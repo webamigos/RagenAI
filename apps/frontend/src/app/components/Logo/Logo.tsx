@@ -10,7 +10,7 @@ export const Logo = () => {
           width={120}
           height={80}
           className="h-8 w-auto"
-          src="/assets/salesyy-logo-on-dark-bg.png"
+          src="/assets/salesyy-white-logo-white-on-dark-bg.png"
           alt=""
         />
       </Link>
