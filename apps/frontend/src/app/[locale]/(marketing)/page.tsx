@@ -2,8 +2,10 @@ import {
   getTranslations,
   unstable_setRequestLocale as setRequestLocale,
 } from 'next-intl/server';
-
 import { useTranslations } from 'next-intl';
+
+import { PromptForm } from '../../components/PromptForm';
+import { sendPrompt } from './actions';
 
 type Props = {
   params: {
@@ -31,6 +33,8 @@ export default function Index({ params: { locale } }: Props) {
   return (
     <>
       <h1>{t('title')}</h1>
+
+      <PromptForm />
     </>
   );
 }
