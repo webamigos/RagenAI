@@ -12,6 +12,12 @@ import { CreateThreadDto } from '../../api/threads/route';
 import { MessageDto } from '../../contracts/MessageDto';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
+const ASSISTANT_NAME = 'SalesYY';
+
+export type Message = {
+  role: string;
+  content: string;
+};
 
 export const Assistant = () => {
   const [threadId, setThreadId] = useState(() => {
@@ -20,7 +26,7 @@ export const Assistant = () => {
       return localThreadId ? localThreadId : '';
     }
   });
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const handleNewThread = async () => {
     try {
@@ -38,9 +44,17 @@ export const Assistant = () => {
     console.log('in client: ', data);
     // const serverResult = await serverAction(data);
 
+    const message: Message = { role: 'user', content: data.prompt };
+
+    setMessages([...messages, message]);
+
     console.log({ threadId });
     const result = await axios.post(`/api/messages/${threadId}`, data);
-    console.log({ result });
+    console.log('result: ', result.data.message);
+    setMessages([
+      ...messages,
+      { role: ASSISTANT_NAME, content: result.data.message },
+    ]);
   };
 
   return (

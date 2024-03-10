@@ -32,9 +32,9 @@ export const POST = async (request: Request, { params }: Params) => {
   //   );
   // }
 
-  const assistant = await askAssistant(prompt, threadPublicId);
+  const assistantResponse = await askAssistant(prompt, threadPublicId);
 
-  return NextResponse.json({ status: 'ok' });
+  return NextResponse.json({ message: assistantResponse });
   // try {
   //   const threadResult = await getThread(publicId);
   //   return NextResponse.json(threadResult);

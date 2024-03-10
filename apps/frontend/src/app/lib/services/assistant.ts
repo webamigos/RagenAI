@@ -66,20 +66,40 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
   const runId = run.id;
 
   // step: check the status
-  const status = await openai.beta.threads.runs.retrieve(threadId, runId);
+  let runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
 
-  console.log({ status });
+  // Polling mechanism to see if runStatus is completed
+  // TODO: this should be done more robust
+  while (runStatus.status !== 'completed') {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
+  }
+
+  // console.log({ status });
 
   // step: check the answer
   const messages = await openai.beta.threads.messages.list(threadId);
 
-  messages.data.forEach((message) => {
-    console.log({
-      id: message.id,
-      role: message.role,
-      content: message.content,
-      content_0: message.content[0],
-      // text: message.content[0],
-    });
-  });
+  const lastMessageForRun = messages.data
+    .filter(
+      (message) => message.run_id === runId && message.role === 'assistant'
+    )
+    .pop();
+
+  // TODO: response
+  if (lastMessageForRun) {
+    console.log(`${lastMessageForRun.content[0].text.value}`);
+  }
+
+  return lastMessageForRun.content[0].text.value;
+
+  // messages.data.forEach((message) => {
+  //   console.log({
+  //     id: message.id,
+  //     role: message.role,
+  //     content: message.content,
+  //     content_0: message.content[0],
+  //     // text: message.content[0],
+  //   });
+  // });
 };
