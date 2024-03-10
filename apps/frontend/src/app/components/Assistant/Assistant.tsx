@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+import { type SubmitHandler } from 'react-hook-form';
 
 import { Button } from '@salesyy/common-ui';
 
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateThreadDto } from '../../api/threads/route';
+import { MessageDto } from '../../contracts/MessageDto';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 
@@ -16,6 +18,7 @@ export const Assistant = () => {
     const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
     return localThreadId ? localThreadId : '';
   });
+  const [messages, setMessages] = useState([]);
 
   const handleNewThread = async () => {
     try {
@@ -29,12 +32,20 @@ export const Assistant = () => {
     }
   };
 
+  const onSubmit = async (data: MessageDto) => {
+    console.log('in client: ', data);
+    // const serverResult = await serverAction(data);
+
+    console.log({ threadId });
+    // await axios.post('/api/prompt', data);
+  };
+
   return (
     <div className="container mx-auto">
       <p>Thread id: {threadId}</p>
 
-      <ChatOutput />
-      {threadId && <PromptForm threadId={threadId} />}
+      <ChatOutput messages={messages} />
+      {threadId && <PromptForm onSubmit={onSubmit} />}
 
       {!threadId && (
         <Button label="Start new thread" onClick={handleNewThread} />

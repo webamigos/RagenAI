@@ -1,18 +1,17 @@
 'use client';
 
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
-import { Button, Input, Textarea } from '@salesyy/common-ui';
+import { Button, Textarea } from '@salesyy/common-ui';
 import { type MessageDto, messageSchema } from '../../../contracts/MessageDto';
 
 type Props = {
-  threadId: string;
+  onSubmit: SubmitHandler<MessageDto>;
 };
 
-export const PromptForm = ({ threadId }: Props) => {
+export const PromptForm = ({ onSubmit }: Props) => {
   const {
     register,
     reset,
@@ -22,16 +21,13 @@ export const PromptForm = ({ threadId }: Props) => {
     resolver: zodResolver(messageSchema),
   });
 
-  const onSubmit: SubmitHandler<MessageDto> = async (data) => {
-    console.log('in client: ', data);
-    // const serverResult = await serverAction(data);
-
-    console.log({ threadId });
-    // await axios.post('/api/prompt', data);
+  const handleFormSubmit: SubmitHandler<MessageDto> = async (data) => {
+    reset();
+    onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
       <Textarea
         label="Enter your question"
         placeholder="Let's chat"
