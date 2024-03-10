@@ -23,7 +23,8 @@ flowchart TB
     F[Thread] -->|add message| G(Message)
     G --> H(Run the Assistant)
     H --> I(Check status)
-    I --> J(Check the answer)
+    I --> J(Display the answer)
+    J --> K(Send output to avatar)
 
 ```
 

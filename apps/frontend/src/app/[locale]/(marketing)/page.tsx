@@ -4,8 +4,9 @@ import {
 } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 
-import { PromptForm } from '../../components/PromptForm';
+import { PromptForm } from '../../components/Assistant/PromptForm';
 import { sendPrompt } from './actions';
+import { Assistant } from '../../components/Assistant';
 
 type Props = {
   params: {
@@ -30,9 +31,5 @@ export default function Index({ params: { locale } }: Props) {
    *
    * Note: The corresponding styles are in the ./index.none file.
    */
-  return (
-    <div className="container mx-auto">
-      <PromptForm />
-    </div>
-  );
+  return <Assistant />;
 }

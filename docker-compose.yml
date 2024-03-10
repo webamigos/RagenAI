@@ -1,0 +1,45 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: salesyy-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass123
+    ports:
+      - 27017:27017
+    volumes:
+      - ./volumes/mongo:/data/db
+  db:
+    image: postgres
+    container_name: salesyy-postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass123
+      POSTGRES_DB: salesyy-avatar
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
+  redis:
+    image: redis
+    container_name: salesyy-redis
+    ports:
+      - 6379:6379
+    restart: always
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: salesyy-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15627
+    volumes:
+      - ./volumes/rabbit/data:/var/lib/rabbitmq
+      - ./volumes/rabbit/log:/var/log/rabbitmq
+    networks:
+      - rabbitmq_go_net
+
+networks:
+  rabbitmq_go_net:
+    driver: bridge
