@@ -6,23 +6,28 @@ import axios from 'axios';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 import { Button, Input, Textarea } from '@salesyy/common-ui';
-import { type PromptDto, promptSchema } from '../../../contracts/ChatDto';
+import { type MessageDto, messageSchema } from '../../../contracts/MessageDto';
 
-export const PromptForm = () => {
+type Props = {
+  threadId: string;
+};
+
+export const PromptForm = ({ threadId }: Props) => {
   const {
     register,
     reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<PromptDto>({
-    resolver: zodResolver(promptSchema),
+  } = useForm<MessageDto>({
+    resolver: zodResolver(messageSchema),
   });
 
-  const onSubmit: SubmitHandler<PromptDto> = async (data) => {
+  const onSubmit: SubmitHandler<MessageDto> = async (data) => {
     console.log('in client: ', data);
     // const serverResult = await serverAction(data);
 
-    await axios.post('/api/prompt', data);
+    console.log({ threadId });
+    // await axios.post('/api/prompt', data);
   };
 
   return (

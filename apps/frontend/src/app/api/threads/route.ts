@@ -22,6 +22,10 @@ import { createThread, getThread } from '../../lib/services/thread';
 //   // StreamingTextResponse(OpenAIStream(completions))
 // };
 
+export type CreateThreadDto = {
+  public_id: string;
+};
+
 export const POST = async () => {
   try {
     const threadResult = await createThread();
