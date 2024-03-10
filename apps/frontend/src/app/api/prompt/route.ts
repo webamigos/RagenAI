@@ -24,6 +24,7 @@ export const POST = async (request: Request) => {
     return NextResponse.json({ status: 'flagged' }, { status: 400 });
   }
 
+  // await askAssistant(prompt, 'thread_OOc9fxXw08vvz4zh1ZOZxdv5');
   await askAssistant(prompt);
 
   return NextResponse.json({ status: 'ok' });

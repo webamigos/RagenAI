@@ -1,4 +1,7 @@
 import OpenAI from 'openai';
+import { Thread } from '@prisma/client';
+
+import db from '@salesyy/prisma-client';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -14,22 +17,36 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  * @param input Question to the assistant
  *
  */
-export const askAssistant = async (input: string) => {
+export const askAssistant = async (input: string, threadId?: string) => {
   // step: get current assistant
   const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
 
-  console.log({ assistant });
+  // console.log({ assistant });
 
   // step: create thread
   // A Thread represents a conversation. We recommend creating one Thread per user
   // as soon as the user initiates the conversation. Pass any user-specific context
   // and files in this thread by creating Messages.
-  const thread = await openai.beta.threads.create();
+
+  let thread;
+  let threadEntity: Thread;
+  if (threadId) {
+    threadEntity = await db.thread.findFirstOrThrow({
+      where: { openai_id: threadId },
+    });
+    thread = await openai.beta.threads.retrieve(threadEntity.openai_id);
+  } else {
+    thread = await openai.beta.threads.create();
+    threadEntity = await db.thread.create({
+      data: { openai_id: thread.id },
+    });
+  }
+
   // const thread2 = await openai.beta.threads.retrieve();
-  console.log({ thread });
+  // console.log({ thread });
 
   // const threadId = thread.id;
-  const threadId = 'thread_OOc9fxXw08vvz4zh1ZOZxdv5';
+  // const threadId = 'thread_OOc9fxXw08vvz4zh1ZOZxdv5';
 
   // step: add a message to a thread
   const message = await openai.beta.threads.messages.create(threadId, {
@@ -48,18 +65,18 @@ export const askAssistant = async (input: string) => {
   // step: check the status
   const status = await openai.beta.threads.runs.retrieve(threadId, runId);
 
-  console.log({ status });
+  // console.log({ status });
 
   // step: check the answer
   const messages = await openai.beta.threads.messages.list(threadId);
 
-  messages.data.forEach((message) => {
-    console.log({
-      id: message.id,
-      role: message.role,
-      content: message.content,
-      content_0: message.content[0],
-      // text: message.content[0],
-    });
-  });
+  // messages.data.forEach((message) => {
+  //   console.log({
+  //     id: message.id,
+  //     role: message.role,
+  //     content: message.content,
+  //     content_0: message.content[0],
+  //     // text: message.content[0],
+  //   });
+  // });
 };
