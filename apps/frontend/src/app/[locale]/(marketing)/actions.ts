@@ -1,6 +1,6 @@
 'use server';
 
-import { type PromptDto, promptSchema } from '../../contracts/Prompt';
+import { type PromptDto, promptSchema } from '../../contracts/ChatDto';
 
 export const sendPrompt = async (data: PromptDto) => {
   const parseResult = promptSchema.safeParse(data);

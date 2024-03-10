@@ -1,8 +1,11 @@
 import { type AxiosResponse } from 'axios';
+import { Thread } from '@prisma/client';
+
+import db from '@salesyy/prisma-client';
 
 import { openAIInstance } from './config';
 
-type ModerationResponse = {
+type OpenAIModerationResponse = {
   id: string;
   model: string;
   results: [
@@ -38,8 +41,25 @@ type ModerationResponse = {
   ];
 };
 
+type ModerationResponse = {
+  input: string;
+  isFlagged: boolean;
+};
+
 export const sendForModeration = async (
   input: string
-): Promise<AxiosResponse<ModerationResponse>> => {
-  return openAIInstance.post('/moderations', { input });
+): Promise<ModerationResponse> => {
+  try {
+    const response = await openAIInstance.post<OpenAIModerationResponse>(
+      '/moderations',
+      { input }
+    );
+
+    const data = response.data;
+    const isFlagged = !!data.results[0].flagged;
+
+    return { input, isFlagged };
+  } catch {
+    throw new Error('Fail to check moderation');
+  }
 };

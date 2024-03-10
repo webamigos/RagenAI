@@ -13,6 +13,10 @@ model User {
 }
 
 model Thread {
-  id        String @id @default(auto()) @map("_id") @db.ObjectId
-  openai_id String
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_id        String   @unique @default(uuid())
+  openai_thread_id String
+  created_at       DateTime @default(now())
 }
+
+// per message moderation_passed Boolean @default(false)

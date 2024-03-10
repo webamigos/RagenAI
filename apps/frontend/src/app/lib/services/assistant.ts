@@ -17,7 +17,7 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  * @param input Question to the assistant
  *
  */
-export const askAssistant = async (input: string, threadId?: string) => {
+export const askAssistant = async (input: string, publicThreadId?: string) => {
   // step: get current assistant
   const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
 
@@ -30,45 +30,51 @@ export const askAssistant = async (input: string, threadId?: string) => {
 
   let thread;
   let threadEntity: Thread;
-  if (threadId) {
-    threadEntity = await db.thread.findFirstOrThrow({
-      where: { openai_id: threadId },
-    });
-    thread = await openai.beta.threads.retrieve(threadEntity.openai_id);
+  if (publicThreadId) {
+    // thread passed from frontend
+    try {
+      threadEntity = await db.thread.findUniqueOrThrow({
+        where: { public_id: publicThreadId },
+      });
+      thread = await openai.beta.threads.retrieve(threadEntity.openai_id);
+    } catch (e) {
+      thread = await openai.beta.threads.create();
+      threadEntity = await db.thread.create({
+        data: { openai_id: thread.id },
+      });
+    }
   } else {
+    // new session
     thread = await openai.beta.threads.create();
     threadEntity = await db.thread.create({
       data: { openai_id: thread.id },
     });
+    console.log({ threadEntity });
   }
 
-  // const thread2 = await openai.beta.threads.retrieve();
-  // console.log({ thread });
-
-  // const threadId = thread.id;
-  // const threadId = 'thread_OOc9fxXw08vvz4zh1ZOZxdv5';
+  const threadId = thread.id;
 
   // step: add a message to a thread
   const message = await openai.beta.threads.messages.create(threadId, {
     role: 'user',
-    content: input,
+    content: input.trim(), // TODO: sanitize
   });
 
   // step: run the assistant
-  const run = await openai.beta.threads.runs.create(threadId, {
-    assistant_id: assistant.id,
-    // instructions: 'Co to jest sprzedaz b2b?', // this will override the default instructions of the Assistant
-  });
+  // const run = await openai.beta.threads.runs.create(threadId, {
+  //   assistant_id: assistant.id,
+  //   // instructions: 'Co to jest sprzedaz b2b?', // this will override the default instructions of the Assistant
+  // });
 
-  const runId = run.id;
+  // const runId = run.id;
 
   // step: check the status
-  const status = await openai.beta.threads.runs.retrieve(threadId, runId);
+  // const status = await openai.beta.threads.runs.retrieve(threadId, runId);
 
   // console.log({ status });
 
   // step: check the answer
-  const messages = await openai.beta.threads.messages.list(threadId);
+  // const messages = await openai.beta.threads.messages.list(threadId);
 
   // messages.data.forEach((message) => {
   //   console.log({

@@ -1,4 +1,4 @@
-import { classMerge } from '@ishot/common-ui';
+import { classMerge } from '@salesyy/common-ui';
 import { utcToZonedTime } from 'date-fns-tz';
 import { format } from 'date-fns';
 

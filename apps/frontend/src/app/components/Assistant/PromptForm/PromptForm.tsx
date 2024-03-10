@@ -6,7 +6,7 @@ import axios from 'axios';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 import { Button, Input, Textarea } from '@salesyy/common-ui';
-import { type PromptDto, promptSchema } from '../../../contracts/Prompt';
+import { type PromptDto, promptSchema } from '../../../contracts/ChatDto';
 
 export const PromptForm = () => {
   const {
