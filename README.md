@@ -10,6 +10,23 @@ Enhance your Nx experience by installing [Nx Console](https://nx.dev/nx-console)
 provides an interactive UI to view your projects, run tasks, generate code, and more! Available for VSCode, IntelliJ and
 comes with a LSP for Vim users.
 
+## Diagrams
+
+Code flow
+
+```mermaid
+flowchart TB
+    A[input prompt] -->|moderation| B(Moderated)
+    B --> |retrieve assistant| C(Assistant)
+    C -->|Thread exits| D[Retrieve thread] --> F
+    C -->|Thread doesn't exist| E[Create thread] --> F
+    F[Thread] -->|add message| G(Message)
+    G --> H(Run the Assistant)
+    H --> I(Check status)
+    I --> J(Check the answer)
+
+```
+
 ## Nx plugins and code generators
 
 Add Nx plugins to leverage their code generators and automated, inferred tasks.

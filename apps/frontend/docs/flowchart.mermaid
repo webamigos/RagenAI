@@ -1,0 +1,5 @@
+flowchart LR
+    A[input prompt] -->|moderation| B(Moderated)
+    B --> C[retrive assistant]
+    C -->|Thread exits| D[Retrieve threead] --> F
+    C -->|Thread is not created| E[Create thread] --> F

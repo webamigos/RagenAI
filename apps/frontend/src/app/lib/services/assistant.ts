@@ -3,6 +3,17 @@ import OpenAI from 'openai';
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
 
+/**
+ * A typical integration of the Assistants API has the following flow:
+ *
+ * 1. Create an Assistant in the API by defining its custom instructions and picking a model. If helpful, enable tools like Code Interpreter, Retrieval, and Function calling.
+ * 2. Create a Thread when a user starts a conversation.
+ * 3. Add Messages to the Thread as the user ask questions.
+ * 4. Run the Assistant on the Thread to trigger responses. This automatically calls the relevant tools.
+ *
+ * @param input Question to the assistant
+ *
+ */
 export const askAssistant = async (input: string) => {
   // step: get current assistant
   const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
@@ -10,7 +21,11 @@ export const askAssistant = async (input: string) => {
   console.log({ assistant });
 
   // step: create thread
+  // A Thread represents a conversation. We recommend creating one Thread per user
+  // as soon as the user initiates the conversation. Pass any user-specific context
+  // and files in this thread by creating Messages.
   const thread = await openai.beta.threads.create();
+  // const thread2 = await openai.beta.threads.retrieve();
   console.log({ thread });
 
   // const threadId = thread.id;
@@ -25,7 +40,7 @@ export const askAssistant = async (input: string) => {
   // step: run the assistant
   const run = await openai.beta.threads.runs.create(threadId, {
     assistant_id: assistant.id,
-    // instructions: 'Co to jest sprzedaz b2b?',
+    // instructions: 'Co to jest sprzedaz b2b?', // this will override the default instructions of the Assistant
   });
 
   const runId = run.id;
@@ -43,7 +58,8 @@ export const askAssistant = async (input: string) => {
       id: message.id,
       role: message.role,
       content: message.content,
-      text: message.content[0],
+      content_0: message.content[0],
+      // text: message.content[0],
     });
   });
 };

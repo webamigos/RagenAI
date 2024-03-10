@@ -42,13 +42,20 @@ export const Textarea = forwardRef(
         </div>
         {error && (
           <>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            {/* <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
               <ExclamationCircleIcon
                 className="h-5 w-5 text-red-500"
                 aria-hidden="true"
               />
-            </div>
-            <p className="mt-2 text-sm text-red-600" id="email-error">
+            </div> */}
+            <p
+              className="flex items-center mt-2 text-sm text-red-600"
+              id="email-error"
+            >
+              <ExclamationCircleIcon
+                className="h-4 w-4 mr-1 text-red-500"
+                aria-hidden="true"
+              />{' '}
               {error.message}
             </p>
           </>

@@ -3,8 +3,9 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
+import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
-import { Button, Input } from '@salesyy/common-ui';
+import { Button, Input, Textarea } from '@salesyy/common-ui';
 import { type PromptDto, promptSchema } from '../../contracts/Prompt';
 
 export const PromptForm = () => {
@@ -25,16 +26,26 @@ export const PromptForm = () => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          label="Your question"
-          placeholder="Let's chat"
-          {...register('prompt')}
-          error={errors.prompt}
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Textarea
+        label="Enter your question"
+        placeholder="Let's chat"
+        {...register('prompt')}
+        rows={2}
+        error={errors.prompt}
+      />
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          label="Send"
+          icon={
+            <PaperAirplaneIcon
+              className="mt-0.5 h-5 w-5 flex-none text-white cursor-pointer"
+              aria-hidden="true"
+            />
+          }
         />
-        <Button type="submit" label="Send" />
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };

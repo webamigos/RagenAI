@@ -31,10 +31,8 @@ export default function Index({ params: { locale } }: Props) {
    * Note: The corresponding styles are in the ./index.none file.
    */
   return (
-    <>
-      <h1>{t('title')}</h1>
-
+    <div className="container mx-auto">
       <PromptForm />
-    </>
+    </div>
   );
 }
