@@ -1,0 +1,49 @@
+import { NextResponse } from 'next/server';
+import { StatusCodes } from 'http-status-codes';
+
+import { getThread } from '../../../lib/services/thread';
+import { messageSchema } from '../../../contracts/MessageDto';
+import { sendForModeration } from '../../../lib/services/moderation';
+import { askAssistant } from '../../../lib/services/assistant';
+
+type Params = {
+  params: { threadPublicId: string };
+};
+
+export const POST = async (request: Request, { params }: Params) => {
+  const requestData = await messageSchema.safeParseAsync(await request.json());
+
+  if (!requestData.success) {
+    return NextResponse.json(requestData.error.format(), { status: 400 });
+  }
+
+  const threadPublicId = params.threadPublicId;
+  const prompt = requestData.data.prompt;
+
+  console.log({ threadPublicId, requestData });
+
+  // TODO: moderation API - add this message to thread?
+  // const moderationResult = await sendForModeration(prompt);
+
+  // if (moderationResult.isFlagged) {
+  //   return NextResponse.json(
+  //     { error: 'Bad message' },
+  //     { status: StatusCodes.BAD_REQUEST }
+  //   );
+  // }
+
+  const assistant = await askAssistant(prompt, threadPublicId);
+
+  return NextResponse.json({ status: 'ok' });
+  // try {
+  //   const threadResult = await getThread(publicId);
+  //   return NextResponse.json(threadResult);
+  // } catch {
+  //   return NextResponse.json(
+  //     { error: 'Thread not found' },
+  //     { status: StatusCodes.NOT_FOUND }
+  //   );
+  // }
+
+  // StreamingTextResponse(OpenAIStream(completions))
+};

@@ -15,8 +15,10 @@ const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 
 export const Assistant = () => {
   const [threadId, setThreadId] = useState(() => {
-    const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
-    return localThreadId ? localThreadId : '';
+    if (typeof window !== 'undefined') {
+      const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
+      return localThreadId ? localThreadId : '';
+    }
   });
   const [messages, setMessages] = useState([]);
 
@@ -37,7 +39,8 @@ export const Assistant = () => {
     // const serverResult = await serverAction(data);
 
     console.log({ threadId });
-    // await axios.post('/api/prompt', data);
+    const result = await axios.post(`/api/messages/${threadId}`, data);
+    console.log({ result });
   };
 
   return (
