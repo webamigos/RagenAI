@@ -55,8 +55,9 @@ export const Assistant = () => {
 
     const md = markdownit();
 
-    setMessages([
+    setMessages(() => [
       ...messages,
+      message,
       {
         role: ASSISTANT_NAME,
         content: md.render(result.data.message),
