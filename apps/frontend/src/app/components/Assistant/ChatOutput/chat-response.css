@@ -1,0 +1,29 @@
+.chat-response h3 {
+  font-size: 20px;
+  margin: 12px 0;
+  font-weight: bold;
+}
+
+.chat-response h4 {
+  font-size: 18px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+.chat-response p {
+  margin: 14px 0;
+}
+
+.chat-response ul {
+  margin-left: 16px;
+  list-style-type: disc;
+}
+
+.chat-response ul li {
+  margin: 6px 0;
+}
+
+.chat-response ol {
+  margin-left: 16px;
+  list-style-type: decimal;
+}

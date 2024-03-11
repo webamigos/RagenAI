@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+import markdownit from 'markdown-it';
 import { type SubmitHandler } from 'react-hook-form';
 
 import { Button } from '@salesyy/common-ui';
@@ -51,9 +52,15 @@ export const Assistant = () => {
     console.log({ threadId });
     const result = await axios.post(`/api/messages/${threadId}`, data);
     console.log('result: ', result.data.message);
+
+    const md = markdownit();
+
     setMessages([
       ...messages,
-      { role: ASSISTANT_NAME, content: result.data.message },
+      {
+        role: ASSISTANT_NAME,
+        content: md.render(result.data.message),
+      },
     ]);
   };
 
