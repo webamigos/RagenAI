@@ -12,11 +12,29 @@ model User {
   email String
 }
 
+enum Role {
+  USER
+  ASSISTANT
+}
+
+model Message {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  public_id         String  @unique @default(uuid())
+  openai_message_id String
+  openai_created_at Int
+  content           String
+  role              Role    @default(USER)
+  thread            Thread? @relation(fields: [thread_id], references: [id])
+  thread_id         String? @db.ObjectId
+}
+
 model Thread {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  public_id        String   @unique @default(uuid())
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  public_id        String    @unique @default(uuid())
   openai_thread_id String
-  created_at       DateTime @default(now())
+  created_at       DateTime  @default(now())
+  is_falgged       Boolean   @default(false)
+  messages         Message[]
 }
 
 // per message moderation_passed Boolean @default(false)

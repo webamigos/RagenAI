@@ -1,7 +1,8 @@
 import OpenAI from 'openai';
-import { Thread } from '@prisma/client';
+import { Role, Thread } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
+import { createMessage } from './message';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -29,8 +30,9 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
   // and files in this thread by creating Messages.
 
   let thread;
+  let threadEntity: Thread;
   try {
-    const threadEntity = await db.thread.findUniqueOrThrow({
+    threadEntity = await db.thread.findUniqueOrThrow({
       where: { public_id: publicThreadId },
     });
     if (!threadEntity.openai_thread_id) {
@@ -56,6 +58,16 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
     role: 'user',
     content: input.trim(), // TODO: sanitize
   });
+  console.log({ message, content: message.content[0].text.value });
+  await createMessage({
+    thread: threadEntity,
+    message: {
+      id: message.id,
+      created_at: message.created_at,
+      content: message.content[0].text.value,
+    },
+    role: Role.USER,
+  }); // TODO: can trow an error
 
   // step: run the assistant
   const run = await openai.beta.threads.runs.create(threadId, {
@@ -89,6 +101,16 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
   // TODO: response
   if (lastMessageForRun) {
     console.log(`${lastMessageForRun.content[0].text.value}`);
+
+    await createMessage({
+      thread: threadEntity,
+      message: {
+        id: lastMessageForRun.id,
+        created_at: lastMessageForRun.created_at,
+        content: lastMessageForRun.content[0].text.value,
+      },
+      role: Role.ASSISTANT,
+    }); // TODO: can trow an error
   }
 
   return lastMessageForRun.content[0].text.value;

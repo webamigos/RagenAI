@@ -14,6 +14,7 @@ import { MessageDto } from '../../contracts/MessageDto';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 const ASSISTANT_NAME = 'SalesYY';
+const USER_NAME = 'You';
 
 export type Message = {
   role: string;
@@ -45,7 +46,7 @@ export const Assistant = () => {
     console.log('in client: ', data);
     // const serverResult = await serverAction(data);
 
-    const message: Message = { role: 'user', content: data.prompt };
+    const message: Message = { role: USER_NAME, content: data.prompt };
 
     setMessages([...messages, message]);
 
