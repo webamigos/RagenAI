@@ -3,6 +3,7 @@ import { Role, Thread } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
 import { createMessage } from './message';
+import { parseMessage } from './utils';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -58,13 +59,16 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
     role: 'user',
     content: input.trim(), // TODO: sanitize
   });
-  console.log({ message, content: message.content[0].text.value });
+  // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
+  const userMessageContent = parseMessage(message);
+
+  console.log({ message, content: userMessageContent });
   await createMessage({
     thread: threadEntity,
     message: {
       id: message.id,
       created_at: message.created_at,
-      content: message.content[0].text.value,
+      content: userMessageContent,
     },
     role: Role.USER,
   }); // TODO: can trow an error
@@ -100,28 +104,20 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
 
   // TODO: response
   if (lastMessageForRun) {
-    console.log(`${lastMessageForRun.content[0].text.value}`);
+    const assistantMessageContent = parseMessage(lastMessageForRun);
+    console.log(`${assistantMessageContent}`);
 
     await createMessage({
       thread: threadEntity,
       message: {
         id: lastMessageForRun.id,
         created_at: lastMessageForRun.created_at,
-        content: lastMessageForRun.content[0].text.value,
+        content: assistantMessageContent,
       },
       role: Role.ASSISTANT,
     }); // TODO: can trow an error
+    return assistantMessageContent;
   }
 
-  return lastMessageForRun.content[0].text.value;
-
-  // messages.data.forEach((message) => {
-  //   console.log({
-  //     id: message.id,
-  //     role: message.role,
-  //     content: message.content,
-  //     content_0: message.content[0],
-  //     // text: message.content[0],
-  //   });
-  // });
+  throw new Error('Cannot fetch message from assistant');
 };

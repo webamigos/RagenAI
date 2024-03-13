@@ -9,13 +9,17 @@ type MessageDto = {
   role: Message['role'];
 };
 
+type MessagesQueryKey = {
+  queryKey: [string, { threadId: string }];
+};
+
 export const createMessage = async ({
   thread,
   message,
   role,
 }: {
   thread: Thread;
-  message: MessageDto;
+  message: Omit<MessageDto, 'role'>;
   role: Role;
 }) => {
   // TODO: moderation
@@ -30,10 +34,9 @@ export const createMessage = async ({
   });
 };
 
-export const fetchMessagesFromApi = async (
-  threadPublicId: Thread['public_id']
-) => {
-  return api.get<MessageDto[]>(`/threads/${threadPublicId}/messages`);
+export const fetchMessagesFromApi = async ({ queryKey }: MessagesQueryKey) => {
+  const [_key, { threadId }] = queryKey;
+  return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
 };
 
 export const fetchMessagesFromDb = async (
@@ -43,7 +46,6 @@ export const fetchMessagesFromDb = async (
     where: { public_id: threadPublicId },
   });
 
-  console.log({ threadPublicId });
   return db.message.findMany({
     where: { thread_id: thread?.id },
     select: {

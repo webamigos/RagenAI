@@ -32,9 +32,8 @@ export const Assistant = () => {
   });
   const [messages, setMessages] = useState<Message[]>([]);
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['messages'],
-    queryFn: (publicThreadId: ThreadDto['public_id']) =>
-      fetchMessagesFromApi(publicThreadId),
+    queryKey: ['messages', { threadId: threadId || '' }],
+    queryFn: fetchMessagesFromApi,
   });
   console.log({ data, isLoading, isError });
 
