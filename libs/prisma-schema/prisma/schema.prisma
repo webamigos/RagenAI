@@ -24,6 +24,7 @@ model Message {
   openai_created_at Int
   created_at        DateTime @default(now())
   content           String
+  is_falgged        Boolean  @default(true)
   role              Role     @default(USER)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
   thread_id         String?  @db.ObjectId
@@ -34,7 +35,6 @@ model Thread {
   public_id        String    @unique @default(uuid())
   openai_thread_id String
   created_at       DateTime  @default(now())
-  is_falgged       Boolean   @default(false)
   messages         Message[]
 }
 

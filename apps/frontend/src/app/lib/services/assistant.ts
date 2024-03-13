@@ -3,7 +3,7 @@ import { Role, Thread } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
 import { createMessage } from './message';
-import { parseMessage } from './utils';
+import { parseThreadMessage } from './utils';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -60,7 +60,8 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
     content: input.trim(), // TODO: sanitize
   });
   // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
-  const userMessageContent = parseMessage(message);
+  console.log({ messageFromThread: message.content });
+  const userMessageContent = parseThreadMessage(message);
 
   console.log({ message, content: userMessageContent });
   await createMessage({
@@ -104,7 +105,7 @@ export const askAssistant = async (input: string, publicThreadId: string) => {
 
   // TODO: response
   if (lastMessageForRun) {
-    const assistantMessageContent = parseMessage(lastMessageForRun);
+    const assistantMessageContent = parseThreadMessage(lastMessageForRun);
     console.log(`${assistantMessageContent}`);
 
     await createMessage({

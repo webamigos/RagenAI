@@ -13,6 +13,12 @@ type Params = {
   params: { publicId: string };
 };
 
+/**
+ * Send new message from client
+ * @param request
+ * @param param1
+ * @returns
+ */
 export const POST = async (request: Request, { params }: Params) => {
   const requestData = await messageSchema.safeParseAsync(await request.json());
 
@@ -26,48 +32,25 @@ export const POST = async (request: Request, { params }: Params) => {
   console.log({ threadPublicId, requestData });
 
   // TODO: moderation API - add this message to thread?
-  // const moderationResult = await sendForModeration(prompt);
+  const moderationResult = await sendForModeration(prompt);
 
-  // if (moderationResult.isFlagged) {
-  //   return NextResponse.json(
-  //     { error: 'Bad message' },
-  //     { status: StatusCodes.BAD_REQUEST }
-  //   );
-  // }
+  if (moderationResult.isFlagged) {
+    return NextResponse.json(
+      { error: 'Bad message' },
+      { status: StatusCodes.BAD_REQUEST }
+    );
+  }
 
   const assistantResponse = await askAssistant(prompt, threadPublicId);
 
-  // const responseStream = new TransformStream();
-  // const writer = responseStream.writable.getWriter();
-  // const encoder = new TextEncoder();
-
-  // await writer.write(
-  //   encoder.encode(`event: message\ndata: ${assistantResponse}\n\n`)
-  // );
-
   return NextResponse.json(
-    // return new Response(
     { message: assistantResponse },
-    // responseStream.readable,
     {
       headers: {
-        Connection: 'keep-alive',
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
+        'Content-Type': 'application/json',
       },
     }
   );
-  // try {
-  //   const threadResult = await getThread(publicId);
-  //   return NextResponse.json(threadResult);
-  // } catch {
-  //   return NextResponse.json(
-  //     { error: 'Thread not found' },
-  //     { status: StatusCodes.NOT_FOUND }
-  //   );
-  // }
-
-  // StreamingTextResponse(OpenAIStream(completions))
 };
 
 export const GET = async (_request: Request, { params }: Params) => {

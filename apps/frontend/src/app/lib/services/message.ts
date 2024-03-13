@@ -1,5 +1,7 @@
 import { Thread, Message, Role } from '@prisma/client';
+
 import db from '@salesyy/prisma-client';
+
 import { api } from './config';
 
 type MessageDto = {
