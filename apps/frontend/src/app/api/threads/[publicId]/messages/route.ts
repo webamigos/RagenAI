@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
-import { getThread } from '../../../../lib/services/thread';
+import { getOrCreateThread, getThread } from '../../../../lib/services/thread';
 import { messageSchema } from '../../../../contracts/MessageDto';
 import { sendForModeration } from '../../../../lib/services/moderation';
 import { askAssistant } from '../../../../lib/services/assistant';
-import { fetchMessagesFromDb } from '../../../../lib/services/message';
+import {
+  createThreadMessage,
+  fetchMessagesFromDb,
+} from '../../../../lib/services/message';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,9 +32,6 @@ export const POST = async (request: Request, { params }: Params) => {
   const threadPublicId = params.publicId;
   const prompt = requestData.data.prompt;
 
-  console.log({ threadPublicId, requestData });
-
-  // TODO: moderation API - add this message to thread?
   const moderationResult = await sendForModeration(prompt);
 
   if (moderationResult.isFlagged) {
@@ -41,16 +41,40 @@ export const POST = async (request: Request, { params }: Params) => {
     );
   }
 
-  const assistantResponse = await askAssistant(prompt, threadPublicId);
+  // get or create thread
+  try {
+    const { thread, threadEntity } = await getOrCreateThread(threadPublicId);
 
-  return NextResponse.json(
-    { message: assistantResponse },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+    // create user message
+    const messageResponse = await createThreadMessage({
+      prompt,
+      thread,
+      threadEntity,
+    });
+
+    // run in background
+    askAssistant({
+      prompt,
+      thread,
+      threadEntity,
+    });
+
+    // create user message and return it to display in frontend
+
+    return NextResponse.json(
+      { message: messageResponse },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  } catch {
+    return NextResponse.json(
+      { error: 'Problem during processing' },
+      { status: StatusCodes.BAD_REQUEST }
+    );
+  }
 };
 
 export const GET = async (_request: Request, { params }: Params) => {

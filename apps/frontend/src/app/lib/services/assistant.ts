@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 import { Role, Thread } from '@prisma/client';
 
-import db from '@salesyy/prisma-client';
 import { createMessage } from './message';
 import { parseThreadMessage } from './utils';
 
@@ -19,60 +18,19 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  * @param input Question to the assistant
  *
  */
-export const askAssistant = async (input: string, publicThreadId: string) => {
-  // step: get current assistant
-  const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
-
-  // console.log({ assistant });
-
-  // step: create thread
-  // A Thread represents a conversation. We recommend creating one Thread per user
-  // as soon as the user initiates the conversation. Pass any user-specific context
-  // and files in this thread by creating Messages.
-
-  let thread;
-  let threadEntity: Thread;
-  try {
-    threadEntity = await db.thread.findUniqueOrThrow({
-      where: { public_id: publicThreadId },
-    });
-    if (!threadEntity.openai_thread_id) {
-      thread = await openai.beta.threads.create();
-      await db.thread.update({
-        where: { public_id: publicThreadId },
-        data: { openai_thread_id: thread.id },
-      });
-    } else {
-      thread = await openai.beta.threads.retrieve(
-        threadEntity.openai_thread_id
-      );
-    }
-  } catch {
-    // TODO: implement
-    throw new Error(`Cannot fetch thread ${publicThreadId}`);
-  }
-
+export const askAssistant = async ({
+  prompt,
+  thread,
+  threadEntity,
+}: {
+  prompt: string;
+  thread: OpenAI.Beta.Threads.Thread;
+  threadEntity: Thread;
+}) => {
   const threadId = thread.id;
 
-  // step: add a message to a thread
-  const message = await openai.beta.threads.messages.create(threadId, {
-    role: 'user',
-    content: input.trim(), // TODO: sanitize
-  });
-  // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
-  console.log({ messageFromThread: message.content });
-  const userMessageContent = parseThreadMessage(message);
-
-  console.log({ message, content: userMessageContent });
-  await createMessage({
-    thread: threadEntity,
-    message: {
-      id: message.id,
-      created_at: message.created_at,
-      content: userMessageContent,
-    },
-    role: Role.USER,
-  }); // TODO: can trow an error
+  // step: get current assistant
+  const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
 
   // step: run the assistant
   const run = await openai.beta.threads.runs.create(threadId, {

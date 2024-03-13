@@ -7,6 +7,34 @@ import { ThreadDto } from '../../contracts/ThreadDto';
 
 const openai = new OpenAI();
 
+export const getOrCreateThread = async (
+  threadPublicId: ThreadDto['public_id']
+) => {
+  let thread;
+  let threadEntity: Thread;
+  try {
+    threadEntity = await db.thread.findUniqueOrThrow({
+      where: { public_id: threadPublicId },
+    });
+    if (!threadEntity.openai_thread_id) {
+      thread = await openai.beta.threads.create();
+      await db.thread.update({
+        where: { public_id: threadPublicId },
+        data: { openai_thread_id: thread.id },
+      });
+    } else {
+      thread = await openai.beta.threads.retrieve(
+        threadEntity.openai_thread_id
+      );
+    }
+
+    return { thread, threadEntity };
+  } catch {
+    // TODO: implement
+    throw new Error(`Cannot fetch thread ${threadPublicId}`);
+  }
+};
+
 export const createThread = async () => {
   // TODO: move creation of Open AI thread to first message
   const thread = await openai.beta.threads.create();

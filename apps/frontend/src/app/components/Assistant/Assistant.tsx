@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import markdownit from 'markdown-it';
 import { useQuery } from '@tanstack/react-query';
+import { Role, Message as MessageModel } from '@prisma/client';
 
 import { Button } from '@salesyy/common-ui';
 
@@ -13,17 +14,25 @@ import { CreateThreadDto } from '../../api/threads/route';
 import { MessageDto } from '../../contracts/MessageDto';
 import { fetchMessagesFromApi } from '../../lib/services/message';
 import { ThreadDto } from '../../contracts/ThreadDto';
+import { StatusCodes } from 'http-status-codes';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 const ASSISTANT_NAME = 'SalesYY';
 const USER_NAME = 'You';
 
 export type Message = {
-  role: string;
-  content: string;
+  role: Role;
+  content: MessageModel['content'];
+  created_at: MessageModel['created_at'];
+  public_id: MessageModel['public_id'];
+};
+
+type MessageResponse = {
+  message: Message;
 };
 
 export const Assistant = () => {
+  const [messageError, setMessageError] = useState(false);
   const [threadId, setThreadId] = useState(() => {
     if (typeof window !== 'undefined') {
       const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
@@ -82,27 +91,34 @@ export const Assistant = () => {
   };
 
   const onSubmit = async (data: MessageDto) => {
-    console.log('in client: ', data);
-    // const serverResult = await serverAction(data);
+    try {
+      const result = await axios.post<MessageResponse>(
+        `/api/threads/${threadId}/messages`,
+        data
+      );
 
-    const message: Message = { role: USER_NAME, content: data.prompt };
+      const messageResponse = result.data.message;
+      console.log(result.status);
 
-    setMessages([...messages, message]);
+      const md = markdownit();
 
-    console.log({ threadId });
-    const result = await axios.post(`/api/threads/${threadId}/messages`, data);
-    console.log('result: ', result.data.message);
-
-    const md = markdownit();
-
-    setMessages(() => [
-      ...messages,
-      message,
-      {
-        role: ASSISTANT_NAME,
-        content: md.render(result.data.message),
-      },
-    ]);
+      setMessages(() => [
+        ...messages,
+        {
+          public_id: messageResponse.public_id,
+          role: messageResponse.role,
+          content: md.render(messageResponse.content),
+          created_at: messageResponse.created_at,
+        },
+      ]);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorStatus = error.status;
+        if (errorStatus === StatusCodes.BAD_REQUEST) {
+          setMessageError(true);
+        }
+      }
+    }
   };
 
   return (

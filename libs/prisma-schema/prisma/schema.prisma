@@ -24,10 +24,17 @@ model Message {
   openai_created_at Int
   created_at        DateTime @default(now())
   content           String
-  is_falgged        Boolean  @default(true)
   role              Role     @default(USER)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
   thread_id         String?  @db.ObjectId
+}
+
+model FlaggedMessage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_id  String   @unique @default(uuid())
+  created_at DateTime @default(now())
+  content    String
+  role       Role     @default(USER)
 }
 
 model Thread {

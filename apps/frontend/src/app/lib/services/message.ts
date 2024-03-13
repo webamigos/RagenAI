@@ -1,8 +1,12 @@
+'use server';
+
+import OpenAI from 'openai';
 import { Thread, Message, Role } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
 
 import { api } from './config';
+import { parseThreadMessage } from './utils';
 
 type MessageDto = {
   id: Message['id'];
@@ -14,6 +18,8 @@ type MessageDto = {
 type MessagesQueryKey = {
   queryKey: [string, { threadId: string }];
 };
+
+const openai = new OpenAI();
 
 export const createMessage = async ({
   thread,
@@ -68,4 +74,41 @@ export const fetchMessagesFromDb = async (
   //     messages: true,
   //   },
   // });
+};
+
+export const createThreadMessage = async ({
+  prompt,
+  thread,
+  threadEntity,
+}: {
+  prompt: string;
+  thread: OpenAI.Beta.Threads.Thread;
+  threadEntity: Thread;
+}) => {
+  const threadId = thread.id;
+  const threadMessage = await openai.beta.threads.messages.create(threadId, {
+    role: 'user',
+    content: prompt.trim(), // TODO: sanitize
+  });
+  // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
+  console.log({ messageFromThread: threadMessage.content });
+  const userMessageContent = parseThreadMessage(threadMessage);
+
+  console.log({ threadMessage, content: userMessageContent });
+  const dbMessage = await createMessage({
+    thread: threadEntity,
+    message: {
+      id: threadMessage.id,
+      created_at: threadMessage.created_at,
+      content: userMessageContent,
+    },
+    role: Role.USER,
+  }); // TODO: can trow an error
+
+  return {
+    public_id: dbMessage.public_id,
+    role: dbMessage.role,
+    created_at: dbMessage.created_at,
+    content: dbMessage.content,
+  };
 };
