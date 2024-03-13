@@ -59,7 +59,7 @@ export const Assistant = () => {
     setMessages([...messages, message]);
 
     console.log({ threadId });
-    const result = await axios.post(`/api/messages/${threadId}`, data);
+    const result = await axios.post(`/api/threads/${threadId}/messages`, data);
     console.log('result: ', result.data.message);
 
     const md = markdownit();

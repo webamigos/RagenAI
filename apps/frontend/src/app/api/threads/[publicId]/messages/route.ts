@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
-import { getThread } from '../../../lib/services/thread';
-import { messageSchema } from '../../../contracts/MessageDto';
-import { sendForModeration } from '../../../lib/services/moderation';
-import { askAssistant } from '../../../lib/services/assistant';
-import { fetchMessagesFromDb } from '../../../lib/services/message';
+import { getThread } from '../../../../lib/services/thread';
+import { messageSchema } from '../../../../contracts/MessageDto';
+import { sendForModeration } from '../../../../lib/services/moderation';
+import { askAssistant } from '../../../../lib/services/assistant';
+import { fetchMessagesFromDb } from '../../../../lib/services/message';
 
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { threadPublicId: string };
+  params: { publicId: string };
 };
 
 export const POST = async (request: Request, { params }: Params) => {
@@ -20,7 +20,7 @@ export const POST = async (request: Request, { params }: Params) => {
     return NextResponse.json(requestData.error.format(), { status: 400 });
   }
 
-  const threadPublicId = params.threadPublicId;
+  const threadPublicId = params.publicId;
   const prompt = requestData.data.prompt;
 
   console.log({ threadPublicId, requestData });
@@ -71,7 +71,7 @@ export const POST = async (request: Request, { params }: Params) => {
 };
 
 export const GET = async (_request: Request, { params }: Params) => {
-  const threadPublicId = params.threadPublicId;
+  const threadPublicId = params.publicId;
 
   try {
     const messages = await fetchMessagesFromDb(threadPublicId);

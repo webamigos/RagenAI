@@ -33,7 +33,7 @@ export const createMessage = async ({
 export const fetchMessagesFromApi = async (
   threadPublicId: Thread['public_id']
 ) => {
-  return api.get<MessageDto[]>(`/api/messages/${threadPublicId}`);
+  return api.get<MessageDto[]>(`/threads/${threadPublicId}/messages`);
 };
 
 export const fetchMessagesFromDb = async (
