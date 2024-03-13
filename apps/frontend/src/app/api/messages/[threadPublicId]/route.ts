@@ -5,6 +5,7 @@ import { getThread } from '../../../lib/services/thread';
 import { messageSchema } from '../../../contracts/MessageDto';
 import { sendForModeration } from '../../../lib/services/moderation';
 import { askAssistant } from '../../../lib/services/assistant';
+import { fetchMessagesFromDb } from '../../../lib/services/message';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,4 +68,20 @@ export const POST = async (request: Request, { params }: Params) => {
   // }
 
   // StreamingTextResponse(OpenAIStream(completions))
+};
+
+export const GET = async (_request: Request, { params }: Params) => {
+  const threadPublicId = params.threadPublicId;
+
+  try {
+    const messages = await fetchMessagesFromDb(threadPublicId);
+
+    return NextResponse.json({ messages });
+  } catch (e) {
+    console.log(e);
+    return NextResponse.json(
+      { error: 'Failed fetching messages' },
+      { status: StatusCodes.BAD_REQUEST }
+    );
+  }
 };

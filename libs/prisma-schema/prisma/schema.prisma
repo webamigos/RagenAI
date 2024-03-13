@@ -18,14 +18,15 @@ enum Role {
 }
 
 model Message {
-  id                String  @id @default(auto()) @map("_id") @db.ObjectId
-  public_id         String  @unique @default(uuid())
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_id         String   @unique @default(uuid())
   openai_message_id String
   openai_created_at Int
+  created_at        DateTime @default(now())
   content           String
-  role              Role    @default(USER)
-  thread            Thread? @relation(fields: [thread_id], references: [id])
-  thread_id         String? @db.ObjectId
+  role              Role     @default(USER)
+  thread            Thread?  @relation(fields: [thread_id], references: [id])
+  thread_id         String?  @db.ObjectId
 }
 
 model Thread {

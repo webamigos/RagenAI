@@ -9,3 +9,10 @@ export const openAIInstance = axios.create({
     Authorization: `Bearer ${OPENAI_API_KEY}`,
   },
 });
+
+export const api = axios.create({
+  baseURL: '/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});

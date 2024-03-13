@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import markdownit from 'markdown-it';
-import { type SubmitHandler } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
 
 import { Button } from '@salesyy/common-ui';
 
@@ -11,6 +11,8 @@ import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateThreadDto } from '../../api/threads/route';
 import { MessageDto } from '../../contracts/MessageDto';
+import { fetchMessagesFromApi } from '../../lib/services/message';
+import { ThreadDto } from '../../contracts/ThreadDto';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 const ASSISTANT_NAME = 'SalesYY';
@@ -29,6 +31,12 @@ export const Assistant = () => {
     }
   });
   const [messages, setMessages] = useState<Message[]>([]);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['messages'],
+    queryFn: (publicThreadId: ThreadDto['public_id']) =>
+      fetchMessagesFromApi(publicThreadId),
+  });
+  console.log({ data, isLoading, isError });
 
   const handleNewThread = async () => {
     try {
