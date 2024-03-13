@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import markdownit from 'markdown-it';
 import { useQuery } from '@tanstack/react-query';
@@ -36,6 +36,38 @@ export const Assistant = () => {
     queryFn: fetchMessagesFromApi,
   });
   console.log({ data, isLoading, isError });
+
+  useEffect(() => {
+    const eventSource = new EventSource('/api/sse');
+
+    eventSource.addEventListener('salesyy-event', (e) => {
+      // the event name here must be the same as in the API
+      console.log(JSON.parse(e.data));
+    });
+    eventSource.addEventListener('open', (e) => {
+      console.log('open', e);
+    });
+    eventSource.addEventListener('error', (e) => {
+      eventSource.close();
+    });
+
+    // eventSource.onmessage = (event) => {
+    //   console.log('event from sse: ', event);
+    // };
+
+    //   eventSource.onopen(() => {
+    //     console.log('opened');
+    //   });
+
+    // eventSource.onerror((e) => {
+    //   console.log('e');
+    //   eventSource.close();
+    // });
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
 
   const handleNewThread = async () => {
     try {
