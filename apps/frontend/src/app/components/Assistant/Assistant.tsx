@@ -32,6 +32,7 @@ type MessageResponse = {
 };
 
 export const Assistant = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [messageError, setMessageError] = useState(false);
   const [threadId, setThreadId] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -40,43 +41,43 @@ export const Assistant = () => {
     }
   });
   const [messages, setMessages] = useState<Message[]>([]);
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['messages', { threadId: threadId || '' }],
-    queryFn: fetchMessagesFromApi,
-  });
-  console.log({ data, isLoading, isError });
+  // const { data, isLoading, isError } = useQuery({
+  //   queryKey: ['messages', { threadId: threadId || '' }],
+  //   queryFn: fetchMessagesFromApi,
+  // });
+  // console.log({ data, isLoading, isError });
 
-  useEffect(() => {
-    const eventSource = new EventSource('/api/sse');
+  // useEffect(() => {
+  //   const eventSource = new EventSource('/api/sse');
 
-    eventSource.addEventListener('salesyy-event', (e) => {
-      // the event name here must be the same as in the API
-      console.log(JSON.parse(e.data));
-    });
-    eventSource.addEventListener('open', (e) => {
-      console.log('open', e);
-    });
-    eventSource.addEventListener('error', (e) => {
-      eventSource.close();
-    });
+  //   eventSource.addEventListener('salesyy-event', (e) => {
+  //     // the event name here must be the same as in the API
+  //     console.log('event data: ', JSON.parse(e.data));
+  //   });
+  //   eventSource.addEventListener('open', (e) => {
+  //     console.log('open', e);
+  //   });
+  //   eventSource.addEventListener('error', (e) => {
+  //     eventSource.close();
+  //   });
 
-    // eventSource.onmessage = (event) => {
-    //   console.log('event from sse: ', event);
-    // };
+  //   // eventSource.onmessage = (event) => {
+  //   //   console.log('event from sse: ', event);
+  //   // };
 
-    //   eventSource.onopen(() => {
-    //     console.log('opened');
-    //   });
+  //   //   eventSource.onopen(() => {
+  //   //     console.log('opened');
+  //   //   });
 
-    // eventSource.onerror((e) => {
-    //   console.log('e');
-    //   eventSource.close();
-    // });
+  //   // eventSource.onerror((e) => {
+  //   //   console.log('e');
+  //   //   eventSource.close();
+  //   // });
 
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  //   return () => {
+  //     eventSource.close();
+  //   };
+  // }, []);
 
   const handleNewThread = async () => {
     try {
@@ -102,13 +103,28 @@ export const Assistant = () => {
 
       const md = markdownit();
 
-      setMessages(() => [
-        ...messages,
+      setMessages((currentMessages) => [
+        ...currentMessages,
         {
           public_id: messageResponse.public_id,
           role: messageResponse.role,
           content: md.render(messageResponse.content),
           created_at: messageResponse.created_at,
+        },
+      ]);
+
+      const assistantResult = await axios.post<MessageResponse>(
+        `/api/assistant/${threadId}`
+      );
+      const assistantResponse = assistantResult.data.message;
+
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        {
+          public_id: assistantResponse.public_id,
+          role: assistantResponse.role,
+          content: md.render(assistantResponse.content),
+          created_at: assistantResponse.created_at,
         },
       ]);
     } catch (error) {

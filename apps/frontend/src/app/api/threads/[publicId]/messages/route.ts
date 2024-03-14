@@ -52,15 +52,7 @@ export const POST = async (request: Request, { params }: Params) => {
       threadEntity,
     });
 
-    // run in background
-    askAssistant({
-      prompt,
-      thread,
-      threadEntity,
-    });
-
     // create user message and return it to display in frontend
-
     return NextResponse.json(
       { message: messageResponse },
       {
@@ -69,7 +61,8 @@ export const POST = async (request: Request, { params }: Params) => {
         },
       }
     );
-  } catch {
+  } catch (e) {
+    console.log('processing error: ', e);
     return NextResponse.json(
       { error: 'Problem during processing' },
       { status: StatusCodes.BAD_REQUEST }

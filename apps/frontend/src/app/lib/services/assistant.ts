@@ -1,8 +1,12 @@
 import OpenAI from 'openai';
 import { Role, Thread } from '@prisma/client';
 
+import db from '@salesyy/prisma-client';
+
 import { createMessage } from './message';
 import { parseThreadMessage } from './utils';
+import EventEmitter from 'events';
+import { getOrCreateThread, getThread } from './thread';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -18,15 +22,20 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  * @param input Question to the assistant
  *
  */
-export const askAssistant = async ({
-  prompt,
-  thread,
-  threadEntity,
-}: {
-  prompt: string;
-  thread: OpenAI.Beta.Threads.Thread;
-  threadEntity: Thread;
-}) => {
+export const askAssistant = async (publicThreadId: string) => {
+  const threadEntity = await db.thread.findUniqueOrThrow({
+    where: { public_id: publicThreadId },
+    select: {
+      id: true,
+      public_id: true,
+      openai_thread_id: true,
+      created_at: true,
+    },
+  });
+
+  const thread = await openai.beta.threads.retrieve(
+    threadEntity.openai_thread_id
+  );
   const threadId = thread.id;
 
   // step: get current assistant
@@ -46,7 +55,7 @@ export const askAssistant = async ({
   // Polling mechanism to see if runStatus is completed
   // TODO: this should be done more robust
   while (runStatus.status !== 'completed') {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
   }
 
@@ -66,7 +75,7 @@ export const askAssistant = async ({
     const assistantMessageContent = parseThreadMessage(lastMessageForRun);
     console.log(`${assistantMessageContent}`);
 
-    await createMessage({
+    const dbMessage = await createMessage({
       thread: threadEntity,
       message: {
         id: lastMessageForRun.id,
@@ -74,8 +83,18 @@ export const askAssistant = async ({
         content: assistantMessageContent,
       },
       role: Role.ASSISTANT,
-    }); // TODO: can trow an error
-    return assistantMessageContent;
+    });
+
+    return {
+      public_id: dbMessage.public_id,
+      role: dbMessage.role,
+      created_at: dbMessage.created_at,
+      content: dbMessage.content,
+    };
+
+    // stream to /api/sse which should notify frontend
+    // const stream = new EventEmitter();
+    // stream.emit('channel', 'salesyy-event', assistantMessageContent);
   }
 
   throw new Error('Cannot fetch message from assistant');
