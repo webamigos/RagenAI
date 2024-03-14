@@ -12,7 +12,6 @@ import { PromptForm } from './PromptForm';
 import { CreateThreadDto } from '../../api/threads/route';
 import { MessageDto } from '../../contracts/MessageDto';
 import { fetchMessagesFromApi } from '../../lib/services/api';
-import { ThreadDto } from '../../contracts/ThreadDto';
 import { StatusCodes } from 'http-status-codes';
 import { ThreadId } from './ThreadId/ThreadId';
 import { api } from '../../lib/services/config';
