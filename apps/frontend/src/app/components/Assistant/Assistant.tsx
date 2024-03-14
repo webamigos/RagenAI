@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 //import markdownit from 'markdown-it';
 import { Role, Message as MessageModel } from '@prisma/client';
 
