@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import axios, { AxiosError } from 'axios';
-import markdownit from 'markdown-it';
-import { useQuery } from '@tanstack/react-query';
+//import markdownit from 'markdown-it';
 import { Role, Message as MessageModel } from '@prisma/client';
 
 import { Button } from '@salesyy/common-ui';
@@ -12,9 +11,12 @@ import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateThreadDto } from '../../api/threads/route';
 import { MessageDto } from '../../contracts/MessageDto';
-import { fetchMessagesFromApi } from '../../lib/services/message';
+import { fetchMessagesFromApi } from '../../lib/services/api';
 import { ThreadDto } from '../../contracts/ThreadDto';
 import { StatusCodes } from 'http-status-codes';
+import { ThreadId } from './ThreadId/ThreadId';
+import { api } from '../../lib/services/config';
+import { useQuery } from '@tanstack/react-query';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 const ASSISTANT_NAME = 'SalesYY';
@@ -32,20 +34,39 @@ type MessageResponse = {
 };
 
 export const Assistant = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [threadId, setThreadId] = useState('');
+  const [isMessageLoading, setMessageIsLoading] = useState(false);
+  const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
-  const [threadId, setThreadId] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
-      return localThreadId ? localThreadId : '';
-    }
-  });
   const [messages, setMessages] = useState<Message[]>([]);
-  // const { data, isLoading, isError } = useQuery({
-  //   queryKey: ['messages', { threadId: threadId || '' }],
-  //   queryFn: fetchMessagesFromApi,
-  // });
-  // console.log({ data, isLoading, isError });
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['messages', { threadId: threadId || '' }],
+    queryFn: fetchMessagesFromApi,
+  });
+
+  const initialMessages = data ? data.data.messages : [];
+  console.log({ initialMessages, isLoading, isError });
+
+  useEffect(() => {
+    const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
+    setThreadId(localThreadId ? localThreadId : '');
+  }, []);
+
+  // useEffect(() => {
+  //   const loadMessages = async () => {
+  //     try {
+  //       if (threadId) {
+  //         const messagesFromApi = await api.get<MessageDto[]>(
+  //           `/threads/${threadId}/messages`
+  //         );
+  //         console.log({ messagesFromApi });
+  //       }
+  //     } catch (e) {
+  //       console.log('fetchMessages Error: ', e);
+  //     }
+  //   };
+  //   loadMessages();
+  // }, [threadId]);
 
   // useEffect(() => {
   //   const eventSource = new EventSource('/api/sse');
@@ -81,7 +102,7 @@ export const Assistant = () => {
 
   const handleNewThread = async () => {
     try {
-      const result = await axios.post<CreateThreadDto>('/api/threads');
+      const result = await api.post<CreateThreadDto>('/threads');
       const threadId = result.data.public_id;
       setThreadId(threadId);
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
@@ -93,40 +114,45 @@ export const Assistant = () => {
 
   const onSubmit = async (data: MessageDto) => {
     try {
-      const result = await axios.post<MessageResponse>(
-        `/api/threads/${threadId}/messages`,
+      setMessageIsLoading(true);
+      const result = await api.post<MessageResponse>(
+        `/threads/${threadId}/messages`,
         data
       );
+      refetch();
 
       const messageResponse = result.data.message;
       console.log(result.status);
 
-      const md = markdownit();
+      // const md = markdownit();
 
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        {
-          public_id: messageResponse.public_id,
-          role: messageResponse.role,
-          content: md.render(messageResponse.content),
-          created_at: messageResponse.created_at,
-        },
-      ]);
+      // setMessages((currentMessages) => [
+      //   ...currentMessages,
+      //   {
+      //     public_id: messageResponse.public_id,
+      //     role: messageResponse.role,
+      //     content: md.render(messageResponse.content),
+      //     created_at: messageResponse.created_at,
+      //   },
+      // ]);
+      setMessageIsLoading(true);
 
-      const assistantResult = await axios.post<MessageResponse>(
-        `/api/assistant/${threadId}`
+      const assistantResult = await api.post<MessageResponse>(
+        `/assistant/${threadId}`
       );
       const assistantResponse = assistantResult.data.message;
 
-      setMessages((currentMessages) => [
-        ...currentMessages,
-        {
-          public_id: assistantResponse.public_id,
-          role: assistantResponse.role,
-          content: md.render(assistantResponse.content),
-          created_at: assistantResponse.created_at,
-        },
-      ]);
+      // setMessages((currentMessages) => [
+      //   ...currentMessages,
+      //   {
+      //     public_id: assistantResponse.public_id,
+      //     role: assistantResponse.role,
+      //     content: md.render(assistantResponse.content),
+      //     created_at: assistantResponse.created_at,
+      //   },
+      // ]);
+      refetch();
+      setMessageIsLoading(false);
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorStatus = error.status;
@@ -139,14 +165,19 @@ export const Assistant = () => {
 
   return (
     <div className="container mx-auto">
-      <p>Thread id: {threadId}</p>
+      {/* {threadId && <ThreadId threadId={threadId} />} */}
 
-      <ChatOutput messages={messages} />
-      {threadId && <PromptForm onSubmit={onSubmit} />}
+      <div>
+        <ChatOutput
+          messages={initialMessages ? initialMessages : messages}
+          loading={isMessageLoading}
+        />
+        {threadId && <PromptForm onSubmit={onSubmit} />}
 
-      {!threadId && (
-        <Button label="Start new thread" onClick={handleNewThread} />
-      )}
+        {!threadId && (
+          <Button label="Start new thread" onClick={handleNewThread} />
+        )}
+      </div>
     </div>
   );
 };

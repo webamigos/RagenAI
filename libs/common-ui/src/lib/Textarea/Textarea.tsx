@@ -6,6 +6,7 @@ import {
 } from 'react';
 import { ExclamationCircleIcon } from '@heroicons/react/20/solid';
 import type { FieldError } from 'react-hook-form';
+import { classMerge } from '../utils/cn';
 
 type Props = {
   label: string;
@@ -23,7 +24,7 @@ export const Textarea = forwardRef(
       <div className="py-2">
         <label
           htmlFor={id}
-          className="block text-sm font-medium leading-6 text-gray-900"
+          className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
         >
           {label}
         </label>
@@ -32,11 +33,15 @@ export const Textarea = forwardRef(
             id={id}
             ref={ref}
             rows={4}
-            className={
-              error
-                ? `block w-full rounded-md border-0 py-1.5 px-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6  ${className}`
-                : `block w-full rounded-md border-0 py-1.5 px-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 ${className}`
-            }
+            className={classMerge(
+              'block w-full dark:bg-slate-900 dark:text-gray-300 rounded-md border-0 py-1.5 px-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-blue-500 focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6',
+              {
+                'text-red-900  ring-red-300 placeholder:text-red-300 focus:ring-red-500':
+                  error,
+                'shadow-sm': !error,
+              },
+              className
+            )}
             {...rest}
           />
         </div>
@@ -61,7 +66,10 @@ export const Textarea = forwardRef(
           </>
         )}
         {hint && (
-          <p className="mt-2 text-sm text-gray-500" id="email-description">
+          <p
+            className="mt-2 text-sm  text-gray-500 dark:text-gray-400"
+            id="email-description"
+          >
             {hint}
           </p>
         )}

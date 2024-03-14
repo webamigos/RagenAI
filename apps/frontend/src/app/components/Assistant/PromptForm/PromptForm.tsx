@@ -27,26 +27,28 @@ export const PromptForm = ({ onSubmit }: Props) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)}>
-      <Textarea
-        label="Enter your question"
-        placeholder="Let's chat"
-        {...register('prompt')}
-        rows={2}
-        error={errors.prompt}
-      />
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          label="Send"
-          icon={
-            <PaperAirplaneIcon
-              className="mt-0.5 h-5 w-5 flex-none text-white cursor-pointer"
-              aria-hidden="true"
-            />
-          }
+    <div className="rounded-lg text-sm ">
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <Textarea
+          label="Enter your question"
+          placeholder="Let's chat"
+          {...register('prompt')}
+          rows={2}
+          error={errors.prompt}
         />
-      </div>
-    </form>
+        <div className="flex justify-end">
+          <Button
+            type="submit"
+            label="Send"
+            icon={
+              <PaperAirplaneIcon
+                className="mt-0.5 h-5 w-5 flex-none text-white cursor-pointer"
+                aria-hidden="true"
+              />
+            }
+          />
+        </div>
+      </form>
+    </div>
   );
 };

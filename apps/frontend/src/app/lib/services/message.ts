@@ -5,18 +5,13 @@ import { Thread, Message, Role } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
 
-import { api } from './config';
 import { parseThreadMessage } from './utils';
 
-type MessageDto = {
+export type MessageDto = {
   id: Message['id'];
   created_at: Message['openai_created_at'];
   content: Message['content'];
   role: Message['role'];
-};
-
-type MessagesQueryKey = {
-  queryKey: [string, { threadId: string }];
 };
 
 const openai = new OpenAI();
@@ -42,10 +37,16 @@ export const createMessage = async ({
   });
 };
 
-export const fetchMessagesFromApi = async ({ queryKey }: MessagesQueryKey) => {
-  const [_key, { threadId }] = queryKey;
-  return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
-};
+// export const fetchMessagesFromApi = async (threadId: string) => {
+//   return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
+// };
+
+// useQuery version - moved to other file because this one is marked as 'use server'
+// export const fetchMessagesFromApi = async ({ queryKey }: MessagesQueryKey) => {
+//   const [_key, { threadId }] = queryKey;
+//   console.log('on server: ', { threadId });
+//   return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
+// };
 
 export const fetchMessagesFromDb = async (
   threadPublicId: Thread['public_id']

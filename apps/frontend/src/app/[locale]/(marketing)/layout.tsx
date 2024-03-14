@@ -13,7 +13,7 @@ export default function MarketingLayout({ children }: Props) {
   return (
     <NextIntlClientProvider messages={messages}>
       <Toast />
-      <div className="h-full ">
+      <div>
         <NavHeader />
 
         <div className="relative isolate px-6 pt-14 lg:px-8">

@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 
-export const delay = (ms: number) =>
+const delay = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export const runtime = 'nodejs';
