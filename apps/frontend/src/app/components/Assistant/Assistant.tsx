@@ -34,6 +34,7 @@ type MessageResponse = {
 export const Assistant = () => {
   const [threadId, setThreadId] = useState('');
   const [isMessageLoading, setMessageIsLoading] = useState(false);
+  const [messageLoadingText, setMessageLoadingText] = useState('');
   const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -66,13 +67,15 @@ export const Assistant = () => {
   const onSubmit = async (data: MessageDto) => {
     try {
       setMessageIsLoading(true);
+      setMessageLoadingText('Thinking...');
       const result = await api.post<MessageResponse>(
         `/threads/${threadId}/messages`,
         data
       );
+      setMessageLoadingText('Searching memories...');
       refetch();
 
-      const messageResponse = result.data.message;
+      // const messageResponse = result.data.message;
       // console.log(result.status);
 
       // const md = markdownit();
@@ -86,12 +89,17 @@ export const Assistant = () => {
       //     created_at: messageResponse.created_at,
       //   },
       // ]);
-      setMessageIsLoading(true);
+      // setMessageIsLoading(true);
+
+      setMessageLoadingText('Beep, boop, robots are waking up...');
+      setMessageLoadingText('Asking AI what it thinks about your question...');
 
       const assistantResult = await api.post<MessageResponse>(
         `/assistant/${threadId}`
       );
       const assistantResponse = assistantResult.data.message;
+
+      setMessageLoadingText('Analyzing your question...');
 
       // setMessages((currentMessages) => [
       //   ...currentMessages,
@@ -122,6 +130,7 @@ export const Assistant = () => {
         <ChatOutput
           messages={initialMessages ? initialMessages : messages}
           loading={isMessageLoading}
+          loadingMessage={messageLoadingText}
         />
         {threadId && <PromptForm onSubmit={onSubmit} />}
 

@@ -55,7 +55,7 @@ export const askAssistant = async (publicThreadId: string) => {
   // Polling mechanism to see if runStatus is completed
   // TODO: this should be done more robust
   while (runStatus.status !== 'completed') {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
   }
 
