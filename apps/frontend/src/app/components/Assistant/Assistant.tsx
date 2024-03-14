@@ -44,7 +44,7 @@ export const Assistant = () => {
   const t = useTranslations('Index');
 
   const initialMessages = data ? data.data.messages : [];
-  console.log({ initialMessages, isLoading, isError });
+  // console.log({ initialMessages, isLoading, isError });
 
   useEffect(() => {
     const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
@@ -105,7 +105,7 @@ export const Assistant = () => {
       const threadId = result.data.public_id;
       setThreadId(threadId);
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-      console.log(threadId);
+      // console.log(threadId);
     } catch {
       // TODO: implement
     }
@@ -121,7 +121,7 @@ export const Assistant = () => {
       refetch();
 
       const messageResponse = result.data.message;
-      console.log(result.status);
+      // console.log(result.status);
 
       // const md = markdownit();
 
