@@ -2,7 +2,7 @@ import { OpenAI } from 'openai';
 
 // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
 export const parseThreadMessage = (
-  message: OpenAI.Beta.Threads.Messages.ThreadMessage
+  message: OpenAI.Beta.Threads.Messages.Message
 ) =>
   message.content
     .map((msg) => (msg.type === 'text' ? msg.text.value : ''))
