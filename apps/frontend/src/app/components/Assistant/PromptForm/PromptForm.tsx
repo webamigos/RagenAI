@@ -9,10 +9,11 @@ import { type MessageDto, messageSchema } from '../../../contracts/MessageDto';
 import { useTranslations } from 'next-intl';
 
 type Props = {
+  handleCloseThread: () => void;
   onSubmit: SubmitHandler<MessageDto>;
 };
 
-export const PromptForm = ({ onSubmit }: Props) => {
+export const PromptForm = ({ handleCloseThread, onSubmit }: Props) => {
   const {
     register,
     reset,
@@ -39,18 +40,29 @@ export const PromptForm = ({ onSubmit }: Props) => {
           error={errors.prompt}
           errorMessage={t('provide-at-least-10-characters')}
         />
-        <div className="flex justify-end">
-          <Button
-            type="submit"
-            label={t('send')}
-            icon={
-              <PaperAirplaneIcon
-                className="mt-0.5 h-5 w-5 flex-none text-white cursor-pointer"
-                aria-hidden="true"
+        <div className="flex flex-row">
+          <div className="w-1/2">
+            <p>
+              <Button
+                label={t('close-thread')}
+                onClick={handleCloseThread}
+                className="cursor-pointer"
               />
-            }
-            className="bg-salesyy-red hover:bg-red-700"
-          />
+            </p>
+          </div>
+          <div className="w-1/2 flex  justify-end">
+            <Button
+              type="submit"
+              label={t('send')}
+              icon={
+                <PaperAirplaneIcon
+                  className="mt-0.5 h-5 w-5 flex-none text-white cursor-pointer"
+                  aria-hidden="true"
+                />
+              }
+              className="bg-salesyy-red hover:bg-red-700 cursor-pointer"
+            />
+          </div>
         </div>
       </form>
     </div>

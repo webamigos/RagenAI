@@ -64,6 +64,11 @@ export const Assistant = () => {
     }
   };
 
+  const handleCloseThread = () => {
+    localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
+    setThreadId('');
+  };
+
   const onSubmit = async (data: MessageDto) => {
     try {
       setMessageIsLoading(true);
@@ -132,7 +137,12 @@ export const Assistant = () => {
           loading={isMessageLoading}
           loadingMessage={messageLoadingText}
         />
-        {threadId && <PromptForm onSubmit={onSubmit} />}
+        {threadId && (
+          <PromptForm
+            handleCloseThread={handleCloseThread}
+            onSubmit={onSubmit}
+          />
+        )}
 
         {!threadId && (
           <div className="mt-6 flex flex-col items-center">
