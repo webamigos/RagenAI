@@ -30,7 +30,7 @@ export const ChatOutput = ({ messages, loading }: Props) => {
             <div className="text-sm">
               <strong>{t(message.role)}</strong>{' '}
               <span className="font-light">
-                {format(message.created_at, 'dd.MM.yyyy HH:mm:ss')}
+                {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
               </span>
             </div>
             <div
