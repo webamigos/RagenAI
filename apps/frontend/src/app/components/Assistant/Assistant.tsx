@@ -51,54 +51,6 @@ export const Assistant = () => {
     setThreadId(localThreadId ? localThreadId : '');
   }, []);
 
-  // useEffect(() => {
-  //   const loadMessages = async () => {
-  //     try {
-  //       if (threadId) {
-  //         const messagesFromApi = await api.get<MessageDto[]>(
-  //           `/threads/${threadId}/messages`
-  //         );
-  //         console.log({ messagesFromApi });
-  //       }
-  //     } catch (e) {
-  //       console.log('fetchMessages Error: ', e);
-  //     }
-  //   };
-  //   loadMessages();
-  // }, [threadId]);
-
-  // useEffect(() => {
-  //   const eventSource = new EventSource('/api/sse');
-
-  //   eventSource.addEventListener('salesyy-event', (e) => {
-  //     // the event name here must be the same as in the API
-  //     console.log('event data: ', JSON.parse(e.data));
-  //   });
-  //   eventSource.addEventListener('open', (e) => {
-  //     console.log('open', e);
-  //   });
-  //   eventSource.addEventListener('error', (e) => {
-  //     eventSource.close();
-  //   });
-
-  //   // eventSource.onmessage = (event) => {
-  //   //   console.log('event from sse: ', event);
-  //   // };
-
-  //   //   eventSource.onopen(() => {
-  //   //     console.log('opened');
-  //   //   });
-
-  //   // eventSource.onerror((e) => {
-  //   //   console.log('e');
-  //   //   eventSource.close();
-  //   // });
-
-  //   return () => {
-  //     eventSource.close();
-  //   };
-  // }, []);
-
   const handleNewThread = async () => {
     try {
       const result = await api.post<CreateThreadDto>('/threads');
