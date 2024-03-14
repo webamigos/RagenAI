@@ -73,19 +73,6 @@ export const Assistant = () => {
       eventSource.close();
     });
 
-    // eventSource.onmessage = (event) => {
-    //   console.log('event from sse: ', event);
-    // };
-
-    //   eventSource.onopen(() => {
-    //     console.log('opened');
-    //   });
-
-    // eventSource.onerror((e) => {
-    //   console.log('e');
-    //   eventSource.close();
-    // });
-
     return () => {
       eventSource.close();
     };

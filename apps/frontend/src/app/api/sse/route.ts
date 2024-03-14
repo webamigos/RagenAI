@@ -1,18 +1,16 @@
-import EventEmitter from 'events';
+import EventEmitter from 'eventemitter2';
 import { Redis } from 'ioredis';
-
-const delay = (ms: number) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
+import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 // This is required to enable streaming
 export const dynamic = 'force-dynamic';
 
-export const config = {
-  api: {
-    externalResolver: true,
-  },
-}; // this is important to avoid the 'API resolved without sending a response for /api/test_sse, this may result in stalled requests.' warning
+// export const config = {
+//   api: {
+//     externalResolver: true,
+//   },
+// }; // this is important to avoid the 'API resolved without sending a response for /api/test_sse, this may result in stalled requests.' warning
 
 const EVENT_NAME = 'salesyy-event';
 
