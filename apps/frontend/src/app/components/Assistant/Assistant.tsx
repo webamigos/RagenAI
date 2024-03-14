@@ -17,10 +17,9 @@ import { StatusCodes } from 'http-status-codes';
 import { ThreadId } from './ThreadId/ThreadId';
 import { api } from '../../lib/services/config';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
-const ASSISTANT_NAME = 'SalesYY';
-const USER_NAME = 'You';
 
 export type Message = {
   role: Role;
@@ -43,6 +42,7 @@ export const Assistant = () => {
     queryKey: ['messages', { threadId: threadId || '' }],
     queryFn: fetchMessagesFromApi,
   });
+  const t = useTranslations('Index');
 
   const initialMessages = data ? data.data.messages : [];
   console.log({ initialMessages, isLoading, isError });
@@ -175,7 +175,13 @@ export const Assistant = () => {
         {threadId && <PromptForm onSubmit={onSubmit} />}
 
         {!threadId && (
-          <Button label="Start new thread" onClick={handleNewThread} />
+          <div className="mt-6 flex flex-col items-center">
+            <Button
+              label={t('start-new-thread')}
+              className="bg-salesyy-red hover:bg-red-700"
+              onClick={handleNewThread}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -1,8 +1,20 @@
 {
   "Index": {
-    "title": "SalesYY Assistant"
+    "title": "SalesYY Assistant",
+    "start-new-thread": "Start new thread"
   },
   "Metadata": {
     "index": "SalesYY Assistant"
+  },
+  "chat": {
+    "USER": "You",
+    "ASSISTANT": "Assistant",
+    "loading": "Loading..."
+  },
+  "form": {
+    "enter-your-question": "Enter your question",
+    "lets-chat": "Let's chat",
+    "send": "Send",
+    "provide-at-least-10-characters": "Provide at least 10 characters"
   }
 }

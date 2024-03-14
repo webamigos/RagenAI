@@ -1,8 +1,20 @@
 {
   "Index": {
-    "title": "Asystent SalesYY"
+    "title": "Asystent SalesYY",
+    "start-new-thread": "Zacznij nowy wątek"
   },
   "Metadata": {
     "index": "Asystent SalesYY"
+  },
+  "chat": {
+    "USER": "Ty",
+    "ASSISTANT": "Asystent",
+    "loading": "Chwileczkę..."
+  },
+  "form": {
+    "enter-your-question": "Wpisz swoje pytanie",
+    "lets-chat": "Porozmawiajmy",
+    "send": "Wyślij",
+    "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków"
   }
 }

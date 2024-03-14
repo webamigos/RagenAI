@@ -12,19 +12,21 @@ type Props = {
   label: string;
   hint?: string;
   error?: FieldError;
+  errorMessage?: string; // for translations
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
   (
-    { label, hint, error, className, ...rest }: Props,
+    { label, hint, error, errorMessage, className, ...rest }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>
   ) => {
     const id = useId();
+
     return (
       <div className="py-2">
         <label
           htmlFor={id}
-          className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+          className="block text-sm font-medium leading-6  dark:text-gray-300"
         >
           {label}
         </label>
@@ -61,7 +63,7 @@ export const Textarea = forwardRef(
                 className="h-4 w-4 mr-1 text-red-500"
                 aria-hidden="true"
               />{' '}
-              {error.message}
+              {errorMessage ? errorMessage : error.message}
             </p>
           </>
         )}

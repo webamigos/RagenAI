@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import markdownit from 'markdown-it';
+import { useTranslations } from 'next-intl';
 
 import { Message } from '../Assistant';
 
@@ -10,29 +11,38 @@ type Props = {
   loading: boolean;
 };
 
+// const ASSISTANT_NAME = 'SalesYY';
+// const USER_NAME = 'You';
+
+const md = markdownit();
+
 export const ChatOutput = ({ messages, loading }: Props) => {
-  const md = markdownit();
+  const t = useTranslations('chat');
 
   return (
-    <div>
-      <div className="chat-response">
+    <div className="">
+      <div>
         {messages.map((message) => (
-          <div key={message.public_id} className="mb-4">
-            <div>
-              <strong>{message.role}</strong>{' '}
+          <div
+            key={message.public_id}
+            className="mb-6 border-solid 	border-2  border-gray-300 rounded-md p-2"
+          >
+            <div className="text-sm">
+              <strong>{t(message.role)}</strong>{' '}
               <span className="font-light">
                 {format(message.created_at, 'dd.MM.yyyy HH:mm:ss')}
               </span>
             </div>
             <div
+              className="chat-response"
               dangerouslySetInnerHTML={{ __html: md.render(message.content) }}
             />
           </div>
         ))}
         {loading && (
-          <p className="flex">
+          <p className="flex mb-4">
             <svg
-              className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900 dark:text-white mr-2"
+              className="animate-spin -ml-1 h-5 w-5  dark:text-white mr-2"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -51,7 +61,7 @@ export const ChatOutput = ({ messages, loading }: Props) => {
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>{' '}
-            Loading...
+            {t('loading')}
           </p>
         )}
       </div>
