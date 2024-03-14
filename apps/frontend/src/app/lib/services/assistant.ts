@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { Redis } from 'ioredis';
 import { Role, Thread } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
@@ -23,6 +24,8 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  *
  */
 export const askAssistant = async (publicThreadId: string) => {
+  const redis = new Redis(process.env.REDIS_URL!);
+
   const threadEntity = await db.thread.findUniqueOrThrow({
     where: { public_id: publicThreadId },
     select: {
@@ -85,16 +88,21 @@ export const askAssistant = async (publicThreadId: string) => {
       role: Role.ASSISTANT,
     });
 
-    return {
+    const stringifiedMessage = JSON.stringify({
       public_id: dbMessage.public_id,
       role: dbMessage.role,
       created_at: dbMessage.created_at,
       content: dbMessage.content,
-    };
+    });
 
-    // stream to /api/sse which should notify frontend
-    // const stream = new EventEmitter();
-    // stream.emit('channel', 'salesyy-event', assistantMessageContent);
+    redis.publish('assistant-response', stringifiedMessage);
+
+    redis.set(
+      publicThreadId, // TODO: rather runId not thread?
+      stringifiedMessage
+    );
+
+    return;
   }
 
   throw new Error('Cannot fetch message from assistant');

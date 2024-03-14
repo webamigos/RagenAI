@@ -52,6 +52,45 @@ export const Assistant = () => {
     setThreadId(localThreadId ? localThreadId : '');
   }, []);
 
+  useEffect(() => {
+    const eventSource = new EventSource('/api/sse');
+
+    eventSource.addEventListener('salesyy-event', (e) => {
+      // the event name here must be the same as in the API
+      const eventMessage = JSON.parse(e.data);
+      if (eventMessage) {
+        // TODO: add message to messages instead of revalidate
+        refetch();
+        setMessageIsLoading(false);
+      }
+
+      // console.log('event data: ', JSON.parse(e.data));
+    });
+    eventSource.addEventListener('open', (e) => {
+      console.log('open', e);
+    });
+    eventSource.addEventListener('error', (e) => {
+      eventSource.close();
+    });
+
+    // eventSource.onmessage = (event) => {
+    //   console.log('event from sse: ', event);
+    // };
+
+    //   eventSource.onopen(() => {
+    //     console.log('opened');
+    //   });
+
+    // eventSource.onerror((e) => {
+    //   console.log('e');
+    //   eventSource.close();
+    // });
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
   const handleNewThread = async () => {
     try {
       const result = await api.post<CreateThreadDto>('/threads');
@@ -73,50 +112,22 @@ export const Assistant = () => {
     try {
       setMessageIsLoading(true);
       setMessageLoadingText('Thinking...');
-      const result = await api.post<MessageResponse>(
-        `/threads/${threadId}/messages`,
-        data
-      );
+
+      await api.post<MessageResponse>(`/threads/${threadId}/messages`, data);
       setMessageLoadingText('Searching memories...');
       refetch();
-
-      // const messageResponse = result.data.message;
-      // console.log(result.status);
-
-      // const md = markdownit();
-
-      // setMessages((currentMessages) => [
-      //   ...currentMessages,
-      //   {
-      //     public_id: messageResponse.public_id,
-      //     role: messageResponse.role,
-      //     content: md.render(messageResponse.content),
-      //     created_at: messageResponse.created_at,
-      //   },
-      // ]);
-      // setMessageIsLoading(true);
 
       setMessageLoadingText('Beep, boop, robots are waking up...');
       setMessageLoadingText('Asking AI what it thinks about your question...');
 
-      const assistantResult = await api.post<MessageResponse>(
-        `/assistant/${threadId}`
-      );
-      const assistantResponse = assistantResult.data.message;
+      // run in background
+      api.post<MessageResponse>(`/assistant/${threadId}`);
+      // this will be streamed and then received by SSE
 
       setMessageLoadingText('Analyzing your question...');
 
-      // setMessages((currentMessages) => [
-      //   ...currentMessages,
-      //   {
-      //     public_id: assistantResponse.public_id,
-      //     role: assistantResponse.role,
-      //     content: md.render(assistantResponse.content),
-      //     created_at: assistantResponse.created_at,
-      //   },
-      // ]);
-      refetch();
-      setMessageIsLoading(false);
+      // refetch();
+      // setMessageIsLoading(false);
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorStatus = error.status;
