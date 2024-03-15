@@ -3,7 +3,8 @@ import { Redis } from 'ioredis';
 
 const isDev = process.env.NODE_ENV === 'development';
 // TODO: might broke build on local machine?
-export const runtime = isDev ? 'nodejs' : 'edge';
+// export const runtime = isDev ? 'nodejs' : 'edge';
+export const runtime = 'edge';
 // This is required to enable streaming
 export const dynamic = 'force-dynamic';
 
