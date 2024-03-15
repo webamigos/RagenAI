@@ -64,6 +64,7 @@ export async function GET() {
     headers: {
       'Content-Type': 'text/event-stream',
       Connection: 'keep-alive',
+      'Content-Encoding': 'none',
       'Cache-Control': 'no-cache, no-transform',
     },
   });
