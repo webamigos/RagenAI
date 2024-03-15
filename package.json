@@ -6,8 +6,8 @@
     "node": "18.x"
   },
   "scripts": {
-    "build": "nx run-many --target=build --projects=frontend --parallel=true",
-    "start": "nx run prisma-schema:generate-types && nx run frontend:serve:production"
+    "build": "nx run prisma-schema:generate-types && nx run frontend:build:production",
+    "start": "nx run frontend:serve:production"
   },
   "private": true,
   "devDependencies": {
