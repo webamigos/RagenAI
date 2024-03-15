@@ -1,4 +1,4 @@
-import EventEmitter from 'eventemitter2';
+// import EventEmitter from 'eventemitter2';
 import { Redis } from 'ioredis';
 
 // const isDev = process.env.NODE_ENV === 'development';
@@ -42,18 +42,19 @@ export async function GET() {
   writer.write(`event: init\ndata: ${JSON.stringify({ status: 'ok' })}\n\n`);
 
   try {
-    const stream = new EventEmitter();
+    // const stream = new EventEmitter();
 
-    stream.on('channel', function (event, data) {
-      // res.write(
-      //   `event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`
-      // ); // <- the format here is important!
-      writer.write(`event: ${event}\ndata: ${data}\n\n`); // <- the format here is important!
-    });
+    // stream.on('channel', function (event, data) {
+    // res.write(
+    //   `event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`
+    // ); // <- the format here is important!
+    // writer.write(`event: message\ndata: ${data}\n\n`); // <- the format here is important!
+    // });
 
     redis.on('message', (channel: string, message: string) => {
       console.log(`get ${message} on ${channel}`);
-      stream.emit('channel', EVENT_NAME, message);
+      // stream.emit('channel', EVENT_NAME, message);
+      writer.write(`event: message\ndata: ${message}\n\n`); // <- the format here is important!
     });
 
     redis.on('close', () => writer.close());

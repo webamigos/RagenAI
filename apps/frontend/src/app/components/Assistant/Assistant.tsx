@@ -45,7 +45,7 @@ export const Assistant = () => {
   useEffect(() => {
     const eventSource = new EventSource('/api/sse');
 
-    eventSource.addEventListener('salesyy-event', (e) => {
+    eventSource.addEventListener('message', (e) => {
       // the event name here must be the same as in the API
       const eventMessage = JSON.parse(e.data);
       if (eventMessage) {
