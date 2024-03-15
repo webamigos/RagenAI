@@ -6,8 +6,8 @@
     "node": "20.x"
   },
   "scripts": {
-    "build": "npx nx run prisma-schema:generate-types && npx nx run-many --target=build --projects=frontend --parallel=true",
-    "start": "npx nx run frontend:serve:production"
+    "build": "nx run-many --target=build --projects=frontend --parallel=true",
+    "start": "nx run prisma-schema:generate-types && nx run frontend:serve:production"
   },
   "private": true,
   "devDependencies": {
