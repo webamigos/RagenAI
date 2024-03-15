@@ -100,7 +100,7 @@ export const askAssistant = async (publicThreadId: string) => {
       stringifiedMessage
     );
 
-    return;
+    return true;
   }
 
   throw new Error('Cannot fetch message from assistant');

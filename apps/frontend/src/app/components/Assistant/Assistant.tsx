@@ -2,34 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
-//import markdownit from 'markdown-it';
-import { Role, Message as MessageModel } from '@prisma/client';
+import { StatusCodes } from 'http-status-codes';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@salesyy/common-ui';
 
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
-
-import { CreateMessageDto } from '../../contracts/Message';
-import { fetchMessagesFromApi, sendMessage } from '../../lib/services/api';
-import { StatusCodes } from 'http-status-codes';
+import { CreateMessageDto, MessageDto } from '../../contracts/Message';
+import {
+  fetchMessagesFromApi,
+  runAssistant,
+  sendMessage,
+} from '../../lib/services/api';
 import { api } from '../../lib/services/config';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
 import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
-
-export type Message = {
-  role: Role;
-  content: MessageModel['content'];
-  created_at: MessageModel['created_at'];
-  public_id: MessageModel['public_id'];
-};
-
-type MessageResponse = {
-  message: Message;
-};
 
 export const Assistant = () => {
   const [threadId, setThreadId] = useState('');
@@ -37,19 +27,20 @@ export const Assistant = () => {
   const [messageLoadingText, setMessageLoadingText] = useState('');
   const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageDto[]>([]);
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['messages', { threadId: threadId || '' }],
     queryFn: fetchMessagesFromApi,
   });
   const t = useTranslations('Index');
 
-  const initialMessages = data ? data.data.messages : [];
+  const initialMessages = data ? data.data : [];
   const isGlobalLoading = isLoading || isMessageLoading;
 
   useEffect(() => {
     const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
     setThreadId(localThreadId ? localThreadId : '');
+    setMessageIsLoading(true);
   }, []);
 
   useEffect(() => {
@@ -108,8 +99,7 @@ export const Assistant = () => {
       setMessageLoadingText('Asking AI what it thinks about your question...');
 
       // run in background
-      api.post<MessageResponse>(`/assistant/${threadId}`);
-      // this will be streamed and then received by SSE
+      runAssistant(threadId);
 
       setMessageLoadingText('Analyzing your question...');
 

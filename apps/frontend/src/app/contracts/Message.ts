@@ -7,7 +7,7 @@ export const createMessageSchema = z.object({
 
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;
 
-export type Message = {
+export type MessageDto = {
   role: Role;
   content: MessageModel['content'];
   created_at: MessageModel['created_at'];
@@ -15,5 +15,5 @@ export type Message = {
 };
 
 export type MessageResponse = {
-  message: Message;
+  message: MessageDto;
 };

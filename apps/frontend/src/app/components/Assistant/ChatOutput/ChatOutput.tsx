@@ -2,18 +2,15 @@ import { format } from 'date-fns';
 import markdownit from 'markdown-it';
 import { useTranslations } from 'next-intl';
 
-import { Message } from '../Assistant';
+import { MessageDto } from '../../../contracts/Message';
 
 import './chat-response.css';
 
 type Props = {
-  messages: Message[];
+  messages: MessageDto[];
   isLoading: boolean;
   loadingMessage: string;
 };
-
-// const ASSISTANT_NAME = 'SalesYY';
-// const USER_NAME = 'You';
 
 const md = markdownit();
 

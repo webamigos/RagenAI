@@ -1,6 +1,7 @@
 'use client';
 
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
@@ -9,7 +10,6 @@ import {
   type CreateMessageDto,
   createMessageSchema,
 } from '../../../contracts/Message';
-import { useTranslations } from 'next-intl';
 
 type Props = {
   isLoading: boolean;
