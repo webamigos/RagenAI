@@ -3,11 +3,13 @@
   "version": "0.0.0",
   "license": "MIT",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "scripts": {
-    "build": "nx run prisma-schema:generate-types && nx run frontend:build:production",
-    "start": "nx run frontend:serve:production"
+    "generate:types": "nx run prisma-schema:generate-types",
+    "postinstall": "npm run generate:types",
+    "build": "npm run generate:types && nx run frontend:build:production",
+    "start": "next start -p $PORT"
   },
   "private": true,
   "devDependencies": {
