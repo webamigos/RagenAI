@@ -1,10 +1,10 @@
 import EventEmitter from 'eventemitter2';
 import { Redis } from 'ioredis';
 
-const isDev = process.env.NODE_ENV === 'development';
+// const isDev = process.env.NODE_ENV === 'development';
 // TODO: might broke build on local machine?
 // export const runtime = isDev ? 'nodejs' : 'edge';
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 // This is required to enable streaming
 export const dynamic = 'force-dynamic';
 
@@ -36,22 +36,30 @@ export async function GET() {
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  const stream = new EventEmitter();
+  writer.write(encoder.encode('Hello there....'));
 
-  stream.on('channel', function (event, data) {
-    // res.write(
-    //   `event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`
-    // ); // <- the format here is important!
-    writer.write(`event: ${event}\ndata: ${data}\n\n`); // <- the format here is important!
-  });
+  try {
+    const stream = new EventEmitter();
 
-  redis.on('message', (channel: string, message: string) => {
-    console.log(`get ${message} on ${channel}`);
-    stream.emit('channel', EVENT_NAME, message);
-  });
+    stream.on('channel', function (event, data) {
+      // res.write(
+      //   `event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`
+      // ); // <- the format here is important!
+      writer.write(`event: ${event}\ndata: ${data}\n\n`); // <- the format here is important!
+    });
 
-  // TODO: uncomment
-  // redis.on('close', () => res.end());
+    redis.on('message', (channel: string, message: string) => {
+      console.log(`get ${message} on ${channel}`);
+      stream.emit('channel', EVENT_NAME, message);
+    });
+
+    // TODO: uncomment
+    // redis.on('close', () => res.end());
+  } catch (error) {
+    console.error('An error occurred', error);
+    writer.write(encoder.encode('An error occurred during request'));
+    writer.close();
+  }
 
   return new Response(responseStream.readable, {
     headers: {
