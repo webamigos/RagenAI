@@ -4,7 +4,7 @@ import { Redis } from 'ioredis';
 // const isDev = process.env.NODE_ENV === 'development';
 // TODO: might broke build on local machine?
 // export const runtime = isDev ? 'nodejs' : 'edge';
-export const runtime = 'nodejs';
+export const runtime = 'edge';
 // This is required to enable streaming
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +36,7 @@ export async function GET() {
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  // writer.write(encoder.encode('Hello there....'));
+  writer.write(encoder.encode('Hello there....'));
 
   try {
     const stream = new EventEmitter();
