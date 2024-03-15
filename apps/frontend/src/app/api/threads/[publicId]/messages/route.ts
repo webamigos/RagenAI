@@ -77,7 +77,7 @@ export const GET = async (_request: Request, { params }: Params) => {
   try {
     const messages = await fetchMessagesFromDb(threadPublicId);
 
-    return NextResponse.json({ messages });
+    return NextResponse.json(messages);
   } catch (e) {
     console.log(e);
     return NextResponse.json(

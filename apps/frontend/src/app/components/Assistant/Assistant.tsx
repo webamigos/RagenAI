@@ -40,7 +40,6 @@ export const Assistant = () => {
   useEffect(() => {
     const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
     setThreadId(localThreadId ? localThreadId : '');
-    setMessageIsLoading(true);
   }, []);
 
   useEffect(() => {
