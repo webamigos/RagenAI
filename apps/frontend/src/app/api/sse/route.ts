@@ -38,7 +38,8 @@ export async function GET() {
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  writer.write(encoder.encode('Hello there....'));
+  // writer.write(encoder.encode('Hello there....'));
+  writer.write(`event: init\ndata: ${JSON.stringify({ status: 'ok' })}\n\n`);
 
   try {
     const stream = new EventEmitter();
