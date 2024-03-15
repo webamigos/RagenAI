@@ -8,8 +8,7 @@
   "scripts": {
     "generate:types": "nx run prisma-schema:generate-types",
     "postinstall": "npm run generate:types",
-    "build": "npm run generate:types && nx run frontend:build:production",
-    "start": "next start -p $PORT"
+    "build": "npm run generate:types && nx run frontend:build:production"
   },
   "private": true,
   "devDependencies": {

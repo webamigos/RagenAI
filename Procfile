@@ -1,1 +1,1 @@
-web: npm start
+web: cd dist/apps/frontend && npm start
