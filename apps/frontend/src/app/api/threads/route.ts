@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import {
   type CreateMessageDto,
-  messageSchema,
+  createMessageSchema,
 } from '../../contracts/MessageDto';
 
 import { createThread, getThread } from '../../lib/services/thread';

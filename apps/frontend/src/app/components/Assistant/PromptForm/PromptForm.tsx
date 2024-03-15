@@ -7,7 +7,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { Button, Textarea } from '@salesyy/common-ui';
 import {
   type CreateMessageDto,
-  messageSchema,
+  createMessageSchema,
 } from '../../../contracts/MessageDto';
 import { useTranslations } from 'next-intl';
 
@@ -28,7 +28,7 @@ export const PromptForm = ({
     handleSubmit,
     formState: { errors },
   } = useForm<CreateMessageDto>({
-    resolver: zodResolver(messageSchema),
+    resolver: zodResolver(createMessageSchema),
   });
   const t = useTranslations('form');
 

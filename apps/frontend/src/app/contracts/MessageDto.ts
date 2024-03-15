@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const messageSchema = z.object({
+export const createMessageSchema = z.object({
   prompt: z.string().min(10, 'Provide what least 10 characters'),
 });
 
-export type CreateMessageDto = z.infer<typeof messageSchema>;
+export type CreateMessageDto = z.infer<typeof createMessageSchema>;

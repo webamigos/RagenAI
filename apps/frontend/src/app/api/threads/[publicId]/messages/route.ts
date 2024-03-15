@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
 import { getOrCreateThread, getThread } from '../../../../lib/services/thread';
-import { messageSchema } from '../../../../contracts/MessageDto';
+import { createMessageSchema } from '../../../../contracts/MessageDto';
 import { sendForModeration } from '../../../../lib/services/moderation';
 import { askAssistant } from '../../../../lib/services/assistant';
 import {
@@ -23,7 +23,9 @@ type Params = {
  * @returns
  */
 export const POST = async (request: Request, { params }: Params) => {
-  const requestData = await messageSchema.safeParseAsync(await request.json());
+  const requestData = await createMessageSchema.safeParseAsync(
+    await request.json()
+  );
 
   if (!requestData.success) {
     return NextResponse.json(requestData.error.format(), { status: 400 });

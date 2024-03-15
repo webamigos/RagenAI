@@ -2,14 +2,16 @@ import { NextResponse } from 'next/server';
 
 import {
   type CreateMessageDto,
-  messageSchema,
+  createMessageSchema,
 } from '../../contracts/MessageDto';
 import { sendForModeration } from '../../lib/services/moderation';
 import { askAssistant } from '../../lib/services/assistant';
 import { createThread, getThread } from '../../lib/services/thread';
 
 export const POST = async (request: Request) => {
-  const requestData = await messageSchema.safeParseAsync(await request.json());
+  const requestData = await createMessageSchema.safeParseAsync(
+    await request.json()
+  );
   if (!requestData.success) {
     return NextResponse.json(requestData.error.format(), { status: 400 });
   }
