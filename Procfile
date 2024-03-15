@@ -1,1 +1,1 @@
-web: cd dist/apps/frontend && npm start -p 8080
+web: cd dist/apps/frontend && npm start -p 3000
