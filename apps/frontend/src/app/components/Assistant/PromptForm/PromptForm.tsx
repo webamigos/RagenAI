@@ -8,7 +8,7 @@ import { Button, Textarea } from '@salesyy/common-ui';
 import {
   type CreateMessageDto,
   createMessageSchema,
-} from '../../../contracts/MessageDto';
+} from '../../../contracts/Message';
 import { useTranslations } from 'next-intl';
 
 type Props = {

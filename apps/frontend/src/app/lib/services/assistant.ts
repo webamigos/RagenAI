@@ -1,13 +1,11 @@
 import OpenAI from 'openai';
 import { Redis } from 'ioredis';
-import { Role, Thread } from '@prisma/client';
+import { Role } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
 
 import { createMessage } from './message';
 import { parseThreadMessage } from './utils';
-import EventEmitter from 'events';
-import { getOrCreateThread, getThread } from './thread';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;

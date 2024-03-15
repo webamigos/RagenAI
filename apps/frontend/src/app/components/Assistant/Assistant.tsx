@@ -9,14 +9,14 @@ import { Button } from '@salesyy/common-ui';
 
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
-import { CreateThreadDto } from '../../api/threads/route';
-import { CreateMessageDto } from '../../contracts/MessageDto';
+
+import { CreateMessageDto } from '../../contracts/Message';
 import { fetchMessagesFromApi, sendMessage } from '../../lib/services/api';
 import { StatusCodes } from 'http-status-codes';
-import { ThreadId } from './ThreadId/ThreadId';
 import { api } from '../../lib/services/config';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
+import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
 

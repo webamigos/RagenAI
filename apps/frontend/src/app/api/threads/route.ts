@@ -1,33 +1,7 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
-import {
-  type CreateMessageDto,
-  createMessageSchema,
-} from '../../contracts/MessageDto';
-
-import { createThread, getThread } from '../../lib/services/thread';
-
-// export const POST = async (request: Request) => {
-//   const requestData = await messageSchema.safeParseAsync(await request.json());
-//   if (!requestData.success) {
-//     return NextResponse.json(requestData.error.format(), { status: 400 });
-//   }
-
-//   const prompt = requestData.data.prompt;
-
-//   // TODO: below step can be used for initiating new thread
-//   const threadPublicId = '';
-//   const threadResult = threadPublicId ? getThread(threadPublicId) : createThread();
-
-//   return NextResponse.json(threadResult);
-
-//   // StreamingTextResponse(OpenAIStream(completions))
-// };
-
-export type CreateThreadDto = {
-  public_id: string;
-};
+import { createThread } from '../../lib/services/thread';
 
 export const POST = async () => {
   try {

@@ -1,6 +1,5 @@
 import EventEmitter from 'eventemitter2';
 import { Redis } from 'ioredis';
-import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 // This is required to enable streaming

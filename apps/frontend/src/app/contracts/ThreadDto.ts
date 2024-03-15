@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-export const threadSchema = z.object({
+export const createThreadSchema = z.object({
   public_id: z.string().uuid(),
 });
 
-export type ThreadDto = z.infer<typeof threadSchema>;
+export type CreateThreadDto = z.infer<typeof createThreadSchema>;

@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
-import { getOrCreateThread, getThread } from '../../../../lib/services/thread';
-import { createMessageSchema } from '../../../../contracts/MessageDto';
+import { getOrCreateThread } from '../../../../lib/services/thread';
+import { createMessageSchema } from '../../../../contracts/Message';
 import { sendForModeration } from '../../../../lib/services/moderation';
-import { askAssistant } from '../../../../lib/services/assistant';
 import {
   createThreadMessage,
   fetchMessagesFromDb,

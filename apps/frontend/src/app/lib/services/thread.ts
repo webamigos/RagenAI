@@ -3,12 +3,12 @@ import { Thread } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
 
-import { ThreadDto } from '../../contracts/ThreadDto';
+import { type CreateThreadDto } from '../../contracts/ThreadDto';
 
 const openai = new OpenAI();
 
 export const getOrCreateThread = async (
-  threadPublicId: ThreadDto['public_id']
+  threadPublicId: CreateThreadDto['public_id']
 ) => {
   let thread;
   let threadEntity: Thread;
@@ -46,7 +46,7 @@ export const createThread = async () => {
   };
 };
 
-export const getThread = async (publicId: ThreadDto['public_id']) => {
+export const getThread = async (publicId: CreateThreadDto['public_id']) => {
   try {
     return await db.thread.findUniqueOrThrow({
       where: { public_id: publicId },
