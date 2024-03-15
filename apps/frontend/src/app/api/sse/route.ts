@@ -38,27 +38,27 @@ export async function GET() {
 
   // writer.write(encoder.encode('Hello there....'));
 
-  const stream = new EventEmitter();
+  try {
+    const stream = new EventEmitter();
 
-  stream.on('channel', function (event, data) {
-    // res.write(
-    //   `event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`
-    // ); // <- the format here is important!
-    writer.write(`event: ${event}\ndata: ${data}\n\n`); // <- the format here is important!
-  });
+    stream.on('channel', function (event, data) {
+      // res.write(
+      //   `event: ${event}\ndata: ${JSON.stringify({ counter: data })}\n\n`
+      // ); // <- the format here is important!
+      writer.write(`event: ${event}\ndata: ${data}\n\n`); // <- the format here is important!
+    });
 
-  redis.on('message', (channel: string, message: string) => {
-    console.log(`get ${message} on ${channel}`);
-    stream.emit('channel', EVENT_NAME, message);
-  });
+    redis.on('message', (channel: string, message: string) => {
+      console.log(`get ${message} on ${channel}`);
+      stream.emit('channel', EVENT_NAME, message);
+    });
 
-  // TODO: uncomment
-  // redis.on('close', () => res.end());
-  // } catch (error) {
-  //   console.error('An error occurred', error);
-  //   writer.write(encoder.encode('An error occurred during request'));
-  //   writer.close();
-  // }
+    redis.on('close', () => writer.close());
+  } catch (error) {
+    console.error('An error occurred', error);
+    writer.write(encoder.encode('An error occurred during request'));
+    writer.close();
+  }
 
   return new Response(responseStream.readable, {
     headers: {
