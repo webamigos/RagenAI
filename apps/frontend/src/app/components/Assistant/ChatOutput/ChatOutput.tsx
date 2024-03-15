@@ -8,7 +8,7 @@ import './chat-response.css';
 
 type Props = {
   messages: Message[];
-  loading: boolean;
+  isLoading: boolean;
   loadingMessage: string;
 };
 
@@ -19,7 +19,7 @@ const md = markdownit();
 
 export const ChatOutput = ({
   messages,
-  loading,
+  isLoading,
   loadingMessage = '',
 }: Props) => {
   const t = useTranslations('chat');
@@ -44,7 +44,7 @@ export const ChatOutput = ({
             />
           </div>
         ))}
-        {loading && (
+        {isLoading && (
           <p className="flex mb-4 ml-2">
             <svg
               className="animate-spin -ml-1 h-5 w-5  dark:text-white mr-2"

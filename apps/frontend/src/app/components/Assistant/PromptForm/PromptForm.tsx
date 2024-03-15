@@ -9,11 +9,16 @@ import { type MessageDto, messageSchema } from '../../../contracts/MessageDto';
 import { useTranslations } from 'next-intl';
 
 type Props = {
+  isLoading: boolean;
   handleCloseThread: () => void;
   onSubmit: SubmitHandler<MessageDto>;
 };
 
-export const PromptForm = ({ handleCloseThread, onSubmit }: Props) => {
+export const PromptForm = ({
+  isLoading,
+  handleCloseThread,
+  onSubmit,
+}: Props) => {
   const {
     register,
     reset,
@@ -60,7 +65,8 @@ export const PromptForm = ({ handleCloseThread, onSubmit }: Props) => {
                   aria-hidden="true"
                 />
               }
-              className="bg-salesyy-red hover:bg-red-700 cursor-pointer"
+              className="bg-salesyy-red hover:bg-red-700 cursor-pointer disabled:bg-red-400"
+              disabled={isLoading}
             />
           </div>
         </div>

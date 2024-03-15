@@ -45,7 +45,7 @@ export const Assistant = () => {
   const t = useTranslations('Index');
 
   const initialMessages = data ? data.data.messages : [];
-  // console.log({ initialMessages, isLoading, isError });
+  const isGlobalLoading = isLoading || isMessageLoading;
 
   useEffect(() => {
     const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
@@ -132,12 +132,13 @@ export const Assistant = () => {
       <div>
         <ChatOutput
           messages={initialMessages ? initialMessages : messages}
-          loading={isMessageLoading}
+          isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
         />
         {threadId && (
           <PromptForm
             handleCloseThread={handleCloseThread}
+            isLoading={isGlobalLoading}
             onSubmit={onSubmit}
           />
         )}
@@ -146,8 +147,9 @@ export const Assistant = () => {
           <div className="mt-6 flex flex-col items-center">
             <Button
               label={t('start-new-thread')}
-              className="bg-salesyy-red hover:bg-red-700"
+              className="bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
               onClick={handleNewThread}
+              disabled={isGlobalLoading}
             />
           </div>
         )}
