@@ -4,4 +4,4 @@ export const messageSchema = z.object({
   prompt: z.string().min(10, 'Provide what least 10 characters'),
 });
 
-export type MessageDto = z.infer<typeof messageSchema>;
+export type CreateMessageDto = z.infer<typeof messageSchema>;

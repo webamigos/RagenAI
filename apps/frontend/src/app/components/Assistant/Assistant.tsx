@@ -10,8 +10,8 @@ import { Button } from '@salesyy/common-ui';
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateThreadDto } from '../../api/threads/route';
-import { MessageDto } from '../../contracts/MessageDto';
-import { fetchMessagesFromApi } from '../../lib/services/api';
+import { CreateMessageDto } from '../../contracts/MessageDto';
+import { fetchMessagesFromApi, sendMessage } from '../../lib/services/api';
 import { StatusCodes } from 'http-status-codes';
 import { ThreadId } from './ThreadId/ThreadId';
 import { api } from '../../lib/services/config';
@@ -95,12 +95,12 @@ export const Assistant = () => {
     setThreadId('');
   };
 
-  const onSubmit = async (data: MessageDto) => {
+  const onSubmit = async (data: CreateMessageDto) => {
     try {
       setMessageIsLoading(true);
       setMessageLoadingText('Thinking...');
 
-      await api.post<MessageResponse>(`/threads/${threadId}/messages`, data);
+      await sendMessage(threadId, data);
       setMessageLoadingText('Searching memories...');
       refetch();
 

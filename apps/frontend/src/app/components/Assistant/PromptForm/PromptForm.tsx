@@ -5,13 +5,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
 import { Button, Textarea } from '@salesyy/common-ui';
-import { type MessageDto, messageSchema } from '../../../contracts/MessageDto';
+import {
+  type CreateMessageDto,
+  messageSchema,
+} from '../../../contracts/MessageDto';
 import { useTranslations } from 'next-intl';
 
 type Props = {
   isLoading: boolean;
   handleCloseThread: () => void;
-  onSubmit: SubmitHandler<MessageDto>;
+  onSubmit: SubmitHandler<CreateMessageDto>;
 };
 
 export const PromptForm = ({
@@ -24,12 +27,12 @@ export const PromptForm = ({
     reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<MessageDto>({
+  } = useForm<CreateMessageDto>({
     resolver: zodResolver(messageSchema),
   });
   const t = useTranslations('form');
 
-  const handleFormSubmit: SubmitHandler<MessageDto> = async (data) => {
+  const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
     reset();
     onSubmit(data);
   };

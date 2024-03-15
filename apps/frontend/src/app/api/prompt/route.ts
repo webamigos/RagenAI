@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import { type MessageDto, messageSchema } from '../../contracts/MessageDto';
+import {
+  type CreateMessageDto,
+  messageSchema,
+} from '../../contracts/MessageDto';
 import { sendForModeration } from '../../lib/services/moderation';
 import { askAssistant } from '../../lib/services/assistant';
 import { createThread, getThread } from '../../lib/services/thread';

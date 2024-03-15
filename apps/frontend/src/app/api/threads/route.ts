@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
-import { type MessageDto, messageSchema } from '../../contracts/MessageDto';
+import {
+  type CreateMessageDto,
+  messageSchema,
+} from '../../contracts/MessageDto';
 
 import { createThread, getThread } from '../../lib/services/thread';
 
