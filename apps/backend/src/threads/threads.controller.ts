@@ -1,7 +1,7 @@
-import { Controller, Get, Sse, type MessageEvent } from '@nestjs/common';
+import { Controller, Get, Sse, type MessageEvent, Param } from '@nestjs/common';
 
 import { ThreadsService } from './threads.service';
-import { Observable, fromEvent, interval, map } from 'rxjs';
+import { Observable, fromEvent, map } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TestEvent } from './events/test-event';
 
@@ -17,12 +17,8 @@ export class ThreadsController {
     return this.threadService.getData();
   }
 
-  @Sse('sse')
-  sse(): Observable<MessageEvent> {
-    // return interval(1000).pipe(
-    //   map((_) => ({ data: { hello: 'world' } } as MessageEvent))
-    // );
-
+  @Sse(':id/sse')
+  sse(@Param('id') id: string): Observable<MessageEvent> {
     return fromEvent(this.eventEmitter, 'test.event').pipe(
       map((eventData: TestEvent) => {
         return new MessageEvent('order_created', { data: eventData });
