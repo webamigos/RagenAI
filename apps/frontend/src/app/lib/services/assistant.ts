@@ -60,8 +60,6 @@ export const askAssistant = async (publicThreadId: string) => {
     runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
   }
 
-  // console.log({ status });
-
   // step: check the answer
   const messages = await openai.beta.threads.messages.list(threadId);
 
@@ -93,7 +91,12 @@ export const askAssistant = async (publicThreadId: string) => {
       content: dbMessage.content,
     });
 
-    redis.publish('assistant-response', stringifiedMessage);
+    try {
+      // TODO: it works but throws an error: unhandledRejection: ResponseAborted
+      redis.publish('assistant-response', stringifiedMessage);
+    } catch (e) {
+      console.log('Redis publish error: ', e);
+    }
 
     redis.set(
       publicThreadId, // TODO: rather runId not thread?

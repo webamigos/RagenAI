@@ -64,7 +64,7 @@ export const Assistant = () => {
     //   // console.log('event data: ', JSON.parse(e.data));
     // });
     eventSource.addEventListener('open', (e) => {
-      console.log('open', e);
+      // console.log('open', e);
     });
     eventSource.addEventListener('error', (e) => {
       eventSource.close();
