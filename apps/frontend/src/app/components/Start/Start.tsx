@@ -16,9 +16,9 @@ export const Start = () => {
   const t = useTranslations('Index');
 
   useEffect(() => {
-    const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
-    if (localThreadId) {
-      push(`/${locale}/threads/${localThreadId}`);
+    const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
+    if (localStorageThreadId) {
+      push(`/${locale}/threads/${localStorageThreadId}`);
     }
   }, []);
 

@@ -39,6 +39,13 @@ export const Assistant = ({ threadId }: Props) => {
   const isGlobalLoading = isLoading || isMessageLoading;
 
   useEffect(() => {
+    const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
+    if (!localStorageThreadId) {
+      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+    }
+  }, []);
+
+  useEffect(() => {
     const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
     eventSource.onmessage = (event) => {
       const eventMessage = JSON.parse(event.data);
