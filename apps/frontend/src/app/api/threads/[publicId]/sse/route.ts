@@ -8,7 +8,7 @@ import { Redis } from 'ioredis';
 //   runtime: 'edge',
 // };
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 // This is required to enable streaming
 export const dynamic = 'force-dynamic';

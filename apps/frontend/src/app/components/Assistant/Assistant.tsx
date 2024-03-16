@@ -45,16 +45,42 @@ export const Assistant = ({ threadId }: Props) => {
     }
   }, []);
 
-  useEffect(() => {
+  // Function to take care of initial connect to the SSE API
+  // Also, it reconnects to the SSE API as soon as it shuts down
+  // This keeps the connection alive - forever with micro second delays
+  const connectToStream = () => {
     const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
-    eventSource.onmessage = (event) => {
+    eventSource.addEventListener('message', (event) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
         refetch(); // TODO: uncomment
         setMessageIsLoading(false);
       }
+    });
+
+    // In case of any error, close the event source
+    // So that it attempts to connect again
+    eventSource.addEventListener('error', () => {
+      eventSource.close();
+      setTimeout(connectToStream, 1);
+    });
+
+    // As soon as SSE API source is closed, attempt to reconnect
+    eventSource.close = () => {
+      setTimeout(connectToStream, 1);
     };
+    return eventSource;
+  };
+
+  useEffect(() => {
+    // Initiate the first call to connect to SSE API
+    const eventSource = connectToStream();
+    // As the component unmounts, close listener to SSE API
+    return () => {
+      eventSource.close();
+    };
+
     // eventSource.addEventListener('message', (e) => {
     //   // the event name here must be the same as in the API
     //   const eventMessage = JSON.parse(e.data);
@@ -63,19 +89,17 @@ export const Assistant = ({ threadId }: Props) => {
     //     refetch();
     //     setMessageIsLoading(false);
     //   }
-
     //   // console.log('event data: ', JSON.parse(e.data));
     // });
-    eventSource.addEventListener('open', (e) => {
-      // console.log('open', e);
-    });
-    eventSource.addEventListener('error', (e) => {
-      eventSource.close();
-    });
-
-    return () => {
-      eventSource.close();
-    };
+    // eventSource.addEventListener('open', (e) => {
+    //   // console.log('open', e);
+    // });
+    // eventSource.addEventListener('error', (e) => {
+    //   eventSource.close();
+    // });
+    // return () => {
+    //   eventSource.close();
+    // };
   }, []);
 
   const handleCloseThread = () => {
