@@ -93,15 +93,18 @@ export const askAssistant = async (publicThreadId: string) => {
 
     try {
       // TODO: it works but throws an error: unhandledRejection: ResponseAborted
-      redis.publish(`assistant-response-${publicThreadId}`, stringifiedMessage);
+      await redis.publish(
+        `assistant-response-${publicThreadId}`,
+        stringifiedMessage
+      );
     } catch (e) {
       console.log('Redis publish error: ', e);
     }
 
-    redis.set(
-      publicThreadId, // TODO: rather runId not thread?
-      stringifiedMessage
-    );
+    // redis.set(
+    //   publicThreadId, // TODO: rather runId not thread?
+    //   stringifiedMessage
+    // );
 
     return true;
   }

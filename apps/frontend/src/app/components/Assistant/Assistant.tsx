@@ -46,15 +46,12 @@ export const Assistant = ({ threadId }: Props) => {
   }, []);
 
   useEffect(() => {
-    const eventSource = new EventSource(
-      `http://localhost:4000/api/threads/${threadId}/sse`
-    );
-    // const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
+    const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
     eventSource.onmessage = (event) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
-        // refetch(); // TODO: uncomment
+        refetch(); // TODO: uncomment
         setMessageIsLoading(false);
       }
     };

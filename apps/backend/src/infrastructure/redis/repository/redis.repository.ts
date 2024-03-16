@@ -13,6 +13,10 @@ export class RedisRepository
     this.redisClient.disconnect();
   }
 
+  getClient(): Redis {
+    return this.redisClient;
+  }
+
   async get(prefix: string, key: string): Promise<string | null> {
     return this.redisClient.get(`${prefix}:${key}`);
   }

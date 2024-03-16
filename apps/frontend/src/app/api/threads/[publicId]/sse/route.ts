@@ -15,11 +15,11 @@ type Params = {
 };
 
 // const EVENT_NAME = 'salesyy-event';
+const redis = new Redis(process.env.REDIS_URL!);
 
 export async function GET(request: Request, { params }: Params) {
   const threadPublicId = params.publicId;
   const redisChannel = `assistant-response-${threadPublicId}`;
-  const redis = new Redis(process.env.REDIS_URL!);
 
   const responseStream = new TransformStream();
   const writer = responseStream.writable.getWriter();
@@ -42,23 +42,23 @@ export async function GET(request: Request, { params }: Params) {
     await redis.unsubscribe(redisChannel); // Unsubscribe from Redis channels (calls redis.unsubscribe(...))
   };
 
-  redis.subscribe(redisChannel, (err, count) => {
-    if (err) {
-      // Just like other commands, subscribe() can fail for some reasons,
-      // ex network issues.
-      console.error('Failed to subscribe: %s', err.message);
-    } else {
-      // `count` represents the number of channels this client are currently subscribed to.
-      console.log(
-        `Subscribed successfully! This client is currently subscribed to ${count} channels.`
-      );
-    }
-  });
-
   try {
     writer.write(
       `event: init\nevent: init\ndata: ${JSON.stringify({ status: 'ok' })}\n\n`
     );
+
+    await redis.subscribe(redisChannel, (err, count) => {
+      if (err) {
+        // Just like other commands, subscribe() can fail for some reasons,
+        // ex network issues.
+        console.error('Failed to subscribe: %s', err.message);
+      } else {
+        // `count` represents the number of channels this client are currently subscribed to.
+        console.log(
+          `Subscribed successfully! This client is currently subscribed to ${count} channels.`
+        );
+      }
+    });
 
     // const stream = new EventEmitter();
 

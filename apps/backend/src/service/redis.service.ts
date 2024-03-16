@@ -1,9 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { RedisPrefixEnum } from '../domain/enum/redis-prefix-enum';
 import { ProductInterface } from '../domain/interface/product.interface';
@@ -13,29 +8,15 @@ const oneDayInSeconds = 60 * 60 * 24;
 const tenMinutesInSeconds = 60 * 10;
 
 @Injectable()
-export class RedisService implements OnApplicationBootstrap {
+export class RedisService {
   private readonly logger = new Logger(RedisService.name);
 
   constructor(
     @Inject(RedisRepository) private readonly redisRepository: RedisRepository
   ) {}
 
-  onApplicationBootstrap() {
-    console.log(`Redis module has been initialized.`);
-    this.logger.log('Redis module has been initialized.');
-
-    // redis.subscribe(redisChannel, (err, count) => {
-    //   if (err) {
-    //     // Just like other commands, subscribe() can fail for some reasons,
-    //     // ex network issues.
-    //     console.error('Failed to subscribe: %s', err.message);
-    //   } else {
-    //     // `count` represents the number of channels this client are currently subscribed to.
-    //     console.log(
-    //       `Subscribed successfully! This client is currently subscribed to ${count} channels.`
-    //     );
-    //   }
-    // });
+  getClient() {
+    return this.redisRepository.getClient();
   }
 
   async saveProduct(
