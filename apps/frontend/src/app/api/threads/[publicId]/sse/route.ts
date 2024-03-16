@@ -10,18 +10,17 @@ import { Redis } from 'ioredis';
 // This is required to enable streaming
 export const dynamic = 'force-dynamic';
 
-// export const config = {
-//   api: {
-//     externalResolver: true,
-//   },
-// }; // this is important to avoid the 'API resolved without sending a response for /api/test_sse, this may result in stalled requests.' warning
+type Params = {
+  params: { publicId: string };
+};
 
-const EVENT_NAME = 'salesyy-event';
+// const EVENT_NAME = 'salesyy-event';
 
-export async function GET() {
+export async function GET(request: Request, { params }: Params) {
+  const threadPublicId = params.publicId;
   const redis = new Redis(process.env.REDIS_URL!);
 
-  redis.subscribe('assistant-response', (err, count) => {
+  redis.subscribe(`assistant-response-${threadPublicId}`, (err, count) => {
     if (err) {
       // Just like other commands, subscribe() can fail for some reasons,
       // ex network issues.
