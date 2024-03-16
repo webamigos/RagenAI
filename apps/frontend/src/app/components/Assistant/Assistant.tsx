@@ -95,7 +95,7 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageLoadingText('Beep, boop, robots are waking up...');
       setMessageLoadingText('Asking AI what it thinks about your question...');
 
-      // run in background
+      // TODO: move to backend event in background
       runAssistant(threadId);
 
       setMessageLoadingText('Analyzing your question...');

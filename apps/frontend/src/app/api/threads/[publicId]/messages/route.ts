@@ -8,6 +8,8 @@ import {
   createThreadMessage,
   fetchMessagesFromDb,
 } from '../../../../lib/services/message';
+import { api } from '../../../../lib/services/config';
+import axios from 'axios';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +54,13 @@ export const POST = async (request: Request, { params }: Params) => {
       thread,
       threadEntity,
     });
+
+    // IMPORTANT! run in background
+    // TODO: it would be better to send on pub/sub
+    // const reqUrl = request.headers.get('referer')!;
+    // const url = new URL(reqUrl);
+
+    // axios.post(`${url.origin}/api/assistant/${threadPublicId}`);
 
     // create user message and return it to display in frontend
     return NextResponse.json(

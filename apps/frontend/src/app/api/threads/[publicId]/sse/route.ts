@@ -18,9 +18,31 @@ type Params = {
 
 export async function GET(request: Request, { params }: Params) {
   const threadPublicId = params.publicId;
+  const redisChannel = `assistant-response-${threadPublicId}`;
   const redis = new Redis(process.env.REDIS_URL!);
 
-  redis.subscribe(`assistant-response-${threadPublicId}`, (err, count) => {
+  const responseStream = new TransformStream();
+  const writer = responseStream.writable.getWriter();
+  const encoder = new TextEncoder();
+
+  const messageListener = (channel: string, message: string) => {
+    console.log(`get ${message} on ${channel}`);
+    // stream.emit('channel', EVENT_NAME, message);
+    writer.write(`event: message\ndata: ${message}\n\n`); // <- the format here is important!
+  };
+
+  request.signal.onabort = async () => {
+    // Close connections
+    console.log(
+      'Browser disconnected. Unsubscribing from Redis and closing writer.'
+    );
+    redis.removeListener('message', messageListener); // Unregister Redis event listener (created using redis.on(...))
+    await writer.ready;
+    await writer.close();
+    await redis.unsubscribe(redisChannel); // Unsubscribe from Redis channels (calls redis.unsubscribe(...))
+  };
+
+  redis.subscribe(redisChannel, (err, count) => {
     if (err) {
       // Just like other commands, subscribe() can fail for some reasons,
       // ex network issues.
@@ -32,10 +54,6 @@ export async function GET(request: Request, { params }: Params) {
       );
     }
   });
-
-  const responseStream = new TransformStream();
-  const writer = responseStream.writable.getWriter();
-  const encoder = new TextEncoder();
 
   try {
     writer.write(
@@ -51,11 +69,7 @@ export async function GET(request: Request, { params }: Params) {
     // writer.write(`event: message\ndata: ${data}\n\n`); // <- the format here is important!
     // });
 
-    redis.on('message', (channel: string, message: string) => {
-      console.log(`get ${message} on ${channel}`);
-      // stream.emit('channel', EVENT_NAME, message);
-      writer.write(`event: message\ndata: ${message}\n\n`); // <- the format here is important!
-    });
+    redis.on('message', messageListener);
 
     redis.on('close', () => writer.close());
   } catch (error) {
