@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createThread } from '../../lib/services/thread';
 
+export const dynamic = 'force-dynamic';
+
 export const POST = async () => {
   try {
     const threadResult = await createThread();

@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 
 import { getThread } from '../../../lib/services/thread';
 
+export const dynamic = 'force-dynamic';
+
 type Params = {
   params: { publicId: string };
 };
