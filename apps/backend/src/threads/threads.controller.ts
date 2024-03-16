@@ -3,6 +3,7 @@ import { Controller, Get, Sse, type MessageEvent } from '@nestjs/common';
 import { ThreadsService } from './threads.service';
 import { Observable, fromEvent, interval, map } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TestEvent } from './events/test-event';
 
 @Controller('threads')
 export class ThreadsController {
@@ -23,9 +24,8 @@ export class ThreadsController {
     // );
 
     return fromEvent(this.eventEmitter, 'test.event').pipe(
-      map((_data) => {
-        //
-        return new MessageEvent('order_created', { data: 'lorem ipsum' });
+      map((eventData: TestEvent) => {
+        return new MessageEvent('order_created', { data: eventData });
       })
     );
   }
