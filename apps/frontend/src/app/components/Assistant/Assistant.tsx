@@ -44,18 +44,25 @@ export const Assistant = () => {
 
   useEffect(() => {
     const eventSource = new EventSource('/api/sse');
-
-    eventSource.addEventListener('message', (e) => {
-      // the event name here must be the same as in the API
-      const eventMessage = JSON.parse(e.data);
+    eventSource.onmessage = (event) => {
+      const eventMessage = JSON.parse(event.data);
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
         refetch();
         setMessageIsLoading(false);
       }
+    };
+    // eventSource.addEventListener('message', (e) => {
+    //   // the event name here must be the same as in the API
+    //   const eventMessage = JSON.parse(e.data);
+    //   if (eventMessage) {
+    //     // TODO: add message to messages instead of revalidate
+    //     refetch();
+    //     setMessageIsLoading(false);
+    //   }
 
-      // console.log('event data: ', JSON.parse(e.data));
-    });
+    //   // console.log('event data: ', JSON.parse(e.data));
+    // });
     eventSource.addEventListener('open', (e) => {
       console.log('open', e);
     });
