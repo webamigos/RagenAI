@@ -2,6 +2,7 @@ import { Role, Message as MessageModel } from '@prisma/client';
 
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
 import { api } from './config';
+import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 type MessagesQueryKey = {
   queryKey: [string, { threadId: string }];
@@ -13,6 +14,10 @@ export const fetchMessagesFromApi = async ({ queryKey }: MessagesQueryKey) => {
     return undefined;
   }
   return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
+};
+
+export const createThread = () => {
+  return api.post<CreateThreadDto>('/threads');
 };
 
 export const sendMessage = (threadId: string, data: CreateMessageDto) => {

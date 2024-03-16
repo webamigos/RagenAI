@@ -4,11 +4,12 @@ import {
 } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 
-import { Assistant } from '../../components/Assistant';
-import { Start } from '../../components/Start';
+import { Assistant } from '../../../../components/Assistant';
+import { notFound } from 'next/navigation';
 
 type Props = {
   params: {
+    publicId: string;
     locale: string;
   };
 };
@@ -21,14 +22,14 @@ export async function generateMetadata({ params: { locale } }: Props) {
   };
 }
 
-export default function Index({ params: { locale } }: Props) {
+export default function ThreadPage({ params: { publicId, locale } }: Props) {
+  const threadPublicId = publicId;
+  if (!threadPublicId) {
+    notFound();
+  }
+
   setRequestLocale(locale);
   const t = useTranslations('Index');
 
-  /*
-   * Replace the elements below with your own.
-   *
-   * Note: The corresponding styles are in the ./index.none file.
-   */
-  return <Start />;
+  return <Assistant threadId={threadPublicId} />;
 }

@@ -1,12 +1,11 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-
-import { Button } from '@salesyy/common-ui';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
@@ -16,20 +15,22 @@ import {
   runAssistant,
   sendMessage,
 } from '../../lib/services/api';
-import { api } from '../../lib/services/config';
-import { CreateThreadDto } from '../../contracts/ThreadDto';
+import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 
-const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
+type Props = {
+  threadId: string;
+};
 
-export const Assistant = () => {
-  const [threadId, setThreadId] = useState('');
+export const Assistant = ({ threadId }: Props) => {
   const [isMessageLoading, setMessageIsLoading] = useState(false);
   const [messageLoadingText, setMessageLoadingText] = useState('');
   const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
   const [messages, setMessages] = useState<MessageDto[]>([]);
+  const { push } = useRouter();
+  const locale = useLocale();
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['messages', { threadId: threadId || '' }],
+    queryKey: ['messages', { threadId }],
     queryFn: fetchMessagesFromApi,
   });
   const t = useTranslations('Index');
@@ -38,60 +39,41 @@ export const Assistant = () => {
   const isGlobalLoading = isLoading || isMessageLoading;
 
   useEffect(() => {
-    const localThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
-    setThreadId(localThreadId ? localThreadId : '');
+    const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
+    eventSource.onmessage = (event) => {
+      const eventMessage = JSON.parse(event.data);
+      if (eventMessage) {
+        // TODO: add message to messages instead of revalidate
+        refetch();
+        setMessageIsLoading(false);
+      }
+    };
+    // eventSource.addEventListener('message', (e) => {
+    //   // the event name here must be the same as in the API
+    //   const eventMessage = JSON.parse(e.data);
+    //   if (eventMessage) {
+    //     // TODO: add message to messages instead of revalidate
+    //     refetch();
+    //     setMessageIsLoading(false);
+    //   }
+
+    //   // console.log('event data: ', JSON.parse(e.data));
+    // });
+    eventSource.addEventListener('open', (e) => {
+      // console.log('open', e);
+    });
+    eventSource.addEventListener('error', (e) => {
+      eventSource.close();
+    });
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
-
-  useEffect(() => {
-    if (threadId) {
-      const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
-      eventSource.onmessage = (event) => {
-        const eventMessage = JSON.parse(event.data);
-        if (eventMessage) {
-          // TODO: add message to messages instead of revalidate
-          refetch();
-          setMessageIsLoading(false);
-        }
-      };
-      // eventSource.addEventListener('message', (e) => {
-      //   // the event name here must be the same as in the API
-      //   const eventMessage = JSON.parse(e.data);
-      //   if (eventMessage) {
-      //     // TODO: add message to messages instead of revalidate
-      //     refetch();
-      //     setMessageIsLoading(false);
-      //   }
-
-      //   // console.log('event data: ', JSON.parse(e.data));
-      // });
-      eventSource.addEventListener('open', (e) => {
-        // console.log('open', e);
-      });
-      eventSource.addEventListener('error', (e) => {
-        eventSource.close();
-      });
-
-      return () => {
-        eventSource.close();
-      };
-    }
-  }, [threadId]);
-
-  const handleNewThread = async () => {
-    try {
-      const result = await api.post<CreateThreadDto>('/threads');
-      const threadId = result.data.public_id;
-      setThreadId(threadId);
-      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-      // console.log(threadId);
-    } catch {
-      // TODO: implement
-    }
-  };
 
   const handleCloseThread = () => {
     localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-    setThreadId('');
+    push(`/${locale}`);
   };
 
   const onSubmit = async (data: CreateMessageDto) => {
@@ -139,17 +121,6 @@ export const Assistant = () => {
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
           />
-        )}
-
-        {!threadId && (
-          <div className="mt-6 flex flex-col items-center">
-            <Button
-              label={t('start-new-thread')}
-              className="bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
-              onClick={handleNewThread}
-              disabled={isGlobalLoading}
-            />
-          </div>
         )}
       </div>
     </div>
