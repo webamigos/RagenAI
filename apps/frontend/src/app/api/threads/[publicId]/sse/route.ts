@@ -37,12 +37,11 @@ export async function GET(request: Request, { params }: Params) {
   const writer = responseStream.writable.getWriter();
   const encoder = new TextEncoder();
 
-  // writer.write(encoder.encode('Hello there....'));
-  writer.write(
-    `event: init\nevent: init\ndata: ${JSON.stringify({ status: 'ok' })}\n\n`
-  );
-
   try {
+    writer.write(
+      `event: init\nevent: init\ndata: ${JSON.stringify({ status: 'ok' })}\n\n`
+    );
+
     // const stream = new EventEmitter();
 
     // stream.on('channel', function (event, data) {
