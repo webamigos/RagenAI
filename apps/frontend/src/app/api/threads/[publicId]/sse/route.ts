@@ -18,7 +18,7 @@ type Params = {
 
 const redisSubscriber = new Redis(process.env.REDIS_DSN!);
 
-export async function GET(request: Request, { params }: Params) {
+export async function GET(_request: Request, { params }: Params) {
   const threadPublicId = params.publicId;
   const redisChannel = `assistant-response-${threadPublicId}`;
 
