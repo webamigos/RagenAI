@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { Redis } from 'ioredis';
+import { Redis } from '@upstash/redis';
 import { Role } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
@@ -22,8 +22,6 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  *
  */
 export const askAssistant = async (publicThreadId: string) => {
-  const redis = new Redis(process.env.REDIS_URL!);
-
   const threadEntity = await db.thread.findUniqueOrThrow({
     where: { public_id: publicThreadId },
     select: {
@@ -93,6 +91,11 @@ export const askAssistant = async (publicThreadId: string) => {
 
     try {
       // TODO: it works but throws an error: unhandledRejection: ResponseAborted
+      const redis = new Redis({
+        url: process.env.REDIS_URL!,
+        token: process.env.REDIS_TOKEN!,
+      });
+
       await redis.publish(
         `assistant-response-${publicThreadId}`,
         stringifiedMessage
