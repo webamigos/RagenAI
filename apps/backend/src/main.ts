@@ -14,6 +14,7 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalPipes(new ValidationPipe());
+  app.enableCors(); // TODO: allow only from frontend
 
   const config = new DocumentBuilder()
     .setTitle('Backend')
