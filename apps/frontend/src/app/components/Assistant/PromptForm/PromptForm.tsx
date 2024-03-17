@@ -40,7 +40,7 @@ export const PromptForm = ({
   };
 
   return (
-    <div className="px-4 sm:px-4 lg:px-22 pb-8">
+    <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
       <div className="rounded-lg text-sm ">
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <Input
