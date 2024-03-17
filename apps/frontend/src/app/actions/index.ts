@@ -6,11 +6,11 @@ import {
   CreateMessageDto,
   MessageDto,
   createMessageSchema,
-} from '../../../../contracts/Message';
-import { sendForModeration } from '../../../../lib/services/moderation';
-import { getOrCreateThread } from '../../../../lib/services/thread';
-import { createThreadMessage } from '../../../../lib/services/message';
-import { askAssistant } from '../../../../lib/services/assistant';
+} from '../contracts/Message';
+import { sendForModeration } from '../lib/services/moderation';
+import { getOrCreateThread } from '../lib/services/thread';
+import { createThreadMessage } from '../lib/services/message';
+import { askAssistant } from '../lib/services/assistant';
 
 type ResponseMessage =
   | {

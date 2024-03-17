@@ -10,9 +10,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
-import { fetchMessagesFromApi, runAssistant } from '../../lib/services/api';
+import { fetchMessagesFromApi } from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { sendMessage } from '../../[locale]/(marketing)/threads/[publicId]/actions';
+import { sendMessage, runAssistant } from '../../actions';
 
 type Props = {
   threadId: string;
@@ -81,26 +81,6 @@ export const Assistant = ({ threadId }: Props) => {
     return () => {
       eventSource.close();
     };
-
-    // eventSource.addEventListener('message', (e) => {
-    //   // the event name here must be the same as in the API
-    //   const eventMessage = JSON.parse(e.data);
-    //   if (eventMessage) {
-    //     // TODO: add message to messages instead of revalidate
-    //     refetch();
-    //     setMessageIsLoading(false);
-    //   }
-    //   // console.log('event data: ', JSON.parse(e.data));
-    // });
-    // eventSource.addEventListener('open', (e) => {
-    //   // console.log('open', e);
-    // });
-    // eventSource.addEventListener('error', (e) => {
-    //   eventSource.close();
-    // });
-    // return () => {
-    //   eventSource.close();
-    // };
   }, []);
 
   const handleCloseThread = () => {
