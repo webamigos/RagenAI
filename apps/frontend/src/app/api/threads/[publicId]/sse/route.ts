@@ -29,7 +29,9 @@ export async function GET(_request: Request, { params }: Params) {
   // Create a stream
   const customReadable = new ReadableStream({
     start(controller) {
-      controller.enqueue(encoder.encode(`data: init\n\n`));
+      controller.enqueue(
+        encoder.encode(`data: ${JSON.stringify({ message: 'init' })}\n\n`)
+      );
 
       // Subscribe to Redis updates for the key: "posts"
       // In case of any error, just log it
