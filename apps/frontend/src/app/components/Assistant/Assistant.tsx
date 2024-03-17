@@ -10,9 +10,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
-import { fetchMessagesFromApi, runAssistant } from '../../lib/services/api';
+import { fetchMessagesFromApi } from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { sendMessage } from '../../actions';
+import { sendMessage, runAssistant } from '../../actions';
 
 type Props = {
   threadId: string;
@@ -109,15 +109,15 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageLoadingText('Asking AI what it thinks about your question...');
 
       // TODO: vercel doesn't like to run this as server action
-      runAssistant(threadId);
+      // runAssistant(threadId);
 
       // on vercel this is not working good
-      // const assistantResponse = await runAssistant(threadId);
-      // if (assistantResponse.status === StatusCodes.OK) {
-      //   setMessageLoadingText('Analyzing your question...');
-      // } else {
-      //   setMessageError(true);
-      // }
+      const assistantResponse = await runAssistant(threadId);
+      if (assistantResponse.status === StatusCodes.OK) {
+        setMessageLoadingText('Analyzing your question...');
+      } else {
+        setMessageError(true);
+      }
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorStatus = error.status;

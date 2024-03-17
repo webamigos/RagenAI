@@ -71,7 +71,7 @@ export const runAssistant = async (
   const publicThreadId = threadId;
 
   try {
-    askAssistant(publicThreadId);
+    void askAssistant(publicThreadId);
 
     // create user message and return it to display in frontend
     return { message: 'Processing started', status: StatusCodes.OK };
