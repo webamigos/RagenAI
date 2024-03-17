@@ -18,7 +18,7 @@ type ResponseMessage =
       status: StatusCodes;
     }
   | {
-      message: MessageDto;
+      message: MessageDto | string;
       status: StatusCodes;
     };
 
@@ -55,20 +55,28 @@ export const sendMessage = async (
       threadEntity,
     });
 
-    // IMPORTANT! run in background
-    // TODO: it would be better to send on pub/sub
-    // const reqUrl = request.headers.get('referer')!;
-    // const url = new URL(reqUrl);
-
-    // axios.post(`${url.origin}/api/assistant/${threadPublicId}`);
-
-    // create user message and return it to display in frontend
-
-    askAssistant(threadPublicId);
-
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
     console.log('processing error: ', e);
+    return {
+      error: 'Problem during processing',
+      status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+export const runAssistant = async (
+  threadId: string
+): Promise<ResponseMessage> => {
+  const publicThreadId = threadId;
+
+  try {
+    askAssistant(publicThreadId);
+
+    // create user message and return it to display in frontend
+    return { message: 'Processing started', status: StatusCodes.OK };
+  } catch (e) {
+    console.log('Assistant processing error: ', e);
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,
