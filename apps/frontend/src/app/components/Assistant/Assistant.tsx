@@ -109,15 +109,15 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageLoadingText('Asking AI what it thinks about your question...');
 
       // TODO: vercel doesn't like to run this as server action
-      // runAssistant(threadId);
+      runAssistant(threadId);
 
       // on vercel this is not working good
-      const assistantResponse = await runAssistant(threadId);
-      if (assistantResponse.status === StatusCodes.OK) {
-        setMessageLoadingText('Analyzing your question...');
-      } else {
-        setMessageError(true);
-      }
+      // const assistantResponse = await runAssistant(threadId);
+      // if (assistantResponse.status === StatusCodes.OK) {
+      //   setMessageLoadingText('Analyzing your question...');
+      // } else {
+      //   setMessageError(true);
+      // }
     } catch (error) {
       if (error instanceof AxiosError) {
         const errorStatus = error.status;
