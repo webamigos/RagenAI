@@ -114,6 +114,7 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageIsLoading(true);
       setMessageLoadingText('Thinking...');
 
+      // TODO: change to server action
       await sendMessage(threadId, data);
       setMessageLoadingText('Searching memories...');
       refetch();
@@ -122,6 +123,7 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageLoadingText('Asking AI what it thinks about your question...');
 
       // TODO: move to backend event in background
+      // TODO: change to server action
       runAssistant(threadId);
 
       setMessageLoadingText('Analyzing your question...');

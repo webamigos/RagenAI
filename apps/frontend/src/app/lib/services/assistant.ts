@@ -6,6 +6,7 @@ import db from '@salesyy/prisma-client';
 
 import { createMessage } from './message';
 import { parseThreadMessage } from './utils';
+import { redisChannelPrefix } from '../../config';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -97,7 +98,7 @@ export const askAssistant = async (publicThreadId: string) => {
       });
 
       await redis.publish(
-        `assistant-response-${publicThreadId}`,
+        `${redisChannelPrefix}-${publicThreadId}`,
         stringifiedMessage
       );
     } catch (e) {
