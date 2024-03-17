@@ -51,8 +51,10 @@ export const Assistant = ({ threadId }: Props) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
-        refetch(); // TODO: uncomment
-        setMessageIsLoading(false);
+        if (!(eventMessage.type && eventMessage.type === 'init')) {
+          refetch();
+          setMessageIsLoading(false);
+        }
       }
     });
 
