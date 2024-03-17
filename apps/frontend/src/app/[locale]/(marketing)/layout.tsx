@@ -13,10 +13,10 @@ export default function MarketingLayout({ children }: Props) {
   return (
     <NextIntlClientProvider messages={messages}>
       <Toast />
-      <div>
+      <div className="h-screen flex flex-col">
         <NavHeader />
 
-        <div className="relative isolate px-6 pt-14 lg:px-8">
+        {/* <div className="relative isolate px-6 pt-14 lg:px-8">
           <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
             aria-hidden="true"
@@ -29,9 +29,9 @@ export default function MarketingLayout({ children }: Props) {
               }}
             />
           </div>
-          <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:py-22">
-            {children}
-          </div>
+          <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:py-22"> */}
+        {children}
+        {/* </div>
           <div
             className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
             aria-hidden="true"
@@ -44,7 +44,7 @@ export default function MarketingLayout({ children }: Props) {
               }}
             />
           </div>
-        </div>
+        </div> */}
       </div>
     </NextIntlClientProvider>
   );

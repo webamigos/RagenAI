@@ -129,23 +129,24 @@ export const Assistant = ({ threadId }: Props) => {
   };
 
   return (
-    <div className="container mx-auto">
+    <>
       {/* {threadId && <ThreadId threadId={threadId} />} */}
 
-      <div>
+      <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={initialMessages ? initialMessages : messages}
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
         />
-        {threadId && (
-          <PromptForm
-            handleCloseThread={handleCloseThread}
-            isLoading={isGlobalLoading}
-            onSubmit={onSubmit}
-          />
-        )}
       </div>
-    </div>
+
+      {threadId && (
+        <PromptForm
+          handleCloseThread={handleCloseThread}
+          isLoading={isGlobalLoading}
+          onSubmit={onSubmit}
+        />
+      )}
+    </>
   );
 };
