@@ -6,11 +6,12 @@ type Props = {
   label: string;
   hint?: string;
   error?: FieldError;
+  errorMessage?: string; // for translations
 } & ComponentPropsWithRef<'input'>;
 
 export const Input = forwardRef(
   (
-    { label, hint, error, className, ...rest }: Props,
+    { label, hint, error, errorMessage, className, ...rest }: Props,
     ref: Ref<HTMLInputElement>
   ) => {
     const id = useId();
@@ -51,7 +52,7 @@ export const Input = forwardRef(
               className="mt-2 text-sm text-red-600 dark:text-red-500"
               id="email-error"
             >
-              {error.message}
+              {errorMessage ? errorMessage : error.message}
             </p>
           </>
         )}

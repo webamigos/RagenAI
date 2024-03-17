@@ -1,11 +1,12 @@
 'use client';
 
+import { MouseEventHandler } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PaperAirplaneIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline';
 
-import { Button, Textarea } from '@salesyy/common-ui';
+import { Button, Input } from '@salesyy/common-ui';
 import {
   type CreateMessageDto,
   createMessageSchema,
@@ -13,7 +14,7 @@ import {
 
 type Props = {
   isLoading: boolean;
-  handleCloseThread: () => void;
+  handleCloseThread: MouseEventHandler<HTMLButtonElement>;
   onSubmit: SubmitHandler<CreateMessageDto>;
 };
 
@@ -41,19 +42,20 @@ export const PromptForm = ({
   return (
     <div className="rounded-lg text-sm ">
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <Textarea
+        <Input
           label={t('enter-your-question')}
           placeholder={t('lets-chat')}
           {...register('prompt')}
-          rows={2}
           disabled={isLoading}
           error={errors.prompt}
           errorMessage={t('provide-at-least-10-characters')}
+          className="h-12"
         />
-        <div className="mt-2 flex flex-row">
+        <div className="mt-6 flex flex-row">
           <div className="w-1/2">
             <p>
               <Button
+                type="button"
                 label={t('close-thread')}
                 onClick={handleCloseThread}
                 className="cursor-pointer"
@@ -70,7 +72,7 @@ export const PromptForm = ({
             <Button
               type="submit"
               label={t('send')}
-              icon={
+              iconRight={
                 <PaperAirplaneIcon
                   className="h-5 w-5 flex-none text-white cursor-pointer"
                   aria-hidden="true"

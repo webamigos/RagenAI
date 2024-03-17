@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
 import { Button } from '@salesyy/common-ui';
 
@@ -43,6 +44,12 @@ export const Start = () => {
           className="bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
           onClick={handleNewThread}
           disabled={isLoading}
+          iconRight={
+            <ChevronRightIcon
+              className="h-5 w-5 flex-none text-white cursor-pointer"
+              aria-hidden="true"
+            />
+          }
         />
       </div>
     </div>

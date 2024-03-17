@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { useQuery } from '@tanstack/react-query';
@@ -83,7 +83,8 @@ export const Assistant = ({ threadId }: Props) => {
     };
   }, []);
 
-  const handleCloseThread = () => {
+  const handleCloseThread: MouseEventHandler<HTMLButtonElement> = (event) => {
+    event.preventDefault();
     localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
     push(`/${locale}`);
   };

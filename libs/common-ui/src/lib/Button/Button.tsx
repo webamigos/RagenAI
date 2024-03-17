@@ -3,14 +3,14 @@ import { classMerge } from '../utils/cn';
 
 type Props = Readonly<{
   label: string;
-  icon?: React.ReactNode;
+  iconRight?: React.ReactNode;
   iconLeft?: React.ReactNode;
 }> &
   ComponentProps<'button'>;
 
 export const Button = forwardRef(
   (
-    { label, icon, iconLeft, className, ...rest }: Props,
+    { label, iconRight, iconLeft, className, ...rest }: Props,
     ref: ForwardedRef<HTMLButtonElement>
   ) => {
     return (
@@ -22,9 +22,9 @@ export const Button = forwardRef(
           className
         )}
       >
-        <span className="flex">
+        <span className="flex items-center">
           {iconLeft ? <span className="pr-2">{iconLeft}</span> : null} {label}{' '}
-          {icon ? <span className="pl-2">{icon}</span> : null}
+          {iconRight ? <span className="pl-2">{iconRight}</span> : null}
         </span>
       </button>
     );
