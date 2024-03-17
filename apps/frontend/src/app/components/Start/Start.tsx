@@ -43,6 +43,7 @@ export const Start = () => {
           label={t('start-new-thread')}
           className="bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
           onClick={handleNewThread}
+          isLoading={isLoading}
           disabled={isLoading}
           iconRight={
             <ChevronRightIcon

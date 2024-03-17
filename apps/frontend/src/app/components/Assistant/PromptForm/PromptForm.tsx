@@ -49,7 +49,7 @@ export const PromptForm = ({
           disabled={isLoading}
           error={errors.prompt}
           errorMessage={t('provide-at-least-10-characters')}
-          className="h-12"
+          className="h-10"
         />
         <div className="mt-6 flex flex-row">
           <div className="w-1/2">
