@@ -29,6 +29,7 @@ export const PromptForm = ({
     formState: { errors },
   } = useForm<CreateMessageDto>({
     resolver: zodResolver(createMessageSchema),
+    reValidateMode: 'onSubmit',
   });
   const t = useTranslations('form');
 
@@ -45,6 +46,7 @@ export const PromptForm = ({
           placeholder={t('lets-chat')}
           {...register('prompt')}
           rows={2}
+          disabled={isLoading}
           error={errors.prompt}
           errorMessage={t('provide-at-least-10-characters')}
         />
