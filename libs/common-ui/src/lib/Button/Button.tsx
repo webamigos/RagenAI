@@ -4,12 +4,13 @@ import { classMerge } from '../utils/cn';
 type Props = Readonly<{
   label: string;
   icon?: React.ReactNode;
+  iconLeft?: React.ReactNode;
 }> &
   ComponentProps<'button'>;
 
 export const Button = forwardRef(
   (
-    { label, icon, className, ...rest }: Props,
+    { label, icon, iconLeft, className, ...rest }: Props,
     ref: ForwardedRef<HTMLButtonElement>
   ) => {
     return (
@@ -22,7 +23,8 @@ export const Button = forwardRef(
         )}
       >
         <span className="flex">
-          {label} {icon ? <span className="pl-2">{icon}</span> : null}
+          {iconLeft ? <span className="pr-2">{iconLeft}</span> : null} {label}{' '}
+          {icon ? <span className="pl-2">{icon}</span> : null}
         </span>
       </button>
     );

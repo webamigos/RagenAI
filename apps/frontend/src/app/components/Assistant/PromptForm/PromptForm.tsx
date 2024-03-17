@@ -3,7 +3,7 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { PaperAirplaneIcon, ArchiveBoxIcon } from '@heroicons/react/24/outline';
 
 import { Button, Textarea } from '@salesyy/common-ui';
 import {
@@ -50,23 +50,29 @@ export const PromptForm = ({
           error={errors.prompt}
           errorMessage={t('provide-at-least-10-characters')}
         />
-        <div className="flex flex-row">
+        <div className="mt-2 flex flex-row">
           <div className="w-1/2">
             <p>
               <Button
                 label={t('close-thread')}
                 onClick={handleCloseThread}
                 className="cursor-pointer"
+                iconLeft={
+                  <ArchiveBoxIcon
+                    className="h-5 w-5 flex-none text-white cursor-pointer"
+                    aria-hidden="true"
+                  />
+                }
               />
             </p>
           </div>
-          <div className="w-1/2 flex  justify-end">
+          <div className="w-1/2 flex justify-end">
             <Button
               type="submit"
               label={t('send')}
               icon={
                 <PaperAirplaneIcon
-                  className="mt-0.5 h-5 w-5 flex-none text-white cursor-pointer"
+                  className="h-5 w-5 flex-none text-white cursor-pointer"
                   aria-hidden="true"
                 />
               }
