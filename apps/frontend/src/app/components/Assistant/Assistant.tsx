@@ -111,8 +111,8 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageIsLoading(true);
       setMessageLoadingText('Thinking...');
 
-      // TODO: change to server action
       const messageResponse = await sendMessage(threadId, data);
+
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         setMessageError(true);
         return;
@@ -127,7 +127,7 @@ export const Assistant = ({ threadId }: Props) => {
 
       // TODO: move to backend event in background
       // TODO: change to server action
-      runAssistant(threadId);
+      // runAssistant(threadId);
 
       setMessageLoadingText('Analyzing your question...');
 

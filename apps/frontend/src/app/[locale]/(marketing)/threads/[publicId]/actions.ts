@@ -10,6 +10,7 @@ import {
 import { sendForModeration } from '../../../../lib/services/moderation';
 import { getOrCreateThread } from '../../../../lib/services/thread';
 import { createThreadMessage } from '../../../../lib/services/message';
+import { askAssistant } from '../../../../lib/services/assistant';
 
 type ResponseMessage =
   | {
@@ -62,6 +63,9 @@ export const sendMessage = async (
     // axios.post(`${url.origin}/api/assistant/${threadPublicId}`);
 
     // create user message and return it to display in frontend
+
+    askAssistant(threadPublicId);
+
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
     console.log('processing error: ', e);
