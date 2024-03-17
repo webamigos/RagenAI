@@ -10,12 +10,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
-import {
-  fetchMessagesFromApi,
-  runAssistant,
-  sendMessage,
-} from '../../lib/services/api';
+import { fetchMessagesFromApi, runAssistant } from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
+import { sendMessage } from '../../[locale]/(marketing)/threads/[publicId]/actions';
 
 type Props = {
   threadId: string;
@@ -115,9 +112,15 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageLoadingText('Thinking...');
 
       // TODO: change to server action
-      await sendMessage(threadId, data);
-      setMessageLoadingText('Searching memories...');
-      refetch();
+      const messageResponse = await sendMessage(threadId, data);
+      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
+        setMessageError(true);
+        return;
+      } else if (messageResponse.status === StatusCodes.CREATED) {
+        setMessageLoadingText('Searching memories...');
+        // TODO: instead refetch mutate data
+        refetch();
+      }
 
       setMessageLoadingText('Beep, boop, robots are waking up...');
       setMessageLoadingText('Asking AI what it thinks about your question...');

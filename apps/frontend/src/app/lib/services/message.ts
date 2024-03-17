@@ -6,6 +6,7 @@ import { Thread, Message, Role } from '@prisma/client';
 import db from '@salesyy/prisma-client';
 
 import { parseThreadMessage } from './utils';
+import { MessageDto } from '../../contracts/Message';
 
 export type DbMessageDto = {
   id: Message['id'];
@@ -73,7 +74,7 @@ export const createThreadMessage = async ({
   prompt: string;
   thread: OpenAI.Beta.Threads.Thread;
   threadEntity: Thread;
-}) => {
+}): Promise<MessageDto> => {
   const threadId = thread.id;
   const threadMessage = await openai.beta.threads.messages.create(threadId, {
     role: 'user',
