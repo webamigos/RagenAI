@@ -65,6 +65,7 @@ export const sendMessage = async (
   }
 };
 
+// @duplicated
 export const runAssistant = async (
   threadId: string
 ): Promise<ResponseMessage> => {

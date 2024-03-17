@@ -10,9 +10,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
-import { fetchMessagesFromApi } from '../../lib/services/api';
+import { fetchMessagesFromApi, runAssistant } from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { sendMessage, runAssistant } from '../../actions';
+import { sendMessage } from '../../actions';
 
 type Props = {
   threadId: string;
