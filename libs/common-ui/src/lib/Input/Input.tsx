@@ -20,7 +20,7 @@ export const Input = forwardRef(
       <div className="py-2">
         <label
           htmlFor={id}
-          className="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300"
+          className="block text-sm font-medium leading-6  dark:text-gray-300"
         >
           {label}
         </label>
