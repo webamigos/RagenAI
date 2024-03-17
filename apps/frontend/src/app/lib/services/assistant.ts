@@ -7,6 +7,7 @@ import db from '@salesyy/prisma-client';
 import { createMessage } from './message';
 import { parseThreadMessage } from './utils';
 import { redisChannelPrefix } from '../../config';
+import { type SseMessageEvent } from '../../contracts/Events';
 
 const openai = new OpenAI();
 const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
@@ -83,15 +84,19 @@ export const askAssistant = async (publicThreadId: string) => {
       role: Role.ASSISTANT,
     });
 
-    const stringifiedMessage = JSON.stringify({
-      public_id: dbMessage.public_id,
-      role: dbMessage.role,
-      created_at: dbMessage.created_at,
-      content: dbMessage.content,
-    });
+    const messageToSend: SseMessageEvent = {
+      type: 'message',
+      payload: {
+        public_id: dbMessage.public_id,
+        role: dbMessage.role,
+        created_at: dbMessage.created_at,
+        content: dbMessage.content,
+      },
+    };
+
+    const stringifiedMessage = JSON.stringify(messageToSend);
 
     try {
-      // TODO: it works but throws an error: unhandledRejection: ResponseAborted
       const redis = new Redis({
         url: process.env.REDIS_URL!,
         token: process.env.REDIS_TOKEN!,

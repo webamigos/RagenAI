@@ -1,6 +1,10 @@
 import { Redis } from 'ioredis';
 
 import { redisChannelPrefix } from '../../../../config';
+import {
+  type SseInitEvent,
+  type SseMessageEvent,
+} from '../../../../contracts/Events';
 
 // errors during build - probably prisma?
 // export const runtime = 'edge';
@@ -23,8 +27,9 @@ export async function GET(_request: Request, { params }: Params) {
   // Create a stream
   const customReadable = new ReadableStream({
     start(controller) {
+      const initMessage: SseInitEvent = { type: 'init' };
       controller.enqueue(
-        encoder.encode(`data: ${JSON.stringify({ type: 'init' })}\n\n`)
+        encoder.encode(`data: ${JSON.stringify(initMessage)}\n\n`)
       );
 
       // Subscribe to Redis updates for the key: "redisChannel"
@@ -40,6 +45,7 @@ export async function GET(_request: Request, { params }: Params) {
         // Only send data when the channel message is reeived is same as the message is published to
         if (channel === redisChannel)
           // TODO: change to format: { type: 'message', payload: data }
+          // TODO: zod parse
           controller.enqueue(encoder.encode(`data: ${message}\n\n`));
       });
       redisSubscriber.on('end', () => {
