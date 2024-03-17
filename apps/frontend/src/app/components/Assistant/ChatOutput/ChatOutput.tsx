@@ -22,7 +22,7 @@ export const ChatOutput = ({
   const t = useTranslations('chat');
 
   return (
-    <div className="px-16 sm:px-24 lg:px-22 py-8">
+    <div className="px-4 sm:px-4 lg:px-22 py-8">
       <div>
         {messages.map((message) => (
           <div
