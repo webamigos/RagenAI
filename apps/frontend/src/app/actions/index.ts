@@ -24,7 +24,8 @@ type ResponseMessage =
 
 export const sendMessage = async (
   threadId: string,
-  data: CreateMessageDto
+  data: CreateMessageDto,
+  visitorId: string
 ): Promise<ResponseMessage> => {
   const requestData = await createMessageSchema.safeParseAsync(data);
 
@@ -53,6 +54,7 @@ export const sendMessage = async (
       prompt,
       thread,
       threadEntity,
+      visitorId,
     });
 
     return { message: messageResponse, status: StatusCodes.CREATED };

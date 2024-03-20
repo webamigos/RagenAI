@@ -1,10 +1,7 @@
 import { Redis } from 'ioredis';
 
 import { redisChannelPrefix } from '../../../../config';
-import {
-  type SseInitEvent,
-  type SseMessageEvent,
-} from '../../../../contracts/Events';
+import { type SseInitEvent } from '../../../../contracts/Events';
 
 // errors during build - probably prisma?
 // export const runtime = 'edge';

@@ -36,13 +36,13 @@ export const LanguageSwitcher = ({ className }: Props) => {
     <div className="flex">
       <div
         onClick={() => handleClick('en')}
-        className={classMerge('cursor-pointer opacity-80 px-3', className)}
+        className={classMerge('cursor-pointer opacity-85 px-3', className)}
       >
         <span className={`fi fi-gb mx-auto`} />
       </div>
       <div
         onClick={() => handleClick('pl')}
-        className={classMerge('cursor-pointer opacity-80 px-3', className)}
+        className={classMerge('cursor-pointer opacity-85 px-3', className)}
       >
         <span className={`fi fi-pl mx-auto`} />
       </div>

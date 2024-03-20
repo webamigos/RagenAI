@@ -10,9 +10,16 @@ import { useLocale, useTranslations } from 'next-intl';
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
-import { fetchMessagesFromApi, runAssistant } from '../../lib/services/api';
+import {
+  checkVisitorVisits,
+  fetchMessagesFromApi,
+  runAssistant,
+} from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { sendMessage } from '../../actions';
+import { loadFingerprint } from '../../lib/utils/fingerprint';
+import { dailyMessageLimit } from '../../config';
+import { Alert } from '@salesyy/common-ui';
 
 type Props = {
   threadId: string;
@@ -21,6 +28,7 @@ type Props = {
 export const Assistant = ({ threadId }: Props) => {
   const [isInitialLoad, setIsInitialLoad] = useState(true); // it tells if we want to animate last assistant response
   const [isMessageLoading, setMessageIsLoading] = useState(false);
+  const [isLimitLock, setIsLimitLock] = useState(false);
   const [messageLoadingText, setMessageLoadingText] = useState('');
   const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
@@ -54,6 +62,14 @@ export const Assistant = ({ threadId }: Props) => {
     if (messagesEndDivRef.current) {
       messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+    const loadVisitorMessages = async () => {
+      const visitorId = await loadFingerprint();
+      const visitorMessagesResponse = await checkVisitorVisits(visitorId);
+      if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
+        setIsLimitLock(true);
+      }
+    };
+    loadVisitorMessages();
   }, [data]);
 
   // Function to take care of initial connect to the SSE API
@@ -109,7 +125,8 @@ export const Assistant = ({ threadId }: Props) => {
 
       setMessageLoadingText(() => t('status-thinking'));
 
-      const messageResponse = await sendMessage(threadId, data);
+      const visitorId = await loadFingerprint();
+      const messageResponse = await sendMessage(threadId, data, visitorId);
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         setMessageError(true);
@@ -159,7 +176,13 @@ export const Assistant = ({ threadId }: Props) => {
         <div ref={messagesEndDivRef} />
       </div>
 
-      {threadId && (
+      {/* <Avatar /> */}
+      {isLimitLock && (
+        <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
+          <Alert title={t('limit-reached')} type="info" />
+        </div>
+      )}
+      {!isLimitLock && threadId && (
         <PromptForm
           handleCloseThread={handleCloseThread}
           isLoading={isGlobalLoading}

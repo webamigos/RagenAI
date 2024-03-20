@@ -1,5 +1,3 @@
-import { Role, Message as MessageModel } from '@prisma/client';
-
 import { CreateMessageDto, MessageDto } from '../../contracts/Message';
 import { api } from './config';
 import { CreateThreadDto } from '../../contracts/ThreadDto';
@@ -26,4 +24,12 @@ export const sendMessage = (threadId: string, data: CreateMessageDto) => {
 
 export const runAssistant = async (threadId: string) => {
   return api.post<void>(`/assistant/${threadId}`);
+};
+
+export const checkVisitorVisits = async (visitorId: string) => {
+  return api.get<{ messages: number }>(`/visitor/${visitorId}`);
+};
+
+export const clearVisitorMessagesStats = async () => {
+  return api.post<void>(`/visitor/hejho`);
 };

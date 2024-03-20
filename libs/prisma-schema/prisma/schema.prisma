@@ -27,6 +27,7 @@ model Message {
   role              Role     @default(USER)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
   thread_id         String?  @db.ObjectId
+  visitor_id        String?
 }
 
 model FlaggedMessage {
@@ -43,6 +44,13 @@ model Thread {
   openai_thread_id String
   created_at       DateTime  @default(now())
   messages         Message[]
+}
+
+model VisitorMessages {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  visitor_id String
+  message_id String   @db.ObjectId
+  created_at DateTime @default(now())
 }
 
 // per message moderation_passed Boolean @default(false)

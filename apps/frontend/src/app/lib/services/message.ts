@@ -7,6 +7,7 @@ import db from '@salesyy/prisma-client';
 
 import { parseThreadMessage } from './utils';
 import { MessageDto } from '../../contracts/Message';
+import { createVisitorEntry } from './visitor';
 
 export type DbMessageDto = {
   id: Message['id'];
@@ -21,10 +22,12 @@ export const createMessage = async ({
   thread,
   message,
   role,
+  visitorId,
 }: {
   thread: Thread;
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
+  visitorId?: string;
 }) => {
   return await db.message.create({
     data: {
@@ -33,6 +36,7 @@ export const createMessage = async ({
       openai_created_at: message.created_at,
       content: message.content,
       role,
+      visitor_id: visitorId,
     },
   });
 };
@@ -70,10 +74,12 @@ export const createThreadMessage = async ({
   prompt,
   thread,
   threadEntity,
+  visitorId,
 }: {
   prompt: string;
   thread: OpenAI.Beta.Threads.Thread;
   threadEntity: Thread;
+  visitorId?: string;
 }): Promise<MessageDto> => {
   const threadId = thread.id;
   const threadMessage = await openai.beta.threads.messages.create(threadId, {
@@ -93,7 +99,16 @@ export const createThreadMessage = async ({
       content: userMessageContent,
     },
     role: Role.USER,
+    visitorId,
   }); // TODO: can trow an error
+
+  if (visitorId) {
+    try {
+      createVisitorEntry(dbMessage, visitorId);
+    } catch {
+      console.error('Cannot create visitor entry');
+    }
+  }
 
   return {
     public_id: dbMessage.public_id,

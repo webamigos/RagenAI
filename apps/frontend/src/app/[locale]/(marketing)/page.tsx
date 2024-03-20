@@ -4,7 +4,6 @@ import {
 } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 
-import { Assistant } from '../../components/Assistant';
 import { Start } from '../../components/Start';
 
 type Props = {
