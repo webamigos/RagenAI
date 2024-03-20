@@ -6,7 +6,6 @@
     "status-searching-memories": "Searching memories...",
     "status-robots-are-waking-up": "Beep, boop, robots are waking up...",
     "status-asking-ai": "Asking AI what it thinks about your question..."
-
   },
   "Metadata": {
     "index": "SalesYY Assistant"
@@ -21,6 +20,7 @@
     "lets-chat": "How Can I help you?",
     "send": "Send",
     "close-thread": "Close thread",
-    "provide-at-least-10-characters": "Provide at least 10 characters"
+    "provide-at-least-10-characters": "Provide at least 10 characters",
+    "contact-with-us": "Contact with us"
   }
 }
