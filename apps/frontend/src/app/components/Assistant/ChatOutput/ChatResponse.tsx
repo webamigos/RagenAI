@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import markdownit from 'markdown-it';
 
 import { MessageDto } from '../../../contracts/Message';
@@ -13,64 +13,64 @@ type Props = {
 
 const md = markdownit();
 
-export const ChatResponse = ({
-  message,
-  isAssistantMessage,
-  isInitialLoad,
-}: Props) => {
-  const [displayResponse, setDisplayResponse] = useState('');
-  const [completedTyping, setCompletedTyping] = useState(false);
+export const ChatResponse = memo(
+  ({ message, isAssistantMessage, isInitialLoad }: Props) => {
+    const [displayResponse, setDisplayResponse] = useState('');
+    const [completedTyping, setCompletedTyping] = useState(false);
 
-  useEffect(() => {
-    if (!message) {
-      return;
-    }
-    // if (isInitialLoad) {
-    //   setDisplayResponse(message.content);
-    //   return;
-    // }
-
-    setCompletedTyping(false);
-
-    let i = 0;
-    const stringResponse = message.content;
-
-    const intervalId = setInterval(() => {
-      setDisplayResponse(stringResponse.slice(0, i));
-
-      i++;
-
-      if (i > stringResponse.length) {
-        clearInterval(intervalId);
-        setCompletedTyping(true);
+    useEffect(() => {
+      if (!message) {
+        return;
       }
-    }, 20);
+      if (isInitialLoad) {
+        setDisplayResponse(message.content);
+        return;
+      }
 
-    return () => clearInterval(intervalId);
-  }, [message]);
+      setCompletedTyping(false);
 
-  const renderMessage = (message: MessageDto) => {
-    return md.render(message.content);
-  };
+      let i = 0;
+      const stringResponse = message.content;
 
-  const renderLastAssistantResponse = (message: string) => {
-    console.log({ isInitialLoad });
-    if (isInitialLoad || completedTyping) {
-      return md.render(message);
-    }
-    return message;
-  };
+      const intervalId = setInterval(() => {
+        setDisplayResponse(stringResponse.slice(0, i));
 
-  const response = isAssistantMessage
-    ? renderLastAssistantResponse(displayResponse)
-    : renderMessage(message);
+        i++;
 
-  return (
-    <div
-      className="chat-response"
-      dangerouslySetInnerHTML={{
-        __html: response,
-      }}
-    />
-  );
-};
+        if (i > stringResponse.length) {
+          clearInterval(intervalId);
+          setCompletedTyping(true);
+        }
+      }, 20);
+
+      return () => clearInterval(intervalId);
+    }, [message]);
+
+    const renderMessage = (message: MessageDto) => {
+      return md.render(message.content);
+    };
+
+    const renderLastAssistantResponse = (message: string) => {
+      console.log({ isInitialLoad });
+      if (isInitialLoad || completedTyping) {
+        return md.render(message);
+      }
+      return message;
+    };
+
+    const response = isAssistantMessage
+      ? renderLastAssistantResponse(displayResponse)
+      : renderMessage(message);
+
+    return (
+      <div
+        className="chat-response"
+        dangerouslySetInnerHTML={{
+          __html: response,
+        }}
+      />
+    );
+  }
+);
+
+ChatResponse.displayName = 'ChatResponse';

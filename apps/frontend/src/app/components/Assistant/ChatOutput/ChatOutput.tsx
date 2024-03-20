@@ -38,6 +38,7 @@ export const ChatOutput = ({
               </span>
             </div>
             <ChatResponse
+              key={message.public_id}
               message={message}
               isAssistantMessage={
                 messageIndex === messages.length - 1 &&

@@ -49,10 +49,9 @@ export const Assistant = ({ threadId }: Props) => {
 
   useEffect(() => {
     if (isSuccess) {
-      setIsInitialLoad(true);
+      setIsInitialLoad(false);
     }
     if (messagesEndDivRef.current) {
-      console.log('here');
       messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [data]);
