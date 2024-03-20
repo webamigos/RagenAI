@@ -62,12 +62,13 @@ export const ChatResponse = memo(
       : renderMessage(message);
 
     return (
-      <div
-        className="chat-response"
-        dangerouslySetInnerHTML={{
-          __html: response,
-        }}
-      />
+      <div className="chat-response">
+        <div
+          dangerouslySetInnerHTML={{
+            __html: response,
+          }}
+        />
+      </div>
     );
   }
 );

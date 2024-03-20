@@ -59,7 +59,7 @@ export const PromptForm = ({
                   type="button"
                   label={t('close-thread')}
                   onClick={handleCloseThread}
-                  className=" bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
+                  className=" bg-red-600 hover:bg-red-700 disabled:bg-red-400"
                   iconLeft={
                     <ArchiveBoxIcon
                       className="h-5 w-5 flex-none text-white cursor-pointer"
