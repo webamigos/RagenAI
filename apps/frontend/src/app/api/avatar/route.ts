@@ -18,6 +18,8 @@ type HeygenSessionResponseDto = {
   message: string;
 };
 
+export const dynamic = 'force-dynamic';
+
 export const POST = async () => {
   try {
     await axios.post<HeygenSessionResponseDto>(

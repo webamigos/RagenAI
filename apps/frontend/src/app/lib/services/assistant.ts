@@ -44,33 +44,11 @@ export const askAssistant = async (publicThreadId: string) => {
 
   // step: run the assistant
   // without streaming
+  // BEGIN: without streaming
   let run = await openai.beta.threads.runs.create(threadId, {
     assistant_id: assistant.id,
     // instructions: 'Co to jest sprzedaz b2b?', // this will override the default instructions of the Assistant
   });
-
-  // with streaming
-  // const run = openai.beta.threads.runs.createAndStream(thread.id, {
-  //   assistant_id: assistant.id
-  // })
-  //   .on('textCreated', (text) => process.stdout.write('\nassistant > '))
-  //   .on('textDelta', (textDelta, snapshot) => process.stdout.write(textDelta.value))
-  //   .on('toolCallCreated', (toolCall) => process.stdout.write(`\nassistant > ${toolCall.type}\n\n`))
-  //   .on('toolCallDelta', (toolCallDelta, snapshot) => {
-  //     if (toolCallDelta.type === 'code_interpreter') {
-  //       if (toolCallDelta.code_interpreter.input) {
-  //         process.stdout.write(toolCallDelta.code_interpreter.input);
-  //       }
-  //       if (toolCallDelta.code_interpreter.outputs) {
-  //         process.stdout.write("\noutput >\n");
-  //         toolCallDelta.code_interpreter.outputs.forEach(output => {
-  //           if (output.type === "logs") {
-  //             process.stdout.write(`\n${output.logs}\n`);
-  //           }
-  //         });
-  //       }
-  //     }
-  //   });
 
   const runId = run.id;
 

@@ -76,7 +76,8 @@ export const Assistant = ({ threadId }: Props) => {
   // Also, it reconnects to the SSE API as soon as it shuts down
   // This keeps the connection alive - forever with micro second delays
   const connectToStream = () => {
-    const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
+    // const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
+    const eventSource = new EventSource(`/api/threads/${threadId}/sse/v2`);
     eventSource.addEventListener('message', (event) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage) {
@@ -143,7 +144,7 @@ export const Assistant = ({ threadId }: Props) => {
       setMessageLoadingText(() => t('status-asking-ai'));
 
       // TODO: vercel doesn't like to run this as server action
-      runAssistant(threadId);
+      // runAssistant(threadId); // refactored to streams, now SSE is listening if assistant run returns stream
 
       // on vercel this is not working good
       // const assistantResponse = await runAssistant(threadId);
