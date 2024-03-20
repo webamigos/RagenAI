@@ -8,3 +8,4 @@ export * from './lib/Input';
 export * from './lib/Text';
 export * from './lib/Textarea';
 export * from './lib/utils/cn';
+export * from './lib/icons';

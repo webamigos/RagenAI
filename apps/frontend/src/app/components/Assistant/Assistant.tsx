@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { MouseEventHandler, useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
 import { useQuery } from '@tanstack/react-query';
@@ -19,14 +19,16 @@ type Props = {
 };
 
 export const Assistant = ({ threadId }: Props) => {
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // it tells if we want to animate last assistant response
   const [isMessageLoading, setMessageIsLoading] = useState(false);
   const [messageLoadingText, setMessageLoadingText] = useState('');
   const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
   const [messages, setMessages] = useState<MessageDto[]>([]);
+  const messagesEndDivRef = useRef<HTMLDivElement>(null);
   const { push } = useRouter();
   const locale = useLocale();
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, isSuccess, refetch } = useQuery({
     queryKey: ['messages', { threadId }],
     queryFn: fetchMessagesFromApi,
   });
@@ -36,11 +38,24 @@ export const Assistant = ({ threadId }: Props) => {
   const isGlobalLoading = isLoading || isMessageLoading;
 
   useEffect(() => {
+    if (isSuccess) {
+      setIsInitialLoad(true);
+    }
     const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
     if (!localStorageThreadId) {
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
     }
   }, []);
+
+  useEffect(() => {
+    if (isSuccess) {
+      setIsInitialLoad(true);
+    }
+    if (messagesEndDivRef.current) {
+      console.log('here');
+      messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [data]);
 
   // Function to take care of initial connect to the SSE API
   // Also, it reconnects to the SSE API as soon as it shuts down
@@ -137,7 +152,9 @@ export const Assistant = ({ threadId }: Props) => {
           messages={initialMessages ? initialMessages : messages}
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
+          isInitialLoad={isInitialLoad}
         />
+        <div ref={messagesEndDivRef} />
       </div>
 
       {threadId && (
