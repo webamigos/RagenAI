@@ -21,21 +21,31 @@ export const LanguageSwitcher = ({ className }: Props) => {
   const flag = locale === 'pl' ? 'gb' : 'pl';
   const localeCode = locale === 'pl' ? 'en' : 'pl';
 
-  const handleClick = () => {
-    startTransition(() => {
-      const newPath = pathname.split('/');
-      newPath[1] = localeCode;
+  const handleClick = (language: string) => {
+    if (language !== locale) {
+      startTransition(() => {
+        const newPath = pathname.split('/');
+        newPath[1] = language;
 
-      router.push(newPath.join('/'));
-    });
+        router.push(newPath.join('/'));
+      });
+    }
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className={classMerge('cursor-pointer px-4', className)}
-    >
-      <span className={`fi fi-${flag} mx-auto`} />
+    <div className="flex">
+      <div
+        onClick={() => handleClick('en')}
+        className={classMerge('cursor-pointer opacity-80 px-3', className)}
+      >
+        <span className={`fi fi-gb mx-auto`} />
+      </div>
+      <div
+        onClick={() => handleClick('pl')}
+        className={classMerge('cursor-pointer opacity-80 px-3', className)}
+      >
+        <span className={`fi fi-pl mx-auto`} />
+      </div>
     </div>
   );
 };

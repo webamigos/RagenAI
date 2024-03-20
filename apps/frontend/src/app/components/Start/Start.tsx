@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
@@ -12,6 +12,7 @@ import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 
 export const Start = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isPending, setTransition] = useTransition();
   const locale = useLocale();
   const { push } = useRouter();
   const t = useTranslations('Index');
@@ -29,7 +30,7 @@ export const Start = () => {
       const result = await createThread();
       const threadId = result.data.public_id;
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-      push(`/${locale}/threads/${threadId}`);
+      setTransition(() => push(`/${locale}/threads/${threadId}`));
       setIsLoading(false);
     } catch {
       // TODO: implement
@@ -39,19 +40,21 @@ export const Start = () => {
   return (
     <div className="container mx-auto">
       <div className="mt-6 flex flex-col items-center">
-        <Button
-          label={t('start-new-thread')}
-          className="bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
-          onClick={handleNewThread}
-          isLoading={isLoading}
-          disabled={isLoading}
-          iconRight={
-            <ChevronRightIcon
-              className="h-5 w-5 flex-none text-white cursor-pointer"
-              aria-hidden="true"
-            />
-          }
-        />
+        {!isPending && (
+          <Button
+            label={t('start-new-thread')}
+            className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
+            onClick={handleNewThread}
+            isLoading={isLoading}
+            disabled={isLoading}
+            iconRight={
+              <ChevronRightIcon
+                className="h-5 w-5 flex-none text-white cursor-pointer"
+                aria-hidden="true"
+              />
+            }
+          />
+        )}
       </div>
     </div>
   );

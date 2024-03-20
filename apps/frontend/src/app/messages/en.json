@@ -1,7 +1,12 @@
 {
   "Index": {
     "title": "SalesYY Assistant",
-    "start-new-thread": "Start new thread"
+    "start-new-thread": "Start new thread",
+    "status-thinking": "Thinking...",
+    "status-searching-memories": "Searching memories...",
+    "status-robots-are-waking-up": "Beep, boop, robots are waking up...",
+    "status-asking-ai": "Asking AI what it thinks about your question..."
+
   },
   "Metadata": {
     "index": "SalesYY Assistant"

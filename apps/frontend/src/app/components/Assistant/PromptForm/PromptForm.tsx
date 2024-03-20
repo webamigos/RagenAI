@@ -44,22 +44,22 @@ export const PromptForm = ({
       <div className="rounded-lg text-sm ">
         <form onSubmit={handleSubmit(handleFormSubmit)}>
           <Input
-            label={t('enter-your-question')}
-            placeholder={t('lets-chat')}
+            label={t('lets-chat')}
+            placeholder={t('enter-your-question')}
             {...register('prompt')}
             disabled={isLoading}
             error={errors.prompt}
             errorMessage={t('provide-at-least-10-characters')}
             className="h-10"
           />
-          <div className="mt-6 flex flex-row">
+          <div className="mt-6 flex flex-row pb-4">
             <div className="w-1/2">
               <p>
                 <Button
                   type="button"
                   label={t('close-thread')}
                   onClick={handleCloseThread}
-                  className="cursor-pointer"
+                  className=" bg-salesyy-red hover:bg-red-700 disabled:bg-red-400"
                   iconLeft={
                     <ArchiveBoxIcon
                       className="h-5 w-5 flex-none text-white cursor-pointer"
@@ -79,7 +79,7 @@ export const PromptForm = ({
                     aria-hidden="true"
                   />
                 }
-                className="bg-salesyy-red hover:bg-red-700 cursor-pointer disabled:bg-red-400"
+                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
                 disabled={isLoading}
               />
             </div>

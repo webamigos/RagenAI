@@ -49,10 +49,10 @@ export const ChatOutput = ({
           </div>
         ))}
         {isLoading && (
-          <p className="flex mb-4 ml-2">
+          <p className="flex mb-4">
             <SpinnerSVG />
             {''} {/* {t('loading')} */}
-            {loadingMessage}
+            <span className="ml-2">{loadingMessage}</span>
           </p>
         )}
       </div>

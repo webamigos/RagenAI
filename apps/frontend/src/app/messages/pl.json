@@ -1,7 +1,11 @@
 {
   "Index": {
     "title": "Asystent SalesYY",
-    "start-new-thread": "Rozpocznij nowy wątek"
+    "start-new-thread": "Rozpocznij nowy wątek",
+    "status-thinking": "Myślę...",
+    "status-searching-memories": "Wyszukuję w pamięci...",
+    "status-robots-are-waking-up": "Beep, boop, roboty budzą się...",
+    "status-asking-ai": "Pytam AI co myśli o Twoim pytaniu..."
   },
   "Metadata": {
     "index": "Asystent SalesYY"

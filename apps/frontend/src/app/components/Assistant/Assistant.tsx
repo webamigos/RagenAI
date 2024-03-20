@@ -106,7 +106,8 @@ export const Assistant = ({ threadId }: Props) => {
   const onSubmit = async (data: CreateMessageDto) => {
     try {
       setMessageIsLoading(true);
-      setMessageLoadingText('Thinking...');
+
+      setMessageLoadingText(() => t('status-thinking'));
 
       const messageResponse = await sendMessage(threadId, data);
 
@@ -114,13 +115,15 @@ export const Assistant = ({ threadId }: Props) => {
         setMessageError(true);
         return;
       } else if (messageResponse.status === StatusCodes.CREATED) {
-        setMessageLoadingText('Searching memories...');
+        setMessageLoadingText(() => t('status-searching-memories'));
+
         // TODO: instead refetch mutate data
         refetch();
       }
 
-      setMessageLoadingText('Beep, boop, robots are waking up...');
-      setMessageLoadingText('Asking AI what it thinks about your question...');
+      setMessageLoadingText(() => t('status-robots-are-waking-up'));
+
+      setMessageLoadingText(() => t('status-asking-ai'));
 
       // TODO: vercel doesn't like to run this as server action
       runAssistant(threadId);
