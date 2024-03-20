@@ -51,7 +51,6 @@ export const ChatResponse = memo(
     };
 
     const renderLastAssistantResponse = (message: string) => {
-      console.log({ isInitialLoad });
       if (isInitialLoad || completedTyping) {
         return md.render(message);
       }
