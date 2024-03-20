@@ -55,12 +55,12 @@ export const Start = () => {
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="mt-6 flex flex-col items-center">
+    <div className="container mx-auto h-full">
+      <div className="flex flex-col h-full items-center justify-center">
         {!isPending && (
           <Button
             label={t('start-new-thread')}
-            className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
+            className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 mb-8"
             onClick={handleNewThread}
             isLoading={isLoading}
             // disabled={isLoading}
