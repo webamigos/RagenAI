@@ -86,12 +86,13 @@ export const Assistant = ({ threadId }: Props) => {
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
         if (eventMessage.type && eventMessage.type === 'message') {
-          refetch();
+          setStreamedMessage('');
           setMessageIsLoading(false);
+          refetch();
         } else if (eventMessage.type && eventMessage.type === 'delta') {
-          // setStreamedMessage(
-          //   () => `${streamedMessage}${eventMessage.payload.content}`
-          // );
+          setStreamedMessage((prevState) =>
+            prevState.concat(eventMessage.payload.content)
+          );
         }
       }
     });
@@ -130,6 +131,10 @@ export const Assistant = ({ threadId }: Props) => {
   };
 
   const onSubmit = async (data: CreateMessageDto) => {
+    if (messagesEndDivRef.current) {
+      messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+
     try {
       setMessageIsLoading(true);
 
@@ -150,7 +155,7 @@ export const Assistant = ({ threadId }: Props) => {
         setMessageLoadingText(() => t('status-searching-memories'));
 
         // TODO: instead refetch mutate data
-        refetch();
+        // refetch(); <-- refetch will be done when message will be streamed from assistant
       }
 
       setMessageLoadingText(() => t('status-robots-are-waking-up'));
@@ -188,14 +193,15 @@ export const Assistant = ({ threadId }: Props) => {
           loadingMessage={messageLoadingText}
           isInitialLoad={isInitialLoad}
         />
-        {/* <div className="px-4 sm:px-4 lg:px-22 py-8">
-          <div className="mb-6 border-solid 	border-2  border-gray-300 rounded-md p-2">
-            <div className="text-sm">
-              <strong>Assistant</strong> <span className="font-light"></span>
-            </div>
-            {streamedMessage}
-          </div>
-        </div> */}
+        <div className="px-4 sm:px-4 lg:px-22">
+          {streamedMessage && (
+            <ChatResponse
+              message={streamedMessage}
+              isAssistantMessage={true}
+              isInitialLoad={false}
+            />
+          )}
+        </div>
         <div ref={messagesEndDivRef} />
       </div>
 

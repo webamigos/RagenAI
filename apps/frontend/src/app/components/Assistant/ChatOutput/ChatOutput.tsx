@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
+import markdownit from 'markdown-it';
 
 import { MessageDto } from '../../../contracts/Message';
 
@@ -15,6 +16,8 @@ type Props = {
   loadingMessage: string;
 };
 
+const md = markdownit();
+
 export const ChatOutput = ({
   messages,
   isLoading,
@@ -24,7 +27,7 @@ export const ChatOutput = ({
   const t = useTranslations('chat');
 
   return (
-    <div className="px-4 sm:px-4 lg:px-22 py-8">
+    <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
         {messages.map((message, messageIndex) => (
           <div
@@ -37,7 +40,7 @@ export const ChatOutput = ({
                 {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
               </span>
             </div>
-            <ChatResponse
+            {/* <ChatResponse
               key={message.public_id}
               message={message}
               isAssistantMessage={
@@ -45,7 +48,14 @@ export const ChatOutput = ({
                 message.role === Role.ASSISTANT
               }
               isInitialLoad={isInitialLoad}
-            />
+            /> */}
+            <div className="chat-response">
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: md.render(message.content),
+                }}
+              />
+            </div>
           </div>
         ))}
         {isLoading && (
