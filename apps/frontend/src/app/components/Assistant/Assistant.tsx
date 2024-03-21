@@ -89,7 +89,7 @@ export const Assistant = ({ threadId }: Props) => {
           setStreamedMessage('');
           setMessageIsLoading(false);
           refetch();
-          eventSource.close(); // for heroku
+          // eventSource.close(); // for heroku
         } else if (eventMessage.type && eventMessage.type === 'delta') {
           setStreamedMessage((prevState) =>
             prevState.concat(eventMessage.payload.content)
