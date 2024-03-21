@@ -7,3 +7,14 @@ export const parseThreadMessage = (
   message.content
     .map((msg) => (msg.type === 'text' ? msg.text.value : ''))
     .join('');
+
+export const parseThreadDelta = (
+  message: OpenAI.Beta.Threads.Messages.MessageDelta
+) => {
+  if (message.content) {
+    return message.content
+      .map((msg) => (msg.type === 'text' && msg.text ? msg.text.value : ''))
+      .join('');
+  }
+  return '';
+};

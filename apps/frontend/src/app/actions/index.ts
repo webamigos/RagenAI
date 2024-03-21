@@ -12,15 +12,11 @@ import { getOrCreateThread } from '../lib/services/thread';
 import { createThreadMessage } from '../lib/services/message';
 import { askAssistant } from '../lib/services/assistant';
 
-type ResponseMessage =
-  | {
-      error: string;
-      status: StatusCodes;
-    }
-  | {
-      message: MessageDto | string;
-      status: StatusCodes;
-    };
+type ResponseMessage = {
+  status: StatusCodes;
+  message?: MessageDto;
+  error?: string;
+};
 
 export const sendMessage = async (
   threadId: string,
@@ -68,9 +64,7 @@ export const sendMessage = async (
 };
 
 // @duplicated
-export const runAssistant = async (
-  threadId: string
-): Promise<ResponseMessage> => {
+export const runAssistant = async (threadId: string) => {
   const publicThreadId = threadId;
 
   try {

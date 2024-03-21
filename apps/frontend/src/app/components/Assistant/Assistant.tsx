@@ -20,6 +20,7 @@ import { sendMessage } from '../../actions';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { dailyMessageLimit } from '../../config';
 import { Alert } from '@salesyy/common-ui';
+import { ChatResponse } from './ChatOutput/ChatResponse';
 
 type Props = {
   threadId: string;
@@ -28,10 +29,12 @@ type Props = {
 export const Assistant = ({ threadId }: Props) => {
   const [isInitialLoad, setIsInitialLoad] = useState(true); // it tells if we want to animate last assistant response
   const [isMessageLoading, setMessageIsLoading] = useState(false);
+  const [userMessageId, setMessageId] = useState('');
   const [isLimitLock, setIsLimitLock] = useState(false);
   const [messageLoadingText, setMessageLoadingText] = useState('');
   const [isMessageError, setMessageIsError] = useState(false);
   const [messageError, setMessageError] = useState(false);
+  const [streamedMessage, setStreamedMessage] = useState('');
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
   const { push } = useRouter();
@@ -82,9 +85,13 @@ export const Assistant = ({ threadId }: Props) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
-        if (!(eventMessage.type && eventMessage.type === 'init')) {
+        if (eventMessage.type && eventMessage.type === 'message') {
           refetch();
           setMessageIsLoading(false);
+        } else if (eventMessage.type && eventMessage.type === 'delta') {
+          // setStreamedMessage(
+          //   () => `${streamedMessage}${eventMessage.payload.content}`
+          // );
         }
       }
     });
@@ -107,12 +114,14 @@ export const Assistant = ({ threadId }: Props) => {
 
   useEffect(() => {
     // Initiate the first call to connect to SSE API
-    const eventSource = connectToStream();
-    // As the component unmounts, close listener to SSE API
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+    if (userMessageId !== '') {
+      const eventSource = connectToStream();
+      // As the component unmounts, close listener to SSE API
+      return () => {
+        eventSource.close();
+      };
+    }
+  }, [userMessageId]);
 
   const handleCloseThread: MouseEventHandler<HTMLButtonElement> = (event) => {
     event.preventDefault();
@@ -133,6 +142,11 @@ export const Assistant = ({ threadId }: Props) => {
         setMessageError(true);
         return;
       } else if (messageResponse.status === StatusCodes.CREATED) {
+        if (messageResponse.message?.public_id) {
+          // this is workaround to send message to opean ai thread and then reload sse here
+          setMessageId(messageResponse.message?.public_id);
+        }
+
         setMessageLoadingText(() => t('status-searching-memories'));
 
         // TODO: instead refetch mutate data
@@ -174,6 +188,14 @@ export const Assistant = ({ threadId }: Props) => {
           loadingMessage={messageLoadingText}
           isInitialLoad={isInitialLoad}
         />
+        {/* <div className="px-4 sm:px-4 lg:px-22 py-8">
+          <div className="mb-6 border-solid 	border-2  border-gray-300 rounded-md p-2">
+            <div className="text-sm">
+              <strong>Assistant</strong> <span className="font-light"></span>
+            </div>
+            {streamedMessage}
+          </div>
+        </div> */}
         <div ref={messagesEndDivRef} />
       </div>
 
