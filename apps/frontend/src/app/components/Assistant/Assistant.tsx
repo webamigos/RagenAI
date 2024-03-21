@@ -89,11 +89,14 @@ export const Assistant = ({ threadId }: Props) => {
           setStreamedMessage('');
           setMessageIsLoading(false);
           refetch();
-          // eventSource.close(); // for heroku
+          // eventSource.close();
         } else if (eventMessage.type && eventMessage.type === 'delta') {
           setStreamedMessage((prevState) =>
             prevState.concat(eventMessage.payload.content)
           );
+          if (messagesEndDivRef.current) {
+            messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
         }
       }
     });
