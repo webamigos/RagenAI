@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { AxiosError } from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { ChatOutput } from './ChatOutput';
@@ -21,6 +20,7 @@ import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { dailyMessageLimit } from '../../config';
 import { Alert } from '@salesyy/common-ui';
 import { ChatResponse } from './ChatOutput/ChatResponse';
+import { useApi } from '../../hooks/useApi';
 
 type Props = {
   threadId: string;
@@ -39,10 +39,10 @@ export const Assistant = ({ threadId }: Props) => {
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
   const { push } = useRouter();
   const locale = useLocale();
-  const { data, isLoading, isError, isSuccess, refetch } = useQuery({
-    queryKey: ['messages', { threadId }],
-    queryFn: fetchMessagesFromApi,
-  });
+  const { data, isLoading, isError, isSuccess, refetch } = useApi(() =>
+    fetchMessagesFromApi(threadId)
+  );
+
   const t = useTranslations('Index');
 
   const initialMessages = data ? data.data : [];
@@ -88,7 +88,11 @@ export const Assistant = ({ threadId }: Props) => {
         if (eventMessage.type && eventMessage.type === 'message') {
           setStreamedMessage('');
           setMessageIsLoading(false);
-          refetch();
+          console.log({ eventMessage });
+          if (eventMessage.payload.role === 'USER') {
+            refetch();
+          }
+
           // eventSource.close();
         } else if (eventMessage.type && eventMessage.type === 'delta') {
           setStreamedMessage((prevState) =>

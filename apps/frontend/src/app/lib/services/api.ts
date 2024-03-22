@@ -6,8 +6,16 @@ type MessagesQueryKey = {
   queryKey: [string, { threadId: string }];
 };
 
-export const fetchMessagesFromApi = async ({ queryKey }: MessagesQueryKey) => {
-  const [_key, { threadId }] = queryKey;
+// useQuery version
+// export const fetchMessagesFromApi = async ({ queryKey }: MessagesQueryKey) => {
+//   const [_key, { threadId }] = queryKey;
+//   if (!threadId) {
+//     return undefined;
+//   }
+//   return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
+// };
+
+export const fetchMessagesFromApi = async (threadId: string) => {
   if (!threadId) {
     return undefined;
   }

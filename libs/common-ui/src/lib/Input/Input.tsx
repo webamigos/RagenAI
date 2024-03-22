@@ -7,17 +7,26 @@ type Props = {
   hint?: string;
   error?: FieldError;
   errorMessage?: string; // for translations
+  containerClassName?: string;
 } & ComponentPropsWithRef<'input'>;
 
 export const Input = forwardRef(
   (
-    { label, hint, error, errorMessage, className, ...rest }: Props,
+    {
+      label,
+      hint,
+      error,
+      errorMessage,
+      className,
+      containerClassName,
+      ...rest
+    }: Props,
     ref: Ref<HTMLInputElement>
   ) => {
     const id = useId();
 
     return (
-      <div className="py-2">
+      <div className={classMerge('pt-2', containerClassName)}>
         <label
           htmlFor={id}
           className="block text-sm font-medium leading-6  dark:text-gray-300"

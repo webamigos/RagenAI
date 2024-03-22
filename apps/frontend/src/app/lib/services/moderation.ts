@@ -61,7 +61,7 @@ export const sendForModeration = async (
     }
 
     return { isFlagged };
-  } catch {
+  } catch (_error) {
     throw new Error('Fail to check moderation');
   }
 };

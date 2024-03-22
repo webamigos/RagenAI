@@ -46,7 +46,7 @@ export const PromptForm = ({
   return (
     <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
       <div className="rounded-lg text-sm ">
-        <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="flex w-full">
           <Input
             label={t('lets-chat')}
             placeholder={t('enter-your-question')}
@@ -55,72 +55,53 @@ export const PromptForm = ({
             error={errors.prompt}
             errorMessage={t('provide-at-least-10-characters')}
             className="h-10"
+            containerClassName="w-9/12 md:w-10/12"
           />
-          <div className="mt-6 flex flex-row pb-4">
-            <div className="w-1/2 md:w-1/3">
-              <Button
-                type="button"
-                label={t('close-thread')}
-                onClick={handleCloseThread}
-                className=" bg-red-600 hover:bg-red-700 disabled:bg-red-400"
-                iconLeft={
-                  <ArchiveBoxIcon
-                    className="h-5 w-5 flex-none text-white cursor-pointer"
-                    aria-hidden="true"
-                  />
-                }
-              />
-            </div>
-            <div className="hidden md:w-1/3 md:flex items-center justify-center">
-              <p
-                onClick={() =>
-                  (window.location.href =
-                    'mailto:hello@salesyy.com?body=Współpraca')
-                }
-              >
-                <span className="flex items-center">
-                  <EnvelopeIcon
-                    className="h-5 w-5 flex-none mr-2 dark:text-white cursor-pointer"
-                    aria-hidden="true"
-                  />
 
-                  {t('contact-with-us')}
-                </span>
-              </p>
-            </div>
-            <div className="w-1/2 md:w-1/3 flex justify-end">
-              <Button
-                type="submit"
-                label={t('send')}
-                iconRight={
-                  <PaperAirplaneIcon
-                    className="h-5 w-5 flex-none text-white cursor-pointer"
-                    aria-hidden="true"
-                  />
-                }
-                className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
-                disabled={isLoading}
-              />
-            </div>
+          <div className="w-3/12 md:w-2/12 flex justify-end items-end">
+            <Button
+              type="submit"
+              label={t('send')}
+              iconRight={
+                <PaperAirplaneIcon
+                  className="h-5 w-5 flex-none text-white cursor-pointer"
+                  aria-hidden="true"
+                />
+              }
+              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
+              disabled={isLoading}
+            />
           </div>
-          <div className="md:hidden mt-2 flex items-center justify-end">
-            <p
+        </form>
+        <div className="mt-6 flex flex-row pb-4 items-center justify-start">
+          <p className="flex  dark:text-slate-100">
+            <span
+              className="flex items-center cursor-pointer mr-4"
+              onClick={handleCloseThread}
+            >
+              <ArchiveBoxIcon
+                className="h-5 w-5 flex-none mr-2  cursor-pointer"
+                aria-hidden="true"
+              />
+              {t('close-thread')}
+            </span>
+
+            <span
+              className="flex items-center cursor-pointer"
               onClick={() =>
                 (window.location.href =
                   'mailto:hello@salesyy.com?body=Współpraca')
               }
             >
-              <span className="flex items-center">
-                <EnvelopeIcon
-                  className="h-5 w-5 flex-none mr-2 dark:text-white cursor-pointer"
-                  aria-hidden="true"
-                />
+              <EnvelopeIcon
+                className="h-5 w-5 flex-none mr-2 dark:text-white cursor-pointer"
+                aria-hidden="true"
+              />
 
-                {t('contact-with-us')}
-              </span>
-            </p>
-          </div>
-        </form>
+              {t('contact-with-us')}
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );
