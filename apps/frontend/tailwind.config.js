@@ -12,7 +12,7 @@ module.exports = {
     ),
     ...createGlobPatternsForDependencies(__dirname),
   ],
-  darkMode: ['class', '[data-mode="dark"]'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
