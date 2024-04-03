@@ -86,7 +86,7 @@ export const Assistant = ({ threadId }: Props) => {
       if (eventMessage) {
         // TODO: add message to messages instead of revalidate
         if (eventMessage.type && eventMessage.type === 'message') {
-          setStreamedMessage('');
+          // setStreamedMessage('');
           setMessageIsLoading(false);
           console.log({ eventMessage });
           if (eventMessage.payload.role === 'USER') {
@@ -158,6 +158,7 @@ export const Assistant = ({ threadId }: Props) => {
         if (messageResponse.message?.public_id) {
           // this is workaround to send message to opean ai thread and then reload sse here
           setMessageId(messageResponse.message?.public_id);
+          refetch(); // TODO push to messages list instead of refetch
         }
 
         setMessageLoadingText(() => t('status-searching-memories'));
@@ -196,7 +197,8 @@ export const Assistant = ({ threadId }: Props) => {
 
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
-          messages={initialMessages ? initialMessages : messages}
+          // messages={initialMessages ? initialMessages : messages}
+          messages={initialMessages}
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           isInitialLoad={isInitialLoad}

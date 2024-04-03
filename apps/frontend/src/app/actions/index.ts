@@ -36,6 +36,7 @@ export const sendMessage = async (
   const prompt = requestData.data.prompt;
 
   const moderationResult = await sendForModeration(prompt);
+  console.log({ moderationResult });
 
   if (moderationResult.isFlagged) {
     return { error: 'Bad message', status: StatusCodes.BAD_REQUEST };

@@ -5,6 +5,7 @@ import { openAIInstance } from './config';
 type OpenAIModerationResponse = {
   id: string;
   model: string;
+  error?: object;
   results: [
     {
       flagged: boolean;
@@ -46,22 +47,35 @@ export const sendForModeration = async (
   input: string
 ): Promise<ModerationResponse> => {
   try {
-    const response = await openAIInstance.post<OpenAIModerationResponse>(
-      '/moderations',
-      { input }
-    );
+    // TODO: uncomment
+    return { isFlagged: false };
 
-    const data = response.data;
-    const isFlagged = !!data.results[0].flagged;
+    // const response = await openAIInstance.post<OpenAIModerationResponse>(
+    //   '/moderations',
+    //   { input }
+    // );
 
-    if (isFlagged) {
-      await db.flaggedMessage.create({
-        data: { content: input },
-      });
-    }
+    // const data = response.data;
 
-    return { isFlagged };
+    // console.log('response data: ', { data });
+
+    // const moderationError = data.error;
+    // if (moderationError) {
+    //   console.log({ moderationError });
+    // }
+
+    // const isFlagged = !!data.results[0].flagged;
+
+    // if (isFlagged) {
+    //   await db.flaggedMessage.create({
+    //     data: { content: input },
+    //   });
+    // }
+
+    // return { isFlagged };
   } catch (_error) {
+    // console.log()
+    // console.error('Moderation error: ', _error);
     throw new Error('Fail to check moderation');
   }
 };
