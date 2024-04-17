@@ -8,6 +8,10 @@
     "status-asking-ai": "Pytam AI co myśli o Twoim pytaniu...",
     "limit-reached": "Limit wiadomości został przekroczony - spróbuj za 24h lub skontaktuj się z nami hello@salesyy.com"
   },
+  "common": {
+    "sign-in": "Zaloguj",
+    "sign-out": "Wyloguj"
+  },
   "Metadata": {
     "index": "Asystent SalesYY"
   },
