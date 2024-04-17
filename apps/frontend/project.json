@@ -12,8 +12,17 @@
       }
     },
     "build": {
+      "executor": "@nx/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/frontend"
+      },
+      "configurations": {
+        "development": {
+          "outputPath": "apps/frontend"
+        },
+        "production": {}
       }
     },
     "serve": {
