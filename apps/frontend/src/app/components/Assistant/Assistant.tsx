@@ -114,7 +114,6 @@ export const Assistant = ({ threadId }: Props) => {
 
     // As soon as SSE API source is closed, attempt to reconnect
 
-    // @ts-ignore
     // eventSource.onclose = () => {
     //   setTimeout(connectToStream, 1);
     // };

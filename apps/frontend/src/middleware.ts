@@ -1,6 +1,6 @@
 import createMiddleware from 'next-intl/middleware';
 import { authMiddleware } from '@clerk/nextjs';
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { locales, defaultLocale } from './app/config';
 
@@ -12,14 +12,25 @@ const intlMiddleware = createMiddleware({
   defaultLocale,
 });
 
-const publicRoutes = ['/', '/pl/threads', '/en/threads'];
+const publicRoutes = [
+  '/',
+  '/pl',
+  '/en',
+  '/:locale/threads',
+  '/:locale/threads/:publicId',
+];
+const ignoreRoutes = ['assets'];
 
 export const config = {
   // Match only internationalized pathnames
   // matcher: ['/', '/(en|pl)/:path*'],
-  // matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'], // TODO: what which endpoints which should be run only by authorized users?
+  matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'], // TODO: what which endpoints which should be run only by authorized users?
 
-  matcher: ['/((?!.+.[w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+  // matcher: [
+  //   '/((?!.+.[w]+$|_next|assets|monitoring).*)',
+  //   '/',
+  //   '/(api|trpc)(.*)',
+  // ],
 };
 
 export default authMiddleware({
