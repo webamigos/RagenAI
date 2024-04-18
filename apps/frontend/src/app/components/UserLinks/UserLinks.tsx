@@ -15,11 +15,19 @@ export const UserLinks = () => {
     <div>
       <SignedIn>
         <div>
-          <SignOutButton>{t('common.sign-out')}</SignOutButton>
+          <SignOutButton>
+            <span className="text-slate-300 cursor-pointer">
+              {t('common.sign-out')}
+            </span>
+          </SignOutButton>
         </div>
       </SignedIn>
       <SignedOut>
-        <SignInButton mode="redirect">{t('common.sign-in')}</SignInButton>
+        <SignInButton mode="redirect">
+          <span className="text-slate-300 cursor-pointer">
+            {t('common.sign-in')}
+          </span>
+        </SignInButton>
       </SignedOut>
     </div>
   );

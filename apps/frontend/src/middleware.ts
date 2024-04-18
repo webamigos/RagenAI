@@ -17,7 +17,7 @@ const publicRoutes = [
   '/pl',
   '/en',
   '/:locale/threads',
-  '/:locale/threads/:publicId',
+  // '/:locale/threads/:publicId',
 ];
 const ignoreRoutes = ['assets'];
 
