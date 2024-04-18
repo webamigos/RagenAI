@@ -11,7 +11,7 @@
         }
       }
     },
-    
+
     "serve": {
       "executor": "@nx/next:server",
       "defaultConfiguration": "development",
