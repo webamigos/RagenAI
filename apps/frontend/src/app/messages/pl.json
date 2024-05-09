@@ -22,10 +22,10 @@
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",
-    "lets-chat": "Jak mogę Ci pomóc?",
+    "lets-chat": "Jak mogę Ci pomóc? Masz 5 darmowych porad",
     "send": "Wyślij",
     "close-thread": "Zamknij wątek",
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
-    "contact-with-us": "Skontaktuj się z nami"
+    "contact-with-us": "Skontaktuj się z nami"
   }
 }
