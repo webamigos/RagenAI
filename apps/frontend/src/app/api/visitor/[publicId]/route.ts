@@ -18,5 +18,6 @@ export const GET = async (_request: Request, { params }: Params) => {
     return NextResponse.json({ messages: visitorMessages });
   } catch (error) {
     console.log('Error during fetch visitor messages stats');
+    return NextResponse.json({});
   }
 };

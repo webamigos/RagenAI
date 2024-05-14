@@ -9,6 +9,10 @@ module.exports = {
     './{app,pages,components}/**/*.{js,jsx,ts,tsx}',
     // path to ui-kit components (relative to current dir)
     join(__dirname, '../../../ui/**/*.{js,jsx,ts,tsx}'),
+    // common-ui
+    join(__dirname, '../../../../common-ui/**/*.{js,jsx,ts,tsx}'),
+    // apps/frontend
+    join(__dirname, '../../../../../apps/frontend/**/*.{js,jsx,ts,tsx}'),
   ],
   darkMode: ['class'],
   theme: {
