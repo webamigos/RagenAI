@@ -16,8 +16,8 @@ const publicRoutes = [
   '/',
   '/pl',
   '/en',
-  // '/:locale/threads', // FIXME: temporary
-  // '/:locale/threads/:publicId',
+  '/:locale/threads', // FIXME: temporary
+  '/:locale/threads/:publicId', // FIXME: temporary
 ];
 const ignoreRoutes = ['assets'];
 
