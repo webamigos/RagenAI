@@ -12,7 +12,7 @@ export const UserLinks = () => {
   const t = useTranslations();
 
   return (
-    <div>
+    <div className="ml-2">
       <SignedIn>
         <div>
           <SignOutButton>
