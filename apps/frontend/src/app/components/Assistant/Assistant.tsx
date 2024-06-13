@@ -21,12 +21,15 @@ import { dailyMessageLimit } from '../../config';
 import { Alert } from '@salesyy/common-ui';
 import { ChatResponse } from './ChatOutput/ChatResponse';
 import { useApi } from '../../hooks/useApi';
+import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 
 type Props = {
   threadId: string;
 };
 
 export const Assistant = ({ threadId }: Props) => {
+  const { isSignedIn } = useUser();
   const [isInitialLoad, setIsInitialLoad] = useState(true); // it tells if we want to animate last assistant response
   const [isMessageLoading, setMessageIsLoading] = useState(false);
   const [userMessageId, setMessageId] = useState('');
@@ -190,6 +193,13 @@ export const Assistant = ({ threadId }: Props) => {
     }
   };
 
+  const isLocked = () => {
+    if (isSignedIn) {
+      return false;
+    }
+    return isLimitLock;
+  };
+
   return (
     <>
       {/* {threadId && <ThreadId threadId={threadId} />} */}
@@ -215,13 +225,29 @@ export const Assistant = ({ threadId }: Props) => {
       </div>
 
       {/* <Avatar /> */}
-      {isLimitLock && (
+      {isLimitLock && !isSignedIn && (
         <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
-          <Alert title={t('limit-reached')} type="info" />
+          <Alert
+            title={
+              <p>
+                {t('limit-reached')}{' '}
+                <Link href="/sign-up" className="bold underline">
+                  Zarejestruj się
+                </Link>{' '}
+                lub{' '}
+                <Link href="/sign-in" className="bold underline">
+                  zaloguj
+                </Link>
+                , aby korzystać dalej.
+              </p>
+            }
+            type="info"
+          />
         </div>
       )}
-      {!isLimitLock && threadId && (
+      {!isLocked() && threadId && (
         <PromptForm
+          isUserLogged={!!isSignedIn}
           handleCloseThread={handleCloseThread}
           isLoading={isGlobalLoading}
           onSubmit={onSubmit}

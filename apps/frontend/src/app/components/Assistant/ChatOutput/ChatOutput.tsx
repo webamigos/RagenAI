@@ -31,7 +31,7 @@ export const ChatOutput = ({
       <div>
         {messages.map((message, messageIndex) => (
           <div
-            key={message.public_id}
+            key={`message-${message.public_id}-${messageIndex}`}
             className="mb-6 border-solid 	border-2  border-gray-300 rounded-md p-2"
           >
             <div className="text-sm">

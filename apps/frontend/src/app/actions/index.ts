@@ -53,7 +53,7 @@ export const sendMessage = async (
       threadEntity,
       visitorId,
     });
-
+    console.log({ messageResponse });
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
     console.log('processing error: ', e);

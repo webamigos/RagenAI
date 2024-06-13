@@ -1,5 +1,9 @@
 import createMiddleware from 'next-intl/middleware';
-import { authMiddleware } from '@clerk/nextjs';
+import {
+  clerkMiddleware,
+  createRouteMatcher,
+  clerkClient,
+} from '@clerk/nextjs/server';
 import { type NextRequest } from 'next/server';
 
 import { locales, defaultLocale } from './app/config';
@@ -16,15 +20,21 @@ const publicRoutes = [
   '/',
   '/pl',
   '/en',
+  '/:locale/sign-in',
+  '/:locale/sign-up',
   '/:locale/threads', // FIXME: temporary
   '/:locale/threads/:publicId', // FIXME: temporary
 ];
+const isProtectedRoute = createRouteMatcher([
+  '/:locale/threads/:publicId/user',
+]);
 const ignoreRoutes = ['assets'];
 
 export const config = {
   // Match only internationalized pathnames
   // matcher: ['/', '/(en|pl)/:path*'],
   matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'], // TODO: what which endpoints which should be run only by authorized users?
+  // matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'], // TODO: what which endpoints which should be run only by authorized users?
 
   // matcher: [
   //   '/((?!.+.[w]+$|_next|assets|monitoring).*)',
@@ -33,9 +43,21 @@ export const config = {
   // ],
 };
 
-export default authMiddleware({
-  beforeAuth: (request: NextRequest) => {
+// export default authMiddleware({
+//   beforeAuth: (request: NextRequest) => {
+//     return intlMiddleware(request);
+//   },
+//   publicRoutes,
+// });
+
+export default clerkMiddleware(
+  (auth, request) => {
+    if (isProtectedRoute(request)) {
+      auth().protect();
+    }
+
+    // return NextResponse.next({ request: { headers } });
     return intlMiddleware(request);
   },
-  publicRoutes,
-});
+  { debug: false }
+);

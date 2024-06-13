@@ -18,12 +18,14 @@ import {
 
 type Props = {
   isLoading: boolean;
+  isUserLogged: boolean;
   handleCloseThread: MouseEventHandler<HTMLButtonElement>;
   onSubmit: SubmitHandler<CreateMessageDto>;
 };
 
 export const PromptForm = ({
   isLoading,
+  isUserLogged,
   handleCloseThread,
   onSubmit,
 }: Props) => {
@@ -46,9 +48,10 @@ export const PromptForm = ({
   return (
     <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
       <div className="rounded-lg text-sm ">
+        <p>{isUserLogged ? t('lets-chat-user') : t('lets-chat')}</p>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="flex w-full">
           <Input
-            label={t('lets-chat')}
+            label=""
             placeholder={t('enter-your-question')}
             {...register('prompt')}
             disabled={isLoading}
@@ -58,7 +61,7 @@ export const PromptForm = ({
             containerClassName="w-9/12 md:w-10/12"
           />
 
-          <div className="w-3/12 md:w-2/12 flex justify-end items-end">
+          <div className="w-3/12 md:w-2/12 flex justify-end items-end ml-2">
             <Button
               type="submit"
               label={t('send')}

@@ -11,8 +11,10 @@ import { checkVisitorVisits, createThread } from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { dailyMessageLimit } from '../../config';
+import { useUser } from '@clerk/nextjs';
 
 export const Start = () => {
+  const { isSignedIn } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, setTransition] = useTransition();
   const [isLimitLock, setIsLimitLock] = useState(false);
@@ -73,7 +75,9 @@ export const Start = () => {
             }
           />
         )}
-        {isLimitLock && <Alert title={t('limit-reached')} type="info" />}
+        {isLimitLock && !isSignedIn && (
+          <Alert title={t('limit-reached')} type="info" />
+        )}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import { classMerge } from '../utils/cn';
 type ALERT_TYPE = 'warning' | 'error' | 'success' | 'info';
 
 type Props = {
-  title: string;
+  title: string | React.ReactNode;
   type?: ALERT_TYPE;
   titleBold?: boolean;
   description?: string;
