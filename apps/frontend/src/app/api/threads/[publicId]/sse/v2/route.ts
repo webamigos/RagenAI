@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 import db from '@salesyy/prisma-client';
-import { type AssistantStreamEvent } from 'openai/resources/beta/assistants/assistants';
+// import { type AssistantStreamEvent } from 'openai/resources/beta/assistants/assistants';
 
 import {
   createMessage,
@@ -78,7 +78,8 @@ export async function GET(_request: Request, { params }: Params) {
       .createAndStream(thread.id, {
         assistant_id: assistant.id,
       })
-      .on('event', async (event: AssistantStreamEvent) => {
+      .on('event', async (event: any) => {
+        // FIXME: AssistantStreamEvent
         // TODO: podziałać na deltach, zamiast czekać na całośc odpowiedzi
         // console.log({ event });
         if (event.event === 'thread.message.delta') {
