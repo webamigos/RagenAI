@@ -3,12 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  id    String @id @default(cuid()) @map("_id")
   email String
 }
 
@@ -18,7 +19,7 @@ enum Role {
 }
 
 model Message {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  id                String   @id @default(cuid()) @map("_id")
   public_id         String   @unique @default(uuid())
   openai_message_id String
   openai_created_at Int
@@ -26,12 +27,12 @@ model Message {
   content           String
   role              Role     @default(USER)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
-  thread_id         String?  @db.ObjectId
+  thread_id         String?
   visitor_id        String?
 }
 
 model FlaggedMessage {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(cuid()) @map("_id")
   public_id  String   @unique @default(uuid())
   created_at DateTime @default(now())
   content    String
@@ -39,7 +40,7 @@ model FlaggedMessage {
 }
 
 model Thread {
-  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  id               String    @id @default(cuid()) @map("_id")
   public_id        String    @unique @default(uuid())
   openai_thread_id String
   created_at       DateTime  @default(now())
@@ -47,9 +48,9 @@ model Thread {
 }
 
 model VisitorMessages {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(cuid()) @map("_id")
   visitor_id String
-  message_id String   @db.ObjectId
+  message_id String
   created_at DateTime @default(now())
 }
 
