@@ -1,17 +1,26 @@
-import OpenAI from 'openai';
+import { HttpResponseOutputParser } from 'langchain/output_parsers';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { ChatOpenAI } from '@langchain/openai';
+import {
+  Message as VercelChatMessage,
+  StreamingTextResponse,
+  createStreamDataTransformer,
+} from 'ai';
 import { Redis } from '@upstash/redis';
 import { Role } from '@prisma/client';
 
 import db from '@salesyy/prisma-client';
-
 import { createMessage } from './message';
-import { parseThreadMessage } from './utils';
 import { redisChannelPrefix } from '../../config';
 import { type SseMessageEvent } from '../../contracts/Events';
 
-const openai = new OpenAI();
-const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
+const TEMPLATE = `
+  Current conversation:
+  {chat_history}§
+  user: {input}
+  assistant:`;
 
+const modelName = process.env.OPENAI_MODEL;
 /**
  * A typical integration of the Assistants API has the following flow:
  *
@@ -23,7 +32,10 @@ const ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID!;
  * @param input Question to the assistant
  *
  */
-export const askAssistant = async (publicThreadId: string) => {
+export const askAssistant = async (
+  publicThreadId: string,
+  _request?: Request
+) => {
   const threadEntity = await db.thread.findUniqueOrThrow({
     where: { public_id: publicThreadId },
     select: {
@@ -34,88 +46,64 @@ export const askAssistant = async (publicThreadId: string) => {
     },
   });
 
-  const thread = await openai.beta.threads.retrieve(
-    threadEntity.openai_thread_id
-  );
-  const threadId = thread.id;
+  const { messages } = await _request!.json();
 
-  // step: get current assistant
-  const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
+  const formatMessage = (messages: VercelChatMessage) => {
+    return `${messages.role}: ${messages.content}`;
+  };
 
-  // step: run the assistant
-  // without streaming
-  // BEGIN: without streaming
-  let run = await openai.beta.threads.runs.create(threadId, {
-    assistant_id: assistant.id,
-    // instructions: 'Co to jest sprzedaz b2b?', // this will override the default instructions of the Assistant
+  const llm = new ChatOpenAI({ modelName, temperature: 0.25, verbose: true });
+  const promptTemplate = PromptTemplate.fromTemplate(TEMPLATE);
+  const parser = new HttpResponseOutputParser();
+  const chain = promptTemplate.pipe(llm.bind({ stop: ['?'] })).pipe(parser);
+
+  const formattedPreviousMessages = messages.slice(0, -1).map(formatMessage);
+  const currentMessageContent = messages.at(-1)?.content;
+
+  const stream = await chain.stream({
+    chat_history: formattedPreviousMessages.join('\n'),
+    input: currentMessageContent,
   });
 
-  const runId = run.id;
+  const dbMessage = await createMessage({
+    thread: threadEntity,
+    message: {
+      id: `msg_${Date.now()}`,
+      created_at: Number(new Date()),
+      content: currentMessageContent,
+    },
+    role: Role.ASSISTANT,
+  });
 
-  // step: check the status
-  run = await openai.beta.threads.runs.retrieve(threadId, runId);
+  const messageToSend: SseMessageEvent = {
+    type: 'message',
+    payload: {
+      public_id: dbMessage.public_id,
+      role: dbMessage.role,
+      created_at: dbMessage.created_at,
+      content: dbMessage.content,
+    },
+  };
 
-  // Polling mechanism to see if runStatus is completed
-  // TODO: this should be done more robust
-  while (['queued', 'in_progress', 'cancelling'].includes(run.status)) {
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
-    run = await openai.beta.threads.runs.retrieve(threadId, runId);
+  const stringifiedMessage = JSON.stringify(messageToSend);
+
+  try {
+    const redis = new Redis({
+      url: process.env.REDIS_URL!,
+      token: process.env.REDIS_TOKEN!,
+    });
+
+    await redis.publish(
+      `${redisChannelPrefix}-${publicThreadId}`, // mewa-123
+      stringifiedMessage
+    );
+  } catch (e) {
+    console.log('Redis publish error: ', e);
   }
 
-  // step: check the answer
-  if (run.status === 'completed') {
-    const messages = await openai.beta.threads.messages.list(threadId);
+  return new StreamingTextResponse(
+    stream.pipeThrough(createStreamDataTransformer())
+  );
 
-    const lastMessageForRun = messages.data
-      .filter(
-        (message) => message.run_id === runId && message.role === 'assistant'
-      )
-      .pop();
-
-    // TODO: response
-    if (lastMessageForRun) {
-      const assistantMessageContent = parseThreadMessage(lastMessageForRun);
-      console.log(`${assistantMessageContent}`);
-
-      const dbMessage = await createMessage({
-        thread: threadEntity,
-        message: {
-          id: lastMessageForRun.id,
-          created_at: lastMessageForRun.created_at,
-          content: assistantMessageContent,
-        },
-        role: Role.ASSISTANT,
-      });
-
-      const messageToSend: SseMessageEvent = {
-        type: 'message',
-        payload: {
-          public_id: dbMessage.public_id,
-          role: dbMessage.role,
-          created_at: dbMessage.created_at,
-          content: dbMessage.content,
-        },
-      };
-
-      const stringifiedMessage = JSON.stringify(messageToSend);
-
-      try {
-        const redis = new Redis({
-          url: process.env.REDIS_URL!,
-          token: process.env.REDIS_TOKEN!,
-        });
-
-        await redis.publish(
-          `${redisChannelPrefix}-${publicThreadId}`, // mewa-123
-          stringifiedMessage
-        );
-      } catch (e) {
-        console.log('Redis publish error: ', e);
-      }
-
-      return true;
-    }
-  }
-
-  throw new Error('Cannot fetch message from assistant');
+  // throw new Error('Cannot fetch message from assistant');
 };

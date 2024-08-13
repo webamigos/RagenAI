@@ -13,7 +13,7 @@ export const POST = async (_request: Request, { params }: Params) => {
   const publicThreadId = params.publicId;
 
   try {
-    await askAssistant(publicThreadId);
+    await askAssistant(publicThreadId, _request);
 
     // create user message and return it to display in frontend
     return NextResponse.json({});
