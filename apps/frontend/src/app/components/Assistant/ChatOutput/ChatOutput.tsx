@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { useTranslations } from 'next-intl';
-import markdownit from 'markdown-it';
 
 import { SpinnerSVG } from '@salesyy/common-ui';
-import './chat-response.css';
 
+import { useChatViewLogic } from './useChatViewLogic';
 import type { MessageDto } from '../../../contracts/Message';
+import './chat-response.css';
 
 type Props = {
   messages: MessageDto[];
@@ -15,23 +13,13 @@ type Props = {
   streamedMessage: { content: string; created_at: string } | null;
 };
 
-const md = markdownit();
-
-export const ChatView = ({
+export const ChatOutput = ({
   messages,
   isLoading,
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const t = useTranslations('chat');
-  const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
-
-  useEffect(() => {
-    if (streamedMessage) {
-      const rendered = md.render(streamedMessage.content);
-      setRenderedStreamedMessage(rendered);
-    }
-  }, [streamedMessage]);
+  const { t, md, renderedStreamedMessage } = useChatViewLogic(streamedMessage);
 
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
