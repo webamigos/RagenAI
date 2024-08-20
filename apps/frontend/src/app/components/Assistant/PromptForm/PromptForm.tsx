@@ -3,14 +3,10 @@
 import { MouseEventHandler } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  PaperAirplaneIcon,
-  ArchiveBoxIcon,
-  EnvelopeIcon,
-} from '@heroicons/react/24/outline';
 
-import { Button, Input } from '@salesyy/common-ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+import { Contact, CloseThread, SendMessage, AskQuestion } from './';
 import {
   type CreateMessageDto,
   createMessageSchema,
@@ -50,59 +46,19 @@ export const PromptForm = ({
       <div className="rounded-lg text-sm ">
         <p>{isUserLogged ? t('lets-chat-user') : t('lets-chat')}</p>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="flex w-full">
-          <Input
-            label=""
-            placeholder={t('enter-your-question')}
-            {...register('prompt')}
+          <AskQuestion
             disabled={isLoading}
-            error={errors.prompt}
-            errorMessage={t('provide-at-least-10-characters')}
-            className="h-10"
-            containerClassName="w-9/12 md:w-10/12"
+            error={errors?.prompt}
+            register={register}
           />
-
           <div className="w-3/12 md:w-2/12 flex justify-end items-end ml-2">
-            <Button
-              type="submit"
-              label={t('send')}
-              iconRight={
-                <PaperAirplaneIcon
-                  className="h-5 w-5 flex-none text-white cursor-pointer"
-                  aria-hidden="true"
-                />
-              }
-              className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
-              disabled={isLoading}
-            />
+            <SendMessage disabled={isLoading} />
           </div>
         </form>
         <div className="mt-6 flex flex-row pb-4 items-center justify-start">
           <p className="flex  dark:text-slate-100">
-            <span
-              className="flex items-center cursor-pointer mr-4"
-              onClick={handleCloseThread}
-            >
-              <ArchiveBoxIcon
-                className="h-5 w-5 flex-none mr-2  cursor-pointer"
-                aria-hidden="true"
-              />
-              {t('close-thread')}
-            </span>
-
-            <span
-              className="flex items-center cursor-pointer"
-              onClick={() =>
-                (window.location.href =
-                  'mailto:hello@salesyy.com?body=Współpraca')
-              }
-            >
-              <EnvelopeIcon
-                className="h-5 w-5 flex-none mr-2 dark:text-white cursor-pointer"
-                aria-hidden="true"
-              />
-
-              {t('contact-with-us')}
-            </span>
+            <CloseThread handleCloseThread={handleCloseThread} />
+            <Contact />
           </p>
         </div>
       </div>

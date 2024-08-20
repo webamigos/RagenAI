@@ -3,9 +3,9 @@ import {
   unstable_setRequestLocale as setRequestLocale,
 } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
+import { notFound } from 'next/navigation';
 
 import { Assistant } from '../../../../components/Assistant';
-import { notFound } from 'next/navigation';
 
 type Props = {
   params: {

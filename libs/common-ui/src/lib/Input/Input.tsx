@@ -3,7 +3,7 @@ import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
 
 type Props = {
-  label: string;
+  label?: string;
   hint?: string;
   error?: FieldError;
   errorMessage?: string; // for translations

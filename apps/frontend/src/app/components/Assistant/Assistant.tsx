@@ -1,250 +1,41 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { MouseEventHandler, useEffect, useRef, useState } from 'react';
-import { AxiosError } from 'axios';
-import { StatusCodes } from 'http-status-codes';
-import { useLocale, useTranslations } from 'next-intl';
-
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
-import { CreateMessageDto, MessageDto } from '../../contracts/Message';
-import {
-  checkVisitorVisits,
-  fetchMessagesFromApi,
-  runAssistant,
-} from '../../lib/services/api';
-import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { sendMessage } from '../../actions';
-import { loadFingerprint } from '../../lib/utils/fingerprint';
-import { dailyMessageLimit } from '../../config';
-import { Alert } from '@salesyy/common-ui';
-import { ChatResponse } from './ChatOutput/ChatResponse';
-import { useApi } from '../../hooks/useApi';
-import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
+import { LimitReached } from './ChatOutput/LimitReached';
+
+import { useAssistantLogic } from './useAssistantLogic';
 
 type Props = {
   threadId: string;
 };
 
 export const Assistant = ({ threadId }: Props) => {
-  const { isSignedIn } = useUser();
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // it tells if we want to animate last assistant response
-  const [isMessageLoading, setMessageIsLoading] = useState(false);
-  const [userMessageId, setMessageId] = useState('');
-  const [isLimitLock, setIsLimitLock] = useState(false);
-  const [messageLoadingText, setMessageLoadingText] = useState('');
-  const [isMessageError, setMessageIsError] = useState(false);
-  const [messageError, setMessageError] = useState(false);
-  const [streamedMessage, setStreamedMessage] = useState('');
-  const [messages, setMessages] = useState<MessageDto[]>([]);
-  const messagesEndDivRef = useRef<HTMLDivElement>(null);
-  const { push } = useRouter();
-  const locale = useLocale();
-  const { data, isLoading, isError, isSuccess, refetch } = useApi(() =>
-    fetchMessagesFromApi(threadId)
-  );
-
-  const t = useTranslations('Index');
-
-  const initialMessages = data ? data.data : [];
-  const isGlobalLoading = isLoading || isMessageLoading;
-
-  useEffect(() => {
-    if (isSuccess) {
-      setIsInitialLoad(true);
-    }
-    const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
-    if (!localStorageThreadId) {
-      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isSuccess) {
-      setIsInitialLoad(false);
-    }
-    if (messagesEndDivRef.current) {
-      messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-    const loadVisitorMessages = async () => {
-      const visitorId = await loadFingerprint();
-      const visitorMessagesResponse = await checkVisitorVisits(visitorId);
-      if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
-        setIsLimitLock(true);
-      }
-    };
-    loadVisitorMessages();
-  }, [data]);
-
-  // Function to take care of initial connect to the SSE API
-  // Also, it reconnects to the SSE API as soon as it shuts down
-  // This keeps the connection alive - forever with micro second delays
-  const connectToStream = () => {
-    // const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
-    const eventSource = new EventSource(`/api/threads/${threadId}/sse/v2`);
-    eventSource.addEventListener('message', (event) => {
-      const eventMessage = JSON.parse(event.data);
-      if (eventMessage) {
-        // TODO: add message to messages instead of revalidate
-        if (eventMessage.type && eventMessage.type === 'message') {
-          // setStreamedMessage('');
-          setMessageIsLoading(false);
-          console.log({ eventMessage });
-          if (eventMessage.payload.role === 'USER') {
-            refetch();
-          }
-
-          // eventSource.close();
-        } else if (eventMessage.type && eventMessage.type === 'delta') {
-          setStreamedMessage((prevState) =>
-            prevState.concat(eventMessage.payload.content)
-          );
-          if (messagesEndDivRef.current) {
-            messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-      }
-    });
-
-    // In case of any error, close the event source
-    // So that it attempts to connect again
-    // eventSource.addEventListener('error', () => {
-    //   eventSource.close();
-    //   setTimeout(connectToStream, 1);
-    // });
-
-    // As soon as SSE API source is closed, attempt to reconnect
-
-    // eventSource.onclose = () => {
-    //   setTimeout(connectToStream, 1);
-    // };
-    return eventSource;
-  };
-
-  useEffect(() => {
-    // Initiate the first call to connect to SSE API
-    if (userMessageId !== '') {
-      const eventSource = connectToStream();
-      // As the component unmounts, close listener to SSE API
-      return () => {
-        eventSource.close();
-      };
-    }
-  }, [userMessageId]);
-
-  const handleCloseThread: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.preventDefault();
-    localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-    push(`/${locale}`);
-  };
-
-  const onSubmit = async (data: CreateMessageDto) => {
-    if (messagesEndDivRef.current) {
-      messagesEndDivRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    try {
-      setMessageIsLoading(true);
-
-      setMessageLoadingText(() => t('status-thinking'));
-
-      const visitorId = await loadFingerprint();
-      const messageResponse = await sendMessage(threadId, data, visitorId);
-
-      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-        setMessageError(true);
-        return;
-      } else if (messageResponse.status === StatusCodes.CREATED) {
-        if (messageResponse.message?.public_id) {
-          // this is workaround to send message to opean ai thread and then reload sse here
-          setMessageId(messageResponse.message?.public_id);
-          refetch(); // TODO push to messages list instead of refetch
-        }
-
-        setMessageLoadingText(() => t('status-searching-memories'));
-
-        // TODO: instead refetch mutate data
-        // refetch(); <-- refetch will be done when message will be streamed from assistant
-      }
-
-      setMessageLoadingText(() => t('status-robots-are-waking-up'));
-
-      setMessageLoadingText(() => t('status-asking-ai'));
-
-      // TODO: vercel doesn't like to run this as server action
-      // runAssistant(threadId); // refactored to streams, now SSE is listening if assistant run returns stream
-
-      // on vercel this is not working good
-      // const assistantResponse = await runAssistant(threadId);
-      // if (assistantResponse.status === StatusCodes.OK) {
-      //   setMessageLoadingText('Analyzing your question...');
-      // } else {
-      //   setMessageError(true);
-      // }
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        const errorStatus = error.status;
-        if (errorStatus === StatusCodes.BAD_REQUEST) {
-          setMessageError(true);
-        }
-      }
-    }
-  };
-
-  const isLocked = () => {
-    if (isSignedIn) {
-      return false;
-    }
-    return isLimitLock;
-  };
+  const {
+    messageLoadingText,
+    messagesEndDivRef,
+    isGlobalLoading,
+    streamedMessage,
+    isLimitLock,
+    isSignedIn,
+    messages,
+    handleCloseThread,
+    onSubmit,
+    isLocked,
+  } = useAssistantLogic(threadId);
 
   return (
     <>
-      {/* {threadId && <ThreadId threadId={threadId} />} */}
-
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
-          // messages={initialMessages ? initialMessages : messages}
-          messages={initialMessages}
+          messages={messages}
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
-          isInitialLoad={isInitialLoad}
+          streamedMessage={streamedMessage}
         />
-        <div className="px-4 sm:px-4 lg:px-22">
-          {streamedMessage && (
-            <ChatResponse
-              message={streamedMessage}
-              isAssistantMessage={true}
-              isInitialLoad={false}
-            />
-          )}
-        </div>
         <div ref={messagesEndDivRef} />
       </div>
-
-      {/* <Avatar /> */}
-      {isLimitLock && !isSignedIn && (
-        <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
-          <Alert
-            title={
-              <p>
-                {t('limit-reached')}{' '}
-                <Link href="/sign-up" className="bold underline">
-                  Zarejestruj się
-                </Link>{' '}
-                lub{' '}
-                <Link href="/sign-in" className="bold underline">
-                  zaloguj
-                </Link>
-                , aby korzystać dalej.
-              </p>
-            }
-            type="info"
-          />
-        </div>
-      )}
+      {isLimitLock && !isSignedIn && <LimitReached />}
       {!isLocked() && threadId && (
         <PromptForm
           isUserLogged={!!isSignedIn}
