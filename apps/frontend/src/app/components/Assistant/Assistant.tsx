@@ -1,7 +1,6 @@
 'use client';
-//Server component?
 
-import { ChatOutput } from './ChatOutput/ChatOutput';
+import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 

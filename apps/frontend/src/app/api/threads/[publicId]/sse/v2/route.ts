@@ -1,12 +1,8 @@
 import OpenAI from 'openai';
 
 import db from '@salesyy/prisma-client';
-// import { type AssistantStreamEvent } from 'openai/resources/beta/assistants/assistants';
 
-import {
-  createMessage,
-  createThreadMessage,
-} from '../../../../../lib/services/message';
+import { createMessage } from '../../../../../lib/services/message';
 import {
   SseInitEvent,
   SseMessageDelta,
@@ -40,7 +36,6 @@ const prepareSseMessage = (
 export async function GET(_request: Request, { params }: Params) {
   const responseStream = new TransformStream();
   const writer = responseStream.writable.getWriter();
-  const encoder = new TextEncoder();
 
   writer.write(prepareSseMessage('init', { type: 'init' }));
 
@@ -61,30 +56,19 @@ export async function GET(_request: Request, { params }: Params) {
       threadEntity.openai_thread_id
     );
 
-    // for testing
-    // const messageResponse = await createThreadMessage({
-    //   prompt: 'co jest stolicą francji?',
-    //   thread,
-    //   threadEntity,
-    //   visitorId: '123',
-    // });
-
-    const threadId = thread.id;
-
     // step: get current assistant
     const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
 
     const run = openai.beta.threads.runs
+      //Legacy
       .createAndStream(thread.id, {
         assistant_id: assistant.id,
       })
       .on('event', async (event: any) => {
         // FIXME: AssistantStreamEvent
         // TODO: podziałać na deltach, zamiast czekać na całośc odpowiedzi
-        // console.log({ event });
         if (event.event === 'thread.message.delta') {
           const parseDelta = parseThreadDelta(event.data.delta);
-          console.log({ parseDelta });
           writer.write(
             prepareSseMessage('message', {
               type: 'delta',
@@ -96,7 +80,6 @@ export async function GET(_request: Request, { params }: Params) {
         if (event.event === 'thread.message.completed') {
           if (event.data.role === 'assistant') {
             const assistantMessageContent = parseThreadMessage(event.data);
-            // console.log(`${assistantMessageContent}`);
 
             const dbMessage = await createMessage({
               thread: threadEntity,
@@ -122,32 +105,8 @@ export async function GET(_request: Request, { params }: Params) {
           }
         }
       })
-      .on('textCreated', (text) => process.stdout.write('\nassistant > '))
-      .on(
-        'textDelta',
-        (textDelta, snapshot) =>
-          // process.stdout.write(textDelta.value)
-          writer.write(textDelta.value)
-        // writer.write(`event: message\ndata: ${message}\n\n`)
-      );
-    // .on('toolCallCreated', (toolCall) =>
-    //   process.stdout.write(`\nassistant > ${toolCall.type}\n\n`)
-    // )
-    // .on('toolCallDelta', (toolCallDelta, snapshot) => {
-    //   if (toolCallDelta.type === 'code_interpreter') {
-    //     if (toolCallDelta.code_interpreter.input) {
-    //       process.stdout.write(toolCallDelta.code_interpreter.input);
-    //     }
-    //     if (toolCallDelta.code_interpreter.outputs) {
-    //       process.stdout.write('\noutput >\n');
-    //       toolCallDelta.code_interpreter.outputs.forEach((output) => {
-    //         if (output.type === 'logs') {
-    //           process.stdout.write(`\n${output.logs}\n`);
-    //         }
-    //       });
-    //     }
-    //   }
-    // });
+      .on('textCreated', () => process.stdout.write('\nassistant > '))
+      .on('textDelta', (textDelta) => writer.write(textDelta.value));
   } catch (error) {
     console.log('Endpoint error: ', error);
   }

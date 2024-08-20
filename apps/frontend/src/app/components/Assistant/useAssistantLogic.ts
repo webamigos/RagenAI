@@ -1,5 +1,3 @@
-'use client';
-
 import { useReducer, useEffect, useRef, type MouseEventHandler } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -109,9 +107,8 @@ export const useAssistantLogic = (threadId: string) => {
     }
   }
 
-  const scrollToBottom = () => {
+  const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   useEffect(() => {
     if (isSuccess && data) {
@@ -139,7 +136,6 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const connectToStream = () => {
-    // const eventSource = new EventSource(`/api/threads/${threadId}/sse`);
     const eventSource = new EventSource(`/api/threads/${threadId}/sse/v2`);
     let accumulatingMessage = '';
 

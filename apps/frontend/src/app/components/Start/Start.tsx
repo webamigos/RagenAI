@@ -66,7 +66,6 @@ export const Start = () => {
             className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 sm:mb-12 mb-8 "
             onClick={handleNewThread}
             isLoading={isLoading}
-            // disabled={isLoading}
             disabled={isLoading || isLimitLock}
             iconRight={
               <ChevronRightIcon

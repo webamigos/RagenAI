@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
 
 import { getLast24hVisitorMessages } from '../../../lib/services/visitor';
 
@@ -14,7 +13,6 @@ export const GET = async (_request: Request, { params }: Params) => {
 
   try {
     const visitorMessages = await getLast24hVisitorMessages(publicId);
-    console.log({ visitorMessages });
     return NextResponse.json({ messages: visitorMessages });
   } catch (error) {
     console.log('Error during fetch visitor messages stats');

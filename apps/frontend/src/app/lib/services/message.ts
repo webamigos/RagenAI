@@ -62,12 +62,6 @@ export const fetchMessagesFromDb = async (
       },
     ],
   });
-  // return db.thread.findUniqueOrThrow({
-  //   where: { public_id: threadPublicId },
-  //   select: {
-  //     messages: true,
-  //   },
-  // });
 };
 
 export const createThreadMessage = async ({
@@ -87,10 +81,8 @@ export const createThreadMessage = async ({
     content: prompt.trim(), // TODO: sanitize
   });
   // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
-  console.log({ messageFromThread: threadMessage.content });
   const userMessageContent = parseThreadMessage(threadMessage);
 
-  console.log({ threadMessage, content: userMessageContent });
   const dbMessage = await createMessage({
     thread: threadEntity,
     message: {
