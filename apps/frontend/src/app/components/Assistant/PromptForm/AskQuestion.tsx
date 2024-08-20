@@ -15,7 +15,6 @@ export const AskQuestion = ({ disabled, error, register }: Props) => {
 
   return (
     <Input
-      label=""
       placeholder={t('enter-your-question')}
       {...register('prompt')}
       disabled={disabled}

@@ -6,7 +6,11 @@
     "status-searching-memories": "Searching memories...",
     "status-robots-are-waking-up": "Beep, boop, robots are waking up...",
     "status-asking-ai": "Asking AI what it thinks about your question...",
-    "limit-reached": "Messages limit reached"
+    "limit-reached": "Messages limit reached",
+    "register": "Sign Up",
+    "log-in": "log in",
+    "or": "or",
+    "to-still-use": "to continue using the service"
   },
   "common": {
     "sign-in": "Sign in",

@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import markdownit from 'markdown-it';
 
-export const useChatViewLogic = (
-  streamedMessage: { content: string; created_at: string } | null
-) => {
+type Props = {
+  content: string;
+  created_at: string;
+};
+
+export const useChatViewLogic = (streamedMessage: Props | null) => {
   const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
 
   const t = useTranslations('chat');

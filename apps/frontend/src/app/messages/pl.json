@@ -6,7 +6,11 @@
     "status-searching-memories": "Wyszukuję w pamięci...",
     "status-robots-are-waking-up": "Beep, boop, roboty budzą się...",
     "status-asking-ai": "Pytam AI co myśli o Twoim pytaniu...",
-    "limit-reached": "Limit wiadomości został przekroczony."
+    "limit-reached": "Limit wiadomości został przekroczony.",
+    "register": "Zarejestruj się",
+    "log-in": "zaloguj",
+    "or": "lub",
+    "to-still-use": "aby korzystać dalej"
   },
   "common": {
     "sign-in": "Zaloguj",

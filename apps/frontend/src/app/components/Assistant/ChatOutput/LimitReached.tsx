@@ -13,13 +13,13 @@ export const LimitReached = () => {
           <p>
             {t('limit-reached')}{' '}
             <Link href="/sign-up" className="bold underline">
-              Zarejestruj się
+              {t('register')}
             </Link>{' '}
-            lub{' '}
+            {t('or')}{' '}
             <Link href="/sign-in" className="bold underline">
-              zaloguj
+              {t('log-in')}
             </Link>
-            , aby korzystać dalej.
+            , {t('to-still-use')}.
           </p>
         }
         type="info"
