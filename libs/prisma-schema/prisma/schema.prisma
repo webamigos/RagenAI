@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(cuid()) @map("_id")
+  id    String @id @default(uuid())
   email String
 }
 
@@ -19,7 +19,7 @@ enum Role {
 }
 
 model Message {
-  id                String   @id @default(cuid()) @map("_id")
+  id                String   @id @default(uuid())
   public_id         String   @unique @default(uuid())
   openai_message_id String
   openai_created_at Int
@@ -32,7 +32,7 @@ model Message {
 }
 
 model FlaggedMessage {
-  id         String   @id @default(cuid()) @map("_id")
+  id         String   @id @default(uuid())
   public_id  String   @unique @default(uuid())
   created_at DateTime @default(now())
   content    String
@@ -40,7 +40,7 @@ model FlaggedMessage {
 }
 
 model Thread {
-  id               String    @id @default(cuid()) @map("_id")
+  id               String    @id @default(uuid())
   public_id        String    @unique @default(uuid())
   openai_thread_id String
   created_at       DateTime  @default(now())
@@ -48,7 +48,7 @@ model Thread {
 }
 
 model VisitorMessages {
-  id         String   @id @default(cuid()) @map("_id")
+  id         String   @id @default(uuid())
   visitor_id String
   message_id String
   created_at DateTime @default(now())
