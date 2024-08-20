@@ -3,21 +3,22 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Alert, Button } from '@salesyy/common-ui';
+import { useUser } from '@clerk/nextjs';
 
 import { checkVisitorVisits, createThread } from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { dailyMessageLimit } from '../../config';
-import { useUser } from '@clerk/nextjs';
 
 export const Start = () => {
-  const { isSignedIn } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, setTransition] = useTransition();
   const [isLimitLock, setIsLimitLock] = useState(false);
+
+  const { isSignedIn } = useUser();
   const locale = useLocale();
   const { push } = useRouter();
   const t = useTranslations('Index');

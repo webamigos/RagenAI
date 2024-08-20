@@ -10,7 +10,6 @@ import {
 import { sendForModeration } from '../lib/services/moderation';
 import { getOrCreateThread } from '../lib/services/thread';
 import { createThreadMessage } from '../lib/services/message';
-import { askAssistant } from '../lib/services/assistant';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -57,24 +56,6 @@ export const sendMessage = async (
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
     console.log('processing error: ', e);
-    return {
-      error: 'Problem during processing',
-      status: StatusCodes.BAD_REQUEST,
-    };
-  }
-};
-
-// @duplicated
-export const runAssistant = async (threadId: string) => {
-  const publicThreadId = threadId;
-
-  try {
-    void askAssistant(publicThreadId);
-
-    // create user message and return it to display in frontend
-    return { message: 'Processing started', status: StatusCodes.OK };
-  } catch (e) {
-    console.log('Assistant processing error: ', e);
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,

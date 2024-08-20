@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import { Thread } from '@prisma/client';
 
+import { Thread } from '@prisma/client';
 import db from '@salesyy/prisma-client';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
