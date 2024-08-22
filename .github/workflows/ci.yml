@@ -1,7 +1,7 @@
 name: CI/CD for Assistant
 
 env:
-  SENTRY_AUTH_TOKEN: 'dummy'
+  SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: 'dummy'
 
 on:
