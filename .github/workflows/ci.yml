@@ -1,5 +1,9 @@
 name: CI/CD for Assistant
 
+env:
+  SENTRY_AUTH_TOKEN: 'dummy'
+  OPENAI_API_KEY: 'dummy'
+
 on:
   push:
     branches:
