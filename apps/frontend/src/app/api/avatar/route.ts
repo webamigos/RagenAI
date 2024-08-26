@@ -44,7 +44,7 @@ export const POST = async () => {
     return NextResponse.json({});
   } catch (error) {
     if (error instanceof AxiosError) {
-      logger.error('Axios error: ', error);
+      logger.error('Axios error: %o', error);
     }
   }
 };
