@@ -1,6 +1,7 @@
 'use server';
 
 import { StatusCodes } from 'http-status-codes';
+import { logger } from '../lib/utils/logger';
 
 import {
   CreateMessageDto,
@@ -10,7 +11,6 @@ import {
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
 import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
-import { logger } from '../lib/utils/logger';
 
 type ResponseMessage = {
   status: StatusCodes;
