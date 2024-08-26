@@ -50,6 +50,7 @@ export const useAssistantLogic = (threadId: string) => {
   );
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
+
   const { push } = useRouter();
   const locale = useLocale();
   const t = useTranslations('Index');
@@ -106,7 +107,6 @@ export const useAssistantLogic = (threadId: string) => {
         return state;
     }
   }
-
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -135,49 +135,40 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
-  const connectToStream = () => {
-    const eventSource = new EventSource(`/api/threads/${threadId}/sse/v2`);
+  const connectToStream = (userMessageId: string) => {
+    const eventSource = new EventSource(
+      `/api/threads/${threadId}/${userMessageId}`
+    );
+
     let accumulatingMessage = '';
 
     eventSource.addEventListener('message', (event) => {
       const eventMessage = JSON.parse(event.data);
 
       if (eventMessage.type === 'delta') {
-        accumulatingMessage += eventMessage.payload.content;
+        const newContent = eventMessage.payload.content;
+        accumulatingMessage += newContent;
         dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
-          payload: eventMessage.payload.content,
+          payload: newContent,
         });
         scrollToBottom();
-      } else if (eventMessage.type === 'message') {
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-
-        if (accumulatingMessage.trim()) {
-          dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              public_id: eventMessage.payload.public_id,
-              role: eventMessage.payload.role,
-              content: accumulatingMessage,
-              created_at: eventMessage.payload.created_at,
-            },
-          });
-        }
-
-        accumulatingMessage = '';
-        dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
       }
+    });
+
+    eventSource.addEventListener('error', (error) => {
+      console.error('Stream error:', error);
+      console.error('EventSource State:', eventSource.readyState);
     });
 
     return eventSource;
   };
 
   useEffect(() => {
-    // Initiate the first call to connect to SSE API
     if (userMessageId !== '') {
-      const eventSource = connectToStream();
-      // As the component unmounts, close listener to SSE API
+      const eventSource = connectToStream(userMessageId);
+
       return () => eventSource.close();
     }
   }, [userMessageId]);
@@ -225,7 +216,6 @@ export const useAssistantLogic = (threadId: string) => {
         messageResponse.status === StatusCodes.CREATED &&
         messageResponse.message?.public_id
       ) {
-        // this is workaround to send message to opean ai thread and then reload sse here
         dispatch({
           type: SET_MESSAGE_ID,
           payload: messageResponse.message.public_id,
@@ -235,16 +225,6 @@ export const useAssistantLogic = (threadId: string) => {
           payload: t('status-asking-ai'),
         });
       }
-      // TODO: vercel doesn't like to run this as server action
-      // runAssistant(threadId); // refactored to streams, now SSE is listening if assistant run returns stream
-
-      // on vercel this is not working good
-      // const assistantResponse = await runAssistant(threadId);
-      // if (assistantResponse.status === StatusCodes.OK) {
-      //   setMessageLoadingText('Analyzing your question...');
-      // } else {
-      //   setMessageError(true);
-      // }
     } catch (error) {
       if (
         error instanceof AxiosError &&

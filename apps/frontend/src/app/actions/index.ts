@@ -9,7 +9,7 @@ import {
 } from '../contracts/Message';
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
-import { createThreadMessage } from '../lib/services/message';
+import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -34,8 +34,8 @@ export const sendMessage = async (
   const threadPublicId = threadId;
   const prompt = requestData.data.prompt;
 
+  //moderation is off right now
   const moderationResult = await sendForModeration(prompt);
-
   if (moderationResult.isFlagged) {
     return { error: 'Bad message', status: StatusCodes.BAD_REQUEST };
   }
@@ -47,12 +47,13 @@ export const sendMessage = async (
     );
 
     // create user message
-    const messageResponse = await createThreadMessage({
+    const messageResponse = await createAndStoreOpenAIThreadMessage({
       prompt,
       thread,
       threadEntity,
       visitorId,
     });
+
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
     console.log('processing error: ', e);
