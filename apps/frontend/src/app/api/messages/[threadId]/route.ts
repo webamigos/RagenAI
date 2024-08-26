@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 
-import { createMessageSchema } from '../../../../contracts/Message';
-import { sendForModeration } from '../../../../lib/services/moderation';
-import { fetchMessagesFromDb } from '../../../../lib/services/message';
+import { createMessageSchema } from '../../../contracts/Message';
+import { sendForModeration } from '../../../lib/services/moderation';
+import { fetchMessagesFromDb } from '../../../lib/services/message';
 
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { publicId: string };
+  params: { threadId: string };
 };
 
 /**
@@ -39,11 +39,10 @@ export const POST = async (request: Request) => {
 };
 
 export const GET = async (_request: Request, { params }: Params) => {
-  const threadPublicId = params.publicId;
+  const threadPublicId = params.threadId;
 
   try {
     const messages = await fetchMessagesFromDb(threadPublicId);
-
     return NextResponse.json(messages);
   } catch (e) {
     console.log(e);
