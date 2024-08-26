@@ -1,6 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { JsonOutputParser } from '@langchain/core/output_parsers';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 
 import db from '@salesyy/prisma-client';
 
@@ -96,7 +96,7 @@ export async function GET(_request: Request, { params }: Params) {
       input: thredMessage!.content,
     });
 
-    const chain = chat.pipe(new JsonOutputParser());
+    const chain = chat.pipe(new StringOutputParser());
 
     const eventStream = await chain.streamEvents(prompt, {
       version: 'v1',
@@ -113,7 +113,7 @@ export async function GET(_request: Request, { params }: Params) {
             payload: { content: textChunk },
           })
         );
-      } else if (event.event === 'on_llm_end') {
+      } else if (event.event === 'on_chain_end') {
         const dbMessage = await createMessageInDB({
           thread: threadEntity,
           message: {

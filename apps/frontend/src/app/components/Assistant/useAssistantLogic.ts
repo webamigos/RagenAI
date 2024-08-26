@@ -148,17 +148,34 @@ export const useAssistantLogic = (threadId: string) => {
       if (eventMessage.type === 'delta') {
         const newContent = eventMessage.payload.content;
         accumulatingMessage += newContent;
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
           payload: newContent,
         });
+
+        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         scrollToBottom();
+      } else if (eventMessage.type === 'message') {
+        dispatch({
+          type: ADD_MESSAGE,
+          payload: {
+            public_id: eventMessage.payload.public_id,
+            role: eventMessage.payload.role,
+            content: accumulatingMessage,
+            created_at: eventMessage.payload.created_at,
+          },
+        });
+
+        accumulatingMessage = '';
+        dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
       }
     });
 
     eventSource.addEventListener('error', (error) => {
-      throw new Error(error.toString());
+      console.error('Stream error:', error);
+      eventSource.close();
     });
 
     return eventSource;
