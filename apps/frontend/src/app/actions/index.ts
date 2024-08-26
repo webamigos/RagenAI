@@ -10,6 +10,7 @@ import {
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
 import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
+import { logger } from '../lib/utils/logger';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -56,7 +57,7 @@ export const sendMessage = async (
 
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
-    console.log('processing error: ', e);
+    logger.error('processing error: %o', e);
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,
