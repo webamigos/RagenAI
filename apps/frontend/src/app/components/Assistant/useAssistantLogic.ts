@@ -158,8 +158,7 @@ export const useAssistantLogic = (threadId: string) => {
     });
 
     eventSource.addEventListener('error', (error) => {
-      console.error('Stream error:', error);
-      console.error('EventSource State:', eventSource.readyState);
+      throw new Error(error.toString());
     });
 
     return eventSource;

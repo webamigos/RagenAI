@@ -11,6 +11,8 @@ import {
   SseMessageEvent,
 } from '../../../contracts/Events';
 import { Role } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { StatusCodes } from 'http-status-codes';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -134,7 +136,10 @@ export async function GET(_request: Request, { params }: Params) {
       }
     }
   } catch (error) {
-    console.error('Error processing SSE:', error);
+    NextResponse.json(
+      { error: 'Error processing SSE' },
+      { status: StatusCodes.BAD_REQUEST }
+    );
   }
 
   return new Response(responseStream.readable, {
