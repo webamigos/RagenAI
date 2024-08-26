@@ -19,6 +19,7 @@ import { loadFingerprint } from '../../lib/utils/fingerprint';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
+import { logger } from '../../lib/utils/logger';
 
 const {
   SET_INITIAL_LOAD,
@@ -158,8 +159,8 @@ export const useAssistantLogic = (threadId: string) => {
     });
 
     eventSource.addEventListener('error', (error) => {
-      console.error('Stream error:', error);
-      console.error('EventSource State:', eventSource.readyState);
+      logger.error('Stream error:', error);
+      logger.error('EventSource State:', eventSource.readyState);
     });
 
     return eventSource;

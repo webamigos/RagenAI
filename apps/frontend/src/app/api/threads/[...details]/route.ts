@@ -11,6 +11,7 @@ import {
   SseMessageEvent,
 } from '../../../contracts/Events';
 import { Role } from '@prisma/client';
+import { logger } from '../../../lib/utils/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -134,7 +135,7 @@ export async function GET(_request: Request, { params }: Params) {
       }
     }
   } catch (error) {
-    console.error('Error processing SSE:', error);
+    logger.error('Error processing SSE:', error);
   }
 
   return new Response(responseStream.readable, {
