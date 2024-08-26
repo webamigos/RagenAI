@@ -1,39 +1,34 @@
-import { ChatOpenAI } from '@langchain/openai';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
+import { MultiFileLoader } from 'langchain/document_loaders/fs/multi_file';
+import { NextResponse } from 'next/server';
+import { StatusCodes } from 'http-status-codes';
 
-import db from '@salesyy/prisma-client';
+import { Role } from '@prisma/client';
 
+import { createChatInstance } from './../services/ChatService';
+import {
+  getMessageById,
+  getThreadDetails,
+  getThreadMessages,
+} from './../services/dbService';
 import { createMessageInDB } from '../../../lib/services/message';
 import {
   SseInitEvent,
   SseMessageDelta,
   SseMessageEvent,
 } from '../../../contracts/Events';
-import { Role } from '@prisma/client';
-import { NextResponse } from 'next/server';
-import { StatusCodes } from 'http-status-codes';
+import { PROMPT_TEMPLATE } from '../../../config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-const apiKey = process.env.OPENAI_API_KEY;
-const model = process.env.OPENAI_CHAT_MODEL;
-const TEMPLATE = `
-{chat_history}
-user: {input}
-assistant:`;
+const apiKey = process.env.OPENAI_API_KEY!;
+const model = process.env.OPENAI_CHAT_MODEL!;
 
 type Params = {
   params: { details: string[] };
 };
-
-const chat = new ChatOpenAI({
-  apiKey,
-  model,
-  temperature: 1,
-  verbose: true,
-  streaming: true,
-});
 
 const prepareSseMessage = (
   event: string,
@@ -51,24 +46,25 @@ export async function GET(_request: Request, { params }: Params) {
   writer.write(prepareSseMessage('init', { type: 'init' }));
 
   try {
-    const thredMessage = await db.message.findUnique({
-      where: {
-        public_id: publicMessageId,
-      },
-    });
+    const thredMessage = await getMessageById(publicMessageId);
+    const threadMessages = await getThreadMessages(publicThreadId);
+    const threadEntity = await getThreadDetails(publicThreadId);
 
-    const threadMessages = await db.thread.findUnique({
-      where: {
-        public_id: publicThreadId,
-      },
-      select: {
-        messages: {
-          orderBy: {
-            created_at: 'asc',
-          },
-        },
-      },
+    const promptTemplate = new PromptTemplate({
+      template: PROMPT_TEMPLATE,
+      inputVariables: ['chat_history', 'input', 'context'],
     });
+    const multiFileLoader = new MultiFileLoader(
+      [
+        'src/data/ProceduratworzeniacontentuYouTubeSolo.pdf',
+        'src/data/PROCEDURAtworzeniapostaLinkedIn.pdf',
+        'src/data/PROCEDURAWEBINAR(Checklistawebinarowa).pdf',
+        'src/data/ProceduraStrategiaMarketingowaLeadMagnet.pdf',
+      ],
+      {
+        '.pdf': (path: string) => new PDFLoader(path),
+      }
+    );
 
     const chatHistory = threadMessages?.messages
       .map((msg) => {
@@ -76,28 +72,15 @@ export async function GET(_request: Request, { params }: Params) {
       })
       .join('\n');
 
-    const threadEntity = await db.thread.findUniqueOrThrow({
-      where: { public_id: publicThreadId },
-      select: {
-        id: true,
-        public_id: true,
-        openai_thread_id: true,
-        created_at: true,
-      },
-    });
-
-    const promptTemplate = new PromptTemplate({
-      template: TEMPLATE,
-      inputVariables: ['chat_history', 'input'],
-    });
-
+    const docs = await multiFileLoader.load();
     const prompt = await promptTemplate.format({
       chat_history: chatHistory || '',
       input: thredMessage!.content,
+      context: docs,
     });
-
-    const chain = chat.pipe(new StringOutputParser());
-
+    const chain = createChatInstance(apiKey, model).pipe(
+      new StringOutputParser()
+    );
     const eventStream = await chain.streamEvents(prompt, {
       version: 'v1',
     });
