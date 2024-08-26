@@ -1,6 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import { NextResponse } from 'next/server';
 
+import { logger } from '../../lib/utils/logger';
+
 const SERVER_URL = 'https://api.heygen.com';
 const HEYGEN_AVATAR_ID = process.env.HEYGEN_AVATAR_ID;
 const HEYGEN_API_TOKEN = process.env.HEYGEN_API_TOKEN;
@@ -42,9 +44,7 @@ export const POST = async () => {
     return NextResponse.json({});
   } catch (error) {
     if (error instanceof AxiosError) {
-      return NextResponse.json({
-        error: 'axios error',
-      });
+      logger.error('Axios error: %o', error);
     }
   }
 };

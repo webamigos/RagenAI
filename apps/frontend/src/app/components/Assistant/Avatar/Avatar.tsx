@@ -2,10 +2,12 @@
 
 import { Button } from '@salesyy/common-ui';
 import axios from 'axios';
+import { logger } from '../../../lib/utils/logger';
 
 export const Avatar = () => {
   const handleClick = async () => {
     const avatarResponse = await axios.post('/api/avatar');
+    logger.info('Avatar response: %o', avatarResponse);
   };
 
   return (

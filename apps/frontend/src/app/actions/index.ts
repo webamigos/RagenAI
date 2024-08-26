@@ -1,6 +1,7 @@
 'use server';
 
 import { StatusCodes } from 'http-status-codes';
+import { logger } from '../lib/utils/logger';
 
 import {
   CreateMessageDto,
@@ -56,6 +57,7 @@ export const sendMessage = async (
 
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
+    logger.error('processing error: %o', e);
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,

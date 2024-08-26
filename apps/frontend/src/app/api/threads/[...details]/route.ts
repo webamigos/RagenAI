@@ -2,12 +2,11 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { MultiFileLoader } from 'langchain/document_loaders/fs/multi_file';
-import { NextResponse } from 'next/server';
-import { StatusCodes } from 'http-status-codes';
 
 import { Role } from '@prisma/client';
 
 import { createChatInstance } from './../services/ChatService';
+import { logger } from '../../../lib/utils/logger';
 import {
   getMessageById,
   getThreadDetails,
@@ -119,10 +118,7 @@ export async function GET(_request: Request, { params }: Params) {
       }
     }
   } catch (error) {
-    NextResponse.json(
-      { error: 'Error processing SSE' },
-      { status: StatusCodes.BAD_REQUEST }
-    );
+    logger.error('Error processing SSE: %o', error);
   }
 
   return new Response(responseStream.readable, {

@@ -8,8 +8,7 @@ import db from '@salesyy/prisma-client';
 import { parseThreadMessage } from './utils';
 import { MessageDto } from '../../contracts/Message';
 import { createVisitorEntry } from './visitor';
-import { NextResponse } from 'next/server';
-import { error } from 'console';
+import { logger } from '../utils/logger';
 
 export type DbMessageDto = {
   id: Message['id'];
@@ -100,12 +99,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
     try {
       createVisitorEntry(dbMessage, visitorId);
     } catch {
-      return {
-        public_id: dbMessage.public_id,
-        role: dbMessage.role,
-        created_at: dbMessage.created_at,
-        content: 'Error: Cannot create visitor entry',
-      };
+      logger.error('Cannot create visitor entry');
     }
   }
 

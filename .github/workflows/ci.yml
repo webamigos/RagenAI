@@ -1,0 +1,49 @@
+name: Assistant
+
+env:
+  SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
+  OPENAI_API_KEY: 'dummy'
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  build-lint-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Optional: Cache node modules to speed up the build process
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint app
+        run: npx nx lint frontend
+
+      - name: Build Next.js app
+        run: npx nx build frontend
+
+      - name: Run tests
+        run: npx nx test frontend

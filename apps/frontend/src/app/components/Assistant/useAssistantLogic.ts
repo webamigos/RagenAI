@@ -19,6 +19,7 @@ import { loadFingerprint } from '../../lib/utils/fingerprint';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
+import { logger } from '../../lib/utils/logger';
 
 const {
   SET_INITIAL_LOAD,
@@ -146,35 +147,40 @@ export const useAssistantLogic = (threadId: string) => {
       const eventMessage = JSON.parse(event.data);
 
       if (eventMessage.type === 'delta') {
-        const newContent = eventMessage.payload.content;
-        accumulatingMessage += newContent;
-
+        accumulatingMessage += eventMessage.payload.content;
+        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
-          payload: newContent,
+          payload: accumulatingMessage,
         });
 
         dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         scrollToBottom();
       } else if (eventMessage.type === 'message') {
-        dispatch({
-          type: ADD_MESSAGE,
-          payload: {
-            public_id: eventMessage.payload.public_id,
-            role: eventMessage.payload.role,
-            content: accumulatingMessage,
-            created_at: eventMessage.payload.created_at,
-          },
-        });
+        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+
+        if (accumulatingMessage.trim()) {
+          dispatch({
+            type: ADD_MESSAGE,
+            payload: {
+              public_id: eventMessage.payload.public_id,
+              role: eventMessage.payload.role,
+              content: accumulatingMessage,
+              created_at: eventMessage.payload.created_at,
+            },
+          });
+        }
 
         accumulatingMessage = '';
         dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
       }
+
+
     });
 
     eventSource.addEventListener('error', (error) => {
-      console.error('Stream error:', error);
+      logger.error('Stream error: %o', error);
+      logger.error('EventSource State: %d', eventSource.readyState);
       eventSource.close();
     });
 
