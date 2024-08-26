@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { createMessageSchema } from '../../../contracts/Message';
 import { sendForModeration } from '../../../lib/services/moderation';
 import { fetchMessagesFromDb } from '../../../lib/services/message';
+import { logger } from '../../../lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +46,7 @@ export const GET = async (_request: Request, { params }: Params) => {
     const messages = await fetchMessagesFromDb(threadPublicId);
     return NextResponse.json(messages);
   } catch (e) {
-    console.log(e);
+    logger.error('Error %o', e);
     return NextResponse.json(
       { error: 'Failed fetching messages' },
       { status: StatusCodes.BAD_REQUEST }
