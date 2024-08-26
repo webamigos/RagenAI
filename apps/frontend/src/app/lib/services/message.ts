@@ -18,7 +18,7 @@ export type DbMessageDto = {
 
 const openai = new OpenAI();
 
-export const createMessage = async ({
+export const createMessageInDB = async ({
   thread,
   message,
   role,
@@ -64,7 +64,7 @@ export const fetchMessagesFromDb = async (
   });
 };
 
-export const createThreadMessage = async ({
+export const createAndStoreOpenAIThreadMessage = async ({
   prompt,
   thread,
   threadEntity,
@@ -83,7 +83,7 @@ export const createThreadMessage = async ({
   // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
   const userMessageContent = parseThreadMessage(threadMessage);
 
-  const dbMessage = await createMessage({
+  const dbMessage = await createMessageInDB({
     thread: threadEntity,
     message: {
       id: threadMessage.id,

@@ -6,16 +6,16 @@ export const fetchMessagesFromApi = async (threadId: string) => {
   if (!threadId) {
     return undefined;
   }
-  return api.get<MessageDto[]>(`/threads/${threadId}/messages`);
+  return api.get<MessageDto[]>(`/messages/${threadId}`);
 };
 
 export const createThread = () => {
   return api.post<CreateThreadDto>('/threads');
 };
 
-export const runAssistant = async (threadId: string) => {
-  return api.post<void>(`/assistant/${threadId}`);
-};
+// export const runAssistant = async (threadId: string) => {
+//   return api.post<void>(`/assistant/${threadId}`);
+// };
 
 export const checkVisitorVisits = async (visitorId: string) => {
   return api.get<{ messages: number }>(`/visitor/${visitorId}`);
