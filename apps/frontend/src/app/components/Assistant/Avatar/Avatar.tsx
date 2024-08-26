@@ -7,7 +7,7 @@ import { logger } from '../../../lib/utils/logger';
 export const Avatar = () => {
   const handleClick = async () => {
     const avatarResponse = await axios.post('/api/avatar');
-    logger.info({ avatarResponse });
+    logger.info('Avatar response: %o', avatarResponse);
   };
 
   return (

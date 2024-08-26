@@ -135,7 +135,7 @@ export async function GET(_request: Request, { params }: Params) {
       }
     }
   } catch (error) {
-    logger.error('Error processing SSE:', error);
+    logger.error('Error processing SSE: %o', error);
   }
 
   return new Response(responseStream.readable, {
