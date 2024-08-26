@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { StatusCodes } from 'http-status-codes';
 
 import { getLast24hVisitorMessages } from '../../../lib/services/visitor';
 
@@ -15,7 +16,10 @@ export const GET = async (_request: Request, { params }: Params) => {
     const visitorMessages = await getLast24hVisitorMessages(publicId);
     return NextResponse.json({ messages: visitorMessages });
   } catch (error) {
-    console.log('Error during fetch visitor messages stats');
-    return NextResponse.json({});
+    console.error('Error during fetch visitor messages stats');
+    return NextResponse.json({
+      error: 'Error during fetch visitor messages stats',
+      status: StatusCodes.BAD_REQUEST,
+    });
   }
 };

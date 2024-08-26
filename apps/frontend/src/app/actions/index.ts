@@ -56,7 +56,6 @@ export const sendMessage = async (
 
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
-    console.log('processing error: ', e);
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,

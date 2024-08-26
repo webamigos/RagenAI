@@ -8,7 +8,6 @@ export const POST = async (_request: Request) => {
     // create user message and return it to display in frontend
     return NextResponse.json({});
   } catch (e) {
-    console.log('Assistant processing error: ', e);
     return NextResponse.json(
       { error: 'Problem during processing' },
       { status: StatusCodes.BAD_REQUEST }

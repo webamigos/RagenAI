@@ -42,7 +42,9 @@ export const POST = async () => {
     return NextResponse.json({});
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.log('axios error: ', error);
+      return NextResponse.json({
+        error: 'axios error',
+      });
     }
   }
 };

@@ -6,7 +6,6 @@ import axios from 'axios';
 export const Avatar = () => {
   const handleClick = async () => {
     const avatarResponse = await axios.post('/api/avatar');
-    console.log({ avatarResponse });
   };
 
   return (
