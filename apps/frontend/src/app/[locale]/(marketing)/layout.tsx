@@ -1,7 +1,25 @@
 import { NextIntlClientProvider, useMessages } from 'next-intl';
-
 import { NavHeader } from '../../components/NavHeader';
+import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
+import {
+  SidebarBody,
+  SidebarSection,
+  SidebarItem,
+  SidebarLabel,
+  SidebarHeader,
+} from '../../components/Sidebar/Sidebar';
+import { Navbar } from '../../components/Sidebar/navbar';
+import {
+  Dropdown,
+  DropdownButton,
+  DropdownMenu,
+  DropdownItem,
+  DropdownLabel,
+} from '../../components/Sidebar/dropdown';
+import { SidebarLayout } from '../../components/Sidebar/sidebar-layout';
+import { Logo } from '../../components/Logo';
+import { ThemeSwitcher } from '../../components/Theme';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -9,42 +27,67 @@ type Props = Readonly<{
 
 export default function MarketingLayout({ children }: Props) {
   const messages = useMessages();
-
+  const DownIcon = () => {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="w-6 h-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="m19.5 8.25-7.5 7.5-7.5-7.5"
+        />
+      </svg>
+    );
+  };
   return (
     <NextIntlClientProvider messages={messages}>
       <Toast />
       <div className="h-screen flex flex-col">
-        <NavHeader />
-
-        {/* <div className="relative isolate px-6 pt-14 lg:px-8">
-          <div
-            className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
-            aria-hidden="true"
-          >
-            <div
-              className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#4885FF] to-[#0C07FF] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-          <div className="mx-auto max-w-2xl py-16 sm:py-24 lg:py-22"> */}
-        {children}
-        {/* </div>
-          <div
-            className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
-            aria-hidden="true"
-          >
-            <div
-              className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#4885FF] to-[#0C07FF] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
-          </div>
-        </div> */}
+        <SidebarLayout
+          navbar={
+            <Navbar>
+              <NavHeader />
+            </Navbar>
+          }
+          sidebar={
+            <Sidebar className="dark:bg-slate-900">
+              <SidebarHeader>
+                <Dropdown>
+                  <div className="flex">
+                    <Logo />
+                    <DropdownButton as={SidebarItem} className="lg:mb-2.5">
+                      <DownIcon />
+                    </DropdownButton>
+                    <DropdownMenu
+                      className="w-60 lg:min-w-64"
+                      anchor="bottom end"
+                    >
+                      <DropdownItem className="w-full">
+                        <NavHeader />
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </div>
+                </Dropdown>
+              </SidebarHeader>
+              <SidebarBody>
+                <SidebarSection>
+                  <SidebarItem href="/">
+                    {/* <HomeIcon /> */}
+                    <SidebarLabel>Home</SidebarLabel>
+                  </SidebarItem>
+                </SidebarSection>
+              </SidebarBody>
+            </Sidebar>
+          }
+        >
+          {children}
+        </SidebarLayout>
       </div>
     </NextIntlClientProvider>
   );
