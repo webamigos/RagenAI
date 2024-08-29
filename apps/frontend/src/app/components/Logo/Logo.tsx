@@ -2,16 +2,23 @@
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
-
+import { useTransition, useEffect, useState } from 'react';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
 
 export const Logo = () => {
   const { refresh } = useRouter();
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
+  const [logoSrc, setLogoSrc] = useState('/assets/salesyy-logo-on-dark-bg.png');
+
+  useEffect(() => {
+    if (theme === 'dark' || resolvedTheme === 'dark') {
+      setLogoSrc('/assets/salesyy-white-logo-white-on-dark-bg.png');
+    } else {
+      setLogoSrc('/assets/salesyy-logo-on-dark-bg.png');
+    }
+  }, [theme, resolvedTheme]);
 
   const handleResetVisits = async () => {
     await clearVisitorMessagesStats();
@@ -26,11 +33,7 @@ export const Logo = () => {
           width={120}
           height={80}
           className="h-8 w-auto"
-          src={
-            theme === 'dark'
-              ? '/assets/salesyy-white-logo-white-on-dark-bg.png'
-              : '/assets/salesyy-logo-on-dark-bg.png'
-          }
+          src={logoSrc}
           alt="Logo"
         />
       </div>
