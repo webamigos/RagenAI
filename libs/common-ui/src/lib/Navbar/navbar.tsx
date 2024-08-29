@@ -1,11 +1,23 @@
+/* eslint-disable prefer-const */
 'use client';
 
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
 import { LayoutGroup, motion } from 'framer-motion';
 import React, { forwardRef, useId } from 'react';
-import { TouchTarget } from './button';
-import { Link } from './link';
+import { Link } from '../Link';
+
+export function TouchTarget({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <span
+        className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
+        aria-hidden="true"
+      />
+      {children}
+    </>
+  );
+}
 
 export function Navbar({
   className,
