@@ -46,3 +46,32 @@ export const clearVisitorMessages = async () => {
     },
   });
 };
+
+export const getUserThreads = async (visitorId: string) => {
+  return await db.thread.findMany({
+    where: {
+      messages: {
+        some: {
+          visitor_id: visitorId,
+        },
+      },
+    },
+    select: {
+      id: true,
+      public_id: true,
+      created_at: true,
+      openai_thread_id: true,
+      messages: {
+        select: {
+          id: true,
+          content: true,
+          created_at: true,
+          role: true,
+        },
+        orderBy: {
+          created_at: 'asc',
+        },
+      },
+    },
+  });
+};

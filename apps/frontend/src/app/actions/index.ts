@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from '../lib/utils/logger';
 
 import {
+  ThreadHistoryResponse,
   CreateMessageDto,
   MessageDto,
   createMessageSchema,
@@ -11,10 +12,17 @@ import {
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
 import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
+import { getUserThreads } from '../lib/services/visitor';
 
 type ResponseMessage = {
   status: StatusCodes;
   message?: MessageDto;
+  error?: string;
+};
+
+type ResponseHistory = {
+  threads?: ThreadHistoryResponse[];
+  status: StatusCodes;
   error?: string;
 };
 
@@ -60,6 +68,21 @@ export const sendMessage = async (
     logger.error('processing error: %o', e);
     return {
       error: 'Problem during processing',
+      status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+export const getUserMessages = async (
+  visitorId: string
+): Promise<ResponseHistory> => {
+  try {
+    const userThreads = await getUserThreads(visitorId);
+
+    return { threads: userThreads, status: StatusCodes.CREATED };
+  } catch (err) {
+    return {
+      error: 'Fetching threads failed',
       status: StatusCodes.BAD_REQUEST,
     };
   }

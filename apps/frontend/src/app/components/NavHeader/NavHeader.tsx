@@ -1,6 +1,5 @@
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
-import { UserLinks } from '../UserLinks';
 
 export const NavHeader = () => {
   return (
@@ -11,7 +10,6 @@ export const NavHeader = () => {
       >
         <ThemeSwitcher />
         <LanguageSwitcher />
-        {/* <UserLinks /> */}
       </nav>
     </header>
   );

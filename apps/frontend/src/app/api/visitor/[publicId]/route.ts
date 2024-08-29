@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import { getLast24hVisitorMessages } from '../../../lib/services/visitor';
+import {
+  getLast24hVisitorMessages,
+  getUserThreads,
+} from '../../../lib/services/visitor';
 import { logger } from '../../../lib/utils/logger';
 
 type Params = {
@@ -14,7 +17,8 @@ export const GET = async (_request: Request, { params }: Params) => {
 
   try {
     const visitorMessages = await getLast24hVisitorMessages(publicId);
-    return NextResponse.json({ messages: visitorMessages });
+    const userThreads = await getUserThreads(publicId);
+    return NextResponse.json({ messages: visitorMessages, userThreads });
   } catch (error) {
     logger.error('Error during fetch visitor messages stats');
     return NextResponse.json({});
