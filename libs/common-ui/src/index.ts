@@ -12,3 +12,4 @@ export * from './lib/icons';
 export * from './lib/Sidebar';
 export * from './lib/Link';
 export * from './lib/Navbar';
+export * from './lib/Avatar';

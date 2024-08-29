@@ -14,6 +14,7 @@ import {
 import { SidebarLayout } from '@salesyy/common-ui';
 import { Navbar } from '@salesyy/common-ui';
 import { ChatConversation } from '@salesyy/common-ui';
+import { useUser } from '@clerk/nextjs';
 
 import { Logo } from '../Logo';
 import { NavHeader } from '../NavHeader';
@@ -33,6 +34,7 @@ export const Sidebar = ({ children }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   const { push } = useRouter();
+  const { user, isSignedIn } = useUser();
 
   const noThreads = userThreads.length === 0;
 
@@ -40,7 +42,6 @@ export const Sidebar = ({ children }: Props) => {
     push(`/threads/${threadId}`);
   };
 
-  // Callback function to refresh user threads
   const refreshThreads = useCallback(async () => {
     const visitorId = await loadFingerprint();
 
@@ -56,7 +57,6 @@ export const Sidebar = ({ children }: Props) => {
       logger.error(err);
     }
   }, []);
-
   useEffect(() => {
     refreshThreads();
   }, [refreshThreads]);
@@ -93,12 +93,19 @@ export const Sidebar = ({ children }: Props) => {
             </SidebarBody>
             <SidebarFooter className="mb-10">
               <SidebarSection>
-                <SidebarItem>
-                  <LogoutIcon />
-                  <SidebarLabel>
-                    <UserLinks />
-                  </SidebarLabel>
-                </SidebarItem>
+                <div className="flex justify-between items-center">
+                  {isSignedIn && (
+                    <SidebarLabel>
+                      {user?.emailAddresses[0].emailAddress}
+                    </SidebarLabel>
+                  )}
+                  <SidebarItem>
+                    <LogoutIcon />
+                    <SidebarLabel>
+                      <UserLinks />
+                    </SidebarLabel>
+                  </SidebarItem>
+                </div>
               </SidebarSection>
             </SidebarFooter>
           </div>
