@@ -80,10 +80,11 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@headlessui/react": "^2.1.1",
+    "framer-motion": "^11.2.6",
     "@clerk/localizations": "^1.26.13",
     "@clerk/nextjs": "^5.0.3",
     "@fingerprintjs/fingerprintjs": "^4.2.2",
-    "@headlessui/react": "^1.7.18",
     "@headlessui/tailwindcss": "^0.2.0",
     "@heroicons/react": "^2.1.1",
     "@hookform/resolvers": "^3.3.4",
