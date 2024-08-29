@@ -46,7 +46,7 @@ function MobileSidebar({
         transition
         className="fixed inset-y-0 w-full max-w-80 p-2 transition duration-300 ease-in-out data-[closed]:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-lg bg-white shadow-sm ring-1 ring-zinc-950/5 dark:bg-zinc-900 dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-lg bg-white shadow-sm ring-1 ring-zinc-950/5 dark:bg-slate-900 dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
             <Headless.CloseButton as={NavbarItem} aria-label="Close navigation">
               <CloseMenuIcon />
@@ -70,9 +70,11 @@ export function SidebarLayout({
   const [showSidebar, setShowSidebar] = useState(false);
 
   return (
-    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
+    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-zinc-100 lg:dark:bg-slate-900 dark:bg-zinc-900  dark:lg:bg-zinc-950">
       {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-0 w-64 max-lg:hidden">{sidebar}</div>
+      <div className="fixed inset-y-0 left-0 w-80 dark:bg-slate-900 max-lg:hidden">
+        {sidebar}
+      </div>
 
       {/* Sidebar on mobile */}
       <MobileSidebar open={showSidebar} close={() => setShowSidebar(false)}>
@@ -93,7 +95,7 @@ export function SidebarLayout({
       </header>
 
       {/* content */}
-      <main className="flex flex-1 flex-col pb-2 px-2.5 lg:ml-64 lg:pt-2 justify-end">
+      <main className="flex flex-1 flex-col pb-2 px-2.5 lg:ml-80 lg:pt-2 justify-end">
         <div className="flex flex-1  h-full p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-sm lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
           <div className="w-full mx-auto max-w-6xl">{children}</div>
         </div>

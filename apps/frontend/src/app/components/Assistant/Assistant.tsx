@@ -25,7 +25,6 @@ export const Assistant = ({ threadId }: Props) => {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Kontener dla ChatOutput, który zajmuje resztę przestrzeni */}
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}
@@ -36,7 +35,6 @@ export const Assistant = ({ threadId }: Props) => {
         <div ref={messagesEndDivRef} />
       </div>
 
-      {/* Kontener dla PromptForm, zawsze na dole */}
       <div className="flex-shrink-0 w-full">
         {isLimitLock && !isSignedIn && <LimitReached />}
         {!isLocked() && threadId && (

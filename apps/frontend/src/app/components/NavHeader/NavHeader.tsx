@@ -11,7 +11,7 @@ export const NavHeader = () => {
       >
         <ThemeSwitcher />
         <LanguageSwitcher />
-        <UserLinks />
+        {/* <UserLinks /> */}
       </nav>
     </header>
   );
