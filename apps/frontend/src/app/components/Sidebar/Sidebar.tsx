@@ -8,6 +8,8 @@ import {
   SidebarItem,
   SidebarLabel,
   SidebarHeader,
+  SidebarFooter,
+  LogoutIcon,
 } from '@salesyy/common-ui';
 import { SidebarLayout } from '@salesyy/common-ui';
 import { Navbar } from '@salesyy/common-ui';
@@ -20,6 +22,7 @@ import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { logger } from '../../lib/utils/logger';
 
 import type { ThreadHistoryResponse } from '../../contracts/Message';
+import { UserLinks } from '../UserLinks';
 
 type Props = {
   children: React.ReactNode;
@@ -63,7 +66,7 @@ export const Sidebar = ({ children }: Props) => {
       <SidebarLayout
         navbar={<Navbar />}
         sidebar={
-          <>
+          <div className="flex flex-col h-full">
             <SidebarHeader>
               <div className="flex justify-between items-center">
                 <Logo />
@@ -88,7 +91,17 @@ export const Sidebar = ({ children }: Props) => {
                 ))}
               </SidebarSection>
             </SidebarBody>
-          </>
+            <SidebarFooter className="mb-10">
+              <SidebarSection>
+                <SidebarItem>
+                  <LogoutIcon />
+                  <SidebarLabel>
+                    <UserLinks />
+                  </SidebarLabel>
+                </SidebarItem>
+              </SidebarSection>
+            </SidebarFooter>
+          </div>
         }
       >
         {children}
