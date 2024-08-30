@@ -15,6 +15,7 @@ export const useSidebarLogic = () => {
   const { user, isSignedIn } = useUser();
 
   const noThreads = userThreads.length === 0;
+  const userEmail = user?.emailAddresses[0].emailAddress;
 
   const fetchData = useCallback(async () => {
     dispatch({ type: 'LOADING' });
@@ -40,8 +41,8 @@ export const useSidebarLogic = () => {
   };
 
   return {
-    user,
     error,
+    userEmail,
     noThreads,
     isLoading,
     isSignedIn,
