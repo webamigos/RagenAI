@@ -50,11 +50,7 @@ export const clearVisitorMessages = async () => {
 export const getUserThreads = async (visitorId: string) => {
   return await db.thread.findMany({
     where: {
-      messages: {
-        some: {
-          visitor_id: visitorId,
-        },
-      },
+      visitor_id: visitorId,
     },
     select: {
       id: true,

@@ -43,6 +43,7 @@ model Thread {
   id               String    @id @default(uuid())
   public_id        String    @unique @default(uuid())
   openai_thread_id String
+  visitor_id       String?
   created_at       DateTime  @default(now())
   messages         Message[]
 }

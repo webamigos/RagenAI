@@ -1,8 +1,8 @@
 'use server';
 
 import { StatusCodes } from 'http-status-codes';
-import { logger } from '../lib/utils/logger';
 
+import { logger } from '../lib/utils/logger';
 import {
   ThreadHistoryResponse,
   CreateMessageDto,
@@ -52,7 +52,8 @@ export const sendMessage = async (
   // get or create thread
   try {
     const { thread, threadEntity } = await findOrCreateOpenAIThread(
-      threadPublicId
+      threadPublicId,
+      visitorId
     );
 
     // create user message

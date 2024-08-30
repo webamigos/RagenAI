@@ -22,7 +22,8 @@
   "chat": {
     "USER": "You",
     "ASSISTANT": "Assistant",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "chat-history": "Conversation history"
   },
   "form": {
     "enter-your-question": "Enter your question",

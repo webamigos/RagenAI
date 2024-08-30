@@ -8,10 +8,12 @@ import { type CreateThreadDto } from '../../contracts/ThreadDto';
 const openai = new OpenAI();
 
 export const findOrCreateOpenAIThread = async (
-  threadPublicId: CreateThreadDto['public_id']
+  threadPublicId: CreateThreadDto['public_id'],
+  visitorId: string
 ) => {
   let thread;
   let threadEntity: Thread;
+
   try {
     threadEntity = await db.thread.findUniqueOrThrow({
       where: { public_id: threadPublicId },
@@ -20,12 +22,21 @@ export const findOrCreateOpenAIThread = async (
       thread = await openai.beta.threads.create();
       await db.thread.update({
         where: { public_id: threadPublicId },
-        data: { openai_thread_id: thread.id },
+        data: {
+          openai_thread_id: thread.id,
+          visitor_id: visitorId,
+        },
       });
     } else {
       thread = await openai.beta.threads.retrieve(
         threadEntity.openai_thread_id
       );
+      await db.thread.update({
+        where: { public_id: threadPublicId },
+        data: {
+          visitor_id: visitorId,
+        },
+      });
     }
 
     return { thread, threadEntity };
