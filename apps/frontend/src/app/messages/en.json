@@ -23,7 +23,10 @@
     "USER": "You",
     "ASSISTANT": "Assistant",
     "loading": "Loading...",
-    "chat-history": "Conversation history"
+    "chat-history": "Conversation history",
+    "today": "today",
+    "yesterday": "yesterday",
+    "older": "older"
   },
   "form": {
     "enter-your-question": "Enter your question",
