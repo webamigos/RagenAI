@@ -5,6 +5,7 @@ import { ChatConversation } from '@salesyy/common-ui';
 import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../contracts/Message';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
+import { format, subDays } from 'date-fns';
 
 type Props = {
   hasMore: boolean;
@@ -59,10 +60,9 @@ export const UserThreadsHistory = ({
 
   const categorizeThreads = (threads: ThreadHistoryResponse[]) => {
     const now = new Date();
-    const todayDate = now.toDateString();
-    const yesterdayDate = new Date(
-      now.setDate(now.getDate() - 1)
-    ).toDateString();
+    const todayDate = format(now, 'EEE MMM dd yyyy');
+
+    const yesterdayDate = format(subDays(now, 1), 'EEE MMM dd yyyy');
 
     return threads.reduce(
       (acc, thread) => {

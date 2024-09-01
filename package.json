@@ -68,7 +68,7 @@
     "jest-environment-jsdom": "^29.4.1",
     "jest-environment-node": "^29.4.1",
     "lint-staged": "^15.2.9",
-    "nx": "18.0.8",
+    "nx": "^19.6.4",
     "postcss": "^8.4.42",
     "prettier": "^2.8.8",
     "prisma": "^5.10.2",
