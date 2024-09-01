@@ -6,7 +6,7 @@ import { Navbar } from '@salesyy/common-ui';
 
 import { UserThreadsHistory } from './UserThreadsHistory';
 import { Header } from './Header';
-import { useSidebarLogic } from './useSidebarLogic';
+import { useSidebarLogic } from './useSidebarLogic'; // Ensure this hook returns hasMore and loadMoreThreads
 import { Footer } from './Footer';
 
 type Props = {
@@ -21,7 +21,9 @@ export const Sidebar = ({ children }: Props) => {
     noThreads,
     isSignedIn,
     userThreads,
+    activeThread,
     handleThreadClick,
+    hasMore,
   } = useSidebarLogic();
 
   return (
@@ -36,7 +38,9 @@ export const Sidebar = ({ children }: Props) => {
               isLoading={isLoading}
               noThreads={noThreads}
               userThreads={userThreads}
+              activeThread={activeThread}
               handleThreadClick={handleThreadClick}
+              hasMore={hasMore}
             />
           </SidebarBody>
           <Footer isSignedIn={isSignedIn} userEmail={userEmail} />

@@ -75,10 +75,12 @@ export const sendMessage = async (
 };
 
 export const getUserMessages = async (
-  visitorId: string
+  visitorId: string,
+  skip?: number,
+  take?: number
 ): Promise<ResponseHistory> => {
   try {
-    const userThreads = await getUserThreads(visitorId);
+    const userThreads = await getUserThreads(visitorId, skip, take);
 
     return { threads: userThreads, status: StatusCodes.CREATED };
   } catch (err) {

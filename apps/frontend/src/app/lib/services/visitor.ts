@@ -47,11 +47,20 @@ export const clearVisitorMessages = async () => {
   });
 };
 
-export const getUserThreads = async (visitorId: string) => {
+export const getUserThreads = async (
+  visitorId: string,
+  skip?: number,
+  take?: number
+) => {
   return await db.thread.findMany({
     where: {
       visitor_id: visitorId,
     },
+    orderBy: {
+      created_at: 'desc',
+    },
+    skip: skip,
+    take: take,
     select: {
       id: true,
       public_id: true,
@@ -63,9 +72,6 @@ export const getUserThreads = async (visitorId: string) => {
           content: true,
           created_at: true,
           role: true,
-        },
-        orderBy: {
-          created_at: 'asc',
         },
       },
     },

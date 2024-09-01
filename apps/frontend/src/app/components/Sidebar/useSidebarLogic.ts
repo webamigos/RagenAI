@@ -1,52 +1,44 @@
-import { useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 
-import { getUserMessages } from '../../actions';
-import { loadFingerprint } from '../../lib/utils/fingerprint';
-import { logger } from '../../lib/utils/logger';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 
 export const useSidebarLogic = () => {
-  const { state, dispatch } = useThreadsContext();
-  const { userThreads, error, isLoading } = state;
-
-  const { push } = useRouter();
+  const [activeThread, setActiveThread] = useState<string>('');
+  const { state } = useThreadsContext();
+  const { userThreads, error, isLoading, hasMore } = state;
+  const router = useRouter();
   const { user, isSignedIn } = useUser();
+  const pathname = usePathname();
 
   const noThreads = userThreads.length === 0;
   const userEmail = user?.emailAddresses[0].emailAddress;
 
-  const fetchData = useCallback(async () => {
-    dispatch({ type: 'LOADING' });
-    try {
-      const visitorId = await loadFingerprint();
-      const data = await getUserMessages(visitorId);
-      dispatch({
-        type: 'USER_THREADS',
-        payload: data.threads || [],
-      });
-    } catch (error) {
-      dispatch({ type: 'ERROR', payload: 'Failed to fetch user threads' });
-      logger.error(error);
-    }
-  }, [dispatch]);
+  const handleThreadClick = (threadId: string) => {
+    router.push(`/threads/${threadId}`);
+    setActiveThread(threadId);
+  };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const parts = pathname.split('/');
+    const threadIndex = parts.indexOf('threads');
 
-  const handleThreadClick = (threadId: string) => {
-    push(`/threads/${threadId}`);
-  };
+    if (threadIndex !== -1 && parts[threadIndex + 1]) {
+      const threadId = parts[threadIndex + 1];
+      setActiveThread(threadId);
+    }
+  }, [pathname]);
 
   return {
     error,
+    hasMore,
     userEmail,
     noThreads,
     isLoading,
     isSignedIn,
     userThreads,
+    activeThread,
     handleThreadClick,
   };
 };
