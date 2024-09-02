@@ -131,100 +131,48 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": "docker-compose.yml",
-        "hash": "16890741725261907468"
-      },
-      {
-        "file": "tsconfig.json",
-        "hash": "12705955262305002984"
+        "file": ".nvmrc",
+        "hash": "16498882585960246525"
       },
       {
         "file": ".npmrc",
         "hash": "1880664178033616490"
       },
       {
-        "file": "jest.config.ts",
-        "hash": "12333515226966617182"
-      },
-      {
-        "file": "jest.preset.js",
-        "hash": "9430166341120122740"
-      },
-      {
-        "file": "components.json",
-        "hash": "7965102274035901596"
-      },
-      {
-        "file": "tsconfig.base.json",
-        "hash": "13105892178190406432"
-      },
-      {
         "file": ".vscode/settings.json",
         "hash": "2207652029129029017"
-      },
-      {
-        "file": ".github/workflows/ci.yml",
-        "hash": "6541619924497931459"
-      },
-      {
-        "file": ".prettierrc",
-        "hash": "16267754514737964994"
-      },
-      {
-        "file": "package-lock.json",
-        "hash": "2776400114339374900"
-      },
-      {
-        "file": ".github/workflows/release.yml",
-        "hash": "7056157439164662069"
-      },
-      {
-        "file": ".vscode/extensions.json",
-        "hash": "4934098906304722861"
-      },
-      {
-        "file": "docs/adrs/01-hosting.adr",
-        "hash": "1468191937749385535"
-      },
-      {
-        "file": "Procfile",
-        "hash": "15993174086350194989"
-      },
-      {
-        "file": ".editorconfig",
-        "hash": "5443105041930014821"
       },
       {
         "file": "package.json",
         "hash": "14788049951272845517"
       },
       {
-        "file": "README.md",
-        "hash": "17826978514101131598"
+        "file": ".lintstagedrc.json",
+        "hash": "3484621408988370514"
       },
       {
-        "file": ".husky/pre-commit",
-        "hash": "12570913365339744336"
+        "file": ".eslintrc.json",
+        "hash": "18315524891129148814"
       },
       {
-        "file": ".nvmrc",
-        "hash": "16498882585960246525"
+        "file": ".nx/workspace-data/d/server-process.json",
+        "hash": "632839774465018490"
       },
       {
-        "file": "nx.json",
-        "hash": "6649250335432363019"
+        "file": ".github/workflows/release.yml",
+        "hash": "7056157439164662069"
       },
       {
         "file": ".husky/commit-msg",
         "hash": "1407302808277523102"
       },
       {
-        "file": ".releaserc",
-        "hash": "4447607332303588112"
+        "file": "mongodb_replica/Dockerfile",
+        "hash": "10636974759867772930"
       },
       {
-        "file": ".eslintignore",
-        "hash": "7663861978715868291"
+        "file": "jest.preset.js",
+        "hash": "9430166341120122740"
       },
       {
         "file": ".env.example",
@@ -235,24 +183,76 @@
         "hash": "16448050467312557263"
       },
       {
+        "file": "tsconfig.json",
+        "hash": "12705955262305002984"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "13105892178190406432"
+      },
+      {
+        "file": ".releaserc",
+        "hash": "4447607332303588112"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "6541619924497931459"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "12333515226966617182"
+      },
+      {
         "file": ".gitignore",
         "hash": "18362572093490142426"
       },
       {
-        "file": ".eslintrc.json",
-        "hash": "18315524891129148814"
+        "file": ".vscode/extensions.json",
+        "hash": "4934098906304722861"
       },
       {
-        "file": "mongodb_replica/Dockerfile",
-        "hash": "10636974759867772930"
+        "file": ".husky/pre-commit",
+        "hash": "12570913365339744336"
       },
       {
-        "file": ".lintstagedrc.json",
-        "hash": "3484621408988370514"
+        "file": ".prettierrc",
+        "hash": "16267754514737964994"
       },
       {
-        "file": ".nx/workspace-data/d/server-process.json",
-        "hash": "632839774465018490"
+        "file": "package-lock.json",
+        "hash": "2776400114339374900"
+      },
+      {
+        "file": "Procfile",
+        "hash": "15993174086350194989"
+      },
+      {
+        "file": "docs/adrs/01-hosting.adr",
+        "hash": "1468191937749385535"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "16890741725261907468"
+      },
+      {
+        "file": ".editorconfig",
+        "hash": "5443105041930014821"
+      },
+      {
+        "file": ".eslintignore",
+        "hash": "7663861978715868291"
+      },
+      {
+        "file": "README.md",
+        "hash": "17826978514101131598"
+      },
+      {
+        "file": "nx.json",
+        "hash": "6649250335432363019"
+      },
+      {
+        "file": "components.json",
+        "hash": "7965102274035901596"
       },
       {
         "file": "commitlint.config.mjs",
@@ -504,8 +504,8 @@
         },
         {
           "file": "apps/frontend/src/app/api/visitor/[publicId]/route.ts",
-          "hash": "15423191270419237093",
-          "deps": ["npm:next", "npm:@clerk/nextjs"]
+          "hash": "8837576565739837109",
+          "deps": ["npm:next"]
         },
         {
           "file": "apps/frontend/src/app/api/visitor/hejho/route.ts",
