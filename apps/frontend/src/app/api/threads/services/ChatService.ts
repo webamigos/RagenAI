@@ -1,6 +1,10 @@
 import { ChatOpenAI } from '@langchain/openai';
+import { OpenAIEmbeddings } from '@langchain/openai';
 
-export const createChatInstance = (apiKey: string, model: string) => {
+const apiKey = process.env.OPENAI_API_KEY!;
+const model = process.env.OPENAI_CHAT_MODEL!;
+
+export const createChatInstance = () => {
   return new ChatOpenAI({
     apiKey,
     model,
@@ -9,3 +13,7 @@ export const createChatInstance = (apiKey: string, model: string) => {
     streaming: true,
   });
 };
+
+export const embeddingModel = new OpenAIEmbeddings({
+  apiKey,
+});

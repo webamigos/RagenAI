@@ -1,8 +1,10 @@
+// src/api/threads/[threadId]/[messageId].ts
+import { formatDocumentsAsString } from 'langchain/util/document';
+import { MultiFileLoader } from 'langchain/document_loaders/fs/multi_file';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { MultiFileLoader } from 'langchain/document_loaders/fs/multi_file';
-
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { Role } from '@prisma/client';
 
 import { createChatInstance } from './../services/ChatService';
@@ -13,26 +15,28 @@ import {
   getThreadMessages,
 } from './../services/dbService';
 import { createMessageInDB } from '../../../lib/services/message';
+import { PROMPT_TEMPLATE } from '../../../config';
+import { selectRelevantChunks } from '../utills';
 import {
   SseInitEvent,
-  SseMessageDelta,
   SseMessageEvent,
+  SseMessageDelta,
 } from '../../../contracts/Events';
-import { PROMPT_TEMPLATE } from '../../../config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-const apiKey = process.env.OPENAI_API_KEY!;
-const model = process.env.OPENAI_CHAT_MODEL!;
 
 type Params = {
   params: { details: string[] };
 };
 
-const prepareSseMessage = (
+const CHUNK_SIZE = 1000;
+const CHUNK_OVERLAP = 200;
+
+export const prepareSseMessage = (
   event: string,
   data: SseInitEvent | SseMessageEvent | SseMessageDelta
-) => {
+): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
 
@@ -53,6 +57,7 @@ export async function GET(_request: Request, { params }: Params) {
       template: PROMPT_TEMPLATE,
       inputVariables: ['chat_history', 'input', 'context'],
     });
+
     const multiFileLoader = new MultiFileLoader(
       [
         'src/data/ProceduratworzeniacontentuYouTubeSolo.pdf',
@@ -66,20 +71,32 @@ export async function GET(_request: Request, { params }: Params) {
     );
 
     const chatHistory = threadMessages?.messages
-      .map((msg) => {
-        return `${msg.role.toLowerCase()}: ${msg.content}`;
-      })
+      .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
       .join('\n');
 
     const docs = await multiFileLoader.load();
+    const stringDocs = formatDocumentsAsString(docs);
+
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: CHUNK_SIZE,
+      chunkOverlap: CHUNK_OVERLAP,
+    });
+    const splitDocs = await textSplitter.splitText(stringDocs);
+
+    const relevantChunks = await selectRelevantChunks(
+      splitDocs,
+      thredMessage!.content,
+      10
+    );
+    const combinedContext = relevantChunks.join('\n');
+
     const prompt = await promptTemplate.format({
       chat_history: chatHistory || '',
       input: thredMessage!.content,
-      context: docs,
+      context: combinedContext,
     });
-    const chain = createChatInstance(apiKey, model).pipe(
-      new StringOutputParser()
-    );
+
+    const chain = createChatInstance().pipe(new StringOutputParser());
     const eventStream = await chain.streamEvents(prompt, {
       version: 'v1',
     });
@@ -105,6 +122,7 @@ export async function GET(_request: Request, { params }: Params) {
           },
           role: Role.ASSISTANT,
         });
+
         const messageToSend: SseMessageEvent = {
           type: 'message',
           payload: {
@@ -114,6 +132,7 @@ export async function GET(_request: Request, { params }: Params) {
             content: dbMessage.content,
           },
         };
+
         writer.write(prepareSseMessage('message', messageToSend));
       }
     }

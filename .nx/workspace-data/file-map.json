@@ -1,0 +1,1360 @@
+{
+  "version": "6.0",
+  "nxVersion": "19.6.4",
+  "deps": {
+    "@clerk/localizations": "^1.26.13",
+    "@clerk/nextjs": "^5.0.3",
+    "@fingerprintjs/fingerprintjs": "^4.2.2",
+    "@headlessui/react": "^1.7.18",
+    "@headlessui/tailwindcss": "^0.2.0",
+    "@heroicons/react": "^2.1.1",
+    "@hookform/resolvers": "^3.3.4",
+    "@langchain/community": "^0.2.31",
+    "@langchain/core": "^0.2.23",
+    "@langchain/openai": "^0.2.6",
+    "@prisma/client": "^5.10.2",
+    "@radix-ui/react-icons": "^1.3.0",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@sentry/nextjs": "^7.105.0",
+    "@supabase/supabase-js": "^2.45.1",
+    "@upstash/redis": "^1.28.4",
+    "@vercel/og": "^0.6.2",
+    "ai": "^3.0.7",
+    "axios": "^1.6.7",
+    "class-variance-authority": "^0.7.0",
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0",
+    "flag-icons": "^7.2.0",
+    "http-status-codes": "^2.3.0",
+    "ioredis": "^5.3.2",
+    "langchain": "^0.2.16",
+    "langsmith": "^0.1.41",
+    "markdown-it": "^14.0.0",
+    "marked": "^12.0.1",
+    "next": "14.2.3",
+    "next-intl": "^3.9.4",
+    "next-themes": "^0.2.1",
+    "openai": "^4.55.4",
+    "pino": "^9.3.2",
+    "pino-pretty": "^11.2.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.51.0",
+    "react-toastify": "^10.0.4",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "tailwindcss-animate": "^1.0.7",
+    "tslib": "^2.3.0",
+    "use-debounce": "^10.0.0",
+    "zod": "^3.22.4",
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@nx/cypress": "18.2.4",
+    "@nx/eslint": "18.2.4",
+    "@nx/eslint-plugin": "18.2.4",
+    "@nx/jest": "18.2.4",
+    "@nx/js": "18.2.4",
+    "@nx/nest": "^18.2.4",
+    "@nx/next": "18.2.4",
+    "@nx/node": "18.2.4",
+    "@nx/react": "18.2.4",
+    "@nx/storybook": "18.2.4",
+    "@nx/vite": "18.2.4",
+    "@nx/web": "18.2.4",
+    "@nx/webpack": "18.2.4",
+    "@nx/workspace": "18.2.4",
+    "@semantic-release/github": "^10.1.7",
+    "@storybook/addon-a11y": "^7.6.17",
+    "@storybook/addon-essentials": "7.6.17",
+    "@storybook/addon-themes": "^7.6.17",
+    "@storybook/core-server": "7.6.17",
+    "@storybook/nextjs": "7.6.17",
+    "@storybook/react": "^7.6.17",
+    "@swc-node/register": "~1.8.0",
+    "@swc/cli": "~0.1.62",
+    "@swc/core": "~1.3.85",
+    "@swc/helpers": "~0.5.2",
+    "@swc/jest": "0.2.20",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "@testing-library/react": "14.0.0",
+    "@types/jest": "^29.4.0",
+    "@types/markdown-it": "^13.0.7",
+    "@types/node": "18.16.9",
+    "@types/react": "18.2.33",
+    "@types/react-dom": "18.2.14",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "autoprefixer": "10.4.13",
+    "babel-jest": "^29.4.1",
+    "clsx": "^2.1.1",
+    "eslint": "~8.48.0",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-jsx-a11y": "6.7.1",
+    "eslint-plugin-react": "7.32.2",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "husky": "^9.1.5",
+    "jest": "^29.4.1",
+    "jest-environment-jsdom": "^29.4.1",
+    "jest-environment-node": "^29.4.1",
+    "lint-staged": "^15.2.9",
+    "nx": "18.0.8",
+    "postcss": "8.4.21",
+    "prettier": "^2.6.2",
+    "prisma": "^5.10.2",
+    "semantic-release": "^24.1.0",
+    "storybook": "7.6.17",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss": "3.2.7",
+    "ts-jest": "^29.1.0",
+    "ts-node": "10.9.1",
+    "typescript": "~5.3.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "pathMappings": {
+    "@salesyy/common-ui": [
+      "libs/common-ui/src/index.ts"
+    ],
+    "@salesyy/common-ui/server": [
+      "libs/common-ui/src/server.ts"
+    ],
+    "@salesyy/prisma-client": [
+      "libs/prisma-client/src/index.ts"
+    ],
+    "@salesyy/prisma-schema": [
+      "libs/prisma-schema/src/index.ts"
+    ],
+    "@ui-kit/ui": [
+      "libs/ui-kit/ui/src/index.ts"
+    ],
+    "@ui-kit/ui/*": [
+      "libs/ui-kit/ui/src/*"
+    ],
+    "@ui-kit/utils": [
+      "libs/ui-kit/utils/src/index.ts"
+    ],
+    "@ui-kit/utils/*": [
+      "libs/ui-kit/utils/src/*"
+    ]
+  },
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": ".npmrc",
+        "hash": "1880664178033616490"
+      },
+      {
+        "file": ".releaserc",
+        "hash": "4447607332303588112"
+      },
+      {
+        "file": ".editorconfig",
+        "hash": "5443105041930014821"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "12705955262305002984"
+      },
+      {
+        "file": "jest.config.ts",
+        "hash": "12333515226966617182"
+      },
+      {
+        "file": ".vscode/settings.json",
+        "hash": "862430530592744981"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "16890741725261907468"
+      },
+      {
+        "file": ".vscode/extensions.json",
+        "hash": "4934098906304722861"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "6541619924497931459"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "18362572093490142426"
+      },
+      {
+        "file": "jest.preset.js",
+        "hash": "9430166341120122740"
+      },
+      {
+        "file": ".lintstagedrc.json",
+        "hash": "3484621408988370514"
+      },
+      {
+        "file": "docs/adrs/01-hosting.adr",
+        "hash": "1468191937749385535"
+      },
+      {
+        "file": ".husky/pre-commit",
+        "hash": "12570913365339744336"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "16448050467312557263"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "7534936903143809075"
+      },
+      {
+        "file": "Procfile",
+        "hash": "15993174086350194989"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "16267754514737964994"
+      },
+      {
+        "file": ".eslintignore",
+        "hash": "7663861978715868291"
+      },
+      {
+        "file": "commitlint.config.mjs",
+        "hash": "18366426122252222080"
+      },
+      {
+        "file": "README.md",
+        "hash": "10280839586833286828"
+      },
+      {
+        "file": "package.json",
+        "hash": "6265924203819889439"
+      },
+      {
+        "file": ".env.example",
+        "hash": "5548459154024346299"
+      },
+      {
+        "file": ".husky/commit-msg",
+        "hash": "1407302808277523102"
+      },
+      {
+        "file": "components.json",
+        "hash": "7965102274035901596"
+      },
+      {
+        "file": ".github/workflows/release.yml",
+        "hash": "7056157439164662069"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "13105892178190406432"
+      },
+      {
+        "file": "nx.json",
+        "hash": "6649250335432363019"
+      },
+      {
+        "file": ".nvmrc",
+        "hash": "16498882585960246525"
+      },
+      {
+        "file": ".eslintrc.json",
+        "hash": "18315524891129148814"
+      },
+      {
+        "file": "mongodb_replica/Dockerfile",
+        "hash": "10636974759867772930"
+      }
+    ],
+    "projectFileMap": {
+      "prisma-client": [
+        {
+          "file": "libs/prisma-client/.eslintrc.json",
+          "hash": "16896711999632553762"
+        },
+        {
+          "file": "libs/prisma-client/README.md",
+          "hash": "12603477094977505093"
+        },
+        {
+          "file": "libs/prisma-client/package.json",
+          "hash": "3978810389990002710",
+          "deps": [
+            "npm:tslib"
+          ]
+        },
+        {
+          "file": "libs/prisma-client/project.json",
+          "hash": "85119141201505607"
+        },
+        {
+          "file": "libs/prisma-client/src/index.ts",
+          "hash": "11179834921792216188"
+        },
+        {
+          "file": "libs/prisma-client/src/lib/db.ts",
+          "hash": "1948121278234104032",
+          "deps": [
+            "npm:@prisma/client"
+          ]
+        },
+        {
+          "file": "libs/prisma-client/src/lib/prisma-client.ts",
+          "hash": "18136186832176654045"
+        },
+        {
+          "file": "libs/prisma-client/tsconfig.json",
+          "hash": "634795086719220447"
+        },
+        {
+          "file": "libs/prisma-client/tsconfig.lib.json",
+          "hash": "18155349116525859334"
+        }
+      ],
+      "prisma-schema": [
+        {
+          "file": "libs/prisma-schema/.eslintrc.json",
+          "hash": "16896711999632553762"
+        },
+        {
+          "file": "libs/prisma-schema/README.md",
+          "hash": "8600045904601318281"
+        },
+        {
+          "file": "libs/prisma-schema/package.json",
+          "hash": "11410904245269897857",
+          "deps": [
+            "npm:tslib"
+          ]
+        },
+        {
+          "file": "libs/prisma-schema/prisma/migrations/20240809095141_migration_from_mongo/migration.sql",
+          "hash": "11378018837168198654"
+        },
+        {
+          "file": "libs/prisma-schema/prisma/migrations/20240826111140_from_mongo/migration.sql",
+          "hash": "1523237557017151245"
+        },
+        {
+          "file": "libs/prisma-schema/prisma/migrations/migration_lock.toml",
+          "hash": "11493296588214560035"
+        },
+        {
+          "file": "libs/prisma-schema/prisma/schema.prisma",
+          "hash": "6627878489375412784"
+        },
+        {
+          "file": "libs/prisma-schema/project.json",
+          "hash": "15968249941670516974"
+        },
+        {
+          "file": "libs/prisma-schema/tsconfig.json",
+          "hash": "634795086719220447"
+        },
+        {
+          "file": "libs/prisma-schema/tsconfig.lib.json",
+          "hash": "18155349116525859334"
+        }
+      ],
+      "frontend": [
+        {
+          "file": "apps/frontend/.env.example",
+          "hash": "9442023280727100185"
+        },
+        {
+          "file": "apps/frontend/.eslintrc.json",
+          "hash": "2945441008724256255"
+        },
+        {
+          "file": "apps/frontend/.gitignore",
+          "hash": "3476745705427117497"
+        },
+        {
+          "file": "apps/frontend/docs/flowchart.mermaid",
+          "hash": "16099202084664627074"
+        },
+        {
+          "file": "apps/frontend/index.d.ts",
+          "hash": "5498222895072842432"
+        },
+        {
+          "file": "apps/frontend/jest.config.ts",
+          "hash": "2166717749580758805"
+        },
+        {
+          "file": "apps/frontend/next-env.d.ts",
+          "hash": "5909181270615354023"
+        },
+        {
+          "file": "apps/frontend/next.config.js",
+          "hash": "5528154116074511337",
+          "deps": [
+            "npm:@nx/next",
+            "npm:@sentry/nextjs",
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/frontend/postcss.config.js",
+          "hash": "2759402739052110475"
+        },
+        {
+          "file": "apps/frontend/project.json",
+          "hash": "5364682816973929319"
+        },
+        {
+          "file": "apps/frontend/proxy.conf.json",
+          "hash": "11281046345527164812"
+        },
+        {
+          "file": "apps/frontend/public/.gitkeep",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/frontend/public/assets/salesyy-logo-on-dark-bg.png",
+          "hash": "4976950162037693129"
+        },
+        {
+          "file": "apps/frontend/public/assets/salesyy-white-logo-white-on-dark-bg.png",
+          "hash": "14091501260413856926"
+        },
+        {
+          "file": "apps/frontend/public/favicon.ico",
+          "hash": "170708269253367849"
+        },
+        {
+          "file": "apps/frontend/public/favicon.png",
+          "hash": "8610137891234254471"
+        },
+        {
+          "file": "apps/frontend/sentry.client.config.js",
+          "hash": "8965800571326059289",
+          "deps": [
+            "npm:@sentry/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/sentry.edge.config.js",
+          "hash": "15818437078367883434",
+          "deps": [
+            "npm:@sentry/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/sentry.server.config.js",
+          "hash": "18050560415923246994",
+          "deps": [
+            "npm:@sentry/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/specs/index.spec.tsx",
+          "hash": "14221637561770971746",
+          "deps": [
+            "npm:react",
+            "npm:@testing-library/react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(auth)/layout.tsx",
+          "hash": "2507342094772761084",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(auth)/sign-in/[[...sign-in]]/page.tsx",
+          "hash": "8612454131108154477",
+          "deps": [
+            "npm:@clerk/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(auth)/sign-up/[[...sign-up]]/page.tsx",
+          "hash": "9993143929780006455",
+          "deps": [
+            "npm:@clerk/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(auth)/user-profile/[[...user-profile]]/page.tsx",
+          "hash": "16950538498178844393",
+          "deps": [
+            "npm:@clerk/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(marketing)/layout.tsx",
+          "hash": "4646192067346499590",
+          "deps": [
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(marketing)/page.tsx",
+          "hash": "5968654977532516459",
+          "deps": [
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/(marketing)/threads/[publicId]/page.tsx",
+          "hash": "18253800457960947258",
+          "deps": [
+            "npm:next-intl",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/global.css",
+          "hash": "14811850364626637964"
+        },
+        {
+          "file": "apps/frontend/src/app/[locale]/layout.tsx",
+          "hash": "6437749331655726391",
+          "deps": [
+            "npm:next-intl",
+            "npm:@clerk/nextjs",
+            "npm:@clerk/localizations",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/actions/index.ts",
+          "hash": "1879842006559983089",
+          "deps": [
+            "npm:http-status-codes"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/assistant/[publicId]/route.ts",
+          "hash": "4049337714994137819",
+          "deps": [
+            "npm:next",
+            "npm:http-status-codes"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/avatar/route.ts",
+          "hash": "13671890312746863048",
+          "deps": [
+            "npm:axios",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/healthcheck/route.ts",
+          "hash": "16768906650158862559",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/messages/[threadId]/route.ts",
+          "hash": "5956438583908904780",
+          "deps": [
+            "npm:next",
+            "npm:http-status-codes"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/threads/[...details]/route.ts",
+          "hash": "4819808299835398304",
+          "deps": [
+            "npm:langchain",
+            "npm:@langchain/core",
+            "npm:@langchain/community",
+            "npm:@langchain/textsplitters",
+            "npm:@prisma/client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/threads/route.ts",
+          "hash": "13866088098775186450",
+          "deps": [
+            "npm:next",
+            "npm:http-status-codes"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/threads/services/ChatService.ts",
+          "hash": "11323990971890375509",
+          "deps": [
+            "npm:@langchain/openai"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/threads/services/dbService.ts",
+          "hash": "7771687696240348649",
+          "deps": [
+            "prisma-client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/visitor/[publicId]/route.ts",
+          "hash": "3079423486108370254",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/api/visitor/hejho/route.ts",
+          "hash": "6128339082591242325",
+          "deps": [
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/Assistant.tsx",
+          "hash": "11499051979416390262"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/Avatar/Avatar.tsx",
+          "hash": "10716404327093431645",
+          "deps": [
+            "common-ui",
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/Avatar/index.ts",
+          "hash": "12759376602507185976"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/ChatOutput/ChatOutput.tsx",
+          "hash": "15283611186382582759",
+          "deps": [
+            "npm:date-fns",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/ChatOutput/LimitReached.tsx",
+          "hash": "2744333418850190694",
+          "deps": [
+            "npm:next",
+            "npm:next-intl",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/ChatOutput/chat-response.css",
+          "hash": "6038173786453980699"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/ChatOutput/index.ts",
+          "hash": "11005986376237980882"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/ChatOutput/useChatViewLogic.ts",
+          "hash": "5542494557478722155",
+          "deps": [
+            "npm:react",
+            "npm:next-intl",
+            "npm:markdown-it"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/PromptForm/AskQuestion.tsx",
+          "hash": "17282431188967502619",
+          "deps": [
+            "npm:next-intl",
+            "npm:react-hook-form",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/PromptForm/CloseThread.tsx",
+          "hash": "4862739772650124808",
+          "deps": [
+            "npm:next-intl",
+            "npm:react",
+            "npm:@heroicons/react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/PromptForm/Contact.tsx",
+          "hash": "10245966259058906869",
+          "deps": [
+            "npm:next-intl",
+            "npm:@heroicons/react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/PromptForm/PromptForm.tsx",
+          "hash": "11307727480638800573",
+          "deps": [
+            "npm:react",
+            "npm:react-hook-form",
+            "npm:next-intl",
+            "npm:@hookform/resolvers"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/PromptForm/SendMessage.tsx",
+          "hash": "1016803561397696337",
+          "deps": [
+            "npm:next-intl",
+            "npm:@heroicons/react",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/PromptForm/index.ts",
+          "hash": "4917594514755970220"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/ThreadId/ThreadId.tsx",
+          "hash": "2483043431592177899"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/index.ts",
+          "hash": "15058508791940325420"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/types.ts",
+          "hash": "8227118454871991834"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Assistant/useAssistantLogic.ts",
+          "hash": "4994322133686375953",
+          "deps": [
+            "npm:react",
+            "npm:next-intl",
+            "npm:next",
+            "npm:http-status-codes",
+            "npm:axios",
+            "npm:@prisma/client",
+            "npm:@clerk/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Date/Date.tsx",
+          "hash": "8169365547522685065",
+          "deps": [
+            "common-ui",
+            "npm:date-fns-tz",
+            "npm:date-fns"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Date/index.ts",
+          "hash": "14025761460102457320"
+        },
+        {
+          "file": "apps/frontend/src/app/components/LanguageSwitcher/LanguageSwitcher.tsx",
+          "hash": "7696072749584995357",
+          "deps": [
+            "npm:react",
+            "npm:next-intl",
+            "npm:next",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/LanguageSwitcher/index.ts",
+          "hash": "5146564564673052112"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Link/Link.stories.tsx",
+          "hash": "11020241305388999182",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Link/Link.tsx",
+          "hash": "16551767127991710083",
+          "deps": [
+            "npm:react",
+            "npm:next",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Link/index.ts",
+          "hash": "4238584548924999174"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Logo/Logo.tsx",
+          "hash": "13172684900930796776",
+          "deps": [
+            "npm:next",
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Logo/index.ts",
+          "hash": "6260612077746424581"
+        },
+        {
+          "file": "apps/frontend/src/app/components/NavHeader/NavHeader.tsx",
+          "hash": "4502406041416692180"
+        },
+        {
+          "file": "apps/frontend/src/app/components/NavHeader/index.ts",
+          "hash": "4524663606093678586"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Providers.tsx",
+          "hash": "297334665907472010",
+          "deps": [
+            "npm:next-themes"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Start/Start.tsx",
+          "hash": "5964943995844744821",
+          "deps": [
+            "npm:next",
+            "npm:react",
+            "npm:next-intl",
+            "npm:@heroicons/react",
+            "common-ui",
+            "npm:@clerk/nextjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Start/index.ts",
+          "hash": "12360625962471118688"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Theme/ThemeSwitcher.tsx",
+          "hash": "2852699760230269611",
+          "deps": [
+            "npm:@heroicons/react",
+            "npm:next-themes",
+            "npm:react",
+            "common-ui"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Theme/index.ts",
+          "hash": "9502725836389225045"
+        },
+        {
+          "file": "apps/frontend/src/app/components/Toast/Toast.tsx",
+          "hash": "18246866865805337625",
+          "deps": [
+            "npm:react-toastify",
+            "npm:next-themes"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/Toast/index.ts",
+          "hash": "4632881445101568446"
+        },
+        {
+          "file": "apps/frontend/src/app/components/UserLinks/UserLinks.tsx",
+          "hash": "12857618116742916517",
+          "deps": [
+            "npm:@clerk/nextjs",
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/components/UserLinks/index.ts",
+          "hash": "4749158808064666080"
+        },
+        {
+          "file": "apps/frontend/src/app/components/config.ts",
+          "hash": "8945891530584037663"
+        },
+        {
+          "file": "apps/frontend/src/app/config.ts",
+          "hash": "13571042915311417620"
+        },
+        {
+          "file": "apps/frontend/src/app/contracts/Events.ts",
+          "hash": "3229372890451124448"
+        },
+        {
+          "file": "apps/frontend/src/app/contracts/Message.ts",
+          "hash": "1061324640453990204",
+          "deps": [
+            "npm:zod",
+            "npm:@prisma/client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/contracts/ThreadDto.ts",
+          "hash": "14760946824820843777",
+          "deps": [
+            "npm:zod"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/global-error.tsx",
+          "hash": "8898961641480304652",
+          "deps": [
+            "npm:@sentry/nextjs",
+            "npm:next",
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/hooks/useApi.ts",
+          "hash": "18058208433929629700",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/api.ts",
+          "hash": "17524802784879770443"
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/config.ts",
+          "hash": "10212473126551735285",
+          "deps": [
+            "npm:axios"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/message.ts",
+          "hash": "5267438540697194849",
+          "deps": [
+            "npm:openai",
+            "npm:@prisma/client",
+            "prisma-client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/moderation.ts",
+          "hash": "16540091447378379324",
+          "deps": [
+            "prisma-client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/thread.ts",
+          "hash": "11143402342906694658",
+          "deps": [
+            "npm:openai",
+            "npm:@prisma/client",
+            "prisma-client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/utils.ts",
+          "hash": "14599458610330108311",
+          "deps": [
+            "npm:openai"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/services/visitor.ts",
+          "hash": "4096884598305240354",
+          "deps": [
+            "npm:@prisma/client",
+            "npm:date-fns",
+            "prisma-client"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/utils/fingerprint.ts",
+          "hash": "7049977995627068719",
+          "deps": [
+            "npm:@fingerprintjs/fingerprintjs"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/lib/utils/logger.ts",
+          "hash": "12924178603479112402",
+          "deps": [
+            "npm:pino"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/app/messages/en.json",
+          "hash": "13877640980840464053"
+        },
+        {
+          "file": "apps/frontend/src/app/messages/pl.json",
+          "hash": "12580010101480271522"
+        },
+        {
+          "file": "apps/frontend/src/data/PROCEDURAWEBINAR(Checklistawebinarowa).pdf",
+          "hash": "15231306127943626328"
+        },
+        {
+          "file": "apps/frontend/src/data/PROCEDURAtworzeniapostaLinkedIn.pdf",
+          "hash": "8511514718376773824"
+        },
+        {
+          "file": "apps/frontend/src/data/ProceduraStrategiaMarketingowaLeadMagnet.pdf",
+          "hash": "8049893453524455062"
+        },
+        {
+          "file": "apps/frontend/src/data/ProceduratworzeniacontentuYouTubeSolo.pdf",
+          "hash": "7678793308724092413"
+        },
+        {
+          "file": "apps/frontend/src/i18n.ts",
+          "hash": "8989149075722601593",
+          "deps": [
+            "npm:next",
+            "npm:next-intl"
+          ]
+        },
+        {
+          "file": "apps/frontend/src/middleware.ts",
+          "hash": "16459487753582598072",
+          "deps": [
+            "npm:next-intl",
+            "npm:@clerk/nextjs",
+            "npm:next"
+          ]
+        },
+        {
+          "file": "apps/frontend/tailwind.config.js",
+          "hash": "8267530722387483357",
+          "deps": [
+            "ui-kit-utils"
+          ]
+        },
+        {
+          "file": "apps/frontend/tsconfig.json",
+          "hash": "9841394152292059676"
+        },
+        {
+          "file": "apps/frontend/tsconfig.spec.json",
+          "hash": "6922413205408300107"
+        }
+      ],
+      "ui-kit-utils": [
+        {
+          "file": "libs/ui-kit/utils/.eslintrc.json",
+          "hash": "12398963952796570856"
+        },
+        {
+          "file": "libs/ui-kit/utils/.swcrc",
+          "hash": "16777374493166073853"
+        },
+        {
+          "file": "libs/ui-kit/utils/README.md",
+          "hash": "14932460155419058838"
+        },
+        {
+          "file": "libs/ui-kit/utils/jest.config.ts",
+          "hash": "12637952919713174586"
+        },
+        {
+          "file": "libs/ui-kit/utils/package.json",
+          "hash": "15099670731903142948",
+          "deps": [
+            "npm:@swc/helpers"
+          ]
+        },
+        {
+          "file": "libs/ui-kit/utils/project.json",
+          "hash": "18008954177329292017"
+        },
+        {
+          "file": "libs/ui-kit/utils/src/index.ts",
+          "hash": "602383509461752784"
+        },
+        {
+          "file": "libs/ui-kit/utils/src/lib/cn.ts",
+          "hash": "12111293506813543899",
+          "deps": [
+            "npm:clsx",
+            "npm:tailwind-merge"
+          ]
+        },
+        {
+          "file": "libs/ui-kit/utils/src/styles/global.css",
+          "hash": "11110365288291255079"
+        },
+        {
+          "file": "libs/ui-kit/utils/src/tailwind/tailwind.config.js",
+          "hash": "7954569353203359789",
+          "deps": [
+            "npm:tailwindcss",
+            "npm:tailwindcss-animate"
+          ]
+        },
+        {
+          "file": "libs/ui-kit/utils/tsconfig.json",
+          "hash": "1098465750514412960"
+        },
+        {
+          "file": "libs/ui-kit/utils/tsconfig.lib.json",
+          "hash": "5554291030212586824"
+        },
+        {
+          "file": "libs/ui-kit/utils/tsconfig.spec.json",
+          "hash": "9110660443763673899"
+        }
+      ],
+      "ui-kit-ui": [
+        {
+          "file": "libs/ui-kit/ui/.eslintrc.json",
+          "hash": "15946965712701950674"
+        },
+        {
+          "file": "libs/ui-kit/ui/README.md",
+          "hash": "5915945759680104491"
+        },
+        {
+          "file": "libs/ui-kit/ui/package.json",
+          "hash": "15676858568941435854"
+        },
+        {
+          "file": "libs/ui-kit/ui/project.json",
+          "hash": "13379928052846968635"
+        },
+        {
+          "file": "libs/ui-kit/ui/src/index.ts",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "libs/ui-kit/ui/src/lib/ui/button.tsx",
+          "hash": "8543312853784842680",
+          "deps": [
+            "npm:react",
+            "npm:@radix-ui/react-slot",
+            "npm:class-variance-authority",
+            "ui-kit-utils"
+          ]
+        },
+        {
+          "file": "libs/ui-kit/ui/tsconfig.json",
+          "hash": "9466653708934095578"
+        },
+        {
+          "file": "libs/ui-kit/ui/tsconfig.lib.json",
+          "hash": "8570955936826736169"
+        }
+      ],
+      "common-ui": [
+        {
+          "file": "libs/common-ui/.eslintrc.json",
+          "hash": "14556524733145915277"
+        },
+        {
+          "file": "libs/common-ui/.storybook/main.ts",
+          "hash": "4868400007972605024",
+          "deps": [
+            "npm:@storybook/nextjs"
+          ]
+        },
+        {
+          "file": "libs/common-ui/.storybook/preview.ts",
+          "hash": "16176132684078846673",
+          "deps": [
+            "npm:@storybook/addon-themes"
+          ]
+        },
+        {
+          "file": "libs/common-ui/README.md",
+          "hash": "9508545300527879303"
+        },
+        {
+          "file": "libs/common-ui/package.json",
+          "hash": "9556179268387384996"
+        },
+        {
+          "file": "libs/common-ui/postcss.config.js",
+          "hash": "2759402739052110475"
+        },
+        {
+          "file": "libs/common-ui/project.json",
+          "hash": "8847543299212260214"
+        },
+        {
+          "file": "libs/common-ui/src/global.css",
+          "hash": "14205313331670919605"
+        },
+        {
+          "file": "libs/common-ui/src/index.ts",
+          "hash": "1573218987143657715"
+        },
+        {
+          "file": "libs/common-ui/src/lib/Alert/Alert.stories.tsx",
+          "hash": "7483518379921570388",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Alert/Alert.tsx",
+          "hash": "5570711143775190642",
+          "deps": [
+            "npm:@heroicons/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Alert/index.ts",
+          "hash": "14925126151502316263"
+        },
+        {
+          "file": "libs/common-ui/src/lib/Button/Button.spec.tsx",
+          "hash": "11444790630275681883",
+          "deps": [
+            "npm:@testing-library/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Button/Button.stories.tsx",
+          "hash": "8652515860463890322",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Button/Button.tsx",
+          "hash": "18002350270857068936",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Button/index.ts",
+          "hash": "14547200106519176950"
+        },
+        {
+          "file": "libs/common-ui/src/lib/Header/Header.stories.ts",
+          "hash": "13296504545178621221",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Header/Header.tsx",
+          "hash": "165306542694566177",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Header/index.ts",
+          "hash": "123234856955568023"
+        },
+        {
+          "file": "libs/common-ui/src/lib/Input/Input.spec.tsx",
+          "hash": "8243925147180758179",
+          "deps": [
+            "npm:@testing-library/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Input/Input.stories.tsx",
+          "hash": "11105025514688762884",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Input/Input.tsx",
+          "hash": "3678493315919815583",
+          "deps": [
+            "npm:react",
+            "npm:react-hook-form"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Input/index.ts",
+          "hash": "3770040670399285892"
+        },
+        {
+          "file": "libs/common-ui/src/lib/Text/Text.stories.tsx",
+          "hash": "4080205367775886216",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Text/Text.tsx",
+          "hash": "6516529854007011294",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Text/index.ts",
+          "hash": "10405438901590370408"
+        },
+        {
+          "file": "libs/common-ui/src/lib/Textarea/Textarea.stories.tsx",
+          "hash": "7695946848893565445",
+          "deps": [
+            "npm:@storybook/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Textarea/Textarea.tsx",
+          "hash": "11142295954439639694",
+          "deps": [
+            "npm:react",
+            "npm:@heroicons/react",
+            "npm:react-hook-form"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/Textarea/index.ts",
+          "hash": "9434546479532198934"
+        },
+        {
+          "file": "libs/common-ui/src/lib/common-ui.spec.tsx",
+          "hash": "12265684845501197012",
+          "deps": [
+            "npm:@testing-library/react"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/lib/common-ui.tsx",
+          "hash": "13140972622966147951"
+        },
+        {
+          "file": "libs/common-ui/src/lib/hello-server.tsx",
+          "hash": "2397568674684759047"
+        },
+        {
+          "file": "libs/common-ui/src/lib/icons/CursorSVG.tsx",
+          "hash": "4502413536024432565"
+        },
+        {
+          "file": "libs/common-ui/src/lib/icons/SpinnerSVG.tsx",
+          "hash": "11106669148038602049"
+        },
+        {
+          "file": "libs/common-ui/src/lib/icons/index.ts",
+          "hash": "5450959251699760932"
+        },
+        {
+          "file": "libs/common-ui/src/lib/utils/cn.ts",
+          "hash": "42208162778040893",
+          "deps": [
+            "npm:tailwind-merge",
+            "npm:clsx"
+          ]
+        },
+        {
+          "file": "libs/common-ui/src/server.ts",
+          "hash": "8912437808649717296"
+        },
+        {
+          "file": "libs/common-ui/tailwind.config.js",
+          "hash": "2862805630569408850",
+          "deps": [
+            "ui-kit-utils"
+          ]
+        },
+        {
+          "file": "libs/common-ui/tsconfig.json",
+          "hash": "4317979821831494925"
+        },
+        {
+          "file": "libs/common-ui/tsconfig.lib.json",
+          "hash": "9925407152991006790"
+        },
+        {
+          "file": "libs/common-ui/tsconfig.storybook.json",
+          "hash": "9107249430377532392"
+        }
+      ]
+    }
+  }
+}
