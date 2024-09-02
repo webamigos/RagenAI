@@ -26,11 +26,17 @@ export const ThreadsSection = ({
           threads.length > 0 && (
             <div key={title}>
               <SidebarLabel className="ml-1">{title}</SidebarLabel>
+
               {threads.map((thread, index) => {
+                const contentPreview =
+                  thread.messages[0]?.content.length > 40
+                    ? `${thread.messages[0]?.content.slice(0, 40)}...`
+                    : thread.messages[0]?.content;
                 const isActive = thread.public_id === activeThread;
                 const isLastThreadInAllCategories =
                   categoryIndex === threadCategories.length - 1 &&
                   index === threads.length - 1;
+
                 return (
                   <div
                     className="mb-1.5 last-of-type:mb-10 first-of-type:mt-5"
@@ -43,7 +49,7 @@ export const ThreadsSection = ({
                       onClick={() => handleThreadClick(thread.public_id)}
                       current={isActive}
                     >
-                      {thread.messages[0].content}
+                      {`${contentPreview}`}
                     </SidebarItem>
                   </div>
                 );
