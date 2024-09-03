@@ -61,7 +61,6 @@ export const UserThreadsHistory = ({
   const categorizeThreads = (threads: ThreadHistoryResponse[]) => {
     const now = new Date();
     const todayDate = format(now, 'EEE MMM dd yyyy');
-
     const yesterdayDate = format(subDays(now, 1), 'EEE MMM dd yyyy');
 
     return threads.reduce(

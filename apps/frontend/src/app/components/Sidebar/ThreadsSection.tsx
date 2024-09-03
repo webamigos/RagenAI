@@ -43,7 +43,7 @@ export const ThreadsSection = ({
                     ref={
                       isLastThreadInAllCategories ? lastThreadElementRef : null
                     }
-                    key={thread.id}
+                    key={thread.public_id}
                   >
                     <SidebarItem
                       onClick={() => handleThreadClick(thread.public_id)}

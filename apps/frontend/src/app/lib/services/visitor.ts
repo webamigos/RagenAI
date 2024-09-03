@@ -62,13 +62,11 @@ export const getUserThreads = async (
     skip: skip,
     take: take,
     select: {
-      id: true,
       public_id: true,
       created_at: true,
       openai_thread_id: true,
       messages: {
         select: {
-          id: true,
           content: true,
           created_at: true,
           role: true,
