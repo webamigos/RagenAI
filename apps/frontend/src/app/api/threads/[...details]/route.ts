@@ -1,27 +1,18 @@
-// src/api/threads/[threadId]/[messageId].ts
-import { formatDocumentsAsString } from 'langchain/util/document';
-import { MultiFileLoader } from 'langchain/document_loaders/fs/multi_file';
-import { PromptTemplate } from '@langchain/core/prompts';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { Role } from '@prisma/client';
 
-import { createChatInstance } from './../services/ChatService';
-import { logger } from '../../../lib/utils/logger';
 import {
   getMessageById,
   getThreadDetails,
   getThreadMessages,
 } from './../services/dbService';
 import { createMessageInDB } from '../../../lib/services/message';
-import { PROMPT_TEMPLATE } from '../../../config';
-import { selectRelevantChunks } from '../utills';
+import { chain } from '../utills';
 import {
   SseInitEvent,
   SseMessageEvent,
   SseMessageDelta,
 } from '../../../contracts/Events';
+import { logger } from '../../../lib/utils/logger';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,9 +20,6 @@ export const dynamic = 'force-dynamic';
 type Params = {
   params: { details: string[] };
 };
-
-const CHUNK_SIZE = 1000;
-const CHUNK_OVERLAP = 200;
 
 export const prepareSseMessage = (
   event: string,
@@ -53,58 +41,27 @@ export async function GET(_request: Request, { params }: Params) {
     const threadMessages = await getThreadMessages(publicThreadId);
     const threadEntity = await getThreadDetails(publicThreadId);
 
-    const promptTemplate = new PromptTemplate({
-      template: PROMPT_TEMPLATE,
-      inputVariables: ['chat_history', 'input', 'context'],
-    });
-
-    const multiFileLoader = new MultiFileLoader(
-      [
-        'src/data/ProceduratworzeniacontentuYouTubeSolo.pdf',
-        'src/data/PROCEDURAtworzeniapostaLinkedIn.pdf',
-        'src/data/PROCEDURAWEBINAR(Checklistawebinarowa).pdf',
-        'src/data/ProceduraStrategiaMarketingowaLeadMagnet.pdf',
-      ],
-      {
-        '.pdf': (path: string) => new PDFLoader(path),
-      }
-    );
-
-    const chatHistory = threadMessages?.messages
+    const conv_history = threadMessages?.messages
       .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
       .join('\n');
 
-    const docs = await multiFileLoader.load();
-    const stringDocs = formatDocumentsAsString(docs);
+    //if you need add another files to context - uncomment
+    //await addDocumentsToStore(splitDocs);
 
-    const textSplitter = new RecursiveCharacterTextSplitter({
-      chunkSize: CHUNK_SIZE,
-      chunkOverlap: CHUNK_OVERLAP,
-    });
-    const splitDocs = await textSplitter.splitText(stringDocs);
-
-    const relevantChunks = await selectRelevantChunks(
-      splitDocs,
-      thredMessage!.content,
-      10
+    const eventStream = await chain.streamEvents(
+      {
+        question: thredMessage!.content,
+        conv_history: conv_history,
+      },
+      {
+        version: 'v2',
+      }
     );
-    const combinedContext = relevantChunks.join('\n');
-
-    const prompt = await promptTemplate.format({
-      chat_history: chatHistory || '',
-      input: thredMessage!.content,
-      context: combinedContext,
-    });
-
-    const chain = createChatInstance().pipe(new StringOutputParser());
-    const eventStream = await chain.streamEvents(prompt, {
-      version: 'v1',
-    });
-
     let fullMessage = '';
+
     for await (const event of eventStream) {
-      if (event.event === 'on_llm_stream') {
-        const textChunk = event.data.chunk?.text || '';
+      if (event.event === 'on_parser_stream') {
+        const textChunk = event.data.chunk || '';
         fullMessage += textChunk;
         writer.write(
           prepareSseMessage('message', {
@@ -112,13 +69,16 @@ export async function GET(_request: Request, { params }: Params) {
             payload: { content: textChunk },
           })
         );
-      } else if (event.event === 'on_chain_end') {
+      } else if (event.event === 'on_parser_end') {
         const dbMessage = await createMessageInDB({
-          thread: threadEntity,
+          thread: {
+            ...threadEntity,
+            visitor_id: threadEntity.visitor_id,
+          },
           message: {
             id: publicMessageId,
             created_at: Math.floor(Date.now() / 1000),
-            content: fullMessage,
+            content: event.data.output,
           },
           role: Role.ASSISTANT,
         });

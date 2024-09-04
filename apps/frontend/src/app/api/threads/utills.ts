@@ -1,30 +1,69 @@
-import { embeddingModel } from './services/ChatService';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { PromptTemplate } from '@langchain/core/prompts';
+import { StringOutputParser } from '@langchain/core/output_parsers';
+import {
+  RunnablePassthrough,
+  RunnableSequence,
+} from '@langchain/core/runnables';
 
-export const cosineSimilarity = (vecA: number[], vecB: number[]): number => {
-  const dotProduct = vecA.reduce((sum, a, idx) => sum + a * vecB[idx], 0);
-  const magnitudeA = Math.sqrt(vecA.reduce((sum, val) => sum + val * val, 0));
-  const magnitudeB = Math.sqrt(vecB.reduce((sum, val) => sum + val * val, 0));
-  return dotProduct / (magnitudeA * magnitudeB);
+import { standaloneQuestionTemplate, answerTemplate } from '../../config';
+import {
+  createChatInstance,
+  embeddingModel,
+  supeBaseClient,
+} from './services/ChatService';
+
+type Document = {
+  pageContent: string;
+  metadata: Record<string, any>;
+  id?: number | string;
 };
 
-export const getEmbeddings = async (texts: string[]): Promise<number[][]> => {
-  return await embeddingModel.embedDocuments(texts);
-};
+const vectorStore = new SupabaseVectorStore(embeddingModel, {
+  client: supeBaseClient,
+  tableName: 'documents',
+  queryName: 'match_documents',
+});
+const retriever = vectorStore.asRetriever();
 
-export const selectRelevantChunks = async (
-  chunks: string[],
-  query: string,
-  maxChunks: number = 10
-): Promise<string[]> => {
-  const queryEmbedding = await getEmbeddings([query]);
-  const chunkEmbeddings = await getEmbeddings(chunks);
+const standaloneQuestionPrompt = PromptTemplate.fromTemplate(
+  standaloneQuestionTemplate
+);
+const standaloneQuestionChain = standaloneQuestionPrompt
+  .pipe(createChatInstance)
+  .pipe(new StringOutputParser());
+const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
+const answerChain = answerPrompt
+  .pipe(createChatInstance)
+  .pipe(new StringOutputParser());
+const retrieverChain = RunnableSequence.from([
+  (prevResult) => prevResult.standalone_question,
+  retriever,
+  combineDocuments,
+]);
 
-  const scores = chunkEmbeddings.map((embedding, index) => ({
-    chunk: chunks[index],
-    score: cosineSimilarity(queryEmbedding[0], embedding),
-  }));
+const chain = RunnableSequence.from([
+  {
+    standalone_question: standaloneQuestionChain,
+    original_input: new RunnablePassthrough(),
+  },
+  {
+    context: retrieverChain,
+    question: ({ original_input }) => original_input.question,
+    conv_history: ({ original_input }) => original_input.conv_history,
+  },
+]);
 
-  scores.sort((a, b) => b.score - a.score);
+function combineDocuments(docs: Document[]) {
+  console.log({ sdasddas: docs });
+  return docs.map((doc) => doc.pageContent).join('\n\n');
+}
 
-  return scores.slice(0, maxChunks).map((item) => item.chunk);
+export {
+  chain,
+  retriever,
+  answerChain,
+  answerPrompt,
+  retrieverChain,
+  standaloneQuestionPrompt,
 };
