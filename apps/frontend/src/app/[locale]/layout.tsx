@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { plPL, enUS } from '@clerk/localizations';
 
 import { Providers } from '../components/Providers';
+import { ThreadsContextProvider } from '../../context/ThreadsContext';
 import { locales } from '../config';
 import './global.css';
 
@@ -28,7 +29,9 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
     <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
       <html lang={locale} className="h-full" suppressHydrationWarning>
         <body className={`${inter.className} h-full`}>
-          <Providers>{children}</Providers>
+          <ThreadsContextProvider>
+            <Providers>{children}</Providers>
+          </ThreadsContextProvider>
         </body>
       </html>
     </ClerkProvider>

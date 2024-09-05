@@ -22,7 +22,11 @@
   "chat": {
     "USER": "Ty",
     "ASSISTANT": "Asystent",
-    "loading": "Chwileczkę..."
+    "loading": "Chwileczkę...",
+    "chat-history": "Historia konwersacji",
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "older": "Starsze"
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",

@@ -9,17 +9,18 @@ import { useUser } from '@clerk/nextjs';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
-import { sendMessage } from '../../actions';
+import { getUserMessages, sendMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
+import { useThreadsContext } from '../../hooks/useThreadsContext';
 import {
   checkVisitorVisits,
   fetchMessagesFromApi,
 } from '../../lib/services/api';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
+import { logger } from '../../lib/utils/logger';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
-import { logger } from '../../lib/utils/logger';
 
 const {
   SET_INITIAL_LOAD,
@@ -56,6 +57,7 @@ export const useAssistantLogic = (threadId: string) => {
   const locale = useLocale();
   const t = useTranslations('Index');
   const { isSignedIn } = useUser();
+  const { dispatch: threadsDispatch } = useThreadsContext();
 
   const [
     {
@@ -108,6 +110,7 @@ export const useAssistantLogic = (threadId: string) => {
         return state;
     }
   }
+
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
@@ -174,8 +177,6 @@ export const useAssistantLogic = (threadId: string) => {
         accumulatingMessage = '';
         dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
       }
-
-
     });
 
     eventSource.addEventListener('error', (error) => {
@@ -203,6 +204,15 @@ export const useAssistantLogic = (threadId: string) => {
 
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
+    const visitorId = await loadFingerprint();
+    const messageResponse = await sendMessage(threadId, data, visitorId);
+    const response = await getUserMessages(visitorId);
+    const threads = response.threads;
+
+    threadsDispatch({
+      type: 'USER_THREADS',
+      payload: threads || [],
+    });
 
     try {
       const userMessage = {
@@ -211,7 +221,6 @@ export const useAssistantLogic = (threadId: string) => {
         content: data.prompt,
         created_at: new Date(),
       };
-
       dispatch({ type: ADD_MESSAGE, payload: userMessage });
       dispatch({
         type: SET_MESSAGE_LOADING,
@@ -225,9 +234,6 @@ export const useAssistantLogic = (threadId: string) => {
         type: SET_LOADING_TEXT,
         payload: t('status-thinking'),
       });
-
-      const visitorId = await loadFingerprint();
-      const messageResponse = await sendMessage(threadId, data, visitorId);
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });

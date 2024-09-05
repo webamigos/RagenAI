@@ -22,7 +22,11 @@
   "chat": {
     "USER": "You",
     "ASSISTANT": "Assistant",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "chat-history": "Conversation history",
+    "today": "today",
+    "yesterday": "yesterday",
+    "older": "older"
   },
   "form": {
     "enter-your-question": "Enter your question",

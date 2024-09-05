@@ -1,5 +1,4 @@
 import {
-  useUser,
   SignedIn,
   SignInButton,
   SignOutButton,
@@ -8,7 +7,6 @@ import {
 import { useTranslations } from 'next-intl';
 
 export const UserLinks = () => {
-  // const { user } = useUser();
   const t = useTranslations();
 
   return (
@@ -16,7 +14,7 @@ export const UserLinks = () => {
       <SignedIn>
         <div>
           <SignOutButton>
-            <span className="text-slate-300 cursor-pointer">
+            <span className=" dark:text-slate-200 text-slate-900 cursor-pointer">
               {t('common.sign-out')}
             </span>
           </SignOutButton>

@@ -14,6 +14,16 @@ export type MessageDto = {
   public_id: MessageModel['public_id'];
 };
 
-export type MessageResponse = {
-  message: MessageDto;
+export type Thread = {
+  thread: ThreadHistoryResponse[];
+};
+
+export type MessageDtoWithoutPublicId = Omit<MessageDto, 'public_id'>;
+
+export type ThreadHistoryResponse = {
+  id: string;
+  created_at: Date;
+  public_id: string;
+  openai_thread_id: string;
+  messages: MessageDtoWithoutPublicId[];
 };
