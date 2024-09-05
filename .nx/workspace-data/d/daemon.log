@@ -1,51 +1,33 @@
-[NX Daemon Server] - 2024-09-05T11:48:04.691Z - Started listening on: /var/folders/_9/fw3gv09d59s3snkd8l9bsr2r0000gn/T/4ad5407dce91d4a010c3/d.sock
-[NX Daemon Server] - 2024-09-05T11:48:04.693Z - [WATCHER]: Subscribed to changes within: /Users/patryk/Workspace/salesyy (native)
-[NX Daemon Server] - 2024-09-05T11:48:04.694Z - Established a connection. Number of open connections: 1
-[NX Daemon Server] - 2024-09-05T11:48:04.695Z - Established a connection. Number of open connections: 2
-[NX Daemon Server] - 2024-09-05T11:48:04.696Z - Closed a connection. Number of open connections: 1
-[NX Daemon Server] - 2024-09-05T11:48:04.696Z - [REQUEST]: Client Request for Project Graph Received
-[NX Daemon Server] - 2024-09-05T11:48:04.700Z - Established a connection. Number of open connections: 2
-[NX Daemon Server] - 2024-09-05T11:48:04.701Z - Closed a connection. Number of open connections: 1
-[NX Daemon Server] - 2024-09-05T11:48:04.701Z - Established a connection. Number of open connections: 2
-[NX Daemon Server] - 2024-09-05T11:48:04.703Z - [REQUEST]: Client Request for Project Graph Received
-[NX Daemon Server] - 2024-09-05T11:48:04.914Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
-[NX Daemon Server] - 2024-09-05T11:48:04.914Z - [REQUEST]: 
-[NX Daemon Server] - 2024-09-05T11:48:04.914Z - [REQUEST]: 
-[NX Daemon Server] - 2024-09-05T11:48:04.919Z - Time taken for 'loadNxPlugins' 209.331625ms
-[NX Daemon Server] - 2024-09-05T11:48:04.922Z - Time taken for 'loadNxPlugins' 217.873125ms
-[NX Daemon Server] - 2024-09-05T11:48:04.978Z - Time taken for 'build-project-configs' 47.86362500000001ms
-[NX Daemon Server] - 2024-09-05T11:48:04.992Z - [SYNC]: collect registered sync generators
-[NX Daemon Server] - 2024-09-05T11:48:04.993Z - [SYNC]: scheduling: []
-[NX Daemon Server] - 2024-09-05T11:48:04.993Z - [REQUEST]: Responding to the client. project-graph
-[NX Daemon Server] - 2024-09-05T11:48:04.993Z - [REQUEST]: Responding to the client. project-graph
-[NX Daemon Server] - 2024-09-05T11:48:04.994Z - Time taken for 'total for creating and serializing project graph' 290.14408399999996ms
-[NX Daemon Server] - 2024-09-05T11:48:04.997Z - Done responding to the client project-graph
-[NX Daemon Server] - 2024-09-05T11:48:04.997Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 297. Response time: 4.
-[NX Daemon Server] - 2024-09-05T11:48:04.998Z - Done responding to the client project-graph
-[NX Daemon Server] - 2024-09-05T11:48:04.998Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 290. Response time: 5.
-[NX Daemon Server] - 2024-09-05T11:48:05.005Z - [REQUEST]: Client Request for Project Graph Received
-[NX Daemon Server] - 2024-09-05T11:48:05.005Z - [REQUEST]: Responding to the client. project-graph
-[NX Daemon Server] - 2024-09-05T11:48:05.005Z - Time taken for 'total for creating and serializing project graph' 0.22654199999999491ms
-[NX Daemon Server] - 2024-09-05T11:48:05.007Z - Done responding to the client project-graph
-[NX Daemon Server] - 2024-09-05T11:48:05.007Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 2.
-[NX Daemon Server] - 2024-09-05T11:48:05.021Z - [REQUEST]: Responding to the client. handleHashTasks
-[NX Daemon Server] - 2024-09-05T11:48:05.021Z - Done responding to the client handleHashTasks
-[NX Daemon Server] - 2024-09-05T11:48:05.022Z - Handled HASH_TASKS. Handling time: 13. Response time: 1.
-[NX Daemon Server] - 2024-09-05T11:48:05.023Z - Established a connection. Number of open connections: 3
-[NX Daemon Server] - 2024-09-05T11:48:06.027Z - [REQUEST]: Responding to the client. recordOutputsHash
-[NX Daemon Server] - 2024-09-05T11:48:06.027Z - Done responding to the client recordOutputsHash
-[NX Daemon Server] - 2024-09-05T11:48:06.027Z - Handled RECORD_OUTPUTS_HASH. Handling time: 1. Response time: 0.
-[NX Daemon Server] - 2024-09-05T11:48:06.030Z - [REQUEST]: Responding to the client. handleWriteTaskRunsToHistory
-[NX Daemon Server] - 2024-09-05T11:48:06.030Z - Done responding to the client handleWriteTaskRunsToHistory
-[NX Daemon Server] - 2024-09-05T11:48:06.030Z - Handled WRITE_TASK_RUNS_TO_HISTORY. Handling time: 0. Response time: 0.
-[NX Daemon Server] - 2024-09-05T11:48:06.031Z - [REQUEST]: Responding to the client. handleGetTaskHistoryForHashes
-[NX Daemon Server] - 2024-09-05T11:48:06.031Z - Done responding to the client handleGetTaskHistoryForHashes
-[NX Daemon Server] - 2024-09-05T11:48:06.031Z - Handled GET_TASK_HISTORY_FOR_HASHES. Handling time: 0. Response time: 0.
-[NX Daemon Server] - 2024-09-05T11:48:06.035Z - Closed a connection. Number of open connections: 2
-[NX Daemon Server] - 2024-09-05T11:48:06.320Z - [WATCHER]: Processing file changes in outputs
-[NX Daemon Server] - 2024-09-05T11:48:06.321Z - [WATCHER]: 17 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
-[NX Daemon Server] - 2024-09-05T11:48:06.322Z - Closed a connection. Number of open connections: 1
-[NX Daemon Server] - 2024-09-05T11:48:06.322Z - Closed a connection. Number of open connections: 0
-[NX Daemon Server] - 2024-09-05T11:48:06.322Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (sources)
-[NX Daemon Server] - 2024-09-05T11:48:06.322Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (outputs)
-[NX Daemon Server] - 2024-09-05T11:48:06.323Z - Server stopped because: "Stopping the daemon the set of ignored files changed (native)"
+[NX Daemon Server] - 2024-09-05T12:41:16.977Z - Started listening on: /var/folders/_9/fw3gv09d59s3snkd8l9bsr2r0000gn/T/4ad5407dce91d4a010c3/d.sock
+[NX Daemon Server] - 2024-09-05T12:41:16.978Z - [WATCHER]: Subscribed to changes within: /Users/patryk/Workspace/salesyy (native)
+[NX Daemon Server] - 2024-09-05T12:41:16.979Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T12:41:16.979Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-09-05T12:41:16.980Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T12:41:16.981Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX Daemon Server] - 2024-09-05T12:41:16.982Z - Done responding to the client Shutdown initiated
+[NX Daemon Server] - 2024-09-05T12:41:16.982Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2024-09-05T12:41:16.982Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-09-05T12:41:16.983Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (sources)
+[NX Daemon Server] - 2024-09-05T12:41:16.983Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (outputs)
+[NX Daemon Server] - 2024-09-05T12:45:58.045Z - Started listening on: /var/folders/_9/fw3gv09d59s3snkd8l9bsr2r0000gn/T/4ad5407dce91d4a010c3/d.sock
+[NX Daemon Server] - 2024-09-05T12:45:58.049Z - [WATCHER]: Subscribed to changes within: /Users/patryk/Workspace/salesyy (native)
+[NX Daemon Server] - 2024-09-05T12:45:58.057Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T12:45:58.061Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-09-05T12:45:58.062Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T12:45:58.064Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX Daemon Server] - 2024-09-05T12:45:58.064Z - Done responding to the client Shutdown initiated
+[NX Daemon Server] - 2024-09-05T12:45:58.064Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 0.
+[NX Daemon Server] - 2024-09-05T12:45:58.091Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-09-05T12:45:58.095Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (sources)
+[NX Daemon Server] - 2024-09-05T12:45:58.095Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (outputs)
+[NX Daemon Server] - 2024-09-05T13:10:39.884Z - Started listening on: /var/folders/_9/fw3gv09d59s3snkd8l9bsr2r0000gn/T/4ad5407dce91d4a010c3/d.sock
+[NX Daemon Server] - 2024-09-05T13:10:39.886Z - [WATCHER]: Subscribed to changes within: /Users/patryk/Workspace/salesyy (native)
+[NX Daemon Server] - 2024-09-05T13:10:39.895Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T13:10:39.895Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-09-05T13:10:39.896Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T13:10:39.897Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX Daemon Server] - 2024-09-05T13:10:39.897Z - Done responding to the client Shutdown initiated
+[NX Daemon Server] - 2024-09-05T13:10:39.897Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 0.
+[NX Daemon Server] - 2024-09-05T13:10:39.899Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-09-05T13:10:39.899Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (sources)
+[NX Daemon Server] - 2024-09-05T13:10:39.899Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (outputs)

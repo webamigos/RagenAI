@@ -1,4 +1,32 @@
 {
-  "_COMMENT": "only used by shadcn/ui cli to generate shadcn/ui components",
-  "extends": "./tsconfig.base.json"
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      // for backward compatibility
+      "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
+      "@salesyy/common-ui": ["./src/libs/common-ui"],
+      "@salesyy/prisma-client": ["./src/libs/db"],
+
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }
