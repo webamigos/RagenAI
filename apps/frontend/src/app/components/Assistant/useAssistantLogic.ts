@@ -70,7 +70,6 @@ export const useAssistantLogic = (threadId: string) => {
   ] = useReducer(reducer, initialState);
 
   const isGlobalLoading = isLoading || isMessageLoading;
-
   function reducer(state: State, action: Action): State {
     switch (action.type) {
       case SET_INITIAL_LOAD:
@@ -103,7 +102,6 @@ export const useAssistantLogic = (threadId: string) => {
           ...state,
           messages: [...state.messages, action.payload],
         };
-
       default:
         return state;
     }
@@ -145,20 +143,18 @@ export const useAssistantLogic = (threadId: string) => {
 
     eventSource.addEventListener('message', (event) => {
       const eventMessage = JSON.parse(event.data);
-
       if (eventMessage.type === 'delta') {
-        accumulatingMessage += eventMessage.payload.content;
+        const textChunk = eventMessage.payload.content;
+        accumulatingMessage += textChunk;
         dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
-          payload: accumulatingMessage,
+          payload: textChunk,
         });
 
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         scrollToBottom();
       } else if (eventMessage.type === 'message') {
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-
         if (accumulatingMessage.trim()) {
           dispatch({
             type: ADD_MESSAGE,
@@ -169,13 +165,11 @@ export const useAssistantLogic = (threadId: string) => {
               created_at: eventMessage.payload.created_at,
             },
           });
+          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
         }
 
         accumulatingMessage = '';
-        dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
       }
-
-
     });
 
     eventSource.addEventListener('error', (error) => {
@@ -186,7 +180,6 @@ export const useAssistantLogic = (threadId: string) => {
 
     return eventSource;
   };
-
   useEffect(() => {
     if (userMessageId !== '') {
       const eventSource = connectToStream(userMessageId);
@@ -216,10 +209,6 @@ export const useAssistantLogic = (threadId: string) => {
       dispatch({
         type: SET_MESSAGE_LOADING,
         payload: true,
-      });
-      dispatch({
-        type: SET_STREAMED_MESSAGE,
-        payload: null,
       });
       dispatch({
         type: SET_LOADING_TEXT,

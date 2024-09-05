@@ -20,7 +20,6 @@ export const ChatOutput = ({
   streamedMessage,
 }: Props) => {
   const { t, md, renderedStreamedMessage } = useChatViewLogic(streamedMessage);
-
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
