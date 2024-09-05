@@ -13,7 +13,6 @@ export const useChatViewLogic = (streamedMessage: Props | null) => {
   const t = useTranslations('chat');
 
   const md = markdownit();
-
   useEffect(() => {
     if (streamedMessage) {
       const rendered = md.render(streamedMessage.content);
