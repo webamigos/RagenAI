@@ -55,7 +55,6 @@ const chain = RunnableSequence.from([
 ]);
 
 function combineDocuments(docs: Document[]) {
-  console.log({ sdasddas: docs });
   return docs.map((doc) => doc.pageContent).join('\n\n');
 }
 

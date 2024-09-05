@@ -72,10 +72,7 @@ export const addDocumentsToStore = async (chunks: string[]) => {
       .select('id');
 
     if (error) {
-      console.error(
-        'Error inserting documents into PostgreSQL:',
-        error.message
-      );
+      logger.error('Error inserting documents into PostgreSQL:', error.message);
       throw new Error(
         `Error inserting documents into PostgreSQL: ${error.message}`
       );
