@@ -1,49 +1,17 @@
 version: '3'
 services:
-  mongodb:
-    build:
-      context: ./mongodb_replica
-      args:
-        MONGO_VERSION: 6
-    environment:
-      MONGO_REPLICA_HOST: 127.0.0.1
-      MONGO_REPLICA_PORT: 27017
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: pass123
-      MONGO_INITDB_DATABASE: salesyy
-      # Use "mongo" instead of "mongosh" before v5.0
-      MONGO_COMMAND: 'mongosh'
+  db:
+    image: postgres
+    container_name: salesyy-postgres
+    restart: always
     ports:
-      - '27017:27017'
-    restart: unless-stopped
-    healthcheck:
-      # Use "mongo" instead of "mongosh" before v5.0
-      test:
-        [
-          'CMD',
-          'mongosh',
-          'admin',
-          '--port',
-          '27017',
-          '--eval',
-          "db.adminCommand('ping').ok",
-        ]
-      interval: 5s
-      timeout: 2s
-      retries: 20
-
-  # db:
-  #   image: postgres
-  #   container_name: salesyy-postgres
-  #   restart: always
-  #   ports:
-  #     - 5432:5432
-  #   environment:
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: pass123
-  #     POSTGRES_DB: salesyy-avatar
-  #   volumes:
-  #     - ./volumes/postgres:/var/lib/postgresql/data
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass123
+      POSTGRES_DB: salesyy-avatar
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
   redis:
     image: redis
     container_name: salesyy-redis
@@ -64,3 +32,35 @@ services:
 # networks:
 #   rabbitmq_go_net:
 #     driver: bridge
+
+# mongodb:
+#   build:
+#     context: ./mongodb_replica
+#     args:
+#       MONGO_VERSION: 6
+#   environment:
+#     MONGO_REPLICA_HOST: 127.0.0.1
+#     MONGO_REPLICA_PORT: 27017
+#     MONGO_INITDB_ROOT_USERNAME: root
+#     MONGO_INITDB_ROOT_PASSWORD: pass123
+#     MONGO_INITDB_DATABASE: salesyy
+#     # Use "mongo" instead of "mongosh" before v5.0
+#     MONGO_COMMAND: 'mongosh'
+#   ports:
+#     - '27017:27017'
+#   restart: unless-stopped
+#   healthcheck:
+#     # Use "mongo" instead of "mongosh" before v5.0
+#     test:
+#       [
+#         'CMD',
+#         'mongosh',
+#         'admin',
+#         '--port',
+#         '27017',
+#         '--eval',
+#         "db.adminCommand('ping').ok",
+#       ]
+#     interval: 5s
+#     timeout: 2s
+#     retries: 20
