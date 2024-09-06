@@ -9,7 +9,6 @@ import { format, subDays } from 'date-fns';
 
 type Props = {
   hasMore: boolean;
-  noThreads: boolean;
   isLoading: boolean;
   error: string | null;
   activeThread: string;
@@ -21,7 +20,6 @@ export const UserThreadsHistory = ({
   error,
   hasMore,
   isLoading,
-  noThreads,
   userThreads,
   activeThread,
   handleThreadClick,
@@ -89,12 +87,10 @@ export const UserThreadsHistory = ({
 
   return (
     <SidebarSection>
-      {!noThreads && (
-        <div className="flex items-center cursor-pointer ml-2 mb-5 gap-2 text-lg">
-          <ChatConversation />
-          <SidebarLabel>{t('chat-history')}</SidebarLabel>
-        </div>
-      )}
+      <div className="flex items-center  ml-2 mb-5 gap-2 text-lg">
+        <ChatConversation />
+        <SidebarLabel>{t('chat-history')}</SidebarLabel>
+      </div>
       <ThreadsSection
         activeThread={activeThread}
         threadCategories={threadCategories}

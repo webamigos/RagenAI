@@ -23,6 +23,5 @@ export type MessageDtoWithoutPublicId = Omit<MessageDto, 'public_id'>;
 export type ThreadHistoryResponse = {
   created_at: Date;
   public_id: string;
-  openai_thread_id: string;
   messages: MessageDtoWithoutPublicId[];
 };

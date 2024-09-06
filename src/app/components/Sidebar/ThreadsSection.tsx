@@ -46,6 +46,7 @@ export const ThreadsSection = ({
                     key={thread.public_id}
                   >
                     <SidebarItem
+                      className="cursor-pointer"
                       onClick={() => handleThreadClick(thread.public_id)}
                       current={isActive}
                     >

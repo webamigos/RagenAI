@@ -12,6 +12,14 @@
     "or": "or",
     "to-still-use": "to continue using the service"
   },
+  "Sign-up": {
+    "sign-up": "Sign up",
+    "password": "Password",
+    "Already-have-an-account": "Already have an account?",
+    "sign-in": "Sign in",
+    "Verification-code": "Verification code",
+    "confirm": "Confirm code"
+  },
   "common": {
     "sign-in": "Sign in",
     "sign-out": "Sign out"

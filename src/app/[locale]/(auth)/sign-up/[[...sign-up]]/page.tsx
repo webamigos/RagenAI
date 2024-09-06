@@ -1,9 +1,11 @@
-import { SignUp } from '@clerk/nextjs';
+'use client';
+
+import { RegisterForm } from '../../../../components/RegisterForm';
 
 export default function SignUpPage() {
   return (
     <div>
-      <SignUp />
+      <RegisterForm />
     </div>
   );
 }
