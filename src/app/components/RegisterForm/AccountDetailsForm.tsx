@@ -4,12 +4,12 @@ import { useSignUp } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
-import { SignUpResource } from '@clerk/types';
 
 import { Input } from '@salesyy/common-ui';
-import { type RegistrationFormData, registrationSchema } from './schema';
 import { logger } from '@/app/lib/utils/logger';
-import { clerkClient } from '@clerk/nextjs/dist/types/server';
+
+import { type RegistrationFormData, registrationSchema } from './schema';
+
 type Props = {
   onSuccess: () => void;
 };
@@ -33,7 +33,7 @@ export const AccountDetailsForm = ({ onSuccess }: Props) => {
     const { email, password } = data;
 
     try {
-      const result = await signUp.create({
+      await signUp.create({
         emailAddress: email,
         password,
         unsafeMetadata: { visitorId },
