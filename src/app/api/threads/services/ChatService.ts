@@ -4,8 +4,11 @@ import { createClient } from '@supabase/supabase-js';
 
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_CHAT_MODEL;
-const sbApiKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const sbApiKey = process.env.SUPABASE_ANON_KEY;
+const sbUrl = process.env.SUPABASE_URL;
+
+// eslint-disable-next-line
+console.log({ sbApiKey, sbUrl });
 
 export const createChatInstance = new ChatOpenAI({
   apiKey,
