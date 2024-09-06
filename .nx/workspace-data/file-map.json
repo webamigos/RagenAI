@@ -1,0 +1,833 @@
+{
+  "version": "6.0",
+  "nxVersion": "19.6.5",
+  "deps": {
+    "@clerk/localizations": "^1.26.13",
+    "@clerk/nextjs": "^5.0.3",
+    "@fingerprintjs/fingerprintjs": "^4.2.2",
+    "@headlessui/react": "^2.1.1",
+    "@headlessui/tailwindcss": "^0.2.0",
+    "@heroicons/react": "^2.1.1",
+    "@hookform/resolvers": "^3.3.4",
+    "@langchain/community": "^0.2.31",
+    "@langchain/core": "^0.2.23",
+    "@langchain/openai": "^0.2.8",
+    "@prisma/client": "^5.10.2",
+    "@radix-ui/react-icons": "^1.3.0",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@sentry/nextjs": "^7.105.0",
+    "@supabase/supabase-js": "^2.45.3",
+    "@upstash/redis": "^1.28.4",
+    "@vercel/og": "^0.6.2",
+    "ai": "^3.0.7",
+    "axios": "^1.6.7",
+    "class-variance-authority": "^0.7.0",
+    "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0",
+    "flag-icons": "^7.2.0",
+    "framer-motion": "^11.2.6",
+    "http-status-codes": "^2.3.0",
+    "ioredis": "^5.3.2",
+    "langchain": "^0.2.17",
+    "langsmith": "^0.1.41",
+    "markdown-it": "^14.0.0",
+    "marked": "^12.0.1",
+    "next": "14.2.3",
+    "next-intl": "^3.9.4",
+    "next-themes": "^0.2.1",
+    "openai": "^4.55.4",
+    "pino": "^9.3.2",
+    "pino-pretty": "^11.2.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hook-form": "^7.51.0",
+    "react-toastify": "^10.0.4",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "tailwindcss-animate": "^1.0.7",
+    "tslib": "^2.3.0",
+    "use-debounce": "^10.0.0",
+    "zod": "^3.22.4",
+    "@commitlint/cli": "^19.4.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@semantic-release/github": "^10.1.7",
+    "@storybook/addon-a11y": "^7.6.17",
+    "@storybook/addon-essentials": "7.6.17",
+    "@storybook/addon-themes": "^7.6.17",
+    "@storybook/cli": "^8.2.9",
+    "@storybook/core-server": "^8.2.9",
+    "@storybook/nextjs": "7.6.17",
+    "@storybook/react": "^7.6.17",
+    "@swc-node/register": "~1.8.0",
+    "@swc/cli": "~0.1.62",
+    "@swc/core": "^1.7.22",
+    "@swc/helpers": "~0.5.2",
+    "@swc/jest": "0.2.20",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "@testing-library/react": "14.0.0",
+    "@types/jest": "^29.4.0",
+    "@types/markdown-it": "^13.0.7",
+    "@types/node": "18.16.9",
+    "@types/react": "18.2.33",
+    "@types/react-dom": "18.2.14",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "autoprefixer": "10.4.13",
+    "babel-jest": "^29.4.1",
+    "clsx": "^2.1.1",
+    "eslint": "~8.48.0",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-jsx-a11y": "6.7.1",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-storybook": "^0.8.0",
+    "husky": "^9.1.5",
+    "jest": "^29.4.1",
+    "jest-environment-jsdom": "^29.4.1",
+    "jest-environment-node": "^29.4.1",
+    "lint-staged": "^15.2.9",
+    "nx": "^19.6.4",
+    "postcss": "^8.4.42",
+    "prettier": "^2.8.8",
+    "prisma": "^5.10.2",
+    "semantic-release": "^24.1.0",
+    "storybook": "^8.2.9",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss": "3.2.7",
+    "ts-jest": "^29.1.0",
+    "ts-node": "10.9.1",
+    "typescript": "~5.3.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "pathMappings": {
+    "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
+    "@salesyy/common-ui": ["./src/libs/common-ui"],
+    "@salesyy/prisma-client": ["./src/libs/db"],
+    "@/*": ["./src/*"]
+  },
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {},
+    "nonProjectFiles": [
+      {
+        "file": ".editorconfig",
+        "hash": "5443105041930014821"
+      },
+      {
+        "file": ".env.example",
+        "hash": "9442023280727100185"
+      },
+      {
+        "file": ".eslintignore",
+        "hash": "14004603834679650608"
+      },
+      {
+        "file": ".eslintrc.json",
+        "hash": "4386132274621758908"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "6857591450996052315"
+      },
+      {
+        "file": ".github/workflows/release.yml",
+        "hash": "7056157439164662069"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "13485197137347008561"
+      },
+      {
+        "file": ".husky/commit-msg",
+        "hash": "1407302808277523102"
+      },
+      {
+        "file": ".husky/pre-commit",
+        "hash": "12570913365339744336"
+      },
+      {
+        "file": ".lintstagedrc.json",
+        "hash": "3484621408988370514"
+      },
+      {
+        "file": ".npmrc",
+        "hash": "1880664178033616490"
+      },
+      {
+        "file": ".nvmrc",
+        "hash": "16498882585960246525"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "16448050467312557263"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "16267754514737964994"
+      },
+      {
+        "file": ".releaserc",
+        "hash": "4447607332303588112"
+      },
+      {
+        "file": ".sentryclirc",
+        "hash": "12949426556325516646"
+      },
+      {
+        "file": ".vscode/extensions.json",
+        "hash": "4934098906304722861"
+      },
+      {
+        "file": ".vscode/settings.json",
+        "hash": "2207652029129029017"
+      },
+      {
+        "file": "README.md",
+        "hash": "5280947544453293886"
+      },
+      {
+        "file": "commitlint.config.mjs",
+        "hash": "18366426122252222080"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "5964209789415751127"
+      },
+      {
+        "file": "docs/adrs/01-hosting.adr",
+        "hash": "1468191937749385535"
+      },
+      {
+        "file": "docs/flowchart.mermaid",
+        "hash": "16099202084664627074"
+      },
+      {
+        "file": "next.config.mjs",
+        "hash": "18368572980184205402"
+      },
+      {
+        "file": "package-lock.json",
+        "hash": "8811153581784666712"
+      },
+      {
+        "file": "package.json",
+        "hash": "7604608437019463807"
+      },
+      {
+        "file": "postcss.config.mjs",
+        "hash": "2557392112968376575"
+      },
+      {
+        "file": "prisma/migrations/20240809095141_migration_from_mongo/migration.sql",
+        "hash": "11378018837168198654"
+      },
+      {
+        "file": "prisma/migrations/20240826111140_from_mongo/migration.sql",
+        "hash": "1523237557017151245"
+      },
+      {
+        "file": "prisma/migrations/20240829093400_visitor_id_col/migration.sql",
+        "hash": "8000048276262273787"
+      },
+      {
+        "file": "prisma/migrations/20240829103325_required_visitor_id_col/migration.sql",
+        "hash": "13106559406035706372"
+      },
+      {
+        "file": "prisma/migrations/20240829104028_visitor_id/migration.sql",
+        "hash": "292721986167730569"
+      },
+      {
+        "file": "prisma/migrations/20240902080526_content_preview_optional_col/migration.sql",
+        "hash": "10091474555530623448"
+      },
+      {
+        "file": "prisma/migrations/20240902090822_removing_content_preview_col/migration.sql",
+        "hash": "5684507428839914025"
+      },
+      {
+        "file": "prisma/migrations/migration_lock.toml",
+        "hash": "11493296588214560035"
+      },
+      {
+        "file": "prisma/prisma-client.ts",
+        "hash": "18136186832176654045"
+      },
+      {
+        "file": "prisma/schema.prisma",
+        "hash": "3595642663638383163"
+      },
+      {
+        "file": "public/.gitkeep",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "public/assets/salesyy-logo-on-dark-bg.png",
+        "hash": "4976950162037693129"
+      },
+      {
+        "file": "public/assets/salesyy-white-logo-white-on-dark-bg.png",
+        "hash": "14091501260413856926"
+      },
+      {
+        "file": "public/favicon.ico",
+        "hash": "170708269253367849"
+      },
+      {
+        "file": "public/favicon.png",
+        "hash": "8610137891234254471"
+      },
+      {
+        "file": "sentry.client.config.js",
+        "hash": "8376429854651158978"
+      },
+      {
+        "file": "sentry.edge.config.js",
+        "hash": "3484834895878251008"
+      },
+      {
+        "file": "sentry.server.config.js",
+        "hash": "7189090191176443356"
+      },
+      {
+        "file": "src/app/[locale]/(auth)/layout.tsx",
+        "hash": "2507342094772761084"
+      },
+      {
+        "file": "src/app/[locale]/(auth)/sign-in/[[...sign-in]]/page.tsx",
+        "hash": "8612454131108154477"
+      },
+      {
+        "file": "src/app/[locale]/(auth)/sign-up/[[...sign-up]]/page.tsx",
+        "hash": "9993143929780006455"
+      },
+      {
+        "file": "src/app/[locale]/(auth)/user-profile/[[...user-profile]]/page.tsx",
+        "hash": "16950538498178844393"
+      },
+      {
+        "file": "src/app/[locale]/(marketing)/layout.tsx",
+        "hash": "4608722164485825651"
+      },
+      {
+        "file": "src/app/[locale]/(marketing)/page.tsx",
+        "hash": "5968654977532516459"
+      },
+      {
+        "file": "src/app/[locale]/(marketing)/threads/[publicId]/page.tsx",
+        "hash": "18253800457960947258"
+      },
+      {
+        "file": "src/app/[locale]/global.css",
+        "hash": "15785007184391941304"
+      },
+      {
+        "file": "src/app/[locale]/layout.tsx",
+        "hash": "3967017578075875778"
+      },
+      {
+        "file": "src/app/actions/index.ts",
+        "hash": "104004017053509026"
+      },
+      {
+        "file": "src/app/api/assistant/[publicId]/route.ts",
+        "hash": "4049337714994137819"
+      },
+      {
+        "file": "src/app/api/avatar/route.ts",
+        "hash": "13671890312746863048"
+      },
+      {
+        "file": "src/app/api/healthcheck/route.ts",
+        "hash": "16768906650158862559"
+      },
+      {
+        "file": "src/app/api/messages/[threadId]/route.ts",
+        "hash": "5956438583908904780"
+      },
+      {
+        "file": "src/app/api/threads/[...details]/route.ts",
+        "hash": "15758701996297195156"
+      },
+      {
+        "file": "src/app/api/threads/route.ts",
+        "hash": "13866088098775186450"
+      },
+      {
+        "file": "src/app/api/threads/services/ChatService.ts",
+        "hash": "11268820758291215019"
+      },
+      {
+        "file": "src/app/api/threads/services/createVectorTable.ts",
+        "hash": "6734446796470562791"
+      },
+      {
+        "file": "src/app/api/threads/services/dbService.ts",
+        "hash": "14619253491977481644"
+      },
+      {
+        "file": "src/app/api/threads/utills.ts",
+        "hash": "10614940590337788607"
+      },
+      {
+        "file": "src/app/api/visitor/[publicId]/route.ts",
+        "hash": "8837576565739837109"
+      },
+      {
+        "file": "src/app/api/visitor/hejho/route.ts",
+        "hash": "6128339082591242325"
+      },
+      {
+        "file": "src/app/components/Assistant/Assistant.tsx",
+        "hash": "7009383062394408632"
+      },
+      {
+        "file": "src/app/components/Assistant/Avatar/Avatar.tsx",
+        "hash": "10716404327093431645"
+      },
+      {
+        "file": "src/app/components/Assistant/Avatar/index.ts",
+        "hash": "12759376602507185976"
+      },
+      {
+        "file": "src/app/components/Assistant/ChatOutput/ChatOutput.tsx",
+        "hash": "440348382521379600"
+      },
+      {
+        "file": "src/app/components/Assistant/ChatOutput/LimitReached.tsx",
+        "hash": "2744333418850190694"
+      },
+      {
+        "file": "src/app/components/Assistant/ChatOutput/chat-response.css",
+        "hash": "6038173786453980699"
+      },
+      {
+        "file": "src/app/components/Assistant/ChatOutput/index.ts",
+        "hash": "11005986376237980882"
+      },
+      {
+        "file": "src/app/components/Assistant/ChatOutput/useChatViewLogic.ts",
+        "hash": "88303431344642648"
+      },
+      {
+        "file": "src/app/components/Assistant/PromptForm/AskQuestion.tsx",
+        "hash": "17282431188967502619"
+      },
+      {
+        "file": "src/app/components/Assistant/PromptForm/CloseThread.tsx",
+        "hash": "4862739772650124808"
+      },
+      {
+        "file": "src/app/components/Assistant/PromptForm/Contact.tsx",
+        "hash": "10245966259058906869"
+      },
+      {
+        "file": "src/app/components/Assistant/PromptForm/PromptForm.tsx",
+        "hash": "2373451924269911113"
+      },
+      {
+        "file": "src/app/components/Assistant/PromptForm/SendMessage.tsx",
+        "hash": "1016803561397696337"
+      },
+      {
+        "file": "src/app/components/Assistant/PromptForm/index.ts",
+        "hash": "4917594514755970220"
+      },
+      {
+        "file": "src/app/components/Assistant/ThreadId/ThreadId.tsx",
+        "hash": "2483043431592177899"
+      },
+      {
+        "file": "src/app/components/Assistant/index.ts",
+        "hash": "15058508791940325420"
+      },
+      {
+        "file": "src/app/components/Assistant/types.ts",
+        "hash": "8227118454871991834"
+      },
+      {
+        "file": "src/app/components/Assistant/useAssistantLogic.ts",
+        "hash": "14295464827059679602"
+      },
+      {
+        "file": "src/app/components/Date/Date.tsx",
+        "hash": "8169365547522685065"
+      },
+      {
+        "file": "src/app/components/Date/index.ts",
+        "hash": "14025761460102457320"
+      },
+      {
+        "file": "src/app/components/LanguageSwitcher/LanguageSwitcher.tsx",
+        "hash": "3697202555203299113"
+      },
+      {
+        "file": "src/app/components/LanguageSwitcher/index.ts",
+        "hash": "5146564564673052112"
+      },
+      {
+        "file": "src/app/components/Link/Link.stories.tsx",
+        "hash": "11020241305388999182"
+      },
+      {
+        "file": "src/app/components/Link/Link.tsx",
+        "hash": "16551767127991710083"
+      },
+      {
+        "file": "src/app/components/Link/index.ts",
+        "hash": "4238584548924999174"
+      },
+      {
+        "file": "src/app/components/Logo/Logo.tsx",
+        "hash": "3523734961483205558"
+      },
+      {
+        "file": "src/app/components/Logo/index.ts",
+        "hash": "6260612077746424581"
+      },
+      {
+        "file": "src/app/components/NavHeader/NavHeader.tsx",
+        "hash": "9822270527117375875"
+      },
+      {
+        "file": "src/app/components/NavHeader/index.ts",
+        "hash": "4524663606093678586"
+      },
+      {
+        "file": "src/app/components/Providers.tsx",
+        "hash": "297334665907472010"
+      },
+      {
+        "file": "src/app/components/Sidebar/Footer.tsx",
+        "hash": "7400869032858419574"
+      },
+      {
+        "file": "src/app/components/Sidebar/Header.tsx",
+        "hash": "11487665716107709839"
+      },
+      {
+        "file": "src/app/components/Sidebar/Sidebar.tsx",
+        "hash": "16130706396677968327"
+      },
+      {
+        "file": "src/app/components/Sidebar/ThreadsSection.tsx",
+        "hash": "4874793990738017908"
+      },
+      {
+        "file": "src/app/components/Sidebar/UserThreadsHistory.tsx",
+        "hash": "2689746293934365230"
+      },
+      {
+        "file": "src/app/components/Sidebar/index.ts",
+        "hash": "5081007514944301673"
+      },
+      {
+        "file": "src/app/components/Sidebar/useSidebarLogic.ts",
+        "hash": "6435325016990533474"
+      },
+      {
+        "file": "src/app/components/Start/Start.tsx",
+        "hash": "5964943995844744821"
+      },
+      {
+        "file": "src/app/components/Start/index.ts",
+        "hash": "12360625962471118688"
+      },
+      {
+        "file": "src/app/components/Theme/ThemeSwitcher.tsx",
+        "hash": "2852699760230269611"
+      },
+      {
+        "file": "src/app/components/Theme/index.ts",
+        "hash": "9502725836389225045"
+      },
+      {
+        "file": "src/app/components/Toast/Toast.tsx",
+        "hash": "18246866865805337625"
+      },
+      {
+        "file": "src/app/components/Toast/index.ts",
+        "hash": "4632881445101568446"
+      },
+      {
+        "file": "src/app/components/UserLinks/UserLinks.tsx",
+        "hash": "13719702562092060897"
+      },
+      {
+        "file": "src/app/components/UserLinks/index.ts",
+        "hash": "4749158808064666080"
+      },
+      {
+        "file": "src/app/components/config.ts",
+        "hash": "8945891530584037663"
+      },
+      {
+        "file": "src/app/config.ts",
+        "hash": "3664129170943751216"
+      },
+      {
+        "file": "src/app/contracts/Events.ts",
+        "hash": "3229372890451124448"
+      },
+      {
+        "file": "src/app/contracts/Message.ts",
+        "hash": "4736567322069588453"
+      },
+      {
+        "file": "src/app/contracts/ThreadDto.ts",
+        "hash": "14760946824820843777"
+      },
+      {
+        "file": "src/app/global-error.tsx",
+        "hash": "8898961641480304652"
+      },
+      {
+        "file": "src/app/hooks/useApi.ts",
+        "hash": "18058208433929629700"
+      },
+      {
+        "file": "src/app/hooks/useThreadsContext.ts",
+        "hash": "3989793648507531625"
+      },
+      {
+        "file": "src/app/lib/services/api.ts",
+        "hash": "17524802784879770443"
+      },
+      {
+        "file": "src/app/lib/services/config.ts",
+        "hash": "10212473126551735285"
+      },
+      {
+        "file": "src/app/lib/services/message.ts",
+        "hash": "5267438540697194849"
+      },
+      {
+        "file": "src/app/lib/services/moderation.ts",
+        "hash": "16540091447378379324"
+      },
+      {
+        "file": "src/app/lib/services/thread.ts",
+        "hash": "1469606561151582715"
+      },
+      {
+        "file": "src/app/lib/services/utils.ts",
+        "hash": "14599458610330108311"
+      },
+      {
+        "file": "src/app/lib/services/visitor.ts",
+        "hash": "6048714137811705863"
+      },
+      {
+        "file": "src/app/lib/utils/fingerprint.ts",
+        "hash": "7049977995627068719"
+      },
+      {
+        "file": "src/app/lib/utils/logger.ts",
+        "hash": "12924178603479112402"
+      },
+      {
+        "file": "src/app/messages/en.json",
+        "hash": "12826233890413551649"
+      },
+      {
+        "file": "src/app/messages/pl.json",
+        "hash": "2421825724866026996"
+      },
+      {
+        "file": "src/context/ThreadsContext.tsx",
+        "hash": "10789233756528661418"
+      },
+      {
+        "file": "src/data/PROCEDURAWEBINAR(Checklistawebinarowa).pdf",
+        "hash": "15231306127943626328"
+      },
+      {
+        "file": "src/data/PROCEDURAtworzeniapostaLinkedIn.pdf",
+        "hash": "8511514718376773824"
+      },
+      {
+        "file": "src/data/ProceduraStrategiaMarketingowaLeadMagnet.pdf",
+        "hash": "8049893453524455062"
+      },
+      {
+        "file": "src/data/ProceduratworzeniacontentuYouTubeSolo.pdf",
+        "hash": "7678793308724092413"
+      },
+      {
+        "file": "src/i18n.ts",
+        "hash": "8989149075722601593"
+      },
+      {
+        "file": "src/libs/common-ui/Alert/Alert.stories.tsx",
+        "hash": "7483518379921570388"
+      },
+      {
+        "file": "src/libs/common-ui/Alert/Alert.tsx",
+        "hash": "5570711143775190642"
+      },
+      {
+        "file": "src/libs/common-ui/Alert/index.ts",
+        "hash": "14925126151502316263"
+      },
+      {
+        "file": "src/libs/common-ui/Avatar/avatar.tsx",
+        "hash": "7684782301301668299"
+      },
+      {
+        "file": "src/libs/common-ui/Avatar/index.ts",
+        "hash": "14134652143837508568"
+      },
+      {
+        "file": "src/libs/common-ui/Button/Button.spec.tsx",
+        "hash": "1556004131076544846"
+      },
+      {
+        "file": "src/libs/common-ui/Button/Button.stories.tsx",
+        "hash": "8652515860463890322"
+      },
+      {
+        "file": "src/libs/common-ui/Button/Button.tsx",
+        "hash": "10950242010622531216"
+      },
+      {
+        "file": "src/libs/common-ui/Button/index.ts",
+        "hash": "1548372080853166209"
+      },
+      {
+        "file": "src/libs/common-ui/Header/Header.stories.ts",
+        "hash": "13296504545178621221"
+      },
+      {
+        "file": "src/libs/common-ui/Header/Header.tsx",
+        "hash": "165306542694566177"
+      },
+      {
+        "file": "src/libs/common-ui/Header/index.ts",
+        "hash": "10442331447314614684"
+      },
+      {
+        "file": "src/libs/common-ui/Input/Input.spec.tsx",
+        "hash": "6895840080856152878"
+      },
+      {
+        "file": "src/libs/common-ui/Input/Input.stories.tsx",
+        "hash": "11105025514688762884"
+      },
+      {
+        "file": "src/libs/common-ui/Input/Input.tsx",
+        "hash": "14889719021163823619"
+      },
+      {
+        "file": "src/libs/common-ui/Input/index.ts",
+        "hash": "3770040670399285892"
+      },
+      {
+        "file": "src/libs/common-ui/Link/index.ts",
+        "hash": "15903834600563128183"
+      },
+      {
+        "file": "src/libs/common-ui/Link/link.tsx",
+        "hash": "10853254662587582751"
+      },
+      {
+        "file": "src/libs/common-ui/Navbar/index.ts",
+        "hash": "14214547267656379258"
+      },
+      {
+        "file": "src/libs/common-ui/Navbar/navbar.tsx",
+        "hash": "13014394233922457233"
+      },
+      {
+        "file": "src/libs/common-ui/Sidebar/Sidebar.tsx",
+        "hash": "11185801652127468816"
+      },
+      {
+        "file": "src/libs/common-ui/Sidebar/index.ts",
+        "hash": "2759229774159129186"
+      },
+      {
+        "file": "src/libs/common-ui/Sidebar/sidebar-layout.tsx",
+        "hash": "14825259594727764903"
+      },
+      {
+        "file": "src/libs/common-ui/Text/Text.stories.tsx",
+        "hash": "8257875419001363207"
+      },
+      {
+        "file": "src/libs/common-ui/Text/Text.tsx",
+        "hash": "13847152975837951550"
+      },
+      {
+        "file": "src/libs/common-ui/Text/index.ts",
+        "hash": "10405438901590370408"
+      },
+      {
+        "file": "src/libs/common-ui/Textarea/Textarea.stories.tsx",
+        "hash": "7695946848893565445"
+      },
+      {
+        "file": "src/libs/common-ui/Textarea/Textarea.tsx",
+        "hash": "1217590571335669029"
+      },
+      {
+        "file": "src/libs/common-ui/Textarea/index.ts",
+        "hash": "9434546479532198934"
+      },
+      {
+        "file": "src/libs/common-ui/icons/ChatConversation.tsx",
+        "hash": "16304658581902056501"
+      },
+      {
+        "file": "src/libs/common-ui/icons/CursorSVG.tsx",
+        "hash": "4502413536024432565"
+      },
+      {
+        "file": "src/libs/common-ui/icons/DownIcon.tsx",
+        "hash": "9015019164034857174"
+      },
+      {
+        "file": "src/libs/common-ui/icons/LogoutIcon.tsx",
+        "hash": "16694986004617065793"
+      },
+      {
+        "file": "src/libs/common-ui/icons/SpinnerSVG.tsx",
+        "hash": "11106669148038602049"
+      },
+      {
+        "file": "src/libs/common-ui/icons/index.ts",
+        "hash": "2873370711727670100"
+      },
+      {
+        "file": "src/libs/common-ui/index.ts",
+        "hash": "9095085524007063006"
+      },
+      {
+        "file": "src/libs/common-ui/utils/cn.ts",
+        "hash": "5316727888117723275"
+      },
+      {
+        "file": "src/libs/db/index.ts",
+        "hash": "1948121278234104032"
+      },
+      {
+        "file": "src/middleware.ts",
+        "hash": "16459487753582598072"
+      },
+      {
+        "file": "src/tests/index.spec.tsx",
+        "hash": "14873558184793758640"
+      },
+      {
+        "file": "tailwind.config.js",
+        "hash": "995437422721731404"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "15653311379460496492"
+      }
+    ]
+  }
+}

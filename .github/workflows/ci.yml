@@ -3,6 +3,8 @@ name: Assistant
 env:
   SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: 'dummy'
+  SUPABASE_SERVICE_ROLE_KEY: 'dummy'
+  SUPABASE_URL: 'dummy'
 
 on:
   push:

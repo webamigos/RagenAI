@@ -44,6 +44,6 @@ export const WithError: Story = {
   args: {
     label: 'E-mail',
     type: 'email',
-    error: 'Not a valid email address.',
+    errorMessage: 'Not a valid email address.',
   },
 };

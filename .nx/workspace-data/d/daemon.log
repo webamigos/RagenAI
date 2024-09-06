@@ -31,3 +31,14 @@
 [NX Daemon Server] - 2024-09-05T13:10:39.899Z - Closed a connection. Number of open connections: 0
 [NX Daemon Server] - 2024-09-05T13:10:39.899Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (sources)
 [NX Daemon Server] - 2024-09-05T13:10:39.899Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (outputs)
+[NX Daemon Server] - 2024-09-05T14:40:20.255Z - Started listening on: /var/folders/_9/fw3gv09d59s3snkd8l9bsr2r0000gn/T/4ad5407dce91d4a010c3/d.sock
+[NX Daemon Server] - 2024-09-05T14:40:20.258Z - [WATCHER]: Subscribed to changes within: /Users/patryk/Workspace/salesyy (native)
+[NX Daemon Server] - 2024-09-05T14:40:20.259Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T14:40:20.259Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-09-05T14:40:20.260Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-09-05T14:40:20.260Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX Daemon Server] - 2024-09-05T14:40:20.261Z - Done responding to the client Shutdown initiated
+[NX Daemon Server] - 2024-09-05T14:40:20.261Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2024-09-05T14:40:20.262Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-09-05T14:40:20.262Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (sources)
+[NX Daemon Server] - 2024-09-05T14:40:20.262Z - [WATCHER]: Stopping the watcher for /Users/patryk/Workspace/salesyy (outputs)
