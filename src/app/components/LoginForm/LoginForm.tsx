@@ -16,7 +16,6 @@ import { LoginFormData, loginSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
 
 export const LoginForm = () => {
-  const [apiError, setApiError] = useState<string | null>(null);
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[] | undefined>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
