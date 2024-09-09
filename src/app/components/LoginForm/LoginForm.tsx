@@ -53,7 +53,7 @@ export const LoginForm = () => {
         <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
       </div>
       <SocialAuthOptions />
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <Input
             type="email"
@@ -78,7 +78,7 @@ export const LoginForm = () => {
         </div>
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600"
         >
           {t('sign-in')}
         </button>

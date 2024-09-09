@@ -90,6 +90,10 @@ export const ThreadsContextProvider = ({
   const loadMoreThreads = useCallback(async () => {
     if (state.isLoading || !state.hasMore) return;
 
+    if (!visitorId) {
+      return;
+    }
+
     dispatch({ type: 'LOADING' });
 
     try {
@@ -114,14 +118,14 @@ export const ThreadsContextProvider = ({
     } catch (error) {
       dispatch({ type: 'ERROR', payload: 'Failed to load more threads' });
     }
-  }, [state]);
+  }, [state, visitorId]);
 
   useEffect(() => {
-    if (!hasInitialLoadCompleted.current) {
+    if (!hasInitialLoadCompleted.current && visitorId) {
       loadMoreThreads();
       hasInitialLoadCompleted.current = true;
     }
-  }, [loadMoreThreads]);
+  }, [loadMoreThreads, visitorId]);
 
   return (
     <ThreadsContext.Provider value={{ state, dispatch, loadMoreThreads }}>

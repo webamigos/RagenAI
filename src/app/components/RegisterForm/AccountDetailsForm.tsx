@@ -38,6 +38,7 @@ export const AccountDetailsForm = () => {
       const result = await signUp.create({
         emailAddress: email,
         password,
+        unsafeMetadata: { visitorId },
       });
 
       await saveUserIdToClerk(result.id as string, visitorId);

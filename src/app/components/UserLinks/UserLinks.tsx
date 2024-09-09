@@ -22,7 +22,7 @@ export const UserLinks = () => {
       </SignedIn>
       <SignedOut>
         <SignInButton mode="redirect">
-          <span className="text-slate-300 cursor-pointer">
+          <span className=" dark:text-slate-200 text-slate-900 cursor-pointer">
             {t('common.sign-in')}
           </span>
         </SignInButton>

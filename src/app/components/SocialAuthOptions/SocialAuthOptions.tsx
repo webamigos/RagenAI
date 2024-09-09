@@ -11,6 +11,7 @@ export const SocialAuthOptions = () => {
 
   const handleGoogleSignUp = async () => {
     if (!isLoaded) return;
+
     try {
       await signIn?.authenticateWithRedirect({
         strategy: 'oauth_google',
