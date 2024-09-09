@@ -18,7 +18,6 @@ export const Sidebar = ({ children }: Props) => {
     error,
     userEmail,
     isLoading,
-    noThreads,
     isSignedIn,
     userThreads,
     activeThread,
@@ -30,13 +29,12 @@ export const Sidebar = ({ children }: Props) => {
     <SidebarLayout
       navbar={<Navbar />}
       sidebar={
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full text-sm">
           <Header />
           <SidebarBody>
             <UserThreadsHistory
               error={error}
               isLoading={isLoading}
-              noThreads={noThreads}
               userThreads={userThreads}
               activeThread={activeThread}
               handleThreadClick={handleThreadClick}

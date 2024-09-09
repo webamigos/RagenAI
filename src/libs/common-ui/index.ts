@@ -12,3 +12,4 @@ export * from './Sidebar';
 export * from './Link';
 export * from './Navbar';
 export * from './Avatar';
+export * from './Card';

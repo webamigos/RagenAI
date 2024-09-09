@@ -12,6 +12,14 @@
     "or": "lub",
     "to-still-use": "aby korzystać dalej"
   },
+  "Sign-up": {
+    "sign-up": "Zarejestruj się",
+    "password": "Hasło",
+    "Already-have-an-account": "Masz już konto?",
+    "sign-in": "Zaloguj się",
+    "Verification-code": "Kod weryfikacyjny",
+    "confirm": "Potwierdź kod"
+  },
   "common": {
     "sign-in": "Zaloguj",
     "sign-out": "Wyloguj"

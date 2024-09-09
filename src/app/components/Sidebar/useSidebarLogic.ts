@@ -12,7 +12,6 @@ export const useSidebarLogic = () => {
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
 
-  const noThreads = userThreads.length === 0;
   const userEmail = user?.emailAddresses[0].emailAddress;
 
   const handleThreadClick = (threadId: string) => {
@@ -34,7 +33,6 @@ export const useSidebarLogic = () => {
     error,
     hasMore,
     userEmail,
-    noThreads,
     isLoading,
     isSignedIn,
     userThreads,

@@ -8,10 +8,10 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
+import { useUser } from '@clerk/nextjs';
 
 import type { ThreadHistoryResponse } from '../app/contracts/Message';
 import { getUserMessages } from '../app/actions';
-import { loadFingerprint } from '../app/lib/utils/fingerprint';
 
 type State = {
   userThreads: ThreadHistoryResponse[];
@@ -42,7 +42,12 @@ function threadsReducer(state: State, action: Action): State {
     case 'LOADING':
       return { ...state, isLoading: true, error: null };
     case 'USER_THREADS':
-      return { ...state, isLoading: false, userThreads: action.payload };
+      return {
+        ...state,
+        isLoading: false,
+        userThreads: action.payload,
+        hasMore: action.payload.length > 0,
+      };
     case 'ERROR':
       return { ...state, isLoading: false, error: action.payload };
     case 'ADD_THREADS':
@@ -79,6 +84,8 @@ export const ThreadsContextProvider = ({
 }: ThreadsContextProviderProps) => {
   const [state, dispatch] = useReducer(threadsReducer, initialState);
   const hasInitialLoadCompleted = useRef(false);
+  const { user } = useUser();
+  const visitorId = user?.unsafeMetadata.visitorId;
 
   const loadMoreThreads = useCallback(async () => {
     if (state.isLoading || !state.hasMore) return;
@@ -86,8 +93,11 @@ export const ThreadsContextProvider = ({
     dispatch({ type: 'LOADING' });
 
     try {
-      const visitorId = await loadFingerprint();
-      const response = await getUserMessages(visitorId, state.skip, 16);
+      const response = await getUserMessages(
+        visitorId as string,
+        state.skip,
+        16
+      );
       const threads = response.threads || [];
 
       if (threads.length > 0) {
@@ -98,6 +108,7 @@ export const ThreadsContextProvider = ({
           dispatch({ type: 'SET_HAS_MORE', payload: false });
         }
       } else {
+        dispatch({ type: 'USER_THREADS', payload: [] });
         dispatch({ type: 'SET_HAS_MORE', payload: false });
       }
     } catch (error) {

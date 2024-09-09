@@ -64,7 +64,6 @@ export const getUserThreads = async (
     select: {
       public_id: true,
       created_at: true,
-      openai_thread_id: true,
       messages: {
         select: {
           content: true,
