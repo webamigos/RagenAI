@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Divider } from '@salesyy/common-ui/Divider';
 import { logger } from '@/app/lib/utils/logger';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
-import { useEffect, useState, useTransition } from 'react';
+import { useTransition } from 'react';
 
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 
@@ -43,23 +43,13 @@ type SocialAuthOptionsProps = {
 export const SocialAuthOptions = ({ isSignUp }: SocialAuthOptionsProps) => {
   const { signUp, isLoaded: signUpLoaded } = useSignUp();
   const { signIn, isLoaded: signInLoaded } = useSignIn();
-  const t = useTranslations(isSignUp ? 'Sign-up' : 'Sign-in');
-  const [visitorId, setVisitorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    const fetchFingerprint = async () => {
-      try {
-        const id = await loadFingerprint();
-        setVisitorId(id);
-      } catch (error) {
-        logger.error('Failed to load fingerprint', error);
-      }
-    };
-    fetchFingerprint();
-  }, []);
+  const t = useTranslations(isSignUp ? 'Sign-up' : 'Sign-in');
 
   const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
+    const visitorId = await loadFingerprint();
+
     startTransition(() => {
       if (
         (!isSignUp && !signInLoaded) ||
