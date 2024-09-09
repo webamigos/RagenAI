@@ -9,11 +9,12 @@ import { useRouter } from 'next/navigation';
 
 import { SocialAuthOptions } from '../SocialAuthOptions';
 import { LoginFormData, loginSchema } from './schema';
-import { Card, Input } from '@salesyy/common-ui';
+import { Button, Card, Input } from '@salesyy/common-ui';
 import Link from 'next/link';
 
 export const LoginForm = () => {
   const [apiError, setApiError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const t = useTranslations('Sign-in');
@@ -31,6 +32,9 @@ export const LoginForm = () => {
     const { email, password } = data;
 
     if (!isLoaded) return;
+
+    setIsSubmitting(true);
+
     try {
       const result = await signIn.create({
         identifier: email,
@@ -52,7 +56,7 @@ export const LoginForm = () => {
         <p className="font-bold text-lg	">{t('sign-in')}</p>
         <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
       </div>
-      <SocialAuthOptions />
+      <SocialAuthOptions isSignUp={false} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <Input
@@ -76,12 +80,12 @@ export const LoginForm = () => {
             errorMessage={errors.password?.message}
           />
         </div>
-        <button
+        <Button
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          isLoading={isSubmitting}
+          label={t('sign-in')}
           type="submit"
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          {t('sign-in')}
-        </button>
+        />
         <p> {apiError && <div className="text-red-500">{apiError}</div>}</p>
         <p className="text-start">
           {t('Dont-have-an-account')}{' '}

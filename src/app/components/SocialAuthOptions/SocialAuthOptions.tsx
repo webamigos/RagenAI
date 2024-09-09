@@ -1,90 +1,102 @@
 import Image from 'next/image';
-import { useSignIn } from '@clerk/nextjs';
+import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
-
 import { Divider } from '@salesyy/common-ui/Divider';
 import { logger } from '@/app/lib/utils/logger';
+import { loadFingerprint } from '@/app/lib/utils/fingerprint';
+import { useEffect, useState } from 'react';
 
-export const SocialAuthOptions = () => {
-  const { signIn, isLoaded } = useSignIn();
-  const t = useTranslations('Sign-up');
+type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
 
-  const handleGoogleSignUp = async () => {
-    if (!isLoaded) return;
+const SocialButton = ({
+  onClick,
+  imageUrl,
+  altText,
+}: {
+  onClick: () => void;
+  imageUrl: string;
+  altText: string;
+}) => (
+  <button
+    onClick={onClick}
+    className="w-1/2 py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
+  >
+    <Image src={imageUrl} alt={altText} width={15} height={15} />
+  </button>
+);
+
+type SocialAuthOptionsProps = {
+  isSignUp: boolean;
+};
+
+export const SocialAuthOptions = ({ isSignUp }: SocialAuthOptionsProps) => {
+  const { signUp, isLoaded: signUpLoaded } = useSignUp();
+  const { signIn, isLoaded: signInLoaded } = useSignIn();
+  const t = useTranslations(isSignUp ? 'Sign-up' : 'Sign-in'); // Zmiana tekstów zależnie od trybu
+  const [visitorId, setVisitorId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFingerprint = async () => {
+      try {
+        const id = await loadFingerprint();
+        setVisitorId(id);
+      } catch (error) {
+        logger.error('Failed to load fingerprint', error);
+      }
+    };
+    fetchFingerprint();
+  }, []);
+
+  // Uniwersalna funkcja obsługująca zarówno logowanie jak i rejestrację przez OAuth
+  const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
+    if (
+      (!isSignUp && !signInLoaded) ||
+      (isSignUp && !signUpLoaded) ||
+      !visitorId
+    )
+      return;
 
     try {
-      await signIn?.authenticateWithRedirect({
-        strategy: 'oauth_google',
-        redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/',
-      });
+      if (isSignUp) {
+        await signUp?.authenticateWithRedirect({
+          strategy,
+          redirectUrl: '/sso-callback',
+          redirectUrlComplete: '/',
+          unsafeMetadata: { visitorId },
+        });
+      } else {
+        await signIn?.authenticateWithRedirect({
+          strategy,
+          redirectUrl: '/sso-callback',
+          redirectUrlComplete: '/',
+        });
+      }
     } catch (error) {
-      logger.error(error);
-    }
-  };
-
-  const handleAppleSignUp = async () => {
-    if (!isLoaded) return;
-    try {
-      await signIn?.authenticateWithRedirect({
-        strategy: 'oauth_apple',
-        redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/',
-      });
-    } catch (error) {
-      logger.error(error);
-    }
-  };
-
-  const handleFacebookSignUp = async () => {
-    if (!isLoaded) return;
-    try {
-      await signIn?.authenticateWithRedirect({
-        strategy: 'oauth_facebook',
-        redirectUrl: '/sso-callback',
-        redirectUrlComplete: '/',
-      });
-    } catch (error) {
-      logger.error(error);
+      logger.error(
+        `Error during ${isSignUp ? 'sign-up' : 'sign-in'} with ${strategy}`,
+        error
+      );
     }
   };
 
   return (
     <>
       <div className="max-w-xs w-full flex gap-x-2 mb-4">
-        <button
-          onClick={handleGoogleSignUp}
-          className="w-1/2 py-2 ml-3 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
-        >
-          <Image
-            src="https://img.clerk.com/static/google.svg"
-            alt="Google logo"
-            width={15}
-            height={15}
-          />
-        </button>
-        <button
-          onClick={handleFacebookSignUp}
-          className="w-1/2 py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
-        >
-          <Image
-            src="https://img.clerk.com/static/facebook.svg"
-            alt="Facebook logo"
-            width={15}
-            height={15}
-          />
-        </button>
-        <button
-          onClick={handleAppleSignUp}
-          className="w-1/2 py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
-        >
-          <Image
-            src="https://img.clerk.com/static/apple.svg"
-            alt="Apple logo"
-            width={15}
-            height={15}
-          />
-        </button>
+        <SocialButton
+          onClick={() => handleOAuth('oauth_google')}
+          imageUrl="https://img.clerk.com/static/google.svg"
+          altText="Google logo"
+        />
+        <SocialButton
+          onClick={() => handleOAuth('oauth_facebook')}
+          imageUrl="https://img.clerk.com/static/facebook.svg"
+          altText="Facebook logo"
+        />
+        <SocialButton
+          onClick={() => handleOAuth('oauth_apple')}
+          imageUrl="https://img.clerk.com/static/apple.svg"
+          altText="Apple logo"
+        />
       </div>
       <div className="flex items-center mb-4">
         <Divider soft />
