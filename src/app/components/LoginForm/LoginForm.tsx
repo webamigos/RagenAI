@@ -8,12 +8,16 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { SocialAuthOptions } from '../SocialAuthOptions';
-import { LoginFormData, loginSchema } from './schema';
 import { Button, Card, Input } from '@salesyy/common-ui';
 import Link from 'next/link';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
+
+import { LoginFormData, loginSchema } from './schema';
+import { type ClerkAPIError } from '@clerk/types';
 
 export const LoginForm = () => {
   const [apiError, setApiError] = useState<string | null>(null);
+  const [apiErrors, setApiErrors] = useState<ClerkAPIError[] | undefined>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
 
@@ -45,8 +49,12 @@ export const LoginForm = () => {
         await setActive({ session: result.createdSessionId });
         push('/');
       }
-    } catch (error: any) {
-      setApiError(error?.errors[0].message);
+    } catch (error) {
+      if (isClerkAPIResponseError(error)) {
+        setApiErrors(error.errors);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +94,13 @@ export const LoginForm = () => {
           label={t('sign-in')}
           type="submit"
         />
-        <p> {apiError && <div className="text-red-500">{apiError}</div>}</p>
+        {apiErrors && apiErrors.length > 0 && (
+          <ul className="mb-2 text-red-500 text-sm">
+            {apiErrors.map((error, index) => (
+              <li key={index}>{error.longMessage || error.message}</li>
+            ))}
+          </ul>
+        )}
         <p className="text-start">
           {t('Dont-have-an-account')}{' '}
           <Link href="/sign-up" className="text-blue-500 hover:underline">
