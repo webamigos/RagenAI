@@ -99,7 +99,7 @@ export const SocialAuthOptions = ({ isSignUp }: SocialAuthOptionsProps) => {
 
   return (
     <>
-      <div className="max-w-xs w-full flex gap-x-2 mb-4">
+      <div className="max-w-xs w-full flex gap-x-2 mb-4 ml-2">
         {Object.entries(socialPlatforms).map(
           ([strategy, { imageUrl, altText }]) => (
             <SocialButton

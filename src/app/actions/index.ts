@@ -94,12 +94,12 @@ export const getUserMessages = async (
 
 export const saveUserIdToClerk = async (
   clerkUserId: string,
-  userId: string
+  visitorId: string
 ) => {
   try {
-    await clerkClient.users.updateUser(clerkUserId, {
+    await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
-        userId,
+        visitorId,
       },
     });
     return { success: true };

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { Button, Input } from '@salesyy/common-ui';
-import { saveUserIdToClerk } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
@@ -39,13 +38,11 @@ export const AccountDetailsForm = () => {
     const { email, password } = data;
 
     try {
-      const result = await signUp.create({
+      await signUp.create({
         emailAddress: email,
         password,
         unsafeMetadata: { visitorId },
       });
-
-      await saveUserIdToClerk(result.id as string, visitorId);
 
       await signUp.prepareEmailAddressVerification({
         strategy: 'email_code',
@@ -93,7 +90,6 @@ export const AccountDetailsForm = () => {
           label={t('sign-up')}
           type="submit"
         />
-
         {apiErrors && apiErrors.length > 0 && (
           <ul className="mb-2 text-red-500 text-sm">
             {apiErrors.map((error, index) => (
@@ -101,7 +97,6 @@ export const AccountDetailsForm = () => {
             ))}
           </ul>
         )}
-
         <p className="text-start">
           {t('Already-have-an-account')}{' '}
           <Link href="/sign-in" className="text-blue-500 hover:underline">

@@ -6,17 +6,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
-import { Card } from '@salesyy/common-ui';
+import { saveUserIdToClerk } from '@/app/actions';
+import { loadFingerprint } from '@/app/lib/utils/fingerprint';
+import { Button, Card } from '@salesyy/common-ui';
 import { Input } from '@salesyy/common-ui';
 
+import { type ClerkAPIError } from '@clerk/types';
 import {
   type VerificationFormData,
   verificationSchema,
 } from '../../../components/RegisterForm/schema';
 
 export default function EnterCodePage() {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [apiErrors, setApiErrors] = useState<ClerkAPIError[] | undefined>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signUp, setActive } = useSignUp();
 
   const t = useTranslations('Sign-up');
@@ -32,6 +37,9 @@ export default function EnterCodePage() {
 
   const onSubmit = async (data: VerificationFormData) => {
     if (!isLoaded) return;
+    setIsSubmitting(true);
+    const visitorId = await loadFingerprint();
+
     const { email_code } = data;
     try {
       const completeSignUp = await signUp.attemptEmailAddressVerification({
@@ -39,22 +47,22 @@ export default function EnterCodePage() {
       });
 
       if (completeSignUp.status === 'complete') {
+        await saveUserIdToClerk(completeSignUp.id as string, visitorId);
         await setActive({ session: completeSignUp.createdSessionId });
         push('/');
       }
     } catch (error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage('Wystąpił nieznany błąd podczas weryfikacji');
+      if (isClerkAPIResponseError(error)) {
+        setApiErrors(error.errors);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Card>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
         <div>
           <label htmlFor="email_code" className="block mb-1">
             {t('Verification-code')}
@@ -69,12 +77,19 @@ export default function EnterCodePage() {
             <p className="text-red-500">{errors.email_code.message}</p>
           )}
         </div>
-        <button
+        {apiErrors && apiErrors.length > 0 && (
+          <ul className="mb-2 text-red-500 text-sm">
+            {apiErrors.map((error, index) => (
+              <li key={index}>{error.longMessage || error.message}</li>
+            ))}
+          </ul>
+        )}
+        <Button
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          isLoading={isSubmitting}
+          label={t('confirm')}
           type="submit"
-          className="w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          {t('confirm')}
-        </button>
+        />
       </form>
     </Card>
   );
