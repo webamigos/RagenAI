@@ -85,7 +85,7 @@ export const LoginForm = () => {
         <p> {apiError && <div className="text-red-500">{apiError}</div>}</p>
         <p className="text-start">
           {t('Dont-have-an-account')}{' '}
-          <Link href="/sign-in" className="text-blue-500 hover:underline">
+          <Link href="/sign-up" className="text-blue-500 hover:underline">
             {t('Sign-up')}
           </Link>
         </p>

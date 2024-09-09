@@ -7,7 +7,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const SocialAuthOptions = () => {
   const { signIn, isLoaded } = useSignIn();
-  const t = useTranslations();
+  const t = useTranslations('Sign-up');
 
   const handleGoogleSignUp = async () => {
     if (!isLoaded) return;

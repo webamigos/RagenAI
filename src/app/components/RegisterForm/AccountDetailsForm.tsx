@@ -7,18 +7,17 @@ import { useTranslations } from 'next-intl';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { Input } from '@salesyy/common-ui';
 import { logger } from '@/app/lib/utils/logger';
+import { saveUserIdToClerk } from '@/app/actions';
+import { useRouter } from 'next/navigation';
 
 import { SocialAuthOptions } from '../SocialAuthOptions';
-import { Divider } from '@salesyy/common-ui/Divider/divider';
 import { type RegistrationFormData, registrationSchema } from './schema';
 
-type Props = {
-  onSuccess: () => void;
-};
-
-export const AccountDetailsForm = ({ onSuccess }: Props) => {
+export const AccountDetailsForm = () => {
   const { isLoaded, signUp } = useSignUp();
   const t = useTranslations('Sign-up');
+  const { push } = useRouter();
+
   const [apiError, setApiError] = useState<string | null>(null);
 
   const {
@@ -36,16 +35,18 @@ export const AccountDetailsForm = ({ onSuccess }: Props) => {
     const { email, password } = data;
 
     try {
-      await signUp.create({
+      const result = await signUp.create({
         emailAddress: email,
         password,
-        unsafeMetadata: { visitorId },
       });
+
+      await saveUserIdToClerk(result.id as string, visitorId);
 
       await signUp.prepareEmailAddressVerification({
         strategy: 'email_code',
       });
-      onSuccess();
+
+      push('/enter-code');
     } catch (error: any) {
       logger.error(error);
       setApiError(error?.errors[0].message);
@@ -59,11 +60,6 @@ export const AccountDetailsForm = ({ onSuccess }: Props) => {
         <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
       </div>
       <SocialAuthOptions />
-      <div className="flex items-center mb-4">
-        <Divider soft />
-        <p className="font-light text-gray-500 mx-2">{t('or')}</p>
-        <Divider soft />
-      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="">
         <Input
           type="email"
