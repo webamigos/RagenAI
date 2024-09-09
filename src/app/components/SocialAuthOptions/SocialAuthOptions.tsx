@@ -47,7 +47,6 @@ export const SocialAuthOptions = ({ isSignUp }: SocialAuthOptionsProps) => {
     fetchFingerprint();
   }, []);
 
-  // Uniwersalna funkcja obsługująca zarówno logowanie jak i rejestrację przez OAuth
   const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
     if (
       (!isSignUp && !signInLoaded) ||
