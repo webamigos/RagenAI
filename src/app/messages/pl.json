@@ -13,12 +13,23 @@
     "to-still-use": "aby korzystać dalej"
   },
   "Sign-up": {
+    "create-account": "Utwórz konto",
+    "to-continue": "aby kontynuować w SalesYY Assistant",
     "sign-up": "Zarejestruj się",
     "password": "Hasło",
     "Already-have-an-account": "Masz już konto?",
     "sign-in": "Zaloguj się",
     "Verification-code": "Kod weryfikacyjny",
-    "confirm": "Potwierdź kod"
+    "confirm": "Potwierdź kod",
+    "or": "lub"
+  },
+  "Sign-in": {
+    "sign-in": "Zaloguj się",
+    "Sign-up": "Zarejestruj się",
+    "Password": "Hasło",
+    "to-continue": "aby przejść do SalesYY Assistant",
+    "Dont-have-an-account": "Nie posiadasz konta?",
+    "or": "lub"
   },
   "common": {
     "sign-in": "Zaloguj",
@@ -34,7 +45,7 @@
     "chat-history": "Historia konwersacji",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
-    "older": "Starsze"
+    "older": "Starsze niż 2 dni"
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",

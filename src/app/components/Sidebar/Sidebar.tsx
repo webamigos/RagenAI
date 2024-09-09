@@ -6,7 +6,7 @@ import { Navbar } from '@salesyy/common-ui';
 
 import { UserThreadsHistory } from './UserThreadsHistory';
 import { Header } from './Header';
-import { useSidebarLogic } from './useSidebarLogic'; // Ensure this hook returns hasMore and loadMoreThreads
+import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
 
 type Props = {

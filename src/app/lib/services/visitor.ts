@@ -64,6 +64,7 @@ export const getUserThreads = async (
     select: {
       public_id: true,
       created_at: true,
+      visitor_id: true,
       messages: {
         select: {
           content: true,

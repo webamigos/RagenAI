@@ -13,12 +13,23 @@
     "to-still-use": "to continue using the service"
   },
   "Sign-up": {
+    "create-account": "Create your account",
+    "to-continue": "to continue to SalesYY Assistant",
     "sign-up": "Sign up",
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
     "sign-in": "Sign in",
     "Verification-code": "Verification code",
-    "confirm": "Confirm code"
+    "confirm": "Confirm code",
+    "or": "or"
+  },
+  "Sign-in": {
+    "sign-in": "Sign in",
+    "Sign-up": "Sign up",
+    "Password": "Password",
+    "to-continue": "to continue to SalesYY Assistant",
+    "Dont-have-an-account": "Dont have an account?",
+    "or": "or"
   },
   "common": {
     "sign-in": "Sign in",

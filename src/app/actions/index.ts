@@ -1,6 +1,7 @@
 'use server';
 
 import { StatusCodes } from 'http-status-codes';
+import { clerkClient } from '@clerk/nextjs/server';
 
 import { logger } from '../lib/utils/logger';
 import {
@@ -88,5 +89,21 @@ export const getUserMessages = async (
       error: 'Fetching threads failed',
       status: StatusCodes.BAD_REQUEST,
     };
+  }
+};
+
+export const saveUserIdToClerk = async (
+  clerkUserId: string,
+  visitorId: string
+) => {
+  try {
+    await clerkClient().users.updateUser(clerkUserId, {
+      publicMetadata: {
+        visitorId,
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false };
   }
 };
