@@ -1,0 +1,1 @@
+export { SocialAuthOptions } from './SocialAuthOptions';
