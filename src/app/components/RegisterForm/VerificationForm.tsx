@@ -9,7 +9,7 @@ import { Input } from '@salesyy/common-ui';
 
 import { type VerificationFormData, verificationSchema } from './schema';
 
-export const VerificationForm: React.FC = () => {
+export const VerificationForm = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { isLoaded, signUp, setActive } = useSignUp();
 

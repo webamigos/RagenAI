@@ -1,9 +1,9 @@
-import { SignIn } from '@clerk/nextjs';
+import { LoginForm } from '@/app/components/LoginForm/LoginForm';
 
 export default function SignInPage() {
   return (
     <>
-      <SignIn />
+      <LoginForm />
     </>
   );
 }

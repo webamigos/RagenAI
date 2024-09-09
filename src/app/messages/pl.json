@@ -23,6 +23,13 @@
     "confirm": "Potwierdź kod",
     "or": "lub"
   },
+  "Sign-in": {
+    "sign-in": "Zaloguj się",
+    "Sign-up": "Zarejestruj się",
+    "Password": "Hasło",
+    "to-continue": "aby przejść do SalesYY Assistant",
+    "Dont-have-an-account": "Nie posiadasz konta?"
+  },
   "common": {
     "sign-in": "Zaloguj",
     "sign-out": "Wyloguj"

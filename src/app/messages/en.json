@@ -23,6 +23,13 @@
     "confirm": "Confirm code",
     "or": "or"
   },
+  "Sign-in": {
+    "sign-in": "Sign in",
+    "Sign-up": "Sign up",
+    "Password": "Password",
+    "to-continue": "to continue to SalesYY Assistant",
+    "Dont-have-an-account": "Dont have an account?"
+  },
   "common": {
     "sign-in": "Sign in",
     "sign-out": "Sign out"
