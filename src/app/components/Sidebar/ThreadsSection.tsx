@@ -1,5 +1,6 @@
 import { SidebarLabel, SidebarItem } from '@salesyy/common-ui';
 import { ThreadHistoryResponse } from '../../contracts/Message';
+import { useSidebar } from '@/app/hooks/useSidebar';
 
 type Category = {
   title: string;
@@ -19,6 +20,8 @@ export const ThreadsSection = ({
   lastThreadElementRef,
   handleThreadClick,
 }: Props) => {
+  const { closeSidebar } = useSidebar();
+
   return (
     <>
       {threadCategories.map(
@@ -47,7 +50,10 @@ export const ThreadsSection = ({
                   >
                     <SidebarItem
                       className="cursor-pointer"
-                      onClick={() => handleThreadClick(thread.public_id)}
+                      onClick={() => {
+                        handleThreadClick(thread.public_id);
+                        closeSidebar();
+                      }}
                       current={isActive}
                     >
                       {`${contentPreview}`}
