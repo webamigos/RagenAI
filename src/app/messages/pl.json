@@ -29,7 +29,16 @@
     "Password": "Hasło",
     "to-continue": "aby przejść do SalesYY Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
-    "or": "lub"
+    "or": "lub",
+    "Forgot-password": "Zapomniałeś hasła?"
+  },
+  "Forgot-password": {
+    "Forgot-password": "Zapomniałeś hasła?",
+    "Provide-email": "Proszę wprowadź swój adres email",
+    "Send-reset-code": "Wyślij kod do resetowania hasła",
+    "Enter-password": "Wpisz nowe hasło",
+    "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
+    "Reset-password": "Zresetuj hasło"
   },
   "common": {
     "sign-in": "Zaloguj",

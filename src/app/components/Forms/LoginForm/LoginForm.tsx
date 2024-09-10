@@ -1,22 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-
-import { SocialAuthOptions } from '../SocialAuthOptions';
-import { Button, Card, Input } from '@salesyy/common-ui';
+import { useForm } from 'react-hook-form';
+import { useSignIn } from '@clerk/nextjs';
+import { useState } from 'react';
 import Link from 'next/link';
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
-import { LoginFormData, loginSchema } from './schema';
+import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
+import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
+import { Button, Card, Input } from '@salesyy/common-ui';
+
+import { type LoginFormData, loginSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
 
 export const LoginForm = () => {
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[] | undefined>([]);
+  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
 
@@ -87,19 +88,19 @@ export const LoginForm = () => {
             errorMessage={errors.password?.message}
           />
         </div>
+        <Link
+          href="/forgot-password"
+          className="text-end text-sm font-light text-blue-500 hover:underline"
+        >
+          {t('Forgot-password')}
+        </Link>
         <Button
           className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
           isLoading={isSubmitting}
           label={t('sign-in')}
           type="submit"
         />
-        {apiErrors && apiErrors.length > 0 && (
-          <ul className="mb-2 text-red-500 text-sm">
-            {apiErrors.map((error, index) => (
-              <li key={index}>{error.longMessage || error.message}</li>
-            ))}
-          </ul>
-        )}
+        <ClerkErrorsInterface apiErrors={apiErrors} />
         <p className="text-start">
           {t('Dont-have-an-account')}{' '}
           <Link href="/sign-up" className="text-blue-500 hover:underline">
