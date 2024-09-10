@@ -87,7 +87,7 @@ export const UserThreadsHistory = ({
 
   return (
     <SidebarSection>
-      <div className="flex items-center  ml-2 mb-5 gap-2 text-lg">
+      <div className="flex items-center ml-2 mb-5 gap-2 text-lg">
         <ChatConversation />
         <SidebarLabel>{t('chat-history')}</SidebarLabel>
       </div>
