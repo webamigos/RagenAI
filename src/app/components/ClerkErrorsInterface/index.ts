@@ -1,0 +1,1 @@
+export { ClerkErrorsInterface } from './ClerkErrorsInterface';

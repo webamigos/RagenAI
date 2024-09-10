@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -5,18 +7,19 @@ import { useSignUp } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
-import { Button, Input } from '@salesyy/common-ui';
 import { useRouter } from 'next/navigation';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
-import { SocialAuthOptions } from '../SocialAuthOptions';
+import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
+import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
+import { Button, Input, Card } from '@salesyy/common-ui';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
 
-export const AccountDetailsForm = () => {
+export const RegisterForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[] | undefined>([]);
+  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
 
   const { isLoaded, signUp } = useSignUp();
   const t = useTranslations('Sign-up');
@@ -59,7 +62,7 @@ export const AccountDetailsForm = () => {
   };
 
   return (
-    <>
+    <Card>
       <div className="flex flex-col mb-4 text-center">
         <p className="font-bold text-lg	">{t('create-account')}</p>
         <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
@@ -85,18 +88,12 @@ export const AccountDetailsForm = () => {
           errorMessage={errors.password?.message}
         />
         <Button
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 mt-9 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
           disabled={isSubmitting}
           label={t('sign-up')}
           type="submit"
         />
-        {apiErrors && apiErrors.length > 0 && (
-          <ul className="mb-2 text-red-500 text-sm">
-            {apiErrors.map((error, index) => (
-              <li key={index}>{error.longMessage}</li>
-            ))}
-          </ul>
-        )}
+        <ClerkErrorsInterface apiErrors={apiErrors} />
         <p className="text-start">
           {t('Already-have-an-account')}{' '}
           <Link href="/sign-in" className="text-blue-500 hover:underline">
@@ -104,6 +101,6 @@ export const AccountDetailsForm = () => {
           </Link>
         </p>
       </form>
-    </>
+    </Card>
   );
 };
