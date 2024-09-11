@@ -36,6 +36,8 @@ const {
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
+  const { isSignedIn, user, isLoaded } = useUser();
+
   const initialState: State = {
     isInitialLoad: true,
     isMessageLoading: false,
@@ -47,8 +49,10 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
+  const visitorId = isLoaded && user?.unsafeMetadata.visitorId;
+
   const { data, isLoading, isSuccess } = useApi(() =>
-    fetchMessagesFromApi(threadId)
+    fetchMessagesFromApi(threadId, visitorId as string)
   );
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
@@ -56,7 +60,6 @@ export const useAssistantLogic = (threadId: string) => {
   const { push } = useRouter();
   const locale = useLocale();
   const t = useTranslations('Index');
-  const { isSignedIn } = useUser();
   const { dispatch: threadsDispatch } = useThreadsContext();
 
   const [

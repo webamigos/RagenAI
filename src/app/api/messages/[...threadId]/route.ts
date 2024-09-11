@@ -39,10 +39,12 @@ export const POST = async (request: Request) => {
 };
 
 export const GET = async (_request: Request, { params }: Params) => {
-  const threadPublicId = params.threadId;
+  // const threadPublicId = params.threadId;
+  const threadPublicId = params.threadId[0];
+  const visitorId = params.threadId[1];
 
   try {
-    const messages = await fetchMessagesFromDb(threadPublicId);
+    const messages = await fetchMessagesFromDb(threadPublicId, visitorId);
     return NextResponse.json(messages);
   } catch (e) {
     return NextResponse.json(
