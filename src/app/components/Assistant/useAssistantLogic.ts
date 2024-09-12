@@ -36,6 +36,7 @@ const {
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
+  const { isSignedIn } = useUser();
   const initialState: State = {
     isInitialLoad: true,
     isMessageLoading: false,
@@ -56,7 +57,6 @@ export const useAssistantLogic = (threadId: string) => {
   const { push } = useRouter();
   const locale = useLocale();
   const t = useTranslations('Index');
-  const { isSignedIn } = useUser();
   const { dispatch: threadsDispatch } = useThreadsContext();
 
   const [
@@ -200,6 +200,22 @@ export const useAssistantLogic = (threadId: string) => {
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const visitorId = await loadFingerprint();
+    const userMessage = {
+      public_id: `user-${Date.now()}`,
+      role: Role.USER,
+      content: data.prompt,
+      created_at: new Date(),
+    };
+    dispatch({ type: ADD_MESSAGE, payload: userMessage });
+    dispatch({
+      type: SET_MESSAGE_LOADING,
+      payload: true,
+    });
+    dispatch({
+      type: SET_LOADING_TEXT,
+      payload: t('status-thinking'),
+    });
+
     const messageResponse = await sendMessage(threadId, data, visitorId);
     const response = await getUserMessages(visitorId);
     const threads = response.threads;
@@ -210,22 +226,6 @@ export const useAssistantLogic = (threadId: string) => {
     });
 
     try {
-      const userMessage = {
-        public_id: `user-${Date.now()}`,
-        role: Role.USER,
-        content: data.prompt,
-        created_at: new Date(),
-      };
-      dispatch({ type: ADD_MESSAGE, payload: userMessage });
-      dispatch({
-        type: SET_MESSAGE_LOADING,
-        payload: true,
-      });
-      dispatch({
-        type: SET_LOADING_TEXT,
-        payload: t('status-thinking'),
-      });
-
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
         return;
