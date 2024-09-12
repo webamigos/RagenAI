@@ -49,10 +49,10 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const visitorId = isLoaded && user?.unsafeMetadata.visitorId;
+  const userVisitorId = isLoaded && user?.unsafeMetadata.visitorId;
 
   const { data, isLoading, isSuccess } = useApi(() =>
-    fetchMessagesFromApi(threadId, visitorId as string)
+    fetchMessagesFromApi(threadId, userVisitorId as string)
   );
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
@@ -203,8 +203,14 @@ export const useAssistantLogic = (threadId: string) => {
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const visitorId = await loadFingerprint();
-    const messageResponse = await sendMessage(threadId, data, visitorId);
-    const response = await getUserMessages(visitorId);
+    const messageResponse = await sendMessage(
+      threadId,
+      data,
+      userVisitorId ? (userVisitorId as string) : (visitorId as string)
+    );
+    const response = await getUserMessages(
+      userVisitorId ? (userVisitorId as string) : (visitorId as string)
+    );
     const threads = response.threads;
 
     threadsDispatch({

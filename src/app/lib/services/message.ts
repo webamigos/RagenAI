@@ -47,11 +47,15 @@ export const fetchMessagesFromDb = async (
   visitorId: Thread['visitor_id']
 ) => {
   const thread = await db.thread.findUnique({
-    where: { public_id: threadPublicId },
+    where: { public_id: threadPublicId, visitor_id: visitorId },
   });
 
+  if (!thread) {
+    return [];
+  }
+
   return db.message.findMany({
-    where: { thread_id: thread?.id, visitor_id: visitorId },
+    where: { thread_id: thread?.id },
     select: {
       public_id: true,
       created_at: true,
