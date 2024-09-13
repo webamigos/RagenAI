@@ -88,7 +88,7 @@ export const RegisterForm = () => {
           errorMessage={errors.password?.message}
         />
         <Button
-          className="w-full py-2 px-4 mt-9 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
           disabled={isSubmitting}
           label={t('sign-up')}
           type="submit"
