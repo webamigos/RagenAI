@@ -64,5 +64,8 @@
     "close-thread": "Zamknij wątek",
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
     "contact-with-us": "Skontaktuj się z nami"
+  },
+  "toast": {
+    "copied": "skopiowano"
   }
 }
