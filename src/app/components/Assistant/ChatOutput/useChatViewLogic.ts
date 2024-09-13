@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import markdownit from 'markdown-it';
+import { toast } from 'react-toastify';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 type Props = {
   content: string;
@@ -20,5 +23,15 @@ export const useChatViewLogic = (streamedMessage: Props | null) => {
     }
   }, [streamedMessage]);
 
-  return { t, md, renderedStreamedMessage };
+  const successToast = (message: string) => {
+    toast.success(message, {
+      position: 'top-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+    });
+  };
+
+  return { t, md, successToast, renderedStreamedMessage };
 };

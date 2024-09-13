@@ -64,5 +64,8 @@
     "close-thread": "Close thread",
     "provide-at-least-10-characters": "Provide at least 10 characters",
     "contact-with-us": "Contact with us"
+  },
+  "toast": {
+    "copied": "copied"
   }
 }

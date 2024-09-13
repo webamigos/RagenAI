@@ -276,6 +276,7 @@ export const useAssistantLogic = (threadId: string) => {
         payload: t('status-thinking'),
       });
 
+    try {
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
         return;
