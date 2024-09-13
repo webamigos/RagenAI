@@ -19,7 +19,8 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const { t, md, renderedStreamedMessage } = useChatViewLogic(streamedMessage);
+  const { t, md, successToast, renderedStreamedMessage } =
+    useChatViewLogic(streamedMessage);
 
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
@@ -45,6 +46,7 @@ export const ChatOutput = ({
                 <CopyToClipboardButton
                   className="absolute -top-8 right-0 cursor-pointer"
                   message={message}
+                  successToast={successToast}
                 />
               )}
             </div>

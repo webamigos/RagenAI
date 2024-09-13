@@ -4,16 +4,16 @@ import { Clipboard, ClipboardChecked } from '@salesyy/common-ui/icons';
 import { MessageDto } from '@/app/contracts/Message';
 import { useTranslations } from 'next-intl';
 
-import { SuccessToast } from './SuccessToast';
-
 type CopyToClipboardButtonProps = {
   message: MessageDto;
   className: string;
+  successToast: (message: string) => void;
 };
 
 export const CopyToClipboardButton = ({
   message,
   className,
+  successToast,
 }: CopyToClipboardButtonProps) => {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
@@ -22,7 +22,7 @@ export const CopyToClipboardButton = ({
   const copyToClipboard = (text: string, messageId: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedMessageId(messageId);
-      SuccessToast(t('copied'));
+      successToast(t('copied'));
       setTimeout(() => setCopiedMessageId(null), 2000);
     });
   };
