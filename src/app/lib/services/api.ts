@@ -2,11 +2,14 @@ import { MessageDto } from '../../contracts/Message';
 import { api } from './config';
 import { CreateThreadDto } from '../../contracts/ThreadDto';
 
-export const fetchMessagesFromApi = async (threadId: string) => {
+export const fetchMessagesFromApi = async (
+  threadId: string,
+  visitorId: string
+) => {
   if (!threadId) {
     return undefined;
   }
-  return api.get<MessageDto[]>(`/messages/${threadId}`);
+  return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
 };
 
 export const createThread = () => {

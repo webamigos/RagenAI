@@ -18,7 +18,7 @@ export const Start = () => {
   const [isPending, setTransition] = useTransition();
   const [isLimitLock, setIsLimitLock] = useState(false);
 
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
   const locale = useLocale();
   const { push } = useRouter();
   const t = useTranslations('Index');
@@ -31,6 +31,7 @@ export const Start = () => {
 
       const visitorId = await loadFingerprint();
       const visitorMessagesResponse = await checkVisitorVisits(visitorId);
+
       if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
         setIsLimitLock(true);
       }
