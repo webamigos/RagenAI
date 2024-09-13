@@ -249,33 +249,33 @@ export const useAssistantLogic = (threadId: string) => {
 
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
+    const userMessage = {
+      public_id: `user-${Date.now()}`,
+      role: Role.USER,
+      content: data.prompt,
+      created_at: new Date(),
+    };
+    dispatch({ type: ADD_MESSAGE, payload: userMessage });
+    dispatch({
+      type: SET_MESSAGE_LOADING,
+      payload: true,
+    });
+    dispatch({
+      type: SET_LOADING_TEXT,
+      payload: t('status-thinking'),
+    });
+
     const id = userVisitorId || visitorId || (await loadFingerprint());
+    const messageResponse = await sendMessage(threadId, data, id);
+    const response = await getUserMessages(id);
+    const threads = response.threads;
+
+    threadsDispatch({
+      type: 'USER_THREADS',
+      payload: threads || [],
+    });
+
     try {
-      const messageResponse = await sendMessage(threadId, data, id);
-      const response = await getUserMessages(id);
-      const threads = response.threads;
-
-      threadsDispatch({
-        type: 'USER_THREADS',
-        payload: threads || [],
-      });
-
-      const userMessage = {
-        public_id: `user-${Date.now()}`,
-        role: Role.USER,
-        content: data.prompt,
-        created_at: new Date(),
-      };
-      dispatch({ type: ADD_MESSAGE, payload: userMessage });
-      dispatch({
-        type: SET_MESSAGE_LOADING,
-        payload: true,
-      });
-      dispatch({
-        type: SET_LOADING_TEXT,
-        payload: t('status-thinking'),
-      });
-
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
         return;
