@@ -2,8 +2,8 @@ import { toast } from 'react-toastify';
 
 type ToastProps = {
   message: string;
-  autoClose: number;
-  position:
+  autoClose?: number;
+  position?:
     | 'top-center'
     | 'top-left'
     | 'top-right'
@@ -15,7 +15,7 @@ type ToastProps = {
 export const useToast = () => {
   const successToast = ({
     message,
-    position,
+    position = 'top-right',
     autoClose = 3000,
   }: ToastProps) => {
     toast.success(message, {
@@ -27,7 +27,11 @@ export const useToast = () => {
     });
   };
 
-  const errorToast = ({ message, position, autoClose = 3000 }: ToastProps) => {
+  const errorToast = ({
+    message,
+    position = 'top-right',
+    autoClose = 3000,
+  }: ToastProps) => {
     toast.error(message, {
       position: position,
       autoClose: autoClose,
@@ -37,7 +41,11 @@ export const useToast = () => {
     });
   };
 
-  const infoToast = ({ message, position, autoClose = 3000 }: ToastProps) => {
+  const infoToast = ({
+    message,
+    position = 'top-right',
+    autoClose = 3000,
+  }: ToastProps) => {
     toast.info(message, {
       position: position,
       autoClose: autoClose,

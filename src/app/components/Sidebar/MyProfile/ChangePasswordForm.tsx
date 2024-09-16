@@ -59,7 +59,7 @@ export const ChangePasswordForm = ({ handleCloseDialog }: Props) => {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
-      successToast(t('password-changed'));
+      successToast({ message: t('password-changed') });
       handleCloseDialog();
       reset();
     } catch (error) {
