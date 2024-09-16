@@ -6,11 +6,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useUser } from '@clerk/clerk-react';
-import { toast } from 'react-toastify';
 import { useTranslations } from 'next-intl';
 
-import { Input, Button } from '@salesyy/common-ui';
 import { ClerkErrorsInterface } from '../../ClerkErrorsInterface';
+import { Input, Button } from '@salesyy/common-ui';
+import { useToast } from '../../../hooks/useToast';
 
 const schema = z
   .object({
@@ -32,16 +32,6 @@ const schema = z
     }
   });
 
-const successToast = (message: string) => {
-  toast.success(message, {
-    position: 'top-right',
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-  });
-};
-
 type FormData = z.infer<typeof schema>;
 
 type Props = {
@@ -51,6 +41,7 @@ type Props = {
 export const ChangePasswordForm = ({ handleCloseDialog }: Props) => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
 
+  const { successToast } = useToast();
   const { user } = useUser();
   const t = useTranslations('change-password');
   const {
