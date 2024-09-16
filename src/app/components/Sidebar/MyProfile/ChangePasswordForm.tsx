@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { type ClerkAPIError } from '@clerk/types';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
