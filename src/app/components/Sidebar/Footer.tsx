@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
+  SidebarSection,
   Avatar,
   SidebarFooter,
-  SidebarSection,
   SidebarLabel,
   SidebarItem,
   Dropdown,
@@ -23,6 +23,7 @@ import {
 } from '@salesyy/common-ui';
 import { UserLinks } from '../UserLinks';
 import { LockClosed } from '@salesyy/common-ui/icons/LockClosed';
+import { ChangePasswordForm } from './MyProfile';
 
 type Props = {
   isSignedIn?: boolean;
@@ -33,6 +34,7 @@ type Props = {
 export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
   const t = useTranslations('dialog');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState(false);
 
   const handleOpenDialog = () => {
     setIsDialogOpen(true);
@@ -40,6 +42,11 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
+    setPasswordForm((prevState) => !prevState);
+  };
+
+  const handlePasswordForm = () => {
+    setPasswordForm((prevState) => !prevState);
   };
 
   return (
@@ -70,14 +77,17 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 </DropdownButton>
 
                 <DropdownMenu className="w-2/12" anchor="top end">
-                  <DropdownItem onClick={handleOpenDialog}>
+                  <DropdownItem
+                    className="cursor-pointer"
+                    onClick={handleOpenDialog}
+                  >
                     <UserCircleIcon />
                     <DropdownLabel className="text-sm ml-2.5">
                       {t('my-profile')}
                     </DropdownLabel>
                   </DropdownItem>
                   <DropdownDivider />
-                  <DropdownItem>
+                  <DropdownItem className="cursor-pointer">
                     <LogoutIcon />
                     <UserLinks />
                   </DropdownItem>
@@ -91,14 +101,20 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 onClose={handleCloseDialog}
                 size="md"
               >
-                <DialogTitle>{t('my-profile')}</DialogTitle>
-                <DialogBody>
-                  <SidebarItem>
-                    <LockClosed />
-                    {t('change-password')}
-                    <ChevronUpIcon className="w-4 h-4 ml-auto transform rotate-90" />
-                  </SidebarItem>
-                </DialogBody>
+                <DialogTitle>
+                  {!passwordForm ? t('my-profile') : t('change-password')}
+                </DialogTitle>
+                {!passwordForm ? (
+                  <DialogBody>
+                    <SidebarItem onClick={handlePasswordForm}>
+                      <LockClosed />
+                      {t('change-password')}
+                      <ChevronUpIcon className="w-4 h-4 ml-auto transform rotate-90" />
+                    </SidebarItem>
+                  </DialogBody>
+                ) : (
+                  <ChangePasswordForm handleCloseDialog={handleCloseDialog} />
+                )}
                 <DialogActions>
                   <Button
                     className="p-2 text-sm"

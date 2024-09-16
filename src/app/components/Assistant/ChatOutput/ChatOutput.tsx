@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
 import { SpinnerSVG } from '@salesyy/common-ui';
 
+import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
 import type { MessageDto } from '../../../contracts/Message';
 import './chat-response.css';
-import { CopyToClipboardButton } from './CopyToClipboardButton';
 
 type Props = {
   messages: MessageDto[];
