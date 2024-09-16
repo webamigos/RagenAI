@@ -14,3 +14,5 @@ export * from './Navbar';
 export * from './Avatar';
 export * from './Card';
 export * from './Divider';
+export * from './Dropdown';
+export * from './Dialog';

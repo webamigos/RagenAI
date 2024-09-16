@@ -5,3 +5,5 @@ export { ChatConversation } from './ChatConversation';
 export { LogoutIcon } from './LogoutIcon';
 export { Clipboard } from './Clipboard';
 export { ClipboardChecked } from './ClipboardChecked';
+export { ChevronUpIcon } from './ChevronUpIcon';
+export { UserCircleIcon } from './UserCircleIcon';
