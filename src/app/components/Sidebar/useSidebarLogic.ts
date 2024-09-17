@@ -13,7 +13,6 @@ export const useSidebarLogic = () => {
   const pathname = usePathname();
 
   const userEmail = user?.emailAddresses[0].emailAddress;
-  const isAdmin = user?.publicMetadata.userRole && true;
   const userAvatar = user?.imageUrl;
 
   const handleThreadClick = (threadId: string) => {
@@ -34,7 +33,6 @@ export const useSidebarLogic = () => {
   return {
     error,
     hasMore,
-    isAdmin,
     userEmail,
     isLoading,
     userAvatar,

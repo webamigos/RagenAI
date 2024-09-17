@@ -6,18 +6,12 @@ import { UserLinks } from '../UserLinks';
 import { ChangePasswordForm } from './MyProfile';
 
 type Props = {
-  isAdmin?: boolean;
   isSignedIn?: boolean;
   userAvatar?: string;
   userEmail?: string;
 };
 
-export const Footer = ({
-  isSignedIn,
-  userEmail,
-  userAvatar,
-  isAdmin,
-}: Props) => {
+export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
   const t = useTranslations('dialog');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState(false);
@@ -63,14 +57,6 @@ export const Footer = ({
                 </Libs.DropdownButton>
 
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
-                  {isAdmin && (
-                    <Libs.DropdownItem className="cursor-pointer">
-                      <Libs.SettingsIcon />
-                      <Libs.DropdownLabel className="text-sm ml-2.5">
-                        {t('admin-dashboard')}
-                      </Libs.DropdownLabel>
-                    </Libs.DropdownItem>
-                  )}
                   <Libs.DropdownItem
                     className="cursor-pointer"
                     onClick={handleOpenDialog}
