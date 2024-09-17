@@ -46,7 +46,7 @@ export const Sidebar = ({ children }: Props) => {
               />
             </SidebarBody>
             <Footer
-              isAdmin={isAdmin!}
+              isAdmin={isAdmin}
               userAvatar={userAvatar}
               isSignedIn={isSignedIn}
               userEmail={userEmail}

@@ -6,7 +6,7 @@ import { UserLinks } from '../UserLinks';
 import { ChangePasswordForm } from './MyProfile';
 
 type Props = {
-  isAdmin: boolean;
+  isAdmin?: boolean;
   isSignedIn?: boolean;
   userAvatar?: string;
   userEmail?: string;
