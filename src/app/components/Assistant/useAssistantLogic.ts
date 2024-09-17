@@ -56,7 +56,7 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const userVisitorId = user?.publicMetadata.visitorId;
+  const userVisitorId = user?.publicMetadata.visitorId as string;
 
   useEffect(() => {
     if (isLoaded && !isSignedIn && !visitorId) {
@@ -69,10 +69,9 @@ export const useAssistantLogic = (threadId: string) => {
   const id = userVisitorId || visitorId;
 
   const { isLoading } = useApi(() => {
-    if (typeof id === 'string') {
+    if (id) {
       return fetchMessagesFromApi(threadId, id);
     }
-
     return Promise.resolve(null);
   });
 
