@@ -1,4 +1,4 @@
-export const LockClosed = () => {
+export const LockClosedIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

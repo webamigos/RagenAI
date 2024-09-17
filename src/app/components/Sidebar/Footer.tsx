@@ -1,37 +1,23 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  SidebarSection,
-  Avatar,
-  SidebarFooter,
-  SidebarLabel,
-  SidebarItem,
-  Dropdown,
-  DropdownButton,
-  DropdownMenu,
-  DropdownItem,
-  DropdownLabel,
-  DropdownDivider,
-  LogoutIcon,
-  ChevronUpIcon,
-  UserCircleIcon,
-  Dialog,
-  DialogTitle,
-  DialogBody,
-  DialogActions,
-  Button,
-} from '@salesyy/common-ui';
+import * as Libs from '@salesyy/common-ui';
+
 import { UserLinks } from '../UserLinks';
-import { LockClosed } from '@salesyy/common-ui/icons/LockClosed';
 import { ChangePasswordForm } from './MyProfile';
 
 type Props = {
+  isAdmin: boolean;
   isSignedIn?: boolean;
-  userEmail?: string;
   userAvatar?: string;
+  userEmail?: string;
 };
 
-export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
+export const Footer = ({
+  isSignedIn,
+  userEmail,
+  userAvatar,
+  isAdmin,
+}: Props) => {
   const t = useTranslations('dialog');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState(false);
@@ -42,7 +28,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setPasswordForm((prevState) => !prevState);
+    setPasswordForm(false);
   };
 
   const handlePasswordForm = () => {
@@ -50,15 +36,15 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
   };
 
   return (
-    <SidebarFooter className="mb-10 lg:mb-5">
-      <SidebarSection>
+    <Libs.SidebarFooter className="mb-10 lg:mb-5">
+      <Libs.SidebarSection>
         <div className="flex justify-between items-center">
           {isSignedIn && (
             <>
-              <Dropdown>
-                <DropdownButton as={SidebarItem}>
+              <Libs.Dropdown>
+                <Libs.DropdownButton as={Libs.SidebarItem}>
                   <span className="flex min-w-0 items-center gap-3">
-                    <Avatar
+                    <Libs.Avatar
                       src={userAvatar}
                       className="w-10 h-10 rounded-md"
                       alt="User Avatar"
@@ -73,69 +59,77 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                       </span>
                     </span>
                   </span>
-                  <ChevronUpIcon />
-                </DropdownButton>
+                  <Libs.ChevronUpIcon />
+                </Libs.DropdownButton>
 
-                <DropdownMenu className="w-2/12" anchor="top end">
-                  <DropdownItem
+                <Libs.DropdownMenu className="w-3/12" anchor="top end">
+                  {isAdmin && (
+                    <Libs.DropdownItem className="cursor-pointer">
+                      <Libs.SettingsIcon />
+                      <Libs.DropdownLabel className="text-sm ml-2.5">
+                        {t('admin-dashboard')}
+                      </Libs.DropdownLabel>
+                    </Libs.DropdownItem>
+                  )}
+                  <Libs.DropdownItem
                     className="cursor-pointer"
                     onClick={handleOpenDialog}
                   >
-                    <UserCircleIcon />
-                    <DropdownLabel className="text-sm ml-2.5">
+                    <Libs.UserCircleIcon />
+                    <Libs.DropdownLabel className="text-sm ml-2.5">
                       {t('my-profile')}
-                    </DropdownLabel>
-                  </DropdownItem>
-                  <DropdownDivider />
-                  <DropdownItem className="cursor-pointer">
-                    <LogoutIcon />
+                    </Libs.DropdownLabel>
+                  </Libs.DropdownItem>
+                  <Libs.DropdownDivider />
+                  <Libs.DropdownItem className="cursor-pointer">
+                    <Libs.LogoutIcon />
                     <UserLinks />
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
+                  </Libs.DropdownItem>
+                </Libs.DropdownMenu>
+              </Libs.Dropdown>
 
               {/* Dialog */}
-              <Dialog
+              <Libs.Dialog
                 className="p-6"
                 open={isDialogOpen}
                 onClose={handleCloseDialog}
                 size="md"
               >
-                <DialogTitle>
+                <Libs.DialogTitle>
                   {!passwordForm ? t('my-profile') : t('change-password')}
-                </DialogTitle>
+                </Libs.DialogTitle>
                 {!passwordForm ? (
-                  <DialogBody>
-                    <SidebarItem onClick={handlePasswordForm}>
-                      <LockClosed />
+                  <Libs.DialogBody>
+                    <Libs.SidebarItem onClick={handlePasswordForm}>
+                      <Libs.LockClosedIcon />
                       {t('change-password')}
-                      <ChevronUpIcon className="w-4 h-4 ml-auto transform rotate-90" />
-                    </SidebarItem>
-                  </DialogBody>
+                      <Libs.ChevronUpIcon className="w-4 h-4 ml-auto transform rotate-90" />
+                    </Libs.SidebarItem>
+                  </Libs.DialogBody>
                 ) : (
                   <ChangePasswordForm handleCloseDialog={handleCloseDialog} />
                 )}
-                <DialogActions>
-                  <Button
+                <Libs.DialogActions>
+                  <Libs.Button
                     className="p-2 text-sm"
                     label={t('close')}
                     onClick={handleCloseDialog}
                   />
-                </DialogActions>
-              </Dialog>
+                </Libs.DialogActions>
+              </Libs.Dialog>
             </>
           )}
 
           {!isSignedIn && (
-            <SidebarItem>
-              <LogoutIcon />
-              <SidebarLabel>
+            <Libs.SidebarItem>
+              <Libs.LogoutIcon />
+              <Libs.SidebarLabel>
                 <UserLinks />
-              </SidebarLabel>
-            </SidebarItem>
+              </Libs.SidebarLabel>
+            </Libs.SidebarItem>
           )}
         </div>
-      </SidebarSection>
-    </SidebarFooter>
+      </Libs.SidebarSection>
+    </Libs.SidebarFooter>
   );
 };
