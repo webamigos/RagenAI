@@ -97,11 +97,7 @@ export const ThreadsContextProvider = ({
     dispatch({ type: 'LOADING' });
 
     try {
-      const response = await getUserMessages(
-        visitorId as string,
-        state.skip,
-        16
-      );
+      const response = await getUserMessages(visitorId, state.skip, 16);
       const threads = response.threads || [];
 
       if (threads.length > 0) {

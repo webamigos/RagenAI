@@ -69,9 +69,10 @@ export const useAssistantLogic = (threadId: string) => {
   const id = userVisitorId || visitorId;
 
   const { isLoading } = useApi(() => {
-    if (id) {
+    if (typeof id === 'string') {
       return fetchMessagesFromApi(threadId, id);
     }
+
     return Promise.resolve(null);
   });
 
