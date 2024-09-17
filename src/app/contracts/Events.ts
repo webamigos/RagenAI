@@ -15,3 +15,8 @@ export type SseMessageDelta = {
     content: string;
   };
 };
+
+export type SseMessageError = {
+  type: 'error';
+  message: string;
+};

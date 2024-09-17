@@ -115,3 +115,11 @@ export const createAndStoreOpenAIThreadMessage = async ({
     content: dbMessage.content,
   };
 };
+
+export const getMessageById = async (publicMessageId: string) => {
+  return await db.message.findUnique({
+    where: {
+      public_id: publicMessageId,
+    },
+  });
+};

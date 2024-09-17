@@ -4,7 +4,7 @@ import {
   createRouteMatcher,
   clerkClient,
 } from '@clerk/nextjs/server';
-import { type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { locales, defaultLocale } from './app/config';
 
@@ -22,12 +22,9 @@ const publicRoutes = [
   '/en',
   '/:locale/sign-in',
   '/:locale/sign-up',
-  '/:locale/threads', // FIXME: temporary
-  '/:locale/threads/:publicId', // FIXME: temporary
+  '/:locale/guest-threads/:threadId',
 ];
-const isProtectedRoute = createRouteMatcher([
-  '/:locale/threads/:publicId/user',
-]);
+const isProtectedRoute = createRouteMatcher(['/:locale/threads/:threadId']);
 const ignoreRoutes = ['assets'];
 
 export const config = {
@@ -52,11 +49,22 @@ export const config = {
 
 export default clerkMiddleware(
   (auth, request) => {
+    const url = request.nextUrl.pathname;
+
     if (isProtectedRoute(request)) {
       auth().protect();
+    } else {
+      const isPublicRoute = publicRoutes.some((route) =>
+        new RegExp(
+          route.replace(':locale', '(pl|en)').replace(':threadId', '[^/]+')
+        ).test(url)
+      );
+
+      if (!isPublicRoute) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+      }
     }
 
-    // return NextResponse.next({ request: { headers } });
     return intlMiddleware(request);
   },
   { debug: false }
