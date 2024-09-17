@@ -17,13 +17,14 @@ type Props = {
 export const Sidebar = ({ children }: Props) => {
   const {
     error,
+    hasMore,
     userEmail,
     isLoading,
+    userAvatar,
     isSignedIn,
     userThreads,
     activeThread,
     handleThreadClick,
-    hasMore,
   } = useSidebarLogic();
 
   return (
@@ -43,7 +44,11 @@ export const Sidebar = ({ children }: Props) => {
                 hasMore={hasMore}
               />
             </SidebarBody>
-            <Footer isSignedIn={isSignedIn} userEmail={userEmail} />
+            <Footer
+              userAvatar={userAvatar}
+              isSignedIn={isSignedIn}
+              userEmail={userEmail}
+            />
           </div>
         }
       >

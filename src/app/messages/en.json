@@ -67,5 +67,17 @@
   },
   "toast": {
     "copied": "copied"
+  },
+  "dialog": {
+    "my-profile": "My profile",
+    "change-password": "Change password",
+    "close": "close"
+  },
+  "change-password": {
+    "change-password": "Change password",
+    "password-changed": "Password changed!",
+    "current-password": "Current password",
+    "new-password": "New password",
+    "confirm-password": "Confirm password"
   }
 }
