@@ -85,7 +85,7 @@ export const ThreadsContextProvider = ({
   const [state, dispatch] = useReducer(threadsReducer, initialState);
   const hasInitialLoadCompleted = useRef(false);
   const { user } = useUser();
-  const visitorId = user?.unsafeMetadata.visitorId;
+  const visitorId = user?.publicMetadata.visitorId;
 
   const loadMoreThreads = useCallback(async () => {
     if (state.isLoading || !state.hasMore) return;
