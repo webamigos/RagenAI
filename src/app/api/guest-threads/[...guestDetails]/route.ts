@@ -1,5 +1,3 @@
-import { type NextApiRequest } from 'next';
-
 import { Role } from '@prisma/client';
 import { logger } from '../../../lib/utils/logger';
 import {
@@ -28,7 +26,7 @@ type Params = {
   params: { guestDetails: string[] };
 };
 
-export async function GET(_request: NextApiRequest, { params }: Params) {
+export async function GET(_request: Request, { params }: Params) {
   const [publicThreadId, publicMessageId] = params.guestDetails || [];
   try {
     const encoder = new TextEncoder();
