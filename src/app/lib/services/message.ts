@@ -31,7 +31,7 @@ export const createMessageInDB = async ({
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
-  runId: string;
+  runId?: string;
 }) => {
   return await db.message.create({
     data: {
