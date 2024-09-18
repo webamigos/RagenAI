@@ -215,6 +215,7 @@ export const useAssistantLogic = (threadId: string) => {
               role: eventMessage.payload.role,
               content: accumulatingMessage,
               created_at: eventMessage.payload.created_at,
+              run_id: eventMessage.payload.runId,
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });

@@ -1,10 +1,12 @@
 import { format } from 'date-fns';
-import { SpinnerSVG } from '@salesyy/common-ui';
+import { SpinnerSVG, LikeIcon, DislikeIcon } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
 import type { MessageDto } from '../../../contracts/Message';
+
 import './chat-response.css';
+import { m } from 'framer-motion';
 
 type Props = {
   messages: MessageDto[];
@@ -19,16 +21,16 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const { t, md, successToast, renderedStreamedMessage } =
+  const { t, md, handleRateMessage, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
-
+  console.log(messages, 'messages');
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className="mb-6 border-solid border-2 border-gray-300 rounded-md p-2"
+            className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2"
           >
             <div className="text-sm">
               <strong>{t(message.role)}</strong>{' '}
@@ -43,18 +45,34 @@ export const ChatOutput = ({
                 }}
               />
               {message.role === 'ASSISTANT' && (
-                <CopyToClipboardButton
-                  className="absolute -top-8 right-0 cursor-pointer"
-                  message={message}
-                  successToast={successToast}
-                />
+                <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <LikeIcon
+                    onClick={() =>
+                      handleRateMessage(
+                        message.public_id,
+                        'up',
+                        message.run_id!
+                      )
+                    }
+                  />
+                  <DislikeIcon
+                    onClick={() =>
+                      handleRateMessage(
+                        message.public_id,
+                        'down',
+                        message.run_id!
+                      )
+                    }
+                  />
+                  <CopyToClipboardButton message={message} />
+                </div>
               )}
             </div>
           </div>
         ))}
 
         {streamedMessage && (
-          <div className="mb-6 border-solid border-2 border-gray-300 rounded-md p-2">
+          <div className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2">
             <div className="chat-response">
               <div className="mb-6 text-sm">
                 <strong>{t('ASSISTANT')}</strong>{' '}

@@ -29,6 +29,7 @@ model Message {
   thread            Thread?  @relation(fields: [thread_id], references: [id])
   thread_id         String?
   visitor_id        String?
+  run_id            String?
 }
 
 model FlaggedMessage {

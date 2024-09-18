@@ -15,6 +15,7 @@ export type DbMessageDto = {
   created_at: Message['openai_created_at'];
   content: Message['content'];
   role: Message['role'];
+  run_id?: Message['run_id'];
 };
 
 const openai = new OpenAI();
@@ -24,12 +25,15 @@ export const createMessageInDB = async ({
   message,
   role,
   visitorId,
+  runId,
 }: {
   thread: Thread;
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
+  runId: string;
 }) => {
+  console.log({ ruuuisdf: runId });
   return await db.message.create({
     data: {
       thread_id: thread.id,
@@ -38,6 +42,7 @@ export const createMessageInDB = async ({
       content: message.content,
       role,
       visitor_id: visitorId,
+      run_id: runId,
     },
   });
 };
@@ -61,6 +66,7 @@ export const fetchMessagesFromDb = async (
       created_at: true,
       content: true,
       role: true,
+      run_id: true,
     },
     orderBy: [
       {

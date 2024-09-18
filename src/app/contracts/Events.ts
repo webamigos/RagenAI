@@ -13,5 +13,6 @@ export type SseMessageDelta = {
   type: 'delta';
   payload: {
     content: string;
+    run_id: string;
   };
 };

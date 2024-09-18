@@ -27,6 +27,7 @@ const prepareSseMessage = (
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
+let runId: string;
 
 export async function GET(_request: Request, { params }: Params) {
   const publicThreadId = params.details[0];
@@ -57,16 +58,23 @@ export async function GET(_request: Request, { params }: Params) {
         version: 'v2',
       }
     );
+
     let fullMessage = '';
+    let chainRunIds = [];
 
     for await (const event of eventStream) {
+      if (event.event === 'on_chain_start') {
+        chainRunIds.push(event.run_id);
+        runId = chainRunIds[0];
+      }
+
       if (event.event === 'on_parser_stream') {
         const textChunk = event.data.chunk || '';
         fullMessage += textChunk;
         writer.write(
           prepareSseMessage('message', {
             type: 'delta',
-            payload: { content: textChunk },
+            payload: { content: textChunk, run_id: runId },
           })
         );
       } else if (event.event === 'on_parser_end') {
@@ -81,6 +89,7 @@ export async function GET(_request: Request, { params }: Params) {
             content: event.data.output,
           },
           role: Role.ASSISTANT,
+          runId,
         });
 
         const messageToSend: SseMessageEvent = {
@@ -90,6 +99,7 @@ export async function GET(_request: Request, { params }: Params) {
             role: dbMessage.role,
             created_at: dbMessage.created_at,
             content: dbMessage.content,
+            run_id: runId,
           },
         };
 

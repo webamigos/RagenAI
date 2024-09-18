@@ -5,6 +5,7 @@ import {
   RunnablePassthrough,
   RunnableSequence,
 } from '@langchain/core/runnables';
+import { LangChainTracer } from 'langchain/callbacks';
 
 import { standaloneQuestionTemplate, answerTemplate } from '../../config';
 import {
