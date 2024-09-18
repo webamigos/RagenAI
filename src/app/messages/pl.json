@@ -80,5 +80,8 @@
     "current-password": "Aktualne hasło",
     "new-password": "Nowe hasło",
     "confirm-password": "Potwierdź hasło"
+  },
+  "rate-answer": {
+    "thank-you": "Twoja ocena została zapisana. Dziękujemy za feedback"
   }
 }

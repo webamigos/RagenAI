@@ -80,5 +80,8 @@
     "current-password": "Current password",
     "new-password": "New password",
     "confirm-password": "Confirm password"
+  },
+  "rate-answer": {
+    "thank-you": "Your rating has been saved. Thank you for your feedback"
   }
 }
