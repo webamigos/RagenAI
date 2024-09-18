@@ -1,11 +1,12 @@
 import { format } from 'date-fns';
-import { SpinnerSVG, LikeIcon, DislikeIcon } from '@salesyy/common-ui';
+import { SpinnerSVG } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
 import type { MessageDto } from '../../../contracts/Message';
 
 import './chat-response.css';
+import { RateAnswer } from './RateAnswer';
 
 type Props = {
   messages: MessageDto[];
@@ -44,23 +45,10 @@ export const ChatOutput = ({
               />
               {message.role === 'ASSISTANT' && (
                 <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <LikeIcon
-                    onClick={() =>
-                      handleRateMessage(
-                        message.public_id,
-                        'up',
-                        message.run_id!
-                      )
-                    }
-                  />
-                  <DislikeIcon
-                    onClick={() =>
-                      handleRateMessage(
-                        message.public_id,
-                        'down',
-                        message.run_id!
-                      )
-                    }
+                  <RateAnswer
+                    handleRateMessage={handleRateMessage}
+                    publicId={message.public_id}
+                    runId={message.run_id}
                   />
                   <CopyToClipboardButton message={message} />
                 </div>

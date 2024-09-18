@@ -76,10 +76,10 @@ export async function GET(_request: Request, { params }: Params) {
             let chainRunIds = [];
 
             for await (const event of eventStream) {
-                    if (event.event === 'on_chain_start') {
-        chainRunIds.push(event.run_id);
-        runId = chainRunIds[0];
-      }
+              if (event.event === 'on_chain_start') {
+                chainRunIds.push(event.run_id);
+                runId = chainRunIds[0];
+              }
 
               if (event.event === 'on_parser_stream') {
                 const textChunk = event.data.chunk || '';
@@ -104,7 +104,7 @@ export async function GET(_request: Request, { params }: Params) {
                     content: event.data.output,
                   },
                   role: Role.ASSISTANT,
-                  runId
+                  runId,
                 });
 
                 const messageToSend: SseMessageEvent = {
@@ -114,8 +114,7 @@ export async function GET(_request: Request, { params }: Params) {
                     role: dbMessage.role,
                     created_at: dbMessage.created_at,
                     content: dbMessage.content,
-                                run_id: runId,
-
+                    run_id: runId,
                   },
                 };
 
