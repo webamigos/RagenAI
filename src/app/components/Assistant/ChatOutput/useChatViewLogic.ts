@@ -20,7 +20,6 @@ export const useChatViewLogic = (streamedMessage: Props | null) => {
     feedback: 'up' | 'down',
     runId: string
   ) => {
-    console.log(runId, 'run');
     try {
       await submitFeedback(messageId, feedback, runId);
     } catch (error) {

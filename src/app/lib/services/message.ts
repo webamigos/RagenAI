@@ -33,7 +33,6 @@ export const createMessageInDB = async ({
   visitorId?: string;
   runId: string;
 }) => {
-  console.log({ ruuuisdf: runId });
   return await db.message.create({
     data: {
       thread_id: thread.id,

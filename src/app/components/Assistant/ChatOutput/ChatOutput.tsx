@@ -6,7 +6,6 @@ import { useChatViewLogic } from './useChatViewLogic';
 import type { MessageDto } from '../../../contracts/Message';
 
 import './chat-response.css';
-import { m } from 'framer-motion';
 
 type Props = {
   messages: MessageDto[];
@@ -23,7 +22,6 @@ export const ChatOutput = ({
 }: Props) => {
   const { t, md, handleRateMessage, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
-  console.log(messages, 'messages');
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
