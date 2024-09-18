@@ -1,27 +1,20 @@
 import { Role } from '@prisma/client';
-import {
-  getThreadMessages,
-  getThreadDetails,
-} from '../../../lib/services/thread';
-import {
-  createMessageInDB,
-  getMessageById,
-} from '../../../lib/services/message';
-import { chain } from '../utills';
+import { logger } from '../../../lib/utils/logger';
 import {
   SseInitEvent,
   SseMessageEvent,
   SseMessageDelta,
   SseMessageError,
 } from '../../../contracts/Events';
-import { logger } from '../../../lib/utils/logger';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-type Params = {
-  params: { details: string[] };
-};
+import {
+  createMessageInDB,
+  getMessageById,
+} from '../../../lib/services/message';
+import {
+  getThreadMessages,
+  getThreadDetails,
+} from '../../../lib/services/thread';
+import { chain } from '../../threads/utills';
 
 const prepareSseMessage = (
   event: string,
@@ -29,11 +22,13 @@ const prepareSseMessage = (
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
+type Params = {
+  params: { guestDetails: string[] };
+};
 
 export async function GET(_request: Request, { params }: Params) {
+  const [publicThreadId, publicMessageId] = params.guestDetails || [];
   try {
-    const [publicThreadId, publicMessageId] = params.details || [];
-
     const encoder = new TextEncoder();
 
     return new Response(
@@ -58,8 +53,7 @@ export async function GET(_request: Request, { params }: Params) {
             const conv_history = threadMessages?.messages
               .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
               .join('\n');
-            //if you need add another files to context - uncomment
-            //await addDocumentsToStore(splitDocs);
+
             const eventStream = await chain.streamEvents(
               {
                 question: threadMessage.content,

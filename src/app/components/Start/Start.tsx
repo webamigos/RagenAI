@@ -3,33 +3,51 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Alert, Button } from '@salesyy/common-ui';
 import { useUser } from '@clerk/nextjs';
+import { Alert, Button } from '@salesyy/common-ui';
 
-import { checkVisitorVisits, createThread } from '../../lib/services/api';
+import {
+  checkVisitorVisits,
+  createThread,
+  createThreadForGuest,
+} from '../../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { dailyMessageLimit } from '../../config';
 
 export const Start = () => {
+  const [visitorId, setVisitorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, setTransition] = useTransition();
   const [isLimitLock, setIsLimitLock] = useState(false);
 
   const { isSignedIn, user } = useUser();
-  const locale = useLocale();
-  const { push } = useRouter();
   const t = useTranslations('Index');
+  const { push } = useRouter();
+  const locale = useLocale();
 
   useEffect(() => {
+    const setId = async () => {
+      if (isSignedIn && user?.unsafeMetadata?.visitorId) {
+        setVisitorId(user?.unsafeMetadata?.visitorId as string);
+      } else {
+        const fingerprintId = await loadFingerprint();
+        setVisitorId(fingerprintId);
+      }
+    };
+
+    setId();
+  }, [isSignedIn, user]);
+
+  useEffect(() => {
+    if (!visitorId) return;
+
     const loadVisitorMessages = async () => {
       const localStorageThreadId = localStorage.getItem(
         LOCAL_STORAGE_THREAD_KEY
       );
 
-      const visitorId = await loadFingerprint();
       const visitorMessagesResponse = await checkVisitorVisits(visitorId);
 
       if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
@@ -47,10 +65,15 @@ export const Start = () => {
     try {
       setIsLoading(true);
       if (!isLimitLock) {
-        const result = await createThread();
+        const result = user
+          ? await createThread()
+          : await createThreadForGuest();
+
         const threadId = result.data.public_id;
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-        setTransition(() => push(`/${locale}/threads/${threadId}`));
+        user
+          ? setTransition(() => push(`/${locale}/threads/${threadId}`))
+          : setTransition(() => push(`/${locale}/guest-threads/${threadId}`));
         setIsLoading(false);
       }
     } catch {
