@@ -56,3 +56,31 @@ export const createNewOpenAIThread = async () => {
     public_id: threadEntity.public_id,
   };
 };
+
+export const getThreadMessages = async (publicThreadId: string) => {
+  return await db.thread.findUnique({
+    where: {
+      public_id: publicThreadId,
+    },
+    select: {
+      messages: {
+        orderBy: {
+          created_at: 'asc',
+        },
+      },
+    },
+  });
+};
+
+export const getThreadDetails = async (publicThreadId: string) => {
+  return await db.thread.findUniqueOrThrow({
+    where: { public_id: publicThreadId },
+    select: {
+      id: true,
+      public_id: true,
+      openai_thread_id: true,
+      created_at: true,
+      visitor_id: true,
+    },
+  });
+};

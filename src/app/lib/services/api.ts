@@ -28,6 +28,10 @@ export const submitFeedback = async (
 //   return api.post<void>(`/assistant/${threadId}`);
 // };
 
+export const createThreadForGuest = () => {
+  return api.post<CreateThreadDto>(`/guest-threads/`);
+};
+
 export const checkVisitorVisits = async (visitorId: string) => {
   return api.get<{ messages: number }>(`/visitor/${visitorId}`);
 };

@@ -56,7 +56,7 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const userVisitorId = user?.unsafeMetadata.visitorId as string | undefined;
+  const userVisitorId = user?.publicMetadata.visitorId as string;
 
   useEffect(() => {
     if (isLoaded && !isSignedIn && !visitorId) {
@@ -187,9 +187,10 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const connectToStream = (userMessageId: string) => {
-    const eventSource = new EventSource(
-      `/api/threads/${threadId}/${userMessageId}`
-    );
+    const eventSourceUrl = user
+      ? `/api/threads/${threadId}/${userMessageId}`
+      : `/api/guest-threads/${threadId}/${userMessageId}`;
+    const eventSource = new EventSource(eventSourceUrl);
 
     let accumulatingMessage = '';
 

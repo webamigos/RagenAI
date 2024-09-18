@@ -64,7 +64,6 @@ export const SocialAuthOptions = ({ isSignUp }: SocialAuthOptionsProps) => {
             strategy,
             redirectUrl: '/sso-callback',
             redirectUrlComplete: '/',
-            unsafeMetadata: { visitorId },
           });
         } else {
           signIn?.authenticateWithRedirect({

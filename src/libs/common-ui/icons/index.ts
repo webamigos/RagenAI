@@ -9,3 +9,5 @@ export { ChevronUpIcon } from './ChevronUpIcon';
 export { UserCircleIcon } from './UserCircleIcon';
 export { DislikeIcon } from './DislikeIcon';
 export { LikeIcon } from './LikeIcon';
+export { SettingsIcon } from './SettingsIcon';
+export { LockClosedIcon } from './LockClosedIcon';

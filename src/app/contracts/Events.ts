@@ -16,3 +16,8 @@ export type SseMessageDelta = {
     run_id: string;
   };
 };
+
+export type SseMessageError = {
+  type: 'error';
+  message: string;
+};

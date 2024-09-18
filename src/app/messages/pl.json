@@ -69,6 +69,7 @@
     "copied": "skopiowano"
   },
   "dialog": {
+    "admin-dashboard": "Admin panel",
     "my-profile": "Mój profil",
     "change-password": "Zmień hasło",
     "close": "zamknij"

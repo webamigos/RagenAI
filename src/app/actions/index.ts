@@ -74,7 +74,7 @@ export const sendMessage = async (
     };
   }
 };
-
+//get user threads
 export const getUserMessages = async (
   visitorId: string,
   skip?: number,
@@ -92,14 +92,16 @@ export const getUserMessages = async (
   }
 };
 
+//save data to clerk user profile
 export const saveUserIdToClerk = async (
   clerkUserId: string,
   visitorId: string
 ) => {
   try {
-    await clerkClient().users.updateUser(clerkUserId, {
+    await clerkClient.users.updateUser(clerkUserId, {
       publicMetadata: {
         visitorId,
+        userRole: 'USER',
       },
     });
     return { success: true };
