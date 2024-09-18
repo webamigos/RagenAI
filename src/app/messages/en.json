@@ -69,6 +69,7 @@
     "copied": "copied"
   },
   "dialog": {
+    "admin-dashboard": "Admin dashboard",
     "my-profile": "My profile",
     "change-password": "Change password",
     "close": "close"

@@ -7,3 +7,5 @@ export { Clipboard } from './Clipboard';
 export { ClipboardChecked } from './ClipboardChecked';
 export { ChevronUpIcon } from './ChevronUpIcon';
 export { UserCircleIcon } from './UserCircleIcon';
+export { SettingsIcon } from './SettingsIcon';
+export { LockClosedIcon } from './LockClosedIcon';
