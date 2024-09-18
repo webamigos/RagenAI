@@ -3,8 +3,6 @@ import { useTranslations } from 'next-intl';
 import markdownit from 'markdown-it';
 import { toast } from 'react-toastify';
 
-import 'react-toastify/dist/ReactToastify.css';
-
 type Props = {
   content: string;
   created_at: string;
