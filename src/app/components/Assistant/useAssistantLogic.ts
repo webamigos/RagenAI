@@ -187,9 +187,10 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const connectToStream = (userMessageId: string) => {
-    const eventSource = user
-      ? new EventSource(`/api/threads/${threadId}/${userMessageId}`)
-      : new EventSource(`/api/guest-threads/${threadId}/${userMessageId}`);
+    const eventSourceUrl = user
+      ? `/api/threads/${threadId}/${userMessageId}`
+      : `/api/guest-threads/${threadId}/${userMessageId}`;
+    const eventSource = new EventSource(eventSourceUrl);
 
     let accumulatingMessage = '';
 
