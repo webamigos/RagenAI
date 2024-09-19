@@ -116,7 +116,9 @@ export const useAssistantLogic = (threadId: string) => {
         return {
           ...state,
           streamedMessage: {
-            content: (state.streamedMessage?.content || '') + action.payload,
+            content:
+              (state.streamedMessage?.content || '') + action.payload.content,
+            runId: action.payload.run_id,
             created_at:
               state.streamedMessage?.created_at || new Date().toISOString(),
           },
@@ -198,12 +200,13 @@ export const useAssistantLogic = (threadId: string) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage.type === 'delta') {
         const textChunk = eventMessage.payload.content;
+        const runId = eventMessage.payload.runId;
         accumulatingMessage += textChunk;
         dispatch({ type: SET_MESSAGE_LOADING, payload: false });
 
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
-          payload: textChunk,
+          payload: { content: textChunk, run_id: runId },
         });
 
         scrollToBottom();

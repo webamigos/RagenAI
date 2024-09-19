@@ -88,7 +88,7 @@ export async function GET(_request: Request, { params }: Params) {
                   encoder.encode(
                     prepareSseMessage('message', {
                       type: 'delta',
-                      payload: { content: textChunk },
+                      payload: { content: textChunk, runId },
                     })
                   )
                 );

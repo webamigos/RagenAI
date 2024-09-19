@@ -1,9 +1,4 @@
-import type { MessageDto } from '../../contracts/Message';
-
-type StreamedMessage = {
-  content: string;
-  created_at: string;
-};
+import type { MessageDto, StreamedMessageDto } from '../../contracts/Message';
 
 export type State = {
   isInitialLoad: boolean;
@@ -12,7 +7,7 @@ export type State = {
   isLimitLock: boolean;
   messageLoadingText: string;
   isMessageError: boolean;
-  streamedMessage: StreamedMessage | null;
+  streamedMessage: StreamedMessageDto | null;
   messages: MessageDto[];
 };
 
@@ -50,8 +45,11 @@ export type Action =
   | { type: typeof SET_MESSAGE_ERROR; payload: boolean }
   | {
       type: typeof SET_STREAMED_MESSAGE;
-      payload: StreamedMessage | null;
+      payload: StreamedMessageDto | null;
     }
-  | { type: typeof APPEND_TO_STREAMED_MESSAGE; payload: string }
+  | {
+      type: typeof APPEND_TO_STREAMED_MESSAGE;
+      payload: { content: string; run_id: string };
+    }
   | { type: typeof SET_MESSAGES; payload: MessageDto[] }
   | { type: typeof ADD_MESSAGE; payload: MessageDto };

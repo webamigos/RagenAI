@@ -3,7 +3,10 @@ import { SpinnerSVG } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
-import type { MessageDto } from '../../../contracts/Message';
+import type {
+  MessageDto,
+  StreamedMessageDto,
+} from '../../../contracts/Message';
 
 import './chat-response.css';
 import { RateAnswer } from './RateAnswer';
@@ -12,7 +15,7 @@ type Props = {
   messages: MessageDto[];
   isLoading: boolean;
   loadingMessage: string;
-  streamedMessage: { content: string; created_at: string } | null;
+  streamedMessage: StreamedMessageDto | null;
 };
 
 export const ChatOutput = ({
@@ -21,8 +24,13 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const { t, md, handleRateMessage, renderedStreamedMessage } =
-    useChatViewLogic(streamedMessage);
+  const {
+    t,
+    md,
+    handleRateMessage,
+    streamedMessageRunId,
+    renderedStreamedMessage,
+  } = useChatViewLogic(streamedMessage);
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
@@ -48,7 +56,7 @@ export const ChatOutput = ({
                   <RateAnswer
                     handleRateMessage={handleRateMessage}
                     publicId={message.public_id}
-                    runId={message.run_id}
+                    runId={streamedMessageRunId || message.run_id}
                   />
                   <CopyToClipboardButton message={message} />
                 </div>

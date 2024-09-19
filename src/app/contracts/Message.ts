@@ -15,14 +15,6 @@ export type MessageDto = {
   run_id?: MessageModel['run_id'];
 };
 
-// export type Message = {
-//   role: Role;
-//   content: MessageModel['content'];
-//   created_at: MessageModel['created_at'];
-//   public_id: MessageModel['public_id'];
-//   run_id: MessageModel['run_id'];
-// };
-
 export type Thread = {
   thread: ThreadHistoryResponse[];
 };
@@ -33,4 +25,10 @@ export type ThreadHistoryResponse = {
   created_at: Date;
   public_id: string;
   messages: MessageDtoWithoutPublicId[];
+};
+
+export type StreamedMessageDto = {
+  content: string;
+  created_at: string;
+  runId: string;
 };

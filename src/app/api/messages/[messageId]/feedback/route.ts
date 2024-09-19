@@ -25,8 +25,9 @@ export const POST = async (request: Request, { params }: Params) => {
       apiKey: process.env.LANGCHAIN_API_KEY,
     });
 
-    await client.createFeedback(runId, 'feedback-key', {
+    await client.createFeedback(runId, 'user-score', {
       score: feedback === 'up' ? 1 : 0,
+      value: 10,
     });
 
     return NextResponse.json({ message: 'Feedback submitted' });
