@@ -15,6 +15,7 @@ import {
   SseMessageError,
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
+// import { convertAndStoreDocument } from '../services/createVectorTable';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,8 +61,7 @@ export async function GET(_request: Request, { params }: Params) {
               .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
               .join('\n');
             //if you need add another files to context - uncomment
-            //await addDocumentsToStore(splitDocs);
-
+            // await convertAndStoreDocument();
             const eventStream = await chain.streamEvents(
               {
                 question: threadMessage.content,
