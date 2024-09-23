@@ -85,5 +85,17 @@
   "rate-answer": {
     "thank-you": "Twoja ocena została zapisana. Dziękujemy za feedback",
     "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później"
+  },
+  "admin-panel": {
+    "no-files": "Nie wybrano żadnych plików do wysłania",
+    "success": "Wszystkie pliki zostały pomyślnie przetworzone",
+    "error": "Wystąpił błąd",
+    "sending-files-error": "Wystąpił błąd podczas wysyłania plików",
+    "sending": "Wysyłanie",
+    "send": "Wyślij",
+    "Add-files": "Dodaj pliki",
+    "drag-n-drop": "Przeciągnij i upuść pliki tutaj",
+    "or": "lub",
+    "choose-files": "Wybierz pliki"
   }
 }

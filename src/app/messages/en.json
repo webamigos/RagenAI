@@ -85,5 +85,17 @@
   "rate-answer": {
     "thank-you": "Your rating has been saved. Thank you for your feedback",
     "try-again": "Feedback could not be submitted. Please try again later"
+  },
+  "admin-panel": {
+    "no-files": "No files have been selected for upload",
+    "success": "All files were successfully processed",
+    "error": "An error occurred",
+    "sending-files-error": "An error occurred while sending files",
+    "sending": "Sending",
+    "send": "Send",
+    "Add-files": "Add files",
+    "drag-n-drop": "Drag and drop files here",
+    "or": "or",
+    "choose-files": "Choose files"
   }
 }

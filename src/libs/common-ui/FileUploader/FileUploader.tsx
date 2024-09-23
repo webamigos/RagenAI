@@ -12,6 +12,7 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
   const { isOver, setNodeRef } = useDroppable({
     id: 'droppable',
   });
+  const t = useTranslations('admin-panel');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -51,12 +52,12 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
       onDragOver={handleDragOver}
     >
       <div className="flex justify-center items-center cursor-pointer">
-        <p className="mr-2">Przeciągnij i upuść pliki tutaj</p>
+        <p className="mr-2">{t('drag-n-drop')}</p>
         <UploadInboxIcon />
       </div>
-      <p>lub</p>
+      <p>{t('or')}</p>
       <p className="text-blue-600 cursor-pointer" onClick={handleClick}>
-        Wybierz pliki
+        {t('choose-files')}
       </p>
       <input
         ref={fileInputRef}

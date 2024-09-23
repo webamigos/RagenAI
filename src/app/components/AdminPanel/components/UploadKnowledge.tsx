@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+
 import { Card, Button, FileUploader } from '@salesyy/common-ui';
-import { logger } from '@/app/lib/utils/logger';
 import { useToast } from '@/app/hooks/useToast';
 import { FileList } from './FileList';
 
@@ -10,6 +11,7 @@ export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
   const { successToast, errorToast } = useToast();
+  const t = useTranslations('admin-panel');
 
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
@@ -26,7 +28,7 @@ export const UploadKnowledge = () => {
 
   const handleSend = async () => {
     if (files.length === 0) {
-      errorToast({ message: 'Nie wybrano żadnych plików do wysłania.' });
+      errorToast({ message: t('no-files') });
       return;
     }
 
@@ -45,23 +47,22 @@ export const UploadKnowledge = () => {
 
       if (response.ok) {
         successToast({
-          message: 'Wszystkie pliki zostały pomyślnie przetworzone.',
+          message: t('success'),
         });
         setFiles([]);
       } else {
         const data = await response.json();
-        errorToast({ message: `Wystąpił błąd: ${data.message}` });
+        errorToast({ message: `${t('error')}: ${data.message}` });
       }
     } catch (error) {
-      logger.error('Błąd:', error);
-      errorToast({ message: 'Wystąpił błąd podczas wysyłania plików.' });
+      errorToast({ message: t('sending-files-error') });
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <Card size="full">
+    <Card title={t('Add-files')} size="full">
       <FileUploader onFilesAdded={handleFilesAdded} disabled={uploading} />
       {files.length > 0 && (
         <FileList
@@ -71,7 +72,7 @@ export const UploadKnowledge = () => {
         />
       )}
       <Button
-        label={uploading ? 'Wysyłanie...' : 'Wyślij'}
+        label={uploading ? t('sending') : t('send')}
         onClick={handleSend}
         disabled={uploading}
       />
