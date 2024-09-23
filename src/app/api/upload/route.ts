@@ -3,7 +3,6 @@ import { convertAndStoreDocument } from '../../api/threads/services/createVector
 import { logger } from '@/app/lib/utils/logger';
 
 export const runtime = 'nodejs';
-export const bodyParser = false;
 
 export async function POST(request: NextRequest) {
   try {
