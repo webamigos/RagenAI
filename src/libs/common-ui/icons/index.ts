@@ -9,3 +9,6 @@ export { ChevronUpIcon } from './ChevronUpIcon';
 export { UserCircleIcon } from './UserCircleIcon';
 export { SettingsIcon } from './SettingsIcon';
 export { LockClosedIcon } from './LockClosedIcon';
+export { WrenchScrewdriverIcon } from './WrenchScrewdriver';
+export { UploadInboxIcon } from './UploadInboxIcon';
+export { XMarkIcon } from './XMarkIcon';

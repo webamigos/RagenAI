@@ -68,9 +68,10 @@
   "toast": {
     "copied": "copied"
   },
-  "dialog": {
+  "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
     "my-profile": "My profile",
+    "admin-panel": "Admin",
     "change-password": "Change password",
     "close": "close"
   },

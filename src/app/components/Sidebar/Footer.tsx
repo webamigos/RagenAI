@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
-  const t = useTranslations('dialog');
+  const t = useTranslations('my-profile-dialog');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState(false);
 
@@ -57,6 +57,12 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 </Libs.DropdownButton>
 
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
+                  <Libs.DropdownItem className="cursor-pointer" href="/admin">
+                    <Libs.WrenchScrewdriverIcon />
+                    <Libs.DropdownLabel className="text-sm ml-2.5">
+                      {t('admin-panel')}
+                    </Libs.DropdownLabel>
+                  </Libs.DropdownItem>
                   <Libs.DropdownItem
                     className="cursor-pointer"
                     onClick={handleOpenDialog}

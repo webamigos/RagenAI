@@ -3,8 +3,8 @@ import { useTranslations } from 'next-intl';
 import { SidebarSection, SidebarLabel, SpinnerSVG } from '@salesyy/common-ui';
 import { ChatConversation } from '@salesyy/common-ui';
 import { ThreadsSection } from './ThreadsSection';
-import { ThreadHistoryResponse } from '../../contracts/Message';
-import { useThreadsContext } from '../../hooks/useThreadsContext';
+import { ThreadHistoryResponse } from '../../../contracts/Message';
+import { useThreadsContext } from '../../../hooks/useThreadsContext';
 import { format, subDays } from 'date-fns';
 
 type Props = {

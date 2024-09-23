@@ -3,8 +3,9 @@
 import { SidebarBody } from '@salesyy/common-ui';
 import { SidebarLayout } from '@salesyy/common-ui';
 import { Navbar } from '@salesyy/common-ui';
+import { usePathname } from 'next/navigation';
 
-import { UserThreadsHistory } from './UserThreadsHistory';
+import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
@@ -26,6 +27,7 @@ export const Sidebar = ({ children }: Props) => {
     activeThread,
     handleThreadClick,
   } = useSidebarLogic();
+  const pathname = usePathname();
 
   return (
     <SidebarProvider>
@@ -35,14 +37,18 @@ export const Sidebar = ({ children }: Props) => {
           <div className="flex flex-col h-full text-sm">
             <Header />
             <SidebarBody>
-              <UserThreadsHistory
-                error={error}
-                isLoading={isLoading}
-                userThreads={userThreads}
-                activeThread={activeThread}
-                handleThreadClick={handleThreadClick}
-                hasMore={hasMore}
-              />
+              {pathname.includes('admin') ? (
+                <div />
+              ) : (
+                <UserThreadsHistory
+                  error={error}
+                  hasMore={hasMore}
+                  isLoading={isLoading}
+                  userThreads={userThreads}
+                  activeThread={activeThread}
+                  handleThreadClick={handleThreadClick}
+                />
+              )}
             </SidebarBody>
             <Footer
               userAvatar={userAvatar}
