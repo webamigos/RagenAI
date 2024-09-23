@@ -1,18 +1,27 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
+import { Document } from 'langchain/document';
+// import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { supeBaseClient, embeddingModel } from '../services/ChatService';
 
-const loader = new TextLoader(
-  'src/data/ProceduratworzeniacontentuYouTubeSolo.md'
-);
+// const loader = new TextLoader(
+//   'src/data/ProceduratworzeniacontentuYouTubeSolo.md'
+// );
+export const convertAndStoreDocument = async (
+  fileContent: string,
+  fileName: string
+) => {
+  // const rawDocs = await loader.load();
 
-export const convertAndStoreDocument = async () => {
-  const rawDocs = await loader.load();
+  // if (!rawDocs || rawDocs.length === 0) {
+  //   throw new Error('No documents were loaded');
+  // }
 
-  if (!rawDocs || rawDocs.length === 0) {
-    throw new Error('No documents were loaded');
+  if (!fileContent) {
+    throw new Error('Brak zawartości pliku');
   }
+
+  const rawDocs = [new Document({ pageContent: fileContent })];
 
   const textSplitter = new MarkdownTextSplitter({
     chunkSize: 500,
@@ -29,7 +38,7 @@ export const convertAndStoreDocument = async () => {
       const sectionTitle = extractSectionTitle(text);
 
       const metadata = {
-        document_id: 'ProceduratworzeniacontentuYouTubeSolo',
+        document_id: fileName,
         section_title: sectionTitle,
         page_number: index + 1,
         created_at: new Date().toISOString().split('T')[0],

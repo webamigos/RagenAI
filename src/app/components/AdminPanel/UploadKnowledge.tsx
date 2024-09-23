@@ -2,11 +2,19 @@
 
 import { useState, useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { Card } from '@salesyy/common-ui/Card';
-import { UploadInboxIcon, XMarkIcon } from '@salesyy/common-ui/icons';
+import { Card, Button } from '@salesyy/common-ui';
+import {
+  UploadInboxIcon,
+  XMarkIcon,
+  SpinnerSVG,
+} from '@salesyy/common-ui/icons';
+import { logger } from '@/app/lib/utils/logger';
+import { useToast } from '@/app/hooks/useToast';
 
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const { successToast, errorToast } = useToast();
   const { isOver, setNodeRef } = useDroppable({
     id: 'droppable',
   });
@@ -44,6 +52,40 @@ export const UploadKnowledge = () => {
     fileInputRef.current?.click();
   };
 
+  const handleSend = async () => {
+    if (files.length === 0) {
+      errorToast({ message: 'Nie wybrano żadnych plików do wysłania.' });
+      return;
+    }
+
+    setUploading(true);
+
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert('Wszystkie pliki zostały pomyślnie przetworzone.');
+        setFiles([]);
+      } else {
+        const data = await response.json();
+        alert(`Wystąpił błąd: ${data.message}`);
+      }
+    } catch (error) {
+      logger.error('Błąd:', error);
+      alert('Wystąpił błąd podczas wysyłania plików.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Card size="full">
       <div
@@ -74,14 +116,16 @@ export const UploadKnowledge = () => {
           <h3>Wybrane pliki:</h3>
           <ul>
             {files.map((file, index) => (
-              <li key={index}>
-                <div className="flex">
+              <li key={file.name}>
+                <div className="flex items-center">
                   <span className="mr-2">•</span>
                   <span>{file.name}</span>
+                  {uploading && <SpinnerSVG />}
                   <button
                     onClick={() => handleFileRemove(index)}
                     className="ml-auto"
                     aria-label={`Usuń plik ${file.name}`}
+                    disabled={uploading}
                   >
                     <XMarkIcon />
                   </button>
@@ -91,6 +135,11 @@ export const UploadKnowledge = () => {
           </ul>
         </div>
       )}
+      <Button
+        label={uploading ? 'Wysyłanie...' : 'Wyślij'}
+        onClick={handleSend}
+        disabled={uploading}
+      />
     </Card>
   );
 };
