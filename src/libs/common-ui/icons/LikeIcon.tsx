@@ -1,7 +1,13 @@
 import type { ComponentProps } from 'react';
 import clsx from 'clsx';
 
-export const LikeIcon = ({ onClick, className }: ComponentProps<'svg'>) => {
+type Props = { rated?: number | null };
+
+export const LikeIcon = ({
+  onClick,
+  rated,
+  className,
+}: ComponentProps<'svg'> & Props) => {
   return (
     <svg
       onClick={onClick}
@@ -10,7 +16,7 @@ export const LikeIcon = ({ onClick, className }: ComponentProps<'svg'>) => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={clsx(className, 'h-5 w-5')}
+      className={clsx(className, 'h-5 w-5', rated && 'text-green-500')}
     >
       <path
         strokeLinecap="round"

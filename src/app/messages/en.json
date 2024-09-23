@@ -82,6 +82,7 @@
     "confirm-password": "Confirm password"
   },
   "rate-answer": {
-    "thank-you": "Your rating has been saved. Thank you for your feedback"
+    "thank-you": "Your rating has been saved. Thank you for your feedback",
+    "try-again": "Feedback could not be submitted. Please try again later"
   }
 }

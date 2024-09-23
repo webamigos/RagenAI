@@ -13,6 +13,7 @@ export type MessageDto = {
   created_at: MessageModel['created_at'];
   public_id: MessageModel['public_id'];
   run_id?: MessageModel['run_id'];
+  rate?: MessageModel['rate'];
 };
 
 export type Thread = {

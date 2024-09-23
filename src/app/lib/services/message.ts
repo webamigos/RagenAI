@@ -66,6 +66,7 @@ export const fetchMessagesFromDb = async (
       content: true,
       role: true,
       run_id: true,
+      rate: true,
     },
     orderBy: [
       {
@@ -125,6 +126,17 @@ export const getMessageById = async (publicMessageId: string) => {
   return await db.message.findUnique({
     where: {
       public_id: publicMessageId,
+    },
+  });
+};
+
+export const saveRateInDB = async (messagePublicId: string, rate: number) => {
+  return await db.message.update({
+    where: {
+      public_id: messagePublicId,
+    },
+    data: {
+      rate,
     },
   });
 };

@@ -24,13 +24,8 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const {
-    t,
-    md,
-    handleRateMessage,
-    streamedMessageRunId,
-    renderedStreamedMessage,
-  } = useChatViewLogic(streamedMessage);
+  const { t, md, streamedMessageRunId, renderedStreamedMessage } =
+    useChatViewLogic(streamedMessage);
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
@@ -54,7 +49,7 @@ export const ChatOutput = ({
               {message.role === 'ASSISTANT' && (
                 <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <RateAnswer
-                    handleRateMessage={handleRateMessage}
+                    initialRated={message.rate}
                     publicId={message.public_id}
                     runId={streamedMessageRunId || message.run_id}
                   />

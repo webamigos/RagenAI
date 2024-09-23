@@ -21,7 +21,7 @@ export const submitFeedback = async (
   feedback: 'up' | 'down',
   runId: string
 ) => {
-  return api.post(`/messages/${messageId}/feedback`, { feedback, runId });
+  return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
 };
 
 // export const runAssistant = async (threadId: string) => {
