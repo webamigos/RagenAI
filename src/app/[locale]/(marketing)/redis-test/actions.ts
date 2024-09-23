@@ -13,3 +13,8 @@ export const decrease = async () => {
   const counter = await redis.decr('counter');
   return { counter };
 };
+
+export const load = async () => {
+  const counter = await redis.get('counter');
+  return { counter };
+};
