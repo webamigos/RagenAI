@@ -13,6 +13,7 @@ export const useSidebarLogic = () => {
   const pathname = usePathname();
 
   const userEmail = user?.emailAddresses[0].emailAddress;
+  const userAvatar = user?.imageUrl;
 
   const handleThreadClick = (threadId: string) => {
     router.push(`/threads/${threadId}`);
@@ -34,6 +35,7 @@ export const useSidebarLogic = () => {
     hasMore,
     userEmail,
     isLoading,
+    userAvatar,
     isSignedIn,
     userThreads,
     activeThread,

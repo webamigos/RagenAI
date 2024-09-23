@@ -1,12 +1,10 @@
 'use client';
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { useRouter } from 'next/navigation';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
@@ -37,14 +35,12 @@ export const RegisterForm = () => {
     if (!isLoaded) return;
     setIsSubmitting(true);
 
-    const visitorId = await loadFingerprint();
     const { email, password } = data;
 
     try {
       await signUp.create({
         emailAddress: email,
         password,
-        unsafeMetadata: { visitorId },
       });
 
       await signUp.prepareEmailAddressVerification({
@@ -88,8 +84,9 @@ export const RegisterForm = () => {
           errorMessage={errors.password?.message}
         />
         <Button
-          className="w-full py-2 px-4 mt-9 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
           disabled={isSubmitting}
+          isLoading={isSubmitting}
           label={t('sign-up')}
           type="submit"
         />

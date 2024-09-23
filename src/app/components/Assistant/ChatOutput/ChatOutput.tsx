@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
-
 import { SpinnerSVG } from '@salesyy/common-ui';
 
+import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
 import type { MessageDto } from '../../../contracts/Message';
 import './chat-response.css';
@@ -19,7 +19,9 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const { t, md, renderedStreamedMessage } = useChatViewLogic(streamedMessage);
+  const { t, md, successToast, renderedStreamedMessage } =
+    useChatViewLogic(streamedMessage);
+
   return (
     <div className="px-4 sm:px-4 lg:px-22 pt-8">
       <div>
@@ -34,12 +36,19 @@ export const ChatOutput = ({
                 {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
               </span>
             </div>
-            <div className="chat-response">
+            <div className="chat-response relative">
               <div
                 dangerouslySetInnerHTML={{
                   __html: md.render(message.content),
                 }}
               />
+              {message.role === 'ASSISTANT' && (
+                <CopyToClipboardButton
+                  className="absolute -top-8 right-0 cursor-pointer"
+                  message={message}
+                  successToast={successToast}
+                />
+              )}
             </div>
           </div>
         ))}

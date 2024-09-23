@@ -1,4 +1,10 @@
-import { useReducer, useEffect, useRef, type MouseEventHandler } from 'react';
+import {
+  useReducer,
+  useEffect,
+  useState,
+  useRef,
+  type MouseEventHandler,
+} from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { StatusCodes } from 'http-status-codes';
@@ -36,6 +42,9 @@ const {
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const [visitorId, setVisitorId] = useState<string | null>(null);
+
   const initialState: State = {
     isInitialLoad: true,
     isMessageLoading: false,
@@ -47,16 +56,30 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const { data, isLoading, isSuccess } = useApi(() =>
-    fetchMessagesFromApi(threadId)
-  );
+  const userVisitorId = user?.publicMetadata.visitorId as string;
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && !visitorId) {
+      loadFingerprint().then((id) => {
+        setVisitorId(id);
+      });
+    }
+  }, [isLoaded, isSignedIn, visitorId]);
+
+  const id = userVisitorId || visitorId;
+
+  const { isLoading } = useApi(() => {
+    if (id) {
+      return fetchMessagesFromApi(threadId, id);
+    }
+    return Promise.resolve(null);
+  });
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
   const { push } = useRouter();
   const locale = useLocale();
   const t = useTranslations('Index');
-  const { isSignedIn } = useUser();
   const { dispatch: threadsDispatch } = useThreadsContext();
 
   const [
@@ -71,7 +94,8 @@ export const useAssistantLogic = (threadId: string) => {
     dispatch,
   ] = useReducer(reducer, initialState);
 
-  const isGlobalLoading = isLoading || isMessageLoading;
+  const isGlobalLoading = isMessageLoading || isLoading;
+
   function reducer(state: State, action: Action): State {
     switch (action.type) {
       case SET_INITIAL_LOAD:
@@ -112,35 +136,61 @@ export const useAssistantLogic = (threadId: string) => {
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  useEffect(() => {
-    if (isSuccess && data) {
-      dispatch({ type: SET_INITIAL_LOAD, payload: false });
-      dispatch({ type: SET_MESSAGES, payload: data.data });
+  const fetchData = async (id: string) => {
+    dispatch({ type: SET_INITIAL_LOAD, payload: true });
+    try {
+      const response = await fetchMessagesFromApi(threadId, id);
+      if (response) {
+        dispatch({ type: SET_INITIAL_LOAD, payload: false });
+        dispatch({ type: SET_MESSAGES, payload: response.data });
+      }
+    } catch (error) {
+      logger.error('Error fetching messages: %o', error);
     }
+  };
+
+  useEffect(() => {
+    if (isLoaded) {
+      const id = userVisitorId || visitorId;
+      if (id) {
+        fetchData(id);
+      }
+    }
+  }, [isLoaded, userVisitorId, visitorId]);
+
+  useEffect(() => {
     const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
     if (!localStorageThreadId) {
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
     }
-  }, [isSuccess, data]);
+  }, [threadId]);
 
   useEffect(() => {
-    scrollToBottom();
-    loadVisitorMessages();
-  }, [messages]);
+    if (messages.length > 0) {
+      scrollToBottom();
+      const id = userVisitorId || visitorId;
+      if (id) {
+        loadVisitorMessages(id);
+      }
+    }
+  }, [messages, userVisitorId, visitorId]);
 
-  const loadVisitorMessages = async () => {
-    const visitorId = await loadFingerprint();
-    const { data } = await checkVisitorVisits(visitorId);
-
-    if (data.messages >= dailyMessageLimit) {
-      dispatch({ type: SET_LIMIT_LOCK, payload: true });
+  const loadVisitorMessages = async (id: string) => {
+    try {
+      const { data } = await checkVisitorVisits(id);
+      if (data.messages >= dailyMessageLimit) {
+        dispatch({ type: SET_LIMIT_LOCK, payload: true });
+      }
+    } catch (error) {
+      logger.error('Error loading visitor messages: %o', error);
     }
   };
 
   const connectToStream = (userMessageId: string) => {
-    const eventSource = new EventSource(
-      `/api/threads/${threadId}/${userMessageId}`
-    );
+    const eventSourceUrl = user
+      ? `/api/threads/${threadId}/${userMessageId}`
+      : `/api/guest-threads/${threadId}/${userMessageId}`;
+    const eventSource = new EventSource(eventSourceUrl);
 
     let accumulatingMessage = '';
 
@@ -183,6 +233,7 @@ export const useAssistantLogic = (threadId: string) => {
 
     return eventSource;
   };
+
   useEffect(() => {
     if (userMessageId !== '') {
       const eventSource = connectToStream(userMessageId);
@@ -199,9 +250,25 @@ export const useAssistantLogic = (threadId: string) => {
 
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
-    const visitorId = await loadFingerprint();
-    const messageResponse = await sendMessage(threadId, data, visitorId);
-    const response = await getUserMessages(visitorId);
+    const userMessage = {
+      public_id: `user-${Date.now()}`,
+      role: Role.USER,
+      content: data.prompt,
+      created_at: new Date(),
+    };
+    dispatch({ type: ADD_MESSAGE, payload: userMessage });
+    dispatch({
+      type: SET_MESSAGE_LOADING,
+      payload: true,
+    });
+    dispatch({
+      type: SET_LOADING_TEXT,
+      payload: t('status-thinking'),
+    });
+
+    const id = userVisitorId || visitorId || (await loadFingerprint());
+    const messageResponse = await sendMessage(threadId, data, id);
+    const response = await getUserMessages(id);
     const threads = response.threads;
 
     threadsDispatch({
@@ -210,22 +277,6 @@ export const useAssistantLogic = (threadId: string) => {
     });
 
     try {
-      const userMessage = {
-        public_id: `user-${Date.now()}`,
-        role: Role.USER,
-        content: data.prompt,
-        created_at: new Date(),
-      };
-      dispatch({ type: ADD_MESSAGE, payload: userMessage });
-      dispatch({
-        type: SET_MESSAGE_LOADING,
-        payload: true,
-      });
-      dispatch({
-        type: SET_LOADING_TEXT,
-        payload: t('status-thinking'),
-      });
-
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
         return;
@@ -251,6 +302,7 @@ export const useAssistantLogic = (threadId: string) => {
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
       }
+      logger.error('Error submitting message: %o', error);
     }
   };
 

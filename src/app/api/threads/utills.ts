@@ -1,12 +1,9 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import {
-  RunnablePassthrough,
-  RunnableSequence,
-} from '@langchain/core/runnables';
+import { RunnableSequence } from '@langchain/core/runnables';
 
-import { standaloneQuestionTemplate, answerTemplate } from '../../config';
+import { TEMPLATE } from '../../config';
 import {
   createChatInstance,
   embeddingModel,
@@ -26,43 +23,27 @@ const vectorStore = new SupabaseVectorStore(embeddingModel, {
 });
 const retriever = vectorStore.asRetriever();
 
-const standaloneQuestionPrompt = PromptTemplate.fromTemplate(
-  standaloneQuestionTemplate
-);
-const standaloneQuestionChain = standaloneQuestionPrompt
-  .pipe(createChatInstance)
-  .pipe(new StringOutputParser());
-const answerPrompt = PromptTemplate.fromTemplate(answerTemplate);
-const answerChain = answerPrompt
-  .pipe(createChatInstance)
-  .pipe(new StringOutputParser());
 const retrieverChain = RunnableSequence.from([
-  (prevResult) => prevResult.standalone_question,
+  (prevResult) => prevResult.question,
   retriever,
   combineDocuments,
 ]);
 
+const prompt = PromptTemplate.fromTemplate(TEMPLATE);
+
 const chain = RunnableSequence.from([
   {
-    standalone_question: standaloneQuestionChain,
-    original_input: new RunnablePassthrough(),
+    question: (input) => input.question,
+    chat_history: (input) => input.chat_history,
+    context: () => retrieverChain,
   },
-  {
-    context: retrieverChain,
-    question: ({ original_input }) => original_input.question,
-    conv_history: ({ original_input }) => original_input.conv_history,
-  },
+  prompt,
+  createChatInstance,
+  new StringOutputParser(),
 ]);
 
 function combineDocuments(docs: Document[]) {
   return docs.map((doc) => doc.pageContent).join('\n\n');
 }
 
-export {
-  chain,
-  retriever,
-  answerChain,
-  answerPrompt,
-  retrieverChain,
-  standaloneQuestionPrompt,
-};
+export { chain, retriever, retrieverChain };

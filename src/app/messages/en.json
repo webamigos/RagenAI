@@ -64,5 +64,21 @@
     "close-thread": "Close thread",
     "provide-at-least-10-characters": "Provide at least 10 characters",
     "contact-with-us": "Contact with us"
+  },
+  "toast": {
+    "copied": "copied"
+  },
+  "dialog": {
+    "admin-dashboard": "Admin dashboard",
+    "my-profile": "My profile",
+    "change-password": "Change password",
+    "close": "close"
+  },
+  "change-password": {
+    "change-password": "Change password",
+    "password-changed": "Password changed!",
+    "current-password": "Current password",
+    "new-password": "New password",
+    "confirm-password": "Confirm password"
   }
 }

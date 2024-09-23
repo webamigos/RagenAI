@@ -43,11 +43,16 @@ export const createMessageInDB = async ({
 };
 
 export const fetchMessagesFromDb = async (
-  threadPublicId: Thread['public_id']
+  threadPublicId: Thread['public_id'],
+  visitorId: Thread['visitor_id']
 ) => {
   const thread = await db.thread.findUnique({
-    where: { public_id: threadPublicId },
+    where: { public_id: threadPublicId, visitor_id: visitorId },
   });
+
+  if (!thread) {
+    return [];
+  }
 
   return db.message.findMany({
     where: { thread_id: thread?.id },
@@ -109,4 +114,12 @@ export const createAndStoreOpenAIThreadMessage = async ({
     created_at: dbMessage.created_at,
     content: dbMessage.content,
   };
+};
+
+export const getMessageById = async (publicMessageId: string) => {
+  return await db.message.findUnique({
+    where: {
+      public_id: publicMessageId,
+    },
+  });
 };

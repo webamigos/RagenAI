@@ -1,18 +1,21 @@
 import { Role } from '@prisma/client';
-
 import {
-  getMessageById,
-  getThreadDetails,
   getThreadMessages,
-} from './../services/dbService';
-import { createMessageInDB } from '../../../lib/services/message';
+  getThreadDetails,
+} from '../../../lib/services/thread';
+import {
+  createMessageInDB,
+  getMessageById,
+} from '../../../lib/services/message';
 import { chain } from '../utills';
 import {
   SseInitEvent,
   SseMessageEvent,
   SseMessageDelta,
+  SseMessageError,
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
+// import { convertAndStoreDocument } from '../services/createVectorTable';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,89 +26,118 @@ type Params = {
 
 const prepareSseMessage = (
   event: string,
-  data: SseInitEvent | SseMessageEvent | SseMessageDelta
+  data: SseInitEvent | SseMessageEvent | SseMessageDelta | SseMessageError
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
 
 export async function GET(_request: Request, { params }: Params) {
-  const publicThreadId = params.details[0];
-  const publicMessageId = params.details[1];
-
-  const responseStream = new TransformStream();
-  const writer = responseStream.writable.getWriter();
-  writer.write(prepareSseMessage('init', { type: 'init' }));
-
   try {
-    const thredMessage = await getMessageById(publicMessageId);
-    const threadMessages = await getThreadMessages(publicThreadId);
-    const threadEntity = await getThreadDetails(publicThreadId);
+    const [publicThreadId, publicMessageId] = params.details || [];
 
-    const conv_history = threadMessages?.messages
-      .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
-      .join('\n');
+    const encoder = new TextEncoder();
 
-    //if you need add another files to context - uncomment
-    //await addDocumentsToStore(splitDocs);
+    return new Response(
+      new ReadableStream({
+        async start(controller) {
+          controller.enqueue(
+            encoder.encode(prepareSseMessage('init', { type: 'init' }))
+          );
 
-    const eventStream = await chain.streamEvents(
+          try {
+            const threadMessage = await getMessageById(publicMessageId);
+
+            if (!threadMessage) {
+              logger.error('Thread message not found');
+              controller.close();
+              return;
+            }
+
+            const threadMessages = await getThreadMessages(publicThreadId);
+            const threadEntity = await getThreadDetails(publicThreadId);
+
+            const conv_history = threadMessages?.messages
+              .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
+              .join('\n');
+            //if you need add another files to context - uncomment
+            // await convertAndStoreDocument();
+            const eventStream = await chain.streamEvents(
+              {
+                question: threadMessage.content,
+                conv_history: conv_history,
+              },
+              {
+                version: 'v2',
+              }
+            );
+
+            let fullMessage = '';
+
+            for await (const event of eventStream) {
+              if (event.event === 'on_parser_stream') {
+                const textChunk = event.data.chunk || '';
+                fullMessage += textChunk;
+                controller.enqueue(
+                  encoder.encode(
+                    prepareSseMessage('message', {
+                      type: 'delta',
+                      payload: { content: textChunk },
+                    })
+                  )
+                );
+              } else if (event.event === 'on_parser_end') {
+                const dbMessage = await createMessageInDB({
+                  thread: {
+                    ...threadEntity,
+                    visitor_id: threadEntity.visitor_id,
+                  },
+                  message: {
+                    id: publicMessageId,
+                    created_at: Math.floor(Date.now() / 1000),
+                    content: event.data.output,
+                  },
+                  role: Role.ASSISTANT,
+                });
+
+                const messageToSend: SseMessageEvent = {
+                  type: 'message',
+                  payload: {
+                    public_id: dbMessage.public_id,
+                    role: dbMessage.role,
+                    created_at: dbMessage.created_at,
+                    content: dbMessage.content,
+                  },
+                };
+
+                controller.enqueue(
+                  encoder.encode(prepareSseMessage('message', messageToSend))
+                );
+              }
+            }
+          } catch (error) {
+            logger.error('Error processing SSE:', error);
+            controller.enqueue(
+              encoder.encode(
+                prepareSseMessage('error', {
+                  type: 'error',
+                  message: 'Internal Server Error',
+                })
+              )
+            );
+          }
+        },
+      }),
       {
-        question: thredMessage!.content,
-        conv_history: conv_history,
-      },
-      {
-        version: 'v2',
+        headers: {
+          Connection: 'keep-alive',
+          'Content-Encoding': 'none',
+          'Cache-Control': 'no-cache, no-transform',
+          'Content-Type': 'text/event-stream; charset=utf-8',
+        },
       }
     );
-    let fullMessage = '';
-
-    for await (const event of eventStream) {
-      if (event.event === 'on_parser_stream') {
-        const textChunk = event.data.chunk || '';
-        fullMessage += textChunk;
-        writer.write(
-          prepareSseMessage('message', {
-            type: 'delta',
-            payload: { content: textChunk },
-          })
-        );
-      } else if (event.event === 'on_parser_end') {
-        const dbMessage = await createMessageInDB({
-          thread: {
-            ...threadEntity,
-            visitor_id: threadEntity.visitor_id,
-          },
-          message: {
-            id: publicMessageId,
-            created_at: Math.floor(Date.now() / 1000),
-            content: event.data.output,
-          },
-          role: Role.ASSISTANT,
-        });
-
-        const messageToSend: SseMessageEvent = {
-          type: 'message',
-          payload: {
-            public_id: dbMessage.public_id,
-            role: dbMessage.role,
-            created_at: dbMessage.created_at,
-            content: dbMessage.content,
-          },
-        };
-
-        writer.write(prepareSseMessage('message', messageToSend));
-      }
-    }
   } catch (error) {
-    logger.error('Error processing SSE: %o', error);
+    logger.error('Unexpected error in GET handler:', error);
+    return new Response('Internal Server Error', { status: 500 });
   }
-
-  return new Response(responseStream.readable, {
-    headers: {
-      Connection: 'keep-alive',
-      'Content-Encoding': 'none',
-      'Cache-Control': 'no-cache, no-transform',
-      'Content-Type': 'text/event-stream; charset=utf-8',
-    },
-  });
 }

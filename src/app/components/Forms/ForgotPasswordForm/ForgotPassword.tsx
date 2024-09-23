@@ -6,7 +6,7 @@ import { useAuth, useSignIn } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { startTransition, useState } from 'react';
 
 import { ClerkErrorsInterface } from '../../ClerkErrorsInterface';
 import { Button, Input, Card } from '@salesyy/common-ui';
@@ -36,7 +36,7 @@ export const ForgotPasswordForm = () => {
   }
 
   if (isSignedIn) {
-    push('/');
+    startTransition(() => push('/'));
     return null;
   }
 
@@ -62,7 +62,7 @@ export const ForgotPasswordForm = () => {
 
   return (
     <Card>
-      <h1>{t('Forgot-password')}</h1>
+      <p className="font-bold text-lg	">{t('Forgot-password')}</p>
       <form onSubmit={handleSubmit(create)}>
         <Input
           label={t('Provide-email')}

@@ -45,9 +45,15 @@ export const EnterCodeForm = () => {
       });
 
       if (completeSignUp.status === 'complete') {
-        await saveUserIdToClerk(completeSignUp.id as string, visitorId);
-        await setActive({ session: completeSignUp.createdSessionId });
-        push('/');
+        const { success } = await saveUserIdToClerk(
+          completeSignUp.createdUserId as string,
+          visitorId
+        );
+
+        if (success) {
+          await setActive({ session: completeSignUp.createdSessionId });
+          push('/');
+        }
       }
     } catch (error) {
       if (isClerkAPIResponseError(error)) {
