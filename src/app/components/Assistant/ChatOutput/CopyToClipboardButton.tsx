@@ -4,25 +4,25 @@ import { Clipboard, ClipboardChecked } from '@salesyy/common-ui/icons';
 import { MessageDto } from '@/app/contracts/Message';
 import { useTranslations } from 'next-intl';
 
+import { useToast } from '@/app/hooks/useToast';
+
 type CopyToClipboardButtonProps = {
   message: MessageDto;
-  className: string;
-  successToast: (message: string) => void;
+  className?: string;
 };
 
 export const CopyToClipboardButton = ({
   message,
   className,
-  successToast,
 }: CopyToClipboardButtonProps) => {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-
+  const { successToast } = useToast();
   const t = useTranslations('toast');
 
   const copyToClipboard = (text: string, messageId: string) => {
     navigator.clipboard.writeText(text).then(() => {
       setCopiedMessageId(messageId);
-      successToast(t('copied'));
+      successToast({ message: t('copied') });
       setTimeout(() => setCopiedMessageId(null), 2000);
     });
   };

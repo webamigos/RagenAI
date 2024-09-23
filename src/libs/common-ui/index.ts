@@ -16,5 +16,4 @@ export * from './Card';
 export * from './Divider';
 export * from './Dropdown';
 export * from './Dialog';
-export * from './Tooltip';
 export * from './FileUploader';

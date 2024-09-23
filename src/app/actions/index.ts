@@ -3,6 +3,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { clerkClient } from '@clerk/nextjs/server';
 
+import { submitFeedbackDirectly } from '../lib/services/feedback';
 import { logger } from '../lib/utils/logger';
 import {
   ThreadHistoryResponse,
@@ -107,5 +108,19 @@ export const saveUserIdToClerk = async (
     return { success: true };
   } catch (error) {
     return { success: false };
+  }
+};
+
+//send answer rate to assistant
+export const rateMessage = async (
+  messageId: string,
+  feedback: 'up' | 'down',
+  runId: string
+) => {
+  try {
+    await submitFeedbackDirectly(messageId, feedback, runId);
+    return { success: true };
+  } catch (error) {
+    return { success: error };
   }
 };

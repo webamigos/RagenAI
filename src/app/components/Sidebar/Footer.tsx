@@ -101,6 +101,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 ) : (
                   <ChangePasswordForm handleCloseDialog={handleCloseDialog} />
                 )}
+                <Libs.Divider className="mt-4 -m-3" soft />
                 <Libs.DialogActions>
                   <Libs.Button
                     className="p-2 text-sm"

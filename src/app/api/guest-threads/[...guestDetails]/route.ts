@@ -25,6 +25,7 @@ const prepareSseMessage = (
 type Params = {
   params: { guestDetails: string[] };
 };
+let runId: string;
 
 export async function GET(_request: Request, { params }: Params) {
   const [publicThreadId, publicMessageId] = params.guestDetails || [];
@@ -65,8 +66,14 @@ export async function GET(_request: Request, { params }: Params) {
             );
 
             let fullMessage = '';
+            let chainRunIds = [];
 
             for await (const event of eventStream) {
+              if (event.event === 'on_chain_start') {
+                chainRunIds.push(event.run_id);
+                runId = chainRunIds[0];
+              }
+
               if (event.event === 'on_parser_stream') {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
@@ -74,7 +81,7 @@ export async function GET(_request: Request, { params }: Params) {
                   encoder.encode(
                     prepareSseMessage('message', {
                       type: 'delta',
-                      payload: { content: textChunk },
+                      payload: { content: textChunk, runId },
                     })
                   )
                 );

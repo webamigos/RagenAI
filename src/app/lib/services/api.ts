@@ -16,6 +16,18 @@ export const createThread = () => {
   return api.post<CreateThreadDto>('/threads');
 };
 
+export const submitFeedback = async (
+  messageId: string,
+  feedback: 'up' | 'down',
+  runId: string
+) => {
+  return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
+};
+
+// export const runAssistant = async (threadId: string) => {
+//   return api.post<void>(`/assistant/${threadId}`);
+// };
+
 export const createThreadForGuest = () => {
   return api.post<CreateThreadDto>(`/guest-threads/`);
 };

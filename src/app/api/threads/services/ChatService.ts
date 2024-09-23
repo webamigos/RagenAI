@@ -13,7 +13,7 @@ console.log({ sbApiKey, sbUrl });
 export const createChatInstance = new ChatOpenAI({
   apiKey,
   model,
-  temperature: 1,
+  temperature: 0.7,
   verbose: true,
   streaming: true,
 });
