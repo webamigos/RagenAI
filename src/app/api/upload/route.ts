@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { convertAndStoreDocument } from '../../api/threads/services/createVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 
-export const config = {
-  runtime: 'nodejs',
-  bodyParser: false,
-};
+export const runtime = 'nodejs';
+export const bodyParser = false;
 
 export async function POST(request: NextRequest) {
   try {
