@@ -1,35 +1,31 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import markdownit from 'markdown-it';
-import { toast } from 'react-toastify';
 
-type Props = {
-  content: string;
-  created_at: string;
-};
+import type { StreamedMessageDto } from '@/app/contracts/Message';
 
-export const useChatViewLogic = (streamedMessage: Props | null) => {
+export const useChatViewLogic = (
+  streamedMessage: StreamedMessageDto | null
+) => {
   const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
+  const [streamedMessageRunId, setStreamedMessageRunId] = useState<string>();
 
   const t = useTranslations('chat');
-
   const md = markdownit();
+
   useEffect(() => {
     if (streamedMessage) {
       const rendered = md.render(streamedMessage.content);
+      const runId = streamedMessage.runId;
       setRenderedStreamedMessage(rendered);
+      setStreamedMessageRunId(runId);
     }
   }, [streamedMessage]);
 
-  const successToast = (message: string) => {
-    toast.success(message, {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-    });
+  return {
+    t,
+    md,
+    streamedMessageRunId,
+    renderedStreamedMessage,
   };
-
-  return { t, md, successToast, renderedStreamedMessage };
 };

@@ -6,6 +6,7 @@
     "langchain",
     "nextjs",
     "openai",
-    "salesyy"
+    "salesyy",
+    "toastify"
   ]
 }
