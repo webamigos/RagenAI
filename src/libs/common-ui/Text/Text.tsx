@@ -6,6 +6,7 @@ type Props = {
   bold?: boolean;
   fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
   fontSize?: 'sm' | 'md' | 'lg' | 'xl';
+  color?: 'zinc-950' | 'blue-600';
 };
 
 export const Text = memo(

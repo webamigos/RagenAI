@@ -3,6 +3,8 @@ import { useDroppable } from '@dnd-kit/core';
 import { UploadInboxIcon } from '@salesyy/common-ui/icons';
 import { useTranslations } from 'next-intl';
 
+import { Text } from '../Text';
+
 interface FileUploaderProps {
   onFilesAdded: (files: File[]) => void;
   disabled?: boolean;
@@ -52,13 +54,15 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
       onDragOver={handleDragOver}
     >
       <div className="flex justify-center items-center cursor-pointer">
-        <p className="mr-2">{t('drag-n-drop')}</p>
+        <Text fontWeight="light" className="mr-2">
+          {t('drag-n-drop')}
+        </Text>
         <UploadInboxIcon />
       </div>
-      <p>{t('or')}</p>
-      <p className="text-blue-600 cursor-pointer" onClick={handleClick}>
+      <Text fontWeight="light">{t('or')}</Text>
+      <Text color="blue-600" className="cursor-pointer" onClick={handleClick}>
         {t('choose-files')}
-      </p>
+      </Text>
       <input
         ref={fileInputRef}
         className="hidden"
