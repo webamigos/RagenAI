@@ -14,7 +14,6 @@ export const UploadKnowledge = () => {
   const [uploading, setUploading] = useState<boolean>(false);
   const { successToast, errorToast } = useToast();
   const t = useTranslations('admin-panel');
-  const errorMessage = useTranslations('error-toast');
   const { user } = useUser();
 
   const userId = user?.publicMetadata?.visitorId || null;
@@ -46,14 +45,7 @@ export const UploadKnowledge = () => {
     });
 
     try {
-      if (!userId) {
-        return;
-      }
-
-      const response = await uploadFiles(userId, formData);
-      if (!response) {
-        return;
-      }
+      const response = await uploadFiles(userId as string, formData);
 
       if (response.status === 200) {
         successToast({
