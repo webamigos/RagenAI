@@ -32,7 +32,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx"
+    ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
+    "src/app/api/upload/[...upload]/route.ts"
   ],
   "exclude": ["node_modules"]
 }

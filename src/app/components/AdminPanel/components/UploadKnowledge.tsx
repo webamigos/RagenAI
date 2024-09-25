@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useUser } from '@clerk/nextjs';
 
 import { Card, Button, FileUploader } from '@salesyy/common-ui';
 import { useToast } from '@/app/hooks/useToast';
@@ -12,6 +13,9 @@ export const UploadKnowledge = () => {
   const [uploading, setUploading] = useState<boolean>(false);
   const { successToast, errorToast } = useToast();
   const t = useTranslations('admin-panel');
+  const { user } = useUser();
+
+  const userId = user?.publicMetadata.visitorId;
 
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
@@ -40,7 +44,7 @@ export const UploadKnowledge = () => {
     });
 
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`/api/upload/${userId}`, {
         method: 'POST',
         body: formData,
       });

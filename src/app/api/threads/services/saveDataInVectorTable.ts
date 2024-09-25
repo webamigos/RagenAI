@@ -10,13 +10,14 @@ import {
 
 export const convertAndStoreDocument = async (
   fileContent: string,
-  fileName: string
+  fileName: string,
+  uploaderId: string
 ) => {
   if (!fileContent) {
     throw new Error('File content missing!');
   }
 
-  const tableName = `documents_123`;
+  const tableName = `document_${uploaderId}`;
 
   await createTableIfNotExists(tableName);
   await grantTablePermissions(tableName);

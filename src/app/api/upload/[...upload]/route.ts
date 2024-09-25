@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { convertAndStoreDocument } from '../threads/services/saveDataInVectorTable';
+import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
+type Params = {
+  params: { upload: string };
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest, { params }: Params) {
+  const uploaderId = params.upload;
+
   try {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     for (const file of files) {
       const content = await file.text();
-      await convertAndStoreDocument(content, file.name);
+      await convertAndStoreDocument(content, file.name, uploaderId);
     }
 
     return NextResponse.json(
