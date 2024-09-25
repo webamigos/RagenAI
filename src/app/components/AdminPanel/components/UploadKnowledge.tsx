@@ -38,11 +38,6 @@ export const UploadKnowledge = () => {
       return;
     }
 
-    if (!userId) {
-      errorToast({ message: errorMessage('user-id-missing') });
-      return;
-    }
-
     setUploading(true);
 
     const formData = new FormData();
@@ -51,7 +46,14 @@ export const UploadKnowledge = () => {
     });
 
     try {
+      if (!userId) {
+        return;
+      }
+
       const response = await uploadFiles(userId, formData);
+      if (!response) {
+        return;
+      }
 
       if (response.status === 200) {
         successToast({

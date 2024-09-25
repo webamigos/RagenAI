@@ -41,6 +41,9 @@ export const clearVisitorMessagesStats = async () => {
 };
 
 export const uploadFiles = async (uploaderId: string, data: FormData) => {
+  if (!uploaderId) {
+    return undefined;
+  }
   return api.post<void>(`/upload/${uploaderId}`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',
