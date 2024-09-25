@@ -1,7 +1,7 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { createClient } from '@supabase/supabase-js';
-import { DatabaseGenerated } from '@/libs/db/supabase';
+import { DatabaseGenerated } from '@/libs/db/supabase-types';
 
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_CHAT_MODEL;

@@ -7,6 +7,7 @@ import { useUser } from '@clerk/nextjs';
 import { Card, Button, FileUploader } from '@salesyy/common-ui';
 import { useToast } from '@/app/hooks/useToast';
 import { FileList } from './FileList';
+import { uploadFiles } from '@/app/lib/services/api';
 
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -44,22 +45,22 @@ export const UploadKnowledge = () => {
     });
 
     try {
-      const response = await fetch(`/api/upload/${userId}`, {
-        method: 'POST',
-        body: formData,
-      });
+      if (!userId) {
+        return;
+      }
 
-      if (response.ok) {
+      const response = await uploadFiles(userId, formData);
+
+      if (response.status === 200) {
         successToast({
           message: t('success'),
         });
         setFiles([]);
-      } else {
-        const data = await response.json();
-        errorToast({ message: `${t('error')}: ${data.message}` });
+      } else if (response.status === 400 || 404 || 500) {
+        errorToast({ message: `${t('error')}: ${response.statusText}` });
       }
     } catch (error) {
-      errorToast({ message: t('sending-files-error') });
+      errorToast({ message: `${t('sending-files-error')}: ${error}` });
     } finally {
       setUploading(false);
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
+import { saveDocumentDetailsInDB } from '@/app/lib/services/document';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -10,7 +11,7 @@ type Params = {
 };
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const uploaderId = params.upload;
+  const uploaderId = params.upload[0];
 
   try {
     const formData = await request.formData();
@@ -24,8 +25,29 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     for (const file of files) {
+      if (!file.size) {
+        return NextResponse.json(
+          { message: `Plik ${file.name} jest pusty` },
+          { status: 400 }
+        );
+      }
+
       const content = await file.text();
-      await convertAndStoreDocument(content, file.name, uploaderId);
+      try {
+        await convertAndStoreDocument(content, file.name, uploaderId);
+        await saveDocumentDetailsInDB(
+          file.name,
+          file.size,
+          uploaderId,
+          file.name
+        );
+      } catch (error) {
+        logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
+        return NextResponse.json(
+          { message: `Błąd podczas przetwarzania pliku ${file.name}` },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json(
@@ -35,7 +57,10 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (error) {
     logger.error('Błąd podczas przetwarzania plików:', error);
     return NextResponse.json(
-      { message: 'Wystąpił błąd podczas przetwarzania plików' },
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
       { status: 500 }
     );
   }

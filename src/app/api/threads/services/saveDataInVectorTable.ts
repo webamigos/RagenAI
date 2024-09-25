@@ -2,11 +2,11 @@ import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 
-import { supaBaseClient, embeddingModel } from './ChatService';
 import {
   createTableIfNotExists,
   grantTablePermissions,
 } from '@/libs/db/sqlRequest';
+import { supaBaseClient, embeddingModel } from './ChatService';
 
 export const convertAndStoreDocument = async (
   fileContent: string,

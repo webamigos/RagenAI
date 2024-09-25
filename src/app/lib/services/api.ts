@@ -39,3 +39,11 @@ export const checkVisitorVisits = async (visitorId: string) => {
 export const clearVisitorMessagesStats = async () => {
   return api.post<void>(`/visitor/hejho`);
 };
+
+export const uploadFiles = async (uploaderId: string, data: FormData) => {
+  return api.post<void>(`/upload/${uploaderId}`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
