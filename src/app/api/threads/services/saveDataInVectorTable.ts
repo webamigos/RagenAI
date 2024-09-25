@@ -1,25 +1,25 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { Document } from 'langchain/document';
-// import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
-import { supeBaseClient, embeddingModel } from '../services/ChatService';
 
-// const loader = new TextLoader(
-//   'src/data/ProceduratworzeniacontentuYouTubeSolo.md'
-// );
+import { supaBaseClient, embeddingModel } from './ChatService';
+import {
+  createTableIfNotExists,
+  grantTablePermissions,
+} from '@/libs/db/sqlRequest';
+
 export const convertAndStoreDocument = async (
   fileContent: string,
   fileName: string
 ) => {
-  // const rawDocs = await loader.load();
-
-  // if (!rawDocs || rawDocs.length === 0) {
-  //   throw new Error('No documents were loaded');
-  // }
-
   if (!fileContent) {
-    throw new Error('Brak zawartości pliku');
+    throw new Error('File content missing!');
   }
+
+  const tableName = `documents_123`;
+
+  await createTableIfNotExists(tableName);
+  await grantTablePermissions(tableName);
 
   const rawDocs = [new Document({ pageContent: fileContent })];
 
@@ -35,11 +35,8 @@ export const convertAndStoreDocument = async (
     docs.map(async (doc, index) => {
       const text = doc.pageContent;
 
-      const sectionTitle = extractSectionTitle(text);
-
       const metadata = {
         document_id: fileName,
-        section_title: sectionTitle,
         page_number: index + 1,
         created_at: new Date().toISOString().split('T')[0],
         tags: ['YouTube', 'Nagranie', 'Procedura'],
@@ -58,8 +55,8 @@ export const convertAndStoreDocument = async (
   );
 
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
-    client: supeBaseClient,
-    tableName: 'documents',
+    client: supaBaseClient,
+    tableName,
     queryName: 'match_documents',
   });
 
@@ -71,14 +68,3 @@ export const convertAndStoreDocument = async (
     }))
   );
 };
-
-function extractSectionTitle(text: string) {
-  const lines = text.split('\n');
-  for (const line of lines) {
-    const match = line.match(/^#+\s+(.*)/);
-    if (match) {
-      return match[1].trim();
-    }
-  }
-  return '';
-}

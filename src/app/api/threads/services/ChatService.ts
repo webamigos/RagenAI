@@ -1,6 +1,7 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { createClient } from '@supabase/supabase-js';
+import { Database } from '@/libs/db/supabase';
 
 const apiKey = process.env.OPENAI_API_KEY;
 const model = process.env.OPENAI_CHAT_MODEL;
@@ -27,4 +28,4 @@ if (!sbUrl || !sbApiKey) {
   throw new Error('supabaseUrl is required.');
 }
 
-export const supeBaseClient = createClient(sbUrl, sbApiKey);
+export const supaBaseClient = createClient<Database>(sbUrl, sbApiKey);

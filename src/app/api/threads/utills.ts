@@ -7,7 +7,7 @@ import { TEMPLATE } from '../../config';
 import {
   createChatInstance,
   embeddingModel,
-  supeBaseClient,
+  supaBaseClient,
 } from './services/ChatService';
 
 type Document = {
@@ -17,7 +17,7 @@ type Document = {
 };
 
 const vectorStore = new SupabaseVectorStore(embeddingModel, {
-  client: supeBaseClient,
+  client: supaBaseClient,
   tableName: 'documents',
   queryName: 'match_documents',
 });

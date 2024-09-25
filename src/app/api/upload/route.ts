@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { convertAndStoreDocument } from '../../api/threads/services/createVectorTable';
+import { convertAndStoreDocument } from '../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 
+export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export async function POST(request: NextRequest) {
   try {
