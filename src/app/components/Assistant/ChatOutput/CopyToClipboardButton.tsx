@@ -17,7 +17,7 @@ export const CopyToClipboardButton = ({
 }: CopyToClipboardButtonProps) => {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const { successToast } = useToast();
-  const t = useTranslations('toast');
+  const t = useTranslations('success-toast');
 
   const copyToClipboard = (text: string, messageId: string) => {
     navigator.clipboard.writeText(text).then(() => {

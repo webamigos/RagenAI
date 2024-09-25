@@ -14,9 +14,10 @@ export const UploadKnowledge = () => {
   const [uploading, setUploading] = useState<boolean>(false);
   const { successToast, errorToast } = useToast();
   const t = useTranslations('admin-panel');
+  const errorMessage = useTranslations('error-toast');
   const { user } = useUser();
 
-  const userId = user?.publicMetadata.visitorId;
+  const userId = user?.publicMetadata?.visitorId;
 
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
@@ -37,6 +38,11 @@ export const UploadKnowledge = () => {
       return;
     }
 
+    if (!userId) {
+      errorToast({ message: errorMessage('user-id-missing') });
+      return;
+    }
+
     setUploading(true);
 
     const formData = new FormData();
@@ -45,10 +51,6 @@ export const UploadKnowledge = () => {
     });
 
     try {
-      if (!userId) {
-        return;
-      }
-
       const response = await uploadFiles(userId, formData);
 
       if (response.status === 200) {
@@ -56,7 +58,7 @@ export const UploadKnowledge = () => {
           message: t('success'),
         });
         setFiles([]);
-      } else if (response.status === 400 || 404 || 500) {
+      } else if ([400, 404, 500].includes(response.status)) {
         errorToast({ message: `${t('error')}: ${response.statusText}` });
       }
     } catch (error) {

@@ -65,8 +65,11 @@
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
     "contact-with-us": "Skontaktuj się z nami"
   },
-  "toast": {
-    "copied": "skopiowano"
+  "success-toast": {
+    "copied": "copied"
+  },
+  "error-toast": {
+    "no-user-id": "Brak user id"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",

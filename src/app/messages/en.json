@@ -65,8 +65,11 @@
     "provide-at-least-10-characters": "Provide at least 10 characters",
     "contact-with-us": "Contact with us"
   },
-  "toast": {
+  "success-toast": {
     "copied": "copied"
+  },
+  "error-toast": {
+    "no-user-id": "user id missing"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
