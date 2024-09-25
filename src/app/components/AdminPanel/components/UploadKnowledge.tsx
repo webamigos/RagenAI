@@ -17,7 +17,7 @@ export const UploadKnowledge = () => {
   const errorMessage = useTranslations('error-toast');
   const { user } = useUser();
 
-  const userId = user?.publicMetadata?.visitorId;
+  const userId = user?.publicMetadata?.visitorId || null;
 
   const handleFilesAdded = (newFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
