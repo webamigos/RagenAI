@@ -4,6 +4,7 @@ import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { FileList } from './FileList';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
+import { Card } from '@salesyy/common-ui/Card';
 
 export const FileListWrapper = () => {
   const { user, isLoaded } = useUser();
@@ -19,5 +20,9 @@ export const FileListWrapper = () => {
     return <SpinnerSVG />;
   }
 
-  return <FileList userId={userId} />;
+  return (
+    <Card title="Lista plików" size="full">
+      <FileList userId={userId} />
+    </Card>
+  );
 };

@@ -14,3 +14,4 @@ export { LockClosedIcon } from './LockClosedIcon';
 export { WrenchScrewdriverIcon } from './WrenchScrewdriver';
 export { UploadInboxIcon } from './UploadInboxIcon';
 export { XMarkIcon } from './XMarkIcon';
+export { EllipsiHorizontalIcon } from './EllipsiHorizontalIcon';

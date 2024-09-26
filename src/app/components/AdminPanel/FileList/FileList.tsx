@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { getUserDocuments } from '@/app/actions';
 import { usersDocuments } from '@/app/contracts/Documents';
-import { Card } from '@salesyy/common-ui/Card';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 
 import { UserDocumentsTable } from './UserDocumentsTable';
@@ -40,9 +39,5 @@ export const FileList = ({ userId }: Props) => {
     return <SpinnerSVG />;
   }
 
-  return (
-    <Card title="Lista plików" size="full">
-      <UserDocumentsTable documents={documentDetails} />
-    </Card>
-  );
+  return <UserDocumentsTable documents={documentDetails} />;
 };

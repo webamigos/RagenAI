@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 import { createDocumentDetailsInDB } from '@/app/lib/services/document';
+import { deleteDocument } from '../services/TableService';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -63,5 +66,37 @@ export async function POST(request: NextRequest, { params }: Params) {
       },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: any }) {
+  const visitor_id = params.upload[0];
+  const document_id = params.upload[1];
+
+  if (!visitor_id || !document_id) {
+    return new Response(
+      JSON.stringify({ error: 'Missing visitor_id or document_id' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  try {
+    await deleteDocument(visitor_id, document_id);
+    return new Response(
+      JSON.stringify({ message: 'Document successfully deleted' }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error) {
+    logger.error('Error in DELETE handler:', error);
+    return new Response(JSON.stringify({ error: 'Error deleting document' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

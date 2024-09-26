@@ -15,7 +15,11 @@ import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
 import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
-import { fetchUserDocumentsDetails } from '../lib/services/document';
+import {
+  deleteDocumentFromDB,
+  fetchUserDocumentsDetails,
+} from '../lib/services/document';
+import { deleteFile } from '../lib/services/api';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -103,6 +107,32 @@ export const getUserDocuments = async (userId: string) => {
     return {
       error: 'Fetching documents details failed',
       status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+//remove user document
+export const deleteDocument = async (userId: string, documentId: string) => {
+  try {
+    const { count } = await deleteDocumentFromDB(userId, documentId);
+    await deleteFile(userId, documentId);
+
+    if (count === 0) {
+      return {
+        error:
+          'Document not found or user does not have permission to delete it',
+        status: StatusCodes.NOT_FOUND,
+      };
+    }
+
+    return {
+      message: 'Document deleted successfully',
+      status: StatusCodes.OK,
+    };
+  } catch (error) {
+    return {
+      error: 'Failed to delete document',
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
   }
 };

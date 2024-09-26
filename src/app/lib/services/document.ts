@@ -30,3 +30,15 @@ export const fetchUserDocumentsDetails = async (uploaderId: string) => {
     },
   });
 };
+
+export const deleteDocumentFromDB = async (
+  userId: string,
+  documentId: string
+) => {
+  return await db.usersDocuments.deleteMany({
+    where: {
+      id: documentId,
+      visitor_id: userId,
+    },
+  });
+};

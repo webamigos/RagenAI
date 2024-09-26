@@ -47,3 +47,7 @@ export const uploadFiles = async (uploaderId: string, data: FormData) => {
     },
   });
 };
+
+export const deleteFile = async (uploaderId: string, documentId: string) => {
+  return api.delete<void>(`/upload/${uploaderId}/${documentId}`);
+};

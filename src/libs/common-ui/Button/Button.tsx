@@ -3,7 +3,7 @@ import { classMerge } from '../utils/cn';
 import { SpinnerSVG } from '../icons/SpinnerSVG';
 
 type Props = Readonly<{
-  label: string;
+  label?: string;
   isLoading?: boolean;
   iconRight?: React.ReactNode;
   iconLeft?: React.ReactNode;

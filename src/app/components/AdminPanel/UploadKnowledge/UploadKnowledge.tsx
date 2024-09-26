@@ -11,9 +11,11 @@ import { uploadFiles } from '@/app/lib/services/api';
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
+
   const { successToast, errorToast } = useToast();
   const t = useTranslations('admin-panel');
   const { user } = useUser();
+
   const userId = user?.publicMetadata?.visitorId || null;
 
   const handleFilesAdded = (newFiles: File[]) =>

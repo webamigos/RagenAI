@@ -68,6 +68,7 @@ model usersDocuments {
   updated_at    DateTime?
   metadata      Json?
 
+  @@unique([id, visitor_id])
   @@index([visitor_id])
 }
 
