@@ -1,9 +1,13 @@
-import { UploadKnowledge } from './components/UploadKnowledge';
+'use client';
+
+import { UploadKnowledge } from './UploadKnowledge/';
+import { FileList } from './FileList';
 
 export const AdminPanel = () => {
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <UploadKnowledge />
+      <FileList />
     </div>
   );
 };

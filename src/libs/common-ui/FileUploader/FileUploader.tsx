@@ -1,8 +1,9 @@
+'use client';
+
 import { useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { UploadInboxIcon } from '@salesyy/common-ui/icons';
 import { useTranslations } from 'next-intl';
-
 import { Text } from '../Text';
 
 interface FileUploaderProps {
@@ -11,30 +12,24 @@ interface FileUploaderProps {
 }
 
 export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
-  const { isOver, setNodeRef } = useDroppable({
-    id: 'droppable',
-  });
+  const { isOver, setNodeRef } = useDroppable({ id: 'droppable' });
   const t = useTranslations('admin-panel');
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (disabled) return;
-
     const droppedFiles = Array.from(event.dataTransfer.files).filter((file) =>
       file.name.endsWith('.md')
     ) as File[];
     onFilesAdded(droppedFiles);
   };
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) =>
     event.preventDefault();
-  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
-
     const selectedFiles = Array.from(event.target.files || []).filter((file) =>
       file.name.endsWith('.md')
     );
@@ -42,16 +37,15 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
   };
 
   const handleClick = () => {
-    if (disabled) return;
-    fileInputRef.current?.click();
+    if (!disabled) fileInputRef.current?.click();
   };
 
   return (
     <div
-      className="mb-5 p-5 text-center border-2 border-dashed rounded-md"
       ref={setNodeRef}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
+      className="mb-5 p-5 text-center border-2 border-dashed rounded-md"
     >
       <div className="flex justify-center items-center cursor-pointer">
         <Text fontWeight="light" className="mr-2">

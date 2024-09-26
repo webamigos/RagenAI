@@ -65,7 +65,7 @@ model usersDocuments {
   file_name     String
   file_size     Int
   created_at    DateTime? @default(now())
-  updated_at    DateTime? @updatedAt
+  updated_at    DateTime?
   metadata      Json?
 
   @@index([visitor_id])

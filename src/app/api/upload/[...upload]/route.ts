@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
-import { saveDocumentDetailsInDB } from '@/app/lib/services/document';
+import { createDocumentDetailsInDB } from '@/app/lib/services/document';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       const content = await file.text();
       try {
         await convertAndStoreDocument(content, file.name, uploaderId);
-        await saveDocumentDetailsInDB(
+        await createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
