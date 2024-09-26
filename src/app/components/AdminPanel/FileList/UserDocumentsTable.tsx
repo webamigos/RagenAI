@@ -1,6 +1,7 @@
+'use client';
+
 import format from 'date-fns-tz/format';
 import prettyBytes from 'pretty-bytes';
-
 import { usersDocuments } from '@/app/contracts/Documents';
 import {
   Table,
@@ -39,14 +40,14 @@ export const UserDocumentsTable = ({ documents }: Props) => {
                 <TableCell>{prettyBytes(file_size)}</TableCell>
                 <TableCell>
                   {created_at ? (
-                    format(created_at, 'dd.MM.yyyy HH:mm:ss')
+                    format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
                   ) : (
                     <Text>-</Text>
                   )}
                 </TableCell>
                 <TableCell>
                   {updated_at ? (
-                    format(updated_at, 'dd.MM.yyyy HH:mm:ss')
+                    format(new Date(updated_at), 'dd.MM.yyyy HH:mm:ss')
                   ) : (
                     <Text>-</Text>
                   )}

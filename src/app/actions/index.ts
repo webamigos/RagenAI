@@ -15,6 +15,7 @@ import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
 import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
+import { fetchUserDocumentsDetails } from '../lib/services/document';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -88,6 +89,19 @@ export const getUserMessages = async (
   } catch (err) {
     return {
       error: 'Fetching threads failed',
+      status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+//get user documents
+export const getUserDocuments = async (userId: string) => {
+  try {
+    const documentDetails = await fetchUserDocumentsDetails(userId);
+    return { documentDetails };
+  } catch (error) {
+    return {
+      error: 'Fetching documents details failed',
       status: StatusCodes.BAD_REQUEST,
     };
   }

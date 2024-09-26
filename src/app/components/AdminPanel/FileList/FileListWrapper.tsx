@@ -3,6 +3,7 @@
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import { FileList } from './FileList';
+import { SpinnerSVG } from '@salesyy/common-ui/icons';
 
 export const FileListWrapper = () => {
   const { user, isLoaded } = useUser();
@@ -15,7 +16,7 @@ export const FileListWrapper = () => {
   }, [isLoaded, user]);
 
   if (!userId) {
-    return;
+    return <SpinnerSVG />;
   }
 
   return <FileList userId={userId} />;
