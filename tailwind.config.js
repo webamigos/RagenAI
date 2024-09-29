@@ -14,6 +14,7 @@ module.exports = {
       colors: {
         'salesyy-red': '#CB1D3D',
         'salesyy-blue': '#252D53',
+        'apple-dark': '#1C1C1E',
 
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

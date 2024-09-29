@@ -32,7 +32,7 @@ export const ChatOutput = ({
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2"
+            className="group mb-6 bg-slate-100 dark:bg-apple-dark rounded-md p-2"
           >
             <div className="text-sm">
               <strong>{t(message.role)}</strong>{' '}
