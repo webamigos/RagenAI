@@ -1,8 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { LikeIcon, DislikeIcon } from '@salesyy/common-ui/icons';
 import { rateMessage } from '@/app/actions';
-import { useToast } from '@/app/hooks/useToast';
 import { useState, useEffect } from 'react';
+import { statusToast } from '@/app/lib/utils/toast';
 
 type Props = {
   publicId: string;
@@ -14,7 +14,7 @@ export const RateAnswer = ({ publicId, runId, initialRated }: Props) => {
   const [rated, setRated] = useState<number | null | undefined>(initialRated);
 
   const t = useTranslations('rate-answer');
-  const { infoToast, errorToast } = useToast();
+  const { infoToast, errorToast } = statusToast();
 
   const handleRateMessage = async (rate: 'up' | 'down') => {
     const { success } = await rateMessage(publicId, rate, runId!);
