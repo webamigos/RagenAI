@@ -99,6 +99,7 @@
     "Add-files": "Dodaj pliki",
     "drag-n-drop": "Przeciągnij i upuść pliki tutaj",
     "or": "lub",
-    "choose-files": "Wybierz pliki"
+    "choose-files": "Wybierz pliki",
+    "supported-formats": "Obsługiwany format"
   }
 }

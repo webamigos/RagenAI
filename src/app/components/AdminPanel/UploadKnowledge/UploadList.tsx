@@ -1,4 +1,5 @@
-// components/FileList.tsx
+import { Text } from '@salesyy/common-ui/Text';
+
 import { FileItem } from './FileItem';
 
 interface FileListProps {
@@ -7,10 +8,16 @@ interface FileListProps {
   uploading: boolean;
 }
 
-export const FileList = ({ files, onRemoveFile, uploading }: FileListProps) => {
+export const UploadList = ({
+  files,
+  onRemoveFile,
+  uploading,
+}: FileListProps) => {
   return (
-    <div>
-      <h3>Wybrane pliki:</h3>
+    <div className="mt-4">
+      <Text fontSize="lg" fontWeight="medium">
+        Wybrane pliki:
+      </Text>
       <ul>
         {files.map((file, index) => (
           <FileItem

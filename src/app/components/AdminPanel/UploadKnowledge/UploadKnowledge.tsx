@@ -3,16 +3,20 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useUser } from '@clerk/nextjs';
+
 import { Card, Button, FileUploader } from '@salesyy/common-ui';
-import { useToast } from '@/app/hooks/useToast';
-import { FileList } from './FileList';
+import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
+import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
+
+import { UploadList } from './UploadList';
 
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
 
-  const { successToast, errorToast } = useToast();
+  const { refreshDocuments } = useUserDocumentsContext();
+  const { successToast, errorToast } = statusToast();
   const t = useTranslations('admin-panel');
   const { user } = useUser();
 
@@ -46,6 +50,7 @@ export const UploadKnowledge = () => {
       if (response.status === 200) {
         successToast({ message: t('success') });
         setFiles([]);
+        refreshDocuments();
       } else {
         errorToast({ message: `${t('error')}: ${response.statusText}` });
       }
@@ -60,16 +65,17 @@ export const UploadKnowledge = () => {
     <Card title={t('Add-files')} size="full">
       <FileUploader onFilesAdded={handleFilesAdded} disabled={uploading} />
       {files.length > 0 && (
-        <FileList
+        <UploadList
           files={files}
           onRemoveFile={handleFileRemove}
           uploading={uploading}
         />
       )}
       <Button
+        className="mt-5"
         label={uploading ? t('sending') : t('send')}
         onClick={handleSend}
-        disabled={uploading}
+        disabled={uploading || files.length < 1}
       />
     </Card>
   );

@@ -1,43 +1,29 @@
-import { useEffect, useState } from 'react';
+import { memo } from 'react';
 
-import { getUserDocuments } from '@/app/actions';
-import { usersDocuments } from '@/app/contracts/Documents';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
-
+import { statusToast } from '@/app/lib/utils/toast';
 import { UserDocumentsTable } from './UserDocumentsTable';
+import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 
-type Props = {
-  userId: string;
-};
+export const FileList = memo(() => {
+  const { documents, isLoading, isError, refreshDocuments } =
+    useUserDocumentsContext();
+  const { errorToast } = statusToast();
 
-export const FileList = ({ userId }: Props) => {
-  const [documentDetails, setDocumentDetails] = useState<usersDocuments[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        setLoading(true);
-        const { documentDetails, error } = await getUserDocuments(userId);
-        if (documentDetails) {
-          setDocumentDetails(documentDetails);
-        } else {
-          setDocumentDetails([]);
-        }
-      } catch (err) {
-        setError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDocuments();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <SpinnerSVG />;
   }
 
-  return <UserDocumentsTable documents={documentDetails} />;
-};
+  if (isError) {
+    errorToast({ message: 'Błąd podczas pobierania dokumentów' });
+  }
+
+  return (
+    <UserDocumentsTable
+      documents={documents || []}
+      onDocumentsUpdate={refreshDocuments}
+    />
+  );
+});
+
+FileList.displayName = 'FileList';

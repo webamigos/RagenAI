@@ -10,8 +10,7 @@ import { useTranslations } from 'next-intl';
 
 import { ClerkErrorsInterface } from '../../ClerkErrorsInterface';
 import { Input, Button } from '@salesyy/common-ui';
-import { useToast } from '../../../hooks/useToast';
-
+import { statusToast } from '@/app/lib/utils/toast';
 const schema = z
   .object({
     currentPassword: z
@@ -41,7 +40,7 @@ type Props = {
 export const ChangePasswordForm = ({ handleCloseDialog }: Props) => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
 
-  const { successToast } = useToast();
+  const { successToast } = statusToast();
   const { user } = useUser();
   const t = useTranslations('change-password');
   const {

@@ -2,9 +2,10 @@
 
 import { useRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { UploadInboxIcon } from '@salesyy/common-ui/icons';
 import { useTranslations } from 'next-intl';
+
 import { Text } from '../Text';
+import { UploadInboxIcon } from '@salesyy/common-ui/icons';
 
 interface FileUploaderProps {
   onFilesAdded: (files: File[]) => void;
@@ -18,7 +19,9 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const droppedFiles = Array.from(event.dataTransfer.files).filter((file) =>
       file.name.endsWith('.md')
     ) as File[];
@@ -29,7 +32,9 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
     event.preventDefault();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const selectedFiles = Array.from(event.target.files || []).filter((file) =>
       file.name.endsWith('.md')
     );
@@ -37,34 +42,43 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
   };
 
   const handleClick = () => {
-    if (!disabled) fileInputRef.current?.click();
+    if (disabled) {
+      return;
+    }
+
+    fileInputRef.current?.click();
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      className="mb-5 p-5 text-center border-2 border-dashed rounded-md"
-    >
-      <div className="flex justify-center items-center cursor-pointer">
-        <Text fontWeight="light" className="mr-2">
-          {t('drag-n-drop')}
+    <>
+      <div
+        ref={setNodeRef}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        className="mb-5 p-5 text-center border-2 border-dashed rounded-md"
+      >
+        <div className="flex justify-center items-center cursor-pointer">
+          <Text fontWeight="light" className="mr-2">
+            {t('drag-n-drop')}
+          </Text>
+          <UploadInboxIcon />
+        </div>
+        <Text fontWeight="light">{t('or')}</Text>
+        <Text color="blue-600" className="cursor-pointer" onClick={handleClick}>
+          {t('choose-files')}
         </Text>
-        <UploadInboxIcon />
+        <input
+          ref={fileInputRef}
+          className="hidden"
+          type="file"
+          accept=".md"
+          multiple
+          onChange={handleFileSelect}
+        />
       </div>
-      <Text fontWeight="light">{t('or')}</Text>
-      <Text color="blue-600" className="cursor-pointer" onClick={handleClick}>
-        {t('choose-files')}
+      <Text fontSize="sm" color="gray-400" className="-mt-4">
+        {`${t('supported-formats')}: .md`}
       </Text>
-      <input
-        ref={fileInputRef}
-        className="hidden"
-        type="file"
-        accept=".md"
-        multiple
-        onChange={handleFileSelect}
-      />
-    </div>
+    </>
   );
 };

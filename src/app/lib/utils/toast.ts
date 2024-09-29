@@ -12,7 +12,7 @@ type ToastProps = {
     | 'bottom-right';
 };
 
-export const useToast = () => {
+export const statusToast = () => {
   const successToast = ({
     message,
     position = 'top-right',
