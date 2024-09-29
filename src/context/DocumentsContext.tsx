@@ -6,6 +6,7 @@ import {
   useEffect,
 } from 'react';
 import { useUser } from '@clerk/nextjs';
+
 import { getUserDocuments } from '@/app/actions';
 import { usersDocuments } from '@/app/contracts/Documents';
 
@@ -47,7 +48,7 @@ export const DocumentsProvider = ({ children }: Props) => {
         return;
       }
 
-      const { documentDetails } = await getUserDocuments(visitorId);
+      const { documentDetails } = await getUserDocuments(visitorId as string);
       setDocuments(documentDetails ?? null);
       setIsError(false);
     } catch (error) {
