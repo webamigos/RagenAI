@@ -16,3 +16,5 @@ export * from './Card';
 export * from './Divider';
 export * from './Dropdown';
 export * from './Dialog';
+export * from './FileUploader';
+export * from './Table';

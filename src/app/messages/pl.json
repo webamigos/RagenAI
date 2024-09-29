@@ -65,12 +65,16 @@
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
     "contact-with-us": "Skontaktuj się z nami"
   },
-  "toast": {
-    "copied": "skopiowano"
+  "success-toast": {
+    "copied": "copied"
   },
-  "dialog": {
+  "error-toast": {
+    "no-user-id": "Brak user id"
+  },
+  "my-profile-dialog": {
     "admin-dashboard": "Admin panel",
     "my-profile": "Mój profil",
+    "admin-panel": "Admin",
     "change-password": "Zmień hasło",
     "close": "zamknij"
   },
@@ -84,5 +88,18 @@
   "rate-answer": {
     "thank-you": "Twoja ocena została zapisana. Dziękujemy za feedback",
     "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później"
+  },
+  "admin-panel": {
+    "no-files": "Nie wybrano żadnych plików do wysłania",
+    "success": "Wszystkie pliki zostały pomyślnie przetworzone",
+    "error": "Wystąpił błąd",
+    "sending-files-error": "Wystąpił błąd podczas wysyłania plików",
+    "sending": "Wysyłanie",
+    "send": "Wyślij",
+    "Add-files": "Dodaj pliki",
+    "drag-n-drop": "Przeciągnij i upuść pliki tutaj",
+    "or": "lub",
+    "choose-files": "Wybierz pliki",
+    "supported-formats": "Obsługiwany format"
   }
 }

@@ -1,5 +1,5 @@
 import { SidebarLabel, SidebarItem } from '@salesyy/common-ui';
-import { ThreadHistoryResponse } from '../../contracts/Message';
+import { ThreadHistoryResponse } from '../../../contracts/Message';
 import { useSidebar } from '@/app/hooks/useSidebar';
 
 type Category = {

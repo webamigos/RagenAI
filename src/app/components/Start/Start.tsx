@@ -29,8 +29,8 @@ export const Start = () => {
 
   useEffect(() => {
     const setId = async () => {
-      if (isSignedIn && user?.unsafeMetadata?.visitorId) {
-        setVisitorId(user?.unsafeMetadata?.visitorId as string);
+      if (isSignedIn && user?.publicMetadata?.visitorId) {
+        setVisitorId(user?.publicMetadata?.visitorId as string);
       } else {
         const fingerprintId = await loadFingerprint();
         setVisitorId(fingerprintId);

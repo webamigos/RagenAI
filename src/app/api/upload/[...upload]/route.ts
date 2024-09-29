@@ -1,0 +1,102 @@
+import { NextRequest, NextResponse } from 'next/server';
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
+import { logger } from '@/app/lib/utils/logger';
+import { createDocumentDetailsInDB } from '@/app/lib/services/document';
+import { deleteDocument } from '../services/TableService';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+type Params = {
+  params: { upload: string };
+};
+
+export async function POST(request: NextRequest, { params }: Params) {
+  const uploaderId = params.upload[0];
+
+  try {
+    const formData = await request.formData();
+    const files = formData.getAll('files') as File[];
+
+    if (!files || files.length === 0) {
+      return NextResponse.json(
+        { message: 'Brak plików do przetworzenia' },
+        { status: 400 }
+      );
+    }
+
+    for (const file of files) {
+      if (!file.size) {
+        return NextResponse.json(
+          { message: `Plik ${file.name} jest pusty` },
+          { status: 400 }
+        );
+      }
+
+      const content = await file.text();
+      try {
+        await convertAndStoreDocument(content, file.name, uploaderId);
+        await createDocumentDetailsInDB(
+          file.name,
+          file.size,
+          uploaderId,
+          file.name
+        );
+      } catch (error) {
+        logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
+        return NextResponse.json(
+          { message: `Błąd podczas przetwarzania pliku ${file.name}` },
+          { status: 500 }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { message: 'Pliki zostały przetworzone' },
+      { status: 200 }
+    );
+  } catch (error) {
+    logger.error('Błąd podczas przetwarzania plików:', error);
+    return NextResponse.json(
+      {
+        message:
+          error instanceof Error ? error.message : 'Internal Server Error',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: any }) {
+  const visitor_id = params.upload[0];
+  const document_id = params.upload[1];
+
+  if (!visitor_id || !document_id) {
+    return new Response(
+      JSON.stringify({ error: 'Missing visitor_id or document_id' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  try {
+    await deleteDocument(visitor_id, document_id);
+    return new Response(
+      JSON.stringify({ message: 'Document successfully deleted' }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  } catch (error) {
+    logger.error('Error in DELETE handler:', error);
+    return new Response(JSON.stringify({ error: 'Error deleting document' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}

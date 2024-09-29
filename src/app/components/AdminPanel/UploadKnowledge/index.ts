@@ -1,0 +1,1 @@
+export { UploadKnowledge } from './UploadKnowledge';

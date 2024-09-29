@@ -1,18 +1,28 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
+import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
-import { supeBaseClient, embeddingModel } from '../services/ChatService';
 
-const loader = new TextLoader(
-  'src/data/ProceduratworzeniacontentuYouTubeSolo.md'
-);
+import {
+  createTableIfNotExists,
+  grantTablePermissions,
+} from '@/libs/db/sqlRequest';
+import { supaBaseClient, embeddingModel } from './ChatService';
 
-export const convertAndStoreDocument = async () => {
-  const rawDocs = await loader.load();
-
-  if (!rawDocs || rawDocs.length === 0) {
-    throw new Error('No documents were loaded');
+export const convertAndStoreDocument = async (
+  fileContent: string,
+  fileName: string,
+  uploaderId: string
+) => {
+  if (!fileContent) {
+    throw new Error('File content missing!');
   }
+
+  const tableName = `document_${uploaderId}`;
+
+  await createTableIfNotExists(tableName);
+  await grantTablePermissions(tableName);
+
+  const rawDocs = [new Document({ pageContent: fileContent })];
 
   const textSplitter = new MarkdownTextSplitter({
     chunkSize: 500,
@@ -26,11 +36,8 @@ export const convertAndStoreDocument = async () => {
     docs.map(async (doc, index) => {
       const text = doc.pageContent;
 
-      const sectionTitle = extractSectionTitle(text);
-
       const metadata = {
-        document_id: 'ProceduratworzeniacontentuYouTubeSolo',
-        section_title: sectionTitle,
+        document_id: fileName,
         page_number: index + 1,
         created_at: new Date().toISOString().split('T')[0],
         tags: ['YouTube', 'Nagranie', 'Procedura'],
@@ -49,8 +56,8 @@ export const convertAndStoreDocument = async () => {
   );
 
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
-    client: supeBaseClient,
-    tableName: 'documents',
+    client: supaBaseClient,
+    tableName,
     queryName: 'match_documents',
   });
 
@@ -62,14 +69,3 @@ export const convertAndStoreDocument = async () => {
     }))
   );
 };
-
-function extractSectionTitle(text: string) {
-  const lines = text.split('\n');
-  for (const line of lines) {
-    const match = line.match(/^#+\s+(.*)/);
-    if (match) {
-      return match[1].trim();
-    }
-  }
-  return '';
-}

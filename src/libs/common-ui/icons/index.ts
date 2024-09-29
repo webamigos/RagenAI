@@ -11,3 +11,7 @@ export { DislikeIcon } from './DislikeIcon';
 export { LikeIcon } from './LikeIcon';
 export { SettingsIcon } from './SettingsIcon';
 export { LockClosedIcon } from './LockClosedIcon';
+export { WrenchScrewdriverIcon } from './WrenchScrewdriver';
+export { UploadInboxIcon } from './UploadInboxIcon';
+export { XMarkIcon } from './XMarkIcon';
+export { EllipsiHorizontalIcon } from './EllipsiHorizontalIcon';

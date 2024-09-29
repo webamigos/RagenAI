@@ -65,12 +65,16 @@
     "provide-at-least-10-characters": "Provide at least 10 characters",
     "contact-with-us": "Contact with us"
   },
-  "toast": {
+  "success-toast": {
     "copied": "copied"
   },
-  "dialog": {
+  "error-toast": {
+    "no-user-id": "user id missing"
+  },
+  "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
     "my-profile": "My profile",
+    "admin-panel": "Admin",
     "change-password": "Change password",
     "close": "close"
   },
@@ -84,5 +88,18 @@
   "rate-answer": {
     "thank-you": "Your rating has been saved. Thank you for your feedback",
     "try-again": "Feedback could not be submitted. Please try again later"
+  },
+  "admin-panel": {
+    "no-files": "No files have been selected for upload",
+    "success": "All files were successfully processed",
+    "error": "An error occurred",
+    "sending-files-error": "An error occurred while sending files",
+    "sending": "Sending",
+    "send": "Send",
+    "Add-files": "Add files",
+    "drag-n-drop": "Drag and drop files here",
+    "or": "or",
+    "choose-files": "Choose files",
+    "supported-formats": "Supports"
   }
 }
