@@ -1,34 +1,18 @@
 import type { StorybookConfig } from '@storybook/nextjs';
-import path from 'path';
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [
+    '@storybook/addon-onboarding',
+    '@storybook/addon-links',
     '@storybook/addon-essentials',
-    '@storybook/addon-a11y',
-    '@storybook/addon-themes',
+    '@chromatic-com/storybook',
+    '@storybook/addon-interactions',
   ],
   framework: {
     name: '@storybook/nextjs',
     options: {},
   },
-  typescript: {
-    reactDocgen: 'react-docgen-typescript',
-  },
-  core: {
-    builder: {
-      name: '@storybook/builder-webpack5',
-      options: {},
-    },
-  },
-  webpackFinal: async (config) => {
-    config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@salesyy/common-ui': path.resolve(__dirname, '../src/libs/common-ui'),
-    };
-    return config;
-  },
+  staticDirs: ['../public'],
 };
-
 export default config;
