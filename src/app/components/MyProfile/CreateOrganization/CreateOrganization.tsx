@@ -1,7 +1,6 @@
 'use client';
 
 import { CreateOrganization } from '@clerk/nextjs';
-import { Card } from '@salesyy/common-ui/Card';
 
 export const CreateOrganizationComponent = () => {
   return (

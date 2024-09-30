@@ -105,6 +105,8 @@
   "sidebar": {
     "profile": "Profile",
     "security": "Security",
-    "create-organization": "Create organization"
+    "create-organization": "Create organization",
+    "manage-organization": "Menage organization",
+    "manage-members": "Menage members"
   }
 }

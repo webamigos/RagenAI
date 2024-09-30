@@ -1,0 +1,4 @@
+import { MenageOrganization } from '@/app/components/MyProfile/OrganizationProfile';
+export default function OrganizationProfilePage() {
+  return <MenageOrganization />;
+}
