@@ -18,6 +18,7 @@ type Props = {
 export const Sidebar = ({ children }: Props) => {
   const {
     error,
+    locale,
     hasMore,
     userEmail,
     isLoading,
@@ -37,9 +38,7 @@ export const Sidebar = ({ children }: Props) => {
           <div className="flex flex-col h-full text-sm">
             <Header />
             <SidebarBody>
-              {pathname.includes('admin') ? (
-                <div />
-              ) : (
+              {pathname === `/${locale}` || pathname.includes('/threads') ? (
                 <UserThreadsHistory
                   error={error}
                   hasMore={hasMore}
@@ -48,6 +47,8 @@ export const Sidebar = ({ children }: Props) => {
                   activeThread={activeThread}
                   handleThreadClick={handleThreadClick}
                 />
+              ) : (
+                <div />
               )}
             </SidebarBody>
             <Footer
