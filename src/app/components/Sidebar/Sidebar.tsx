@@ -10,6 +10,7 @@ import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
 import { SidebarProvider } from '@/context/SidebarContext';
+import { MyProfileTabs } from './MyProfileSection';
 
 type Props = {
   children: React.ReactNode;
@@ -48,7 +49,7 @@ export const Sidebar = ({ children }: Props) => {
                   handleThreadClick={handleThreadClick}
                 />
               ) : (
-                <div />
+                <MyProfileTabs />
               )}
             </SidebarBody>
             <Footer

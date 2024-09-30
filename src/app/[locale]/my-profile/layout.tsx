@@ -7,7 +7,7 @@ type Props = {
 export default function MyProfileLayout({ children }: Props) {
   return (
     <div className="h-full">
-      <Sidebar>{children} </Sidebar>
+      <Sidebar>{children}</Sidebar>
     </div>
   );
 }

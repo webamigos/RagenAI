@@ -101,5 +101,10 @@
     "or": "lub",
     "choose-files": "Wybierz pliki",
     "supported-formats": "Obsługiwany format"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Bezpieczeństwo",
+    "create-organization": "Stwórz organizację"
   }
 }
