@@ -16,4 +16,4 @@ export { UploadInboxIcon } from './UploadInboxIcon';
 export { XMarkIcon } from './XMarkIcon';
 export { EllipsiHorizontalIcon } from './EllipsiHorizontalIcon';
 export { SheffieldCheck } from './SheffieldCheck';
-export { Briefcase } from './BriefCase';
+export { Briefcase } from './Briefcase';
