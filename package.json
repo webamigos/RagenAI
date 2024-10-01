@@ -79,6 +79,7 @@
     "@clerk/localizations": "^1.26.13",
     "@clerk/nextjs": "^5.4.1",
     "@clerk/themes": "^2.1.33",
+    "@clerk/types": "^4.23.0",
     "@dnd-kit/core": "^6.1.0",
     "@fingerprintjs/fingerprintjs": "^4.2.2",
     "@headlessui/react": "^2.1.1",
