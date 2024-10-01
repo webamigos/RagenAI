@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';

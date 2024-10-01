@@ -39,7 +39,7 @@ export const Sidebar = ({ children }: Props) => {
           <div className="flex flex-col h-full text-sm">
             <Header />
             <SidebarBody>
-              {pathname === `/${locale}` || pathname.includes('/threads') ? (
+              {pathname === `/${locale}` || pathname.includes('threads') ? (
                 <UserThreadsHistory
                   error={error}
                   hasMore={hasMore}
