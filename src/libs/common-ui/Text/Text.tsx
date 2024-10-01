@@ -34,7 +34,6 @@ export const Text = memo(
   ({
     children,
     className,
-    bold,
     fontWeight = 'normal',
     fontSize = 'md',
     color = 'zinc-950',

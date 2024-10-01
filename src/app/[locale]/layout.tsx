@@ -1,10 +1,11 @@
 import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
 import { ClerkProvider } from '@clerk/nextjs';
-import { plPL, enUS } from '@clerk/localizations';
+import { enUS } from '@clerk/localizations';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 
 import { Providers } from '../components/Providers';
 import { ThreadsContextProvider } from '../../context/ThreadsContext';
+import { plPL } from '../messages/pl-PL-clerk';
 import { locales } from '../config';
 import './global.css';
 
