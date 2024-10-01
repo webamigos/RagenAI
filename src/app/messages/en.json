@@ -106,7 +106,8 @@
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
-    "manage-organization": "Menage organization",
-    "manage-members": "Menage members"
+    "manage-organization": "Manage organization",
+    "manage-members": "Manage members",
+    "manage-knowledge": "Manage knowledge"
   }
 }

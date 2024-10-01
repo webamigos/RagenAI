@@ -1,22 +1,16 @@
 'use client';
 
-import { OrganizationProfile } from '@clerk/nextjs';
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
 import { dark, experimental__simple } from '@clerk/themes';
+import { OrganizationProfile } from '@clerk/nextjs';
 
 export const MenageOrganization = () => {
   const { resolvedTheme } = useTheme();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    setIsDarkMode(resolvedTheme === 'dark');
-  }, [resolvedTheme]);
 
   return (
     <OrganizationProfile
       appearance={{
-        baseTheme: isDarkMode ? dark : experimental__simple,
+        baseTheme: resolvedTheme === 'dark' ? dark : experimental__simple,
         elements: {
           cardBox: 'grid-cols-1 h-1/2 shadow-none border-none',
           navbar: 'hidden',

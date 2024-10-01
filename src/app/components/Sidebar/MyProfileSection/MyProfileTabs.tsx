@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 
-import { SidebarItem } from '@salesyy/common-ui';
+import { OpenBookIcon, SidebarItem } from '@salesyy/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import {
   SheffieldCheck,
@@ -28,6 +28,11 @@ export const MyProfileTabs = () => {
           icon: UsersIcon,
           label: t('manage-members'),
           path: '/my-profile/organization-profile/organization-members',
+        },
+        {
+          icon: OpenBookIcon,
+          label: t('manage-knowledge'),
+          path: '/admin',
         },
       ]
     : [

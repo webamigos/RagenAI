@@ -18,3 +18,4 @@ export { EllipsiHorizontalIcon } from './EllipsiHorizontalIcon';
 export { SheffieldCheck } from './SheffieldCheck';
 export { Briefcase } from './Briefcase';
 export { UsersIcon } from './UsersIcon';
+export { OpenBookIcon } from './OpenBookIcon';
