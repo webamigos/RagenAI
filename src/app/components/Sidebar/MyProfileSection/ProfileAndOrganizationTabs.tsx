@@ -11,7 +11,7 @@ import {
   UsersIcon,
 } from '@salesyy/common-ui';
 
-export const MyProfileTabs = () => {
+export const ProfileAndOrganizationTabs = () => {
   const { closeSidebar } = useSidebar();
   const router = useRouter();
   const t = useTranslations('sidebar');

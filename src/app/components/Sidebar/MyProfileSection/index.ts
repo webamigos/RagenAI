@@ -1,1 +1,1 @@
-export { MyProfileTabs } from './MyProfileTabs';
+export { ProfileAndOrganizationTabs } from './ProfileAndOrganizationTabs';
