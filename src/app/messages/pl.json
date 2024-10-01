@@ -108,6 +108,7 @@
     "create-organization": "Stwórz organizację",
     "manage-organization": "Zarządzaj organizacją",
     "manage-members": "Zarządzaj członkami",
-    "manage-knowledge": "Zarządzaj wiedzą"
+    "manage-knowledge": "Zarządzaj wiedzą",
+    "organization-list": "Lista organizacji"
   }
 }

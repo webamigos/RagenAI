@@ -108,6 +108,7 @@
     "create-organization": "Create organization",
     "manage-organization": "Manage organization",
     "manage-members": "Manage members",
-    "manage-knowledge": "Manage knowledge"
+    "manage-knowledge": "Manage knowledge",
+    "organization-list": "Organization list"
   }
 }

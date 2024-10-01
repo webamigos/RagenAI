@@ -15,33 +15,59 @@ export const ProfileAndOrganizationTabs = () => {
   const { closeSidebar } = useSidebar();
   const router = useRouter();
   const t = useTranslations('sidebar');
-  const { orgId } = useAuth();
+  const { orgRole } = useAuth();
 
-  const organizationTabs = orgId
-    ? [
-        {
-          icon: Briefcase,
-          label: t('manage-organization'),
-          path: '/my-profile/organization-profile',
-        },
-        {
-          icon: UsersIcon,
-          label: t('manage-members'),
-          path: '/my-profile/organization-profile/organization-members',
-        },
-        {
-          icon: OpenBookIcon,
-          label: t('manage-knowledge'),
-          path: '/admin',
-        },
-      ]
-    : [
-        {
-          icon: Briefcase,
-          label: t('create-organization'),
-          path: '/my-profile/create-organization',
-        },
-      ];
+  const getOrganizationTabs = () => {
+    switch (orgRole) {
+      case null:
+        return [
+          {
+            icon: Briefcase,
+            label: t('create-organization'),
+            path: '/my-profile/create-organization',
+          },
+        ];
+
+      case 'org:admin':
+      case 'org:owner':
+        return [
+          {
+            icon: Briefcase,
+            label: t('manage-organization'),
+            path: '/my-profile/organization-profile',
+          },
+          {
+            icon: UsersIcon,
+            label: t('manage-members'),
+            path: '/my-profile/organization-profile/organization-members',
+          },
+          {
+            icon: OpenBookIcon,
+            label: t('manage-knowledge'),
+            path: '/admin',
+          },
+        ];
+
+      case 'org:member':
+        return [
+          {
+            icon: Briefcase,
+            label: t('organization-list'),
+            path: '/my-profile/organization-profile/',
+          },
+          {
+            icon: Briefcase,
+            label: t('create-organization'),
+            path: '/my-profile/create-organization',
+          },
+        ];
+
+      default:
+        return [];
+    }
+  };
+
+  const organizationTabs = getOrganizationTabs();
 
   const tabs = [
     { icon: UserCircleIcon, label: t('profile'), path: '/my-profile' },
