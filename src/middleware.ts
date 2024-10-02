@@ -24,7 +24,7 @@ const publicRoutes = [
 
 const isProtectedRoute = createRouteMatcher([
   '/:locale/threads/:threadId',
-  '/admin',
+  '/admin', // Dodajemy /admin do listy chronionych tras
 ]);
 
 export const config = {
@@ -49,11 +49,11 @@ export default clerkMiddleware(
           userId: user.id,
         });
 
-      const isOwner = orgMemberships.data.some(
-        (membership) => membership.role === 'owner'
+      const isOwnerOrAdmin = orgMemberships.data.some(
+        (membership) => membership.role === 'owner' || 'admin'
       );
 
-      if (!isOwner) {
+      if (!isOwnerOrAdmin) {
         return NextResponse.redirect(new URL('/403', request.url));
       }
     }
