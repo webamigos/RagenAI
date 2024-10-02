@@ -49,5 +49,7 @@ export const uploadFiles = async (uploaderId: string, data: FormData) => {
 };
 
 export const deleteFile = async (uploaderId: string, documentId: string) => {
-  return api.delete<void>(`/upload/${uploaderId}/${documentId}`);
+  const url = process.env.NEXT_PUBLIC_API_URL;
+  const fullUrl = `${url}/api/upload/${uploaderId}/${documentId}`;
+  return await api.delete<void>(fullUrl);
 };

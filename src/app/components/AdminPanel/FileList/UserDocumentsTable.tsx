@@ -9,16 +9,11 @@ import { EllipsiHorizontalIcon } from '@salesyy/common-ui/icons';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 
+import { truncateFileName } from '../../../lib/utils/truncateFileName';
+
 type Props = {
   documents: usersDocuments[];
   onDocumentsUpdate: () => void;
-};
-
-const truncateFileName = (fileName: string, maxLength: number) => {
-  if (fileName.length > maxLength) {
-    return fileName.slice(0, maxLength) + '...';
-  }
-  return fileName;
 };
 
 const handleDelete = async (

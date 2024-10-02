@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-import { logger } from '@/app/lib/utils/logger';
-import { createDocumentDetailsInDB } from '@/app/lib/services/document';
 import { deleteDocument } from '../services/TableService';
+
+import { logger } from '../../../lib/utils/logger';
+import { createDocumentDetailsInDB } from '../../../lib/services/document';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
