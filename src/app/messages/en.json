@@ -66,10 +66,12 @@
     "contact-with-us": "Contact with us"
   },
   "success-toast": {
-    "copied": "copied"
+    "copied": "copied",
+    "deleted": "deleted"
   },
   "error-toast": {
-    "no-user-id": "user id missing"
+    "no-user-id": "user id missing",
+    "error-during-deleting-file": "Error deleting document"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
@@ -111,5 +113,12 @@
     "manage-members": "Manage members",
     "manage-knowledge": "Manage knowledge",
     "organization-list": "Organization list"
+  },
+  "files-table": {
+    "delete": "Delete",
+    "file-name": "File Name",
+    "file-size": "File Size",
+    "created": "Created",
+    "updated": "Updated"
   }
 }

@@ -66,10 +66,12 @@
     "contact-with-us": "Skontaktuj się z nami"
   },
   "success-toast": {
-    "copied": "copied"
+    "copied": "Skopiowano!",
+    "deleted": "Usunięto!"
   },
   "error-toast": {
-    "no-user-id": "Brak user id"
+    "no-user-id": "Brak id użytkownika",
+    "error-during-deleting-file": "Błąd podczas usuwania dokumentu"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",
@@ -111,5 +113,12 @@
     "manage-members": "Zarządzaj członkami",
     "manage-knowledge": "Zarządzaj wiedzą",
     "organization-list": "Lista organizacji"
+  },
+  "files-table": {
+    "delete": "Usuń",
+    "file-name": "Nazwa pliku",
+    "file-size": "Rozmiar pliku",
+    "created": "Utworzono",
+    "updated": "Zaktualizowano"
   }
 }
