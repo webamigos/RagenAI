@@ -34,7 +34,7 @@ const ButtonComponent = forwardRef(
         disabled={disabled || isLoading}
         {...rest}
         className={classMerge(
-          'cursor-pointer rounded-md bg-blue-400 px-3.5 py-2.5 text-md font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
+          'cursor-pointer rounded-md bg-blue-500 px-3.5 py-2.5 text-md font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600',
           disabled || isLoading
             ? 'cursor-not-allowed bg-gray-400 hover:bg-gray-400 text-gray-300'
             : '',
