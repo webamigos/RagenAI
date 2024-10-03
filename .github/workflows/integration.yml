@@ -37,6 +37,9 @@ jobs:
       - name: Prisma Generate Types
         run: npx prisma generate
 
+      - name: Prisma Migrate Deploy
+        run: npx prisma migrate deploy
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
