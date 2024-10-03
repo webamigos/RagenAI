@@ -1,4 +1,4 @@
-name: Integration Tests
+name: E2E Tests
 
 on:
   push:
@@ -36,9 +36,15 @@ jobs:
 
       - name: Prisma Generate Types
         run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
+          DIRECT_URL: ${{ vars.DIRECT_URL }}
 
       - name: Prisma Migrate Deploy
         run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ vars.DATABASE_URL }}
+          DIRECT_URL: ${{ vars.DIRECT_URL }}
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
