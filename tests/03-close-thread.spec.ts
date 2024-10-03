@@ -6,7 +6,7 @@ test.beforeEach(async ({ page }) => {
 
 test('open and close thread', async ({ page }) => {
   await page.getByRole('button', { name: 'Start new thread' }).click();
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1000);
 
   await page.getByText('Close thread').click();
 
