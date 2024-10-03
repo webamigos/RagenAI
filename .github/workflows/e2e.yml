@@ -34,23 +34,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Prisma Migrate Deploy
-        run: npx prisma migrate dev
+      # - name: Prisma Migrate Deploy
+      #   run: npx prisma migrate dev
+      #   env:
+      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      #     DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      - name: Prisma Generate Types
+        run: npx prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
 
-      # - name: Prisma Generate Types
-      #   run: npx prisma generate
-      #   env:
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      #     DIRECT_URL: ${{ secrets.DIRECT_URL }}
-
-      # - name: Prisma Migrate Deploy
-      #   run: npx prisma migrate deploy
-      #   env:
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      #     DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      - name: Prisma Migrate Deploy
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
