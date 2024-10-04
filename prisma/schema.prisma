@@ -13,6 +13,11 @@ model User {
   id    String @id @default(uuid())
 }
 
+model Setting {
+  key   String @id
+  value String
+}
+
 model Message {
   public_id         String   @unique @default(uuid())
   openai_message_id String
