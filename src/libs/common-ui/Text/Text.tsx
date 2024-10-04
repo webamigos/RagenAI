@@ -2,7 +2,7 @@ import { memo, type ComponentProps } from 'react';
 import clsx from 'clsx';
 
 type Props = {
-  children: string | string[];
+  children: string | string[] | number;
   bold?: boolean;
   fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
   fontSize?: 'sm' | 'md' | 'lg' | 'xl';

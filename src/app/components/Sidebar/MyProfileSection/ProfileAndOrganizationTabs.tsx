@@ -1,14 +1,17 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 
-import { OpenBookIcon, SidebarItem } from '@salesyy/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import {
   SheffieldCheck,
   UserCircleIcon,
   Briefcase,
   UsersIcon,
+  OpenBookIcon,
+  SettingsIcon,
+  SidebarItem,
 } from '@salesyy/common-ui';
 
 export const ProfileAndOrganizationTabs = () => {
@@ -16,55 +19,73 @@ export const ProfileAndOrganizationTabs = () => {
   const router = useRouter();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();
+  const { user } = useUser();
+
+  const userRole = user?.publicMetadata.userRole;
+
+  const organizationTabsForNoRole = [
+    {
+      icon: Briefcase,
+      label: t('create-organization'),
+      path: '/my-profile/create-organization',
+    },
+  ];
+
+  const organizationTabsForAdminAndOwner = [
+    {
+      icon: Briefcase,
+      label: t('manage-organization'),
+      path: '/my-profile/organization-profile',
+    },
+    {
+      icon: UsersIcon,
+      label: t('manage-members'),
+      path: '/my-profile/organization-profile/organization-members',
+    },
+    {
+      icon: OpenBookIcon,
+      label: t('manage-knowledge'),
+      path: '/admin',
+    },
+  ];
+
+  const organizationTabsForMember = [
+    {
+      icon: Briefcase,
+      label: t('organization-list'),
+      path: '/my-profile/organization-profile/',
+    },
+    {
+      icon: Briefcase,
+      label: t('create-organization'),
+      path: '/my-profile/create-organization',
+    },
+  ];
+
+  const organizationTabsForSuperAdmin = [
+    ...organizationTabsForAdminAndOwner,
+    {
+      icon: SettingsIcon,
+      label: t('prompt-management'),
+      path: '/my-profile/prompt-management',
+    },
+  ];
 
   const getOrganizationTabs = () => {
-    switch (orgRole) {
-      case null:
-        return [
-          {
-            icon: Briefcase,
-            label: t('create-organization'),
-            path: '/my-profile/create-organization',
-          },
-        ];
-
-      case 'org:admin':
-      case 'org:owner':
-        return [
-          {
-            icon: Briefcase,
-            label: t('manage-organization'),
-            path: '/my-profile/organization-profile',
-          },
-          {
-            icon: UsersIcon,
-            label: t('manage-members'),
-            path: '/my-profile/organization-profile/organization-members',
-          },
-          {
-            icon: OpenBookIcon,
-            label: t('manage-knowledge'),
-            path: '/admin',
-          },
-        ];
-
-      case 'org:member':
-        return [
-          {
-            icon: Briefcase,
-            label: t('organization-list'),
-            path: '/my-profile/organization-profile/',
-          },
-          {
-            icon: Briefcase,
-            label: t('create-organization'),
-            path: '/my-profile/create-organization',
-          },
-        ];
-
-      default:
-        return [];
+    if (userRole === 'superAdmin') {
+      return organizationTabsForSuperAdmin;
     }
+
+    if (orgRole === 'org:owner' || orgRole === 'org:admin') {
+      return organizationTabsForAdminAndOwner;
+    }
+
+    if (orgRole === 'org:member') {
+      return organizationTabsForMember;
+    }
+
+    // Jeśli użytkownik nie ma organizacji ani specjalnej roli użytkownika
+    return organizationTabsForNoRole;
   };
 
   const organizationTabs = getOrganizationTabs();

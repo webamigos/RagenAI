@@ -53,3 +53,17 @@ export const deleteFile = async (uploaderId: string, documentId: string) => {
   const fullUrl = `${url}/api/upload/${uploaderId}/${documentId}`;
   return await api.delete<void>(fullUrl);
 };
+
+export const fetchTemperatureSettings = async () => {
+  return await api.get<{ temperature: number }>(`/settings`);
+};
+
+export const updateTemperatureSettings = async (temperature: number) => {
+  const response = await api.put<{ temperature: number }>(
+    `/settings/temperature`,
+    {
+      temperature,
+    }
+  );
+  return { data: response.data, status: response.status };
+};

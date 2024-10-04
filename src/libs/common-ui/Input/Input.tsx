@@ -1,5 +1,6 @@
 import { useId, forwardRef, type ComponentPropsWithRef, type Ref } from 'react';
 import type { FieldError } from 'react-hook-form';
+
 import { classMerge } from '../utils/cn';
 
 type Props = {
@@ -50,20 +51,12 @@ export const Input = forwardRef(
           />
         </div>
         {error && (
-          <>
-            {/* <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-              <ExclamationCircleIcon
-                className="h-5 w-5 text-red-500"
-                aria-hidden="true"
-              />
-            </div> */}
-            <p
-              className="mt-2 text-sm text-red-600 dark:text-red-500"
-              id="email-error"
-            >
-              {errorMessage ? errorMessage : error.message}
-            </p>
-          </>
+          <p
+            className="mt-2 text-sm text-red-600 dark:text-red-500"
+            id="email-error"
+          >
+            {errorMessage ? errorMessage : error.message}
+          </p>
         )}
         {hint && (
           <p

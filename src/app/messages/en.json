@@ -112,7 +112,8 @@
     "manage-organization": "Manage organization",
     "manage-members": "Manage members",
     "manage-knowledge": "Manage knowledge",
-    "organization-list": "Organization list"
+    "organization-list": "Organization list",
+    "prompt-management": "Prompt management"
   },
   "files-table": {
     "delete": "Delete",

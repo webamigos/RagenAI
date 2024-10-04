@@ -31,7 +31,7 @@ export const DocumentsProvider = ({ children }: Props) => {
   const [isError, setIsError] = useState<boolean>(false);
 
   const { user } = useUser();
-  const visitorId = user?.publicMetadata.visitorId;
+  const visitorId = (user?.publicMetadata.visitorId as string) || undefined;
 
   useEffect(() => {
     if (visitorId) {
@@ -48,7 +48,7 @@ export const DocumentsProvider = ({ children }: Props) => {
         return;
       }
 
-      const { documentDetails } = await getUserDocuments(visitorId as string);
+      const { documentDetails } = await getUserDocuments(visitorId);
       setDocuments(documentDetails ?? null);
       setIsError(false);
     } catch (error) {
