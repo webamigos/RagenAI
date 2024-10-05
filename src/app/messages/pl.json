@@ -67,11 +67,14 @@
   },
   "success-toast": {
     "copied": "Skopiowano!",
-    "deleted": "Usunięto!"
+    "deleted": "Usunięto!",
+    "saved": "Zapisano!"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
-    "error-during-deleting-file": "Błąd podczas usuwania dokumentu"
+    "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
+    "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",

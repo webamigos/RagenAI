@@ -66,12 +66,15 @@
     "contact-with-us": "Contact with us"
   },
   "success-toast": {
-    "copied": "copied",
-    "deleted": "deleted"
+    "copied": "Copied",
+    "deleted": "Deleted",
+    "saved": "Saved"
   },
   "error-toast": {
     "no-user-id": "user id missing",
-    "error-during-deleting-file": "Error deleting document"
+    "error-during-deleting-file": "Error deleting document",
+    "failed-to-update-temperature": "Failed to update temperature:",
+    "failed-to-fetch-settings": "Failed to fetch settings:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
