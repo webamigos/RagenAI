@@ -3,10 +3,12 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { createClient } from '@supabase/supabase-js';
 
 import { DatabaseGenerated } from '@/libs/db/supabase-types';
-import { getTemperatureSetting } from '@/app/lib/services/settings';
+import {
+  getModelSetting,
+  getTemperatureSetting,
+} from '@/app/lib/services/settings';
 
 const apiKey = process.env.OPENAI_API_KEY;
-const model = process.env.OPENAI_CHAT_MODEL;
 const sbApiKey = process.env.SUPABASE_ANON_KEY;
 const sbUrl = process.env.SUPABASE_URL;
 
@@ -15,10 +17,11 @@ console.log({ sbApiKey, sbUrl });
 
 export const createChatInstance = async () => {
   const temperature = await getTemperatureSetting();
+  const modelName = await getModelSetting();
 
   return new ChatOpenAI({
     apiKey,
-    modelName: model,
+    modelName,
     temperature,
     verbose: true,
     streaming: true,

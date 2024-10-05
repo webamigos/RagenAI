@@ -1,6 +1,7 @@
 import { MessageDto } from '../../contracts/Message';
 import { api } from './config';
 import { CreateThreadDto } from '../../contracts/ThreadDto';
+import { logger } from '../utils/logger';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
@@ -54,8 +55,11 @@ export const deleteFile = async (uploaderId: string, documentId: string) => {
   return await api.delete<void>(fullUrl);
 };
 
-export const fetchTemperatureSettings = async () => {
-  return await api.get<{ temperature: number }>(`/settings`);
+export const fetchSettings = async () => {
+  const { data } = await api.get<{ temperature: number; model: string }>(
+    `/settings`
+  );
+  return data;
 };
 
 export const updateTemperatureSettings = async (temperature: number) => {
@@ -65,5 +69,12 @@ export const updateTemperatureSettings = async (temperature: number) => {
       temperature,
     }
   );
+  return { data: response.data, status: response.status };
+};
+
+export const updateModelSettings = async (model: string) => {
+  const response = await api.put<{ model: string }>(`/settings/model`, {
+    model,
+  });
   return { data: response.data, status: response.status };
 };

@@ -16,8 +16,13 @@ export async function PUT(request: Request) {
 
     await db.setting.upsert({
       where: { key: 'temperature' },
-      update: { value: temperature.toString() },
-      create: { key: 'temperature', value: temperature.toString() },
+      update: {
+        value: temperature.toString(),
+      },
+      create: {
+        key: 'temperature',
+        value: temperature.toString(),
+      },
     });
 
     return NextResponse.json(

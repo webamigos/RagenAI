@@ -5,13 +5,21 @@ import { logger } from '@/app/lib/utils/logger';
 
 export async function GET() {
   try {
-    const setting = await db.setting.findUnique({
-      where: { key: 'temperature' },
+    const settings = await db.setting.findMany({
+      where: {
+        key: { in: ['temperature', 'chat_model'] },
+      },
     });
 
-    const temperature = setting ? parseFloat(setting.value) : 0.7;
+    const temperatureSetting = settings.find((s) => s.key === 'temperature');
+    const modelSetting = settings.find((s) => s.key === 'chat_model');
 
-    return NextResponse.json({ temperature });
+    const temperature = temperatureSetting
+      ? parseFloat(temperatureSetting.value)
+      : 0.7;
+    const model = modelSetting ? modelSetting.value : 'gpt-3.5-turbo';
+
+    return NextResponse.json({ temperature, model });
   } catch (error) {
     logger.error('Failed to fetch settings:', error);
     return NextResponse.json(

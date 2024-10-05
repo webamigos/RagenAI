@@ -16,6 +16,7 @@ model User {
 model Setting {
   key   String @id
   value String
+  type  SettingType @default(STRING)
 }
 
 model Message {
@@ -50,7 +51,6 @@ model Thread {
   messages         Message[]
 }
 
-
 model VisitorMessages {
   visitor_id String
   message_id String
@@ -64,14 +64,15 @@ model documents {
   metadata  Json?
   embedding Unsupported("vector")?
 }
+
 model usersDocuments {
-  id            String   @id
-  visitor_id     String
-  file_name     String
-  file_size     Int
-  created_at    DateTime? @default(now())
-  updated_at    DateTime?
-  metadata      Json?
+  id         String    @id
+  visitor_id String
+  file_name  String
+  file_size  Int
+  created_at DateTime? @default(now())
+  updated_at DateTime?
+  metadata   Json?
 
   @@unique([id, visitor_id])
   @@index([visitor_id])
@@ -80,4 +81,9 @@ model usersDocuments {
 enum Role {
   USER
   ASSISTANT
+}
+
+enum SettingType {
+  STRING
+  NUMBER
 }

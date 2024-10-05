@@ -6,11 +6,11 @@ import { useTranslations } from 'next-intl';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Input, Text, Card } from '@salesyy/common-ui';
 import {
-  fetchTemperatureSettings,
+  fetchSettings,
   updateTemperatureSettings,
 } from '@/app/lib/services/api';
 
-export const PromptManagement = () => {
+export const SetChatTemperature = () => {
   const [temperature, setTemperature] = useState<number>(0.7);
 
   const { successToast, errorToast } = statusToast();
@@ -36,8 +36,8 @@ export const PromptManagement = () => {
   useEffect(() => {
     const fetchTemperature = async () => {
       try {
-        const { data } = await fetchTemperatureSettings();
-        setTemperature(data.temperature || 0.7);
+        const { temperature } = await fetchSettings();
+        setTemperature(temperature || 0.7);
       } catch (error) {
         errorToast({
           message: `${errorMessage('failed-to-fetch-settings')} ${error}`,
