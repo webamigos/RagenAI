@@ -1,6 +1,13 @@
-import { useId, forwardRef, type ComponentPropsWithRef, type Ref } from 'react';
+import {
+  useId,
+  useState,
+  forwardRef,
+  type ComponentPropsWithRef,
+  type Ref,
+} from 'react';
 import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
+import { OpenEyeIcon, EyeOffIcon } from '@salesyy/common-ui';
 
 type Props = {
   label?: string;
@@ -32,6 +39,13 @@ export const Input = forwardRef(
     ref: Ref<HTMLInputElement>
   ) => {
     const id = useId();
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+    const togglePasswordVisibility = () => {
+      setIsPasswordVisible((prev) => !prev);
+    };
+
+    const inputType = type === 'password' && isPasswordVisible ? 'text' : type;
 
     if (
       type === 'range' &&
@@ -53,26 +67,37 @@ export const Input = forwardRef(
           </label>
         )}
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
-          <input
-            ref={ref}
-            id={id}
-            type={type}
-            min={min}
-            max={max}
-            step={step}
-            className={classMerge(
-              'block w-full dark:bg-slate-900 dark:text-gray-300 py-1.5 px-1.5 text-gray-900 sm:text-sm sm:leading-6',
-              {
-                'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset':
-                  type !== 'range',
-                'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
-                  error,
-                'shadow-sm': !error,
-              },
-              className
+          <div className="relative">
+            <input
+              ref={ref}
+              id={id}
+              type={inputType}
+              min={min}
+              max={max}
+              step={step}
+              className={classMerge(
+                'block w-full dark:bg-slate-900 dark:text-gray-300 py-1.5 px-1.5 text-gray-900 sm:text-sm sm:leading-6 overflow-auto pr-10',
+                {
+                  'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset':
+                    type !== 'range',
+                  'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
+                    error,
+                  'shadow-sm': !error,
+                },
+                className
+              )}
+              {...rest}
+            />
+            {type === 'password' && (
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0 px-3 flex items-center bg-gray-100 dark:bg-slate-700 border-l border-gray-300 dark:border-slate-600"
+              >
+                {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
+              </button>
             )}
-            {...rest}
-          />
+          </div>
         </div>
         {error && (
           <p

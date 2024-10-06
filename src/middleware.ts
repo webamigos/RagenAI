@@ -24,16 +24,23 @@ const publicRoutes = [
 
 const isProtectedRoute = createRouteMatcher([
   '/:locale/threads/:threadId',
-  '/admin', // Dodajemy /admin do listy chronionych tras
+  '/admin',
 ]);
 
 export const config = {
-  matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'],
+  matcher: [
+    '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
+    '/api/settings/api-key',
+  ],
 };
 
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
     const url = request.nextUrl.pathname;
+
+    if (request.nextUrl.pathname.startsWith('/api')) {
+      return NextResponse.next();
+    }
 
     if (url.startsWith('/admin')) {
       const session = auth();

@@ -20,3 +20,7 @@ export { Briefcase } from './Briefcase';
 export { UsersIcon } from './UsersIcon';
 export { OpenBookIcon } from './OpenBookIcon';
 export { HomeIcon } from './HomeIcon';
+export { OpenEyeIcon } from './OpenEyeIcon';
+export { EyeOffIcon } from './EyeOffIcon';
+export { PencilIcon } from './PencilIcon';
+export { EnterIcon } from './EnterIcon';

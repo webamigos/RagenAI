@@ -78,3 +78,15 @@ export const updateModelSettings = async (model: string) => {
   });
   return { data: response.data, status: response.status };
 };
+
+export const saveApiKey = async (apiKey: string) => {
+  const response = await api.put<{ apiKey: string }>(`/settings/api-key`, {
+    apiKey,
+  });
+  return { data: response.data, status: response.status };
+};
+
+export const fetchApiKey = async () => {
+  const response = await api.get<{ apiKey: string }>(`/settings/api-key`);
+  return { data: response.data, status: response.status };
+};

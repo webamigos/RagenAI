@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import db from '@salesyy/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
-export async function GET() {
+export async function GET(_request: NextRequest) {
   try {
     const settings = await db.setting.findMany({
       where: {

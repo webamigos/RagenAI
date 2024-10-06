@@ -16,7 +16,6 @@ model User {
 model Setting {
   key   String @id
   value String
-  type  SettingType @default(STRING)
 }
 
 model Message {
@@ -81,9 +80,4 @@ model usersDocuments {
 enum Role {
   USER
   ASSISTANT
-}
-
-enum SettingType {
-  STRING
-  NUMBER
 }
