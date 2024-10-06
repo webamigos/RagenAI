@@ -15,3 +15,11 @@ export async function getModelSetting(): Promise<string> {
 
   return setting ? setting.value : 'gpt-3.5-turbo';
 }
+
+export async function getAssistantPrompt() {
+  const prompt = await db.setting.findUnique({
+    where: { key: 'assistant_prompt' },
+  });
+
+  return prompt?.value || 'Default prompt';
+}

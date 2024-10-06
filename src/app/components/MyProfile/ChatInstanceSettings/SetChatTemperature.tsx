@@ -46,7 +46,7 @@ export const SetChatTemperature = () => {
     };
 
     fetchTemperature();
-  }, [errorMessage, errorToast]);
+  }, []);
 
   const handleTemperatureChange = (
     event: React.ChangeEvent<HTMLInputElement>

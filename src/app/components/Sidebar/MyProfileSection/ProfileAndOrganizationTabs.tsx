@@ -66,7 +66,7 @@ export const ProfileAndOrganizationTabs = () => {
     ...organizationTabsForAdminAndOwner,
     {
       icon: SettingsIcon,
-      label: t('prompt-management'),
+      label: t('assistant-management'),
       path: '/my-profile/prompt-management',
     },
   ];

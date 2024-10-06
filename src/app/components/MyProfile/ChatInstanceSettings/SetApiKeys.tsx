@@ -8,6 +8,7 @@ import {
   PencilIcon,
   EnterIcon,
   SpinnerSVG,
+  LockClosedIcon,
 } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { saveApiKey, fetchApiKey } from '@/app/lib/services/api';
@@ -57,7 +58,7 @@ export const SetApiKeys = () => {
   }
 
   return (
-    <Card title="Set Environment Variables" size="lg">
+    <Card title="Set Environment Variables" size="full" className="mb-5">
       <div className="flex items-center space-x-4">
         <div className="relative w-3/4 flex items-end">
           <Input
@@ -66,18 +67,18 @@ export const SetApiKeys = () => {
             type="password"
             disabled={!isEditable}
             onChange={(e) => setApiKey(e.target.value)}
-            containerClassName="w-full"
+            containerClassName="w-full min-w-full"
           />
           <button
-            className="mb-2 ml-2"
+            className="ml-2"
             onClick={() => setIsEditable(!isEditable)}
             aria-label="Edit API Key"
           >
             <PencilIcon />
           </button>
           {isEditable && (
-            <button onClick={handleSaveApiKey} className="mb-2 ml-2">
-              <EnterIcon />
+            <button onClick={handleSaveApiKey} className="mb-0 ml-2">
+              <LockClosedIcon />
             </button>
           )}
         </div>

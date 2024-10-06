@@ -76,7 +76,7 @@ export const Input = forwardRef(
               max={max}
               step={step}
               className={classMerge(
-                'block w-full dark:bg-slate-900 dark:text-gray-300 py-1.5 px-1.5 text-gray-900 sm:text-sm sm:leading-6 overflow-auto pr-10',
+                'block w-full px-1.5 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
                 {
                   'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset':
                     type !== 'range',

@@ -56,9 +56,11 @@ export const deleteFile = async (uploaderId: string, documentId: string) => {
 };
 
 export const fetchSettings = async () => {
-  const { data } = await api.get<{ temperature: number; model: string }>(
-    `/settings`
-  );
+  const { data } = await api.get<{
+    temperature: number;
+    model: string;
+    prompt: string;
+  }>(`/settings`);
   return data;
 };
 
@@ -89,4 +91,13 @@ export const saveApiKey = async (apiKey: string) => {
 export const fetchApiKey = async () => {
   const response = await api.get<{ apiKey: string }>(`/settings/api-key`);
   return { data: response.data, status: response.status };
+};
+
+export const savePrompt = async (prompt: string) => {
+  const response = await api.put(`/settings/prompt`, {
+    prompt,
+  });
+  return {
+    status: response.status,
+  };
 };
