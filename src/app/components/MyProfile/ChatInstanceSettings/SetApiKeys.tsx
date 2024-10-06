@@ -57,7 +57,7 @@ export const SetApiKeys = () => {
   }
 
   return (
-    <Card title="Set Environment Variables" size="full">
+    <Card title="Set Environment Variables" size="lg">
       <div className="flex items-center space-x-4">
         <div className="relative w-3/4 flex items-end">
           <Input
