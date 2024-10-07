@@ -24,3 +24,4 @@ export { OpenEyeIcon } from './OpenEyeIcon';
 export { EyeOffIcon } from './EyeOffIcon';
 export { PencilIcon } from './PencilIcon';
 export { EnterIcon } from './EnterIcon';
+export { OpenLockIcon } from './OpenLockIcon';

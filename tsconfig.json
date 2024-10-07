@@ -20,7 +20,7 @@
       }
     ],
     "paths": {
-      // for backward compatibility
+      // for backward compatibility,
       "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
       "@salesyy/common-ui": ["./src/libs/common-ui"],
       "@salesyy/prisma-client": ["./src/libs/db"],
@@ -35,7 +35,7 @@
     ".next/types/**/*.ts",
     ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
     "src/app/api/upload/[...upload]/route.tsx",
-    "src/app/api/settings/api-key/route.ts"
+    "src/app/api/settings/api-key/route.ts",
     "storybook/main.js"
   ],
   "exclude": ["node_modules"]

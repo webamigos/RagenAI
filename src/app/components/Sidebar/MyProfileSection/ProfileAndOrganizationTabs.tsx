@@ -1,7 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
-import { useUser } from '@clerk/nextjs';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 import {
@@ -19,9 +18,6 @@ export const ProfileAndOrganizationTabs = () => {
   const router = useRouter();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();
-  const { user } = useUser();
-
-  const userRole = user?.publicMetadata.userRole;
 
   const organizationTabsForNoRole = [
     {
@@ -47,6 +43,11 @@ export const ProfileAndOrganizationTabs = () => {
       label: t('manage-knowledge'),
       path: '/admin',
     },
+    {
+      icon: SettingsIcon,
+      label: t('assistant-management'),
+      path: '/my-profile/prompt-management',
+    },
   ];
 
   const organizationTabsForMember = [
@@ -62,20 +63,7 @@ export const ProfileAndOrganizationTabs = () => {
     },
   ];
 
-  const organizationTabsForSuperAdmin = [
-    ...organizationTabsForAdminAndOwner,
-    {
-      icon: SettingsIcon,
-      label: t('assistant-management'),
-      path: '/my-profile/prompt-management',
-    },
-  ];
-
   const getOrganizationTabs = () => {
-    if (userRole === 'superAdmin') {
-      return organizationTabsForSuperAdmin;
-    }
-
     if (orgRole === 'org:owner' || orgRole === 'org:admin') {
       return organizationTabsForAdminAndOwner;
     }
@@ -84,7 +72,6 @@ export const ProfileAndOrganizationTabs = () => {
       return organizationTabsForMember;
     }
 
-    // Jeśli użytkownik nie ma organizacji ani specjalnej roli użytkownika
     return organizationTabsForNoRole;
   };
 

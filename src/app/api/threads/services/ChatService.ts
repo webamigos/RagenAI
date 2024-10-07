@@ -3,11 +3,11 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { createClient } from '@supabase/supabase-js';
 import { DatabaseGenerated } from '@/libs/db/supabase-types';
 import {
-  getModelSetting,
+  getModel,
   getOpenaiAPIKey,
   getTemperatureSetting,
 } from '@/app/lib/services/settings';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
 
 const apiKey1 = process.env.OPENAI_API_KEY;
@@ -18,14 +18,14 @@ const sbUrl = process.env.SUPABASE_URL;
 console.log({ sbApiKey, sbUrl });
 
 export const createChatInstance = async (request: NextRequest) => {
-  const temperature = await getTemperatureSetting();
-  const modelName = await getModelSetting();
-  const { userId } = getAuth(request);
-
-  if (!userId) {
-    return;
+  const { orgId } = getAuth(request);
+  if (!orgId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const apiKey = (await getOpenaiAPIKey(userId)) as string;
+
+  const temperature = (await getTemperatureSetting(orgId)) as number;
+  const modelName = (await getModel(orgId)) as string;
+  const apiKey = (await getOpenaiAPIKey(orgId)) as string;
 
   return new ChatOpenAI({
     apiKey,

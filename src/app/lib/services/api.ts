@@ -57,6 +57,7 @@ export const deleteFile = async (uploaderId: string, documentId: string) => {
 
 export const fetchSettings = async () => {
   const { data } = await api.get<{
+    apiKey: string;
     temperature: number;
     model: string;
     prompt: string;

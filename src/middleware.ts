@@ -30,8 +30,12 @@ const isProtectedRoute = createRouteMatcher([
 export const config = {
   matcher: [
     '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
-    '/api/settings/api-key',
     '/api/threads/(.*)',
+    '/api/settings/',
+    '/api/settings/api-key',
+    '/api/settings/temperature',
+    '/api/settings/model',
+    '/api/settings/prompt',
   ],
 };
 

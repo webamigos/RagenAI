@@ -9,6 +9,8 @@
     "nextjs",
     "openai",
     "salesyy",
-    "toastify"
+    "tepmerature",
+    "toastify",
+    "trpc"
   ]
 }

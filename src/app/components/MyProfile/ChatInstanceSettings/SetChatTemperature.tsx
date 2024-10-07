@@ -37,6 +37,7 @@ export const SetChatTemperature = () => {
     const fetchTemperature = async () => {
       try {
         const { temperature } = await fetchSettings();
+
         setTemperature(temperature || 0.7);
       } catch (error) {
         errorToast({

@@ -1,4 +1,10 @@
-import { useId, forwardRef, type ComponentPropsWithRef, type Ref } from 'react';
+import {
+  useState,
+  useId,
+  forwardRef,
+  type ComponentPropsWithRef,
+  type Ref,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldError } from 'react-hook-form';
 
@@ -38,7 +44,6 @@ export const Input = forwardRef(
     const id = useId();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const t = useTranslations('Sign-in');
-
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible((prev) => !prev);

@@ -1,29 +1,27 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
+import { getAuth } from '@clerk/nextjs/server';
 
-import db from '@salesyy/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { saveTemperatureSetting } from '@/app/lib/services/settings';
 
 const TemperatureSchema = z.object({
   temperature: z.number().min(0).max(1),
 });
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
+  const { orgId } = getAuth(request);
+
+  if (!orgId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { temperature } = TemperatureSchema.parse(body);
 
-    await db.setting.upsert({
-      where: { key: 'temperature' },
-      update: {
-        value: temperature.toString(),
-      },
-      create: {
-        key: 'temperature',
-        value: temperature.toString(),
-      },
-    });
+    await saveTemperatureSetting(orgId, temperature);
 
     return NextResponse.json(
       { message: 'Temperature updated' },

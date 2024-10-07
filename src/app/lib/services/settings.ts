@@ -1,37 +1,48 @@
 import { redis } from '@/libs/db/redis';
-import db from '@salesyy/prisma-client';
 
-export async function getTemperatureSetting(): Promise<number> {
-  const setting = await db.setting.findUnique({
-    where: { key: 'temperature' },
+export async function saveTemperatureSetting(
+  orgId: string,
+  temperature: number
+) {
+  await redis.hset(`org:${orgId}`, {
+    temperature: temperature.toString(),
   });
-
-  return setting ? parseFloat(setting.value) : 0.7;
 }
 
-export async function getModelSetting(): Promise<string> {
-  const setting = await db.setting.findUnique({
-    where: { key: 'chat_model' },
-  });
-
-  return setting ? setting.value : 'gpt-3.5-turbo';
+export async function getTemperatureSetting(orgId: string) {
+  const temperature = await redis.hget(`org:${orgId}`, 'temperature');
+  return temperature;
 }
 
-export async function getAssistantPrompt() {
-  const prompt = await db.setting.findUnique({
-    where: { key: 'assistant_prompt' },
-  });
-
-  return prompt?.value || '';
-}
-
-export async function getOpenaiAPIKey(userId: string) {
-  const apiKey = await redis.hget(`user:${userId}:api_keys`, 'openai');
+export async function getOpenaiAPIKey(orgId: string) {
+  const apiKey = await redis.hget(`org:${orgId}`, 'openai');
   return apiKey;
 }
 
-export async function saveOpenaiAPIKey(userId: string, apiKey: string) {
-  await redis.hset(`user:${userId}:api_keys`, {
+export async function saveOpenaiAPIKey(orgId: string, apiKey: string) {
+  await redis.hset(`org:${orgId}`, {
     openai: apiKey,
   });
+}
+
+export async function saveModel(orgId: string, model: string) {
+  await redis.hset(`org:${orgId}`, {
+    model,
+  });
+}
+
+export async function getModel(orgId: string) {
+  const model = await redis.hget(`org:${orgId}`, 'model');
+  return model;
+}
+
+export async function saveAssistantPrompt(orgId: string, prompt: string) {
+  await redis.hset(`org:${orgId}`, {
+    prompt,
+  });
+}
+
+export async function getAssistantPrompt(orgId: string) {
+  const prompt = await redis.hget(`org:${orgId}`, 'prompt');
+  return prompt;
 }
