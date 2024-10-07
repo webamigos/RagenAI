@@ -1,3 +1,5 @@
+import { auth } from '@clerk/nextjs/server';
+
 import { Sidebar } from '@/app/components/Sidebar';
 import { Toast } from '@/app/components/Toast';
 
@@ -6,10 +8,13 @@ type Props = {
 };
 
 export default function MyProfileLayout({ children }: Props) {
+  const { sessionClaims } = auth();
+  const membership = sessionClaims?.membership;
+
   return (
     <div className="h-full">
       <Toast />
-      <Sidebar>{children}</Sidebar>
+      <Sidebar membership={membership}>{children}</Sidebar>
     </div>
   );
 }

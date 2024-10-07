@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
+import { useSyncActiveOrganization } from '@/app/hooks/useSyncActiveOrganization';
 import {
   SheffieldCheck,
   UserCircleIcon,
@@ -13,11 +14,19 @@ import {
   SidebarItem,
 } from '@salesyy/common-ui';
 
-export const ProfileAndOrganizationTabs = () => {
+import { OrganizationRoles } from '@/app/contracts/User';
+
+type Props = {
+  membership?: OrganizationRoles;
+};
+
+export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   const { closeSidebar } = useSidebar();
   const router = useRouter();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();
+
+  useSyncActiveOrganization({ membership });
 
   const organizationTabsForNoRole = [
     {
