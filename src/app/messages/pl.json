@@ -66,14 +66,20 @@
     "contact-with-us": "Skontaktuj się z nami"
   },
   "success-toast": {
-    "copied": "copied"
+    "copied": "Skopiowano!",
+    "deleted": "Usunięto!",
+    "saved": "Zapisano!"
   },
   "error-toast": {
-    "no-user-id": "Brak user id"
+    "no-user-id": "Brak id użytkownika",
+    "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
+    "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",
     "my-profile": "Mój profil",
+    "home-page": "Strona główna",
     "admin-panel": "Admin",
     "change-password": "Zmień hasło",
     "close": "zamknij"
@@ -101,5 +107,22 @@
     "or": "lub",
     "choose-files": "Wybierz pliki",
     "supported-formats": "Obsługiwany format"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Bezpieczeństwo",
+    "create-organization": "Stwórz organizację",
+    "manage-organization": "Zarządzaj organizacją",
+    "manage-members": "Zarządzaj członkami",
+    "manage-knowledge": "Zarządzaj wiedzą",
+    "organization-list": "Lista organizacji",
+    "assistant-management": "Zarządzanie asystentem"
+  },
+  "files-table": {
+    "delete": "Usuń",
+    "file-name": "Nazwa pliku",
+    "file-size": "Rozmiar pliku",
+    "created": "Utworzono",
+    "updated": "Zaktualizowano"
   }
 }

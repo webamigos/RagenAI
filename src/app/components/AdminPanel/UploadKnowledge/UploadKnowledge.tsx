@@ -20,7 +20,7 @@ export const UploadKnowledge = () => {
   const t = useTranslations('admin-panel');
   const { user } = useUser();
 
-  const userId = user?.publicMetadata?.visitorId || null;
+  const userId = user?.publicMetadata?.visitorId as string;
 
   const handleFilesAdded = (newFiles: File[]) =>
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
@@ -46,7 +46,7 @@ export const UploadKnowledge = () => {
     files.forEach((file) => formData.append('files', file));
 
     try {
-      const response = await uploadFiles(userId as string, formData);
+      const response = await uploadFiles(userId, formData);
       if (response.status === 200) {
         successToast({ message: t('success') });
         setFiles([]);

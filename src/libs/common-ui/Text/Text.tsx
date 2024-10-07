@@ -2,7 +2,7 @@ import { memo, type ReactNode, type ComponentProps } from 'react';
 import clsx from 'clsx';
 
 type Props = {
-  children: string | string[] | ReactNode;
+  children: string | string[] | ReactNode | number;
   bold?: boolean;
   fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
   fontSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -35,7 +35,6 @@ export const Text = memo(
   ({
     children,
     className,
-    bold,
     fontWeight = 'normal',
     fontSize = 'md',
     color = 'zinc-950',

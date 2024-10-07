@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import * as Libs from '@salesyy/common-ui';
 
 import { UserLinks } from '../UserLinks';
-import { ChangePasswordForm } from './MyProfile';
 
 type Props = {
   isSignedIn?: boolean;
@@ -13,21 +11,6 @@ type Props = {
 
 export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
   const t = useTranslations('my-profile-dialog');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [passwordForm, setPasswordForm] = useState(false);
-
-  const handleOpenDialog = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setPasswordForm(false);
-  };
-
-  const handlePasswordForm = () => {
-    setPasswordForm((prevState) => !prevState);
-  };
 
   return (
     <Libs.SidebarFooter className="mb-10 lg:mb-5">
@@ -57,15 +40,15 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 </Libs.DropdownButton>
 
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
-                  <Libs.DropdownItem className="cursor-pointer" href="/admin">
-                    <Libs.WrenchScrewdriverIcon />
+                  <Libs.DropdownItem className="cursor-pointer" href="/">
+                    <Libs.HomeIcon />
                     <Libs.DropdownLabel className="text-sm ml-2.5">
-                      {t('admin-panel')}
+                      {t('home-page')}
                     </Libs.DropdownLabel>
                   </Libs.DropdownItem>
                   <Libs.DropdownItem
+                    href="/my-profile"
                     className="cursor-pointer"
-                    onClick={handleOpenDialog}
                   >
                     <Libs.UserCircleIcon />
                     <Libs.DropdownLabel className="text-sm ml-2.5">
@@ -79,37 +62,6 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                   </Libs.DropdownItem>
                 </Libs.DropdownMenu>
               </Libs.Dropdown>
-
-              {/* Dialog */}
-              <Libs.Dialog
-                className="p-6"
-                open={isDialogOpen}
-                onClose={handleCloseDialog}
-                size="md"
-              >
-                <Libs.DialogTitle>
-                  {!passwordForm ? t('my-profile') : t('change-password')}
-                </Libs.DialogTitle>
-                {!passwordForm ? (
-                  <Libs.DialogBody>
-                    <Libs.SidebarItem onClick={handlePasswordForm}>
-                      <Libs.LockClosedIcon />
-                      {t('change-password')}
-                      <Libs.ChevronUpIcon className="w-4 h-4 ml-auto transform rotate-90" />
-                    </Libs.SidebarItem>
-                  </Libs.DialogBody>
-                ) : (
-                  <ChangePasswordForm handleCloseDialog={handleCloseDialog} />
-                )}
-                <Libs.Divider className="mt-4 -m-3" soft />
-                <Libs.DialogActions>
-                  <Libs.Button
-                    className="p-2 text-sm"
-                    label={t('close')}
-                    onClick={handleCloseDialog}
-                  />
-                </Libs.DialogActions>
-              </Libs.Dialog>
             </>
           )}
 

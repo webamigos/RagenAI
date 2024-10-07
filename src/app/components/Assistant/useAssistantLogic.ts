@@ -56,7 +56,7 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const userVisitorId = user?.publicMetadata.visitorId as string;
+  const userVisitorId = (user?.publicMetadata.visitorId as string) || undefined;
 
   useEffect(() => {
     if (isLoaded && !isSignedIn && !visitorId) {

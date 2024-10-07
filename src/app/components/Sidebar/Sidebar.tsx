@@ -10,6 +10,7 @@ import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
 import { SidebarProvider } from '@/context/SidebarContext';
+import { ProfileAndOrganizationTabs } from './MyProfileSection';
 
 type Props = {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ type Props = {
 export const Sidebar = ({ children }: Props) => {
   const {
     error,
+    locale,
     hasMore,
     userEmail,
     isLoading,
@@ -37,9 +39,7 @@ export const Sidebar = ({ children }: Props) => {
           <div className="flex flex-col h-full text-sm">
             <Header />
             <SidebarBody>
-              {pathname.includes('admin') ? (
-                <div />
-              ) : (
+              {pathname === `/${locale}` || pathname.includes('threads') ? (
                 <UserThreadsHistory
                   error={error}
                   hasMore={hasMore}
@@ -48,6 +48,8 @@ export const Sidebar = ({ children }: Props) => {
                   activeThread={activeThread}
                   handleThreadClick={handleThreadClick}
                 />
+              ) : (
+                <ProfileAndOrganizationTabs />
               )}
             </SidebarBody>
             <Footer

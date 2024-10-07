@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "typeRoots": ["./contracts", "./node_modules/@types"],
     "plugins": [
       {
         "name": "next"
@@ -33,7 +34,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
-    "src/app/api/upload/[...upload]/route.ts",
+    "src/app/api/upload/[...upload]/route.tsx",
+    "src/app/api/settings/api-key/route.ts"
     "storybook/main.js"
   ],
   "exclude": ["node_modules"]

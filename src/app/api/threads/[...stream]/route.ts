@@ -1,3 +1,5 @@
+import { NextRequest } from 'next/server';
+
 import { Role } from '@prisma/client';
 import {
   getThreadMessages,
@@ -7,7 +9,7 @@ import {
   createMessageInDB,
   getMessageById,
 } from '../../../lib/services/message';
-import { chain } from '../utills';
+import { chain, initializeChain } from '../utills';
 import {
   SseInitEvent,
   SseMessageEvent,
@@ -31,12 +33,13 @@ const prepareSseMessage = (
 };
 let runId: string;
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const [publicThreadId, publicMessageId] = params.stream || [];
+    await initializeChain(request);
+
+    const [publicThreadId, publicMessageId] = params.stream;
 
     const encoder = new TextEncoder();
-
     return new Response(
       new ReadableStream({
         async start(controller) {

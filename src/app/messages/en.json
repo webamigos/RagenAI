@@ -66,14 +66,20 @@
     "contact-with-us": "Contact with us"
   },
   "success-toast": {
-    "copied": "copied"
+    "copied": "Copied",
+    "deleted": "Deleted",
+    "saved": "Saved"
   },
   "error-toast": {
-    "no-user-id": "user id missing"
+    "no-user-id": "user id missing",
+    "error-during-deleting-file": "Error deleting document",
+    "failed-to-update-temperature": "Failed to update temperature:",
+    "failed-to-fetch-settings": "Failed to fetch settings:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
     "my-profile": "My profile",
+    "home-page": "Home page",
     "admin-panel": "Admin",
     "change-password": "Change password",
     "close": "close"
@@ -101,5 +107,22 @@
     "or": "or",
     "choose-files": "Choose files",
     "supported-formats": "Supports"
+  },
+  "sidebar": {
+    "profile": "Profile",
+    "security": "Security",
+    "create-organization": "Create organization",
+    "manage-organization": "Manage organization",
+    "manage-members": "Manage members",
+    "manage-knowledge": "Manage knowledge",
+    "organization-list": "Organization list",
+    "assistant-management": "Assistant management"
+  },
+  "files-table": {
+    "delete": "Delete",
+    "file-name": "File Name",
+    "file-size": "File Size",
+    "created": "Created",
+    "updated": "Updated"
   }
 }

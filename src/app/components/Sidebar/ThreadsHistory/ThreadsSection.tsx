@@ -1,7 +1,10 @@
-import { SidebarLabel, SidebarItem } from '@salesyy/common-ui';
-import { ThreadHistoryResponse } from '../../../contracts/Message';
-import { useSidebar } from '@/app/hooks/useSidebar';
 import { memo } from 'react';
+
+import { SidebarLabel, SidebarItem } from '@salesyy/common-ui';
+import { useSidebar } from '@/app/hooks/useSidebar';
+import { truncateFileName } from '@/app/lib/utils/truncateFileName';
+
+import { ThreadHistoryResponse } from '../../../contracts/Message';
 
 type Category = {
   title: string;
@@ -32,16 +35,17 @@ export const ThreadsSection = memo(
               <div key={title}>
                 <SidebarLabel className="ml-1">{title}</SidebarLabel>
 
-                {threads.map((thread, index) => {
-                  const contentPreview =
-                    thread.messages[0]?.content.length > 40
-                      ? `${thread.messages[0]?.content.slice(0, 40)}...`
-                      : thread.messages[0]?.content;
-                  const isActive = thread.public_id === activeThread;
-                  const isLastThreadInAllCategories =
-                    categoryIndex === threadCategories.length - 1 &&
-                    index === threads.length - 1;
+              {threads.map((thread, index) => {
+                const contentPreview =
+                  thread.messages[0]?.content.length > 30
+                    ? truncateFileName(thread.messages[0]?.content, 30)
+                    : thread.messages[0]?.content;
+                const isActive = thread.public_id === activeThread;
+                const isLastThreadInAllCategories =
+                  categoryIndex === threadCategories.length - 1 &&
+                  index === threads.length - 1;
 
+                  
                   return (
                     <div
                       className="mb-1.5 last-of-type:mb-10 first-of-type:mt-5"

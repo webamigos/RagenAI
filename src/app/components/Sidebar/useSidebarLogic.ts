@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
+import { useLocale } from 'next-intl';
 
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 
@@ -11,7 +12,7 @@ export const useSidebarLogic = () => {
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
-
+  const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
 
@@ -32,6 +33,7 @@ export const useSidebarLogic = () => {
 
   return {
     error,
+    locale,
     hasMore,
     userEmail,
     isLoading,
