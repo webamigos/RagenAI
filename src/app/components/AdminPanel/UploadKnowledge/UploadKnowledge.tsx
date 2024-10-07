@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { useUser } from '@clerk/nextjs';
 
 import { Card, Button, FileUploader } from '@salesyy/common-ui';
-import { UserRole } from '@/app/contracts/User';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
@@ -21,7 +20,7 @@ export const UploadKnowledge = () => {
   const t = useTranslations('admin-panel');
   const { user } = useUser();
 
-  const role = user?.publicMetadata?.role as UserRole;
+  const userId = user?.publicMetadata?.visitorId as string;
 
   const handleFilesAdded = (newFiles: File[]) =>
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
@@ -47,7 +46,7 @@ export const UploadKnowledge = () => {
     files.forEach((file) => formData.append('files', file));
 
     try {
-      const response = await uploadFiles(role, formData);
+      const response = await uploadFiles(userId, formData);
       if (response.status === 200) {
         successToast({ message: t('success') });
         setFiles([]);

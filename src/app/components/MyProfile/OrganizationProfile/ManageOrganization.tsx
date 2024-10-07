@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes';
 import { dark, experimental__simple } from '@clerk/themes';
 import { OrganizationProfile } from '@clerk/nextjs';
 
-export const MenageOrganization = () => {
+export const ManageOrganization = () => {
   const { resolvedTheme } = useTheme();
 
   return (
