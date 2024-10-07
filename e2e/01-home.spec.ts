@@ -1,0 +1,12 @@
+import { test, expect } from '@playwright/test';
+
+test.beforeEach(async ({ page }) => {
+  await page.goto('/en');
+});
+
+test('home elements are visible', async ({ page }) => {
+  await expect(page.getByText('Conversation history')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Start new thread' })
+  ).toBeVisible();
+});

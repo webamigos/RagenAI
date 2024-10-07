@@ -4,6 +4,7 @@ import {
   forwardRef,
   type ComponentPropsWithRef,
   type Ref,
+  HTMLProps,
 } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldError } from 'react-hook-form';
@@ -19,8 +20,8 @@ type Props = {
   errorMessage?: string; // for translations
   containerClassName?: string;
   type?: 'text' | 'range' | 'number' | 'email' | 'password';
-  min?: number;
-  max?: number;
+  min?: HTMLProps<'min'>;
+  max?: HTMLProps<'max'>;
   step?: number;
 } & ComponentPropsWithRef<'input'>;
 
