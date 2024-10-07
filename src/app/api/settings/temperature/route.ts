@@ -14,7 +14,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { temperature } = TemperatureSchema.parse(body);
 
-    await db.setting.upsert({
+    await db.settings.upsert({
       where: { key: 'temperature' },
       update: {
         value: temperature.toString(),

@@ -19,11 +19,11 @@ const meta: Meta<typeof Card> = {
       description: 'Card size.',
       defaultValue: 'sm',
     },
-    shadow: {
-      control: 'boolean',
-      description: 'Box-shadow presence control.',
-      defaultValue: true,
-    },
+    // shadow: {
+    //   control: 'boolean',
+    //   description: 'Box-shadow presence control.',
+    //   defaultValue: true,
+    // },
     children: {
       control: false,
       description: 'Content inside card.',
@@ -98,7 +98,7 @@ export const NoShadowCard: Story = {
   args: {
     title: 'No shadow card',
     size: 'md',
-    shadow: false,
+    // shadow: false,
     children: (
       <Text>
         This card does not have a shadow. You can use this for simpler layouts

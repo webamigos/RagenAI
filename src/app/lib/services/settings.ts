@@ -2,7 +2,7 @@ import { redis } from '@/libs/db/redis';
 import db from '@salesyy/prisma-client';
 
 export async function getTemperatureSetting(): Promise<number> {
-  const setting = await db.setting.findUnique({
+  const setting = await db.settings.findUnique({
     where: { key: 'temperature' },
   });
 
@@ -10,7 +10,7 @@ export async function getTemperatureSetting(): Promise<number> {
 }
 
 export async function getModelSetting(): Promise<string> {
-  const setting = await db.setting.findUnique({
+  const setting = await db.settings.findUnique({
     where: { key: 'chat_model' },
   });
 
@@ -18,7 +18,7 @@ export async function getModelSetting(): Promise<string> {
 }
 
 export async function getAssistantPrompt() {
-  const prompt = await db.setting.findUnique({
+  const prompt = await db.settings.findUnique({
     where: { key: 'assistant_prompt' },
   });
 

@@ -4,7 +4,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 export async function GET(_request: NextRequest) {
   try {
-    const settings = await db.setting.findMany({
+    const settings = await db.settings.findMany({
       where: {
         key: { in: ['temperature', 'chat_model', 'assistant_prompt'] },
       },
