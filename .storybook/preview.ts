@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/react';
+import '../src/app/[locale]/global.css';
 
 const preview: Preview = {
   parameters: {
@@ -9,6 +10,8 @@ const preview: Preview = {
       },
     },
   },
+
+  tags: ['autodocs'],
 };
 
 export default preview;
