@@ -1,6 +1,9 @@
 import { useId, forwardRef, type ComponentPropsWithRef, type Ref } from 'react';
+import { useTranslations } from 'next-intl';
 import type { FieldError } from 'react-hook-form';
+
 import { classMerge } from '../utils/cn';
+import { Text } from '../Text';
 
 type Props = {
   label?: string;
@@ -24,6 +27,7 @@ export const Input = forwardRef(
     ref: Ref<HTMLInputElement>
   ) => {
     const id = useId();
+    const t = useTranslations('Sign-in');
 
     return (
       <div className={classMerge('pt-2', containerClassName)}>
@@ -57,21 +61,21 @@ export const Input = forwardRef(
                 aria-hidden="true"
               />
             </div> */}
-            <p
+            <Text
               className="mt-2 text-sm text-red-600 dark:text-red-500"
               id="email-error"
             >
-              {errorMessage ? errorMessage : error.message}
-            </p>
+              {t(errorMessage ? errorMessage : error.message)}
+            </Text>
           </>
         )}
         {hint && (
-          <p
+          <Text
             className="mt-2 text-sm text-gray-500 dark:text-gray-400"
             id="email-description"
           >
             {hint}
-          </p>
+          </Text>
         )}
       </div>
     );

@@ -3,14 +3,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { Button, Input, Card } from '@salesyy/common-ui';
+import { Button, Input, Card, Link, Text } from '@salesyy/common-ui';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
@@ -60,8 +59,12 @@ export const RegisterForm = () => {
   return (
     <Card>
       <div className="flex flex-col mb-4 text-center">
-        <p className="font-bold text-lg	">{t('create-account')}</p>
-        <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
+        <Text fontSize="lg" fontWeight="bold">
+          {t('create-account')}
+        </Text>
+        <Text fontSize="xs" fontWeight="light" color="gray-400">
+          {t('to-continue')}
+        </Text>
       </div>
       <SocialAuthOptions isSignUp={true} />
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -91,12 +94,14 @@ export const RegisterForm = () => {
           type="submit"
         />
         <ClerkErrorsInterface apiErrors={apiErrors} />
-        <p className="text-start">
-          {t('Already-have-an-account')}{' '}
-          <Link href="/sign-in" className="text-blue-500 hover:underline">
+        <div className="flex items-baseline">
+          <Text className="text-start mr-2">
+            {t('Already-have-an-account')}{' '}
+          </Text>
+          <Link underline href="/sign-in">
             {t('sign-in')}
           </Link>
-        </p>
+        </div>
       </form>
     </Card>
   );
