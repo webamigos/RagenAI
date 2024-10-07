@@ -33,7 +33,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
-    "src/app/api/upload/[...upload]/route.ts"
+    "src/app/api/upload/[...upload]/route.ts",
+    "storybook/main.js"
   ],
   "exclude": ["node_modules"]
 }
