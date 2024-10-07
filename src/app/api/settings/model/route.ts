@@ -12,7 +12,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { model } = ModelSchema.parse(body);
 
-    await db.setting.upsert({
+    await db.settings.upsert({
       where: { key: 'chat_model' },
       update: {
         value: model,

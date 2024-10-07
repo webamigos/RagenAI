@@ -24,7 +24,7 @@ export async function PUT(request: Request) {
 
     const { prompt } = validationResult.data;
 
-    const updatedPrompt = await db.setting.upsert({
+    const updatedPrompt = await db.settings.upsert({
       where: { key: 'assistant_prompt' },
       update: { value: prompt },
       create: { key: 'assistant_prompt', value: prompt },
