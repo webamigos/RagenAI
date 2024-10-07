@@ -46,6 +46,10 @@ jobs:
 
       - name: Build Next.js app
         run: npm run build
+        env:
+          REDIS_URL: ${{ secrets.REDIS_URL }}
 
       - name: Run tests
         run: npm run test
+        env:
+          REDIS_URL: ${{ secrets.REDIS_URL }}
