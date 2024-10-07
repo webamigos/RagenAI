@@ -23,9 +23,9 @@ export const createChatInstance = async (request: NextRequest) => {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const temperature = (await getTemperatureSetting(orgId)) as number;
-  const modelName = (await getModel(orgId)) as string;
-  const apiKey = (await getOpenaiAPIKey(orgId)) as string;
+  const temperature = await getTemperatureSetting(orgId);
+  const modelName = (await getModel(orgId)) ?? '';
+  const apiKey = (await getOpenaiAPIKey(orgId)) ?? '';
 
   return new ChatOpenAI({
     apiKey,

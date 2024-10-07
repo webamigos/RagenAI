@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { getAuth } from '@clerk/nextjs/server';
 
 import { logger } from '@/app/lib/utils/logger';
-import { redis } from '@/libs/db/redis';
 import { getOpenaiAPIKey, saveOpenaiAPIKey } from '@/app/lib/services/settings';
 
 const ApiKeySchema = z.object({
