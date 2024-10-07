@@ -1,26 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@salesyy/prisma-client';
+import { getAuth } from '@clerk/nextjs/server';
+
 import { logger } from '@/app/lib/utils/logger';
+import {
+  getAssistantPrompt,
+  getModel,
+  getOpenaiAPIKey,
+  getTemperatureSetting,
+} from '@/app/lib/services/settings';
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
+  const { orgId, userId } = getAuth(request);
+
+  if (!orgId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const settings = await db.settings.findMany({
-      where: {
-        key: { in: ['temperature', 'chat_model', 'assistant_prompt'] },
-      },
-    });
+    const apiKey = await getOpenaiAPIKey(orgId);
+    const temperature = await getTemperatureSetting(orgId);
+    const model = await getModel(orgId);
+    const prompt = await getAssistantPrompt(orgId);
 
-    const temperatureSetting = settings.find((s) => s.key === 'temperature');
-    const modelSetting = settings.find((s) => s.key === 'chat_model');
-    const promptSetting = settings.find((s) => s.key === 'assistant_prompt');
+    if (!apiKey) {
+      return NextResponse.json(
+        { message: 'No API Key found' },
+        { status: 404 }
+      );
+    }
 
-    const temperature = temperatureSetting
-      ? parseFloat(temperatureSetting.value)
-      : 0.7;
-    const model = modelSetting ? modelSetting.value : 'gpt-3.5-turbo';
-    const prompt = promptSetting ? promptSetting.value : 'Default prompt';
-
-    return NextResponse.json({ temperature, model, prompt });
+    return NextResponse.json({ apiKey, temperature, model, prompt });
   } catch (error) {
     logger.error('Failed to fetch settings:', error);
     return NextResponse.json(

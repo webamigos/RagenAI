@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 
 import {
   Input,
-  Card,
   PencilIcon,
-  SpinnerSVG,
   LockClosedIcon,
+  OpenLockIcon,
 } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
-import { saveApiKey, fetchApiKey } from '@/app/lib/services/api';
+import { saveApiKey, fetchSettings } from '@/app/lib/services/api';
 
 export const SetApiKeys = () => {
   const [apiKey, setApiKey] = useState('');
@@ -22,10 +21,10 @@ export const SetApiKeys = () => {
   useEffect(() => {
     const loadApiKey = async () => {
       try {
-        const { data } = await fetchApiKey();
+        const { apiKey } = await fetchSettings();
 
-        if (data.apiKey) {
-          setApiKey(data.apiKey);
+        if (apiKey) {
+          setApiKey(apiKey);
         }
       } catch (error) {
         errorToast({ message: 'Failed to fetch API Key' });
@@ -52,11 +51,11 @@ export const SetApiKeys = () => {
     }
   };
 
-  if (loading) {
-    return <SpinnerSVG />;
-  }
-
-  return (
+  return loading ? (
+    <div className="animate-pulse">
+      <div className="h-16 bg-gray-300 rounded-md w-3/4" />
+    </div>
+  ) : (
     <div className="flex items-center space-x-4">
       <div className="relative w-3/4 flex items-end">
         <Input
@@ -67,16 +66,17 @@ export const SetApiKeys = () => {
           onChange={(e) => setApiKey(e.target.value)}
           containerClassName="w-full min-w-full"
         />
-        <button
-          className="ml-2"
-          onClick={() => setIsEditable(!isEditable)}
-          aria-label="Edit API Key"
-        >
-          <PencilIcon />
-        </button>
-        {isEditable && (
-          <button onClick={handleSaveApiKey} className="mb-0 ml-2">
+        {!isEditable ? (
+          <button
+            className="ml-2"
+            onClick={() => setIsEditable(!isEditable)}
+            aria-label="Edit API Key"
+          >
             <LockClosedIcon />
+          </button>
+        ) : (
+          <button onClick={handleSaveApiKey} className="mb-0 ml-2">
+            <OpenLockIcon />
           </button>
         )}
       </div>

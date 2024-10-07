@@ -1,14 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuth } from '@clerk/nextjs/server';
 import { StatusCodes } from 'http-status-codes';
 import { z } from 'zod';
-
-import db from '@salesyy/prisma-client';
+import { saveAssistantPrompt } from '@/app/lib/services/settings';
 
 const promptSchema = z.object({
   prompt: z.string().min(50, 'Prompt is required'),
 });
 
-export async function PUT(request: Request) {
+export async function PUT(request: NextRequest) {
+  const { orgId } = getAuth(request);
+
+  if (!orgId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
@@ -24,16 +30,12 @@ export async function PUT(request: Request) {
 
     const { prompt } = validationResult.data;
 
-    const updatedPrompt = await db.settings.upsert({
-      where: { key: 'assistant_prompt' },
-      update: { value: prompt },
-      create: { key: 'assistant_prompt', value: prompt },
-    });
+    await saveAssistantPrompt(orgId, prompt);
 
     return NextResponse.json({
       status: StatusCodes.OK,
       message: 'Prompt updated successfully',
-      updatedPrompt,
+      prompt,
     });
   } catch (error) {
     return NextResponse.json(

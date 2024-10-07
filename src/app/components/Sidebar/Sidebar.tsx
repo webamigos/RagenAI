@@ -11,12 +11,14 @@ import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
+import { OrganizationRoles } from '@/app/contracts/User';
 
 type Props = {
   children: React.ReactNode;
+  membership?: OrganizationRoles;
 };
 
-export const Sidebar = ({ children }: Props) => {
+export const Sidebar = ({ children, membership }: Props) => {
   const {
     error,
     locale,
@@ -49,7 +51,7 @@ export const Sidebar = ({ children }: Props) => {
                   handleThreadClick={handleThreadClick}
                 />
               ) : (
-                <ProfileAndOrganizationTabs />
+                <ProfileAndOrganizationTabs membership={membership} />
               )}
             </SidebarBody>
             <Footer

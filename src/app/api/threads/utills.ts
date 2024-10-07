@@ -1,3 +1,4 @@
+import { getAuth } from '@clerk/nextjs/server';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
@@ -9,7 +10,7 @@ import {
   supaBaseClient,
 } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 type Document = {
   pageContent: string;
@@ -17,26 +18,30 @@ type Document = {
   id?: number | string;
 };
 
-const vectorStore = new SupabaseVectorStore(embeddingModel, {
-  client: supaBaseClient,
-  tableName: `documents`,
-  queryName: 'match_documents',
-});
-
-const retriever = vectorStore.asRetriever();
-
-const retrieverChain = RunnableSequence.from([
-  (prevResult) => prevResult.question,
-  retriever,
-  combineDocuments,
-]);
-
 //TODO: fix types
 let chain: any;
 //
 
 async function initializeChain(request: NextRequest) {
-  const prompt = await getAssistantPrompt();
+  const { orgId } = getAuth(request);
+  if (!orgId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const vectorStore = new SupabaseVectorStore(embeddingModel, {
+    client: supaBaseClient,
+    tableName: `documents_${orgId}`,
+    queryName: 'match_documents',
+  });
+
+  const retriever = vectorStore.asRetriever();
+  const retrieverChain = RunnableSequence.from([
+    (prevResult) => prevResult.question,
+    retriever,
+    combineDocuments,
+  ]);
+
+  const prompt = (await getAssistantPrompt(orgId)) as string;
   const promptTemplate = PromptTemplate.fromTemplate(prompt);
 
   chain = RunnableSequence.from([
@@ -57,4 +62,4 @@ function combineDocuments(docs: Document[]) {
   return docs.map((doc) => doc.pageContent).join('\n\n');
 }
 
-export { initializeChain, chain, retriever, retrieverChain };
+export { initializeChain, chain };

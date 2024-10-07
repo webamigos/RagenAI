@@ -20,7 +20,7 @@
       }
     ],
     "paths": {
-      // for backward compatibility
+      // for backward compatibility,
       "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
       "@salesyy/common-ui": ["./src/libs/common-ui"],
       "@salesyy/prisma-client": ["./src/libs/db"],
