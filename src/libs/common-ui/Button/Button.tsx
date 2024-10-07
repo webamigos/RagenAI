@@ -1,4 +1,9 @@
-import { forwardRef, type ComponentProps, type ForwardedRef } from 'react';
+import {
+  forwardRef,
+  memo,
+  type ComponentProps,
+  type ForwardedRef,
+} from 'react';
 import { classMerge } from '../utils/cn';
 import { SpinnerSVG } from '../icons/SpinnerSVG';
 
@@ -10,7 +15,7 @@ type Props = Readonly<{
 }> &
   ComponentProps<'button'>;
 
-export const Button = forwardRef(
+const ButtonComponent = forwardRef(
   (
     {
       label,
@@ -50,4 +55,7 @@ export const Button = forwardRef(
     );
   }
 );
-Button.displayName = 'Button';
+
+export const Button = memo(ButtonComponent);
+
+ButtonComponent.displayName = 'Button';

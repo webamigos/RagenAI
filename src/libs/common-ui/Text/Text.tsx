@@ -1,11 +1,11 @@
-import { memo, type ComponentProps } from 'react';
+import { memo, type ReactNode, type ComponentProps } from 'react';
 import clsx from 'clsx';
 
 type Props = {
-  children: string | string[] | number;
+  children: string | string[] | ReactNode | number;
   bold?: boolean;
   fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
-  fontSize?: 'sm' | 'md' | 'lg' | 'xl';
+  fontSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   color?: 'zinc-950' | 'blue-600' | 'gray-400';
 };
 
@@ -18,6 +18,7 @@ const fontWeightMap = {
 };
 
 const fontSizeMap = {
+  xs: 'text-xs',
   sm: 'text-sm',
   md: 'text-md',
   lg: 'text-lg',

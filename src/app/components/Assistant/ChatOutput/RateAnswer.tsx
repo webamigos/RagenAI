@@ -1,7 +1,8 @@
+import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
+
 import { LikeIcon, DislikeIcon } from '@salesyy/common-ui/icons';
 import { rateMessage } from '@/app/actions';
-import { useState, useEffect } from 'react';
 import { statusToast } from '@/app/lib/utils/toast';
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
   runId?: string | null;
 };
 
-export const RateAnswer = ({ publicId, runId, initialRated }: Props) => {
+export const RateAnswer = memo(({ publicId, runId, initialRated }: Props) => {
   const [rated, setRated] = useState<number | null | undefined>(initialRated);
 
   const t = useTranslations('rate-answer');
@@ -57,4 +58,6 @@ export const RateAnswer = ({ publicId, runId, initialRated }: Props) => {
   }, [initialRated]);
 
   return <>{renderIcons()}</>;
-};
+});
+
+RateAnswer.displayName = 'RateAnswer';

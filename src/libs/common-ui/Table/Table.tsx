@@ -176,9 +176,10 @@ export function TableCell({
           aria-label={title}
           tabIndex={cellRef?.previousElementSibling === null ? 0 : -1}
           className="absolute inset-0 focus:outline-none"
-        />
+        >
+          {children}
+        </Link>
       )}
-      {children}
     </td>
   );
 }

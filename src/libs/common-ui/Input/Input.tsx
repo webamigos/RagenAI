@@ -1,13 +1,10 @@
-import {
-  useId,
-  useState,
-  forwardRef,
-  type ComponentPropsWithRef,
-  type Ref,
-} from 'react';
+import { useId, forwardRef, type ComponentPropsWithRef, type Ref } from 'react';
+import { useTranslations } from 'next-intl';
 import type { FieldError } from 'react-hook-form';
+
 import { classMerge } from '../utils/cn';
 import { OpenEyeIcon, EyeOffIcon } from '@salesyy/common-ui';
+import { Text } from '../Text';
 
 type Props = {
   label?: string;
@@ -40,6 +37,8 @@ export const Input = forwardRef(
   ) => {
     const id = useId();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const t = useTranslations('Sign-in');
+
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible((prev) => !prev);
@@ -100,20 +99,22 @@ export const Input = forwardRef(
           </div>
         </div>
         {error && (
-          <p
-            className="mt-2 text-sm text-red-600 dark:text-red-500"
-            id="input-error"
-          >
-            {errorMessage ? errorMessage : error.message}
-          </p>
+          <>
+            <Text
+              className="mt-2 text-sm text-red-600 dark:text-red-500"
+              id="input-error"
+            >
+              {t(errorMessage ? errorMessage : error.message)}
+            </Text>
+          </>
         )}
         {hint && (
-          <p
+          <Text
             className="mt-2 text-sm text-gray-500 dark:text-gray-400"
             id="input-description"
           >
             {hint}
-          </p>
+          </Text>
         )}
       </div>
     );
