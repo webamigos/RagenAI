@@ -57,31 +57,29 @@ export const SetApiKeys = () => {
   }
 
   return (
-    <Card title="Set Environment Variables" size="full" className="mb-5">
-      <div className="flex items-center space-x-4">
-        <div className="relative w-3/4 flex items-end">
-          <Input
-            label="OpenAI API Key"
-            value={apiKey}
-            type="password"
-            disabled={!isEditable}
-            onChange={(e) => setApiKey(e.target.value)}
-            containerClassName="w-full min-w-full"
-          />
-          <button
-            className="ml-2"
-            onClick={() => setIsEditable(!isEditable)}
-            aria-label="Edit API Key"
-          >
-            <PencilIcon />
+    <div className="flex items-center space-x-4">
+      <div className="relative w-3/4 flex items-end">
+        <Input
+          label="OpenAI API Key"
+          value={apiKey}
+          type="password"
+          disabled={!isEditable}
+          onChange={(e) => setApiKey(e.target.value)}
+          containerClassName="w-full min-w-full"
+        />
+        <button
+          className="ml-2"
+          onClick={() => setIsEditable(!isEditable)}
+          aria-label="Edit API Key"
+        >
+          <PencilIcon />
+        </button>
+        {isEditable && (
+          <button onClick={handleSaveApiKey} className="mb-0 ml-2">
+            <LockClosedIcon />
           </button>
-          {isEditable && (
-            <button onClick={handleSaveApiKey} className="mb-0 ml-2">
-              <LockClosedIcon />
-            </button>
-          )}
-        </div>
+        )}
       </div>
-    </Card>
+    </div>
   );
 };

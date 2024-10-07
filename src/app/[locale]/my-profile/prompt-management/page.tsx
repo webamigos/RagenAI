@@ -1,11 +1,11 @@
 import { ChatModelSelect } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetChatTemperature } from '@/app/components/MyProfile/ChatInstanceSettings';
-import { SetApiKeys } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeys';
 import { EditablePrompt } from '@/app/components/MyProfile/ChatInstanceSettings';
+import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 export default function PromptManagementPage() {
   return (
     <>
-      <SetApiKeys />
+      <SetApiKeyWrapper />
       <div className="flex justify-between mb-5">
         <SetChatTemperature />
         <ChatModelSelect />
