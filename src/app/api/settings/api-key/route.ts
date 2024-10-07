@@ -4,6 +4,7 @@ import { getAuth } from '@clerk/nextjs/server';
 
 import { logger } from '@/app/lib/utils/logger';
 import { redis } from '@/libs/db/redis';
+import { getOpenaiAPIKey, saveOpenaiAPIKey } from '@/app/lib/services/settings';
 
 const ApiKeySchema = z.object({
   apiKey: z.string().min(1, 'API Key is required'),
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-      const apiKey = await redis.hget(`user:${userId}:api_keys`, 'openai');
+      const apiKey = await getOpenaiAPIKey(userId);
 
       if (!apiKey) {
         return NextResponse.json(
@@ -56,7 +57,7 @@ export async function PUT(request: NextRequest) {
     const { apiKey } = ApiKeySchema.parse(body);
 
     try {
-      await redis.hset(`user:${userId}:api_keys`, { openai: apiKey });
+      await saveOpenaiAPIKey(userId, apiKey);
     } catch (redisError) {
       throw new Error('Redis error: Failed to save API key');
     }

@@ -1,3 +1,4 @@
+import { redis } from '@/libs/db/redis';
 import db from '@salesyy/prisma-client';
 
 export async function getTemperatureSetting(): Promise<number> {
@@ -21,5 +22,16 @@ export async function getAssistantPrompt() {
     where: { key: 'assistant_prompt' },
   });
 
-  return prompt?.value || 'Default prompt';
+  return prompt?.value || '';
+}
+
+export async function getOpenaiAPIKey(userId: string) {
+  const apiKey = await redis.hget(`user:${userId}:api_keys`, 'openai');
+  return apiKey;
+}
+
+export async function saveOpenaiAPIKey(userId: string, apiKey: string) {
+  await redis.hset(`user:${userId}:api_keys`, {
+    openai: apiKey,
+  });
 }

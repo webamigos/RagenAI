@@ -6,7 +6,6 @@ import {
   Input,
   Card,
   PencilIcon,
-  EnterIcon,
   SpinnerSVG,
   LockClosedIcon,
 } from '@salesyy/common-ui';

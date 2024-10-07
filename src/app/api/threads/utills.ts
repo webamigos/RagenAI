@@ -9,6 +9,7 @@ import {
   supaBaseClient,
 } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
+import { NextRequest } from 'next/server';
 
 type Document = {
   pageContent: string;
@@ -34,9 +35,8 @@ const retrieverChain = RunnableSequence.from([
 let chain: any;
 //
 
-async function initializeChain() {
+async function initializeChain(request: NextRequest) {
   const prompt = await getAssistantPrompt();
-
   const promptTemplate = PromptTemplate.fromTemplate(prompt);
 
   chain = RunnableSequence.from([
@@ -46,17 +46,15 @@ async function initializeChain() {
       context: () => retrieverChain,
     },
     promptTemplate,
-    createChatInstance,
+    () => createChatInstance(request),
     new StringOutputParser(),
   ]);
 
   return chain;
 }
 
-initializeChain();
-
 function combineDocuments(docs: Document[]) {
   return docs.map((doc) => doc.pageContent).join('\n\n');
 }
 
-export { chain, retriever, retrieverChain };
+export { initializeChain, chain, retriever, retrieverChain };

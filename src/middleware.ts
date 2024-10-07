@@ -31,6 +31,7 @@ export const config = {
   matcher: [
     '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
     '/api/settings/api-key',
+    '/api/threads/(.*)',
   ],
 };
 

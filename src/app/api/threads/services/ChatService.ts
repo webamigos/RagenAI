@@ -1,26 +1,31 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { createClient } from '@supabase/supabase-js';
-
 import { DatabaseGenerated } from '@/libs/db/supabase-types';
 import {
   getModelSetting,
+  getOpenaiAPIKey,
   getTemperatureSetting,
 } from '@/app/lib/services/settings';
-// import { fetchApiKey } from '@/app/lib/services/api';
+import { NextRequest } from 'next/server';
+import { getAuth } from '@clerk/nextjs/server';
 
-const apiKey = process.env.OPENAI_API_KEY;
+const apiKey1 = process.env.OPENAI_API_KEY;
 const sbApiKey = process.env.SUPABASE_ANON_KEY;
 const sbUrl = process.env.SUPABASE_URL;
 
 // eslint-disable-next-line
 console.log({ sbApiKey, sbUrl });
 
-export const createChatInstance = async () => {
+export const createChatInstance = async (request: NextRequest) => {
   const temperature = await getTemperatureSetting();
   const modelName = await getModelSetting();
-  // const { data } = await fetchApiKey();
-  // const apiKey = data.apiKey;
+  const { userId } = getAuth(request);
+
+  if (!userId) {
+    return;
+  }
+  const apiKey = (await getOpenaiAPIKey(userId)) as string;
 
   return new ChatOpenAI({
     apiKey,
@@ -32,7 +37,7 @@ export const createChatInstance = async () => {
 };
 
 export const embeddingModel = new OpenAIEmbeddings({
-  apiKey,
+  apiKey: apiKey1,
   model: 'text-embedding-ada-002',
 });
 
