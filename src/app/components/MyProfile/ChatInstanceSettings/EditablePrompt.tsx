@@ -5,9 +5,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { fetchSettings, savePrompt } from '@/app/lib/services/api';
+import { savePrompt } from '@/app/lib/services/api';
 import { Button, Card, Textarea } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
+import { fetchSettings } from './actions';
 
 const promptSchema = z.object({
   editablePrompt: z
@@ -33,14 +34,20 @@ export const EditablePrompt = () => {
 
   useEffect(() => {
     const fetchPrompt = async () => {
-      const { prompt } = await fetchSettings();
-      const parts = prompt.split('=');
+      const result = await fetchSettings();
 
-      const editablePart = parts[0].trim();
-      const nonEditablePart = parts.slice(1).join('=').trim();
+      if (result.success) {
+        const { prompt } = result.data;
+        if (prompt) {
+          const parts = prompt.split('=');
 
-      reset({ editablePrompt: editablePart });
-      setNonEditablePrompt(nonEditablePart);
+          const editablePart = parts[0].trim();
+          const nonEditablePart = parts.slice(1).join('=').trim();
+
+          reset({ editablePrompt: editablePart });
+          setNonEditablePrompt(nonEditablePart);
+        }
+      }
     };
 
     fetchPrompt();
