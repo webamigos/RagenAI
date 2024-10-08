@@ -11,7 +11,7 @@ export const FileList = memo(() => {
   const { errorToast } = statusToast();
 
   if (isLoading) {
-    return <SpinnerSVG />;
+    return <SpinnerSVG size="sm" />;
   }
 
   if (isError) {

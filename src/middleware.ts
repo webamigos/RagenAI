@@ -36,6 +36,7 @@ export const config = {
     '/api/settings/temperature',
     '/api/settings/model',
     '/api/settings/prompt',
+    '/api/upload/(.*)',
   ],
 };
 
@@ -47,7 +48,7 @@ export default clerkMiddleware(
       return NextResponse.next();
     }
 
-    if (url.startsWith('/admin')) {
+    if (url.includes('pl/admin') || url.includes(`en/admin`)) {
       const session = auth();
 
       if (!session.userId) {
@@ -61,11 +62,11 @@ export default clerkMiddleware(
           userId: user.id,
         });
 
-      const isOwnerOrAdmin = orgMemberships.data.some(
-        (membership) => membership.role === 'owner' || 'admin'
+      const admin = orgMemberships.data.some(
+        (membership) => membership.role === 'org:admin'
       );
 
-      if (!isOwnerOrAdmin) {
+      if (!admin) {
         return NextResponse.redirect(new URL('/403', request.url));
       }
     }

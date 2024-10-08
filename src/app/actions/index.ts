@@ -99,9 +99,9 @@ export const getUserMessages = async (
 };
 
 //get user documents
-export const getUserDocuments = async (userId: string) => {
+export const getUserDocuments = async (orgId: string) => {
   try {
-    const documentDetails = await fetchUserDocumentsDetails(userId);
+    const documentDetails = await fetchUserDocumentsDetails(orgId);
     return { documentDetails };
   } catch (error) {
     return {
@@ -112,10 +112,13 @@ export const getUserDocuments = async (userId: string) => {
 };
 
 //remove user document
-export const deleteDocument = async (userId: string, documentId: string) => {
+export const deleteDocument = async (
+  organizationId: string,
+  documentId: string
+) => {
   try {
-    const { count } = await deleteDocumentFromDB(userId, documentId);
-    await deleteFile(userId, documentId);
+    const { count } = await deleteDocumentFromDB(organizationId, documentId);
+    await deleteFile(organizationId, documentId);
 
     if (count === 0) {
       return {

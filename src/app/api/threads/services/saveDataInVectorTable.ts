@@ -17,7 +17,7 @@ export const convertAndStoreDocument = async (
     throw new Error('File content missing!');
   }
 
-  const tableName = `document_${uploaderId}`;
+  const tableName = `documents_${uploaderId}`;
 
   await createTableIfNotExists(tableName);
   await grantTablePermissions(tableName);

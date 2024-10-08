@@ -65,16 +65,16 @@ model documents {
 }
 
 model usersDocuments {
-  id         String    @id
-  visitor_id String
-  file_name  String
-  file_size  Int
-  created_at DateTime? @default(now())
-  updated_at DateTime?
-  metadata   Json?
+  id             String   @id
+  organization_id String
+  file_name      String
+  file_size      Int
+  created_at     DateTime? @default(now())
+  updated_at     DateTime?
+  metadata       Json?
 
-  @@unique([id, visitor_id])
-  @@index([visitor_id])
+  @@unique([id, organization_id])
+  @@index([organization_id])
 }
 
 enum Role {

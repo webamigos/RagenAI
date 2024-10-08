@@ -69,7 +69,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: any }) {
+export async function DELETE(_request: Request, { params }: { params: any }) {
   const visitor_id = params.upload[0];
   const document_id = params.upload[1];
 

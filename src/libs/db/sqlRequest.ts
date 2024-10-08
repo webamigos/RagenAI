@@ -57,7 +57,7 @@ export const removeTableContent = async (
   document_id: string
 ) => {
   try {
-    const userTableName = `document_${visitor_id}`;
+    const userTableName = `documents_${visitor_id}`;
 
     const deleteEmbeddingsQuery = `
       DELETE FROM ${userTableName}

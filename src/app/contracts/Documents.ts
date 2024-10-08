@@ -2,7 +2,7 @@ import { usersDocuments as usersDocumentsModel } from '@prisma/client';
 
 export type usersDocuments = {
   id: usersDocumentsModel['id'];
-  visitor_id: usersDocumentsModel['visitor_id'];
+  organization_id: usersDocumentsModel['organization_id'];
   file_name: usersDocumentsModel['file_name'];
   file_size: usersDocumentsModel['file_size'];
   created_at?: usersDocumentsModel['created_at'];

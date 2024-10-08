@@ -3,7 +3,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 export async function deleteDocument(visitor_id: string, document_id: string) {
   try {
-    const userTableName = `document_${visitor_id}`;
+    const userTableName = `documents_${visitor_id}`;
 
     const deleteEmbeddingsQuery = `
       DELETE FROM ${userTableName}
