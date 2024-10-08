@@ -1,4 +1,6 @@
-import { redis } from '@/libs/db/redis';
+import { getRedisInstance } from './redis';
+
+const redis = getRedisInstance();
 
 export async function saveTemperatureSetting(
   orgId: string,
@@ -11,7 +13,10 @@ export async function saveTemperatureSetting(
 
 export async function getTemperatureSetting(orgId: string) {
   const temperature = await redis.hget(`org:${orgId}`, 'temperature');
-  return temperature;
+  if (!temperature) {
+    return 0.5;
+  }
+  return parseInt(temperature, 10);
 }
 
 export async function getOpenaiAPIKey(orgId: string) {
