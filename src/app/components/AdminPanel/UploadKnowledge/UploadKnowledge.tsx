@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@clerk/nextjs';
 
 import { Card, Button, FileUploader } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -18,9 +18,14 @@ export const UploadKnowledge = () => {
   const { refreshDocuments } = useUserDocumentsContext();
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('admin-panel');
+  const { organization } = useOrganization();
   const { user } = useUser();
 
-  const userId = user?.publicMetadata?.visitorId as string;
+  if (!organization) {
+    return;
+  }
+
+  const orgId = organization.id.toLowerCase();
 
   const handleFilesAdded = (newFiles: File[]) =>
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
@@ -46,7 +51,7 @@ export const UploadKnowledge = () => {
     files.forEach((file) => formData.append('files', file));
 
     try {
-      const response = await uploadFiles(userId, formData);
+      const response = await uploadFiles(orgId, formData);
       if (response.status === 200) {
         successToast({ message: t('success') });
         setFiles([]);

@@ -168,7 +168,7 @@ export function TableCell({
         !bleed && 'sm:first:pl-1 sm:last:pr-1'
       )}
     >
-      {href && (
+      {href ? (
         <Link
           data-row-link
           href={href}
@@ -179,6 +179,8 @@ export function TableCell({
         >
           {children}
         </Link>
+      ) : (
+        children
       )}
     </td>
   );

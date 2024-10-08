@@ -1,4 +1,3 @@
-import { memo, useMemo } from 'react';
 import prettyBytes from 'pretty-bytes';
 import format from 'date-fns-tz/format';
 import { useTranslations } from 'next-intl';
@@ -15,120 +14,105 @@ type Props = {
   onDocumentsUpdate: () => void;
 };
 
-const DocumentRow = memo(
-  ({
-    document,
-    onDocumentsUpdate,
-  }: {
-    document: usersDocuments;
-    onDocumentsUpdate: () => void;
-  }) => {
-    const { created_at, updated_at, file_name, file_size, id, visitor_id } =
-      document;
-    const successTranslatedMessage = useTranslations('success-toast');
-    const errorTranslatedMessage = useTranslations('error-toast');
-    const translatedTable = useTranslations('files-table');
+type DocumentRowProps = {
+  document: usersDocuments;
+  onDocumentsUpdate: () => void;
+};
 
-    const formattedCreatedAt = useMemo(() => {
-      return created_at
-        ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
-        : '-';
-    }, [created_at]);
+const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
+  const { created_at, updated_at, file_name, file_size, id, organization_id } =
+    document;
 
-    const formattedUpdatedAt = useMemo(() => {
-      return updated_at
-        ? format(new Date(updated_at), 'dd.MM.yyyy HH:mm:ss')
-        : '-';
-    }, [updated_at]);
+  const successTranslatedMessage = useTranslations('success-toast');
+  const errorTranslatedMessage = useTranslations('error-toast');
+  const translatedTable = useTranslations('files-table');
 
-    const truncatedFileName = useMemo(
-      () => truncateFileName(file_name, 20),
-      [file_name]
-    );
+  const formattedCreatedAt = created_at
+    ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
+    : '-';
 
-    const handleDelete = async (
-      visitor_id: string,
-      document_id: string,
-      onDocumentsUpdate: () => void
-    ) => {
-      const { errorToast, successToast } = statusToast();
+  const formattedUpdatedAt = updated_at
+    ? format(new Date(updated_at), 'dd.MM.yyyy HH:mm:ss')
+    : '-';
 
-      try {
-        const { status } = await deleteDocument(visitor_id, document_id);
-        if (status === 200) {
-          onDocumentsUpdate();
-          successToast({
-            message: `${successTranslatedMessage('deleted')} :${document_id}`,
-          });
-        }
-      } catch (error) {
-        errorToast({
-          message: `${errorTranslatedMessage('error-during-deleting-file')}`,
+  const truncatedFileName = truncateFileName(file_name, 20);
+
+  const handleDelete = async (
+    organization_id: string,
+    document_id: string,
+    onDocumentsUpdate: () => void
+  ) => {
+    const { errorToast, successToast } = statusToast();
+
+    try {
+      const { status } = await deleteDocument(organization_id, document_id);
+      if (status === 200) {
+        onDocumentsUpdate();
+        successToast({
+          message: `${successTranslatedMessage('deleted')} :${document_id}`,
         });
       }
-    };
+    } catch (error) {
+      errorToast({
+        message: `${errorTranslatedMessage('error-during-deleting-file')}`,
+      });
+    }
+  };
 
-    return (
-      <CommonUi.TableRow className="text-sm" key={id}>
-        <CommonUi.TableCell title={file_name}>
-          {truncatedFileName}
-        </CommonUi.TableCell>
-        <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
-        <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-        <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-        <CommonUi.TableCell>
-          <div className="-mx-3 -my-1.5 sm:-mx-2.5">
-            <CommonUi.Dropdown>
-              <CommonUi.DropdownButton>
-                <CommonUi.EllipsiHorizontalIcon />
-              </CommonUi.DropdownButton>
-              <CommonUi.DropdownMenu anchor="bottom end">
-                <CommonUi.DropdownItem
-                  onClick={() =>
-                    handleDelete(visitor_id, id, onDocumentsUpdate)
-                  }
-                >
-                  {translatedTable('delete')}
-                </CommonUi.DropdownItem>
-              </CommonUi.DropdownMenu>
-            </CommonUi.Dropdown>
-          </div>
-        </CommonUi.TableCell>
-      </CommonUi.TableRow>
-    );
-  }
-);
+  return (
+    <CommonUi.TableRow className="text-sm">
+      <CommonUi.TableCell title={file_name}>
+        {truncatedFileName}
+      </CommonUi.TableCell>
+      <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
+      <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
+      <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+      <CommonUi.TableCell>
+        <div className="-mx-3 -my-1.5 sm:-mx-2.5">
+          <CommonUi.Dropdown>
+            <CommonUi.DropdownButton>
+              <CommonUi.EllipsiHorizontalIcon />
+            </CommonUi.DropdownButton>
+            <CommonUi.DropdownMenu anchor="bottom end">
+              <CommonUi.DropdownItem
+                onClick={() =>
+                  handleDelete(organization_id, id, onDocumentsUpdate)
+                }
+              >
+                {translatedTable('delete')}
+              </CommonUi.DropdownItem>
+            </CommonUi.DropdownMenu>
+          </CommonUi.Dropdown>
+        </div>
+      </CommonUi.TableCell>
+    </CommonUi.TableRow>
+  );
+};
 
-DocumentRow.displayName = 'DocumentRow';
-
-export const UserDocumentsTable = memo(
-  ({ documents, onDocumentsUpdate }: Props) => {
-    const t = useTranslations('files-table');
-    return (
-      <CommonUi.Table>
-        <CommonUi.TableHead>
-          <CommonUi.TableRow className="text-base">
-            <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('file-size')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('updated')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>
-              <span className="sr-only">Actions</span>
-            </CommonUi.TableHeader>
-          </CommonUi.TableRow>
-        </CommonUi.TableHead>
-        <CommonUi.TableBody>
-          {documents.map((document) => (
-            <DocumentRow
-              key={document.id}
-              document={document}
-              onDocumentsUpdate={onDocumentsUpdate}
-            />
-          ))}
-        </CommonUi.TableBody>
-      </CommonUi.Table>
-    );
-  }
-);
-
-UserDocumentsTable.displayName = 'UserDocumentsTable';
+export const UserDocumentsTable = ({ documents, onDocumentsUpdate }: Props) => {
+  const t = useTranslations('files-table');
+  return (
+    <CommonUi.Table>
+      <CommonUi.TableHead>
+        <CommonUi.TableRow className="text-base">
+          <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
+          <CommonUi.TableHeader>{t('file-size')}</CommonUi.TableHeader>
+          <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
+          <CommonUi.TableHeader>{t('updated')}</CommonUi.TableHeader>
+          <CommonUi.TableHeader>
+            <span className="sr-only">Actions</span>
+          </CommonUi.TableHeader>
+        </CommonUi.TableRow>
+      </CommonUi.TableHead>
+      <CommonUi.TableBody>
+        {documents.map((document) => (
+          <DocumentRow
+            key={document.id}
+            document={document}
+            onDocumentsUpdate={onDocumentsUpdate}
+          />
+        ))}
+      </CommonUi.TableBody>
+    </CommonUi.Table>
+  );
+};
