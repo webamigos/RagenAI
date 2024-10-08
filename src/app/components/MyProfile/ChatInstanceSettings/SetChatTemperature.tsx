@@ -66,7 +66,7 @@ export const SetChatTemperature = () => {
   };
 
   return (
-    <Card size="md" title={t('set-temperature')}>
+    <Card title={t('set-temperature')} className="w-1/2">
       <div className="flex items-center">
         <Input
           className="cursor-pointer"

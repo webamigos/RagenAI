@@ -7,13 +7,15 @@ export const dynamic = 'force-dynamic';
 
 export default function PromptManagementPage() {
   return (
-    <>
+    <div className="container flex flex-col">
       <SetApiKeyWrapper />
+
       <div className="flex justify-between mb-5">
         <SetChatTemperature />
         <ChatModelSelect />
       </div>
+
       <EditablePrompt />
-    </>
+    </div>
   );
 }

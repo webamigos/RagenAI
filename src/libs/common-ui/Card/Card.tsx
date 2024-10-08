@@ -18,7 +18,7 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
       case 'lg':
         return 'max-w-lg';
       case 'full':
-        return 'max-w-screen-lg';
+        return 'w-full';
       default:
         return 'max-w-sm';
     }
@@ -28,7 +28,7 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
     <div
       className={clsx(
         sizeClass(),
-        'w-screen p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700',
+        'p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700',
         className
       )}
     >

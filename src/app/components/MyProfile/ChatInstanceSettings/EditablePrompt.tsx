@@ -77,7 +77,7 @@ export const EditablePrompt = () => {
   return (
     <Card
       size="full"
-      className="mx-auto py-4 max-h-fit"
+      className="py-4 max-h-fit"
       title="Update Assistant Editable Prompt"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
