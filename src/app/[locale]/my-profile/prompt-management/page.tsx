@@ -10,7 +10,7 @@ export default function PromptManagementPage() {
     <div className="container flex flex-col">
       <SetApiKeyWrapper />
 
-      <div className="flex justify-between mb-5">
+      <div className="flex md:justify-between mb-5 flex-col md:flex-row">
         <SetChatTemperature />
         <ChatModelSelect />
       </div>
