@@ -12,7 +12,7 @@
     "or": "lub",
     "to-still-use": "aby korzystać dalej"
   },
-  "Sign-up": {
+  "sign-up": {
     "create-account": "Utwórz konto",
     "to-continue": "aby kontynuować w SalesYY Assistant",
     "sign-up": "Zarejestruj się",
@@ -23,14 +23,16 @@
     "confirm": "Potwierdź kod",
     "or": "lub"
   },
-  "Sign-in": {
+  "sign-in": {
     "sign-in": "Zaloguj się",
-    "Sign-up": "Zarejestruj się",
+    "sign-up": "Zarejestruj się",
     "Password": "Hasło",
     "to-continue": "aby przejść do SalesYY Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
-    "Forgot-password": "Zapomniałeś hasła?"
+    "Forgot-password": "Zapomniałeś hasła?",
+    "invalid-email": "Nieprawidłowy adres email",
+    "invalid-password": "Hasło musi mieć co najmniej 8 znaków"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
