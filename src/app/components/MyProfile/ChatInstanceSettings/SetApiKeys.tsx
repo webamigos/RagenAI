@@ -1,33 +1,42 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 import {
   Input,
-  PencilIcon,
   LockClosedIcon,
   OpenLockIcon,
+  WarningIcon,
+  Tooltip,
 } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
-import { saveApiKey, fetchSettings } from '@/app/lib/services/api';
+import { fetchSettings, saveSetting } from './actions';
 
 export const SetApiKeys = () => {
   const [apiKey, setApiKey] = useState('');
   const [isEditable, setIsEditable] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isWarning, setIsWarning] = useState(false);
+
+  const t = useTranslations('set-openai-api-key');
 
   const { successToast, errorToast } = statusToast();
 
   useEffect(() => {
     const loadApiKey = async () => {
       try {
-        const { apiKey } = await fetchSettings();
+        const response = await fetchSettings();
 
-        if (apiKey) {
-          setApiKey(apiKey);
+        if (!response.success) {
+          setIsWarning(true);
+        }
+
+        if (response.success) {
+          setApiKey(response.data.apiKey);
         }
       } catch (error) {
-        errorToast({ message: 'Failed to fetch API Key' });
+        errorToast({ message: t('failed-to-fetch') });
       } finally {
         setLoading(false);
       }
@@ -38,11 +47,11 @@ export const SetApiKeys = () => {
 
   const handleSaveApiKey = async () => {
     try {
-      const { status } = await saveApiKey(apiKey);
-
-      if (status === 200) {
-        successToast({ message: 'API Key saved successfully' });
+      const { success } = await saveSetting('apiKey', apiKey);
+      if (success) {
+        successToast({ message: t('save-successfully') });
         setIsEditable(false);
+        setIsWarning(false);
       } else {
         throw new Error('Failed to save API key');
       }
@@ -72,12 +81,23 @@ export const SetApiKeys = () => {
             onClick={() => setIsEditable(!isEditable)}
             aria-label="Edit API Key"
           >
-            <LockClosedIcon />
+            <Tooltip id="edit api key" content={t('edit')}>
+              <LockClosedIcon />
+            </Tooltip>
           </button>
         ) : (
           <button onClick={handleSaveApiKey} className="mb-0 ml-2">
-            <OpenLockIcon />
+            <Tooltip id="save api key" content={t('save')}>
+              <OpenLockIcon />
+            </Tooltip>
           </button>
+        )}
+        {isWarning && (
+          <span>
+            <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
+              <WarningIcon className="-mb-0.5 ml-2 text-yellow-600 cursor-pointer" />
+            </Tooltip>
+          </span>
         )}
       </div>
     </div>

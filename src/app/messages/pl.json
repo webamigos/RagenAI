@@ -124,5 +124,16 @@
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",
     "updated": "Zaktualizowano"
+  },
+  "set-openai-api-key": {
+    "set-env": "Ustaw zmienne środowiskowe",
+    "save": "Zapisz",
+    "edit": "Edytuj",
+    "no-api-key-warning": "Brak klucza API uniemożliwi korzystanie z asystenta",
+    "save-successfully": "Klucz API przypisano do Twojego konta!",
+    "failed-to-fetch": "Błąd podczas pobierania kluacza API"
+  },
+  "set-temperature": {
+    "set-temperature": "Poziom kreatywności odpowiedzi"
   }
 }

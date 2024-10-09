@@ -18,11 +18,30 @@ class RedisService {
   }
 
   async hget(key: string, field: string): Promise<string | null> {
-    return this.client.hget(key, field);
+    try {
+      const result = await this.client.hget(key, field);
+      return result;
+    } catch (error) {
+      logger.error(`Redis error (hget): ${error}`);
+      throw new Error('Failed to retrieve data from Redis');
+    }
   }
 
-  async hset(key: string, hash: Record<string, string>): Promise<number> {
-    return this.client.hset(key, hash);
+  async hsetWithStatus(
+    key: string,
+    hash: Record<string, string>
+  ): Promise<{ success: boolean; status: string }> {
+    try {
+      const result = await this.client.hset(key, hash);
+      if (result > 0) {
+        return { success: true, status: `${hash} saved successfully` };
+      } else {
+        return { success: true, status: `${hash} updated successfully` };
+      }
+    } catch (error) {
+      logger.error(`Redis error (hset): ${error}`);
+      return { success: false, status: 'Failed to save data to Redis' };
+    }
   }
 
   async disconnect(): Promise<void> {

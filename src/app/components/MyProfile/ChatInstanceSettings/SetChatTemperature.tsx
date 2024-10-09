@@ -3,25 +3,24 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
+import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Input, Text, Card } from '@salesyy/common-ui';
-import {
-  fetchSettings,
-  updateTemperatureSettings,
-} from '@/app/lib/services/api';
 
 export const SetChatTemperature = () => {
-  const [temperature, setTemperature] = useState<number>(0.7);
+  const [temperature, setTemperature] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { successToast, errorToast } = statusToast();
   const successMessage = useTranslations('success-toast');
   const errorMessage = useTranslations('error-toast');
+  const t = useTranslations('set-temperature');
 
   const updateTemperature = async (temp: number) => {
     try {
-      const { status } = await updateTemperatureSettings(temp);
+      const { success } = await saveSetting('temperature', temp);
 
-      if (status === 200) {
+      if (success) {
         successToast({
           message: successMessage('saved'),
         });
@@ -35,14 +34,19 @@ export const SetChatTemperature = () => {
 
   useEffect(() => {
     const fetchTemperature = async () => {
+      setIsLoading(true);
       try {
-        const { temperature } = await fetchSettings();
+        const response = await fetchSettings();
 
-        setTemperature(temperature || 0.7);
+        if (response.success) {
+          setTemperature(response.data.temperature);
+        }
       } catch (error) {
         errorToast({
           message: `${errorMessage('failed-to-fetch-settings')} ${error}`,
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -61,10 +65,14 @@ export const SetChatTemperature = () => {
   };
 
   return (
-    <Card title="Set temperature">
+    <Card title={t('set-temperature')}>
       <div className="flex items-center">
         <Input
+          className="cursor-pointer"
           containerClassName="w-full"
+          isLoading={isLoading}
+          skeletonHeight="h-5"
+          skeletonWidth="w-50"
           id="temperature"
           type="range"
           min={0}
