@@ -124,5 +124,16 @@
     "file-size": "File Size",
     "created": "Created",
     "updated": "Updated"
+  },
+  "set-openai-api-key": {
+    "set-env": "Set Environment Variables",
+    "save": "Save",
+    "edit": "Edit",
+    "no-api-key-warning": "The lack of an API key will prevent you from using the assistant",
+    "save-successfully": "API Key saved successfully",
+    "failed-to-fetch": "Failed to fetch API Key"
+  },
+  "set-temperature": {
+    "set-temperature": "Set temperature"
   }
 }

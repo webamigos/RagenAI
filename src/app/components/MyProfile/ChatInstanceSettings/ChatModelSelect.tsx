@@ -5,12 +5,14 @@ import { useTranslations } from 'next-intl';
 
 import { Card } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
-import { updateModelSettings, fetchSettings } from '@/app/lib/services/api';
+import { fetchSettings, saveSetting } from './actions';
 
 import { availableModels } from '../../config';
+import { SettingsType } from './types';
 
-export const ChatModelSelect = () => {
+export const ChatModelSelect = ({}) => {
   const [model, setModel] = useState<string>('gpt-3.5-turbo');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { successToast, errorToast } = statusToast();
   const successMessage = useTranslations('success-toast');
@@ -18,13 +20,18 @@ export const ChatModelSelect = () => {
 
   useEffect(() => {
     const fetchModel = async () => {
+      setIsLoading(true);
       try {
-        const { model } = await fetchSettings();
-        setModel(model || 'gpt-3.5-turbo');
+        const response = await fetchSettings();
+        if (response.success) {
+          setModel(response.data.model);
+        }
       } catch (error) {
         errorToast({
           message: `${errorMessage('failed-to-fetch-model')} ${error}`,
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -38,8 +45,8 @@ export const ChatModelSelect = () => {
     setModel(newModel);
 
     try {
-      const { status } = await updateModelSettings(newModel);
-      if (status === 200) {
+      const { success } = await saveSetting(SettingsType.model, newModel);
+      if (success) {
         successToast({ message: successMessage('Model updated successfully') });
       }
     } catch (error) {
@@ -50,23 +57,29 @@ export const ChatModelSelect = () => {
   };
 
   return (
-    <Card title="Select Model">
+    <Card title="Select Model" size="lg">
       <div className="mt-4">
         <label htmlFor="model" className="block text-sm font-medium leading-6">
           Choose Model:
         </label>
-        <select
-          id="model"
-          value={model}
-          onChange={handleModelChange}
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-        >
-          {availableModels.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        {isLoading ? (
+          <div
+            className={`animate-pulse h-11 w-auto bg-gray-300 dark:bg-slate-700 rounded-md`}
+          />
+        ) : (
+          <select
+            id="model"
+            value={model}
+            onChange={handleModelChange}
+            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+          >
+            {availableModels.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
     </Card>
   );

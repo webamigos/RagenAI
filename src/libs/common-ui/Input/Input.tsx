@@ -23,6 +23,9 @@ type Props = {
   min?: HTMLProps<'min'>;
   max?: HTMLProps<'max'>;
   step?: number;
+  isLoading?: boolean;
+  skeletonHeight?: string;
+  skeletonWidth?: string;
 } & ComponentPropsWithRef<'input'>;
 
 export const Input = forwardRef(
@@ -38,6 +41,9 @@ export const Input = forwardRef(
       min,
       max,
       step,
+      isLoading = false,
+      skeletonHeight = 'h-5',
+      skeletonWidth = 'w-50',
       ...rest
     }: Props,
     ref: Ref<HTMLInputElement>
@@ -73,27 +79,37 @@ export const Input = forwardRef(
         )}
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
           <div className="relative">
-            <input
-              ref={ref}
-              id={id}
-              type={inputType}
-              min={min}
-              max={max}
-              step={step}
-              className={classMerge(
-                'block w-full px-1.5 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
-                {
-                  'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset':
-                    type !== 'range',
-                  'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
-                    error,
-                  'shadow-sm': !error,
-                },
-                className
-              )}
-              {...rest}
-            />
-            {type === 'password' && (
+            {isLoading ? (
+              <div
+                className={classMerge(
+                  'animate-pulse bg-gray-300 dark:bg-slate-700 rounded-md',
+                  skeletonHeight,
+                  skeletonWidth
+                )}
+              />
+            ) : (
+              <input
+                ref={ref}
+                id={id}
+                type={inputType}
+                min={min}
+                max={max}
+                step={step}
+                className={classMerge(
+                  'block w-full px-1.5 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
+                  {
+                    'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset':
+                      type !== 'range',
+                    'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
+                      error,
+                    'shadow-sm': !error,
+                  },
+                  className
+                )}
+                {...rest}
+              />
+            )}
+            {type === 'password' && !isLoading && (
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
@@ -104,7 +120,7 @@ export const Input = forwardRef(
             )}
           </div>
         </div>
-        {error && (
+        {error && !isLoading && (
           <>
             <Text
               className="mt-2 text-sm text-red-600 dark:text-red-500"
@@ -114,7 +130,7 @@ export const Input = forwardRef(
             </Text>
           </>
         )}
-        {hint && (
+        {hint && !isLoading && (
           <Text
             className="mt-2 text-sm text-gray-500 dark:text-gray-400"
             id="input-description"

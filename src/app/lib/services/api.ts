@@ -1,7 +1,6 @@
-import { MessageDto } from '../../contracts/Message';
 import { api } from './config';
+import { MessageDto } from '../../contracts/Message';
 import { CreateThreadDto } from '../../contracts/ThreadDto';
-import { logger } from '../utils/logger';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
@@ -53,52 +52,4 @@ export const deleteFile = async (uploaderId: string, documentId: string) => {
   const url = process.env.NEXT_PUBLIC_API_URL;
   const fullUrl = `${url}/api/upload/${uploaderId}/${documentId}`;
   return await api.delete<void>(fullUrl);
-};
-
-export const fetchSettings = async () => {
-  const { data } = await api.get<{
-    apiKey: string;
-    temperature: number;
-    model: string;
-    prompt: string;
-  }>(`/settings`);
-  return data;
-};
-
-export const updateTemperatureSettings = async (temperature: number) => {
-  const response = await api.put<{ temperature: number }>(
-    `/settings/temperature`,
-    {
-      temperature,
-    }
-  );
-  return { data: response.data, status: response.status };
-};
-
-export const updateModelSettings = async (model: string) => {
-  const response = await api.put<{ model: string }>(`/settings/model`, {
-    model,
-  });
-  return { data: response.data, status: response.status };
-};
-
-export const saveApiKey = async (apiKey: string) => {
-  const response = await api.put<{ apiKey: string }>(`/settings/api-key`, {
-    apiKey,
-  });
-  return { data: response.data, status: response.status };
-};
-
-export const fetchApiKey = async () => {
-  const response = await api.get<{ apiKey: string }>(`/settings/api-key`);
-  return { data: response.data, status: response.status };
-};
-
-export const savePrompt = async (prompt: string) => {
-  const response = await api.put(`/settings/prompt`, {
-    prompt,
-  });
-  return {
-    status: response.status,
-  };
 };

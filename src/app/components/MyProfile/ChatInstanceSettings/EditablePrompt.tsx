@@ -5,10 +5,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { savePrompt } from '@/app/lib/services/api';
 import { Button, Card, Textarea } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
-import { fetchSettings } from './actions';
+import { fetchSettings, saveSetting } from './actions';
+import { SettingsType } from './types';
 
 const promptSchema = z.object({
   editablePrompt: z
@@ -63,9 +63,9 @@ export const EditablePrompt = () => {
 
       const fullPrompt = `${editablePrompt.trim()}\n${nonEditablePrompt.trim()}`;
 
-      const { status } = await savePrompt(fullPrompt);
+      const { success } = await saveSetting(SettingsType.prompt, fullPrompt);
 
-      if (status === 200) {
+      if (success) {
         successToast({ message: 'Prompt updated successfully' });
         reset({ editablePrompt });
       }
