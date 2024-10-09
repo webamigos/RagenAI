@@ -7,6 +7,8 @@ import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Input, Text, Card } from '@salesyy/common-ui';
 
+export const dynamic = 'force-dynamic';
+
 export const SetChatTemperature = () => {
   const [temperature, setTemperature] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -65,7 +67,7 @@ export const SetChatTemperature = () => {
   };
 
   return (
-    <Card title={t('set-temperature')}>
+    <Card size="md" title={t('set-temperature')}>
       <div className="flex items-center">
         <Input
           className="cursor-pointer"

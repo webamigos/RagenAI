@@ -9,6 +9,8 @@ import { fetchSettings, saveSetting } from './actions';
 
 import { availableModels } from '../../config';
 
+export const dynamic = 'force-dynamic';
+
 export const ChatModelSelect = ({}) => {
   const [model, setModel] = useState<string>('gpt-3.5-turbo');
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -56,7 +58,7 @@ export const ChatModelSelect = ({}) => {
   };
 
   return (
-    <Card title="Select Model">
+    <Card title="Select Model" size="lg">
       <div className="mt-4">
         <label htmlFor="model" className="block text-sm font-medium leading-6">
           Choose Model:

@@ -13,6 +13,8 @@ import {
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 
+export const dynamic = 'force-dynamic';
+
 export const SetApiKeys = () => {
   const [apiKey, setApiKey] = useState('');
   const [isEditable, setIsEditable] = useState(false);
