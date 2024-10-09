@@ -6,8 +6,7 @@ import { useTranslations } from 'next-intl';
 import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Input, Text, Card } from '@salesyy/common-ui';
-
-export const dynamic = 'force-dynamic';
+import { SettingsType } from './types';
 
 export const SetChatTemperature = () => {
   const [temperature, setTemperature] = useState<number>(0);
@@ -20,7 +19,7 @@ export const SetChatTemperature = () => {
 
   const updateTemperature = async (temp: number) => {
     try {
-      const { success } = await saveSetting('temperature', temp);
+      const { success } = await saveSetting(SettingsType.temperature, temp);
 
       if (success) {
         successToast({

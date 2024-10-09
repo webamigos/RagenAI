@@ -8,8 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Card, Textarea } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
-
-export const dynamic = 'force-dynamic';
+import { SettingsType } from './types';
 
 const promptSchema = z.object({
   editablePrompt: z
@@ -64,7 +63,7 @@ export const EditablePrompt = () => {
 
       const fullPrompt = `${editablePrompt.trim()}\n${nonEditablePrompt.trim()}`;
 
-      const { success } = await saveSetting('prompt', fullPrompt);
+      const { success } = await saveSetting(SettingsType.prompt, fullPrompt);
 
       if (success) {
         successToast({ message: 'Prompt updated successfully' });

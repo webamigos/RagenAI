@@ -12,8 +12,7 @@ import {
 } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
-
-export const dynamic = 'force-dynamic';
+import { SettingsType } from './types';
 
 export const SetApiKeys = () => {
   const [apiKey, setApiKey] = useState('');
@@ -49,7 +48,7 @@ export const SetApiKeys = () => {
 
   const handleSaveApiKey = async () => {
     try {
-      const { success } = await saveSetting('apiKey', apiKey);
+      const { success } = await saveSetting(SettingsType.prompt, apiKey);
       if (success) {
         successToast({ message: t('save-successfully') });
         setIsEditable(false);

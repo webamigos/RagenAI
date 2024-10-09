@@ -8,8 +8,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 
 import { availableModels } from '../../config';
-
-export const dynamic = 'force-dynamic';
+import { SettingsType } from './types';
 
 export const ChatModelSelect = ({}) => {
   const [model, setModel] = useState<string>('gpt-3.5-turbo');
@@ -46,7 +45,7 @@ export const ChatModelSelect = ({}) => {
     setModel(newModel);
 
     try {
-      const { success } = await saveSetting('model', newModel);
+      const { success } = await saveSetting(SettingsType.model, newModel);
       if (success) {
         successToast({ message: successMessage('Model updated successfully') });
       }

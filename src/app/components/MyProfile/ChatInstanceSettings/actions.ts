@@ -1,4 +1,5 @@
 'use server';
+import { auth } from '@clerk/nextjs/server';
 
 import {
   getAssistantPrompt,
@@ -11,16 +12,9 @@ import {
   saveTemperatureSetting,
 } from '@/app/lib/services/settings';
 import { logger } from '@/app/lib/utils/logger';
-import { auth } from '@clerk/nextjs/server';
+import { SettingsType } from './types';
 
 type SaveSettingsActionResponse = { success: boolean; message: string };
-
-enum SettingType {
-  apiKey = 'apiKey',
-  temperature = 'temperature',
-  model = 'model',
-  prompt = 'prompt',
-}
 
 type ActionResponse =
   | { success: false; message: string }
@@ -33,6 +27,8 @@ type ActionResponse =
         prompt: string;
       };
     };
+
+const { apiKey, model, prompt, temperature } = SettingsType;
 
 export const fetchSettings = async (): Promise<ActionResponse> => {
   const { orgId } = auth();
@@ -62,7 +58,7 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
 };
 
 export const saveSetting = async (
-  type: SettingType,
+  type: SettingsType,
   value: string | number
 ): Promise<SaveSettingsActionResponse> => {
   const { orgId } = auth();
@@ -73,22 +69,22 @@ export const saveSetting = async (
 
   try {
     switch (type) {
-      case SettingType.apiKey:
+      case apiKey:
         await saveOpenaiAPIKey(orgId, value as string);
         return { success: true, message: 'API Key saved successfully' };
 
-      case SettingType.temperature:
+      case temperature:
         await saveTemperatureSetting(orgId, value as number);
         return {
           success: true,
           message: 'Temperature setting saved successfully',
         };
 
-      case SettingType.model:
+      case model:
         await saveModel(orgId, value as string);
         return { success: true, message: 'Model saved successfully' };
 
-      case SettingType.prompt:
+      case prompt:
         await saveAssistantPrompt(orgId, value as string);
         return {
           success: true,
