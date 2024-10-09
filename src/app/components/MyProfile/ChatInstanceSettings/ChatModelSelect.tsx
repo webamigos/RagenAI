@@ -57,7 +57,7 @@ export const ChatModelSelect = ({}) => {
   };
 
   return (
-    <Card title="Select Model" size="lg">
+    <Card title="Select Model" size="full">
       <div className="mt-4">
         <label htmlFor="model" className="block text-sm font-medium leading-6">
           Choose Model:
