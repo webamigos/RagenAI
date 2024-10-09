@@ -3,6 +3,8 @@ import { SetChatTemperature } from '@/app/components/MyProfile/ChatInstanceSetti
 import { EditablePrompt } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 
+export const dynamic = 'force-dynamic';
+
 export default function PromptManagementPage() {
   return (
     <>
