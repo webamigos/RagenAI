@@ -15,7 +15,12 @@ import { auth } from '@clerk/nextjs/server';
 
 type SaveSettingsActionResponse = { success: boolean; message: string };
 
-type SettingType = 'apiKey' | 'temperature' | 'model' | 'prompt';
+enum SettingType {
+  apiKey = 'apiKey',
+  temperature = 'temperature',
+  model = 'model',
+  prompt = 'prompt',
+}
 
 type ActionResponse =
   | { success: false; message: string }
@@ -68,22 +73,22 @@ export const saveSetting = async (
 
   try {
     switch (type) {
-      case 'apiKey':
+      case SettingType.apiKey:
         await saveOpenaiAPIKey(orgId, value as string);
         return { success: true, message: 'API Key saved successfully' };
 
-      case 'temperature':
+      case SettingType.temperature:
         await saveTemperatureSetting(orgId, value as number);
         return {
           success: true,
           message: 'Temperature setting saved successfully',
         };
 
-      case 'model':
+      case SettingType.model:
         await saveModel(orgId, value as string);
         return { success: true, message: 'Model saved successfully' };
 
-      case 'prompt':
+      case SettingType.prompt:
         await saveAssistantPrompt(orgId, value as string);
         return {
           success: true,
