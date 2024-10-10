@@ -17,14 +17,15 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
   const t = useTranslations('admin-panel');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const filterFiles = (files: File[]) =>
+    files.filter(
+      (file) => file.name.endsWith('.md') || file.name.endsWith('.epub')
+    );
+
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (disabled) {
-      return;
-    }
-    const droppedFiles = Array.from(event.dataTransfer.files).filter((file) =>
-      file.name.endsWith('.md')
-    ) as File[];
+    if (disabled) return;
+    const droppedFiles = filterFiles(Array.from(event.dataTransfer.files));
     onFilesAdded(droppedFiles);
   };
 
@@ -32,20 +33,13 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
     event.preventDefault();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (disabled) {
-      return;
-    }
-    const selectedFiles = Array.from(event.target.files || []).filter((file) =>
-      file.name.endsWith('.md')
-    );
+    if (disabled) return;
+    const selectedFiles = filterFiles(Array.from(event.target.files || []));
     onFilesAdded(selectedFiles);
   };
 
   const handleClick = () => {
-    if (disabled) {
-      return;
-    }
-
+    if (disabled) return;
     fileInputRef.current?.click();
   };
 
@@ -71,13 +65,13 @@ export const FileUploader = ({ onFilesAdded, disabled }: FileUploaderProps) => {
           ref={fileInputRef}
           className="hidden"
           type="file"
-          accept=".md"
+          accept=".md,.epub"
           multiple
           onChange={handleFileSelect}
         />
       </div>
       <Text fontSize="sm" color="gray-400" className="-mt-4">
-        {`${t('supported-formats')}: .md`}
+        {`${t('supported-formats')}: .md, .epub`}
       </Text>
     </>
   );
