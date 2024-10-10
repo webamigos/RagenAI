@@ -19,7 +19,7 @@ export const RegisterForm = () => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
 
   const { isLoaded, signUp } = useSignUp();
-  const t = useTranslations('Sign-up');
+  const t = useTranslations('sign-up');
   const { push } = useRouter();
 
   const {

@@ -20,7 +20,7 @@ export const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
 
-  const t = useTranslations('Sign-in');
+  const t = useTranslations('sign-in');
   const { push } = useRouter();
 
   const {
@@ -103,7 +103,7 @@ export const LoginForm = () => {
         <div className="flex items-baseline">
           <Text className="text-start mr-2">{t('Dont-have-an-account')}</Text>
           <Link underline href="/sign-up">
-            {t('Sign-up')}
+            {t('sign-up')}
           </Link>
         </div>
       </form>
