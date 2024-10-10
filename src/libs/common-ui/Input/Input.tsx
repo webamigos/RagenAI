@@ -50,7 +50,7 @@ export const Input = forwardRef(
   ) => {
     const id = useId();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const t = useTranslations('Sign-in');
+    const t = useTranslations();
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible((prev) => !prev);

@@ -12,7 +12,7 @@
     "or": "or",
     "to-still-use": "to continue using the service"
   },
-  "Sign-up": {
+  "sign-up": {
     "create-account": "Create your account",
     "to-continue": "to continue to SalesYY Assistant",
     "sign-up": "Sign up",
@@ -23,14 +23,16 @@
     "confirm": "Confirm code",
     "or": "or"
   },
-  "Sign-in": {
+  "sign-in": {
     "sign-in": "Sign in",
-    "Sign-up": "Sign up",
+    "sign-up": "Sign up",
     "Password": "Password",
     "to-continue": "to continue to SalesYY Assistant",
     "Dont-have-an-account": "Dont have an account?",
     "or": "or",
-    "Forgot-password": "Forgot your password?"
+    "Forgot-password": "Forgot your password?",
+    "invalid-email": "Email is invalid",
+    "invalid-password": "Password should have at least 8 characters"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
