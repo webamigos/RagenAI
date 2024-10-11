@@ -1,42 +1,59 @@
 import * as fs from 'node:fs';
 import path from 'path';
-import os from 'os';
 
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
-import { TokenTextSplitter } from '@langchain/textsplitters';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 
 import {
   createTableIfNotExists,
   grantTablePermissions,
 } from '@/libs/db/sqlRequest';
-import { logger } from '@/app/lib/utils/logger';
-import { supaBaseClient, embeddingModel } from './ChatService';
+import {
+  supaBaseClient,
+  embeddingModel,
+  generateLanguageSpecificTags,
+} from './ChatService';
 
-const saveBinaryToTempFile = async (content: string) => {
+type ConvertAndStoreResult = {
+  success: boolean;
+  message: string;
+  error?: Error;
+};
+
+const saveBinaryToTempFile = async (content: string | Buffer) => {
   const projectDir = process.cwd();
   const filePath = path.join(projectDir, `temp-${Date.now()}.epub`);
 
   try {
-    await fs.promises.writeFile(filePath, content);
-    const fileExists = await fs.promises
+    const data = content instanceof Buffer ? new Uint8Array(content) : content;
+    await fs.promises.writeFile(filePath, data);
+    await fs.promises
       .access(filePath)
       .then(() => true)
       .catch(() => false);
-    return filePath;
+    return {
+      success: true,
+      filePath,
+    };
   } catch (error) {
-    logger.error(`Failed to save file at ${filePath}: ${error}`);
+    if (error) {
+      return {
+        success: false,
+        message: `Failed to save file at ${filePath}: ${error}`,
+      };
+    }
     throw error;
   }
 };
 
 export const convertAndStoreDocument = async (
-  fileContent: any,
+  fileContent: string | Buffer,
   fileName: string,
   uploaderId: string
-) => {
+): Promise<ConvertAndStoreResult> => {
   try {
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
@@ -46,35 +63,35 @@ export const convertAndStoreDocument = async (
     await createTableIfNotExists(tableName);
     await grantTablePermissions(tableName);
 
-    let rawDocs;
+    let rawDocs: Document[] = [];
 
     if (fileName.endsWith('.epub')) {
-      const tempFilePath = await saveBinaryToTempFile(fileContent);
-      try {
-        await fs.promises.access(tempFilePath, fs.constants.R_OK);
-      } catch (error) {
-        if (error) {
+      const { filePath, message } = await saveBinaryToTempFile(fileContent);
+      if (filePath) {
+        try {
+          await fs.promises.access(filePath, fs.constants.R_OK);
+          const load = new EPubLoader(filePath);
+          rawDocs = await load.load();
+        } catch (error) {
           return {
             success: false,
-            message: `File is not accessible at: ${tempFilePath}`,
-            error,
+            message: `File is not accessible at: ${filePath}`,
+            error: error as Error,
           };
+        } finally {
+          await fs.promises.unlink(filePath);
         }
+      } else {
+        return {
+          success: false,
+          message: `Failed to save temporary file: ${message}`,
+        };
       }
-
-      const load = new EPubLoader(tempFilePath);
-
-      rawDocs = await load.load();
-
-      await fs.promises.unlink(tempFilePath);
-    } else if (fileName.endsWith('.md')) {
-      rawDocs = [new Document({ pageContent: fileContent })];
-    } else {
-      return { success: false, message: 'Unsupported file type!' };
     }
-    const textSplitterEPub = new TokenTextSplitter({
+    const textSplitterEPub = new RecursiveCharacterTextSplitter({
       chunkSize: 500,
       chunkOverlap: 50,
+      keepSeparator: true,
     });
 
     const textSplitter = new MarkdownTextSplitter({
@@ -91,13 +108,14 @@ export const convertAndStoreDocument = async (
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
 
+        const tags = await generateLanguageSpecificTags(text);
+
         const metadata = {
           document_id: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
-          tags: ['YouTube', 'Nagranie', 'Procedura'],
+          tags,
           id: index,
-          language: 'pl',
         };
 
         const [embedding] = await embeddingModel.embedDocuments([text]);

@@ -48,7 +48,7 @@ export const SetApiKeys = () => {
 
   const handleSaveApiKey = async () => {
     try {
-      const { success } = await saveSetting(SettingsType.prompt, apiKey);
+      const { success } = await saveSetting(SettingsType.apiKey, apiKey);
       if (success) {
         successToast({ message: t('save-successfully') });
         setIsEditable(false);
