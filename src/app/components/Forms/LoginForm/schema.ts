@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  email: z.string().email('Nieprawidłowy adres email'),
-  password: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
+  email: z.string().email('sign-in.invalid-email'),
+  password: z.string().min(8, 'sign-in.invalid-password'),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
