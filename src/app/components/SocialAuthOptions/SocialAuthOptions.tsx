@@ -46,7 +46,7 @@ export const SocialAuthOptions = memo(
     const { signIn, isLoaded: signInLoaded } = useSignIn();
     const [isPending, startTransition] = useTransition();
 
-    const t = useTranslations(isSignUp ? 'Sign-up' : 'Sign-in');
+    const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
       const visitorId = await loadFingerprint();

@@ -1,6 +1,6 @@
-# Salesyy
+# smartRAG
 
-AI Assistant
+Retrieval Augmented Generation (RAG)
 
 TBD
 

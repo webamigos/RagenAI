@@ -7,6 +7,6 @@ test.beforeEach(async ({ page }) => {
 test('home elements are visible', async ({ page }) => {
   await expect(page.getByText('Conversation history')).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Start new thread' })
+    page.getByRole('button', { name: /start new thread/i })
   ).toBeVisible();
 });
