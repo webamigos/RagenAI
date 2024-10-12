@@ -5,6 +5,20 @@ import { setupClerkTestingToken } from '@clerk/testing/playwright';
 
 test.beforeEach(async ({ page }) => {
   await setupClerkTestingToken({ page });
+  await page.route('**/api/threads', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        threads: [
+          { id: '1', category: 'today' },
+          { id: '2', category: 'yesterday' },
+          { id: '3', category: 'older' },
+        ],
+      }),
+    });
+  });
+
   await page.goto('/en');
 });
 test('User Threads History - Display Category When Threads Exist', async ({
