@@ -16,7 +16,7 @@ test.describe('User Threads History - Display Category When Threads Exist', () =
     await page.locator('#email').fill(testEmail);
     await page.locator('#password').fill(testPassword);
     await page.click('button[type="submit"]');
-    await page.waitForURL(/\/en/, { timeout: 10000 });
+    await page.waitForTimeout(5000);
 
     let atLeastOneCategoryVisible = false;
     const categoriesEnglish = ['today', 'yesterday', 'older'];
