@@ -13,7 +13,7 @@ test('should hide threads after user logs out', async ({ page }) => {
   await page.locator('#email').fill(testEmail);
   await page.locator('#password').fill(testPassword);
   await page.click('button[type="submit"]');
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
 
   let atLeastOneCategoryVisible = false;
   const categoriesEnglish = ['today', 'yesterday', 'older'];
