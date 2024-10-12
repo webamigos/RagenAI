@@ -7,7 +7,7 @@ import { useThreadsContext } from '../../hooks/useThreadsContext';
 
 export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
-  const { state, dispatch, loadMoreThreads } = useThreadsContext();
+  const { state } = useThreadsContext();
   const { userThreads, error, isLoading, hasMore } = state;
   const router = useRouter();
   const { user, isSignedIn } = useUser();
