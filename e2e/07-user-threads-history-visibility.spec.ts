@@ -1,34 +1,36 @@
 import { test, expect } from '@playwright/test';
 import { setupClerkTestingToken } from '@clerk/testing/playwright';
 
-test.setTimeout(30000);
+// test.setTimeout(30000);
 
-test.describe('User Threads History - Display Category When Threads Exist', () => {
-  test.beforeEach(async ({ page }) => {
-    await setupClerkTestingToken({ page });
-    await page.goto('/en/sign-in');
-    await page.waitForSelector('input[name="email"]', { timeout: 20000 });
+test.beforeEach(async ({ page }) => {
+  await setupClerkTestingToken({ page });
+  await page.goto('/en');
+});
+test('User Threads History - Display Category When Threads Exist', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.waitForSelector('input[name="email"]');
 
-    const testEmail = process.env.TESTS_CLERK_USER_EMAIL!;
-    const testPassword = process.env.TESTS_CLERK_USER_PASSWORD!;
+  const testEmail = process.env.TESTS_CLERK_USER_EMAIL!;
+  const testPassword = process.env.TESTS_CLERK_USER_PASSWORD!;
 
-    await page.getByRole('button', { name: 'Sign in' }).click();
-    await page.locator('#email').fill(testEmail);
-    await page.locator('#password').fill(testPassword);
-    await page.click('button[type="submit"]');
-    await page.waitForTimeout(5000);
+  await page.locator('#email').fill(testEmail);
+  await page.locator('#password').fill(testPassword);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.waitForURL('/en', { timeout: 15000 });
 
-    let atLeastOneCategoryVisible = false;
-    const categoriesEnglish = ['today', 'yesterday', 'older'];
+  let atLeastOneCategoryVisible = false;
+  const categoriesEnglish = ['today', 'yesterday', 'older'];
 
-    for (const category of categoriesEnglish) {
-      const categoryLabel = page.getByText(category);
-      if (await categoryLabel.isVisible()) {
-        atLeastOneCategoryVisible = true;
-        break;
-      }
+  for (const category of categoriesEnglish) {
+    const categoryLabel = page.getByText(category);
+    if (await categoryLabel.isVisible()) {
+      atLeastOneCategoryVisible = true;
+      break;
     }
+  }
 
-    expect(atLeastOneCategoryVisible).toBe(true);
-  });
+  expect(atLeastOneCategoryVisible).toBe(true);
 });

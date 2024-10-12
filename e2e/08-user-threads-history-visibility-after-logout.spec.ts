@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-test.setTimeout(30000);
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/en');
@@ -12,8 +11,8 @@ test('should hide threads after user logs out', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.locator('#email').fill(testEmail);
   await page.locator('#password').fill(testPassword);
-  await page.click('button[type="submit"]');
-  await page.waitForTimeout(5000);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.waitForURL('/en', { timeout: 15000 });
 
   let atLeastOneCategoryVisible = false;
   const categoriesEnglish = ['today', 'yesterday', 'older'];
