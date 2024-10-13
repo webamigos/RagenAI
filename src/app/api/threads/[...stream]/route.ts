@@ -9,7 +9,7 @@ import {
   createMessageInDB,
   getMessageById,
 } from '../../../lib/services/message';
-import { chain, initializeChain } from '../utills';
+import { initializeChainV2 } from '../utills';
 import {
   SseInitEvent,
   SseMessageEvent,
@@ -35,7 +35,7 @@ let runId: string;
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    await initializeChain(request);
+    const chain = await initializeChainV2(request);
 
     const [publicThreadId, publicMessageId] = params.stream;
 
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             const eventStream = await chain.streamEvents(
               {
                 question: threadMessage.content,
-                conv_history: conv_history,
+                chat_history: conv_history,
               },
               {
                 version: 'v2',
@@ -77,6 +77,11 @@ export async function GET(request: NextRequest, { params }: Params) {
             let chainRunIds = [];
 
             for await (const event of eventStream) {
+              //TODO: find a better way to handle filtering out standalone-question llm response events!
+              if (!event?.metadata?.store) {
+                continue;
+              }
+
               if (event.event === 'on_chain_start') {
                 chainRunIds.push(event.run_id);
                 runId = chainRunIds[0];
