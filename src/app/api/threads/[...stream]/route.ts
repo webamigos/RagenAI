@@ -77,17 +77,15 @@ export async function GET(request: NextRequest, { params }: Params) {
             let chainRunIds = [];
 
             for await (const event of eventStream) {
-              //TODO: find a better way to handle filtering out standalone-question llm response events!
-              if (!event?.metadata?.store) {
-                continue;
-              }
-
               if (event.event === 'on_chain_start') {
                 chainRunIds.push(event.run_id);
                 runId = chainRunIds[0];
               }
 
-              if (event.event === 'on_parser_stream') {
+              if (
+                event.event === 'on_parser_stream' &&
+                event.name === 'final_answer'
+              ) {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
                 controller.enqueue(
@@ -98,7 +96,10 @@ export async function GET(request: NextRequest, { params }: Params) {
                     })
                   )
                 );
-              } else if (event.event === 'on_parser_end') {
+              } else if (
+                event.event === 'on_parser_end' &&
+                event.name === 'final_answer'
+              ) {
                 const dbMessage = await createMessageInDB({
                   thread: {
                     ...threadEntity,

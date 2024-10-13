@@ -139,7 +139,7 @@ using only the resources provided. Be verbose!
 
     () => createChatInstance(request),
     new StringOutputParser().withConfig({
-      metadata: { store: true },
+      runName: 'final_answer',
     }),
   ]);
 }
