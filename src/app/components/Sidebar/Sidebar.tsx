@@ -29,6 +29,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     isSignedIn,
     userThreads,
     activeThread,
+    isThreadsLoaded,
     handleThreadClick,
   } = useSidebarLogic();
   const pathname = usePathname();
@@ -46,8 +47,10 @@ export const Sidebar = ({ children, membership }: Props) => {
                   error={error}
                   hasMore={hasMore}
                   isLoading={isLoading}
+                  isSignedIn={isSignedIn}
                   userThreads={userThreads}
                   activeThread={activeThread}
+                  isThreadsLoaded={isThreadsLoaded}
                   handleThreadClick={handleThreadClick}
                 />
               ) : (

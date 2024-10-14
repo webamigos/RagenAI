@@ -27,7 +27,9 @@ type Action =
   | { type: 'ERROR'; payload: string }
   | { type: 'ADD_THREADS'; payload: ThreadHistoryResponse[] }
   | { type: 'SET_HAS_MORE'; payload: boolean }
-  | { type: 'INCREMENT_SKIP'; payload: number };
+  | { type: 'INCREMENT_SKIP'; payload: number }
+  | { type: 'ADD_NEW_THREAD'; payload: ThreadHistoryResponse }
+  | { type: 'RESET_THREADS' };
 
 const initialState: State = {
   userThreads: [],
@@ -56,10 +58,17 @@ function threadsReducer(state: State, action: Action): State {
         isLoading: false,
         userThreads: [...state.userThreads, ...action.payload],
       };
+    case 'ADD_NEW_THREAD':
+      return {
+        ...state,
+        userThreads: [action.payload, ...state.userThreads],
+      };
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload };
     case 'INCREMENT_SKIP':
       return { ...state, skip: state.skip + action.payload };
+    case 'RESET_THREADS':
+      return { ...state, userThreads: [], skip: 0, hasMore: true };
     default:
       return state;
   }
@@ -84,7 +93,7 @@ export const ThreadsContextProvider = ({
 }: ThreadsContextProviderProps) => {
   const [state, dispatch] = useReducer(threadsReducer, initialState);
   const hasInitialLoadCompleted = useRef(false);
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
 
   const visitorId = user?.publicMetadata?.visitorId as string | undefined;
 
@@ -111,14 +120,21 @@ export const ThreadsContextProvider = ({
     } catch (error) {
       dispatch({ type: 'ERROR', payload: 'Failed to load more threads' });
     }
-  }, [state, visitorId]);
+  }, [state.isLoading, state.hasMore, visitorId]);
 
   useEffect(() => {
-    if (!hasInitialLoadCompleted.current && visitorId) {
+    if (visitorId && !hasInitialLoadCompleted.current) {
       loadMoreThreads();
       hasInitialLoadCompleted.current = true;
     }
-  }, [loadMoreThreads, visitorId]);
+  }, [visitorId]);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      dispatch({ type: 'RESET_THREADS' });
+      hasInitialLoadCompleted.current = false;
+    }
+  }, [isSignedIn]);
 
   return (
     <ThreadsContext.Provider value={{ state, dispatch, loadMoreThreads }}>

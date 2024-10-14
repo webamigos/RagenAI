@@ -275,10 +275,13 @@ export const useAssistantLogic = (threadId: string) => {
     const response = await getUserMessages(id);
     const threads = response.threads;
 
-    threadsDispatch({
-      type: 'USER_THREADS',
-      payload: threads || [],
-    });
+    const newThread = {
+      public_id: threads![0].public_id,
+      messages: [userMessage],
+      created_at: new Date(),
+    };
+
+    threadsDispatch({ type: 'ADD_NEW_THREAD', payload: newThread });
 
     try {
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {

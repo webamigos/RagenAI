@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
 'use client';
 
-import { type ComponentPropsWithoutRef, forwardRef, memo, useId } from 'react';
+import { type ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import { LayoutGroup, motion } from 'framer-motion';
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
@@ -146,54 +146,53 @@ type SidebarItemProps = {
   | Omit<ComponentPropsWithoutRef<typeof Link>, 'type' | 'className'>
 );
 
-export const SidebarItem = memo(
-  forwardRef(function SidebarItem(
-    { current, className, children, ...props }: SidebarItemProps,
-    ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
-  ) {
-    let classes = clsx(
-      'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base font-medium text-zinc-950 sm:py-2 sm:text-sm',
-      'hover:bg-slate-200',
-      current && 'bg-zinc-950/5 text-blue-500',
-      'dark:text-white dark:bg-white/5',
-      className
-    );
+export const SidebarItem = forwardRef(function SidebarItem(
+  { current, className, children, ...props }: SidebarItemProps,
+  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
+) {
+  let classes = clsx(
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base font-medium text-zinc-950 sm:py-2 sm:text-sm',
+    'hover:bg-slate-200 dark:hover:bg-slate-800',
+    current && 'bg-zinc-950/5 text-blue-500',
+    'dark:text-white',
+    className
+  );
 
-    return (
-      <span className={clsx(className, 'relative')}>
-        {current && (
-          <motion.span
-            layoutId="current-indicator"
-            className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-slate-900 dark:bg-white"
-          />
-        )}
-        {'href' in props ? (
-          <Headless.CloseButton as="div" ref={ref}>
-            <Link className={classes} {...props} data-current={current}>
-              {children}
-            </Link>
-          </Headless.CloseButton>
-        ) : (
-          <Headless.Button
-            {...props}
-            className={clsx(classes, 'cursor-pointer')}
-            data-current={current}
-            ref={ref}
-          >
+  return (
+    <span className={clsx(className, 'relative')}>
+      {current && (
+        <motion.span
+          layoutId="current-indicator"
+          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-slate-900"
+        />
+      )}
+      {'href' in props ? (
+        <Headless.CloseButton as="div" ref={ref}>
+          <Link className={classes} {...props} data-current={current}>
             {children}
-          </Headless.Button>
-        )}
-      </span>
-    );
-  })
-);
+          </Link>
+        </Headless.CloseButton>
+      ) : (
+        <Headless.Button
+          {...props}
+          className={clsx(classes, 'cursor-pointer')}
+          data-current={current}
+          ref={ref}
+        >
+          {children}
+        </Headless.Button>
+      )}
+    </span>
+  );
+});
 
 SidebarItem.displayName = 'SidebarItem';
 
-export const SidebarLabel = memo(
-  ({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) => {
-    return <span {...props} className={clsx(className, 'truncate')} />;
-  }
-);
+export const SidebarLabel = ({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'span'>) => {
+  return <span {...props} className={clsx(className, 'truncate')} />;
+};
 
 SidebarLabel.displayName = 'SidebarLabel';
