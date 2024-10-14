@@ -15,6 +15,7 @@ export const useSidebarLogic = () => {
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
+  const isThreadsLoaded = state.userThreads.length > 0;
 
   const handleThreadClick = (threadId: string) => {
     router.push(`/threads/${threadId}`);
@@ -41,6 +42,7 @@ export const useSidebarLogic = () => {
     isSignedIn,
     userThreads,
     activeThread,
+    isThreadsLoaded,
     handleThreadClick,
   };
 };

@@ -10,9 +10,11 @@ import { format, subDays } from 'date-fns';
 type Props = {
   hasMore: boolean;
   isLoading: boolean;
+  isSignedIn?: boolean;
   error: string | null;
   activeThread: string;
   userThreads: ThreadHistoryResponse[];
+  isThreadsLoaded: boolean;
   handleThreadClick: (threadId: string) => void;
 };
 
@@ -20,8 +22,10 @@ export const UserThreadsHistory = ({
   error,
   hasMore,
   isLoading,
+  isSignedIn,
   userThreads,
   activeThread,
+  isThreadsLoaded,
   handleThreadClick,
 }: Props) => {
   const t = useTranslations('chat');
@@ -54,7 +58,7 @@ export const UserThreadsHistory = ({
         observerRef.current.disconnect();
       }
     };
-  }, [isLoading, hasMore, loadMoreThreads]);
+  }, [isLoading, hasMore, isSignedIn, isThreadsLoaded, loadMoreThreads]);
 
   const categorizeThreads = (threads: ThreadHistoryResponse[]) => {
     const now = new Date();
