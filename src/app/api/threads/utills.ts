@@ -1,5 +1,8 @@
 import { getAuth } from '@clerk/nextjs/server';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import {
+  SupabaseFilterRPCCall,
+  SupabaseVectorStore,
+} from '@langchain/community/vectorstores/supabase';
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,
@@ -18,6 +21,7 @@ import {
 } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
 import { NextRequest, NextResponse } from 'next/server';
+import db from '@salesyy/prisma-client';
 
 type Document = {
   pageContent: string;
@@ -75,11 +79,22 @@ async function initializeChainV2(request: NextRequest) {
     throw new Error('Unauthorized');
   }
 
+  const organizationDocuments = await db.usersDocuments.findMany({
+    where: { organization_id: { equals: orgId, mode: 'insensitive' } },
+    select: { file_name: true },
+  });
+
+  const documentIdFilteringFunction: SupabaseFilterRPCCall = (rpc) =>
+    rpc.in(
+      'metadata->>document_id',
+      organizationDocuments.map((doc) => doc.file_name)
+    );
+
   //Retreival chain
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
     client: supaBaseClient,
-    tableName: `documents_${orgId}`,
     queryName: 'mj_match_documents',
+    filter: documentIdFilteringFunction,
   });
 
   const documentRetrievalChain = RunnableSequence.from([
