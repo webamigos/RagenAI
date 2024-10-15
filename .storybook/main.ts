@@ -4,6 +4,11 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  env: (config) => ({
+    ...config,
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
+  }),
 
   addons: [
     '@storybook/addon-onboarding',
@@ -12,6 +17,7 @@ const config: StorybookConfig = {
     '@storybook/addon-interactions',
     '@chromatic-com/storybook',
     '@storybook/addon-postcss',
+    'storybook-next-intl',
   ],
 
   framework: {
@@ -29,7 +35,17 @@ const config: StorybookConfig = {
           configFile: path.resolve(__dirname, '../tsconfig.json'),
         }),
       ];
+      config.resolve.modules = [
+        ...(config.resolve.modules || []),
+        path.resolve('./'),
+      ];
     }
+
+    config.module?.rules?.push({
+      test: /\.svg$/,
+      use: ['@svgr/webpack'],
+    });
+
     return config;
   },
 
