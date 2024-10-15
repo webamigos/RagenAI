@@ -6,4 +6,4 @@ export {
   NavbarSection,
   NavbarSpacer,
   TouchTarget,
-} from './Navbar2';
+} from './Navbar';
