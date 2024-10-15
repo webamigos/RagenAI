@@ -11,6 +11,7 @@ import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
 import { lazy, Suspense } from 'react';
+import { useTranslations } from 'next-intl';
 
 const OpenEyeIcon = lazy(() =>
   import('@salesyy/common-ui').then((module) => ({
@@ -60,6 +61,7 @@ export const Input = forwardRef(
   ) => {
     const id = useId();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const t = useTranslations();
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible((prev) => !prev);
@@ -137,7 +139,7 @@ export const Input = forwardRef(
               className="mt-2 text-sm text-red-600 dark:text-red-500"
               id="input-error"
             >
-              {errorMessage ? errorMessage : error.message}
+              {t(errorMessage ? errorMessage : error.message)}
             </Text>
           </>
         )}
