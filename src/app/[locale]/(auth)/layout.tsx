@@ -10,7 +10,7 @@ export default function AuthLayout({ children }: Props) {
   const messages = useMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider timeZone="Europe/Warsaw" messages={messages}>
       <div className="h-full ">
         <header className="absolute inset-x-0 top-0 z-50 bg-black">
           <nav

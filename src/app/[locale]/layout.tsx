@@ -29,7 +29,7 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
   const messages = useMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider timeZone="Europe/Warsaw" messages={messages}>
       <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
         <html lang={locale} className="h-full" suppressHydrationWarning>
           <body className={`${inter.className} h-full`}>

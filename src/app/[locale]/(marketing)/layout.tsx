@@ -11,7 +11,7 @@ export default function MarketingLayout({ children }: Props) {
   const messages = useMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider timeZone="Europe/Warsaw" messages={messages}>
       <Toast />
       <div className="h-screen flex flex-col">
         <Sidebar>{children}</Sidebar>

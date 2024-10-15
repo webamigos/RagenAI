@@ -15,7 +15,11 @@ export default function AdminLayout({ children }: Props) {
   const locale = useLocale();
 
   return (
-    <NextIntlClientProvider messages={messages} locale={locale}>
+    <NextIntlClientProvider
+      timeZone="Europe/Warsaw"
+      messages={messages}
+      locale={locale}
+    >
       <div className="h-screen flex flex-col">
         <Toast />
         <DocumentsProvider>
