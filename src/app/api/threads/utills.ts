@@ -6,7 +6,6 @@ import {
 import {
   ChatPromptTemplate,
   MessagesPlaceholder,
-  PromptTemplate,
 } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import {
@@ -19,8 +18,7 @@ import {
   embeddingModel,
   supaBaseClient,
 } from './services/ChatService';
-import { getAssistantPrompt } from '@/app/lib/services/settings';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import db from '@salesyy/prisma-client';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
 
@@ -30,49 +28,12 @@ type Document = {
   id?: number | string;
 };
 
-//TODO: fix types
-let chain: any;
-//
-
-async function initializeChain(request: NextRequest) {
-  const { orgId } = getAuth(request);
-  if (!orgId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const vectorStore = new SupabaseVectorStore(embeddingModel, {
-    client: supaBaseClient,
-    tableName: `documents_${orgId}`,
-    queryName: 'match_documents',
-  });
-
-  const retriever = vectorStore.asRetriever();
-  const retrieverChain = RunnableSequence.from([
-    (prevResult) => prevResult.question,
-    retriever,
-    combineDocuments,
-  ]);
-
-  const prompt = (await getAssistantPrompt(orgId)) as string;
-  const promptTemplate = PromptTemplate.fromTemplate(prompt);
-
-  chain = RunnableSequence.from([
-    {
-      question: (input) => input.question,
-      chat_history: (input) => input.chat_history,
-      context: () => retrieverChain,
-    },
-    promptTemplate,
-    () => createChatInstance(request),
-    new StringOutputParser(),
-  ]);
-
-  return chain;
-}
-
 function combineDocuments(docs: Document[]) {
   return docs.map((doc) => doc.pageContent).join('\n\n');
 }
+
+//Todo:
+//utilise prompt from getAssistantPrompt user settings
 
 async function initializeChainV2(request: NextRequest) {
   const { orgId } = getAuth(request);
@@ -160,4 +121,4 @@ using only the resources provided. Be verbose!
   ]);
 }
 
-export { initializeChain, initializeChainV2, chain };
+export { initializeChainV2 };
