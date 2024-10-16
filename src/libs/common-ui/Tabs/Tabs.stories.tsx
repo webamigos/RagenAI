@@ -8,7 +8,7 @@ export default {
 } as Meta;
 
 const Template: StoryFn = (args) => (
-  <Tabs {...args}>
+  <Tabs activeTab={0} setActiveTab={() => {}} {...args}>
     <TabList activeTab={0} setActiveTab={() => {}}>
       <Tab>Tab 1</Tab>
       <Tab>Tab 2</Tab>
@@ -28,7 +28,7 @@ WithMoreTabs.args = {};
 
 WithMoreTabs.decorators = [
   () => (
-    <Tabs>
+    <Tabs activeTab={0} setActiveTab={() => {}}>
       <TabList activeTab={0} setActiveTab={() => {}}>
         <Tab>Tab 1</Tab>
         <Tab>Tab 2</Tab>
