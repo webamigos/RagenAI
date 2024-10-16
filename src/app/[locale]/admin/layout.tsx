@@ -5,6 +5,7 @@ import { NextIntlClientProvider, useMessages, useLocale } from 'next-intl';
 import { DocumentsProvider } from '@/context/DocumentsContext';
 import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
+import { timezone } from '@/app/config';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -16,7 +17,7 @@ export default function AdminLayout({ children }: Props) {
 
   return (
     <NextIntlClientProvider
-      timeZone="Europe/Warsaw"
+      timeZone={timezone}
       messages={messages}
       locale={locale}
     >

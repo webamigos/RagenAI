@@ -6,7 +6,7 @@ import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { Providers } from '../components/Providers';
 import { ThreadsContextProvider } from '../../context/ThreadsContext';
 import { plPL } from '../messages/pl-PL-clerk';
-import { locales } from '../config';
+import { locales, timezone } from '../config';
 import './global.css';
 
 import { Inter } from 'next/font/google';
@@ -29,7 +29,7 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
   const messages = useMessages();
 
   return (
-    <NextIntlClientProvider timeZone="Europe/Warsaw" messages={messages}>
+    <NextIntlClientProvider timeZone={timezone} messages={messages}>
       <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
         <html lang={locale} className="h-full" suppressHydrationWarning>
           <body className={`${inter.className} h-full`}>
