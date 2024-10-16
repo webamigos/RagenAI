@@ -7,6 +7,10 @@ import {
   grantTablePermissions,
 } from '@/libs/db/sqlRequest';
 import { supaBaseClient, embeddingModel } from './ChatService';
+import {
+  DOCUMENT_SEARCH_QUERY_NAME,
+  VECTOR_STORE_TABLE_NAME,
+} from '@/app/constants/vectorStore';
 
 export const convertAndStoreDocument = async (
   fileContent: string,
@@ -17,7 +21,7 @@ export const convertAndStoreDocument = async (
     throw new Error('File content missing!');
   }
 
-  const tableName = `documents_${uploaderId}`;
+  const tableName = VECTOR_STORE_TABLE_NAME;
 
   await createTableIfNotExists(tableName);
   await grantTablePermissions(tableName);
@@ -58,7 +62,7 @@ export const convertAndStoreDocument = async (
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
     client: supaBaseClient,
     tableName,
-    queryName: 'match_documents',
+    queryName: DOCUMENT_SEARCH_QUERY_NAME,
   });
 
   await vectorStore.addVectors(

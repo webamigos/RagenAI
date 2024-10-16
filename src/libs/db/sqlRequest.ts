@@ -1,4 +1,5 @@
 import { supaBaseClient } from '@/app/api/threads/services/ChatService';
+import { VECTOR_STORE_TABLE_NAME } from '@/app/constants/vectorStore';
 import { logger } from '@/app/lib/utils/logger';
 
 export async function createTableIfNotExists(tableName: string) {
@@ -57,10 +58,8 @@ export const removeTableContent = async (
   document_id: string
 ) => {
   try {
-    const userTableName = `documents_${visitor_id}`;
-
     const deleteEmbeddingsQuery = `
-      DELETE FROM ${userTableName}
+      DELETE FROM ${VECTOR_STORE_TABLE_NAME}
       WHERE metadata->>'document_id' = '${document_id}';
     `;
 

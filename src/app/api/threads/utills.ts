@@ -22,6 +22,7 @@ import {
 import { getAssistantPrompt } from '@/app/lib/services/settings';
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@salesyy/prisma-client';
+import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
 
 type Document = {
   pageContent: string;
@@ -93,7 +94,7 @@ async function initializeChainV2(request: NextRequest) {
   //Retreival chain
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
     client: supaBaseClient,
-    queryName: 'mj_match_documents',
+    queryName: DOCUMENT_SEARCH_QUERY_NAME,
     filter: documentIdFilteringFunction,
   });
 
