@@ -1,0 +1,11 @@
+.custom-quill .ql-toolbar {
+  @apply bg-gray-200 border border-gray-300 rounded-t-lg;
+}
+
+.custom-quill .ql-container {
+  @apply bg-white border border-gray-300 rounded-b-lg;
+}
+
+.custom-quill .ql-editor {
+  @apply p-4 text-gray-800;
+}

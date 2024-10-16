@@ -42,6 +42,11 @@
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Zresetuj hasło"
   },
+  "admin-panel-page": {
+    "add-files": "Add files",
+    "create-file": "Create Document",
+    "uploaded-list": "List of Documents"
+  },
   "common": {
     "sign-in": "Sign in",
     "sign-out": "Sign out"

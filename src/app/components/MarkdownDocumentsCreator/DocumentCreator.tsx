@@ -1,11 +1,13 @@
 'use client';
 
+import './editor-styles.css';
+
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ReactQuill from 'react-quill-new';
-import { Card } from '@salesyy/common-ui/Card';
+import { Card, Button, Text } from '@salesyy/common-ui';
 
 const schema = z.object({
   content: z.string().min(1, 'Content is required'),
@@ -39,12 +41,15 @@ export const DocumentCreator = () => {
     <Card size="full">
       <form onSubmit={handleSubmit(onSubmit)}>
         <ReactQuill
+          className="custom-quill w-full"
           theme="snow"
           value={editorContent}
           onChange={onEditorStateChange}
         />
-        {errors.content && <p>{errors.content.message}</p>}
-        <button type="submit">Save Document</button>
+        {errors.content && (
+          <Text color="red-500">{errors.content.message}</Text>
+        )}
+        <Button label="Save" type="submit" />
       </form>
     </Card>
   );
