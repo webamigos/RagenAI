@@ -115,6 +115,12 @@
     "choose-files": "Choose files",
     "supported-formats": "Supports"
   },
+  "create-document": {
+    "title": "Create document",
+    "input-label": "Title",
+    "input-placeholder": "Enter document title",
+    "editor-label": "Content"
+  },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",

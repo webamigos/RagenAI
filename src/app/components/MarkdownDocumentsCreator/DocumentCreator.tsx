@@ -4,12 +4,16 @@ import './editor-styles.css';
 
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ReactQuill from 'react-quill-new';
-import { Card, Text, ArrowRightCircleIcon } from '@salesyy/common-ui';
+import TurndownService from 'turndown';
+
+import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
 
 const schema = z.object({
+  title: z.string().min(1, 'Title is required'),
   content: z.string().min(1, 'Content is required'),
 });
 
@@ -26,6 +30,8 @@ export const DocumentCreator = () => {
     resolver: zodResolver(schema),
   });
 
+  const t = useTranslations('create-document');
+
   useEffect(() => {
     register('content', { required: true, minLength: 11 });
   }, [register]);
@@ -35,11 +41,30 @@ export const DocumentCreator = () => {
   };
   const editorContent = watch('content');
 
-  const onSubmit = async (data: DocumentSchema) => {};
+  const onSubmit = async (data: DocumentSchema) => {
+    const turndownService = new TurndownService();
+    const markdownContent = turndownService.turndown(data.content);
+  };
 
   return (
-    <Card size="full">
+    <Card title={t('title')} size="full">
       <form onSubmit={handleSubmit(onSubmit)}>
+        <Input
+          mandatory={true}
+          label={t('input-label')}
+          type="text"
+          placeholder={t('input-placeholder')}
+          {...register('title')}
+          className="mb-2 w-full p-2 border-gray-300 rounded"
+          error={errors.title}
+          errorMessage={errors.title?.message}
+        />
+        <div className="flex text-sm items-center font-medium mb-2">
+          <p className="text-red-600 mt-1">*</p>
+          <label className="block leading-6 dark:text-gray-300">
+            {t('editor-label')}
+          </label>
+        </div>
         <ReactQuill
           className="custom-quill w-full"
           theme="snow"
