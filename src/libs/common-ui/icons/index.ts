@@ -1,5 +1,3 @@
-import { PencilSquareIcon } from './PencilSquareIcon';
-import { WarningIcon } from './WarningIcon';
 export { SpinnerSVG } from './SpinnerSVG';
 export { CursorSVG } from './CursorSVG';
 export { DownIcon } from './DownIcon';
@@ -31,3 +29,4 @@ export { WarningIcon } from './WarningIcon';
 export { CloudArrowUp } from './CloudArrowUp';
 export { BulletListIcon } from './BulletListIcon';
 export { PencilSquareIcon } from './PencilSquareIcon';
+export { ArrowRightCircleIcon } from './ArrowRightCircleIcon';

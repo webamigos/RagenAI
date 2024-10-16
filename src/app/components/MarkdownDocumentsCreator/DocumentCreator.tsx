@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ReactQuill from 'react-quill-new';
-import { Card, Button, Text } from '@salesyy/common-ui';
+import { Card, Text, ArrowRightCircleIcon } from '@salesyy/common-ui';
 
 const schema = z.object({
   content: z.string().min(1, 'Content is required'),
@@ -49,7 +49,11 @@ export const DocumentCreator = () => {
         {errors.content && (
           <Text color="red-500">{errors.content.message}</Text>
         )}
-        <Button label="Save" type="submit" />
+        <button type="submit" className="mt-2 rounded-full cursor-pointer">
+          <ArrowRightCircleIcon
+            className={`fill-green-300 hover:fill-green-400 stroke-1`}
+          />
+        </button>
       </form>
     </Card>
   );

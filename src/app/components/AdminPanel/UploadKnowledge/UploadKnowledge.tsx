@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useUser, useOrganization } from '@clerk/nextjs';
 
-import { Card, Button, FileUploader } from '@salesyy/common-ui';
+import { Card, FileUploader, ArrowRightCircleIcon } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
@@ -76,12 +76,15 @@ export const UploadKnowledge = () => {
           uploading={uploading}
         />
       )}
-      <Button
-        className="mt-5"
-        label={uploading ? t('sending') : t('send')}
+      <button
+        className="mt-2 rounded-full cursor-pointer"
         onClick={handleSend}
         disabled={uploading || files.length < 1}
-      />
+      >
+        <ArrowRightCircleIcon
+          className={`fill-green-300 hover:fill-green-400 stroke-1`}
+        />
+      </button>
     </Card>
   );
 };
