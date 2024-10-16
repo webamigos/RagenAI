@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Tooltip as ReactTooltip } from 'react-tooltip';
 
-type TooltipProps = {
+export type TooltipProps = {
   id: string;
   content: string;
   children: ReactNode;

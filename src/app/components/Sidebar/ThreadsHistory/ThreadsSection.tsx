@@ -1,5 +1,3 @@
-import { memo } from 'react';
-
 import { SidebarLabel, SidebarItem } from '@salesyy/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
@@ -18,22 +16,21 @@ type Props = {
   lastThreadElementRef: React.MutableRefObject<HTMLDivElement | null>;
 };
 
-export const ThreadsSection = memo(
-  ({
-    activeThread,
-    threadCategories,
-    lastThreadElementRef,
-    handleThreadClick,
-  }: Props) => {
-    const { closeSidebar } = useSidebar();
+export const ThreadsSection = ({
+  activeThread,
+  threadCategories,
+  lastThreadElementRef,
+  handleThreadClick,
+}: Props) => {
+  const { closeSidebar } = useSidebar();
 
-    return (
-      <>
-        {threadCategories.map(
-          ({ title, threads }, categoryIndex) =>
-            threads.length > 0 && (
-              <div key={title}>
-                <SidebarLabel className="ml-1">{title}</SidebarLabel>
+  return (
+    <>
+      {threadCategories.map(
+        ({ title, threads }, categoryIndex) =>
+          threads.length > 0 && (
+            <div key={title}>
+              <SidebarLabel className="ml-1">{title}</SidebarLabel>
 
               {threads.map((thread, index) => {
                 const contentPreview =
@@ -45,36 +42,30 @@ export const ThreadsSection = memo(
                   categoryIndex === threadCategories.length - 1 &&
                   index === threads.length - 1;
 
-                  
-                  return (
-                    <div
-                      className="mb-1.5 last-of-type:mb-10 first-of-type:mt-5"
-                      ref={
-                        isLastThreadInAllCategories
-                          ? lastThreadElementRef
-                          : null
-                      }
-                      key={thread.public_id}
+                return (
+                  <div
+                    className="mb-1.5 last-of-type:mb-10 first-of-type:mt-5"
+                    ref={
+                      isLastThreadInAllCategories ? lastThreadElementRef : null
+                    }
+                    key={thread.public_id}
+                  >
+                    <SidebarItem
+                      className="cursor-pointer"
+                      onClick={() => {
+                        handleThreadClick(thread.public_id);
+                        closeSidebar();
+                      }}
+                      current={isActive}
                     >
-                      <SidebarItem
-                        className="cursor-pointer"
-                        onClick={() => {
-                          handleThreadClick(thread.public_id);
-                          closeSidebar();
-                        }}
-                        current={isActive}
-                      >
-                        {`${contentPreview}`}
-                      </SidebarItem>
-                    </div>
-                  );
-                })}
-              </div>
-            )
-        )}
-      </>
-    );
-  }
-);
-
-ThreadsSection.displayName = 'ThreadsSection';
+                      {`${contentPreview}`}
+                    </SidebarItem>
+                  </div>
+                );
+              })}
+            </div>
+          )
+      )}
+    </>
+  );
+};
