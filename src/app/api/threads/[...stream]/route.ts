@@ -17,6 +17,7 @@ import {
   SseMessageError,
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
+import { CHAIN_FINAL_ANSWER_RUN_NAME } from '../constants/chainConfig';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest, { params }: Params) {
               .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
               .join('\n');
 
-            const eventStream = await chain.streamEvents(
+            const eventStream = chain.streamEvents(
               {
                 question: threadMessage.content,
                 chat_history: conv_history,
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
               if (
                 event.event === 'on_parser_stream' &&
-                event.name === 'final_answer'
+                event.name === CHAIN_FINAL_ANSWER_RUN_NAME
               ) {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
@@ -98,7 +99,7 @@ export async function GET(request: NextRequest, { params }: Params) {
                 );
               } else if (
                 event.event === 'on_parser_end' &&
-                event.name === 'final_answer'
+                event.name === CHAIN_FINAL_ANSWER_RUN_NAME
               ) {
                 const dbMessage = await createMessageInDB({
                   thread: {

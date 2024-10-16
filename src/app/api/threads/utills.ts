@@ -21,6 +21,8 @@ import {
 import { NextRequest } from 'next/server';
 import db from '@salesyy/prisma-client';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
+import { ThreadConversationPrompts } from './constants/prompts';
+import { CHAIN_FINAL_ANSWER_RUN_NAME } from './constants/chainConfig';
 
 type Document = {
   pageContent: string;
@@ -34,7 +36,6 @@ function combineDocuments(docs: Document[]) {
 
 //Todo:
 //utilise prompt from getAssistantPrompt user settings
-
 async function initializeChainV2(request: NextRequest) {
   const { orgId } = getAuth(request);
   if (!orgId) {
@@ -66,15 +67,10 @@ async function initializeChainV2(request: NextRequest) {
   ]);
 
   // Standalone question chain
-  const REPHRASE_QUESTION_SYSTEM_TEMPLATE = `Given the following conversation and a follow up question, rephrase the follow up question to be a standalone question.`;
-
   const rephraseQuestionChainPrompt = ChatPromptTemplate.fromMessages([
-    ['system', REPHRASE_QUESTION_SYSTEM_TEMPLATE],
+    ['system', ThreadConversationPrompts.systemTemplates.rephraseQuestion],
     new MessagesPlaceholder('chat_history'),
-    [
-      'human',
-      'Rephrase the following question as a standalone question:\n{question}',
-    ],
+    ['human', ThreadConversationPrompts.humanTemplates.rephraseQuestion],
   ]);
 
   const rephraseQuestionChain = RunnableSequence.from([
@@ -84,24 +80,10 @@ async function initializeChainV2(request: NextRequest) {
   ]);
 
   // Answer generation chain
-  const ANSWER_CHAIN_SYSTEM_TEMPLATE = `You are an experienced researcher, 
-expert at interpreting and answering questions based on provided sources.
-Using the below provided context and chat history, 
-answer the user's question to the best of 
-your ability 
-using only the resources provided. Be verbose!
-
-<context>
-{context}
-</context>`;
-
   const answerGenerationChainPrompt = ChatPromptTemplate.fromMessages([
-    ['system', ANSWER_CHAIN_SYSTEM_TEMPLATE],
+    ['system', ThreadConversationPrompts.systemTemplates.answerChain],
     new MessagesPlaceholder('chat_history'),
-    [
-      'human',
-      'Now, answer this question using the previous context and chat history:\n{standalone_question}',
-    ],
+    ['human', ThreadConversationPrompts.humanTemplates.answerChain],
   ]);
 
   // main retrieval chain
@@ -116,7 +98,7 @@ using only the resources provided. Be verbose!
 
     () => createChatInstance(request),
     new StringOutputParser().withConfig({
-      runName: 'final_answer',
+      runName: CHAIN_FINAL_ANSWER_RUN_NAME,
     }),
   ]);
 }
