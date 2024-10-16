@@ -35,15 +35,27 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
 
-      const content = await file.text();
+      let content;
+      const arrayBuffer = await file.arrayBuffer();
+      content = file.name.endsWith('.epub')
+        ? (content = Buffer.from(arrayBuffer))
+        : (content = await file.text());
+
       try {
-        await convertAndStoreDocument(content, file.name, uploaderId);
+        const { message, success } = await convertAndStoreDocument(
+          content,
+          file.name,
+          uploaderId
+        );
         await createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
           file.name
         );
+        if (!success) {
+          return NextResponse.json({ message }, { status: 500 });
+        }
       } catch (error) {
         logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
         return NextResponse.json(

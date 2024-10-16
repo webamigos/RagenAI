@@ -31,7 +31,6 @@ export const FileUploader = ({
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (disabled) return;
-
     const droppedFiles = Array.from(event.dataTransfer.files).filter(
       isMarkdownOrEpubFile
     );
@@ -43,7 +42,6 @@ export const FileUploader = ({
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
-
     const selectedFiles = Array.from(event.target.files || []).filter(
       isMarkdownOrEpubFile
     );
@@ -78,7 +76,7 @@ export const FileUploader = ({
           ref={fileInputRef}
           className="hidden"
           type="file"
-          accept=".md, .epub"
+          accept=".md,.epub"
           multiple
           onChange={handleFileSelect}
         />
