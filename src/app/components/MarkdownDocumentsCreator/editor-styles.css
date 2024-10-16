@@ -3,7 +3,7 @@
 }
 
 .custom-quill .ql-container {
-  @apply bg-white border border-gray-300 rounded-b-lg;
+  @apply bg-white border border-gray-300 rounded-b-lg h-80;
 }
 
 .custom-quill .ql-editor {

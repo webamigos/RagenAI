@@ -2,13 +2,14 @@
 
 import './editor-styles.css';
 
+import dynamic from 'next/dynamic';
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ReactQuill from 'react-quill-new';
 import TurndownService from 'turndown';
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
 
@@ -72,7 +73,9 @@ export const DocumentCreator = () => {
           onChange={onEditorStateChange}
         />
         {errors.content && (
-          <Text color="red-500">{errors.content.message}</Text>
+          <Text className="mt-2" fontSize="sm" color="red-500">
+            {errors.content.message}
+          </Text>
         )}
         <button type="submit" className="mt-2 rounded-full cursor-pointer">
           <ArrowRightCircleIcon
