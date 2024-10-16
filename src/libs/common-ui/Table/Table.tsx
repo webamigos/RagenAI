@@ -2,8 +2,12 @@
 
 import clsx from 'clsx';
 import type React from 'react';
-import { createContext, useContext, useState } from 'react';
-import { Link } from '../Link';
+import { createContext, lazy, useContext, useState } from 'react';
+const Link = lazy(() =>
+  import('@salesyy/common-ui').then((module) => ({
+    default: module.Link,
+  }))
+);
 
 const TableContext = createContext<{
   bleed: boolean;

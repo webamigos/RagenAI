@@ -27,3 +27,4 @@ export { PencilIcon } from './PencilIcon';
 export { EnterIcon } from './EnterIcon';
 export { OpenLockIcon } from './OpenLockIcon';
 export { WarningIcon } from './WarningIcon';
+export { ArrowPath } from './ArrowPath';
