@@ -1,12 +1,17 @@
-export const OpenEyeIcon = () => {
+import { ComponentProps } from 'react';
+
+import { classMerge } from '../utils/cn';
+
+export const OpenEyeIcon = ({ onClick, className }: ComponentProps<'svg'>) => {
   return (
     <svg
+      onClick={onClick}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className="h-5 w-5"
+      className={classMerge(className, 'h-5 w-5')}
     >
       <path
         strokeLinecap="round"

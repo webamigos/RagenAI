@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 import format from 'date-fns-tz/format';
 import { useTranslations } from 'next-intl';
@@ -8,6 +9,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { type usersDocuments } from '@/app/contracts/Documents';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
+import DocumentPreviewModal from './DocumentPreview';
 
 type Props = {
   documents: usersDocuments[];
@@ -20,6 +22,8 @@ type DocumentRowProps = {
 };
 
 const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
 
@@ -36,6 +40,10 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
     : '-';
 
   const truncatedFileName = truncateFileName(file_name, 20);
+
+  const handlePreview = () => {
+    setIsPreviewOpen((prevState) => !prevState);
+  };
 
   const handleDelete = async (
     organization_id: string,
@@ -60,32 +68,55 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
   };
 
   return (
-    <CommonUi.TableRow className="text-sm">
-      <CommonUi.TableCell title={file_name}>
-        {truncatedFileName}
-      </CommonUi.TableCell>
-      <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
-      <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 -my-1.5 sm:-mx-2.5">
-          <CommonUi.Dropdown>
-            <CommonUi.DropdownButton>
-              <CommonUi.EllipsiHorizontalIcon />
-            </CommonUi.DropdownButton>
-            <CommonUi.DropdownMenu anchor="bottom end">
-              <CommonUi.DropdownItem
-                onClick={() =>
-                  handleDelete(organization_id, id, onDocumentsUpdate)
-                }
-              >
-                {translatedTable('delete')}
-              </CommonUi.DropdownItem>
-            </CommonUi.DropdownMenu>
-          </CommonUi.Dropdown>
-        </div>
-      </CommonUi.TableCell>
-    </CommonUi.TableRow>
+    <>
+      <CommonUi.TableRow className="text-sm">
+        <CommonUi.TableCell title={file_name}>
+          {truncatedFileName}
+        </CommonUi.TableCell>
+        <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
+        <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>
+          <div className="-mx-3 -my-1.5 sm:-mx-2.5">
+            <CommonUi.Dropdown>
+              <CommonUi.DropdownButton>
+                <CommonUi.EllipsiHorizontalIcon />
+              </CommonUi.DropdownButton>
+              <CommonUi.DropdownMenu anchor="bottom end">
+                <CommonUi.DropdownItem
+                  onClick={() =>
+                    handleDelete(organization_id, id, onDocumentsUpdate)
+                  }
+                >
+                  <CommonUi.Tooltip
+                    id="delete doc"
+                    place="top"
+                    content={translatedTable('delete')}
+                  >
+                    <CommonUi.TrashIcon />
+                  </CommonUi.Tooltip>
+                </CommonUi.DropdownItem>
+                <CommonUi.DropdownItem onClick={handlePreview}>
+                  <CommonUi.Tooltip
+                    id="preview doc"
+                    content={translatedTable('preview')}
+                  >
+                    <CommonUi.OpenEyeIcon />
+                  </CommonUi.Tooltip>
+                </CommonUi.DropdownItem>
+              </CommonUi.DropdownMenu>
+            </CommonUi.Dropdown>
+          </div>
+        </CommonUi.TableCell>
+      </CommonUi.TableRow>
+      {isPreviewOpen && (
+        <DocumentPreviewModal
+          isOpen={isPreviewOpen}
+          document={document}
+          onClose={handlePreview}
+        />
+      )}
+    </>
   );
 };
 

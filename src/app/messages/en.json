@@ -125,7 +125,8 @@
     "file-name": "File Name",
     "file-size": "File Size",
     "created": "Created",
-    "updated": "Updated"
+    "updated": "Updated",
+    "preview": "Preview"
   },
   "set-openai-api-key": {
     "set-env": "Set Environment Variables",
