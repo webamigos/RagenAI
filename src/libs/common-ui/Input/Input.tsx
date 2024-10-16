@@ -6,12 +6,23 @@ import {
   type Ref,
   HTMLProps,
 } from 'react';
-import { useTranslations } from 'next-intl';
 import type { FieldError } from 'react-hook-form';
 
 import { classMerge } from '../utils/cn';
-import { OpenEyeIcon, EyeOffIcon } from '@salesyy/common-ui';
 import { Text } from '../Text';
+import { lazy, Suspense } from 'react';
+import { useTranslations } from 'next-intl';
+
+const OpenEyeIcon = lazy(() =>
+  import('@salesyy/common-ui').then((module) => ({
+    default: module.OpenEyeIcon,
+  }))
+);
+const EyeOffIcon = lazy(() =>
+  import('@salesyy/common-ui').then((module) => ({
+    default: module.EyeOffIcon,
+  }))
+);
 
 type Props = {
   label?: string;
@@ -101,7 +112,7 @@ export const Input = forwardRef(
                 className={classMerge(
                   'block w-full px-1.5 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
                   {
-                    'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset':
+                    'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset cursor-pointer':
                       type !== 'range',
                     'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
                       error,
@@ -118,7 +129,9 @@ export const Input = forwardRef(
                 onClick={togglePasswordVisibility}
                 className="absolute inset-y-0 right-0 px-3 flex items-center bg-gray-100 dark:bg-slate-700 border-l border-gray-300 dark:border-slate-600"
               >
-                {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
+                <Suspense fallback={null}>
+                  {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
+                </Suspense>
               </button>
             )}
           </div>

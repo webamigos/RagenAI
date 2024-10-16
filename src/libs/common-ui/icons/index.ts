@@ -30,3 +30,4 @@ export { CloudArrowUp } from './CloudArrowUp';
 export { BulletListIcon } from './BulletListIcon';
 export { PencilSquareIcon } from './PencilSquareIcon';
 export { ArrowRightCircleIcon } from './ArrowRightCircleIcon';
+export { ArrowPath } from './ArrowPath';

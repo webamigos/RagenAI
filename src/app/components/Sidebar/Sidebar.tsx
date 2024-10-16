@@ -1,8 +1,13 @@
 'use client';
 
-import { SidebarBody } from '@salesyy/common-ui';
-import { SidebarLayout } from '@salesyy/common-ui';
-import { Navbar } from '@salesyy/common-ui';
+import {
+  SidebarBody,
+  SidebarLayout,
+  Navbar,
+  Text,
+  ArrowPath,
+  Button,
+} from '@salesyy/common-ui';
 import { usePathname } from 'next/navigation';
 
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
@@ -29,10 +34,12 @@ export const Sidebar = ({ children, membership }: Props) => {
     isSignedIn,
     userThreads,
     activeThread,
+    refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
   } = useSidebarLogic();
   const pathname = usePathname();
+  const isError = error ? true : false;
 
   return (
     <SidebarProvider>
@@ -43,16 +50,25 @@ export const Sidebar = ({ children, membership }: Props) => {
             <Header />
             <SidebarBody>
               {pathname === `/${locale}` || pathname.includes('threads') ? (
-                <UserThreadsHistory
-                  error={error}
-                  hasMore={hasMore}
-                  isLoading={isLoading}
-                  isSignedIn={isSignedIn}
-                  userThreads={userThreads}
-                  activeThread={activeThread}
-                  isThreadsLoaded={isThreadsLoaded}
-                  handleThreadClick={handleThreadClick}
-                />
+                error ? (
+                  <div className="flex flex-col items-center text-start">
+                    <Text color="red-500">{error}</Text>
+                    <Button isError={isError} onClick={refetchThreads}>
+                      <ArrowPath />
+                    </Button>
+                  </div>
+                ) : (
+                  <UserThreadsHistory
+                    error={error}
+                    hasMore={hasMore}
+                    isLoading={isLoading}
+                    isSignedIn={isSignedIn}
+                    userThreads={userThreads}
+                    activeThread={activeThread}
+                    isThreadsLoaded={isThreadsLoaded}
+                    handleThreadClick={handleThreadClick}
+                  />
+                )
               ) : (
                 <ProfileAndOrganizationTabs membership={membership} />
               )}
