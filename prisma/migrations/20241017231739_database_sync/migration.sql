@@ -11,17 +11,7 @@ CREATE TABLE "Settings" (
 );
 
 -- CreateTable
-CREATE TABLE "documents" (
-    "id" BIGSERIAL NOT NULL,
-    "content" TEXT,
-    "metadata" JSONB,
-    "embedding" vector,
-
-    CONSTRAINT "documents_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "usersDocuments" (
+CREATE TABLE "UsersDocuments" (
     "id" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "file_name" TEXT NOT NULL,
@@ -30,11 +20,11 @@ CREATE TABLE "usersDocuments" (
     "updated_at" TIMESTAMP(3),
     "metadata" JSONB,
 
-    CONSTRAINT "usersDocuments_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "UsersDocuments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE INDEX "usersDocuments_organization_id_idx" ON "usersDocuments"("organization_id");
+CREATE INDEX "UsersDocuments_organization_id_idx" ON "UsersDocuments"("organization_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "usersDocuments_id_organization_id_key" ON "usersDocuments"("id", "organization_id");
+CREATE UNIQUE INDEX "UsersDocuments_id_organization_id_key" ON "UsersDocuments"("id", "organization_id");

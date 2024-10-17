@@ -1,13 +1,11 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  directUrl  = env("DIRECT_URL")
-  extensions = [pgvector(map: "vector"), uuidOssp(map: "uuid-ossp"), pg_graphql, pg_stat_statements, pgcrypto, pgjwt, pgsodium, supabase_vault]
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_DIRECT_URL")
 }
 
 model User {
@@ -59,14 +57,15 @@ model VisitorMessages {
   id         String   @id @default(uuid())
 }
 
-model documents {
-  id        BigInt                 @id @default(autoincrement())
-  content   String?
-  metadata  Json?
-  embedding Unsupported("vector")?
-}
+// Moved to separate base
+// model documents {
+//   id        BigInt                 @id @default(autoincrement())
+//   content   String?
+//   metadata  Json?
+//   embedding Unsupported("vector")?
+// }
 
-model usersDocuments {
+model UsersDocuments {
   id              String    @id
   organization_id String
   file_name       String
