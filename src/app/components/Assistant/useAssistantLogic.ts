@@ -281,8 +281,6 @@ export const useAssistantLogic = (threadId: string) => {
       created_at: new Date(),
     };
 
-    threadsDispatch({ type: 'ADD_NEW_THREAD', payload: newThread });
-
     try {
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
