@@ -11,11 +11,7 @@ import {
   createTableIfNotExists,
   grantTablePermissions,
 } from '@/libs/db/sqlRequest';
-import {
-  supaBaseClient,
-  embeddingModel,
-  generateLanguageSpecificTags,
-} from './ChatService';
+import { supaBaseClient, embeddingModel } from './ChatService';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -108,13 +104,10 @@ export const convertAndStoreDocument = async (
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
 
-        const tags = await generateLanguageSpecificTags(text);
-
         const metadata = {
           document_id: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
-          tags,
           id: index,
         };
 
