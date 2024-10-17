@@ -16,6 +16,7 @@ import {
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
+import { maskApiKey } from '@/app/lib/utils/hashApiKey';
 
 const apiKeySchema = z.object({
   apiKey: z.string().min(10, 'API key must be at least 10 characters long'),
@@ -58,7 +59,7 @@ export const SetApiKeys = () => {
           }
         } else {
           const fetchedApiKey = response.data.apiKey;
-          setValue('apiKey', fetchedApiKey);
+          setValue('apiKey', maskApiKey(fetchedApiKey));
           initialApiKeyRef.current = fetchedApiKey;
         }
       } catch (error) {
