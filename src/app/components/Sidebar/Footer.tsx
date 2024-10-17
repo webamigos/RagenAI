@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import * as Libs from '@salesyy/common-ui';
 
 import { UserLinks } from '../UserLinks';
+import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
 type Props = {
   isSignedIn?: boolean;
@@ -16,7 +17,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
     <Libs.SidebarFooter className="mb-10 lg:mb-5">
       <Libs.SidebarSection>
         <div className="flex justify-between items-center">
-          {isSignedIn && (
+          {isSignedIn && userEmail && (
             <>
               <Libs.Dropdown>
                 <Libs.DropdownButton as={Libs.SidebarItem}>
@@ -31,9 +32,16 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                       <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
                         {userEmail?.split('@')[0] || 'User'}
                       </span>
-                      <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
-                        {userEmail || 'email@example.com'}
-                      </span>
+                      <Libs.Tooltip
+                        id="email"
+                        place="bottom"
+                        content={userEmail}
+                      >
+                        <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
+                          {truncateFileName(userEmail, 28) ||
+                            'email@example.com'}
+                        </span>
+                      </Libs.Tooltip>
                     </span>
                   </span>
                   <Libs.ChevronUpIcon />
