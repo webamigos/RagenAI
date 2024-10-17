@@ -36,6 +36,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                         id="email"
                         place="bottom"
                         content={userEmail}
+                        delayShow={500}
                       >
                         <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
                           {truncateFileName(userEmail, 28) ||
