@@ -1,5 +1,5 @@
-import { createContext, useState, useMemo, useEffect } from 'react';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { createContext, useState, useEffect } from 'react';
+import { useOrganization } from '@clerk/nextjs';
 
 import { getUserDocuments } from '@/app/actions';
 import { usersDocuments } from '@/app/contracts/Documents';
@@ -24,7 +24,6 @@ export const DocumentsProvider = ({ children }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
 
-  // const { user } = useUser();
   const { organization } = useOrganization();
 
   const orgId = organization?.id.toLowerCase();

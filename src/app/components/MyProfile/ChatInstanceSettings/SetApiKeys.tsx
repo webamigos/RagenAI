@@ -50,14 +50,19 @@ export const SetApiKeys = () => {
         const response = await fetchSettings();
 
         if (!response.success) {
-          setIsWarning(true);
-          errorToast({ message: t('failed-to-fetch') });
+          if (response.message === 'No API Key found') {
+            setIsWarning(true);
+          } else {
+            setIsWarning(true);
+            errorToast({ message: t('failed-to-fetch') });
+          }
         } else {
           const fetchedApiKey = response.data.apiKey;
           setValue('apiKey', fetchedApiKey);
           initialApiKeyRef.current = fetchedApiKey;
         }
       } catch (error) {
+        setIsWarning(true);
         errorToast({ message: t('failed-to-fetch') });
       } finally {
         setLoading(false);

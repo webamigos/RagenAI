@@ -57,7 +57,7 @@ export const RegisterForm = () => {
   };
 
   return (
-    <Card>
+    <Card className="w-screen">
       <div className="flex flex-col mb-4 text-center">
         <Text fontSize="lg" fontWeight="bold">
           {t('create-account')}

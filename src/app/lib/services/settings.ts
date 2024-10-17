@@ -39,7 +39,8 @@ export async function saveModel(
 }
 
 export async function getModel(orgId: string): Promise<string | null> {
-  return await redis.hget(`org:${orgId}`, 'model');
+  const model = await redis.hget(`org:${orgId}`, 'model');
+  return model ? model : 'gpt-3.5-turbo';
 }
 
 export async function saveAssistantPrompt(

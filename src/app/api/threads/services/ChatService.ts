@@ -1,9 +1,7 @@
-import { ChatOpenAI, OpenAI } from '@langchain/openai';
+import { ChatOpenAI } from '@langchain/openai';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { createClient } from '@supabase/supabase-js';
 import { DatabaseGenerated } from '@/libs/db/supabase-types';
-import { franc } from 'franc';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
 
 import {
   getModel,
@@ -49,35 +47,3 @@ if (!sbUrl || !sbApiKey) {
 }
 
 export const supaBaseClient = createClient<DatabaseGenerated>(sbUrl, sbApiKey);
-
-const model = new OpenAI({ apiKey: apiKey1 });
-
-function cleanTags(tags: string[]): string[] {
-  return tags.map((tag) => tag.replace(/["\\]/g, '').trim());
-}
-
-const detectLanguage = (text: string): string => {
-  const langCode = franc(text);
-  return langCode !== 'und' ? langCode : 'unknown';
-};
-
-export async function generateLanguageSpecificTags(
-  content: string
-): Promise<string[]> {
-  const language = detectLanguage(content);
-
-  const prompt = ChatPromptTemplate.fromTemplate(
-    `Generate three relevant tags for this content in ${language}: "${content}" Tags:`
-  );
-  const chain = await prompt.pipe(model);
-  const response = await chain.invoke({
-    content,
-    language,
-  });
-
-  const tags = response
-    .trim()
-    .split(',')
-    .map((tag) => tag.trim());
-  return cleanTags(tags);
-}
