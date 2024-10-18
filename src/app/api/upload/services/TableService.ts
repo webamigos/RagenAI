@@ -1,5 +1,5 @@
-import { supaBaseClient } from '@/app/api/threads/services/ChatService';
 import { logger } from '@/app/lib/utils/logger';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
 export async function deleteDocument(visitor_id: string, document_id: string) {
   try {
@@ -10,12 +10,10 @@ export async function deleteDocument(visitor_id: string, document_id: string) {
       WHERE metadata->>'document_id' = '${document_id}';
     `;
 
-    const { error: deleteEmbeddingsError } = await supaBaseClient.rpc(
-      'execute_sql',
-      {
+    const { error: deleteEmbeddingsError } =
+      await supabaseVectorStoreClient.rpc('execute_sql', {
         sql_text: deleteEmbeddingsQuery,
-      }
-    );
+      });
 
     if (deleteEmbeddingsError) {
       logger.error(

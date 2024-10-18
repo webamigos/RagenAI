@@ -6,12 +6,8 @@ import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-
-import {
-  createTableIfNotExists,
-  grantTablePermissions,
-} from '@/libs/db/sqlRequest';
-import { supaBaseClient, embeddingModel } from './ChatService';
+import { embeddingModel } from './ChatService';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -56,8 +52,6 @@ export const convertAndStoreDocument = async (
     }
 
     const tableName = `documents_${uploaderId}`;
-    await createTableIfNotExists(tableName);
-    await grantTablePermissions(tableName);
 
     let rawDocs: Document[] = [];
 
@@ -122,7 +116,7 @@ export const convertAndStoreDocument = async (
     );
 
     const vectorStore = new SupabaseVectorStore(embeddingModel, {
-      client: supaBaseClient,
+      client: supabaseVectorStoreClient,
       tableName,
       queryName: 'match_documents',
     });
