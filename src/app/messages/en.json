@@ -12,7 +12,7 @@
     "or": "or",
     "to-still-use": "to continue using the service"
   },
-  "Sign-up": {
+  "sign-up": {
     "create-account": "Create your account",
     "to-continue": "to continue to SalesYY Assistant",
     "sign-up": "Sign up",
@@ -23,14 +23,16 @@
     "confirm": "Confirm code",
     "or": "or"
   },
-  "Sign-in": {
+  "sign-in": {
     "sign-in": "Sign in",
-    "Sign-up": "Sign up",
+    "sign-up": "Sign up",
     "Password": "Password",
     "to-continue": "to continue to SalesYY Assistant",
     "Dont-have-an-account": "Dont have an account?",
     "or": "or",
-    "Forgot-password": "Forgot your password?"
+    "Forgot-password": "Forgot your password?",
+    "invalid-email": "Email is invalid",
+    "invalid-password": "Password should have at least 8 characters"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
@@ -66,14 +68,20 @@
     "contact-with-us": "Contact with us"
   },
   "success-toast": {
-    "copied": "copied"
+    "copied": "Copied",
+    "deleted": "Deleted",
+    "saved": "Saved"
   },
   "error-toast": {
-    "no-user-id": "user id missing"
+    "no-user-id": "user id missing",
+    "error-during-deleting-file": "Error deleting document",
+    "failed-to-update-temperature": "Failed to update temperature:",
+    "failed-to-fetch-settings": "Failed to fetch settings:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
     "my-profile": "My profile",
+    "home-page": "Home page",
     "admin-panel": "Admin",
     "change-password": "Change password",
     "close": "close"
@@ -101,5 +109,34 @@
     "or": "or",
     "choose-files": "Choose files",
     "supported-formats": "Supports"
+  },
+  "sidebar": {
+    "profile": "Profile",
+    "security": "Security",
+    "create-organization": "Create organization",
+    "manage-organization": "Manage organization",
+    "manage-members": "Manage members",
+    "manage-knowledge": "Manage knowledge",
+    "organization-list": "Organization list",
+    "assistant-management": "Assistant management"
+  },
+  "files-table": {
+    "delete": "Delete",
+    "file-name": "File Name",
+    "file-size": "File Size",
+    "created": "Created",
+    "updated": "Updated",
+    "preview": "Preview"
+  },
+  "set-openai-api-key": {
+    "set-env": "Set Environment Variables",
+    "save": "Save",
+    "edit": "Edit",
+    "no-api-key-warning": "The lack of an API key will prevent you from using the assistant",
+    "save-successfully": "API Key saved successfully",
+    "failed-to-fetch": "Failed to fetch API Key"
+  },
+  "set-temperature": {
+    "set-temperature": "Set temperature"
   }
 }

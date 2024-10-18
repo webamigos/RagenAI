@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-import { logger } from '@/app/lib/utils/logger';
-import { createDocumentDetailsInDB } from '@/app/lib/services/document';
 import { deleteDocument } from '../services/TableService';
+
+import { logger } from '../../../lib/utils/logger';
+import { createDocumentDetailsInDB } from '../../../lib/services/document';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -35,15 +35,27 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
 
-      const content = await file.text();
+      let content;
+      const arrayBuffer = await file.arrayBuffer();
+      content = file.name.endsWith('.epub')
+        ? (content = Buffer.from(arrayBuffer))
+        : (content = await file.text());
+
       try {
-        await convertAndStoreDocument(content, file.name, uploaderId);
+        const { message, success } = await convertAndStoreDocument(
+          content,
+          file.name,
+          uploaderId
+        );
         await createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
           file.name
         );
+        if (!success) {
+          return NextResponse.json({ message }, { status: 500 });
+        }
       } catch (error) {
         logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
         return NextResponse.json(
@@ -69,7 +81,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: any }) {
+export async function DELETE(_request: Request, { params }: { params: any }) {
   const visitor_id = params.upload[0];
   const document_id = params.upload[1];
 

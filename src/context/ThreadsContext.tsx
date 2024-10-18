@@ -27,7 +27,8 @@ type Action =
   | { type: 'ERROR'; payload: string }
   | { type: 'ADD_THREADS'; payload: ThreadHistoryResponse[] }
   | { type: 'SET_HAS_MORE'; payload: boolean }
-  | { type: 'INCREMENT_SKIP'; payload: number };
+  | { type: 'INCREMENT_SKIP'; payload: number }
+  | { type: 'RESET_THREADS' };
 
 const initialState: State = {
   userThreads: [],
@@ -45,7 +46,7 @@ function threadsReducer(state: State, action: Action): State {
       return {
         ...state,
         isLoading: false,
-        userThreads: action.payload,
+        userThreads: action.payload || [],
         hasMore: action.payload.length > 0,
       };
     case 'ERROR':
@@ -54,12 +55,14 @@ function threadsReducer(state: State, action: Action): State {
       return {
         ...state,
         isLoading: false,
-        userThreads: [...state.userThreads, ...action.payload],
+        userThreads: [...state.userThreads, ...(action.payload || [])],
       };
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload };
     case 'INCREMENT_SKIP':
       return { ...state, skip: state.skip + action.payload };
+    case 'RESET_THREADS':
+      return { ...state, userThreads: [], skip: 0, hasMore: true };
     default:
       return state;
   }
@@ -69,6 +72,7 @@ type ThreadsContextType = {
   state: State;
   dispatch: React.Dispatch<Action>;
   loadMoreThreads: () => void;
+  refetchThreads: () => void;
 };
 
 export const ThreadsContext = createContext<ThreadsContextType | undefined>(
@@ -84,51 +88,60 @@ export const ThreadsContextProvider = ({
 }: ThreadsContextProviderProps) => {
   const [state, dispatch] = useReducer(threadsReducer, initialState);
   const hasInitialLoadCompleted = useRef(false);
-  const { user } = useUser();
-  const visitorId = user?.publicMetadata.visitorId;
+  const { user, isSignedIn } = useUser();
+
+  const visitorId = user?.publicMetadata?.visitorId as string | undefined;
 
   const loadMoreThreads = useCallback(async () => {
-    if (state.isLoading || !state.hasMore) return;
-
-    if (!visitorId) {
-      return;
-    }
+    if (state.isLoading || !state.hasMore || !visitorId) return;
 
     dispatch({ type: 'LOADING' });
 
     try {
-      const response = await getUserMessages(
-        visitorId as string,
+      const { status, error, threads } = await getUserMessages(
+        visitorId,
         state.skip,
         16
       );
-      const threads = response.threads || [];
 
-      if (threads.length > 0) {
-        dispatch({ type: 'ADD_THREADS', payload: threads });
-        dispatch({ type: 'INCREMENT_SKIP', payload: threads.length });
+      if (status === 200) {
+        dispatch({ type: 'ADD_THREADS', payload: threads || [] });
+        dispatch({ type: 'INCREMENT_SKIP', payload: threads?.length || 0 });
 
-        if (threads.length < 16) {
+        if (!threads || threads.length < 16) {
           dispatch({ type: 'SET_HAS_MORE', payload: false });
         }
       } else {
-        dispatch({ type: 'USER_THREADS', payload: [] });
-        dispatch({ type: 'SET_HAS_MORE', payload: false });
+        dispatch({ type: 'ERROR', payload: error || 'Unknown error' });
       }
-    } catch (error) {
-      dispatch({ type: 'ERROR', payload: 'Failed to load more threads' });
+    } catch (err) {
+      dispatch({ type: 'ERROR', payload: err?.toString() || 'Unknown error' });
     }
-  }, [state, visitorId]);
+  }, [state.isLoading, state.hasMore, visitorId]);
+
+  const refetchThreads = () => {
+    dispatch({ type: 'RESET_THREADS' });
+    loadMoreThreads();
+  };
 
   useEffect(() => {
-    if (!hasInitialLoadCompleted.current && visitorId) {
+    if (visitorId && !hasInitialLoadCompleted.current) {
       loadMoreThreads();
       hasInitialLoadCompleted.current = true;
     }
-  }, [loadMoreThreads, visitorId]);
+  }, [visitorId, loadMoreThreads]);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      dispatch({ type: 'RESET_THREADS' });
+      hasInitialLoadCompleted.current = false;
+    }
+  }, [isSignedIn]);
 
   return (
-    <ThreadsContext.Provider value={{ state, dispatch, loadMoreThreads }}>
+    <ThreadsContext.Provider
+      value={{ state, dispatch, loadMoreThreads, refetchThreads }}
+    >
       {children}
     </ThreadsContext.Provider>
   );

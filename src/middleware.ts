@@ -4,15 +4,12 @@ import {
   createRouteMatcher,
   clerkClient,
 } from '@clerk/nextjs/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { locales, defaultLocale } from './app/config';
 
 const intlMiddleware = createMiddleware({
-  // A list of all locales that are supported
   locales,
-
-  // Used when no locale matches
   defaultLocale,
 });
 
@@ -24,32 +21,55 @@ const publicRoutes = [
   '/:locale/sign-up',
   '/:locale/guest-threads/:threadId',
 ];
-const isProtectedRoute = createRouteMatcher(['/:locale/threads/:threadId']);
-const ignoreRoutes = ['assets'];
+
+const isProtectedRoute = createRouteMatcher([
+  '/:locale/threads/:threadId',
+  '/admin',
+]);
 
 export const config = {
-  // Match only internationalized pathnames
-  // matcher: ['/', '/(en|pl)/:path*'],
-  matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'], // TODO: what which endpoints which should be run only by authorized users?
-  // matcher: ['/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)'], // TODO: what which endpoints which should be run only by authorized users?
-
-  // matcher: [
-  //   '/((?!.+.[w]+$|_next|assets|monitoring).*)',
-  //   '/',
-  //   '/(api|trpc)(.*)',
-  // ],
+  matcher: [
+    '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
+    '/api/threads/(.*)',
+    '/api/settings/',
+    '/api/settings/api-key',
+    '/api/settings/temperature',
+    '/api/settings/model',
+    '/api/settings/prompt',
+    '/api/upload/(.*)',
+  ],
 };
 
-// export default authMiddleware({
-//   beforeAuth: (request: NextRequest) => {
-//     return intlMiddleware(request);
-//   },
-//   publicRoutes,
-// });
-
 export default clerkMiddleware(
-  (auth, request) => {
+  async (auth, request: NextRequest) => {
     const url = request.nextUrl.pathname;
+
+    if (request.nextUrl.pathname.startsWith('/api')) {
+      return NextResponse.next();
+    }
+
+    if (url.includes('pl/admin') || url.includes(`en/admin`)) {
+      const session = auth();
+
+      if (!session.userId) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+      }
+
+      const user = await clerkClient.users.getUser(session.userId);
+
+      const orgMemberships =
+        await clerkClient.users.getOrganizationMembershipList({
+          userId: user.id,
+        });
+
+      const admin = orgMemberships.data.some(
+        (membership) => membership.role === 'org:admin'
+      );
+
+      if (!admin) {
+        return NextResponse.redirect(new URL('/403', request.url));
+      }
+    }
 
     if (isProtectedRoute(request)) {
       auth().protect();

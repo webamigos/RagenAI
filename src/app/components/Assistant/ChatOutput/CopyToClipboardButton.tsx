@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 
 import { Clipboard, ClipboardChecked } from '@salesyy/common-ui/icons';
 import { MessageDto } from '@/app/contracts/Message';
@@ -11,32 +11,33 @@ type CopyToClipboardButtonProps = {
   className?: string;
 };
 
-export const CopyToClipboardButton = ({
-  message,
-  className,
-}: CopyToClipboardButtonProps) => {
-  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-  const { successToast } = statusToast();
-  const t = useTranslations('success-toast');
+export const CopyToClipboardButton = memo(
+  ({ message, className }: CopyToClipboardButtonProps) => {
+    const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+    const { successToast } = statusToast();
+    const t = useTranslations('success-toast');
 
-  const copyToClipboard = (text: string, messageId: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedMessageId(messageId);
-      successToast({ message: t('copied') });
-      setTimeout(() => setCopiedMessageId(null), 2000);
-    });
-  };
+    const copyToClipboard = (text: string, messageId: string) => {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopiedMessageId(messageId);
+        successToast({ message: t('copied') });
+        setTimeout(() => setCopiedMessageId(null), 2000);
+      });
+    };
 
-  return (
-    <button
-      onClick={() => copyToClipboard(message.content, message.public_id)}
-      className={className}
-    >
-      {copiedMessageId === message.public_id ? (
-        <ClipboardChecked />
-      ) : (
-        <Clipboard />
-      )}
-    </button>
-  );
-};
+    return (
+      <button
+        onClick={() => copyToClipboard(message.content, message.public_id)}
+        className={className}
+      >
+        {copiedMessageId === message.public_id ? (
+          <ClipboardChecked />
+        ) : (
+          <Clipboard />
+        )}
+      </button>
+    );
+  }
+);
+
+CopyToClipboardButton.displayName = 'CopyToClipboardButton';

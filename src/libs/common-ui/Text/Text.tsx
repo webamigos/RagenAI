@@ -1,12 +1,12 @@
-import { memo, type ComponentProps } from 'react';
+import { memo, type ReactNode, type ComponentProps } from 'react';
 import clsx from 'clsx';
 
 type Props = {
-  children: string | string[];
+  children: string | string[] | ReactNode | number;
   bold?: boolean;
   fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
-  fontSize?: 'sm' | 'md' | 'lg' | 'xl';
-  color?: 'zinc-950' | 'blue-600' | 'gray-400';
+  fontSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  color?: 'zinc-950' | 'blue-600' | 'gray-400' | 'red-500';
 };
 
 const fontWeightMap = {
@@ -18,6 +18,7 @@ const fontWeightMap = {
 };
 
 const fontSizeMap = {
+  xs: 'text-xs',
   sm: 'text-sm',
   md: 'text-md',
   lg: 'text-lg',
@@ -28,13 +29,13 @@ const colorMap = {
   'zinc-950': 'text-zinc-950',
   'blue-600': 'text-blue-600',
   'gray-400': 'text-gray-400',
+  'red-500': 'text-red-500',
 };
 
 export const Text = memo(
   ({
     children,
     className,
-    bold,
     fontWeight = 'normal',
     fontSize = 'md',
     color = 'zinc-950',

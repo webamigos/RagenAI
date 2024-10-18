@@ -4,10 +4,13 @@
     "clsx",
     "hejho",
     "HEYGEN",
+    "hset",
     "langchain",
     "nextjs",
     "openai",
     "salesyy",
-    "toastify"
+    "tepmerature",
+    "toastify",
+    "trpc"
   ]
 }

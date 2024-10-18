@@ -12,7 +12,7 @@
     "or": "lub",
     "to-still-use": "aby korzystać dalej"
   },
-  "Sign-up": {
+  "sign-up": {
     "create-account": "Utwórz konto",
     "to-continue": "aby kontynuować w SalesYY Assistant",
     "sign-up": "Zarejestruj się",
@@ -23,14 +23,16 @@
     "confirm": "Potwierdź kod",
     "or": "lub"
   },
-  "Sign-in": {
+  "sign-in": {
     "sign-in": "Zaloguj się",
-    "Sign-up": "Zarejestruj się",
+    "sign-up": "Zarejestruj się",
     "Password": "Hasło",
     "to-continue": "aby przejść do SalesYY Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
-    "Forgot-password": "Zapomniałeś hasła?"
+    "Forgot-password": "Zapomniałeś hasła?",
+    "invalid-email": "Nieprawidłowy adres email",
+    "invalid-password": "Hasło musi mieć co najmniej 8 znaków"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -66,14 +68,20 @@
     "contact-with-us": "Skontaktuj się z nami"
   },
   "success-toast": {
-    "copied": "copied"
+    "copied": "Skopiowano!",
+    "deleted": "Usunięto!",
+    "saved": "Zapisano!"
   },
   "error-toast": {
-    "no-user-id": "Brak user id"
+    "no-user-id": "Brak id użytkownika",
+    "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
+    "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",
     "my-profile": "Mój profil",
+    "home-page": "Strona główna",
     "admin-panel": "Admin",
     "change-password": "Zmień hasło",
     "close": "zamknij"
@@ -101,5 +109,34 @@
     "or": "lub",
     "choose-files": "Wybierz pliki",
     "supported-formats": "Obsługiwany format"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Bezpieczeństwo",
+    "create-organization": "Stwórz organizację",
+    "manage-organization": "Zarządzaj organizacją",
+    "manage-members": "Zarządzaj członkami",
+    "manage-knowledge": "Zarządzaj wiedzą",
+    "organization-list": "Lista organizacji",
+    "assistant-management": "Zarządzanie asystentem"
+  },
+  "files-table": {
+    "delete": "Usuń",
+    "file-name": "Nazwa pliku",
+    "file-size": "Rozmiar pliku",
+    "created": "Utworzono",
+    "updated": "Zaktualizowano",
+    "preview": "Podgląd"
+  },
+  "set-openai-api-key": {
+    "set-env": "Ustaw zmienne środowiskowe",
+    "save": "Zapisz",
+    "edit": "Edytuj",
+    "no-api-key-warning": "Brak klucza API uniemożliwi korzystanie z asystenta",
+    "save-successfully": "Klucz API przypisano do Twojego konta!",
+    "failed-to-fetch": "Błąd podczas pobierania kluacza API"
+  },
+  "set-temperature": {
+    "set-temperature": "Poziom kreatywności odpowiedzi"
   }
 }

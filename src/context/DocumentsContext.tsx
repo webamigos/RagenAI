@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useState,
-  useCallback,
-  useMemo,
-  useEffect,
-} from 'react';
-import { useUser } from '@clerk/nextjs';
+import { createContext, useState, useEffect } from 'react';
+import { useOrganization } from '@clerk/nextjs';
 
 import { getUserDocuments } from '@/app/actions';
 import { usersDocuments } from '@/app/contracts/Documents';
@@ -30,25 +24,26 @@ export const DocumentsProvider = ({ children }: Props) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
 
-  const { user } = useUser();
-  const visitorId = user?.publicMetadata.visitorId;
+  const { organization } = useOrganization();
+
+  const orgId = organization?.id.toLowerCase();
 
   useEffect(() => {
-    if (visitorId) {
+    if (orgId) {
       refreshDocuments();
     } else {
       setIsLoading(false);
     }
-  }, [visitorId]);
+  }, [orgId]);
 
-  const refreshDocuments = useCallback(async () => {
+  const refreshDocuments = async () => {
     setIsLoading(true);
     try {
-      if (!visitorId) {
+      if (!orgId) {
         return;
       }
 
-      const { documentDetails } = await getUserDocuments(visitorId as string);
+      const { documentDetails } = await getUserDocuments(orgId);
       setDocuments(documentDetails ?? null);
       setIsError(false);
     } catch (error) {
@@ -56,17 +51,14 @@ export const DocumentsProvider = ({ children }: Props) => {
     } finally {
       setIsLoading(false);
     }
-  }, [visitorId]);
+  };
 
-  const value = useMemo(
-    () => ({
-      documents,
-      refreshDocuments,
-      isLoading,
-      isError,
-    }),
-    [documents, isLoading, isError, refreshDocuments]
-  );
+  const value = {
+    documents,
+    refreshDocuments,
+    isLoading,
+    isError,
+  };
 
   return (
     <DocumentsContext.Provider value={value}>

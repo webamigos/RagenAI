@@ -18,3 +18,4 @@ export * from './Dropdown';
 export * from './Dialog';
 export * from './FileUploader';
 export * from './Table';
+export * from './Tooltip';

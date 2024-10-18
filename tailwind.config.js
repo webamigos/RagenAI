@@ -4,7 +4,10 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 const TailwindAnimate = require('tailwindcss-animate');
 
 module.exports = {
-  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  content: [
+    './src/**/*.{js,jsx,ts,tsx,mdx}',
+    './.storybook/**/*.{js,jsx,ts,tsx,mdx}',
+  ],
   darkMode: ['class'],
   theme: {
     extend: {

@@ -1,10 +1,10 @@
 /* eslint-disable prefer-const */
 'use client';
 
+import { type ComponentPropsWithoutRef, forwardRef, useId } from 'react';
+import { LayoutGroup, motion } from 'framer-motion';
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
-import { LayoutGroup, motion } from 'framer-motion';
-import React, { Fragment, forwardRef, useId } from 'react';
 
 import { Link } from '../Link';
 
@@ -137,38 +137,25 @@ export function SidebarHeading({
   );
 }
 
+type SidebarItemProps = {
+  current?: boolean;
+  className?: string;
+  children: React.ReactNode;
+} & (
+  | Omit<Headless.ButtonProps, 'as' | 'className'>
+  | Omit<ComponentPropsWithoutRef<typeof Link>, 'type' | 'className'>
+);
+
 export const SidebarItem = forwardRef(function SidebarItem(
-  {
-    current,
-    className,
-    children,
-    ...props
-  }: { current?: boolean; className?: string; children: React.ReactNode } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className'>
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'type' | 'className'>
-  ),
+  { current, className, children, ...props }: SidebarItemProps,
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
   let classes = clsx(
-    // Base
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base/6 font-medium text-zinc-950 sm:py-2 sm:text-sm/5',
-    // Leading icon/icon-only
-    'data-[slot=icon]:*:size-6 data-[slot=icon]:*:shrink-0 data-[slot=icon]:*:fill-zinc-500 sm:data-[slot=icon]:*:size-5',
-    // Trailing icon (down chevron or similar)
-    'data-[slot=icon]:last:*:ml-auto data-[slot=icon]:last:*:size-5 sm:data-[slot=icon]:last:*:size-4',
-    // Avatar
-    'data-[slot=avatar]:*:-m-0.5 data-[slot=avatar]:*:size-7 data-[slot=avatar]:*:[--ring-opacity:10%] sm:data-[slot=avatar]:*:size-6',
-    // Hover
-    'data-[hover]:bg-slate-200 data-[slot=icon]:*:data-[hover]:fill-zinc-950',
-    // Active
-    'data-[active]:bg-zinc-950/5 data-[slot=icon]:*:data-[active]:fill-zinc-950',
-    // Current
-    'data-[slot=icon]:*:data-[current]:fill-zinc-950',
-    // Dark mode
-    'dark:text-white dark:data-[slot=icon]:*:fill-zinc-400',
-    'dark:data-[hover]:bg-white/5 dark:data-[slot=icon]:*:data-[hover]:fill-white',
-    'dark:data-[active]:bg-white/5 dark:data-[slot=icon]:*:data-[active]:fill-white',
-    'dark:data-[slot=icon]:*:data-[current]:fill-white'
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base font-medium text-zinc-950 sm:py-2 sm:text-sm',
+    'hover:bg-slate-200 dark:hover:bg-slate-800',
+    current && 'bg-zinc-950/5 text-blue-500',
+    'dark:text-white',
+    className
   );
 
   return (
@@ -176,36 +163,36 @@ export const SidebarItem = forwardRef(function SidebarItem(
       {current && (
         <motion.span
           layoutId="current-indicator"
-          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-slate-900  dark:bg-white "
+          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-slate-900"
         />
       )}
       {'href' in props ? (
-        <Headless.CloseButton as={Fragment} ref={ref}>
-          <Link
-            className={classes}
-            {...props}
-            data-current={current ? 'true' : undefined}
-          >
-            <TouchTarget>{children}</TouchTarget>
+        <Headless.CloseButton as="div" ref={ref}>
+          <Link className={classes} {...props} data-current={current}>
+            {children}
           </Link>
         </Headless.CloseButton>
       ) : (
         <Headless.Button
           {...props}
           className={clsx(classes, 'cursor-pointer')}
-          data-current={current ? 'true' : undefined}
+          data-current={current}
           ref={ref}
         >
-          <TouchTarget>{children}</TouchTarget>
+          {children}
         </Headless.Button>
       )}
     </span>
   );
 });
 
-export function SidebarLabel({
+SidebarItem.displayName = 'SidebarItem';
+
+export const SidebarLabel = ({
   className,
   ...props
-}: React.ComponentPropsWithoutRef<'span'>) {
+}: React.ComponentPropsWithoutRef<'span'>) => {
   return <span {...props} className={clsx(className, 'truncate')} />;
-}
+};
+
+SidebarLabel.displayName = 'SidebarLabel';

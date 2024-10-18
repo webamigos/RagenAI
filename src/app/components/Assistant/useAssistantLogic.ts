@@ -56,7 +56,7 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const userVisitorId = user?.publicMetadata.visitorId as string;
+  const userVisitorId = (user?.publicMetadata.visitorId as string) || undefined;
 
   useEffect(() => {
     if (isLoaded && !isSignedIn && !visitorId) {
@@ -275,10 +275,11 @@ export const useAssistantLogic = (threadId: string) => {
     const response = await getUserMessages(id);
     const threads = response.threads;
 
-    threadsDispatch({
-      type: 'USER_THREADS',
-      payload: threads || [],
-    });
+    const newThread = {
+      public_id: threads![0].public_id,
+      messages: [userMessage],
+      created_at: new Date(),
+    };
 
     try {
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {

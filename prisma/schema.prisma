@@ -13,6 +13,11 @@ model User {
   id    String @id @default(uuid())
 }
 
+model Settings {
+  key   String @id
+  value String
+}
+
 model Message {
   public_id         String   @unique @default(uuid())
   openai_message_id String
@@ -45,7 +50,6 @@ model Thread {
   messages         Message[]
 }
 
-
 model VisitorMessages {
   visitor_id String
   message_id String
@@ -59,17 +63,18 @@ model documents {
   metadata  Json?
   embedding Unsupported("vector")?
 }
-model usersDocuments {
-  id            String   @id
-  visitor_id     String
-  file_name     String
-  file_size     Int
-  created_at    DateTime? @default(now())
-  updated_at    DateTime?
-  metadata      Json?
 
-  @@unique([id, visitor_id])
-  @@index([visitor_id])
+model usersDocuments {
+  id             String   @id
+  organization_id String
+  file_name      String
+  file_size      Int
+  created_at     DateTime? @default(now())
+  updated_at     DateTime?
+  metadata       Json?
+
+  @@unique([id, organization_id])
+  @@index([organization_id])
 }
 
 enum Role {
