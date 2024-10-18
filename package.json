@@ -21,11 +21,11 @@
     "generate:types": "npx prisma generate",
     "postinstall": "npm run generate:types",
     "prepare": "husky",
-    "vectorstore:migrate": "knex --knexfile ./vector-store-migrations/knexfile.mjs migrate:latest",
-    "vectorstore:migrate:rollback": "knex --knexfile ./vector-store-migrations/knexfile.mjs migrate:rollback",
-    "vectorstore:migrate:rollback:one": "knex --knexfile ./vector-store-migrations/knexfile.mjs migrate:rollback --step=1",
-    "vectorstore:migrate:make": "knex --knexfile ./vector-store-migrations/knexfile.mjs migrate:make",
-    "vectorstore:migrate:status": "knex --knexfile ./vector-store-migrations/knexfile.mjs migrate:status"
+    "vectorstore:migrate": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:latest",
+    "vectorstore:migrate:rollback": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback",
+    "vectorstore:migrate:rollback:one": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback --step=1",
+    "vectorstore:migrate:make": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:make",
+    "vectorstore:migrate:status": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:status"
   },
   "private": true,
   "devDependencies": {
