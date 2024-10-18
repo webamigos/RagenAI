@@ -1,15 +1,11 @@
 import { logger } from '@/app/lib/utils/logger';
 import { supabaseVectorStoreClient } from './supabaseVectorStoreClient';
+import { VECTOR_STORE_TABLE_NAME } from '@/app/constants/vectorStore';
 
-export const removeTableContent = async (
-  visitor_id: string,
-  document_id: string
-) => {
+export const removeTableContent = async (document_id: string) => {
   try {
-    const userTableName = `documents_${visitor_id}`;
-
     const deleteEmbeddingsQuery = `
-      DELETE FROM ${userTableName}
+      DELETE FROM ${VECTOR_STORE_TABLE_NAME}
       WHERE metadata->>'document_id' = '${document_id}';
     `;
 

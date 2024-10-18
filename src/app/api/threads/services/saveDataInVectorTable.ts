@@ -8,6 +8,10 @@ import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { embeddingModel } from './ChatService';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
+import {
+  DOCUMENT_SEARCH_QUERY_NAME,
+  VECTOR_STORE_TABLE_NAME,
+} from '@/app/constants/vectorStore';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -50,8 +54,6 @@ export const convertAndStoreDocument = async (
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }
-
-    const tableName = `documents_${uploaderId}`;
 
     let rawDocs: Document[] = [];
 
@@ -117,8 +119,8 @@ export const convertAndStoreDocument = async (
 
     const vectorStore = new SupabaseVectorStore(embeddingModel, {
       client: supabaseVectorStoreClient,
-      tableName,
-      queryName: 'match_documents',
+      tableName: VECTOR_STORE_TABLE_NAME,
+      queryName: DOCUMENT_SEARCH_QUERY_NAME,
     });
 
     await vectorStore.addVectors(
