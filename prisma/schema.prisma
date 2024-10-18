@@ -78,6 +78,50 @@ model UsersDocuments {
   @@index([organization_id])
 }
 
+// Organizations, Projects and ApiKeys ids will be used in Redis for store:
+// org:2143, org:2143:proj:6543, org:2143:proj:6543:key:9843 or key:9843, key:9843:usage
+// keys, stats and other informations. Other tables rather doesn't need this kind of ids
+// id - internal id, will be used in internal systems and for redis
+// public_id - id which will be used in routing in the app
+// provider_id - organization id from provider (e.g. Clerk organization id)
+model Organization {
+  id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  public_id   String    @default(cuid())
+  name        String?
+  provider_id String?
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  Project     Project[]
+
+  @@index([public_id, provider_id])
+}
+
+model Project {
+  id              Int           @id @default(dbgenerated("nextval('custom_id_seq')"))
+  public_id       String        @default(cuid())
+  title           String
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  created_at      DateTime?     @default(now())
+  updated_at      DateTime?     @updatedAt
+  organization_id Int?
+  ApiKey          ApiKey[]
+
+  @@index([public_id])
+}
+
+model ApiKey {
+  id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  public_id    String    @default(cuid())
+  masked_value String
+  last_used_at DateTime?
+  created_at   DateTime? @default(now())
+  updated_at   DateTime? @updatedAt
+  project      Project?  @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  project_id   Int?
+
+  @@index([public_id])
+}
+
 enum Role {
   USER
   ASSISTANT

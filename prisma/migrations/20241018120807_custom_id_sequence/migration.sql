@@ -1,0 +1,8 @@
+DROP SEQUENCE IF EXISTS "custom_id_seq";
+
+CREATE SEQUENCE "custom_id_seq"
+    START WITH 10001
+    INCREMENT BY 3
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
