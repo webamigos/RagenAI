@@ -8,6 +8,10 @@ import { RunnableSequence } from '@langchain/core/runnables';
 import { createChatInstance, embeddingModel } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
+import {
+  DOCUMENT_SEARCH_QUERY_NAME,
+  VECTOR_STORE_TABLE_NAME,
+} from '@/app/constants/vectorStore';
 
 type Document = {
   pageContent: string;
@@ -24,12 +28,11 @@ async function initializeChain(request: NextRequest) {
   if (!orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const lowerCaseOrgId = orgId.toLowerCase();
 
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
     client: supabaseVectorStoreClient,
-    tableName: `documents_${lowerCaseOrgId}`,
-    queryName: 'match_documents',
+    tableName: VECTOR_STORE_TABLE_NAME,
+    queryName: DOCUMENT_SEARCH_QUERY_NAME,
   });
 
   const retriever = vectorStore.asRetriever();

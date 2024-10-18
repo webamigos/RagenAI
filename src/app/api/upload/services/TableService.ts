@@ -1,12 +1,12 @@
+import { VECTOR_STORE_TABLE_NAME } from '@/app/constants/vectorStore';
 import { logger } from '@/app/lib/utils/logger';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
+//Todo remove unused parameter visitor_id
 export async function deleteDocument(visitor_id: string, document_id: string) {
   try {
-    const userTableName = `documents_${visitor_id}`;
-
     const deleteEmbeddingsQuery = `
-      DELETE FROM ${userTableName}
+      DELETE FROM ${VECTOR_STORE_TABLE_NAME}
       WHERE metadata->>'document_id' = '${document_id}';
     `;
 
