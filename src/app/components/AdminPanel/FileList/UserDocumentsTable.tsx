@@ -88,14 +88,6 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
                     <CommonUi.TrashIcon />
                   </CommonUi.Tooltip>
                 </CommonUi.DropdownItem>
-                <CommonUi.DropdownItem onClick={handlePreview}>
-                  <CommonUi.Tooltip
-                    id="preview doc"
-                    content={translatedTable('preview')}
-                  >
-                    <CommonUi.OpenEyeIcon />
-                  </CommonUi.Tooltip>
-                </CommonUi.DropdownItem>
               </CommonUi.DropdownMenu>
             </CommonUi.Dropdown>
           </div>
