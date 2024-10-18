@@ -9,7 +9,6 @@ import {
   createMessageInDB,
   getMessageById,
 } from '../../../lib/services/message';
-import { initializeChainV2 } from '../utills';
 import {
   SseInitEvent,
   SseMessageEvent,
@@ -18,6 +17,8 @@ import {
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
 import { CHAIN_FINAL_ANSWER_RUN_NAME } from '../constants/chainConfig';
+import { initializeQuestionAnsweringChain } from '../chains/questionAnsweringChain';
+import { getAuth } from '@clerk/nextjs/server';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,7 +37,12 @@ let runId: string;
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    const chain = await initializeChainV2(request);
+    const { orgId } = getAuth(request);
+    if (!orgId) {
+      throw new Error('Unauthorized');
+    }
+
+    const chain = await initializeQuestionAnsweringChain(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
 
