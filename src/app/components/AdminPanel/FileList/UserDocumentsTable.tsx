@@ -9,7 +9,6 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { type usersDocuments } from '@/app/contracts/Documents';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
-import DocumentPreviewModal from './DocumentPreview';
 
 type Props = {
   documents: usersDocuments[];
@@ -22,8 +21,6 @@ type DocumentRowProps = {
 };
 
 const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
 
@@ -109,13 +106,6 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
           </div>
         </CommonUi.TableCell>
       </CommonUi.TableRow>
-      {isPreviewOpen && (
-        <DocumentPreviewModal
-          isOpen={isPreviewOpen}
-          document={document}
-          onClose={handlePreview}
-        />
-      )}
     </>
   );
 };
