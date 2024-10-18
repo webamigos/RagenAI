@@ -2,8 +2,7 @@ import { VECTOR_STORE_TABLE_NAME } from '@/app/constants/vectorStore';
 import { logger } from '@/app/lib/utils/logger';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
-//Todo remove unused parameter visitor_id
-export async function deleteDocument(visitor_id: string, document_id: string) {
+export async function deleteDocument(document_id: string) {
   try {
     await supabaseVectorStoreClient
       .from(VECTOR_STORE_TABLE_NAME)

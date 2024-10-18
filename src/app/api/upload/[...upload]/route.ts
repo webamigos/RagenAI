@@ -96,7 +96,7 @@ export async function DELETE(_request: Request, { params }: { params: any }) {
   }
 
   try {
-    await deleteDocument(visitor_id, document_id);
+    await deleteDocument(document_id);
     return new Response(
       JSON.stringify({ message: 'Document successfully deleted' }),
       {
