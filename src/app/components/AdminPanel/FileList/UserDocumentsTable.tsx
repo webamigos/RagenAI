@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 import format from 'date-fns-tz/format';
 import { useTranslations } from 'next-intl';
@@ -37,10 +36,6 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
     : '-';
 
   const truncatedFileName = truncateFileName(file_name, 20);
-
-  const handlePreview = () => {
-    setIsPreviewOpen((prevState) => !prevState);
-  };
 
   const handleDelete = async (
     organization_id: string,
