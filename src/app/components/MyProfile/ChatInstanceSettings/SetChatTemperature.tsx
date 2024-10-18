@@ -9,7 +9,7 @@ import { Input, Text, Card } from '@salesyy/common-ui';
 import { SettingsType } from './types';
 
 export const SetChatTemperature = () => {
-  const [temperature, setTemperature] = useState<number>(0);
+  const [temperature, setTemperature] = useState<number>(0.5);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { successToast, errorToast } = statusToast();

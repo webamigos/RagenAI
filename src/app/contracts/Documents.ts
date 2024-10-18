@@ -1,6 +1,6 @@
-import { usersDocuments as usersDocumentsModel } from '@prisma/client';
+import { UsersDocuments as usersDocumentsModel } from '@prisma/client';
 
-export type usersDocuments = {
+export type UsersDocuments = {
   id: usersDocumentsModel['id'];
   organization_id: usersDocumentsModel['organization_id'];
   file_name: usersDocumentsModel['file_name'];

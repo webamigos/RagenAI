@@ -136,7 +136,8 @@
     "file-name": "Nazwa pliku",
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",
-    "updated": "Zaktualizowano"
+    "updated": "Zaktualizowano",
+    "preview": "Podgląd"
   },
   "set-openai-api-key": {
     "set-env": "Ustaw zmienne środowiskowe",

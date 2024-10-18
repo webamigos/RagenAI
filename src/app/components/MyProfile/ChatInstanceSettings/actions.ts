@@ -32,12 +32,8 @@ const { apiKey, model, prompt, temperature } = SettingsType;
 
 //to replace by:
 // https://www.npmjs.com/package/crypto-js
-function maskApiKey(apiKey: string): string {
-  const start = apiKey.slice(0, 10);
-  const end = apiKey.slice(-10);
-  return `${start}****${end}`;
-}
 ////
+
 export const fetchSettings = async (): Promise<ActionResponse> => {
   const { orgId } = auth();
 
@@ -58,11 +54,9 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
       return { success: false, message: 'No API Key found' };
     }
 
-    const maskedApiKey = maskApiKey(apiKey);
-
     return {
       success: true,
-      data: { apiKey: maskedApiKey, temperature, model, prompt },
+      data: { apiKey, temperature, model, prompt },
     };
   } catch (error) {
     logger.error('Failed to fetch settings:', error);

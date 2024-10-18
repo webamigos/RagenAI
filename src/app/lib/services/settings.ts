@@ -1,3 +1,4 @@
+import { decryptApiKey, encryptApiKey } from '../utils/hashApiKey';
 import { getRedisInstance } from './redis';
 
 const redis = getRedisInstance();
@@ -20,13 +21,18 @@ export async function saveOpenaiAPIKey(
   orgId: string,
   apiKey: string
 ): Promise<{ success: boolean; status: string }> {
+  const encryptedApiKey = encryptApiKey(apiKey);
   return await redis.hsetWithStatus(`org:${orgId}`, {
-    openai: apiKey,
+    openai: encryptedApiKey,
   });
 }
 
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
-  return await redis.hget(`org:${orgId}`, 'openai');
+  const encryptedApiKey = await redis.hget(`org:${orgId}`, 'openai');
+  if (!encryptedApiKey) {
+    return null;
+  }
+  return decryptApiKey(encryptedApiKey);
 }
 
 export async function saveModel(
@@ -39,7 +45,8 @@ export async function saveModel(
 }
 
 export async function getModel(orgId: string): Promise<string | null> {
-  return await redis.hget(`org:${orgId}`, 'model');
+  const model = await redis.hget(`org:${orgId}`, 'model');
+  return model ? model : 'gpt-3.5-turbo';
 }
 
 export async function saveAssistantPrompt(
