@@ -1,4 +1,3 @@
-import { WarningIcon } from './WarningIcon';
 export { SpinnerSVG } from './SpinnerSVG';
 export { CursorSVG } from './CursorSVG';
 export { DownIcon } from './DownIcon';
@@ -28,3 +27,4 @@ export { EnterIcon } from './EnterIcon';
 export { OpenLockIcon } from './OpenLockIcon';
 export { WarningIcon } from './WarningIcon';
 export { ArrowPath } from './ArrowPath';
+export { TrashIcon } from './TrashIcon';
