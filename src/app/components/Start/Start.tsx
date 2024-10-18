@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import {
+  ChevronRightIcon,
+  RocketLaunchIcon,
+} from '@heroicons/react/24/outline';
 import { useUser } from '@clerk/nextjs';
 import { Alert, Button } from '@salesyy/common-ui';
 
@@ -87,12 +90,12 @@ export const Start = () => {
         {!isPending && (
           <Button
             label={t('start-new-thread')}
-            className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 sm:mb-12 mb-8 "
+            className="px-8 py-4 bg-primary-blue-400 rounded-3xl hover:bg-primary-blue-500 disabled:bg-emerald-400 font-sans tracking-wide sm:mb-12 mb-8 "
             onClick={handleNewThread}
             isLoading={isLoading}
             disabled={isLoading || isLimitLock}
             iconRight={
-              <ChevronRightIcon
+              <RocketLaunchIcon
                 className="h-5 w-5 flex-none text-white cursor-pointer"
                 aria-hidden="true"
               />

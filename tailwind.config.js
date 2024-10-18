@@ -11,12 +11,18 @@ module.exports = {
   darkMode: ['class'],
   theme: {
     extend: {
+      width: {
+        88: '22rem',
+      },
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: ['Poppins', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         'salesyy-red': '#CB1D3D',
         'salesyy-blue': '#252D53',
+        'primary-light': '#CAD5E8',
+        'primary-blue-400': '#6eacf0',
+        'primary-blue-500': '#589de8',
 
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
