@@ -5,12 +5,9 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnableSequence } from '@langchain/core/runnables';
 
-import {
-  createChatInstance,
-  embeddingModel,
-  supaBaseClient,
-} from './services/ChatService';
+import { createChatInstance, embeddingModel } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
 type Document = {
   pageContent: string;
@@ -30,7 +27,7 @@ async function initializeChain(request: NextRequest) {
   const lowerCaseOrgId = orgId.toLowerCase();
 
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
-    client: supaBaseClient,
+    client: supabaseVectorStoreClient,
     tableName: `documents_${lowerCaseOrgId}`,
     queryName: 'match_documents',
   });
