@@ -21,9 +21,10 @@
     "generate:types": "npx prisma generate",
     "postinstall": "npm run generate:types",
     "prepare": "husky",
-    "vectorstore:migrate": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:latest",
-    "vectorstore:migrate:rollback": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback",
-    "vectorstore:migrate:rollback:one": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback --step=1",
+    "vectorstore:generate:database-types": "node vector-store-migrations/generate-types.js",
+    "vectorstore:migrate": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:latest && npm run vectorstore:generate:database-types",
+    "vectorstore:migrate:rollback": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback && npm run vectorstore:generate:database-types",
+    "vectorstore:migrate:rollback:one": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback --step=1 && npm run vectorstore:generate:database-types",
     "vectorstore:migrate:make": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:make",
     "vectorstore:migrate:status": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:status"
   },
