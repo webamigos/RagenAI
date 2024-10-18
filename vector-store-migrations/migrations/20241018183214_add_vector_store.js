@@ -1,4 +1,4 @@
-export const up = async (knex) => {
+exports.up = function (knex) {
   return knex.raw(`
       -- Enable the pgvector extension
       CREATE EXTENSION IF NOT EXISTS vector;
@@ -42,7 +42,7 @@ export const up = async (knex) => {
     `);
 };
 
-export const down = async (knex) => {
+exports.down = function (knex) {
   return knex.raw(`
       -- Drop the function and table in reverse migration
       DROP FUNCTION IF EXISTS match_documents;
