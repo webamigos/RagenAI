@@ -6,7 +6,7 @@ import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
 import { useThreadsContext } from '../../../hooks/useThreadsContext';
 import { format, subDays } from 'date-fns';
-
+import { BackwardIcon } from '@heroicons/react/24/outline';
 type Props = {
   hasMore: boolean;
   isLoading: boolean;
@@ -92,8 +92,10 @@ export const UserThreadsHistory = ({
   return (
     <SidebarSection>
       <div className="flex items-center ml-2 mb-5 gap-2 text-lg">
-        <ChatConversation />
-        <SidebarLabel>{t('chat-history')}</SidebarLabel>
+        <BackwardIcon className="w-5 h-5 mr-3" />
+        <SidebarLabel className="text-base text-gray-600 tracking-wide font-semibold font-sans">
+          {t('chat-history')}
+        </SidebarLabel>
       </div>
       <ThreadsSection
         activeThread={activeThread}

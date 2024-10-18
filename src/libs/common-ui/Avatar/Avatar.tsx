@@ -4,11 +4,14 @@ import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 import { TouchTarget } from '../Navbar';
 import { Link } from '../Link';
+import Image from 'next/image';
 
 type AvatarProps = {
   src?: string | null;
   square?: boolean;
   initials?: string;
+  height?: number;
+  width?: number;
   alt?: string;
   className?: string;
 };
@@ -17,6 +20,8 @@ export function Avatar({
   src = null,
   square = false,
   initials,
+  width = 40,
+  height = 40,
   alt = '',
   className,
   ...props
@@ -29,7 +34,7 @@ export function Avatar({
         className,
         // Basic layout
         'inline-grid shrink-0 align-middle [--avatar-radius:20%] [--ring-opacity:20%] *:col-start-1 *:row-start-1',
-        'outline outline-1 -outline-offset-1 outline-black/[--ring-opacity] dark:outline-white/[--ring-opacity]',
+        'outline outline-1 -outline-offset-1 outline-[#6eacf0] dark:outline-[#6eacf0]',
         // Add the correct border radius
         square
           ? 'rounded-[--avatar-radius] *:rounded-[--avatar-radius]'
@@ -55,7 +60,15 @@ export function Avatar({
           </text>
         </svg>
       )}
-      {src && <img className="size-full rounded-md" src={src} alt={alt} />}
+      {src && (
+        <Image
+          width={width}
+          height={height}
+          className="size-full border-none rounded-full"
+          src={src}
+          alt={alt}
+        />
+      )}
     </span>
   );
 }

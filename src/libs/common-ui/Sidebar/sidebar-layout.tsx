@@ -86,9 +86,9 @@ export function SidebarLayout({
   const { openSidebar } = useSidebar();
 
   return (
-    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-zinc-100 lg:dark:bg-slate-900 dark:bg-zinc-900 dark:lg:bg-zinc-950">
+    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-slate-900 dark:bg-zinc-900 dark:lg:bg-zinc-950">
       {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-0 w-80 dark:bg-slate-900 max-lg:hidden">
+      <div className="fixed inset-y-0 left-5 top-5 bottom-5 w-88 rounded-3xl bg-white dark:bg-slate-900 max-lg:hidden">
         {sidebar}
       </div>
 
@@ -106,8 +106,8 @@ export function SidebarLayout({
       </header>
 
       {/* content */}
-      <main className="flex flex-1 flex-col pb-2 px-2.5 lg:ml-80 lg:pt-2 justify-end">
-        <div className="flex flex-1 h-full p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-sm lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
+      <main className="flex flex-1 flex-col pb-2 px-2.5 lg:ml-80 lg:pt-2 justify-end bg-primary-light">
+        <div className="flex flex-1 h-full p-6 lg:rounded-lg lg:bg-primary-light lg:p-10 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
           <div className="w-full mx-auto max-w-6xl">{children}</div>
         </div>
       </main>

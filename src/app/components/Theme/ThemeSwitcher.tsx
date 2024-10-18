@@ -29,7 +29,7 @@ export const ThemeSwitcher = ({ className }: Props) => {
   const icon =
     theme === 'light' ? (
       <MoonIcon
-        className="h-5 w-5 flex-none text-gray-400 cursor-pointer"
+        className="h-5 w-5 flex-none cursor-pointer"
         aria-hidden="true"
         onClick={() => handleClick('dark')}
       />
