@@ -22,7 +22,8 @@
     "postinstall": "npm run generate:types",
     "prepare": "husky",
     "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.js",
-    "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js"
+    "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js",
+    "postvectorstore:migrate": "npm run vectorstore:generate:database-types"
   },
   "private": true,
   "devDependencies": {
