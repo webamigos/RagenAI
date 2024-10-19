@@ -21,12 +21,8 @@
     "generate:types": "npx prisma generate",
     "postinstall": "npm run generate:types",
     "prepare": "husky",
-    "vectorstore:generate:database-types": "node vector-store-migrations/generate-types.js",
-    "vectorstore:migrate": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:latest && npm run vectorstore:generate:database-types",
-    "vectorstore:migrate:rollback": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback && npm run vectorstore:generate:database-types",
-    "vectorstore:migrate:rollback:one": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:rollback --step=1 && npm run vectorstore:generate:database-types",
-    "vectorstore:migrate:make": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:make",
-    "vectorstore:migrate:status": "knex --knexfile ./vector-store-migrations/knexfile.js migrate:status"
+    "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.js",
+    "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js"
   },
   "private": true,
   "devDependencies": {
@@ -81,7 +77,6 @@
     "jest": "^29.4.1",
     "jest-environment-jsdom": "^29.4.1",
     "jest-environment-node": "^29.4.1",
-    "knex": "^3.1.0",
     "lint-staged": "^15.2.9",
     "nx": "^19.6.4",
     "playwright-ctrf-json-reporter": "^0.0.18",
@@ -146,7 +141,6 @@
     "next-themes": "^0.2.1",
     "npm": "^10.8.3",
     "openai": "^4.55.4",
-    "pg": "^8.13.0",
     "pino": "^9.3.2",
     "pino-pretty": "^11.2.2",
     "pretty-bytes": "^6.1.1",

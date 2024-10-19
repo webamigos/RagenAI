@@ -30,42 +30,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      migrations: {
-        Row: {
-          batch: number | null;
-          id: number;
-          migration_time: string | null;
-          name: string | null;
-        };
-        Insert: {
-          batch?: number | null;
-          id?: number;
-          migration_time?: string | null;
-          name?: string | null;
-        };
-        Update: {
-          batch?: number | null;
-          id?: number;
-          migration_time?: string | null;
-          name?: string | null;
-        };
-        Relationships: [];
-      };
-      migrations_lock: {
-        Row: {
-          index: number;
-          is_locked: number | null;
-        };
-        Insert: {
-          index?: number;
-          is_locked?: number | null;
-        };
-        Update: {
-          index?: number;
-          is_locked?: number | null;
-        };
-        Relationships: [];
-      };
     };
     Views: {
       [_ in never]: never;

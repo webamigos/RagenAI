@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 const path = require('path');
 
 dotenvFlow.config({
-  path: path.resolve(__dirname, '..'),
+  path: path.resolve(__dirname, '../..'),
 });
 
 const projectId = process.env.SUPABASE_PROJECT_ID;
