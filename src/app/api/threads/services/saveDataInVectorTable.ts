@@ -12,6 +12,7 @@ import {
   DOCUMENT_SEARCH_QUERY_NAME,
   VECTOR_STORE_TABLE_NAME,
 } from '@/app/constants/vectorStore';
+import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -111,7 +112,7 @@ export const convertAndStoreDocument = async (
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
 
-        const metadata = {
+        const metadata: VectorStoreDocumentMetadata = {
           file_name: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
