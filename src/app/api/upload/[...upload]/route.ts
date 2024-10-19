@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { deleteDocument } from '../services/TableService';
@@ -19,6 +20,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
+    const organizationId = formData.get('organizationId') as string;
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -42,16 +44,18 @@ export async function POST(request: NextRequest, { params }: Params) {
         : (content = await file.text());
 
       try {
+        const uniqueFileId = uuidv4();
         const { message, success } = await convertAndStoreDocument(
           content,
           file.name,
-          uploaderId
+          organizationId,
+          uniqueFileId
         );
         await createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
-          file.name
+          uniqueFileId
         );
         if (!success) {
           return NextResponse.json({ message }, { status: 500 });

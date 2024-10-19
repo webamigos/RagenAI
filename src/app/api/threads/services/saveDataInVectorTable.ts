@@ -48,7 +48,8 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
 export const convertAndStoreDocument = async (
   fileContent: string | Buffer,
   fileName: string,
-  uploaderId: string
+  organizationId: string,
+  fileId: string
 ): Promise<ConvertAndStoreResult> => {
   try {
     if (!fileContent) {
@@ -79,6 +80,16 @@ export const convertAndStoreDocument = async (
           message: `Failed to save temporary file: ${message}`,
         };
       }
+    } else {
+      const fileContentIsString = typeof fileContent === 'string';
+      if (fileContentIsString) {
+        rawDocs = [new Document({ pageContent: fileContent })];
+      } else {
+        return {
+          success: false,
+          message: 'Invalid file type detected.',
+        };
+      }
     }
     const textSplitterEPub = new RecursiveCharacterTextSplitter({
       chunkSize: 500,
@@ -101,10 +112,12 @@ export const convertAndStoreDocument = async (
         const text = doc.pageContent;
 
         const metadata = {
-          document_id: fileName,
+          file_name: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
           id: index,
+          organization_id: organizationId,
+          file_id: fileId,
         };
 
         const [embedding] = await embeddingModel.embedDocuments([text]);
