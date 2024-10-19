@@ -6,11 +6,13 @@ dotenvFlow.config({
   path: path.resolve(__dirname, '../..'),
 });
 
-const directUrl = process.env.DIRECT_URL;
+const directUrl = process.env.DATABASE_DIRECT_URL;
 
 if (!directUrl) {
   // eslint-disable-next-line no-console
-  console.error('DIRECT_URL is not defined in your environment variables');
+  console.error(
+    'DATABASE_DIRECT_URL is not defined in your environment variables'
+  );
   process.exit(1);
 }
 
