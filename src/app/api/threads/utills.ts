@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
-import {
-  SupabaseFilter,
-  SupabaseVectorStore,
-} from '@langchain/community/vectorstores/supabase';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnableSequence } from '@langchain/core/runnables';
@@ -11,11 +8,7 @@ import { RunnableSequence } from '@langchain/core/runnables';
 import { createChatInstance, embeddingModel } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import {
-  DOCUMENT_SEARCH_QUERY_NAME,
-  ORGANIZATION_DOCUMENTS_LIMIT,
-} from '@/app/constants/vectorStore';
-import db from '@salesyy/prisma-client';
+import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
 
 type Document = {
   pageContent: string;
@@ -27,36 +20,22 @@ type Document = {
 let chain: any;
 //
 
-async function getOrganizationDocuments(orgId: string) {
-  return await db.usersDocuments.findMany({
-    where: { organization_id: { equals: orgId, mode: 'insensitive' } },
-    select: { file_name: true },
-    take: ORGANIZATION_DOCUMENTS_LIMIT,
-  });
-}
-
-function createVectorStore(organizationDocuments: { file_name: string }[]) {
-  const filteringFunction = (rpc: SupabaseFilter) =>
-    rpc.in(
-      'metadata->>document_id',
-      organizationDocuments.map((doc) => doc.file_name)
-    );
-
-  return new SupabaseVectorStore(embeddingModel, {
-    client: supabaseVectorStoreClient,
-    queryName: DOCUMENT_SEARCH_QUERY_NAME,
-    filter: filteringFunction,
-  });
-}
-
 async function initializeChain(request: NextRequest) {
   const { orgId } = getAuth(request);
   if (!orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const organizationDocuments = await getOrganizationDocuments(orgId);
-  const vectorStore = createVectorStore(organizationDocuments);
+  const metadataFilter = {
+    organization_id: orgId.toLowerCase(),
+  };
+
+  const vectorStore = new SupabaseVectorStore(embeddingModel, {
+    client: supabaseVectorStoreClient,
+    queryName: DOCUMENT_SEARCH_QUERY_NAME,
+    filter: metadataFilter,
+  });
+
   const retriever = vectorStore.asRetriever();
 
   const retrieverChain = RunnableSequence.from([
