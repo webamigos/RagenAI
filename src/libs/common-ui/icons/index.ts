@@ -28,3 +28,4 @@ export { OpenLockIcon } from './OpenLockIcon';
 export { WarningIcon } from './WarningIcon';
 export { ArrowPath } from './ArrowPath';
 export { TrashIcon } from './TrashIcon';
+export { ArrowRight } from './ArrowRight';

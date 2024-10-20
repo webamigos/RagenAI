@@ -23,6 +23,7 @@ module.exports = {
         'primary-light': '#CAD5E8',
         'primary-blue-400': '#6eacf0',
         'primary-blue-500': '#589de8',
+        'primary-gray-200': '#F7F7F7',
 
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

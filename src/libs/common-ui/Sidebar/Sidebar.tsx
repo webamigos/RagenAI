@@ -6,6 +6,7 @@ import { LayoutGroup, motion } from 'framer-motion';
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
 
+import { ArrowRight } from '../icons';
 import { Link } from '../Link';
 
 function TouchTarget({ children }: { children: React.ReactNode }) {
@@ -151,11 +152,12 @@ export const SidebarItem = forwardRef(function SidebarItem(
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
   let classes = clsx(
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base font-medium text-zinc-950 sm:py-2 sm:text-sm',
-    'hover:bg-slate-200 dark:hover:bg-slate-800',
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 sm:py-2 sm:text-sm',
+    'hover:bg-primary-gray-200 dark:hover:bg-slate-800',
     current && 'bg-zinc-950/5 text-blue-500',
     'dark:text-white',
-    className
+    className,
+    'group'
   );
 
   return (
@@ -170,6 +172,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
         <Headless.CloseButton as="div" ref={ref}>
           <Link className={classes} {...props} data-current={current}>
             {children}
+            <ArrowRight />
           </Link>
         </Headless.CloseButton>
       ) : (
@@ -180,6 +183,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
           ref={ref}
         >
           {children}
+          <ArrowRight />
         </Headless.Button>
       )}
     </span>
