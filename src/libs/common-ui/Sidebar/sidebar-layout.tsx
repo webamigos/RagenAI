@@ -86,7 +86,7 @@ export function SidebarLayout({
 }>) {
   const { openSidebar } = useSidebar();
   const pathname = usePathname();
-  const isMyProfile = pathname === '/my-profile';
+  const isMyProfile = /\/my-profile/.test(pathname);
 
   return (
     <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-slate-900 dark:bg-zinc-900 dark:lg:bg-zinc-950">
