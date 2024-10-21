@@ -13,7 +13,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
   const t = useTranslations('my-profile-dialog');
 
   return (
-    <Libs.SidebarFooter className="mb-10 lg:mb-5">
+    <Libs.SidebarFooter className=" lg:mb-5">
       <Libs.SidebarSection>
         <div className="flex justify-between items-center">
           {isSignedIn && (

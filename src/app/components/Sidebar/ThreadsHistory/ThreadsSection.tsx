@@ -55,6 +55,7 @@ export const ThreadsSection = ({
                     key={thread.public_id}
                   >
                     <SidebarItem
+                      hasIcon={true}
                       onClick={() => {
                         handleThreadClick(thread.public_id);
                         closeSidebar();
