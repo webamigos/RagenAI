@@ -1,29 +1,13 @@
-import { supaBaseClient } from '@/app/api/threads/services/ChatService';
+import { VECTOR_STORE_TABLE_NAME } from '@/app/constants/vectorStore';
 import { logger } from '@/app/lib/utils/logger';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
-export async function deleteDocument(visitor_id: string, document_id: string) {
+export async function deleteDocument(file_id: string) {
   try {
-    const userTableName = `documents_${visitor_id}`;
-
-    const deleteEmbeddingsQuery = `
-      DELETE FROM ${userTableName}
-      WHERE metadata->>'document_id' = '${document_id}';
-    `;
-
-    const { error: deleteEmbeddingsError } = await supaBaseClient.rpc(
-      'execute_sql',
-      {
-        sql_text: deleteEmbeddingsQuery,
-      }
-    );
-
-    if (deleteEmbeddingsError) {
-      logger.error(
-        `Error deleting embeddings for document ${document_id}:`,
-        deleteEmbeddingsError
-      );
-      throw deleteEmbeddingsError;
-    }
+    await supabaseVectorStoreClient
+      .from(VECTOR_STORE_TABLE_NAME)
+      .delete()
+      .eq('metadata->>file_id', file_id);
   } catch (error) {
     logger.error(`Error in deleteDocument function:`, error);
     throw error;

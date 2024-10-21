@@ -5,17 +5,17 @@ import { useTranslations } from 'next-intl';
 import * as CommonUi from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { type usersDocuments } from '@/app/contracts/Documents';
+import { type UsersDocuments } from '@/app/contracts/Documents';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 
 type Props = {
-  documents: usersDocuments[];
+  documents: UsersDocuments[];
   onDocumentsUpdate: () => void;
 };
 
 type DocumentRowProps = {
-  document: usersDocuments;
+  document: UsersDocuments;
   onDocumentsUpdate: () => void;
 };
 

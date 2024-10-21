@@ -20,7 +20,10 @@
     "build-storybook": "storybook build",
     "generate:types": "npx prisma generate",
     "postinstall": "npm run generate:types",
-    "prepare": "husky"
+    "prepare": "husky",
+    "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.js",
+    "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js",
+    "postvectorstore:migrate": "npm run vectorstore:generate:database-types"
   },
   "private": true,
   "devDependencies": {
@@ -121,6 +124,7 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
+    "dotenv-flow": "^4.1.0",
     "epub": "^1.2.1",
     "epub2": "^3.0.2",
     "flag-icons": "^7.2.0",

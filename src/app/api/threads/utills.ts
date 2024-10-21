@@ -5,16 +5,18 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnableSequence } from '@langchain/core/runnables';
 
-import {
-  createChatInstance,
-  embeddingModel,
-  supaBaseClient,
-} from './services/ChatService';
+import { createChatInstance, embeddingModel } from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
+import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
+import {
+  VectorStoreDocumentMetadata,
+  VectorStoreMetadataFilter,
+} from '@/app/lib/types/types';
 
 type Document = {
   pageContent: string;
-  metadata: Record<string, any>;
+  metadata: VectorStoreDocumentMetadata;
   id?: number | string;
 };
 
@@ -27,15 +29,19 @@ async function initializeChain(request: NextRequest) {
   if (!orgId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const lowerCaseOrgId = orgId.toLowerCase();
+
+  const metadataFilter: VectorStoreMetadataFilter = {
+    organization_id: orgId.toLowerCase(),
+  };
 
   const vectorStore = new SupabaseVectorStore(embeddingModel, {
-    client: supaBaseClient,
-    tableName: `documents_${lowerCaseOrgId}`,
-    queryName: 'match_documents',
+    client: supabaseVectorStoreClient,
+    queryName: DOCUMENT_SEARCH_QUERY_NAME,
+    filter: metadataFilter,
   });
 
   const retriever = vectorStore.asRetriever();
+
   const retrieverChain = RunnableSequence.from([
     (prevResult) => prevResult.question,
     retriever,

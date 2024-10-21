@@ -6,12 +6,13 @@ import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-
+import { embeddingModel } from './ChatService';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
-  createTableIfNotExists,
-  grantTablePermissions,
-} from '@/libs/db/sqlRequest';
-import { supaBaseClient, embeddingModel } from './ChatService';
+  DOCUMENT_SEARCH_QUERY_NAME,
+  VECTOR_STORE_TABLE_NAME,
+} from '@/app/constants/vectorStore';
+import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -48,16 +49,13 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
 export const convertAndStoreDocument = async (
   fileContent: string | Buffer,
   fileName: string,
-  uploaderId: string
+  organizationId: string,
+  fileId: string
 ): Promise<ConvertAndStoreResult> => {
   try {
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }
-
-    const tableName = `documents_${uploaderId}`;
-    await createTableIfNotExists(tableName);
-    await grantTablePermissions(tableName);
 
     let rawDocs: Document[] = [];
 
@@ -83,6 +81,16 @@ export const convertAndStoreDocument = async (
           message: `Failed to save temporary file: ${message}`,
         };
       }
+    } else {
+      const fileContentIsString = typeof fileContent === 'string';
+      if (fileContentIsString) {
+        rawDocs = [new Document({ pageContent: fileContent })];
+      } else {
+        return {
+          success: false,
+          message: 'Invalid file type detected.',
+        };
+      }
     }
     const textSplitterEPub = new RecursiveCharacterTextSplitter({
       chunkSize: 500,
@@ -104,11 +112,13 @@ export const convertAndStoreDocument = async (
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
 
-        const metadata = {
-          document_id: fileName,
+        const metadata: VectorStoreDocumentMetadata = {
+          file_name: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
           id: index,
+          organization_id: organizationId,
+          file_id: fileId,
         };
 
         const [embedding] = await embeddingModel.embedDocuments([text]);
@@ -122,9 +132,9 @@ export const convertAndStoreDocument = async (
     );
 
     const vectorStore = new SupabaseVectorStore(embeddingModel, {
-      client: supaBaseClient,
-      tableName,
-      queryName: 'match_documents',
+      client: supabaseVectorStoreClient,
+      tableName: VECTOR_STORE_TABLE_NAME,
+      queryName: DOCUMENT_SEARCH_QUERY_NAME,
     });
 
     await vectorStore.addVectors(
