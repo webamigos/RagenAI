@@ -40,12 +40,6 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 </Libs.DropdownButton>
 
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
-                  <Libs.DropdownItem className="cursor-pointe" href="/">
-                    <Libs.HomeIcon />
-                    <Libs.Text className="font-sans font-semibold hover:text-gray-600 text-sm text-gray-500 ml-2.5">
-                      {t('home-page')}
-                    </Libs.Text>
-                  </Libs.DropdownItem>
                   <Libs.DropdownItem
                     href="/my-profile"
                     className="cursor-pointer"
