@@ -3,6 +3,7 @@
 import React from 'react';
 import * as Headless from '@headlessui/react';
 import { usePathname } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 
@@ -86,7 +87,11 @@ export function SidebarLayout({
 }>) {
   const { openSidebar } = useSidebar();
   const pathname = usePathname();
-  const isMyProfile = /\/my-profile/.test(pathname);
+  const locale = useLocale();
+
+  const isMyProfile =
+    pathname.startsWith(`/${locale}/my-profile`) ||
+    pathname.startsWith(`/${locale}/admin`);
 
   return (
     <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-slate-900 dark:bg-zinc-900 dark:lg:bg-zinc-950">
@@ -100,11 +105,9 @@ export function SidebarLayout({
 
       {/* Navbar on mobile */}
       <header className="flex items-center px-4 lg:hidden">
-        <div className="py-2.5">
-          <NavbarItem onClick={openSidebar} aria-label="Open navigation">
-            <OpenMenuIcon />
-          </NavbarItem>
-        </div>
+        <NavbarItem onClick={openSidebar} aria-label="Open navigation">
+          <OpenMenuIcon />
+        </NavbarItem>
         <div className="min-w-0 flex-1">{navbar}</div>
       </header>
 
@@ -118,7 +121,7 @@ export function SidebarLayout({
           </div>
         </main>
       ) : (
-        <main className="flex justify-center flex-1 flex-col pb-2 px-2.5 lg:ml-80 lg:pt-2 bg-primary-light">
+        <main className="flex justify-center flex-1 flex-col pb-2 px-2.5 lg:ml-96 lg:pt-2 bg-primary-light">
           <div className="flex flex-1 h-full p-6 lg:rounded-lg lg:bg-primary-light lg:py-3.5 justify-end lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
             <div className="w-full mx-auto max-w-6xl">{children}</div>
           </div>

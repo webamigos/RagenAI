@@ -24,7 +24,7 @@ export const Assistant = ({ threadId }: Props) => {
   } = useAssistantLogic(threadId);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col font-sans">
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}

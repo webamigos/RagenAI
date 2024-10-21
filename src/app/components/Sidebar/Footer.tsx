@@ -38,7 +38,6 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                   </span>
                   <Libs.ChevronUpIcon />
                 </Libs.DropdownButton>
-
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
                   <Libs.DropdownItem
                     href="/my-profile"

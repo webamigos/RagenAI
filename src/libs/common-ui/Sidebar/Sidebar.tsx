@@ -8,19 +8,6 @@ import clsx from 'clsx';
 
 import { ArrowRight } from '../icons';
 import { Link } from '../Link';
-import { Text } from '../Text';
-
-function TouchTarget({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <span
-        className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
-        aria-hidden="true"
-      />
-      {children}
-    </>
-  );
-}
 
 export function Sidebar({
   className,
@@ -142,6 +129,7 @@ export function SidebarHeading({
 type SidebarItemProps = {
   current?: boolean;
   className?: string;
+  hasIcon?: boolean;
   children: React.ReactNode;
 } & (
   | Omit<Headless.ButtonProps, 'as' | 'className'>
@@ -149,7 +137,7 @@ type SidebarItemProps = {
 );
 
 export const SidebarItem = forwardRef(function SidebarItem(
-  { current, className, children, ...props }: SidebarItemProps,
+  { current, className, children, hasIcon = false, ...props }: SidebarItemProps,
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
   let classes = clsx(
@@ -184,7 +172,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
           ref={ref}
         >
           {children}
-          <ArrowRight />
+          {hasIcon && <ArrowRight />}
         </Headless.Button>
       )}
     </span>
