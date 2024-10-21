@@ -1,12 +1,13 @@
 import { memo, type ReactNode, type ComponentProps } from 'react';
-import clsx from 'clsx';
+
+import { classMerge } from '../utils/cn';
 
 type Props = {
   children: string | string[] | ReactNode | number;
   bold?: boolean;
   fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
   fontSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  color?: 'zinc-950' | 'blue-600' | 'gray-400';
+  color?: 'zinc-950' | 'blue-600' | 'gray-400' | 'red-500';
 };
 
 const fontWeightMap = {
@@ -29,6 +30,7 @@ const colorMap = {
   'zinc-950': 'text-zinc-950',
   'blue-600': 'text-blue-600',
   'gray-400': 'text-gray-400',
+  'red-500': 'text-red-500',
 };
 
 export const Text = memo(
@@ -40,11 +42,11 @@ export const Text = memo(
     color = 'zinc-950',
     ...rest
   }: ComponentProps<'p'> & Props) => {
-    const classNames = clsx(
-      className,
+    const classNames = classMerge(
       fontWeightMap[fontWeight],
       fontSizeMap[fontSize],
-      colorMap[color]
+      colorMap[color],
+      className
     );
 
     return (

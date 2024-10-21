@@ -6,7 +6,9 @@ import { LayoutGroup, motion } from 'framer-motion';
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
 
+import { ArrowRight } from '../icons';
 import { Link } from '../Link';
+import { Text } from '../Text';
 
 function TouchTarget({ children }: { children: React.ReactNode }) {
   return (
@@ -41,7 +43,7 @@ export function SidebarHeader({
       {...props}
       className={clsx(
         className,
-        'flex flex-col w-full border-b border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col w-full border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   );
@@ -71,7 +73,7 @@ export function SidebarFooter({
       {...props}
       className={clsx(
         className,
-        'flex flex-col border-t border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   );
@@ -151,10 +153,11 @@ export const SidebarItem = forwardRef(function SidebarItem(
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
   let classes = clsx(
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left text-base font-medium text-zinc-950 sm:py-2 sm:text-sm',
-    'hover:bg-slate-200 dark:hover:bg-slate-800',
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 sm:py-2 sm:text-sm',
+    'hover:bg-primary-gray-200 dark:hover:bg-slate-800',
     current && 'bg-zinc-950/5 text-blue-500',
     'dark:text-white',
+    'group',
     className
   );
 
@@ -170,16 +173,18 @@ export const SidebarItem = forwardRef(function SidebarItem(
         <Headless.CloseButton as="div" ref={ref}>
           <Link className={classes} {...props} data-current={current}>
             {children}
+            <ArrowRight />
           </Link>
         </Headless.CloseButton>
       ) : (
         <Headless.Button
           {...props}
-          className={clsx(classes, 'cursor-pointer')}
+          className={clsx('cursor-pointer text-gray-400', classes)}
           data-current={current}
           ref={ref}
         >
           {children}
+          <ArrowRight />
         </Headless.Button>
       )}
     </span>
@@ -192,7 +197,7 @@ export const SidebarLabel = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'span'>) => {
-  return <span {...props} className={clsx(className, 'truncate')} />;
+  return <span {...props} className={clsx('font-sans truncate', className)} />;
 };
 
 SidebarLabel.displayName = 'SidebarLabel';

@@ -1,4 +1,6 @@
-import { SidebarLabel, SidebarItem } from '@salesyy/common-ui';
+import { ComponentProps } from 'react';
+
+import { SidebarLabel, SidebarItem, classMerge } from '@salesyy/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
@@ -17,21 +19,23 @@ type Props = {
 };
 
 export const ThreadsSection = ({
+  className,
   activeThread,
   threadCategories,
   lastThreadElementRef,
   handleThreadClick,
-}: Props) => {
+}: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
 
   return (
-    <>
+    <div className={classMerge(className)}>
       {threadCategories.map(
         ({ title, threads }, categoryIndex) =>
           threads.length > 0 && (
-            <div key={title}>
-              <SidebarLabel className="ml-1">{title}</SidebarLabel>
-
+            <div key={title} className="w-11/12 ml-2.5">
+              <SidebarLabel className="ml-2.5 text-gray-600 font-medium">
+                {title}
+              </SidebarLabel>
               {threads.map((thread, index) => {
                 const contentPreview =
                   thread.messages[0]?.content.length > 30
@@ -44,21 +48,21 @@ export const ThreadsSection = ({
 
                 return (
                   <div
-                    className="mb-1.5 last-of-type:mb-10 first-of-type:mt-5"
+                    className="ml-0.5 first-of-type:mt-1.5 last-of-type:mb-10"
                     ref={
                       isLastThreadInAllCategories ? lastThreadElementRef : null
                     }
                     key={thread.public_id}
                   >
                     <SidebarItem
-                      className="cursor-pointer"
                       onClick={() => {
                         handleThreadClick(thread.public_id);
                         closeSidebar();
                       }}
                       current={isActive}
+                      className="!text-gray-600 font-medium"
                     >
-                      {`${contentPreview}`}
+                      {contentPreview}
                     </SidebarItem>
                   </div>
                 );
@@ -66,6 +70,6 @@ export const ThreadsSection = ({
             </div>
           )
       )}
-    </>
+    </div>
   );
 };

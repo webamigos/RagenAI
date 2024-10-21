@@ -23,17 +23,17 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                   <span className="flex min-w-0 items-center gap-3">
                     <Libs.Avatar
                       src={userAvatar}
-                      className="w-10 h-10 rounded-md"
+                      className="w-10 h-10 rounded-full"
                       alt="User Avatar"
                       square
                     />
                     <span className="min-w-0">
-                      <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
+                      <Libs.Text className="block truncate text-gray-600 text-sm font-medium text-zinc-950 dark:text-white">
                         {userEmail?.split('@')[0] || 'User'}
-                      </span>
-                      <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
+                      </Libs.Text>
+                      <Libs.Text className="block truncate text-xs/5 text-gray-400 font-normal dark:text-zinc-400">
                         {userEmail || 'email@example.com'}
-                      </span>
+                      </Libs.Text>
                     </span>
                   </span>
                   <Libs.ChevronUpIcon />
@@ -42,22 +42,20 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
                   <Libs.DropdownItem className="cursor-pointe" href="/">
                     <Libs.HomeIcon />
-                    <Libs.DropdownLabel className="text-sm ml-2.5">
+                    <Libs.Text className="font-sans font-semibold hover:text-gray-600 text-sm text-gray-500 ml-2.5">
                       {t('home-page')}
-                    </Libs.DropdownLabel>
+                    </Libs.Text>
                   </Libs.DropdownItem>
                   <Libs.DropdownItem
                     href="/my-profile"
                     className="cursor-pointer"
                   >
                     <Libs.UserCircleIcon />
-                    <Libs.DropdownLabel className="text-sm ml-2.5">
+                    <Libs.Text className="font-sans font-semibold hover:text-gray-600 text-sm text-gray-500 ml-2.5">
                       {t('my-profile')}
-                    </Libs.DropdownLabel>
+                    </Libs.Text>
                   </Libs.DropdownItem>
-                  <Libs.DropdownDivider />
                   <Libs.DropdownItem className="cursor-pointer">
-                    <Libs.LogoutIcon />
                     <UserLinks />
                   </Libs.DropdownItem>
                 </Libs.DropdownMenu>
@@ -67,7 +65,6 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
 
           {!isSignedIn && (
             <Libs.SidebarItem>
-              <Libs.LogoutIcon />
               <Libs.SidebarLabel>
                 <UserLinks />
               </Libs.SidebarLabel>

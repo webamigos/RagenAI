@@ -1,7 +1,8 @@
-import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai';
-import { OpenAIEmbeddings } from '@langchain/openai';
-import { createClient } from '@supabase/supabase-js';
-import { DatabaseGenerated } from '@/libs/db/supabase-types';
+import {
+  ChatOpenAI,
+  ChatOpenAIFields,
+  OpenAIEmbeddings,
+} from '@langchain/openai';
 import {
   getModel,
   getOpenaiAPIKey,
@@ -12,12 +13,8 @@ import { getAuth } from '@clerk/nextjs/server';
 import { OpenAIModerationChain } from 'langchain/chains';
 
 const apiKey1 = process.env.OPENAI_API_KEY;
-const sbApiKey = process.env.SUPABASE_ANON_KEY;
-const sbUrl = process.env.SUPABASE_URL;
 
 // eslint-disable-next-line
-console.log({ sbApiKey, sbUrl });
-
 export const createChatInstance = async (request: NextRequest) => {
   const { orgId } = getAuth(request);
   if (!orgId) {
@@ -32,8 +29,8 @@ export const createChatInstance = async (request: NextRequest) => {
     apiKey,
     modelName,
     temperature,
-    verbose: true,
     streaming: true,
+    verbose: process.env.NODE_ENV === 'development',
   });
 };
 
@@ -68,11 +65,5 @@ export const createModerationInstance = async (orgId: string) => {
 
 export const embeddingModel = new OpenAIEmbeddings({
   apiKey: apiKey1,
-  model: 'text-embedding-ada-002',
+  model: 'text-embedding-3-small',
 });
-
-if (!sbUrl || !sbApiKey) {
-  throw new Error('supabaseUrl is required.');
-}
-
-export const supaBaseClient = createClient<DatabaseGenerated>(sbUrl, sbApiKey);

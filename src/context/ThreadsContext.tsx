@@ -28,7 +28,6 @@ type Action =
   | { type: 'ADD_THREADS'; payload: ThreadHistoryResponse[] }
   | { type: 'SET_HAS_MORE'; payload: boolean }
   | { type: 'INCREMENT_SKIP'; payload: number }
-  | { type: 'ADD_NEW_THREAD'; payload: ThreadHistoryResponse }
   | { type: 'RESET_THREADS' };
 
 const initialState: State = {
@@ -47,7 +46,7 @@ function threadsReducer(state: State, action: Action): State {
       return {
         ...state,
         isLoading: false,
-        userThreads: action.payload,
+        userThreads: action.payload || [],
         hasMore: action.payload.length > 0,
       };
     case 'ERROR':
@@ -56,12 +55,7 @@ function threadsReducer(state: State, action: Action): State {
       return {
         ...state,
         isLoading: false,
-        userThreads: [...state.userThreads, ...action.payload],
-      };
-    case 'ADD_NEW_THREAD':
-      return {
-        ...state,
-        userThreads: [action.payload, ...state.userThreads],
+        userThreads: [...state.userThreads, ...(action.payload || [])],
       };
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload };
@@ -78,6 +72,7 @@ type ThreadsContextType = {
   state: State;
   dispatch: React.Dispatch<Action>;
   loadMoreThreads: () => void;
+  refetchThreads: () => void;
 };
 
 export const ThreadsContext = createContext<ThreadsContextType | undefined>(
@@ -103,31 +98,38 @@ export const ThreadsContextProvider = ({
     dispatch({ type: 'LOADING' });
 
     try {
-      const response = await getUserMessages(visitorId, state.skip, 16);
-      const threads = response.threads || [];
+      const { status, error, threads } = await getUserMessages(
+        visitorId,
+        state.skip,
+        16
+      );
 
-      if (threads.length > 0) {
-        dispatch({ type: 'ADD_THREADS', payload: threads });
-        dispatch({ type: 'INCREMENT_SKIP', payload: threads.length });
+      if (status === 200) {
+        dispatch({ type: 'ADD_THREADS', payload: threads || [] });
+        dispatch({ type: 'INCREMENT_SKIP', payload: threads?.length || 0 });
 
-        if (threads.length < 16) {
+        if (!threads || threads.length < 16) {
           dispatch({ type: 'SET_HAS_MORE', payload: false });
         }
       } else {
-        dispatch({ type: 'USER_THREADS', payload: [] });
-        dispatch({ type: 'SET_HAS_MORE', payload: false });
+        dispatch({ type: 'ERROR', payload: error || 'Unknown error' });
       }
-    } catch (error) {
-      dispatch({ type: 'ERROR', payload: 'Failed to load more threads' });
+    } catch (err) {
+      dispatch({ type: 'ERROR', payload: err?.toString() || 'Unknown error' });
     }
   }, [state.isLoading, state.hasMore, visitorId]);
+
+  const refetchThreads = () => {
+    dispatch({ type: 'RESET_THREADS' });
+    loadMoreThreads();
+  };
 
   useEffect(() => {
     if (visitorId && !hasInitialLoadCompleted.current) {
       loadMoreThreads();
       hasInitialLoadCompleted.current = true;
     }
-  }, [visitorId]);
+  }, [visitorId, loadMoreThreads]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -137,7 +139,9 @@ export const ThreadsContextProvider = ({
   }, [isSignedIn]);
 
   return (
-    <ThreadsContext.Provider value={{ state, dispatch, loadMoreThreads }}>
+    <ThreadsContext.Provider
+      value={{ state, dispatch, loadMoreThreads, refetchThreads }}
+    >
       {children}
     </ThreadsContext.Provider>
   );

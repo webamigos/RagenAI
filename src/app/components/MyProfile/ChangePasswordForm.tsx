@@ -5,7 +5,7 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useUser } from '@clerk/clerk-react';
+import { useUser } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
 import { ClerkErrorsInterface } from '../ClerkErrorsInterface';

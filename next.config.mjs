@@ -7,6 +7,9 @@ const withNextIntl = createNextIntlPlugin();
 const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
   swcMinify: true,
+  images: {
+    domains: ['img.clerk.com'],
+  },
 
   experimental: {
     serverComponentsExternalPackages: ['pino', 'pino-pretty'],

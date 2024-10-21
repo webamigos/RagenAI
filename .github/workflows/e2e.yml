@@ -38,19 +38,19 @@ jobs:
       #   run: npx prisma migrate dev
       #   env:
       #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      #     DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      #     DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
 
       - name: Prisma Generate Types
         run: npx prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
 
       - name: Prisma Migrate Deploy
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -63,7 +63,7 @@ jobs:
         run: npx playwright test
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
           NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ vars.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}

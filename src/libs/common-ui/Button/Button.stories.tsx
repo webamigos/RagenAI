@@ -30,3 +30,9 @@ export const _Blue: Story = {
     className: 'bg-blue-600 hover:bg-blue-500',
   },
 };
+
+export const _Error: Story = {
+  args: {
+    isError: true,
+  },
+};

@@ -89,12 +89,11 @@ export const getUserMessages = async (
   try {
     const userThreads = await getUserThreads(visitorId, skip, take);
 
-    return { threads: userThreads, status: StatusCodes.CREATED };
+    return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
-    return {
-      error: 'Fetching threads failed',
-      status: StatusCodes.BAD_REQUEST,
-    };
+    const errorMessage =
+      err instanceof Error ? err.message : 'An error occurred';
+    return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
   }
 };
 

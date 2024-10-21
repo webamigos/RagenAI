@@ -5,17 +5,17 @@ import { useTranslations } from 'next-intl';
 import * as CommonUi from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { type usersDocuments } from '@/app/contracts/Documents';
+import { type UsersDocuments } from '@/app/contracts/Documents';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 
 type Props = {
-  documents: usersDocuments[];
+  documents: UsersDocuments[];
   onDocumentsUpdate: () => void;
 };
 
 type DocumentRowProps = {
-  document: usersDocuments;
+  document: UsersDocuments;
   onDocumentsUpdate: () => void;
 };
 
@@ -60,32 +60,40 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
   };
 
   return (
-    <CommonUi.TableRow className="text-sm">
-      <CommonUi.TableCell title={file_name}>
-        {truncatedFileName}
-      </CommonUi.TableCell>
-      <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
-      <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 -my-1.5 sm:-mx-2.5">
-          <CommonUi.Dropdown>
-            <CommonUi.DropdownButton>
-              <CommonUi.EllipsiHorizontalIcon />
-            </CommonUi.DropdownButton>
-            <CommonUi.DropdownMenu anchor="bottom end">
-              <CommonUi.DropdownItem
-                onClick={() =>
-                  handleDelete(organization_id, id, onDocumentsUpdate)
-                }
-              >
-                {translatedTable('delete')}
-              </CommonUi.DropdownItem>
-            </CommonUi.DropdownMenu>
-          </CommonUi.Dropdown>
-        </div>
-      </CommonUi.TableCell>
-    </CommonUi.TableRow>
+    <>
+      <CommonUi.TableRow className="text-sm">
+        <CommonUi.TableCell title={file_name}>
+          {truncatedFileName}
+        </CommonUi.TableCell>
+        <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
+        <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>
+          <div className="-mx-3 -my-1.5 sm:-mx-2.5">
+            <CommonUi.Dropdown>
+              <CommonUi.DropdownButton>
+                <CommonUi.EllipsiHorizontalIcon />
+              </CommonUi.DropdownButton>
+              <CommonUi.DropdownMenu anchor="bottom end">
+                <CommonUi.DropdownItem
+                  onClick={() =>
+                    handleDelete(organization_id, id, onDocumentsUpdate)
+                  }
+                >
+                  <CommonUi.Tooltip
+                    id="delete doc"
+                    place="top"
+                    content={translatedTable('delete')}
+                  >
+                    <CommonUi.TrashIcon />
+                  </CommonUi.Tooltip>
+                </CommonUi.DropdownItem>
+              </CommonUi.DropdownMenu>
+            </CommonUi.Dropdown>
+          </div>
+        </CommonUi.TableCell>
+      </CommonUi.TableRow>
+    </>
   );
 };
 
