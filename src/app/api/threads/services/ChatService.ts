@@ -33,5 +33,5 @@ export const createChatInstance = async (request: NextRequest) => {
 
 export const embeddingModel = new OpenAIEmbeddings({
   apiKey: apiKey1,
-  model: 'text-embedding-ada-002',
+  model: 'text-embedding-3-small',
 });
