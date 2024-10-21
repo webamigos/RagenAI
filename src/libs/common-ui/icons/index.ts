@@ -29,3 +29,4 @@ export { WarningIcon } from './WarningIcon';
 export { ArrowPath } from './ArrowPath';
 export { TrashIcon } from './TrashIcon';
 export { ArrowRight } from './ArrowRight';
+export { QuestionMarkCircle } from './QuestionMarkCircle';
