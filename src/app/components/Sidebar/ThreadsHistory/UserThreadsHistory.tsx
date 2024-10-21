@@ -104,7 +104,7 @@ export const UserThreadsHistory = ({
         </Text>
       </div>
       <ThreadsSection
-        className="flex justify-end items-end mt-1"
+        className="flex flex-col justify-end items-end mt-1"
         activeThread={activeThread}
         threadCategories={threadCategories}
         handleThreadClick={handleThreadClick}

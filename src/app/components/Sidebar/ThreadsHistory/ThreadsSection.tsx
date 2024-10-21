@@ -48,7 +48,7 @@ export const ThreadsSection = ({
 
                 return (
                   <div
-                    className="ml-0.5 first-of-type:mt-1.5 last-of-type:mb-10"
+                    className="ml-0.5 first-of-type:mt-1.5 last-of-type:mb-2"
                     ref={
                       isLastThreadInAllCategories ? lastThreadElementRef : null
                     }
