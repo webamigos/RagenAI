@@ -9,7 +9,6 @@ import {
   RunnablePassthrough,
   RunnableSequence,
 } from '@langchain/core/runnables';
-import db from '@salesyy/prisma-client';
 import {
   CHAIN_FINAL_ANSWER_RUN_NAME,
   HISTORY_CHARACTER_LIMIT,
@@ -24,11 +23,11 @@ import {
 import {
   combineDocuments,
   limitChatHistory,
-  sanitizeInput,
   zodUserInputValidator,
 } from '../utills';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
+import { normalizeAndSanitizeText } from '@/app/lib/utils/chain-utils';
 
 interface QuestionAnsweringInput {
   question: string;
@@ -51,7 +50,7 @@ export async function initializeQuestionAnsweringChain(orgId: string) {
     // Sanitize user input and truncate chat history
     async (input: QuestionAnsweringInput) => {
       const { question } = zodUserInputValidator(
-        sanitizeInput(input.question),
+        normalizeAndSanitizeText(input.question),
         MAX_USER_INPUT_LENGTH
       );
       const truncatedChatHistory = limitChatHistory(
