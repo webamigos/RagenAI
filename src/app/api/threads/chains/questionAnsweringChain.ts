@@ -6,6 +6,8 @@ import {
   MessagesPlaceholder,
 } from '@langchain/core/prompts';
 import {
+  Runnable,
+  RunnableLambda,
   RunnablePassthrough,
   RunnableSequence,
 } from '@langchain/core/runnables';
@@ -13,6 +15,7 @@ import {
   CHAIN_FINAL_ANSWER_RUN_NAME,
   HISTORY_CHARACTER_LIMIT,
   MAX_USER_INPUT_LENGTH,
+  modelParams,
 } from '../constants/chainConfig';
 import { ThreadConversationPrompts } from '../constants/prompts';
 import {
@@ -28,91 +31,109 @@ import {
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
 import { normalizeAndSanitizeText } from '@/app/lib/utils/chain-utils';
+import { logger } from '@/app/lib/utils/logger';
+import { OpenAIModerationChain } from 'langchain/chains';
+import { ChatOpenAI } from '@langchain/openai';
 
-interface QuestionAnsweringInput {
+export interface ChainInput {
   question: string;
   chat_history: string | undefined;
 }
 
 export async function initializeQuestionAnsweringChain(orgId: string) {
   const vectorStore = createVectorStore(orgId);
+  const contentModerator = await createModerationInstance(orgId);
+  const questionRephraser = await createChatInstanceV2(
+    orgId,
+    modelParams.standaloneQuestion
+  );
+  const answerGenerator = await createChatInstanceV2(orgId, modelParams.answer);
 
-  const rephraseQuestionChain = createRephraseQuestionChain(orgId);
-  const documentRetrievalChain = createDocumentRetrievalChain(vectorStore);
-  const moderationChain = createModerationChain(orgId);
+  return RunnableSequence.from<ChainInput, string>([
+    sanitizeAndValidateInput,
 
-  const answerChainModelParams = {
-    modelName: 'gpt-4o',
-    temperature: 0.8,
-  };
+    moderateContent(contentModerator),
 
-  return RunnableSequence.from([
-    // Sanitize user input and truncate chat history
-    async (input: QuestionAnsweringInput) => {
-      const { question } = zodUserInputValidator(
+    RunnablePassthrough.assign({
+      standalone_question: rephraseQuestion(questionRephraser),
+    }),
+
+    RunnablePassthrough.assign({
+      context: retrieveRelevantDocuments(vectorStore),
+    }),
+
+    generateFinalAnswer(answerGenerator, CHAIN_FINAL_ANSWER_RUN_NAME),
+  ]).withConfig({
+    runName: 'Question answering chain',
+  });
+}
+
+function sanitizeAndValidateInput(input: ChainInput) {
+  return new RunnableLambda({
+    func: (input: ChainInput) => ({
+      question: zodUserInputValidator(
         normalizeAndSanitizeText(input.question),
         MAX_USER_INPUT_LENGTH
-      );
-      const truncatedChatHistory = limitChatHistory(
+      ).question,
+      chat_history: limitChatHistory(
         input.chat_history,
         HISTORY_CHARACTER_LIMIT
-      );
-      return {
-        question,
-        chat_history: truncatedChatHistory,
-        contentToModerate: question + truncatedChatHistory,
-      };
+      ),
+    }),
+  }).withConfig({
+    runName: 'Sanitize and validate input',
+  });
+}
+
+function moderateContent(moderationInstance: OpenAIModerationChain) {
+  return new RunnableLambda({
+    func: async (input: ChainInput) => {
+      try {
+        const contentToModerate = `${input.question} ${input.chat_history}`;
+
+        const { results } = await moderationInstance.invoke({
+          input: contentToModerate,
+        });
+
+        const moderationResult = results[0];
+        if (!moderationResult) {
+          throw new Error('Moderation failed: No results returned');
+        }
+
+        if (moderationResult.flagged) {
+          throw new Error('Input is flagged by moderation model');
+        }
+
+        return input;
+      } catch (error) {
+        logger.error('Moderation chain error: %o', error);
+        throw new Error('Content moderation failed');
+      }
     },
+  }).withConfig({
+    runName: 'Moderate content',
+  });
+}
 
-    // Moderation chain
-    RunnablePassthrough.assign({
-      moderationPassed: (input) =>
-        moderationChain(input.contentToModerate as string),
-    }).withConfig({ runName: 'Moderation Chain' }),
-
-    // Rephrase question chain
-    RunnablePassthrough.assign({
-      standalone_question: rephraseQuestionChain,
-    }),
-
-    // Document retrieval chain
-    RunnablePassthrough.assign({
-      context: documentRetrievalChain,
-    }),
-
-    // Answer chain
-    ChatPromptTemplate.fromMessages([
-      ['system', ThreadConversationPrompts.systemTemplates.answerChain],
-      new MessagesPlaceholder('chat_history'),
-      ['human', ThreadConversationPrompts.humanTemplates.answerChain],
-    ]),
-
-    () => createChatInstanceV2(orgId, answerChainModelParams),
-    new StringOutputParser().withConfig({
-      runName: CHAIN_FINAL_ANSWER_RUN_NAME,
-    }),
+function rephraseQuestion(
+  modelInstance: ChatOpenAI
+): Runnable<ChainInput, string> {
+  const promptTemplate = ChatPromptTemplate.fromMessages([
+    ['system', ThreadConversationPrompts.systemTemplates.rephraseQuestion],
+    new MessagesPlaceholder('chat_history'),
+    ['human', ThreadConversationPrompts.humanTemplates.rephraseQuestion],
   ]);
+
+  return RunnableSequence.from([
+    promptTemplate,
+    modelInstance,
+    new StringOutputParser(),
+  ]).withConfig({
+    runName: 'Rephrase question',
+  });
 }
 
-function createModerationChain(orgId: string) {
-  return async (input: string) => {
-    const moderationInstance = await createModerationInstance(orgId);
-    const { results } = await moderationInstance.invoke({ input });
-
-    const moderationResult = results[0];
-    if (!moderationResult) {
-      throw new Error('Moderation failed');
-    }
-
-    if (moderationResult.flagged) {
-      throw new Error('Input is flagged by moderation model');
-    }
-
-    return true;
-  };
-}
-
-function createVectorStore(orgId: string) {
+function createVectorStore(orgId: string): SupabaseVectorStore {
   const metadataFilter: VectorStoreMetadataFilter = {
     organization_id: orgId.toLowerCase(),
   };
@@ -124,29 +145,29 @@ function createVectorStore(orgId: string) {
   });
 }
 
-function createDocumentRetrievalChain(vectorStore: SupabaseVectorStore) {
+function retrieveRelevantDocuments(vectorStore: SupabaseVectorStore) {
   return RunnableSequence.from([
     (input) => input.standalone_question,
     vectorStore.asRetriever(),
     combineDocuments,
-  ]);
+  ]).withConfig({
+    runName: 'Retrieve relevant documents',
+  });
 }
 
-function createRephraseQuestionChain(orgId: string) {
-  const rephraseQuestionChainPrompt = ChatPromptTemplate.fromMessages([
-    ['system', ThreadConversationPrompts.systemTemplates.rephraseQuestion],
+function generateFinalAnswer(modelInstance: ChatOpenAI, runName: string) {
+  const promptTemplate = ChatPromptTemplate.fromMessages([
+    ['system', ThreadConversationPrompts.systemTemplates.answerChain],
     new MessagesPlaceholder('chat_history'),
-    ['human', ThreadConversationPrompts.humanTemplates.rephraseQuestion],
+    ['human', ThreadConversationPrompts.humanTemplates.answerChain],
   ]);
-
-  const standaloneQuestionModelParams = {
-    modelName: 'gpt-4o-mini',
-    temperature: 0,
-  };
-
   return RunnableSequence.from([
-    rephraseQuestionChainPrompt,
-    () => createChatInstanceV2(orgId, standaloneQuestionModelParams),
-    new StringOutputParser(),
-  ]);
+    promptTemplate,
+    modelInstance,
+    new StringOutputParser().withConfig({
+      runName,
+    }),
+  ]).withConfig({
+    runName: 'Generate final answer',
+  });
 }
