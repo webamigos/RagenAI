@@ -1,12 +1,18 @@
 import { useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { SidebarSection, SidebarLabel, SpinnerSVG } from '@salesyy/common-ui';
-import { ChatConversation } from '@salesyy/common-ui';
+import { format, subDays } from 'date-fns';
+
+import {
+  SidebarSection,
+  SidebarLabel,
+  SpinnerSVG,
+  Text,
+} from '@salesyy/common-ui';
 import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
 import { useThreadsContext } from '../../../hooks/useThreadsContext';
-import { format, subDays } from 'date-fns';
-import { BackwardIcon } from '@heroicons/react/24/outline';
+import { ClockIcon } from '@heroicons/react/24/outline';
+
 type Props = {
   hasMore: boolean;
   isLoading: boolean;
@@ -91,13 +97,14 @@ export const UserThreadsHistory = ({
 
   return (
     <SidebarSection>
-      <div className="flex items-center ml-2 mb-5 gap-2 text-lg">
-        <BackwardIcon className="w-5 h-5 mr-3" />
-        <SidebarLabel className="text-base text-gray-600 tracking-wide font-semibold font-sans">
+      <div className="flex items-center ml-2 mt-2.5 mb-2 gap-2">
+        <ClockIcon className="w-5 h-5" />
+        <Text className="font-sans text-sm text-gray-600 font-medium tracking-wide">
           {t('chat-history')}
-        </SidebarLabel>
+        </Text>
       </div>
       <ThreadsSection
+        className="flex justify-end items-end mt-1"
         activeThread={activeThread}
         threadCategories={threadCategories}
         handleThreadClick={handleThreadClick}

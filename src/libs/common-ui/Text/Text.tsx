@@ -1,5 +1,6 @@
 import { memo, type ReactNode, type ComponentProps } from 'react';
-import clsx from 'clsx';
+
+import { classMerge } from '../utils/cn';
 
 type Props = {
   children: string | string[] | ReactNode | number;
@@ -41,11 +42,11 @@ export const Text = memo(
     color = 'zinc-950',
     ...rest
   }: ComponentProps<'p'> & Props) => {
-    const classNames = clsx(
-      className,
+    const classNames = classMerge(
       fontWeightMap[fontWeight],
       fontSizeMap[fontSize],
-      colorMap[color]
+      colorMap[color],
+      className
     );
 
     return (

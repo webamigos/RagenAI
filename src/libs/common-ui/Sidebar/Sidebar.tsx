@@ -8,6 +8,7 @@ import clsx from 'clsx';
 
 import { ArrowRight } from '../icons';
 import { Link } from '../Link';
+import { Text } from '../Text';
 
 function TouchTarget({ children }: { children: React.ReactNode }) {
   return (
@@ -156,8 +157,8 @@ export const SidebarItem = forwardRef(function SidebarItem(
     'hover:bg-primary-gray-200 dark:hover:bg-slate-800',
     current && 'bg-zinc-950/5 text-blue-500',
     'dark:text-white',
-    className,
-    'group'
+    'group',
+    className
   );
 
   return (
@@ -178,7 +179,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
       ) : (
         <Headless.Button
           {...props}
-          className={clsx(classes, 'cursor-pointer')}
+          className={clsx('cursor-pointer text-gray-400', classes)}
           data-current={current}
           ref={ref}
         >
@@ -196,7 +197,7 @@ export const SidebarLabel = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'span'>) => {
-  return <span {...props} className={clsx(className, 'truncate')} />;
+  return <span {...props} className={clsx('font-sans truncate', className)} />;
 };
 
 SidebarLabel.displayName = 'SidebarLabel';
