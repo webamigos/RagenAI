@@ -111,8 +111,10 @@ export function SidebarLayout({
       {/* content */}
       {isMyProfile ? (
         <main className="flex flex-1 flex-col pb-6 px-2.5 lg:ml-[22rem] lg:pt-2 bg-primary-light overflow-y-auto">
-          <div className="flex flex-1 h-full items-start sm:px-0 md:px-2 pt-5 mt-2 lg:mt-0 lg:rounded-lg lg:bg-primary-light lg:py-3.5 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
-            <div className="w-full lg:ml-5 pb-5 mx-auto">{children}</div>
+          <div className="flex flex-1 h-full items-start sm:px-0 pt-5 mt-2 lg:rounded-lg lg:bg-primary-light lg:py-3.5 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
+            <div className="w-full max-w-6xl lg:ml-5 pb-5 mx-auto">
+              {children}
+            </div>
           </div>
         </main>
       ) : (
