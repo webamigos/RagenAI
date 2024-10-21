@@ -1,5 +1,4 @@
-import { ChatOpenAI } from '@langchain/openai';
-import { OpenAIEmbeddings } from '@langchain/openai';
+import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 
 import {
   getModel,
@@ -27,11 +26,11 @@ export const createChatInstance = async (request: NextRequest) => {
     modelName,
     temperature,
     streaming: true,
-    verbose: true, //to be removed on prod
+    verbose: process.env.NODE_ENV === 'development',
   });
 };
 
 export const embeddingModel = new OpenAIEmbeddings({
   apiKey: apiKey1,
-  model: 'text-embedding-ada-002',
+  model: 'text-embedding-3-small',
 });
