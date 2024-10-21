@@ -96,4 +96,5 @@ export {
   sanitizeInput,
   zodUserInputValidator,
   limitChatHistory,
+  chain,
 };

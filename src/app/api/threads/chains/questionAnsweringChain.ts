@@ -1,8 +1,5 @@
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
-import {
-  SupabaseFilter,
-  SupabaseVectorStore,
-} from '@langchain/community/vectorstores/supabase';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import {
   ChatPromptTemplate,
@@ -23,7 +20,6 @@ import {
   createChatInstanceV2,
   embeddingModel,
   createModerationInstance,
-  supaBaseClient,
 } from '../services/ChatService';
 import {
   combineDocuments,
@@ -31,6 +27,8 @@ import {
   sanitizeInput,
   zodUserInputValidator,
 } from '../utills';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
+import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
 
 interface QuestionAnsweringInput {
   question: string;
@@ -38,8 +36,7 @@ interface QuestionAnsweringInput {
 }
 
 export async function initializeQuestionAnsweringChain(orgId: string) {
-  const organizationDocuments = await getOrganizationDocuments(orgId);
-  const vectorStore = createVectorStore(organizationDocuments);
+  const vectorStore = createVectorStore(orgId);
 
   const rephraseQuestionChain = createRephraseQuestionChain(orgId);
   const documentRetrievalChain = createDocumentRetrievalChain(vectorStore);
@@ -116,24 +113,15 @@ function createModerationChain(orgId: string) {
   };
 }
 
-async function getOrganizationDocuments(orgId: string) {
-  return await db.usersDocuments.findMany({
-    where: { organization_id: { equals: orgId, mode: 'insensitive' } },
-    select: { file_name: true },
-  });
-}
-
-function createVectorStore(organizationDocuments: { file_name: string }[]) {
-  const filteringFunction = (rpc: SupabaseFilter) =>
-    rpc.in(
-      'metadata->>document_id',
-      organizationDocuments.map((doc) => doc.file_name)
-    );
+function createVectorStore(orgId: string) {
+  const metadataFilter: VectorStoreMetadataFilter = {
+    organization_id: orgId.toLowerCase(),
+  };
 
   return new SupabaseVectorStore(embeddingModel, {
-    client: supaBaseClient,
+    client: supabaseVectorStoreClient,
     queryName: DOCUMENT_SEARCH_QUERY_NAME,
-    filter: filteringFunction,
+    filter: metadataFilter,
   });
 }
 
