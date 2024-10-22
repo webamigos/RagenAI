@@ -103,6 +103,13 @@ export const UserThreadsHistory = ({
           {t('chat-history')}
         </Text>
       </div>
+
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <SpinnerSVG size="md" />
+        </div>
+      )}
+
       <ThreadsSection
         className="flex flex-col justify-end items-end mt-1"
         activeThread={activeThread}
@@ -110,7 +117,7 @@ export const UserThreadsHistory = ({
         handleThreadClick={handleThreadClick}
         lastThreadElementRef={lastThreadElementRef}
       />
-      {isLoading && <SpinnerSVG />}
+
       {error && <SidebarLabel className="text-red-500">{error}</SidebarLabel>}
     </SidebarSection>
   );

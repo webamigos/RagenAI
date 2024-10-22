@@ -62,9 +62,9 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
       />
       <Headless.DialogPanel
         transition
-        className="fixed inset-y-0 w-full max-w-80 p-2 transition duration-300 ease-in-out data-[closed]:-translate-x-full"
+        className="fixed inset-y-0 w-full sm:w-1/2 max-w-80 p-2 transition duration-300 ease-in-out data-[closed]:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-lg bg-white shadow-sm ring-1 ring-zinc-950/5 dark:bg-slate-900 dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-lg bg-white shadow-sm dark:bg-slate-900 dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
             <Headless.CloseButton as={NavbarItem} aria-label="Close navigation">
               <CloseMenuIcon />

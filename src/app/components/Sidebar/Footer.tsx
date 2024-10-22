@@ -19,7 +19,10 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
           {isSignedIn && (
             <>
               <Libs.Dropdown>
-                <Libs.DropdownButton as={Libs.SidebarItem}>
+                <Libs.DropdownButton
+                  className="mb-5 lg:mb-0 w-full"
+                  as={Libs.SidebarItem}
+                >
                   <span className="flex min-w-0 items-center gap-3">
                     <Libs.Avatar
                       src={userAvatar}
