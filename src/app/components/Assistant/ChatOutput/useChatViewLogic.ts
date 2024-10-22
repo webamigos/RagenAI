@@ -9,9 +9,13 @@ export const useChatViewLogic = (
 ) => {
   const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
   const [streamedMessageRunId, setStreamedMessageRunId] = useState<string>();
+  const [showMessageDetails, setShowMessageDetails] = useState(false);
 
   const t = useTranslations('chat');
   const md = markdownit();
+
+  const handleMessageDetails = () =>
+    setShowMessageDetails((prevState) => !prevState);
 
   useEffect(() => {
     if (streamedMessage) {
@@ -25,7 +29,9 @@ export const useChatViewLogic = (
   return {
     t,
     md,
+    showMessageDetails,
     streamedMessageRunId,
+    handleMessageDetails,
     renderedStreamedMessage,
   };
 };

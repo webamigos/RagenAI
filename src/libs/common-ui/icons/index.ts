@@ -28,5 +28,6 @@ export { OpenLockIcon } from './OpenLockIcon';
 export { WarningIcon } from './WarningIcon';
 export { ArrowPath } from './ArrowPath';
 export { TrashIcon } from './TrashIcon';
-export { ArrowRight } from './ArrowRight';
+export { AnimatedArrow } from './AnimatedArrow';
 export { QuestionMarkCircle } from './QuestionMarkCircle';
+export { ArrowIcon } from './ArrowIcon';

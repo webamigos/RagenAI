@@ -55,7 +55,7 @@ export const PromptForm = ({
             <SendMessage disabled={isLoading} />
           </div>
         </form>
-        <div className="mt-6 flex flex-row pb-4 items-center justify-start">
+        <div className="mt-6 flex flex-row items-center justify-start">
           <p className="flex  dark:text-slate-100">
             <CloseThread handleCloseThread={handleCloseThread} />
             <Contact />

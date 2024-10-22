@@ -6,7 +6,7 @@ import { LayoutGroup, motion } from 'framer-motion';
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
 
-import { ArrowRight } from '../icons';
+import { AnimatedArrow } from '../icons';
 import { Link } from '../Link';
 
 export function Sidebar({
@@ -161,7 +161,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
         <Headless.CloseButton as="div" ref={ref}>
           <Link className={classes} {...props} data-current={current}>
             {children}
-            <ArrowRight />
+            <AnimatedArrow />
           </Link>
         </Headless.CloseButton>
       ) : (
@@ -172,7 +172,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
           ref={ref}
         >
           {children}
-          {hasIcon && <ArrowRight />}
+          {hasIcon && <AnimatedArrow />}
         </Headless.Button>
       )}
     </span>
