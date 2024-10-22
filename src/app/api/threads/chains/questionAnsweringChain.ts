@@ -68,7 +68,7 @@ export async function initializeQuestionAnsweringChain(orgId: string) {
   });
 }
 
-function sanitizeAndValidateInput(input: ChainInput) {
+function sanitizeAndValidateInput() {
   return new RunnableLambda({
     func: (input: ChainInput) => ({
       question: zodUserInputValidator(
