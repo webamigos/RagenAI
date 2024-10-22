@@ -14,6 +14,9 @@ module.exports = {
       width: {
         88: '22rem',
       },
+      spacing: {
+        92: '23rem',
+      },
       fontFamily: {
         sans: ['Poppins', ...defaultTheme.fontFamily.sans],
       },

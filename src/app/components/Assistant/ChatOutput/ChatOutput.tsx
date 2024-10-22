@@ -96,10 +96,10 @@ export const ChatOutput = ({
         )}
 
         {isLoading && (
-          <p className="flex items-center mb-4">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
-          </p>
+          </div>
         )}
       </div>
     </div>

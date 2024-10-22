@@ -20,7 +20,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
             <>
               <Libs.Dropdown>
                 <Libs.DropdownButton
-                  className="mb-5 lg:mb-0 w-full"
+                  className="mb-5 md:mb-0  w-full"
                   as={Libs.SidebarItem}
                 >
                   <span className="flex min-w-0 items-center gap-3">

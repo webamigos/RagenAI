@@ -58,13 +58,13 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
     >
       <Headless.DialogBackdrop
         transition
-        className="fixed inset-0 bg-black/30 transition data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+        className="fixed inset-0  bg-black/30 transition data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
       />
       <Headless.DialogPanel
         transition
         className="fixed inset-y-0 w-full sm:w-1/2 max-w-80 p-2 transition duration-300 ease-in-out data-[closed]:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-lg bg-white shadow-sm dark:bg-slate-900 dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-3xl bg-white shadow-sm dark:bg-slate-900 dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
             <Headless.CloseButton as={NavbarItem} aria-label="Close navigation">
               <CloseMenuIcon />
@@ -121,8 +121,8 @@ export function SidebarLayout({
           </div>
         </main>
       ) : (
-        <main className="flex justify-center flex-1 flex-col pb-2 px-2.5 lg:ml-96 lg:pt-2 bg-primary-light">
-          <div className="flex flex-1 h-full p-6 lg:rounded-lg lg:bg-primary-light lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
+        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-92 lg:pt-2 bg-primary-light">
+          <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
             <div className="w-full mx-auto max-w-6xl">{children}</div>
           </div>
         </main>
