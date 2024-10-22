@@ -16,9 +16,8 @@ import {
   SseMessageError,
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
-import { CHAIN_FINAL_ANSWER_RUN_NAME } from '../constants/chainConfig';
-import { initializeQuestionAnsweringChain } from '../chains/questionAnsweringChain';
 import { getAuth } from '@clerk/nextjs/server';
+import { initializeRagChain } from '../utills';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,7 +41,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       throw new Error('Unauthorized');
     }
 
-    const chain = await initializeQuestionAnsweringChain(orgId);
+    const { chain, finalAnswerRunName } = await initializeRagChain(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
 
@@ -91,7 +90,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
               if (
                 event.event === 'on_parser_stream' &&
-                event.name === CHAIN_FINAL_ANSWER_RUN_NAME
+                event.name === finalAnswerRunName
               ) {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
@@ -105,7 +104,7 @@ export async function GET(request: NextRequest, { params }: Params) {
                 );
               } else if (
                 event.event === 'on_parser_end' &&
-                event.name === CHAIN_FINAL_ANSWER_RUN_NAME
+                event.name === finalAnswerRunName
               ) {
                 const dbMessage = await createMessageInDB({
                   thread: {

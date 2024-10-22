@@ -6,14 +6,23 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { RunnableSequence } from '@langchain/core/runnables';
 
-import { createChatInstance, embeddingModel } from './services/ChatService';
+import {
+  createChatInstance,
+  createChatInstanceV2,
+  createModerationInstance,
+  embeddingModel,
+} from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { DOCUMENT_SEARCH_QUERY_NAME } from '@/app/constants/vectorStore';
+
 import {
   VectorStoreDocumentMetadata,
   VectorStoreMetadataFilter,
 } from '@/app/lib/types/types';
+import { basicRagChain } from '@/libs/chains/basic-rag/chain';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { EmbeddingsInterface } from '@langchain/core/embeddings';
+import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 
 type Document = {
   pageContent: string;
@@ -83,4 +92,44 @@ function limitChatHistory(history: string | undefined, limit: number) {
   return history ? history.slice(-limit) : undefined;
 }
 
-export { combineDocuments, zodUserInputValidator, limitChatHistory, chain };
+const createVectorStore = (
+  orgId: string,
+  client: SupabaseClient,
+  embeddingModel: EmbeddingsInterface
+): SupabaseVectorStore => {
+  const metadataFilter: VectorStoreMetadataFilter = {
+    organization_id: orgId.toLowerCase(),
+  };
+
+  return new SupabaseVectorStore(embeddingModel, {
+    client,
+    queryName: DOCUMENT_SEARCH_QUERY_NAME,
+    filter: metadataFilter,
+  });
+};
+
+const initializeRagChain = (orgId: string) => {
+  const vectorStore = createVectorStore(
+    orgId,
+    supabaseVectorStoreClient,
+    embeddingModel
+  );
+  return basicRagChain({
+    orgId,
+    models: {
+      embeddingModel,
+      createModerationInstance,
+      createChatInstance: createChatInstanceV2,
+    },
+    vectorStore,
+  });
+};
+
+export {
+  combineDocuments,
+  zodUserInputValidator,
+  limitChatHistory,
+  chain,
+  initializeChain,
+  initializeRagChain,
+};

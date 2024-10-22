@@ -1,12 +1,28 @@
-export namespace ThreadConversationPrompts {
-  export const systemTemplates = {
-    rephraseQuestion: `Na podstawie historii czatu i pytania użytkownika, przeformułuj to pytanie tak, aby było samodzielnym pytaniem. Stwórz tylko samodzielne pytanie bez dodatkowego komentarza.`,
-    answerChain: `
+export const CHAIN_FINAL_ANSWER_RUN_NAME = 'final_answer';
+
+export const HISTORY_CHARACTER_LIMIT = 60000;
+export const MAX_USER_INPUT_LENGTH = 10000;
+
+export const modelParams = {
+  answer: {
+    modelName: 'gpt-4o',
+    temperature: 0.7,
+  },
+
+  standaloneQuestion: {
+    modelName: 'gpt-4o',
+    temperature: 0.5,
+  },
+} as const;
+
+export const systemTemplates = {
+  rephraseQuestion: `Na podstawie historii czatu i pytania użytkownika, przeformułuj to pytanie tak, aby było samodzielnym pytaniem. Stwórz tylko samodzielne pytanie bez dodatkowego komentarza.`,
+  answerChain: `
       Jesteś ekspertem w interpretowaniu i odpowiadaniu na pytania na podstawie dostarczonych źródeł.
       Korzystając z poniższego kontekstu i historii czatu, odpowiedz na pytanie użytkownika najlepiej jak potrafisz, jednocześnie dokładnie przestrzegając zasad.
       
       <kontekst>
-      {context}
+        {context}
       </kontekst>
   
       <zasady>
@@ -21,10 +37,9 @@ export namespace ThreadConversationPrompts {
       2. Zaproponuj, że możesz wrócić do głównego tematu lub zadania.
       3. Nie odpowiadaj na pytania, które nie są związane z Twoją główną funkcją.
       </zasady>`,
-  };
+} as const;
 
-  export const humanTemplates = {
-    rephraseQuestion: `Przeformułuj następujące pytanie w samodzielne pytanie:\n{question}`,
-    answerChain: `Teraz odpowiedz na to pytanie, korzystając z poprzedniego kontekstu i historii czatu:\n{standalone_question}`,
-  };
-}
+export const humanTemplates = {
+  rephraseQuestion: `Przeformułuj następujące pytanie w samodzielne pytanie:\n{question}`,
+  answerChain: `Teraz odpowiedz na to pytanie, korzystając z poprzedniego kontekstu i historii czatu:\n{standalone_question}`,
+} as const;

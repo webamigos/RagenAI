@@ -11,7 +11,7 @@ import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
   VECTOR_STORE_TABLE_NAME,
-} from '@/app/constants/vectorStore';
+} from '@/libs/db/constants/vectorStore';
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 
 type ConvertAndStoreResult = {
