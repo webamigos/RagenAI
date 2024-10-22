@@ -99,8 +99,8 @@ export const convertAndStoreDocument = async (
     });
 
     const textSplitter = new MarkdownTextSplitter({
-      chunkSize: 500,
-      chunkOverlap: 50,
+      chunkSize: 800,
+      chunkOverlap: 200,
       keepSeparator: true,
     });
 
