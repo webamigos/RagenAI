@@ -21,6 +21,8 @@ export const AccountDetails = () => {
             footer: 'hidden',
             pageScrollBox: 'bg-white dark:bg-zinc-900 border-none',
             scrollBox: 'bg-white dark:bg-zinc-900 border-none',
+            activeDevice: 'h-30',
+            profileSectionItemList__activeDevices: 'overflow-auto max-h-30',
           },
         }}
       />
