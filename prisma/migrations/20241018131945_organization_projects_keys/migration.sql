@@ -2,7 +2,6 @@
 CREATE TABLE "Organization" (
     "id" INTEGER NOT NULL DEFAULT nextval('custom_id_seq'),
     "public_id" TEXT NOT NULL,
-    "name" TEXT,
     "provider_id" TEXT,
     "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
