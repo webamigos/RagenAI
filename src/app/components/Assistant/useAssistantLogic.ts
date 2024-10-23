@@ -261,6 +261,7 @@ export const useAssistantLogic = (threadId: string) => {
       created_at: new Date(),
     };
     dispatch({ type: ADD_MESSAGE, payload: userMessage });
+
     dispatch({
       type: SET_MESSAGE_LOADING,
       payload: true,
@@ -274,7 +275,6 @@ export const useAssistantLogic = (threadId: string) => {
     const messageResponse = await sendMessage(threadId, data, id);
     const response = await getUserMessages(id);
     const threads = response.threads;
-
     const newThread = {
       public_id: threads![0].public_id,
       messages: [userMessage],
@@ -300,6 +300,10 @@ export const useAssistantLogic = (threadId: string) => {
           payload: t('status-asking-ai'),
         });
       }
+      threadsDispatch({
+        type: 'ADD_THREAD',
+        payload: newThread,
+      });
     } catch (error) {
       if (
         error instanceof AxiosError &&
