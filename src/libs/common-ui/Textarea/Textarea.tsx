@@ -23,7 +23,7 @@ type Props = {
   errorMessage?: string; // for translations
   maxHeight?: number;
   onSend?: () => void;
-  value: string;
+  value?: string;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -57,7 +57,9 @@ export const Textarea = forwardRef(
     };
 
     useEffect(() => {
-      adjustHeight();
+      if (value !== undefined) {
+        adjustHeight();
+      }
     }, [value]);
 
     return (
@@ -101,11 +103,11 @@ export const Textarea = forwardRef(
                 type="button"
                 onClick={onSend}
                 className="absolute bottom-1 right-3 flex items-center"
-                disabled={!value.trim()}
+                disabled={!value?.trim()}
               >
                 <ArrowRightCircleIcon
                   className={`h-7 w-7 ${
-                    value.trim()
+                    value?.trim()
                       ? 'text-blue-500 hover:text-blue-600'
                       : 'text-gray-400'
                   }`}
@@ -124,7 +126,7 @@ export const Textarea = forwardRef(
               <ExclamationCircleIcon
                 className="h-4 w-4 mr-1 text-red-500"
                 aria-hidden="true"
-              />{' '}
+              />
               {errorMessage ? errorMessage : error.message}
             </Text>
           </>
@@ -142,4 +144,4 @@ export const Textarea = forwardRef(
   }
 );
 
-Textarea.displayName = 'Textarea';
+Textarea.displayName = 'textarea';
