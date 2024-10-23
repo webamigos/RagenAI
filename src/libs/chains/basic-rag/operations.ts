@@ -81,14 +81,17 @@ export const rephraseQuestion = (
   });
 };
 
-export const retrieveRelevantDocuments = (vectorStore: VectorStore) => {
+export const retrieveRelevantDocuments = (
+  vectorStore: VectorStore,
+  maxDocuments = 4
+) => {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
   return RunnableSequence.from([
     (input) => input.standalone_question,
-    vectorStore.asRetriever(),
+    vectorStore.asRetriever({ k: maxDocuments }),
     combineDocuments,
   ]).withConfig({
     runName: 'Retrieve relevant documents',
