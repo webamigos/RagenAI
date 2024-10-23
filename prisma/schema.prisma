@@ -76,10 +76,13 @@ model UsersDocuments {
 // id - internal id, will be used in internal systems and for redis
 // public_id - id which will be used in routing in the app
 // provider_id - organization id from provider (e.g. Clerk organization id)
+// NOTE: Prisma nukes custom sequences:
+// - https://github.com/prisma/prisma/issues/24677
+// - https://github.com/prisma/prisma/issues/25060
 model Organization {
-  id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id          Int       @id @default(autoincrement())
   public_id   String    @default(cuid())
-  name        String?
   provider_id String?
   created_at  DateTime? @default(now())
   updated_at  DateTime? @updatedAt
@@ -89,7 +92,8 @@ model Organization {
 }
 
 model Project {
-  id              Int           @id @default(dbgenerated("nextval('custom_id_seq')"))
+  // id              Int           @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id              Int           @id @default(autoincrement())
   public_id       String        @default(cuid())
   title           String
   organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
@@ -102,7 +106,8 @@ model Project {
 }
 
 model ApiKey {
-  id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id           Int       @id @default(autoincrement())
   public_id    String    @default(cuid())
   masked_value String
   last_used_at DateTime?

@@ -1,8 +1,7 @@
 -- CreateTable
 CREATE TABLE "Organization" (
-    "id" INTEGER NOT NULL DEFAULT nextval('custom_id_seq'),
+    "id" SERIAL NOT NULL,
     "public_id" TEXT NOT NULL,
-    "name" TEXT,
     "provider_id" TEXT,
     "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
@@ -12,7 +11,7 @@ CREATE TABLE "Organization" (
 
 -- CreateTable
 CREATE TABLE "Project" (
-    "id" INTEGER NOT NULL DEFAULT nextval('custom_id_seq'),
+    "id" SERIAL NOT NULL,
     "public_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
@@ -24,7 +23,7 @@ CREATE TABLE "Project" (
 
 -- CreateTable
 CREATE TABLE "ApiKey" (
-    "id" INTEGER NOT NULL DEFAULT nextval('custom_id_seq'),
+    "id" SERIAL NOT NULL,
     "public_id" TEXT NOT NULL,
     "masked_value" TEXT NOT NULL,
     "last_used_at" TIMESTAMP(3),
