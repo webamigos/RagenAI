@@ -26,6 +26,7 @@ type Action =
   | { type: 'USER_THREADS'; payload: ThreadHistoryResponse[] }
   | { type: 'ERROR'; payload: string }
   | { type: 'ADD_THREADS'; payload: ThreadHistoryResponse[] }
+  | { type: 'ADD_THREAD'; payload: ThreadHistoryResponse }
   | { type: 'SET_HAS_MORE'; payload: boolean }
   | { type: 'INCREMENT_SKIP'; payload: number }
   | { type: 'RESET_THREADS' };
@@ -56,6 +57,27 @@ function threadsReducer(state: State, action: Action): State {
         ...state,
         isLoading: false,
         userThreads: [...state.userThreads, ...(action.payload || [])],
+      };
+    case 'ADD_THREAD':
+      const existingThread = state.userThreads.find(
+        (thread) => thread.public_id === action.payload.public_id
+      );
+      if (existingThread) {
+        return {
+          ...state,
+          userThreads: state.userThreads.map((thread) =>
+            thread.public_id === action.payload.public_id
+              ? {
+                  ...thread,
+                  messages: [...thread.messages, ...action.payload.messages],
+                }
+              : thread
+          ),
+        };
+      }
+      return {
+        ...state,
+        userThreads: [action.payload, ...state.userThreads],
       };
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload };
