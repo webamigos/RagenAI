@@ -16,6 +16,16 @@ import type {
   BasicRagChainOutput,
 } from '../types/basic-rag';
 
+/**
+ * Creates a basic RAG (Retrieval-Augmented Generation) chain.
+ *
+ * @param {VectorStore} params.vectorStore - The vector store instance used for document retrieval.
+ * @param {Object} params.models - LLM models used in the chain.
+ * @param {ContentModerator} params.models.contentModerator - Model for content moderation, any BaseChain instance can be used.
+ * @param {QuestionRephraser} params.models.questionRephraser - Model for rephrasing questions, any BaseChatModel instance can be used.
+ * @param {AnswerGenerator} params.models.answerGenerator - Model for generating final answers, any BaseChatModel instance can be used.
+ * @returns {BasicRagChainOutput} An object containing the chain and the final answer run name. Final answer run name can be used to filter events while stream processing.
+ */
 export const basicRagChain = ({
   vectorStore,
   models,
