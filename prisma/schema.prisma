@@ -83,11 +83,12 @@ model Organization {
   // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
   id          Int       @id @default(autoincrement())
   public_id   String    @default(cuid())
-  provider_id String?
-  created_at  DateTime? @default(now())
-  updated_at  DateTime? @updatedAt
-  Project     Project[]
+  provider_id String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  project     Project[]
 
+  @@unique([public_id, provider_id])
   @@index([public_id, provider_id])
 }
 
@@ -97,11 +98,12 @@ model Project {
   public_id       String        @default(cuid())
   title           String
   organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
-  created_at      DateTime?     @default(now())
-  updated_at      DateTime?     @updatedAt
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
   organization_id Int?
-  ApiKey          ApiKey[]
+  api_key         ApiKey[]
 
+  @@unique([public_id])
   @@index([public_id])
 }
 
@@ -111,11 +113,12 @@ model ApiKey {
   public_id    String    @default(cuid())
   masked_value String
   last_used_at DateTime?
-  created_at   DateTime? @default(now())
-  updated_at   DateTime? @updatedAt
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
   project      Project?  @relation(fields: [project_id], references: [id], onDelete: SetNull)
   project_id   Int?
 
+  @@unique([public_id])
   @@index([public_id])
 }
 

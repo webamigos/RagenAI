@@ -2,9 +2,9 @@
 CREATE TABLE "Organization" (
     "id" SERIAL NOT NULL,
     "public_id" TEXT NOT NULL,
-    "provider_id" TEXT,
-    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3),
+    "provider_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Organization_pkey" PRIMARY KEY ("id")
 );
@@ -14,8 +14,8 @@ CREATE TABLE "Project" (
     "id" SERIAL NOT NULL,
     "public_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
     "organization_id" INTEGER,
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
@@ -27,8 +27,8 @@ CREATE TABLE "ApiKey" (
     "public_id" TEXT NOT NULL,
     "masked_value" TEXT NOT NULL,
     "last_used_at" TIMESTAMP(3),
-    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
     "project_id" INTEGER,
 
     CONSTRAINT "ApiKey_pkey" PRIMARY KEY ("id")
@@ -38,10 +38,19 @@ CREATE TABLE "ApiKey" (
 CREATE INDEX "Organization_public_id_provider_id_idx" ON "Organization"("public_id", "provider_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Organization_public_id_provider_id_key" ON "Organization"("public_id", "provider_id");
+
+-- CreateIndex
 CREATE INDEX "Project_public_id_idx" ON "Project"("public_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Project_public_id_key" ON "Project"("public_id");
+
+-- CreateIndex
 CREATE INDEX "ApiKey_public_id_idx" ON "ApiKey"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ApiKey_public_id_key" ON "ApiKey"("public_id");
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "Organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
