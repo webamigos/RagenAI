@@ -1,28 +1,27 @@
-import { z } from 'zod';
-import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
+import { PromptTemplate } from '@langchain/core/prompts';
 import { RunnableSequence } from '@langchain/core/runnables';
+import { NextRequest, NextResponse } from 'next/server';
 
-import {
-  createChatInstance,
-  createChatInstanceV2,
-  createModerationInstance,
-  embeddingModel,
-} from './services/ChatService';
 import { getAssistantPrompt } from '@/app/lib/services/settings';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
+import { createChatInstance, embeddingModel } from './services/ChatService';
 
 import {
   VectorStoreDocumentMetadata,
   VectorStoreMetadataFilter,
 } from '@/app/lib/types/types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { EmbeddingsInterface } from '@langchain/core/embeddings';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
+import { Embeddings } from '@langchain/core/embeddings';
+import { SupabaseClient } from '@supabase/supabase-js';
+import {
+  createChatCompletionInstance,
+  createModerationInstance,
+  createEmbeddingsInstance,
+} from './services/llm';
 
 type Document = {
   pageContent: string;
@@ -79,23 +78,10 @@ function combineDocuments(docs: Document[]) {
   return docs.map((doc) => doc.pageContent).join('\n\n');
 }
 
-function zodUserInputValidator(input: string, maxLength: number) {
-  const schema = z.object({
-    question: z.string().min(1).max(maxLength),
-  });
-
-  return schema.parse({ question: input });
-}
-
-//Very naive implementation, consider using a more sophisticated approach like history summarization
-function limitChatHistory(history: string | undefined, limit: number) {
-  return history ? history.slice(-limit) : undefined;
-}
-
 const createVectorStore = (
   orgId: string,
   client: SupabaseClient,
-  embeddingModel: EmbeddingsInterface
+  embeddingModel: Embeddings
 ): SupabaseVectorStore => {
   const metadataFilter: VectorStoreMetadataFilter = {
     organization_id: orgId.toLowerCase(),
@@ -108,28 +94,45 @@ const createVectorStore = (
   });
 };
 
-const initializeRagChain = (orgId: string) => {
+const initializeRagChain = (orgId: string, llmApiKey: string) => {
+  const modelParams = {
+    answer: {
+      modelName: 'gpt-4o',
+      temperature: 0.7,
+    },
+
+    standaloneQuestion: {
+      modelName: 'gpt-4o',
+      temperature: 0.5,
+    },
+  };
+
+  const embeddigModel = createEmbeddingsInstance(llmApiKey);
+  const contentModerator = createModerationInstance({ apiKey: llmApiKey });
+
+  const questionRephraser = createChatCompletionInstance({
+    apiKey: llmApiKey,
+    ...modelParams.standaloneQuestion,
+  });
+  const answerGenerator = createChatCompletionInstance({
+    apiKey: llmApiKey,
+    ...modelParams.answer,
+  });
+
   const vectorStore = createVectorStore(
     orgId,
     supabaseVectorStoreClient,
-    embeddingModel
+    embeddigModel
   );
+
   return basicRagChain({
-    orgId,
     models: {
-      embeddingModel,
-      createModerationInstance,
-      createChatInstance: createChatInstanceV2,
+      contentModerator,
+      questionRephraser,
+      answerGenerator,
     },
     vectorStore,
   });
 };
 
-export {
-  combineDocuments,
-  zodUserInputValidator,
-  limitChatHistory,
-  chain,
-  initializeChain,
-  initializeRagChain,
-};
+export { chain, combineDocuments, initializeChain, initializeRagChain };

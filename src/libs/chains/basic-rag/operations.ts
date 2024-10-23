@@ -1,4 +1,4 @@
-import { OpenAIModerationChain } from 'langchain/chains';
+import { BaseChain } from 'langchain/chains';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import {
   Runnable,
@@ -9,8 +9,6 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import {
   HISTORY_CHARACTER_LIMIT,
   humanTemplates,
@@ -24,6 +22,8 @@ import {
   normalizeAndSanitizeText,
   zodUserInputValidator,
 } from '../utils/chain-utils';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { VectorStore } from '@langchain/core/vectorstores';
 
 export const sanitizeAndValidateInput = () => {
   return new RunnableLambda({
@@ -42,7 +42,7 @@ export const sanitizeAndValidateInput = () => {
   });
 };
 
-export const moderateContent = (moderationInstance: OpenAIModerationChain) => {
+export const moderateContent = (moderationInstance: BaseChain) => {
   return new RunnableLambda({
     func: async (input: BasicRagChainInput) => {
       try {
@@ -72,7 +72,7 @@ export const moderateContent = (moderationInstance: OpenAIModerationChain) => {
 };
 
 export const rephraseQuestion = (
-  modelInstance: ChatOpenAI
+  modelInstance: BaseChatModel
 ): Runnable<BasicRagChainInput, string> => {
   const promptTemplate = ChatPromptTemplate.fromMessages([
     ['system', systemTemplates.rephraseQuestion],
@@ -89,7 +89,7 @@ export const rephraseQuestion = (
   });
 };
 
-export const retrieveRelevantDocuments = (vectorStore: SupabaseVectorStore) => {
+export const retrieveRelevantDocuments = (vectorStore: VectorStore) => {
   return RunnableSequence.from([
     (input) => input.standalone_question,
     vectorStore.asRetriever(),
@@ -100,7 +100,7 @@ export const retrieveRelevantDocuments = (vectorStore: SupabaseVectorStore) => {
 };
 
 export const generateFinalAnswer = (
-  modelInstance: ChatOpenAI,
+  modelInstance: BaseChatModel,
   runName: string
 ) => {
   const promptTemplate = ChatPromptTemplate.fromMessages([
