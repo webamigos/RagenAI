@@ -1,5 +1,3 @@
-const { join } = require('path');
-
 const defaultTheme = require('tailwindcss/defaultTheme');
 const TailwindAnimate = require('tailwindcss-animate');
 
@@ -14,6 +12,9 @@ module.exports = {
       width: {
         88: '22rem',
       },
+      maxWidth: {
+        '10/12': '83.3333%',
+      },
       spacing: {
         92: '23rem',
       },
@@ -27,6 +28,7 @@ module.exports = {
         'primary-blue-400': '#6eacf0',
         'primary-blue-500': '#589de8',
         'primary-gray-200': '#F7F7F7',
+        'success-green': '#5ae078',
 
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
