@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { VectorStoreDocument } from '../types/chain';
+import { VectorStoreDocument } from '../types/chain-utils';
+import { BaseChain } from 'langchain/chains';
 
 export const normalizeAndSanitizeText = (input: string) => {
   return input
@@ -28,4 +29,22 @@ export const limitChatHistory = (
   limit: number
 ) => {
   return history ? history.slice(-limit) : undefined;
+};
+
+export const runModeration = async (
+  moderationInstance: BaseChain,
+  contentToModerate: string
+): Promise<void> => {
+  const { results } = await moderationInstance.invoke({
+    input: contentToModerate,
+  });
+
+  const moderationResult = results[0];
+  if (!moderationResult) {
+    throw new Error('No results returned');
+  }
+
+  if (moderationResult.flagged) {
+    throw new Error('Input is flagged by moderation model');
+  }
 };

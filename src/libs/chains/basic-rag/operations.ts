@@ -15,11 +15,12 @@ import {
   MAX_USER_INPUT_LENGTH,
   systemTemplates,
 } from './config';
-import type { BasicRagChainInput } from '../types/chain';
+import type { BasicRagChainInput } from '../types/basic-rag';
 import {
   combineDocuments,
   limitChatHistory,
   normalizeAndSanitizeText,
+  runModeration,
   zodUserInputValidator,
 } from '../utils/chain-utils';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
@@ -42,29 +43,16 @@ export const sanitizeAndValidateInput = () => {
   });
 };
 
-export const moderateContent = (moderationInstance: BaseChain) => {
+export const moderateContent = (moderator: BaseChain) => {
+  if (!moderator) {
+    throw new Error('Error moderating content: No moderation instance');
+  }
+
   return new RunnableLambda({
     func: async (input: BasicRagChainInput) => {
-      try {
-        const contentToModerate = `${input.question} ${input.chat_history}`;
-
-        const { results } = await moderationInstance.invoke({
-          input: contentToModerate,
-        });
-
-        const moderationResult = results[0];
-        if (!moderationResult) {
-          throw new Error('Moderation failed: No results returned');
-        }
-
-        if (moderationResult.flagged) {
-          throw new Error('Input is flagged by moderation model');
-        }
-
-        return input;
-      } catch (error) {
-        throw new Error('Content moderation failed');
-      }
+      const contentToModerate = `${input.question} ${input.chat_history}`;
+      await runModeration(moderator, contentToModerate);
+      return input;
     },
   }).withConfig({
     runName: 'Moderate content',
@@ -72,8 +60,12 @@ export const moderateContent = (moderationInstance: BaseChain) => {
 };
 
 export const rephraseQuestion = (
-  modelInstance: BaseChatModel
+  model: BaseChatModel
 ): Runnable<BasicRagChainInput, string> => {
+  if (!model) {
+    throw new Error('Error rephrasing question: No model instance');
+  }
+
   const promptTemplate = ChatPromptTemplate.fromMessages([
     ['system', systemTemplates.rephraseQuestion],
     new MessagesPlaceholder('chat_history'),
@@ -82,7 +74,7 @@ export const rephraseQuestion = (
 
   return RunnableSequence.from([
     promptTemplate,
-    modelInstance,
+    model,
     new StringOutputParser(),
   ]).withConfig({
     runName: 'Rephrase question',
@@ -90,6 +82,10 @@ export const rephraseQuestion = (
 };
 
 export const retrieveRelevantDocuments = (vectorStore: VectorStore) => {
+  if (!vectorStore) {
+    throw new Error('Error retrieving relevant documents: No vector store');
+  }
+
   return RunnableSequence.from([
     (input) => input.standalone_question,
     vectorStore.asRetriever(),
@@ -99,18 +95,20 @@ export const retrieveRelevantDocuments = (vectorStore: VectorStore) => {
   });
 };
 
-export const generateFinalAnswer = (
-  modelInstance: BaseChatModel,
-  runName: string
-) => {
+export const generateFinalAnswer = (model: BaseChatModel, runName: string) => {
+  if (!model) {
+    throw new Error('Error generating final answer: No model instance');
+  }
+
   const promptTemplate = ChatPromptTemplate.fromMessages([
     ['system', systemTemplates.answerChain],
     new MessagesPlaceholder('chat_history'),
     ['human', humanTemplates.answerChain],
   ]);
+
   return RunnableSequence.from([
     promptTemplate,
-    modelInstance,
+    model,
     new StringOutputParser().withConfig({
       runName,
     }),

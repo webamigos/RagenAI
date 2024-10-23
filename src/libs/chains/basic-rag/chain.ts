@@ -2,10 +2,6 @@ import {
   RunnablePassthrough,
   RunnableSequence,
 } from '@langchain/core/runnables';
-
-import { BaseChain } from 'langchain/chains';
-import { BasicRagChainInput } from '../types/chain';
-import { CHAIN_FINAL_ANSWER_RUN_NAME } from './config';
 import {
   generateFinalAnswer,
   moderateContent,
@@ -13,19 +9,17 @@ import {
   retrieveRelevantDocuments,
   sanitizeAndValidateInput,
 } from './operations';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { VectorStore } from '@langchain/core/vectorstores';
+import { CHAIN_FINAL_ANSWER_RUN_NAME } from './config';
+import type {
+  BasicRagChainInput,
+  BasicRagChainParams,
+  BasicRagChainOutput,
+} from '../types/basic-rag';
 
-type BasicRagChainParams = {
-  vectorStore: VectorStore;
-  models: {
-    contentModerator: BaseChain;
-    questionRephraser: BaseChatModel;
-    answerGenerator: BaseChatModel;
-  };
-};
-
-export const basicRagChain = ({ vectorStore, models }: BasicRagChainParams) => {
+export const basicRagChain = ({
+  vectorStore,
+  models,
+}: BasicRagChainParams): BasicRagChainOutput => {
   const chain = RunnableSequence.from<BasicRagChainInput, string>([
     sanitizeAndValidateInput,
 
