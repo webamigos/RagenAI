@@ -147,7 +147,7 @@ export async function GET(request: NextRequest, { params }: Params) {
               }
             }
           } catch (error) {
-            logger.error('Error processing SSE:', error);
+            logger.error('Error processing SSE: %o', error);
             controller.enqueue(
               encoder.encode(
                 prepareSseMessage('error', {
@@ -169,7 +169,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     );
   } catch (error) {
-    logger.error('Unexpected error in GET handler:', error);
+    logger.error('Unexpected error in GET handler: %o', error);
     return new Response('Internal Server Error', { status: 500 });
   }
 }
