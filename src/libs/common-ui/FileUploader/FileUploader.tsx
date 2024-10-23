@@ -7,8 +7,8 @@ import { useTranslations } from 'next-intl';
 import {
   UploadInboxIcon,
   Text,
-  QuestionMarkCircle,
   Tooltip,
+  InformationCircle,
 } from '@salesyy/common-ui';
 
 interface FileUploaderProps extends ComponentPropsWithRef<'div'> {
@@ -98,7 +98,7 @@ export const FileUploader = ({
           id="supported formats"
           content={`${t('supported-formats')}: .md, .epub`}
         >
-          <QuestionMarkCircle className="cursor-pointer" />
+          <InformationCircle className="cursor-pointer" />
         </Tooltip>
       </Text>
     </>

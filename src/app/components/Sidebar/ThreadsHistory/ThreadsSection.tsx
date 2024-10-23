@@ -61,7 +61,10 @@ export const ThreadsSection = ({
                         closeSidebar();
                       }}
                       current={isActive}
-                      className="!text-gray-600 font-medium"
+                      className={classMerge(
+                        'font-medium text-gray-600',
+                        isActive ? 'text-primary-blue-400' : 'hover:bg-gray-100'
+                      )}
                     >
                       {contentPreview}
                     </SidebarItem>

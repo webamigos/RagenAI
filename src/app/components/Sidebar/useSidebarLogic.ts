@@ -4,6 +4,8 @@ import { useUser } from '@clerk/nextjs';
 import { useLocale } from 'next-intl';
 
 import { useThreadsContext } from '../../hooks/useThreadsContext';
+import { useNewThread } from '@/app/hooks/useNewThread';
+import { useCloseThread } from '@/app/hooks/useCloseThreads';
 
 export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
@@ -16,6 +18,13 @@ export const useSidebarLogic = () => {
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
   const isThreadsLoaded = state.userThreads.length > 0;
+  const { handleNewThread } = useNewThread();
+  const { handleCloseThread } = useCloseThread();
+
+  const handleThread = () => {
+    handleNewThread();
+    handleCloseThread(false);
+  };
 
   const handleThreadClick = (threadId: string) => {
     router.push(`/threads/${threadId}`);
@@ -29,6 +38,8 @@ export const useSidebarLogic = () => {
     if (threadIndex !== -1 && parts[threadIndex + 1]) {
       const threadId = parts[threadIndex + 1];
       setActiveThread(threadId);
+    } else {
+      setActiveThread('');
     }
   }, [pathname]);
 
@@ -42,6 +53,7 @@ export const useSidebarLogic = () => {
     isSignedIn,
     userThreads,
     activeThread,
+    handleThread,
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,

@@ -1,15 +1,7 @@
-import {
-  useReducer,
-  useEffect,
-  useState,
-  useRef,
-  type MouseEventHandler,
-} from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useReducer, useEffect, useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 
@@ -24,6 +16,7 @@ import {
 } from '../../lib/services/api';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { logger } from '../../lib/utils/logger';
+import { useCloseThread } from '@/app/hooks/useCloseThreads';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
@@ -45,6 +38,7 @@ export const useAssistantLogic = (threadId: string) => {
   const { isLoaded, isSignedIn, user } = useUser();
   const [visitorId, setVisitorId] = useState<string | null>(null);
 
+  const { handleCloseThread } = useCloseThread();
   const initialState: State = {
     isInitialLoad: true,
     isMessageLoading: false,
@@ -77,8 +71,6 @@ export const useAssistantLogic = (threadId: string) => {
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
-  const { push } = useRouter();
-  const locale = useLocale();
   const t = useTranslations('Index');
   const { dispatch: threadsDispatch } = useThreadsContext();
 
@@ -245,12 +237,6 @@ export const useAssistantLogic = (threadId: string) => {
       return () => eventSource.close();
     }
   }, [userMessageId]);
-
-  const handleCloseThread: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.preventDefault();
-    localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-    push(`/${locale}`);
-  };
 
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();

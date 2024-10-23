@@ -1,15 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import * as Headless from '@headlessui/react';
 import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 
+import { classMerge } from '../utils/cn';
 import { NavbarItem } from '../Navbar';
 
-function OpenMenuIcon() {
+function OpenMenuIcon({ className }: ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -17,12 +18,12 @@ function OpenMenuIcon() {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className="w-6 h-6 cursor-pointer"
+      className={classMerge('w-6 h-6 cursor-pointer', className)}
     >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"
+        d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
       />
     </svg>
   );
@@ -104,9 +105,15 @@ export function SidebarLayout({
       <MobileSidebar>{sidebar}</MobileSidebar>
 
       {/* Navbar on mobile */}
-      <header className="flex items-center px-4 lg:hidden">
-        <NavbarItem onClick={openSidebar} aria-label="Open navigation">
-          <OpenMenuIcon />
+      <header className="flex items-center px-4 lg:hidden bg-primary-light">
+        <NavbarItem
+          className="relative"
+          onClick={openSidebar}
+          aria-label="Open navigation"
+        >
+          <div className="absolute -top-6 py-3 px-6 rounded-2xl bg-primary-blue-400 z-50">
+            <OpenMenuIcon className="mt-4 text-white" />
+          </div>
         </NavbarItem>
         <div className="min-w-0 flex-1">{navbar}</div>
       </header>
@@ -121,7 +128,7 @@ export function SidebarLayout({
           </div>
         </main>
       ) : (
-        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-92 lg:pt-2 bg-primary-light">
+        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light">
           <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
             <div className="w-full mx-auto max-w-6xl">{children}</div>
           </div>

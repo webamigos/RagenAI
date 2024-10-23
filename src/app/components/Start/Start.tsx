@@ -3,10 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import {
-  ChevronRightIcon,
-  RocketLaunchIcon,
-} from '@heroicons/react/24/outline';
+import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@clerk/nextjs';
 import { Alert, Button } from '@salesyy/common-ui';
 

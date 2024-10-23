@@ -1,25 +1,21 @@
 import { useTranslations } from 'next-intl';
-import { MouseEventHandler } from 'react';
 
-import { ArchiveBoxIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@salesyy/common-ui/icons';
+import { Button } from '@salesyy/common-ui/Button';
 
 type Props = {
-  handleCloseThread: MouseEventHandler<HTMLButtonElement>;
+  handleCloseThread: (redirect: boolean) => void;
 };
 
 export const CloseThread = ({ handleCloseThread }: Props) => {
   const t = useTranslations('form');
 
   return (
-    <span
-      className="flex items-center cursor-pointer mr-4"
-      onClick={handleCloseThread}
+    <Button
+      className="p-1 bg-primary-blue-400 hover:bg-primary-blue-500"
+      onClick={() => handleCloseThread(true)}
     >
-      <ArchiveBoxIcon
-        className="h-5 w-5 flex-none mr-2  cursor-pointer"
-        aria-hidden="true"
-      />
-      {t('close-thread')}
-    </span>
+      <XMarkIcon className="text-gray-600" />
+    </Button>
   );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatOutput } from './ChatOutput';
-import { PromptForm } from './PromptForm';
+import { CloseThread, PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
 
@@ -25,6 +25,9 @@ export const Assistant = ({ threadId }: Props) => {
 
   return (
     <div className="h-full flex flex-col font-sans">
+      <div className="text-end mr-7 mb-2">
+        <CloseThread handleCloseThread={handleCloseThread} />
+      </div>
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}
@@ -34,13 +37,11 @@ export const Assistant = ({ threadId }: Props) => {
         />
         <div ref={messagesEndDivRef} />
       </div>
-
       <div className="flex-shrink-0 w-full">
         {isLimitLock && !isSignedIn && <LimitReached />}
         {!isLocked() && threadId && (
           <PromptForm
             isUserLogged={!!isSignedIn}
-            handleCloseThread={handleCloseThread}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
           />

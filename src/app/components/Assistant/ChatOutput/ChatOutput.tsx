@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { SpinnerSVG, Text, ArrowIcon } from '@salesyy/common-ui';
+import { SpinnerSVG, Text, Avatar } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
@@ -24,30 +24,28 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const {
-    t,
-    md,
-    streamedMessageRunId,
-    renderedStreamedMessage,
-    showMessageDetails,
-    handleMessageDetails,
-  } = useChatViewLogic(streamedMessage);
+  const { t, md, userAvatar, streamedMessageRunId, renderedStreamedMessage } =
+    useChatViewLogic(streamedMessage);
 
   return (
-    <div className="px-4 sm:px-4 lg:px-22">
+    <div className="px-5 mt-5 mr-3 lg:px-22 lg:mt-0">
       <div className="flex flex-col">
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group mb-6 rounded-2xl p-5 text-gray-600 bg-white ${
+            className={`group mb-6 rounded-2xl p-5 text-gray-600 bg-white max-w-10/12 shadow-lg ${
               message.role === 'USER'
-                ? 'text-right self-end max-w-3/4 w-auto'
-                : 'text-left self-start max-w-3/4 w-auto'
+                ? 'text-right self-end'
+                : 'text-left self-start'
             }`}
           >
-            <Text fontSize="sm" fontWeight="medium">
-              {t(message.role)}
-            </Text>
+            {message.role === 'ASSISTANT' ? (
+              <Text fontSize="sm" fontWeight="medium">
+                {t(message.role)}
+              </Text>
+            ) : (
+              <Avatar width={20} height={20} src={userAvatar} />
+            )}
             <div
               className={`chat-response relative text-sm ${
                 message.role === 'USER' ? 'user-message' : 'assistant-message'
@@ -59,7 +57,7 @@ export const ChatOutput = ({
                 }}
               />
               <div className="flex items-center justify-end">
-                <span className="font-light text-xs">
+                <span className="font-light text-xs text-gray-400">
                   {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
                 </span>
               </div>
@@ -78,7 +76,7 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2 self-start max-w-3/4 w-auto">
+          <div className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2 self-start max-w-10/12 w-auto">
             <div className="chat-response">
               <div className="mb-6 text-sm">
                 <strong>{t('ASSISTANT')}</strong>{' '}

@@ -7,6 +7,7 @@ import {
   Text,
   ArrowPath,
   Button,
+  SidebarItem,
 } from '@salesyy/common-ui';
 import { usePathname } from 'next/navigation';
 
@@ -17,6 +18,7 @@ import { Footer } from './Footer';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 type Props = {
   children: React.ReactNode;
@@ -34,6 +36,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     isSignedIn,
     userThreads,
     activeThread,
+    handleThread,
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
@@ -46,9 +49,15 @@ export const Sidebar = ({ children, membership }: Props) => {
       <SidebarLayout
         navbar={<Navbar />}
         sidebar={
-          <div className="flex flex-col h-full text-sm">
+          <div className="flex w-full flex-col h-full text-sm">
             <Header />
-            <SidebarBody>
+            <SidebarItem onClick={handleThread} className="flex mx-2">
+              <PencilSquareIcon className="w-5 h-5" />
+              <Text className="-ml-1" color="gray-600" fontWeight="medium">
+                Utwórz nowy wątek
+              </Text>
+            </SidebarItem>
+            <SidebarBody className="-mt-3.5">
               {pathname === `/${locale}` || pathname.includes('threads') ? (
                 error ? (
                   <div className="flex flex-col items-center text-start">
