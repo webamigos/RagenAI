@@ -31,3 +31,5 @@ export { TrashIcon } from './TrashIcon';
 export { AnimatedArrow } from './AnimatedArrow';
 export { QuestionMarkCircle } from './QuestionMarkCircle';
 export { ArrowIcon } from './ArrowIcon';
+export { XCircle } from './XCircle';
+export { InformationCircle } from './InformationCircle';
