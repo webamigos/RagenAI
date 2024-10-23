@@ -28,8 +28,8 @@ model Message {
   thread_id         String?
   visitor_id        String?
   id                String   @id @default(uuid())
-  run_id            String?
   rate              Int?     @db.SmallInt
+  run_id            String?
   thread            Thread?  @relation(fields: [thread_id], references: [id])
 }
 
@@ -57,14 +57,6 @@ model VisitorMessages {
   id         String   @id @default(uuid())
 }
 
-// Moved to separate base
-// model documents {
-//   id        BigInt                 @id @default(autoincrement())
-//   content   String?
-//   metadata  Json?
-//   embedding Unsupported("vector")?
-// }
-
 model UsersDocuments {
   id              String    @id
   organization_id String
@@ -76,6 +68,58 @@ model UsersDocuments {
 
   @@unique([id, organization_id])
   @@index([organization_id])
+}
+
+// Organizations, Projects and ApiKeys ids will be used in Redis for store:
+// org:2143, org:2143:proj:6543, org:2143:proj:6543:key:9843 or key:9843, key:9843:usage
+// keys, stats and other informations. Other tables rather doesn't need this kind of ids
+// id - internal id, will be used in internal systems and for redis
+// public_id - id which will be used in routing in the app
+// provider_id - organization id from provider (e.g. Clerk organization id)
+// NOTE: Prisma nukes custom sequences:
+// - https://github.com/prisma/prisma/issues/24677
+// - https://github.com/prisma/prisma/issues/25060
+model Organization {
+  // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id          Int       @id @default(autoincrement())
+  public_id   String    @default(cuid())
+  provider_id String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  project     Project[]
+
+  @@unique([public_id, provider_id])
+  @@index([public_id, provider_id])
+}
+
+model Project {
+  // id              Int           @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id              Int           @id @default(autoincrement())
+  public_id       String        @default(cuid())
+  title           String
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  organization_id Int?
+  api_key         ApiKey[]
+
+  @@unique([public_id])
+  @@index([public_id])
+}
+
+model ApiKey {
+  // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id           Int       @id @default(autoincrement())
+  public_id    String    @default(cuid())
+  masked_value String
+  last_used_at DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  project      Project?  @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  project_id   Int?
+
+  @@unique([public_id])
+  @@index([public_id])
 }
 
 enum Role {
