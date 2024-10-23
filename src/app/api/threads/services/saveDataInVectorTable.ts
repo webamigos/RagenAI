@@ -62,7 +62,7 @@ export const convertAndStoreDocument = async (
     let rawDocs: Document[] = [];
     const apiKey = await getOpenaiAPIKey(organizationId);
     if (!apiKey) {
-      return { success: false, message: 'OpenAI API key is required.' };
+      throw new Error('OpenAI API key is required.');
     }
 
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
@@ -125,7 +125,7 @@ export const convertAndStoreDocument = async (
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
           id: index,
-          organization_id: organizationId,
+          organization_id: organizationId.toLowerCase(),
           file_id: fileId,
         };
 
