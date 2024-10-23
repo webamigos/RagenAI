@@ -6,13 +6,15 @@ import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { embeddingModel } from './ChatService';
+
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
   VECTOR_STORE_TABLE_NAME,
 } from '@/libs/db/constants/vectorStore';
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
+import { createEmbeddingsInstance } from '@/app/lib/services/llm';
+import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -58,6 +60,12 @@ export const convertAndStoreDocument = async (
     }
 
     let rawDocs: Document[] = [];
+    const apiKey = await getOpenaiAPIKey(organizationId);
+    if (!apiKey) {
+      return { success: false, message: 'OpenAI API key is required.' };
+    }
+
+    const embeddingModel = await createEmbeddingsInstance({ apiKey });
 
     if (fileName.endsWith('.epub')) {
       const { filePath, message } = await saveBinaryToTempFile(fileContent);

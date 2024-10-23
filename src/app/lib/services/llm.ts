@@ -2,7 +2,6 @@ import {
   ChatOpenAI,
   ChatOpenAIFields,
   OpenAIEmbeddings,
-  OpenAIEmbeddingsParams,
 } from '@langchain/openai';
 import { OpenAIModerationChain } from 'langchain/chains';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
@@ -31,7 +30,7 @@ export const createModerationInstance = (
   return new OpenAIModerationChain({ ...options, verbose });
 };
 
-export const createEmbeddingsInstance = (apiKey: string) => {
+export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
   if (!apiKey) {
     throw new Error('Cannot create embeddings instance, apiKey is required');
   }

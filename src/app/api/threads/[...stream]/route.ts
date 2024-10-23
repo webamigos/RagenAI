@@ -17,7 +17,7 @@ import {
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
 import { getAuth } from '@clerk/nextjs/server';
-import { initializeRagChain } from '../utills';
+import { initializeRagChain } from '../services/initializeBasicRag';
 import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 
 export const runtime = 'nodejs';
