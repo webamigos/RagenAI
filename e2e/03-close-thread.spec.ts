@@ -8,7 +8,7 @@ test('open and close thread', async ({ page }) => {
   await page.getByRole('button', { name: 'Start new thread' }).click();
   await page.waitForTimeout(1000);
 
-  await page.getByText('Close thread').click();
+  await page.getByLabel('Close thread').click();
 
   await expect(
     page.getByRole('button', { name: 'Start new thread' })

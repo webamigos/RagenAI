@@ -104,6 +104,7 @@ export const Textarea = forwardRef(
                 onClick={onSend}
                 className="absolute bottom-1 right-3 flex items-center"
                 disabled={!value?.trim()}
+                data-testid="send-button"
               >
                 <ArrowRightCircleIcon
                   className={`h-7 w-7 ${
