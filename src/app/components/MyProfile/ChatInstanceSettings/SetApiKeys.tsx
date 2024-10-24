@@ -116,7 +116,7 @@ export const SetApiKeys = () => {
         {!isEditable ? (
           <button
             type="button"
-            className="ml-2"
+            className="ml-2 -mb-1"
             onClick={() => setIsEditable(true)}
             aria-label="Edit API Key"
           >
@@ -128,7 +128,7 @@ export const SetApiKeys = () => {
           <button
             type="button"
             onClick={() => handleSubmit(onSubmit)()}
-            className="mb-0 ml-2"
+            className="ml-2 -mb-1"
           >
             <Tooltip id="save api key" content={t('save')}>
               <OpenLockIcon />

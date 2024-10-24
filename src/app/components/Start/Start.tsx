@@ -1,85 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@clerk/nextjs';
 import { Alert, Button } from '@salesyy/common-ui';
-
-import {
-  checkVisitorVisits,
-  createThread,
-  createThreadForGuest,
-} from '../../lib/services/api';
-import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { loadFingerprint } from '../../lib/utils/fingerprint';
-import { dailyMessageLimit } from '../../config';
+import { useNewThread } from '@/app/hooks/useNewThread';
 
 export const Start = () => {
-  const [visitorId, setVisitorId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPending, setTransition] = useTransition();
-  const [isLimitLock, setIsLimitLock] = useState(false);
-
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useUser();
   const t = useTranslations('Index');
-  const { push } = useRouter();
-  const locale = useLocale();
-
-  useEffect(() => {
-    const setId = async () => {
-      if (isSignedIn && user?.publicMetadata?.visitorId) {
-        setVisitorId(user?.publicMetadata?.visitorId as string);
-      } else {
-        const fingerprintId = await loadFingerprint();
-        setVisitorId(fingerprintId);
-      }
-    };
-
-    setId();
-  }, [isSignedIn, user]);
-
-  useEffect(() => {
-    if (!visitorId) return;
-
-    const loadVisitorMessages = async () => {
-      const localStorageThreadId = localStorage.getItem(
-        LOCAL_STORAGE_THREAD_KEY
-      );
-
-      const visitorMessagesResponse = await checkVisitorVisits(visitorId);
-
-      if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
-        setIsLimitLock(true);
-      }
-
-      if (localStorageThreadId) {
-        push(`/${locale}/threads/${localStorageThreadId}`);
-      }
-    };
-    loadVisitorMessages();
-  }, []);
-
-  const handleNewThread = async () => {
-    try {
-      setIsLoading(true);
-      if (!isLimitLock) {
-        const result = user
-          ? await createThread()
-          : await createThreadForGuest();
-
-        const threadId = result.data.public_id;
-        localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-        user
-          ? setTransition(() => push(`/${locale}/threads/${threadId}`))
-          : setTransition(() => push(`/${locale}/guest-threads/${threadId}`));
-        setIsLoading(false);
-      }
-    } catch {
-      // TODO: implement
-    }
-  };
+  const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
 
   return (
     <div className="container mx-auto h-full">
@@ -87,7 +17,7 @@ export const Start = () => {
         {!isPending && (
           <Button
             label={t('start-new-thread')}
-            className="px-8 py-4 bg-primary-blue-400 rounded-3xl hover:bg-primary-blue-500 disabled:bg-emerald-400 font-sans tracking-wide sm:mb-12 mb-8 "
+            className="px-8 py-4 bg-primary-blue-400 rounded-3xl hover:bg-primary-blue-500 disabled:bg-primary-blue-500 font-sans tracking-wide sm:mb-12 mb-8 "
             onClick={handleNewThread}
             isLoading={isLoading}
             disabled={isLoading || isLimitLock}

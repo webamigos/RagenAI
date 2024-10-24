@@ -56,7 +56,7 @@ const ButtonComponent = forwardRef(
           {label && <span>{label}</span>}
           {children}
           {iconRight && !isLoading && <span className="pl-2">{iconRight}</span>}
-          {isLoading && <SpinnerSVG />}
+          {isLoading && <SpinnerSVG size="sm" className="ml-3 text-white" />}
           {isError && <ArrowPath />}
         </span>
       </button>
