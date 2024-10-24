@@ -1,5 +1,5 @@
-import { useRouter } from 'next/navigation';
-import { MouseEvent, useEffect, useState, useTransition } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useTransition, useReducer } from 'react';
 import { useUser } from '@clerk/nextjs';
 import {
   checkVisitorVisits,
@@ -11,25 +11,68 @@ import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
 import { useLocale } from 'next-intl';
 import { useCloseThread } from './useCloseThreads';
+import { statusToast } from '../lib/utils/toast';
+
+type ActionType =
+  | { type: 'SET_VISITOR_ID'; payload: string | null }
+  | { type: 'SET_IS_LOADING'; payload: boolean }
+  | { type: 'SET_IS_LIMIT_LOCK'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: string | null };
+
+type StateType = {
+  visitorId: string | null;
+  isLoading: boolean;
+  isLimitLock: boolean;
+  error: string | null;
+};
+
+const initialState: StateType = {
+  visitorId: null,
+  isLoading: false,
+  isLimitLock: false,
+  error: null,
+};
+
+const reducer = (state: StateType, action: ActionType): StateType => {
+  switch (action.type) {
+    case 'SET_VISITOR_ID':
+      return { ...state, visitorId: action.payload };
+    case 'SET_IS_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_IS_LIMIT_LOCK':
+      return { ...state, isLimitLock: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
+    default:
+      return state;
+  }
+};
 
 export const useNewThread = () => {
-  const [visitorId, setVisitorId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, dispatch] = useReducer(reducer, initialState);
   const [isPending, setTransition] = useTransition();
-  const [isLimitLock, setIsLimitLock] = useState(false);
 
   const { isSignedIn, user } = useUser();
   const { push } = useRouter();
+  const pathname = usePathname();
   const locale = useLocale();
   const { handleCloseThread } = useCloseThread();
+  const { errorToast } = statusToast();
 
   useEffect(() => {
     const setId = async () => {
-      if (isSignedIn && user?.publicMetadata?.visitorId) {
-        setVisitorId(user?.publicMetadata?.visitorId as string);
-      } else {
-        const fingerprintId = await loadFingerprint();
-        setVisitorId(fingerprintId);
+      try {
+        if (isSignedIn && user?.publicMetadata?.visitorId) {
+          dispatch({
+            type: 'SET_VISITOR_ID',
+            payload: user.publicMetadata.visitorId as string,
+          });
+        } else {
+          const fingerprintId = await loadFingerprint();
+          dispatch({ type: 'SET_VISITOR_ID', payload: fingerprintId });
+        }
+      } catch (err) {
+        dispatch({ type: 'SET_ERROR', payload: 'Failed to set visitor ID.' });
       }
     };
 
@@ -37,30 +80,51 @@ export const useNewThread = () => {
   }, [isSignedIn, user]);
 
   useEffect(() => {
-    if (!visitorId) return;
-
     const loadVisitorMessages = async () => {
-      const localStorageThreadId = localStorage.getItem(
-        LOCAL_STORAGE_THREAD_KEY
-      );
+      if (!state.visitorId) return;
 
-      const visitorMessagesResponse = await checkVisitorVisits(visitorId);
+      try {
+        const localStorageThreadId = localStorage.getItem(
+          LOCAL_STORAGE_THREAD_KEY
+        );
 
-      if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
-        setIsLimitLock(true);
-      }
+        const visitorMessagesResponse = await checkVisitorVisits(
+          state.visitorId
+        );
 
-      if (localStorageThreadId) {
-        push(`/${locale}/threads/${localStorageThreadId}`);
+        if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
+          dispatch({ type: 'SET_IS_LIMIT_LOCK', payload: true });
+        }
+
+        if (localStorageThreadId && !pathname.includes('/threads')) {
+          push(`/${locale}/threads/${localStorageThreadId}`);
+        }
+      } catch (err) {
+        dispatch({
+          type: 'SET_ERROR',
+          payload: 'Failed to load visitor messages.',
+        });
       }
     };
+
     loadVisitorMessages();
-  }, [visitorId]);
+  }, [state.visitorId, pathname]);
+
+  useEffect(() => {
+    try {
+      if (!pathname.includes('/threads')) {
+        localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
+      }
+    } catch (err) {
+      dispatch({ type: 'SET_ERROR', payload: 'Failed to clear thread data.' });
+    }
+  }, [pathname]);
 
   const handleNewThread = async () => {
     try {
-      setIsLoading(true);
-      if (!isLimitLock) {
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
+
+      if (!state.isLimitLock) {
         handleCloseThread(false);
 
         const result = user
@@ -73,12 +137,24 @@ export const useNewThread = () => {
         user
           ? setTransition(() => push(`/${locale}/threads/${threadId}`))
           : setTransition(() => push(`/${locale}/guest-threads/${threadId}`));
-        setIsLoading(false);
+
+        dispatch({ type: 'SET_IS_LOADING', payload: false });
       }
-    } catch {
-      // TODO: Handle error
+    } catch (err) {
+      dispatch({
+        type: 'SET_ERROR',
+        payload: 'Failed to create new thread.',
+      });
+      errorToast({ message: state.error! });
+      dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
   };
 
-  return { handleNewThread, isLoading, isPending, isLimitLock };
+  return {
+    handleNewThread,
+    isLoading: state.isLoading,
+    isPending,
+    isLimitLock: state.isLimitLock,
+    error: state.error,
+  };
 };
