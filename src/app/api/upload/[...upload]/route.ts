@@ -58,6 +58,10 @@ export async function POST(request: NextRequest, { params }: Params) {
           uniqueFileId
         );
         if (!success) {
+          logger.error(
+            `Błąd podczas przetwarzania pliku ${file.name}:%o`,
+            message
+          );
           return NextResponse.json({ message }, { status: 500 });
         }
       } catch (error) {

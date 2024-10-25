@@ -6,13 +6,15 @@ import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { embeddingModel } from './ChatService';
+
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
   VECTOR_STORE_TABLE_NAME,
-} from '@/app/constants/vectorStore';
+} from '@/libs/db/constants/vectorStore';
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
+import { createEmbeddingsInstance } from '@/app/lib/services/llm';
+import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -58,6 +60,12 @@ export const convertAndStoreDocument = async (
     }
 
     let rawDocs: Document[] = [];
+    const apiKey = await getOpenaiAPIKey(organizationId);
+    if (!apiKey) {
+      throw new Error('OpenAI API key is required.');
+    }
+
+    const embeddingModel = await createEmbeddingsInstance({ apiKey });
 
     if (fileName.endsWith('.epub')) {
       const { filePath, message } = await saveBinaryToTempFile(fileContent);
@@ -99,8 +107,8 @@ export const convertAndStoreDocument = async (
     });
 
     const textSplitter = new MarkdownTextSplitter({
-      chunkSize: 500,
-      chunkOverlap: 50,
+      chunkSize: 800,
+      chunkOverlap: 200,
       keepSeparator: true,
     });
 
@@ -117,7 +125,7 @@ export const convertAndStoreDocument = async (
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
           id: index,
-          organization_id: organizationId,
+          organization_id: organizationId.toLowerCase(),
           file_id: fileId,
         };
 

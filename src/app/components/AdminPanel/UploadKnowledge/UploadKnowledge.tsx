@@ -49,7 +49,7 @@ export const UploadKnowledge = () => {
     setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    formData.append('organizationId', orgId);
+    formData.append('organizationId', organization.id);
 
     try {
       const response = await uploadFiles(orgId, formData);

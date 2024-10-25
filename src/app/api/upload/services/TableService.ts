@@ -1,5 +1,5 @@
-import { VECTOR_STORE_TABLE_NAME } from '@/app/constants/vectorStore';
 import { logger } from '@/app/lib/utils/logger';
+import { VECTOR_STORE_TABLE_NAME } from '@/libs/db/constants/vectorStore';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 
 export async function deleteDocument(file_id: string) {

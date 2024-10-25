@@ -9,7 +9,6 @@ import {
   createMessageInDB,
   getMessageById,
 } from '../../../lib/services/message';
-import { chain, initializeChain } from '../utills';
 import {
   SseInitEvent,
   SseMessageEvent,
@@ -17,6 +16,9 @@ import {
   SseMessageError,
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
+import { getAuth } from '@clerk/nextjs/server';
+import { initializeRagChain } from '../services/initializeBasicRag';
+import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,7 +37,21 @@ let runId: string;
 
 export async function GET(request: NextRequest, { params }: Params) {
   try {
-    await initializeChain(request);
+    const { orgId } = getAuth(request);
+    if (!orgId) {
+      throw new Error('Unauthorized');
+    }
+
+    const llmApiKey = await getOpenaiAPIKey(orgId);
+
+    if (!llmApiKey) {
+      throw new Error('LLM API key is required.');
+    }
+
+    const { chain, finalAnswerRunName } = await initializeRagChain(
+      orgId,
+      llmApiKey
+    );
 
     const [publicThreadId, publicMessageId] = params.stream;
 
@@ -63,10 +79,10 @@ export async function GET(request: NextRequest, { params }: Params) {
               .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
               .join('\n');
 
-            const eventStream = await chain.streamEvents(
+            const eventStream = chain.streamEvents(
               {
                 question: threadMessage.content,
-                conv_history: conv_history,
+                chat_history: conv_history,
               },
               {
                 version: 'v2',
@@ -82,7 +98,10 @@ export async function GET(request: NextRequest, { params }: Params) {
                 runId = chainRunIds[0];
               }
 
-              if (event.event === 'on_parser_stream') {
+              if (
+                event.event === 'on_parser_stream' &&
+                event.name === finalAnswerRunName
+              ) {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
                 controller.enqueue(
@@ -93,7 +112,10 @@ export async function GET(request: NextRequest, { params }: Params) {
                     })
                   )
                 );
-              } else if (event.event === 'on_parser_end') {
+              } else if (
+                event.event === 'on_parser_end' &&
+                event.name === finalAnswerRunName
+              ) {
                 const dbMessage = await createMessageInDB({
                   thread: {
                     ...threadEntity,
@@ -125,7 +147,7 @@ export async function GET(request: NextRequest, { params }: Params) {
               }
             }
           } catch (error) {
-            logger.error('Error processing SSE:', error);
+            logger.error('Error processing SSE: %o', error);
             controller.enqueue(
               encoder.encode(
                 prepareSseMessage('error', {
@@ -147,7 +169,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     );
   } catch (error) {
-    logger.error('Unexpected error in GET handler:', error);
+    logger.error('Unexpected error in GET handler: %o', error);
     return new Response('Internal Server Error', { status: 500 });
   }
 }
