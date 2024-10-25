@@ -5,7 +5,7 @@ import { NavHeader } from '../NavHeader';
 
 export const Header = () => {
   return (
-    <SidebarHeader>
+    <SidebarHeader className="mx-4">
       <div className="flex justify-between items-center">
         <Logo />
         <NavHeader />

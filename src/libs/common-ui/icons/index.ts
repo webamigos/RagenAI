@@ -32,3 +32,4 @@ export { PencilSquareIcon } from './PencilSquareIcon';
 export { ArrowRightCircleIcon } from './ArrowRightCircleIcon';
 export { ArrowPath } from './ArrowPath';
 export { TrashIcon } from './TrashIcon';
+export { ArrowRight } from './ArrowRight';
