@@ -62,7 +62,7 @@ export const ForgotPasswordForm = () => {
   };
 
   return (
-    <Card>
+    <Card size="sm" className="w-full">
       <Logo />
       <Text fontWeight="medium" className="my-2">
         {t('Forgot-password')}
