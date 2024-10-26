@@ -13,6 +13,7 @@ import { Card, Input, Button } from '@salesyy/common-ui';
 
 import { type ResetPasswordData, ResetPasswordSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
+import { Logo } from '../../Logo';
 
 export const ResetPasswordForm = () => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
@@ -63,9 +64,11 @@ export const ResetPasswordForm = () => {
 
   return (
     <Card>
+      <Logo />
       <form onSubmit={handleSubmit(reset)}>
         <Input
           errorMessage={errors.password?.message}
+          className="py-1.5"
           label={t('Enter-password')}
           placeholder="New password"
           {...register('password')}
@@ -78,10 +81,11 @@ export const ResetPasswordForm = () => {
           placeholder="Reset code"
           error={errors.code}
           {...register('code')}
+          className="py-1.5"
           type="text"
         />
         <Button
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           isLoading={isLoading}
           label={t('Reset-password')}
           type="submit"

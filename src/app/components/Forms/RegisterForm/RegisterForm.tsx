@@ -10,6 +10,7 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { Button, Input, Card, Link, Text } from '@salesyy/common-ui';
+import { Logo } from '../../Logo';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
@@ -58,8 +59,9 @@ export const RegisterForm = () => {
 
   return (
     <Card className="w-screen">
+      <Logo />
       <div className="flex flex-col mb-4 text-center">
-        <Text fontSize="lg" fontWeight="bold">
+        <Text fontSize="md" fontWeight="medium">
           {t('create-account')}
         </Text>
         <Text fontSize="xs" fontWeight="light" color="gray-400">
@@ -72,7 +74,7 @@ export const RegisterForm = () => {
           type="email"
           id="email"
           {...register('email')}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-3 py-2 border"
           label="Email"
           error={errors.email}
           errorMessage={errors.email?.message}
@@ -82,12 +84,12 @@ export const RegisterForm = () => {
           type="password"
           id="password"
           {...register('password')}
-          className="w-full py-2 border rounded"
+          className="w-full py-2 border"
           error={errors.email}
           errorMessage={errors.password?.message}
         />
         <Button
-          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           disabled={isSubmitting}
           isLoading={isSubmitting}
           label={t('sign-up')}

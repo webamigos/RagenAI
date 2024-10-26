@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { Button, Card, Input, Link, Text } from '@salesyy/common-ui';
+import { Logo } from '../../Logo';
 
 import { type LoginFormData, loginSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
@@ -59,8 +60,9 @@ export const LoginForm = () => {
 
   return (
     <Card className="w-screen">
+      <Logo />
       <div className="flex flex-col mb-4 text-center">
-        <Text fontSize="lg" fontWeight="bold">
+        <Text fontSize="md" fontWeight="medium">
           {t('sign-in')}
         </Text>
         <Text color="gray-400" fontSize="xs" fontWeight="light">
@@ -73,7 +75,7 @@ export const LoginForm = () => {
           type="email"
           id="email"
           {...register('email')}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-3 py-2 border "
           label="Email"
           error={errors.email}
           errorMessage={errors.email?.message}
@@ -82,7 +84,7 @@ export const LoginForm = () => {
           type="password"
           id="password"
           {...register('password')}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-3 py-2 border"
           label={t('Password')}
           error={errors.password}
           errorMessage={errors.password?.message}
@@ -94,7 +96,7 @@ export const LoginForm = () => {
           {t('Forgot-password')}
         </Link>
         <Button
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           isLoading={isSubmitting}
           label={t('sign-in')}
           type="submit"

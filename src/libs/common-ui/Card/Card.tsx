@@ -12,15 +12,15 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
   const sizeClass = () => {
     switch (size) {
       case 'sm':
-        return 'max-w-sm';
+        return 'max-w-sm w-full';
       case 'md':
-        return 'max-w-md';
+        return 'max-w-md w-full';
       case 'lg':
-        return 'max-w-lg';
+        return 'max-w-lg w-full';
       case 'full':
         return 'w-full';
       default:
-        return 'max-w-sm';
+        return 'max-w-sm w-full';
     }
   };
 
