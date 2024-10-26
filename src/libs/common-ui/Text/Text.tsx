@@ -8,7 +8,7 @@ type Color =
   | 'blue-600'
   | 'gray-400'
   | 'gray-500'
-  | 'gray-600'
+  | 'gray-700'
   | 'red-500';
 
 type Props = {
@@ -37,7 +37,7 @@ const fontSizeMap: Record<FontSize, string> = {
 const colorMap: Record<Color, string> = {
   'zinc-950': 'text-zinc-950',
   'blue-600': 'text-blue-600',
-  'gray-600': 'text-gray-600',
+  'gray-700': 'text-gray-700',
   'gray-500': 'text-gray-500',
   'gray-400': 'text-gray-400',
   'red-500': 'text-red-500',

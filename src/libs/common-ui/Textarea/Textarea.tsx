@@ -62,6 +62,13 @@ export const Textarea = forwardRef(
       }
     }, [value]);
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        onSend?.();
+      }
+    };
+
     return (
       <div className={classMerge('py-2 relative', containerClassName)}>
         <label
@@ -95,6 +102,7 @@ export const Textarea = forwardRef(
               )}
               style={{ maxHeight: `${maxHeight}px` }}
               onInput={adjustHeight}
+              onKeyDown={handleKeyDown} // Handle Enter key
               value={value}
               {...rest}
             />

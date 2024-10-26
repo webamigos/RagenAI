@@ -51,9 +51,9 @@ export const Sidebar = ({ children, membership }: Props) => {
         sidebar={
           <div className="flex w-full flex-col h-full text-sm">
             <Header />
-            <SidebarItem onClick={handleThread} className="flex mx-2">
-              <PencilSquareIcon className="w-5 h-5" />
-              <Text className="-ml-1" color="gray-600" fontWeight="medium">
+            <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
+              <PencilSquareIcon className="w-6 h-6" />
+              <Text className="-ml-1 mt-1" color="gray-700" fontWeight="normal">
                 Utwórz nowy wątek
               </Text>
             </SidebarItem>

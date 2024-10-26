@@ -30,7 +30,7 @@ export function SidebarHeader({
       {...props}
       className={clsx(
         className,
-        'flex flex-col w-full border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col w-full border-zinc-950/5 px-4 pt-4 pb-2 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   );
@@ -45,7 +45,7 @@ export function SidebarBody({
       {...props}
       className={clsx(
         className,
-        'flex flex-1 flex-col overflow-y-auto p-4 [&>[data-slot=section]+[data-slot=section]]:mt-8'
+        'flex flex-1 flex-col overflow-y-auto px-4 [&>[data-slot=section]+[data-slot=section]]:mt-8'
       )}
     />
   );
@@ -154,7 +154,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
       {current && (
         <motion.span
           layoutId="current-indicator"
-          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-primary-blue-400"
+          className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400"
         />
       )}
       {'href' in props ? (
