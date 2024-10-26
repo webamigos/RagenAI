@@ -18,16 +18,12 @@ export const Assistant = ({ threadId }: Props) => {
     isLimitLock,
     isSignedIn,
     messages,
-    handleCloseThread,
     onSubmit,
     isLocked,
   } = useAssistantLogic(threadId);
 
   return (
     <div className="h-full flex flex-col font-sans">
-      <div className="text-end mr-7 mb-2">
-        <CloseThread handleCloseThread={handleCloseThread} />
-      </div>
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}

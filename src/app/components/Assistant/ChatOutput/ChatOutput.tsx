@@ -33,21 +33,19 @@ export const ChatOutput = ({
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group mb-6 rounded-2xl p-5 text-gray-600 bg-white max-w-10/12 shadow-lg ${
+            className={`group mb-6 rounded-2xl p-5 text-gray-600 bg-white max-w-10/12 shadow-lg shadow-slate-300 ${
               message.role === 'USER'
                 ? 'text-right self-end'
-                : 'text-left self-start'
+                : 'text-left self-start text-base'
             }`}
           >
             {message.role === 'ASSISTANT' ? (
               <Text fontSize="sm" fontWeight="medium">
                 {t(message.role)}
               </Text>
-            ) : (
-              <Avatar width={20} height={20} src={userAvatar} />
-            )}
+            ) : null}
             <div
-              className={`chat-response relative text-sm ${
+              className={`chat-response relative leading-7 ${
                 message.role === 'USER' ? 'user-message' : 'assistant-message'
               }`}
             >

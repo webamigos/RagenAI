@@ -16,7 +16,6 @@ import {
 } from '../../lib/services/api';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
 import { logger } from '../../lib/utils/logger';
-import { useCloseThread } from '@/app/hooks/useCloseThreads';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
@@ -38,7 +37,6 @@ export const useAssistantLogic = (threadId: string) => {
   const { isLoaded, isSignedIn, user } = useUser();
   const [visitorId, setVisitorId] = useState<string | null>(null);
 
-  const { handleCloseThread } = useCloseThread();
   const initialState: State = {
     isInitialLoad: true,
     isMessageLoading: false,
@@ -316,7 +314,6 @@ export const useAssistantLogic = (threadId: string) => {
     isLimitLock,
     isSignedIn,
     messages,
-    handleCloseThread,
     isLocked,
     dispatch,
     onSubmit,

@@ -16,7 +16,7 @@ import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
 
 type Props = {
-  label: string;
+  label?: string;
   hint?: string;
   error?: FieldError;
   containerClassName?: string;
@@ -69,8 +69,10 @@ export const Textarea = forwardRef(
       }
     };
 
+    const maxHeightClass = `max-h-[${maxHeight}px]`;
+
     return (
-      <div className={classMerge('py-2 relative', containerClassName)}>
+      <div className={classMerge('relative', containerClassName)}>
         <label
           htmlFor={id}
           className="block text-sm font-medium leading-6 dark:text-gray-300"
@@ -91,7 +93,8 @@ export const Textarea = forwardRef(
               }}
               rows={1}
               className={classMerge(
-                'block w-full dark:bg-slate-900 dark:text-gray-300 rounded-2xl border-0 py-1.5 px-2.5 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto',
+                'block w-full dark:bg-slate-900 dark:text-gray-300 rounded-2xl border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
+                maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
                     error,
@@ -100,22 +103,22 @@ export const Textarea = forwardRef(
                 onSend ? 'pr-12' : '',
                 className
               )}
-              style={{ maxHeight: `${maxHeight}px` }}
               onInput={adjustHeight}
-              onKeyDown={handleKeyDown} // Handle Enter key
+              onKeyDown={handleKeyDown}
               value={value}
+              placeholder="Your placeholder text here"
               {...rest}
             />
             {onSend && (
               <button
                 type="button"
                 onClick={onSend}
-                className="absolute bottom-1 right-3 flex items-center"
+                className="absolute bottom-1.5 right-3 flex items-center"
                 disabled={!value?.trim()}
                 data-testid="send-button"
               >
                 <ArrowRightCircleIcon
-                  className={`h-7 w-7 ${
+                  className={`h-9 w-9 ${
                     value?.trim()
                       ? 'text-blue-500 hover:text-blue-600'
                       : 'text-gray-400'

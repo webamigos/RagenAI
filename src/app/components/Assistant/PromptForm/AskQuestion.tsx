@@ -26,7 +26,6 @@ export const AskQuestion = ({
 
   return (
     <Textarea
-      label={isUserLogged ? t('lets-chat-user') : t('lets-chat')}
       value={value}
       onSend={onSend}
       containerClassName="w-9/12 md:w-10/12"

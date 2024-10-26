@@ -24,7 +24,7 @@ module.exports = {
       colors: {
         'salesyy-red': '#CB1D3D',
         'salesyy-blue': '#252D53',
-        'primary-light': '#CAD5E8',
+        'primary-light': '#e2e8f3',
         'primary-blue-400': '#6eacf0',
         'primary-blue-500': '#589de8',
         'primary-gray-200': '#F7F7F7',
