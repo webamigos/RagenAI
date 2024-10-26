@@ -10,6 +10,7 @@ import {
   SidebarItem,
 } from '@salesyy/common-ui';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
@@ -43,6 +44,7 @@ export const Sidebar = ({ children, membership }: Props) => {
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
+  const t = useTranslations('chat');
 
   return (
     <SidebarProvider>
@@ -54,7 +56,7 @@ export const Sidebar = ({ children, membership }: Props) => {
             <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
               <PencilSquareIcon className="w-6 h-6" />
               <Text className="-ml-1 mt-1" color="gray-700" fontWeight="normal">
-                Utwórz nowy wątek
+                {t('create-new-thread')}
               </Text>
             </SidebarItem>
             <SidebarBody className="-mt-3.5">
