@@ -9,10 +9,11 @@ import { useForm } from 'react-hook-form';
 import { startTransition, useState } from 'react';
 
 import { ClerkErrorsInterface } from '../../ClerkErrorsInterface';
-import { Button, Input, Card } from '@salesyy/common-ui';
+import { Button, Input, Card, Text } from '@salesyy/common-ui';
 
 import { type ClerkAPIError } from '@clerk/types';
 import { type ForgotPasswordData, ForgotPasswordSchema } from './schema';
+import { Logo } from '../../Logo';
 
 export const ForgotPasswordForm = () => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
@@ -62,18 +63,22 @@ export const ForgotPasswordForm = () => {
 
   return (
     <Card>
-      <p className="font-bold text-lg	">{t('Forgot-password')}</p>
+      <Logo />
+      <Text fontWeight="medium" className="my-2">
+        {t('Forgot-password')}
+      </Text>
       <form onSubmit={handleSubmit(create)}>
         <Input
           label={t('Provide-email')}
           type="email"
           {...register('email')}
+          className="py-1.5"
           placeholder="e.g john@doe.com"
           error={errors.email}
           errorMessage={errors.email?.message}
         />
         <Button
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           label={t('Send-reset-code')}
           isLoading={isLoading}
           type="submit"
