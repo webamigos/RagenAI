@@ -24,7 +24,7 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const { t, md, userAvatar, streamedMessageRunId, renderedStreamedMessage } =
+  const { t, md, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
 
   return (
@@ -33,10 +33,10 @@ export const ChatOutput = ({
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group mb-6 rounded-2xl p-5 text-gray-600 bg-white max-w-10/12 shadow-lg shadow-slate-300 ${
+            className={`group mb-6 rounded-2xl py-2 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 ${
               message.role === 'USER'
-                ? 'text-right self-end'
-                : 'text-left self-start text-base'
+                ? 'text-right self-end border border-slate-100 bg-white'
+                : 'text-left self-start text-base shadow-none bg-primary-light'
             }`}
           >
             {message.role === 'ASSISTANT' ? (
@@ -54,11 +54,6 @@ export const ChatOutput = ({
                   __html: md.render(message.content),
                 }}
               />
-              <div className="flex items-center justify-end">
-                <span className="font-light text-xs text-gray-400">
-                  {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
-                </span>
-              </div>
               {message.role === 'ASSISTANT' && (
                 <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <RateAnswer
@@ -74,13 +69,10 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2 self-start max-w-10/12 w-auto">
+          <div className="group mb-6 border-solid rounded-md p-2 self-start max-w-10/12 w-auto">
             <div className="chat-response">
-              <div className="mb-6 text-sm">
-                <strong>{t('ASSISTANT')}</strong>{' '}
-                <span>
-                  {new Date(streamedMessage.created_at).toLocaleString()}
-                </span>
+              <div className="mb-6">
+                <strong>{t('ASSISTANT')}</strong>
               </div>
               <div
                 dangerouslySetInnerHTML={{
@@ -92,7 +84,7 @@ export const ChatOutput = ({
         )}
 
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute bottom-[84px] left-28 flex items-center justify-center pointer-events-none">
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
           </div>

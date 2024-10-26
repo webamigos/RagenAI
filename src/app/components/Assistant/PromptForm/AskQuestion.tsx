@@ -15,7 +15,6 @@ type Props = {
 };
 
 export const AskQuestion = ({
-  isUserLogged,
   disabled,
   error,
   value,
@@ -28,7 +27,7 @@ export const AskQuestion = ({
     <Textarea
       value={value}
       onSend={onSend}
-      containerClassName="w-9/12 md:w-10/12"
+      containerClassName="w-9/12 mt-3 md:w-10/12"
       className="h-10"
       errorMessage={t('provide-at-least-10-characters')}
       error={error}
