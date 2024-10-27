@@ -28,24 +28,24 @@ export const ChatOutput = ({
     useChatViewLogic(streamedMessage);
 
   return (
-    <div className="px-5 mt-5 mr-3 lg:px-22 lg:mt-0">
+    <div className="px-5 mr-3 lg:px-22 lg:mt-0">
       <div className="flex flex-col">
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group mb-6 rounded-2xl py-2 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 ${
+            className={`group mb-6 rounded-2xl px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 ${
               message.role === 'USER'
                 ? 'text-right self-end border border-slate-100 bg-white'
                 : 'text-left self-start text-base shadow-none bg-primary-light'
             }`}
           >
             {message.role === 'ASSISTANT' ? (
-              <Text fontSize="sm" fontWeight="medium">
+              <Text fontSize="sm" fontWeight="semibold">
                 {t(message.role)}
               </Text>
             ) : null}
             <div
-              className={`chat-response relative leading-7 ${
+              className={`chat-response relative ${
                 message.role === 'USER' ? 'user-message' : 'assistant-message'
               }`}
             >
@@ -69,10 +69,12 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 border-solid rounded-md p-2 self-start max-w-10/12 w-auto">
+          <div className="group mb-6 rounded-2xl px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base">
             <div className="chat-response">
-              <div className="mb-6">
-                <strong>{t('ASSISTANT')}</strong>
+              <div>
+                <Text fontSize="sm" fontWeight="semibold">
+                  {t('ASSISTANT')}
+                </Text>
               </div>
               <div
                 dangerouslySetInnerHTML={{
