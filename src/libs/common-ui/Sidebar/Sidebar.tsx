@@ -142,7 +142,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
 ) {
   let classes = clsx(
     'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 md:py-2 text-sm',
-    'hover:bg-primary-gray-200 dark:hover:bg-slate-800',
+    'hover:bg-primary-gray-200 dark:hover:bg-accent-dark',
     current && 'bg-zinc-950/5 text-blue-500',
     'dark:text-white',
     'group',

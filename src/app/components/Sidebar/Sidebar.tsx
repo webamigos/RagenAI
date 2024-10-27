@@ -55,7 +55,11 @@ export const Sidebar = ({ children, membership }: Props) => {
             <Header />
             <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
               <PencilSquareIcon className="w-6 h-6" />
-              <Text className="-ml-1 mt-1" color="gray-700" fontWeight="normal">
+              <Text
+                className="-ml-1 mt-1 dark:text-white"
+                color="gray-700"
+                fontWeight="normal"
+              >
                 {t('create-new-thread')}
               </Text>
             </SidebarItem>
