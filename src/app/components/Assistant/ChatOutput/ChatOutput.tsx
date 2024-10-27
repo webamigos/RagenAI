@@ -33,10 +33,10 @@ export const ChatOutput = ({
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group mb-6 rounded-2xl py-2 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 ${
+            className={`group max-w-10/12 mb-6 py-2 px-4 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none ${
               message.role === 'USER'
-                ? 'text-right self-end border border-slate-100 bg-white'
-                : 'text-left self-start text-base shadow-none bg-primary-light'
+                ? 'text-right self-end border border-slate-100 dark:border-gray-800 bg-white dark:bg-secondary-dark'
+                : 'text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
             }`}
           >
             {message.role === 'ASSISTANT' ? (

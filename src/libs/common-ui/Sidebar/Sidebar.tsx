@@ -141,10 +141,9 @@ export const SidebarItem = forwardRef(function SidebarItem(
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
   let classes = clsx(
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 md:py-2 text-sm',
-    'hover:bg-primary-gray-200 dark:hover:bg-accent-dark',
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400  md:py-2 text-sm',
+    'hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500',
     current && 'bg-zinc-950/5 text-blue-500',
-    'dark:text-white',
     'group',
     className
   );
@@ -154,7 +153,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
       {current && (
         <motion.span
           layoutId="current-indicator"
-          className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400"
+          className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400 dark:bg-white"
         />
       )}
       {'href' in props ? (

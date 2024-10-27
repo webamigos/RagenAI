@@ -27,9 +27,16 @@ module.exports = {
         'primary-light': '#e2e8f3',
         'primary-dark': '#06141B',
         'secondary-dark': '#11212D',
-        'accent-dark': '#253745',
-        'primary-blue-400': '#6eacf0',
-        'primary-blue-500': '#589de8',
+        'accent-dark': {
+          300: '#2b3740',
+          500: '#253745',
+          700: '#20303c',
+        },
+        'accent-dark-lightness': '#4A5C6A',
+        'primary-blue': {
+          400: '#6eacf0',
+          500: '#589de8',
+        },
         'primary-gray-200': '#F7F7F7',
         'success-green': '#5ae078',
 

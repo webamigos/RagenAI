@@ -93,7 +93,7 @@ export const Textarea = forwardRef(
               }}
               rows={1}
               className={classMerge(
-                'block w-full dark:bg-slate-900 dark:text-gray-300 rounded-2xl border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-2xl border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
@@ -120,7 +120,7 @@ export const Textarea = forwardRef(
                 <ArrowRightCircleIcon
                   className={`h-9 w-9 ${
                     value?.trim()
-                      ? 'text-blue-500 hover:text-blue-600'
+                      ? 'text-blue-500 dark:text-primary-blue-500 hover:text-blue-600 hover:dark:text-primary-blue-400'
                       : 'text-gray-400'
                   }`}
                   aria-hidden="true"
