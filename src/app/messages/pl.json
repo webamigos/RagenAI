@@ -42,6 +42,11 @@
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
     "Reset-password": "Zresetuj hasło"
   },
+  "admin-panel-page": {
+    "add-files": "Dodaj pliki",
+    "create-file": "Stwórz dokument",
+    "uploaded-list": "Lista dokumentów"
+  },
   "common": {
     "sign-in": "Zaloguj",
     "sign-out": "Wyloguj"
@@ -109,6 +114,12 @@
     "or": "lub",
     "choose-files": "Wybierz pliki",
     "supported-formats": "Obsługiwany format"
+  },
+  "create-document": {
+    "title": "Stwórz dokument",
+    "input-label": "Tytuł",
+    "input-placeholder": "Wpisz tytuł dokumentu",
+    "editor-label": "Treść"
   },
   "sidebar": {
     "profile": "Profil",

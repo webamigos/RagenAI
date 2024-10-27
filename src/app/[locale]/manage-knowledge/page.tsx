@@ -1,3 +1,5 @@
+'use client';
+
 import { AdminPanel } from '@/app/components/AdminPanel';
 export const dynamic = 'force-dynamic';
 
