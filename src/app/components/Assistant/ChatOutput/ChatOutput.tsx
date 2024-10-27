@@ -39,7 +39,7 @@ export const ChatOutput = ({
             }`}
           >
             {message.role === 'ASSISTANT' ? (
-              <Text fontSize="sm" fontWeight="semibold">
+              <Text fontSize="sm" fontWeight="bold">
                 {t(message.role)}
               </Text>
             ) : null}
