@@ -209,5 +209,8 @@
     "form_code_incorrect": "Nieprawidłowy kod",
     "form_password_incorrect": "Nieprawidłowe hasło.",
     "form_password_pwned": "Twoje hasło zostało upublicznione. Dla bezpieczństwa konta, użyj innego hasła."
+  },
+  "api-keys": {
+    "title": "Klucze API"
   }
 }

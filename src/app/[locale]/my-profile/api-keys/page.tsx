@@ -1,10 +1,26 @@
-import { CreateOrganizationComponent } from '@/app/components/MyProfile/CreateOrganization';
-import { Card } from '@salesyy/common-ui/Card';
+import type { Metadata } from 'next';
 
-export default function ApiKeysPage() {
+import { Card } from '@salesyy/common-ui/Card';
+import { getTranslations } from 'next-intl/server';
+import { PropsWihLocale } from '@/app/lib/types/types';
+import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer';
+
+export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+  const t = await getTranslations({ locale, namespace: 'api-keys' });
+
+  return {
+    title: t('title'),
+  };
+}
+
+export default async function ApiKeysPage() {
+  const t = await getTranslations('api-keys');
+
   return (
-    <Card className="min-w-max p-0" size="full">
-      <div>sth</div>
+    <Card title={t('title')} size="full" className="mb-5">
+      <ApiKeysSynchronizer>
+        <div>sth</div>
+      </ApiKeysSynchronizer>
     </Card>
   );
 }
