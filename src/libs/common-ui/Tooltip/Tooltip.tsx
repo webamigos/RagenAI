@@ -28,6 +28,7 @@ export const Tooltip = ({
         data-tooltip-id={id}
         data-tooltip-content={content}
         className={className}
+        style={{ display: 'inline-block' }}
       >
         {children}
       </div>
@@ -37,6 +38,7 @@ export const Tooltip = ({
         offset={offset}
         delayShow={delayShow}
         delayHide={delayHide}
+        anchorSelect={`[data-tooltip-id="${id}"]`}
       />
     </>
   );

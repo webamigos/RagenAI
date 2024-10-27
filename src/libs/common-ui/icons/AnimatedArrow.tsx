@@ -2,7 +2,7 @@ import { ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
 
-export const ArrowRight = ({ className }: ComponentProps<'svg'>) => {
+export const AnimatedArrow = ({ className }: ComponentProps<'svg'>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -11,8 +11,8 @@ export const ArrowRight = ({ className }: ComponentProps<'svg'>) => {
       strokeWidth="3"
       stroke="currentColor"
       className={classMerge(
-        className,
-        'w-3 h-3 transform opacity-0 -translate-x-2 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-50'
+        'w-3 h-3 transform opacity-0 -translate-x-2 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-50',
+        className
       )}
     >
       <path

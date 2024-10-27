@@ -1,5 +1,4 @@
-import { format } from 'date-fns';
-import { SpinnerSVG } from '@salesyy/common-ui';
+import { SpinnerSVG, Text } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
@@ -26,21 +25,29 @@ export const ChatOutput = ({
 }: Props) => {
   const { t, md, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
+
   return (
-    <div className="px-4 sm:px-4 lg:px-22 pt-8">
-      <div>
+    <div className="px-5 mr-3 lg:px-22 lg:mt-0">
+      <div className="flex flex-col">
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2"
+            className={`group mb-6 rounded-2xl px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 ${
+              message.role === 'USER'
+                ? 'text-right self-end border border-slate-100 bg-white'
+                : 'text-left self-start text-base shadow-none bg-primary-light'
+            }`}
           >
-            <div className="text-sm">
-              <strong>{t(message.role)}</strong>{' '}
-              <span className="font-light">
-                {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
-              </span>
-            </div>
-            <div className="chat-response relative">
+            {message.role === 'ASSISTANT' ? (
+              <Text fontSize="sm" fontWeight="bold">
+                {t(message.role)}
+              </Text>
+            ) : null}
+            <div
+              className={`chat-response relative ${
+                message.role === 'USER' ? 'user-message' : 'assistant-message'
+              }`}
+            >
               <div
                 dangerouslySetInnerHTML={{
                   __html: md.render(message.content),
@@ -61,13 +68,12 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 border-solid border-2 border-gray-300 rounded-md p-2">
+          <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base">
             <div className="chat-response">
-              <div className="mb-6 text-sm">
-                <strong>{t('ASSISTANT')}</strong>{' '}
-                <span>
-                  {new Date(streamedMessage.created_at).toLocaleString()}
-                </span>
+              <div>
+                <Text fontSize="sm" fontWeight="semibold">
+                  {t('ASSISTANT')}
+                </Text>
               </div>
               <div
                 dangerouslySetInnerHTML={{
@@ -79,10 +85,10 @@ export const ChatOutput = ({
         )}
 
         {isLoading && (
-          <p className="flex items-center mb-4">
+          <div className="absolute bottom-[84px] left-28 flex items-center justify-center pointer-events-none">
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
-          </p>
+          </div>
         )}
       </div>
     </div>

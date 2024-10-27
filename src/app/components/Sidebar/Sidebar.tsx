@@ -7,8 +7,10 @@ import {
   Text,
   ArrowPath,
   Button,
+  SidebarItem,
 } from '@salesyy/common-ui';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
@@ -17,6 +19,7 @@ import { Footer } from './Footer';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
+import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
 type Props = {
   children: React.ReactNode;
@@ -34,21 +37,29 @@ export const Sidebar = ({ children, membership }: Props) => {
     isSignedIn,
     userThreads,
     activeThread,
+    handleThread,
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
+  const t = useTranslations('chat');
 
   return (
     <SidebarProvider>
       <SidebarLayout
         navbar={<Navbar />}
         sidebar={
-          <div className="flex flex-col h-full text-sm">
+          <div className="flex w-full flex-col h-full text-sm">
             <Header />
-            <SidebarBody>
+            <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
+              <PencilSquareIcon className="w-6 h-6" />
+              <Text className="-ml-1 mt-1" color="gray-700" fontWeight="normal">
+                {t('create-new-thread')}
+              </Text>
+            </SidebarItem>
+            <SidebarBody className="-mt-3.5">
               {pathname === `/${locale}` || pathname.includes('threads') ? (
                 error ? (
                   <div className="flex flex-col items-center text-start">

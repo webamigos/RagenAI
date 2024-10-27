@@ -1,15 +1,7 @@
-import {
-  useReducer,
-  useEffect,
-  useState,
-  useRef,
-  type MouseEventHandler,
-} from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useReducer, useEffect, useState, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 
@@ -77,8 +69,6 @@ export const useAssistantLogic = (threadId: string) => {
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
-  const { push } = useRouter();
-  const locale = useLocale();
   const t = useTranslations('Index');
   const { dispatch: threadsDispatch } = useThreadsContext();
 
@@ -246,12 +236,6 @@ export const useAssistantLogic = (threadId: string) => {
     }
   }, [userMessageId]);
 
-  const handleCloseThread: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.preventDefault();
-    localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-    push(`/${locale}`);
-  };
-
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
@@ -330,7 +314,6 @@ export const useAssistantLogic = (threadId: string) => {
     isLimitLock,
     isSignedIn,
     messages,
-    handleCloseThread,
     isLocked,
     dispatch,
     onSubmit,

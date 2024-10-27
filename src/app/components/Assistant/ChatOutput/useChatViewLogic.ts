@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/nextjs';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import markdownit from 'markdown-it';
@@ -10,6 +11,8 @@ export const useChatViewLogic = (
   const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
   const [streamedMessageRunId, setStreamedMessageRunId] = useState<string>();
 
+  const { user } = useUser();
+  const userAvatar = user?.imageUrl;
   const t = useTranslations('chat');
   const md = markdownit();
 
@@ -25,6 +28,7 @@ export const useChatViewLogic = (
   return {
     t,
     md,
+    userAvatar,
     streamedMessageRunId,
     renderedStreamedMessage,
   };

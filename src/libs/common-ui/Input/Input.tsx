@@ -1,34 +1,22 @@
 import {
-  useState,
   useId,
+  useEffect,
   forwardRef,
   type ComponentPropsWithRef,
   type Ref,
   HTMLProps,
+  useState,
 } from 'react';
 import type { FieldError } from 'react-hook-form';
-
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
-import { lazy, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
-
-const OpenEyeIcon = lazy(() =>
-  import('@salesyy/common-ui').then((module) => ({
-    default: module.OpenEyeIcon,
-  }))
-);
-const EyeOffIcon = lazy(() =>
-  import('@salesyy/common-ui').then((module) => ({
-    default: module.EyeOffIcon,
-  }))
-);
 
 type Props = {
   label?: string;
   hint?: string;
   error?: FieldError;
-  errorMessage?: string; // for translations
+  errorMessage?: string;
   containerClassName?: string;
   type?: 'text' | 'range' | 'number' | 'email' | 'password';
   min?: HTMLProps<'min'>;
@@ -61,7 +49,28 @@ export const Input = forwardRef(
   ) => {
     const id = useId();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [OpenEyeIcon, setOpenEyeIcon] = useState<React.ComponentType | null>(
+      null
+    );
+    const [EyeOffIcon, setEyeOffIcon] = useState<React.ComponentType | null>(
+      null
+    );
     const t = useTranslations();
+
+    useEffect(() => {
+      const loadIcons = async () => {
+        const { OpenEyeIcon } = await import(
+          '@salesyy/common-ui/icons/OpenEyeIcon'
+        ).then((module) => ({ OpenEyeIcon: module.OpenEyeIcon }));
+        const { EyeOffIcon } = await import(
+          '@salesyy/common-ui/icons/EyeOffIcon'
+        ).then((module) => ({ EyeOffIcon: module.EyeOffIcon }));
+        setOpenEyeIcon(() => OpenEyeIcon);
+        setEyeOffIcon(() => EyeOffIcon);
+      };
+
+      loadIcons();
+    }, []);
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible((prev) => !prev);
@@ -77,13 +86,12 @@ export const Input = forwardRef(
         'Props "min", "max" and "step" are required for input type "range".'
       );
     }
-
     return (
       <div className={classMerge('pt-2', containerClassName)}>
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm font-medium leading-6 dark:text-gray-300"
+            className="block text-sm text-gray-600 font-medium leading-6 dark:text-gray-300"
           >
             {label}
           </label>
@@ -107,11 +115,11 @@ export const Input = forwardRef(
                 max={max}
                 step={step}
                 className={classMerge(
-                  'block w-full px-1.5 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
+                  'block w-full px-3 pr-12 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
                   {
-                    'ring-1 ring-inset ring-gray-300 rounded-md focus:ring-blue-500 focus:ring-2 focus:ring-inset cursor-pointer':
+                    'ring-1 ring-inset ring-primary-blue-500 rounded-2xl cursor-pointer':
                       type !== 'range',
-                    'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
+                    'text-red-900 ring-red-300 placeholder:text-red-300 focus-visible:ring-red-500 focus-visible:ring-2':
                       error,
                     'shadow-sm': !error,
                   },
@@ -120,28 +128,24 @@ export const Input = forwardRef(
                 {...rest}
               />
             )}
-            {type === 'password' && !isLoading && (
+            {type === 'password' && !isLoading && OpenEyeIcon && EyeOffIcon && (
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-0 px-3 flex items-center bg-gray-100 dark:bg-slate-700 border-l border-gray-300 dark:border-slate-600"
+                className="absolute inset-y-0 right-2 px-3 flex items-center dark:bg-slate-700 dark:border-slate-600"
               >
-                <Suspense fallback={null}>
-                  {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
-                </Suspense>
+                {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
               </button>
             )}
           </div>
         </div>
         {error && !isLoading && (
-          <>
-            <Text
-              className="mt-2 text-sm text-red-600 dark:text-red-500"
-              id="input-error"
-            >
-              {t(errorMessage ? errorMessage : error.message)}
-            </Text>
-          </>
+          <Text
+            className="mt-2 text-sm text-red-600 dark:text-red-500"
+            id="input-error"
+          >
+            {t(errorMessage ? errorMessage : error.message)}
+          </Text>
         )}
         {hint && !isLoading && (
           <Text

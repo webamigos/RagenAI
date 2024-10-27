@@ -9,10 +9,6 @@ const meta: Meta<typeof Text> = {
       control: 'text',
       description: 'Treść tekstu do wyświetlenia',
     },
-    bold: {
-      control: 'boolean',
-      description: 'Czy tekst ma być pogrubiony',
-    },
     fontWeight: {
       control: 'select',
       options: ['light', 'normal', 'medium', 'semibold', 'bold'],
@@ -20,12 +16,19 @@ const meta: Meta<typeof Text> = {
     },
     fontSize: {
       control: 'select',
-      options: ['sm', 'md', 'lg', 'xl'],
+      options: ['xs', 'sm', 'md', 'lg', 'xl'],
       description: 'Rozmiar fontu tekstu',
     },
     color: {
       control: 'select',
-      options: ['zinc-950', 'blue-600', 'gray-400'],
+      options: [
+        'zinc-950',
+        'blue-600',
+        'gray-400',
+        'gray-500',
+        'gray-600',
+        'red-500',
+      ],
       description: 'Kolor tekstu',
     },
   },
@@ -37,20 +40,23 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     children: 'Przykładowy tekst',
+    fontWeight: 'normal',
+    fontSize: 'md',
+    color: 'zinc-950',
   },
 };
 
 export const BoldText: Story = {
   args: {
     children: 'Pogrubiony tekst',
-    bold: true,
+    fontWeight: 'bold',
   },
 };
 
 export const CustomFontWeight: Story = {
   args: {
     children: 'Tekst o wybranej wadze fontu',
-    fontWeight: 'bold',
+    fontWeight: 'semibold',
   },
 };
 
@@ -71,7 +77,6 @@ export const DifferentColors: Story = {
 export const AllPropsExample: Story = {
   args: {
     children: 'Przykład z wszystkimi właściwościami',
-    bold: true,
     fontWeight: 'semibold',
     fontSize: 'lg',
     color: 'gray-400',

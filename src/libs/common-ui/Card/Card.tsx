@@ -12,15 +12,15 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
   const sizeClass = () => {
     switch (size) {
       case 'sm':
-        return 'max-w-sm';
+        return 'max-w-sm w-full';
       case 'md':
-        return 'max-w-md';
+        return 'max-w-md w-full';
       case 'lg':
-        return 'max-w-lg';
+        return 'max-w-lg w-full';
       case 'full':
         return 'w-full';
       default:
-        return 'max-w-sm';
+        return 'max-w-sm w-full';
     }
   };
 
@@ -28,12 +28,17 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
     <div
       className={clsx(
         sizeClass(),
-        'p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700',
+        'p-6 bg-white border border-gray-200 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700 font-sans',
         className
       )}
     >
       {title && (
-        <Text className="mb-2" fontWeight="medium" fontSize="md">
+        <Text
+          color="gray-700"
+          className="mb-2"
+          fontWeight="medium"
+          fontSize="md"
+        >
           {title}
         </Text>
       )}

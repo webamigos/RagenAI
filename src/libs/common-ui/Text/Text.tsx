@@ -1,16 +1,24 @@
-import { memo, type ReactNode, type ComponentProps } from 'react';
-
+import { type ReactNode, type ComponentProps } from 'react';
 import { classMerge } from '../utils/cn';
 
+type FontWeight = 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
+type FontSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+type Color =
+  | 'zinc-950'
+  | 'blue-600'
+  | 'gray-400'
+  | 'gray-500'
+  | 'gray-700'
+  | 'red-500';
+
 type Props = {
-  children: string | string[] | ReactNode | number;
-  bold?: boolean;
-  fontWeight?: 'light' | 'normal' | 'medium' | 'semibold' | 'bold';
-  fontSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  color?: 'zinc-950' | 'blue-600' | 'gray-400' | 'red-500';
+  children: ReactNode | number;
+  fontWeight?: FontWeight;
+  fontSize?: FontSize;
+  color?: Color;
 };
 
-const fontWeightMap = {
+const fontWeightMap: Record<FontWeight, string> = {
   light: 'font-light',
   normal: 'font-normal',
   medium: 'font-medium',
@@ -18,7 +26,7 @@ const fontWeightMap = {
   bold: 'font-bold',
 };
 
-const fontSizeMap = {
+const fontSizeMap: Record<FontSize, string> = {
   xs: 'text-xs',
   sm: 'text-sm',
   md: 'text-md',
@@ -26,35 +34,33 @@ const fontSizeMap = {
   xl: 'text-xl',
 };
 
-const colorMap = {
+const colorMap: Record<Color, string> = {
   'zinc-950': 'text-zinc-950',
   'blue-600': 'text-blue-600',
+  'gray-700': 'text-gray-700',
+  'gray-500': 'text-gray-500',
   'gray-400': 'text-gray-400',
   'red-500': 'text-red-500',
 };
 
-export const Text = memo(
-  ({
-    children,
-    className,
-    fontWeight = 'normal',
-    fontSize = 'md',
-    color = 'zinc-950',
-    ...rest
-  }: ComponentProps<'p'> & Props) => {
-    const classNames = classMerge(
-      fontWeightMap[fontWeight],
-      fontSizeMap[fontSize],
-      colorMap[color],
-      className
-    );
+export const Text = ({
+  children,
+  className,
+  fontWeight = 'normal',
+  fontSize = 'md',
+  color = 'zinc-950',
+  ...rest
+}: ComponentProps<'p'> & Props) => {
+  const classNames = classMerge(
+    fontWeightMap[fontWeight],
+    fontSizeMap[fontSize],
+    colorMap[color],
+    className
+  );
 
-    return (
-      <p className={classNames} {...rest}>
-        {children}
-      </p>
-    );
-  }
-);
-
-Text.displayName = 'Text';
+  return (
+    <p className={classNames} {...rest}>
+      {children}
+    </p>
+  );
+};

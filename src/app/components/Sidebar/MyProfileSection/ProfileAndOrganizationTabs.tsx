@@ -104,7 +104,11 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   return (
     <div>
       {tabs.map(({ icon: Icon, label, path }) => (
-        <SidebarItem key={path} onClick={() => handleTabClick(path)}>
+        <SidebarItem
+          hasIcon={true}
+          key={path}
+          onClick={() => handleTabClick(path)}
+        >
           <Icon />
           {label}
         </SidebarItem>

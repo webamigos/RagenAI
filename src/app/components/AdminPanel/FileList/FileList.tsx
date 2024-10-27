@@ -20,6 +20,7 @@ export const FileList = memo(() => {
 
   return (
     <UserDocumentsTable
+      className="font-sans"
       documents={documents || []}
       onDocumentsUpdate={refreshDocuments}
     />

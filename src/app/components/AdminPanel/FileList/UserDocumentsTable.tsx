@@ -1,3 +1,4 @@
+import { ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import format from 'date-fns-tz/format';
 import { useTranslations } from 'next-intl';
@@ -6,6 +7,7 @@ import * as CommonUi from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { type UsersDocuments } from '@/app/contracts/Documents';
+import { classMerge } from '@salesyy/common-ui';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 
@@ -97,10 +99,14 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
   );
 };
 
-export const UserDocumentsTable = ({ documents, onDocumentsUpdate }: Props) => {
+export const UserDocumentsTable = ({
+  className,
+  documents,
+  onDocumentsUpdate,
+}: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   return (
-    <CommonUi.Table>
+    <CommonUi.Table className={classMerge(className)}>
       <CommonUi.TableHead>
         <CommonUi.TableRow className="text-base">
           <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
