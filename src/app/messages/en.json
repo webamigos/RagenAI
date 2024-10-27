@@ -19,9 +19,10 @@
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
     "sign-in": "Sign in",
-    "Verification-code": "Verification code",
+    "verification-code": "Verification code",
     "confirm": "Confirm code",
-    "or": "or"
+    "or": "or",
+    "verification-code-hint": "A verification code has been sent to your email address. Please enter it in the field below."
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -49,7 +50,8 @@
   },
   "common": {
     "sign-in": "Sign in",
-    "sign-out": "Sign out"
+    "sign-out": "Sign out",
+    "loading": "Loading..."
   },
   "Metadata": {
     "index": {
@@ -170,7 +172,8 @@
     "manage-members": "Manage members",
     "manage-knowledge": "Manage knowledge",
     "organization-list": "Organization list",
-    "assistant-management": "Assistant management"
+    "assistant-management": "Assistant management",
+    "api-keys": "API Keys"
   },
   "files-table": {
     "delete": "Delete",

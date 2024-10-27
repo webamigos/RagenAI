@@ -12,6 +12,7 @@ import {
   OpenBookIcon,
   SettingsIcon,
   SidebarItem,
+  KeyIcon,
 } from '@salesyy/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
@@ -57,6 +58,11 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: SettingsIcon,
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
+    },
+    {
+      icon: KeyIcon,
+      label: t('api-keys'),
+      path: '/my-profile/api-keys',
     },
   ];
 

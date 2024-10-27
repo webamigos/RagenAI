@@ -79,11 +79,11 @@ export const plPL: LocalizationResource = {
   badge__userDevice: 'Urządzenie użytkownika',
   badge__you: 'Ty',
   createOrganization: {
-    formButtonSubmit: 'Utwórz organizację',
+    formButtonSubmit: 'Załóż organizację',
     invitePage: {
       formButtonReset: 'Pomiń',
     },
-    title: 'Utwórz organizację',
+    title: 'Załóż organizację',
   },
   dates: {
     lastDay: "Wczoraj o godzinie {{ date | timeString('pl-PL') }}",
@@ -227,14 +227,14 @@ export const plPL: LocalizationResource = {
       },
       start: {
         headerTitle__invitations: 'Zaproszenia',
-        headerTitle__members: 'Członkowie',
+        headerTitle__members: 'Użytkownicy',
         headerTitle__requests: 'Requests',
       },
     },
     navbar: {
       description: 'Zarządzaj organizacją.',
       general: 'Główne',
-      members: 'Członkowie',
+      members: 'Użytkownicy',
       title: 'Organizacja',
     },
     profilePage: {
@@ -279,7 +279,7 @@ export const plPL: LocalizationResource = {
     },
     start: {
       headerTitle__general: 'Konto organizacji',
-      headerTitle__members: 'Członkowie',
+      headerTitle__members: 'Użytkownicy',
       profileSection: {
         primaryButton: 'Zaktualizuj profil',
         title: 'Profil organizacji',
