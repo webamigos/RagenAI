@@ -1,6 +1,8 @@
 import Link from 'next/link';
-import { Logo } from '../../components/Logo';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
+
+import { timezone } from '@/app/config';
+import { Logo } from '../../components/Logo';
 
 type Props = {
   readonly children: React.ReactNode;
@@ -10,7 +12,7 @@ export default function AuthLayout({ children }: Props) {
   const messages = useMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider timeZone={timezone} messages={messages}>
       <div className="h-full ">
         <header className="absolute inset-x-0 top-0 z-50 bg-black">
           <nav

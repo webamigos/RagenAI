@@ -55,10 +55,10 @@ export default clerkMiddleware(
         return NextResponse.redirect(new URL('/sign-in', request.url));
       }
 
-      const user = await clerkClient.users.getUser(session.userId);
+      const user = await clerkClient().users.getUser(session.userId);
 
       const orgMemberships =
-        await clerkClient.users.getOrganizationMembershipList({
+        await clerkClient().users.getOrganizationMembershipList({
           userId: user.id,
         });
 

@@ -30,6 +30,7 @@ type Props = {
   error?: FieldError;
   errorMessage?: string; // for translations
   containerClassName?: string;
+  mandatory?: boolean;
   type?: 'text' | 'range' | 'number' | 'email' | 'password';
   min?: HTMLProps<'min'>;
   max?: HTMLProps<'max'>;
@@ -47,6 +48,7 @@ export const Input = forwardRef(
       error,
       errorMessage,
       className,
+      mandatory = false,
       containerClassName,
       type = 'text',
       min,
@@ -85,6 +87,7 @@ export const Input = forwardRef(
             htmlFor={id}
             className="block text-sm font-medium leading-6 dark:text-gray-300"
           >
+            {mandatory && <span className="text-red-600">*</span>}
             {label}
           </label>
         )}

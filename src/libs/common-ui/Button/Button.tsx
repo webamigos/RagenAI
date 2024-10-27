@@ -5,13 +5,14 @@ import {
   type ForwardedRef,
 } from 'react';
 import { classMerge } from '../utils/cn';
-import { SpinnerSVG, ArrowPath } from '../icons';
+import { SpinnerSVG, ArrowRightCircleIcon, ArrowPath } from '../icons';
 
 type Props = Readonly<{
   label?: string;
   isLoading?: boolean;
   iconRight?: React.ReactNode;
   iconLeft?: React.ReactNode;
+  isSubmit?: boolean;
   isError?: boolean;
 }> &
   ComponentProps<'button'>;
@@ -26,6 +27,7 @@ const ButtonComponent = forwardRef(
       isLoading = false,
       isError = false,
       disabled,
+      isSubmit = false,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLButtonElement>
@@ -55,6 +57,7 @@ const ButtonComponent = forwardRef(
             <span className="pl-2">{iconRight}</span>
           ) : null}
           {isLoading && <SpinnerSVG />}
+          {isSubmit && <ArrowRightCircleIcon />}
           {isError && <ArrowPath />}
         </span>
       </button>

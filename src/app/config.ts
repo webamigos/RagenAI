@@ -1,4 +1,5 @@
 export const locales = ['en', 'pl'];
+export const timezone = 'Europe/Warsaw';
 export const defaultLocale = 'en';
 export const redisChannelPrefix = 'assistant-messages-';
 export const dailyMessageLimit = 3;

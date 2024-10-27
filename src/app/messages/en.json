@@ -42,6 +42,11 @@
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Zresetuj hasło"
   },
+  "admin-panel-page": {
+    "add-files": "Add files",
+    "create-file": "Create Document",
+    "uploaded-list": "List of Documents"
+  },
   "common": {
     "sign-in": "Sign in",
     "sign-out": "Sign out"
@@ -109,6 +114,12 @@
     "or": "or",
     "choose-files": "Choose files",
     "supported-formats": "Supports"
+  },
+  "create-document": {
+    "title": "Create document",
+    "input-label": "Title",
+    "input-placeholder": "Enter document title",
+    "editor-label": "Content"
   },
   "sidebar": {
     "profile": "Profile",

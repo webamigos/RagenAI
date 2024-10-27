@@ -2,7 +2,6 @@
 
 import { ToastContainer } from 'react-toastify';
 
-import 'react-toastify/dist/ReactToastify.css';
 import { useTheme } from 'next-themes';
 
 export const Toast = () => {
