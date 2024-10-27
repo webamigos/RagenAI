@@ -56,7 +56,7 @@ export const Sidebar = ({ children, membership }: Props) => {
             <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
               <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
               <Text
-                className="-ml-1 mt-1 dark:text-white"
+                className="-ml-1 mt-1 dark:text-gray-100"
                 color="gray-700"
                 fontWeight="normal"
               >

@@ -24,6 +24,8 @@ export const statusToast = () => {
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
+      className: 'bg-success-green dark:bg-accent-dark-500',
+      progressClassName: 'dark:bg-success-green',
     });
   };
 

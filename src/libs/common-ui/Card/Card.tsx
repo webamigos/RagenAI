@@ -35,7 +35,7 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
       {title && (
         <Text
           color="gray-700"
-          className="mb-2"
+          className="mb-2 dark:text-gray-300"
           fontWeight="medium"
           fontSize="md"
         >
