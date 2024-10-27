@@ -11,6 +11,11 @@ export const CreateOrganizationComponent = () => {
     <CreateOrganization
       appearance={{
         baseTheme: resolvedTheme === 'dark' ? dark : experimental__simple,
+        variables: {
+          colorBackground: resolvedTheme === 'dark' ? '#253745' : '',
+          colorInputBackground: resolvedTheme === 'dark' ? '#253745' : '',
+          colorText: resolvedTheme === 'dark' ? '#e5e7eb' : '',
+        },
         elements: {
           cardBox: 'h-1/2 shadow-none border-none',
           footer: 'hidden',
