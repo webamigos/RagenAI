@@ -32,8 +32,8 @@ export const ThreadsSection = ({
       {threadCategories.map(
         ({ title, threads }, categoryIndex) =>
           threads.length > 0 && (
-            <div key={title} className="w-11/12 ml-2.5">
-              <SidebarLabel className="ml-2.5 text-gray-600 font-medium">
+            <div key={title} className="w-11/12 mt-3">
+              <SidebarLabel className="text-gray-600 font-bold p-2">
                 {title}
               </SidebarLabel>
               {threads.map((thread, index) => {
@@ -48,19 +48,23 @@ export const ThreadsSection = ({
 
                 return (
                   <div
-                    className="ml-0.5 first-of-type:mt-1.5 last-of-type:mb-10"
+                    className="first-of-type:mt-1.5 last-of-type:mb-2"
                     ref={
                       isLastThreadInAllCategories ? lastThreadElementRef : null
                     }
                     key={thread.public_id}
                   >
                     <SidebarItem
+                      hasIcon={true}
                       onClick={() => {
                         handleThreadClick(thread.public_id);
                         closeSidebar();
                       }}
                       current={isActive}
-                      className="!text-gray-600 font-medium"
+                      className={classMerge(
+                        'font-normal text-gray-700',
+                        isActive ? 'text-primary-blue-400' : 'hover:bg-gray-100'
+                      )}
                     >
                       {contentPreview}
                     </SidebarItem>

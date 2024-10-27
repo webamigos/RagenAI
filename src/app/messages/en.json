@@ -58,7 +58,7 @@
     "USER": "You",
     "ASSISTANT": "Assistant",
     "loading": "Loading...",
-    "chat-history": "Conversation history",
+    "create-new-thread": "Create a new thread",
     "today": "today",
     "yesterday": "yesterday",
     "older": "older"

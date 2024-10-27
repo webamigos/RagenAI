@@ -1,13 +1,20 @@
+.chat-response {
+  font-weight: 400;
+  color: #4b5563;
+  text-align: left;
+  align-self: flex-start;
+  font-size: 1rem;
+  min-height: 2.5rem;
+  line-height: 1.75rem;
+}
+
 .chat-response h3 {
-  font-size: 20px;
+  font-size: 16px;
   margin: 12px 0;
-  font-weight: bold;
 }
 
 .chat-response h4 {
-  font-size: 18px;
-  margin: 12px 0;
-  font-weight: 600;
+  font-size: 16px;
 }
 
 .chat-response p {

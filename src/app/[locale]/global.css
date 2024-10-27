@@ -5,6 +5,11 @@
 @import 'react-toastify/dist/ReactToastify.min.css';
 @import 'quill/dist/quill.snow.css';
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d5d4d4 transparent;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -12,18 +12,8 @@ export default function AuthLayout({ children }: Props) {
   const messages = useMessages();
 
   return (
-    <NextIntlClientProvider timeZone={timezone} messages={messages}>
-      <div className="h-full ">
-        <header className="absolute inset-x-0 top-0 z-50 bg-black">
-          <nav
-            className="flex items-center justify-between p-6 lg:px-8"
-            aria-label="Global"
-          >
-            <Link href="/">
-              <Logo />
-            </Link>
-          </nav>
-        </header>
+    <NextIntlClientProvider messages={messages}>
+      <div className="h-full bg-primary-light">
         <main className="flex h-screen w-screen items-center justify-center">
           {children}
         </main>

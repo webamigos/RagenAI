@@ -13,13 +13,16 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
   const t = useTranslations('my-profile-dialog');
 
   return (
-    <Libs.SidebarFooter className="mb-10 lg:mb-5">
+    <Libs.SidebarFooter className=" lg:mb-5">
       <Libs.SidebarSection>
         <div className="flex justify-between items-center">
           {isSignedIn && (
             <>
               <Libs.Dropdown>
-                <Libs.DropdownButton as={Libs.SidebarItem}>
+                <Libs.DropdownButton
+                  className="mb-5 lg:-mb-3 w-full"
+                  as={Libs.SidebarItem}
+                >
                   <span className="flex min-w-0 items-center gap-3">
                     <Libs.Avatar
                       src={userAvatar}
@@ -38,14 +41,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                   </span>
                   <Libs.ChevronUpIcon />
                 </Libs.DropdownButton>
-
                 <Libs.DropdownMenu className="w-3/12" anchor="top end">
-                  <Libs.DropdownItem className="cursor-pointe" href="/">
-                    <Libs.HomeIcon />
-                    <Libs.Text className="font-sans font-semibold hover:text-gray-600 text-sm text-gray-500 ml-2.5">
-                      {t('home-page')}
-                    </Libs.Text>
-                  </Libs.DropdownItem>
                   <Libs.DropdownItem
                     href="/my-profile"
                     className="cursor-pointer"

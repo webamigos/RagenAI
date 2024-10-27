@@ -6,21 +6,8 @@ import { LayoutGroup, motion } from 'framer-motion';
 import * as Headless from '@headlessui/react';
 import clsx from 'clsx';
 
-import { ArrowRight } from '../icons';
+import { AnimatedArrow } from '../icons';
 import { Link } from '../Link';
-import { Text } from '../Text';
-
-function TouchTarget({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <span
-        className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
-        aria-hidden="true"
-      />
-      {children}
-    </>
-  );
-}
 
 export function Sidebar({
   className,
@@ -43,7 +30,7 @@ export function SidebarHeader({
       {...props}
       className={clsx(
         className,
-        'flex flex-col w-full border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col w-full border-zinc-950/5 px-4 pt-4 pb-2 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
       )}
     />
   );
@@ -58,7 +45,7 @@ export function SidebarBody({
       {...props}
       className={clsx(
         className,
-        'flex flex-1 flex-col overflow-y-auto p-4 [&>[data-slot=section]+[data-slot=section]]:mt-8'
+        'flex flex-1 flex-col overflow-y-auto px-4 [&>[data-slot=section]+[data-slot=section]]:mt-8'
       )}
     />
   );
@@ -142,6 +129,7 @@ export function SidebarHeading({
 type SidebarItemProps = {
   current?: boolean;
   className?: string;
+  hasIcon?: boolean;
   children: React.ReactNode;
 } & (
   | Omit<Headless.ButtonProps, 'as' | 'className'>
@@ -149,11 +137,11 @@ type SidebarItemProps = {
 );
 
 export const SidebarItem = forwardRef(function SidebarItem(
-  { current, className, children, ...props }: SidebarItemProps,
+  { current, className, children, hasIcon = false, ...props }: SidebarItemProps,
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
   let classes = clsx(
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 sm:py-2 sm:text-sm',
+    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 md:py-2 text-sm',
     'hover:bg-primary-gray-200 dark:hover:bg-slate-800',
     current && 'bg-zinc-950/5 text-blue-500',
     'dark:text-white',
@@ -166,14 +154,14 @@ export const SidebarItem = forwardRef(function SidebarItem(
       {current && (
         <motion.span
           layoutId="current-indicator"
-          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-slate-900"
+          className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400"
         />
       )}
       {'href' in props ? (
         <Headless.CloseButton as="div" ref={ref}>
           <Link className={classes} {...props} data-current={current}>
             {children}
-            <ArrowRight />
+            <AnimatedArrow />
           </Link>
         </Headless.CloseButton>
       ) : (
@@ -184,7 +172,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
           ref={ref}
         >
           {children}
-          <ArrowRight />
+          {hasIcon && <AnimatedArrow />}
         </Headless.Button>
       )}
     </span>

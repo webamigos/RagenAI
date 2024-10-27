@@ -18,13 +18,12 @@ export const Assistant = ({ threadId }: Props) => {
     isLimitLock,
     isSignedIn,
     messages,
-    handleCloseThread,
     onSubmit,
     isLocked,
   } = useAssistantLogic(threadId);
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col font-sans">
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}
@@ -34,13 +33,11 @@ export const Assistant = ({ threadId }: Props) => {
         />
         <div ref={messagesEndDivRef} />
       </div>
-
       <div className="flex-shrink-0 w-full">
         {isLimitLock && !isSignedIn && <LimitReached />}
         {!isLocked() && threadId && (
           <PromptForm
             isUserLogged={!!isSignedIn}
-            handleCloseThread={handleCloseThread}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
           />

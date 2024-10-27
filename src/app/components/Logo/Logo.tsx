@@ -2,12 +2,15 @@
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTransition, useEffect, useState } from 'react';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
 
 export const Logo = () => {
-  const { refresh } = useRouter();
+  const { refresh, push } = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
   const [logoSrc, setLogoSrc] = useState('/assets/salesyy-logo-on-dark-bg.png');
@@ -24,6 +27,7 @@ export const Logo = () => {
     await clearVisitorMessagesStats();
     setTransition(() => refresh());
   };
+  const isClickableLogo = pathname !== `/${locale}`;
 
   return (
     <div className="flex lg:flex-1">
@@ -32,7 +36,8 @@ export const Logo = () => {
         <Image
           width={120}
           height={80}
-          className="h-8 w-auto"
+          className={`h-8 w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`}
+          onClick={() => push('/')}
           src={logoSrc}
           alt="Logo"
         />
