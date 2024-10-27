@@ -2,10 +2,10 @@ import { createContext, useState, useEffect } from 'react';
 import { useOrganization } from '@clerk/nextjs';
 
 import { getUserDocuments } from '@/app/actions';
-import { type UsersDocuments } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/app/contracts/Documents';
 
 type DocumentsContextType = {
-  documents: UsersDocuments[] | null;
+  documents: UserFileType[] | null;
   refreshDocuments: () => void;
   isLoading: boolean;
   isError: boolean;
@@ -20,7 +20,7 @@ export const DocumentsContext = createContext<DocumentsContextType | undefined>(
 );
 
 export const DocumentsProvider = ({ children }: Props) => {
-  const [documents, setDocuments] = useState<UsersDocuments[] | null>(null);
+  const [documents, setDocuments] = useState<UserFileType[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isError, setIsError] = useState<boolean>(false);
 

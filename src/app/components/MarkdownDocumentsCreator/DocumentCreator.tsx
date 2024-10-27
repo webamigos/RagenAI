@@ -8,10 +8,13 @@ import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import TurndownService from 'turndown';
+import { statusToast } from '@/app/lib/utils/toast';
+import { createDocumentAction } from './action';
+
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
+import { logger } from '@/app/lib/utils/logger';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -32,6 +35,7 @@ export const DocumentCreator = () => {
   });
 
   const t = useTranslations('create-document');
+  const { successToast, errorToast } = statusToast();
 
   useEffect(() => {
     register('content', { required: true, minLength: 11 });
@@ -43,8 +47,19 @@ export const DocumentCreator = () => {
   const editorContent = watch('content');
 
   const onSubmit = async (data: DocumentSchema) => {
-    const turndownService = new TurndownService();
-    const markdownContent = turndownService.turndown(data.content);
+    try {
+      const organizationId = 'your-organization-id';
+      const response = await createDocumentAction(data, organizationId);
+
+      if (response.success) {
+        successToast({ message: 'Document created' });
+      }
+      if (!response.success && response.message) {
+        errorToast({ message: response.message });
+      }
+    } catch (error) {
+      logger.error(error);
+    }
   };
 
   return (

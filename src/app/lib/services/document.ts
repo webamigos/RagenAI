@@ -6,7 +6,7 @@ export const createDocumentDetailsInDB = async (
   organization_id: string,
   id: string
 ) => {
-  await db.usersDocuments.create({
+  await db.userFile.create({
     data: {
       id,
       organization_id,
@@ -17,7 +17,7 @@ export const createDocumentDetailsInDB = async (
 };
 
 export const fetchUserDocumentsDetails = async (uploaderId: string) => {
-  return await db.usersDocuments.findMany({
+  return await db.userFile.findMany({
     where: { organization_id: uploaderId },
     select: {
       created_at: true,
@@ -35,10 +35,30 @@ export const deleteDocumentFromDB = async (
   orgId: string,
   documentId: string
 ) => {
-  return await db.usersDocuments.deleteMany({
+  return await db.userFile.deleteMany({
     where: {
       id: documentId,
       organization_id: orgId,
+    },
+  });
+};
+
+type CreateMarkdownDocumentProps = {
+  title: string;
+  content: string;
+  organization_id: string;
+};
+
+export const createMarkdownDocument = async ({
+  title,
+  content,
+  organization_id,
+}: CreateMarkdownDocumentProps) => {
+  return await db.userDocument.create({
+    data: {
+      title,
+      content,
+      organization_id,
     },
   });
 };
