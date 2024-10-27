@@ -1,5 +1,4 @@
 'use client';
-
 import './editor-styles.css';
 
 import dynamic from 'next/dynamic';
@@ -7,9 +6,12 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
+import { useOrganization } from '@clerk/nextjs';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
-import { createDocumentAction } from './action';
+
+import { saveMarkdownWithMeta } from './action';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -36,6 +38,7 @@ export const DocumentCreator = () => {
 
   const t = useTranslations('create-document');
   const { successToast, errorToast } = statusToast();
+  const { organization } = useOrganization();
 
   useEffect(() => {
     register('content', { required: true, minLength: 11 });
@@ -47,9 +50,13 @@ export const DocumentCreator = () => {
   const editorContent = watch('content');
 
   const onSubmit = async (data: DocumentSchema) => {
+    if (!organization) {
+      return;
+    }
+
     try {
-      const organizationId = 'your-organization-id';
-      const response = await createDocumentAction(data, organizationId);
+      const organizationId = organization?.id.toLowerCase();
+      const response = await saveMarkdownWithMeta(data, organizationId);
 
       if (response.success) {
         successToast({ message: 'Document created' });
@@ -71,12 +78,12 @@ export const DocumentCreator = () => {
           type="text"
           placeholder={t('input-placeholder')}
           {...register('title')}
-          className="mb-2 w-full p-2 border-gray-300 rounded"
+          className="mb-2 w-full p-2 border-gray-300"
           error={errors.title}
           errorMessage={errors.title?.message}
         />
         <div className="flex text-sm items-center font-medium mb-2">
-          <p className="text-red-600 mt-1">*</p>
+          <Text className="text-red-600 mt-1">*</Text>
           <label className="block leading-6 dark:text-gray-300">
             {t('editor-label')}
           </label>

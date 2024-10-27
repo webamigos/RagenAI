@@ -1,9 +1,9 @@
 .custom-quill .ql-toolbar {
-  @apply bg-gray-200 border border-gray-300 rounded-t-lg;
+  @apply bg-primary-light border border-primary-blue-500 rounded-t-2xl;
 }
 
 .custom-quill .ql-container {
-  @apply bg-white border border-gray-300 rounded-b-lg h-80;
+  @apply bg-white border border-primary-blue-500 rounded-b-2xl h-80;
 }
 
 .custom-quill .ql-editor {

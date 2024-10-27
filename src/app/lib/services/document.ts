@@ -43,19 +43,34 @@ export const deleteDocumentFromDB = async (
   });
 };
 
+export const deleteDocumentFromUserDocument = async (
+  orgId: string,
+  document_id: string
+) => {
+  return await db.userDocument.deleteMany({
+    where: {
+      public_id: document_id,
+      organization_id: orgId,
+    },
+  });
+};
+
 type CreateMarkdownDocumentProps = {
+  public_id: string;
   title: string;
   content: string;
   organization_id: string;
 };
 
 export const createMarkdownDocument = async ({
+  public_id,
   title,
   content,
   organization_id,
 }: CreateMarkdownDocumentProps) => {
   return await db.userDocument.create({
     data: {
+      public_id,
       title,
       content,
       organization_id,

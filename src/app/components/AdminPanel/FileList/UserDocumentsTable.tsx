@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import * as CommonUi from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { type UsersDocuments } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/app/contracts/Documents';
 import { classMerge } from '@salesyy/common-ui';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
@@ -72,26 +72,13 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
         <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
         <CommonUi.TableCell>
           <div className="-mx-3 -my-1.5 sm:-mx-2.5">
-            <CommonUi.Dropdown>
-              <CommonUi.DropdownButton>
-                <CommonUi.EllipsiHorizontalIcon />
-              </CommonUi.DropdownButton>
-              <CommonUi.DropdownMenu anchor="bottom end">
-                <CommonUi.DropdownItem
-                  onClick={() =>
-                    handleDelete(organization_id, id, onDocumentsUpdate)
-                  }
-                >
-                  <CommonUi.Tooltip
-                    id="delete doc"
-                    place="top"
-                    content={translatedTable('delete')}
-                  >
-                    <CommonUi.TrashIcon />
-                  </CommonUi.Tooltip>
-                </CommonUi.DropdownItem>
-              </CommonUi.DropdownMenu>
-            </CommonUi.Dropdown>
+            <CommonUi.Tooltip
+              id="delete doc"
+              place="top"
+              content={translatedTable('delete')}
+            >
+              <CommonUi.TrashIcon className="cursor-pointer" />
+            </CommonUi.Tooltip>
           </div>
         </CommonUi.TableCell>
       </CommonUi.TableRow>

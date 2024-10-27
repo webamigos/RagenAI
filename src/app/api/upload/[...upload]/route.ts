@@ -5,7 +5,10 @@ import { convertAndStoreDocument } from '../../threads/services/saveDataInVector
 import { deleteDocument } from '../services/TableService';
 
 import { logger } from '../../../lib/utils/logger';
-import { createDocumentDetailsInDB } from '../../../lib/services/document';
+import {
+  createDocumentDetailsInDB,
+  deleteDocumentFromUserDocument,
+} from '../../../lib/services/document';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -105,6 +108,7 @@ export async function DELETE(_request: Request, { params }: { params: any }) {
 
   try {
     await deleteDocument(document_id);
+    await deleteDocumentFromUserDocument(document_id, visitor_id);
     return new Response(
       JSON.stringify({ message: 'Document successfully deleted' }),
       {
