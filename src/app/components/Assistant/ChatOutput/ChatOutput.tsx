@@ -1,5 +1,4 @@
-import { format } from 'date-fns';
-import { SpinnerSVG, Text, Avatar } from '@salesyy/common-ui';
+import { SpinnerSVG, Text } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
@@ -69,7 +68,7 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 rounded-2xl px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base">
+          <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base">
             <div className="chat-response">
               <div>
                 <Text fontSize="sm" fontWeight="semibold">
