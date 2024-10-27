@@ -58,7 +58,7 @@ model VisitorMessages {
 }
 
 // Files uploaded by user
-model UserFiles {
+model UserFile {
   id              String    @id
   organization_id String
   file_name       String
@@ -72,7 +72,7 @@ model UserFiles {
 }
 
 // Documents from CMS
-model UserDocuments {
+model UserDocument {
   id              BigInt    @id @default(autoincrement())
   public_id       String    @default(cuid())
   organization_id String
