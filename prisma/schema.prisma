@@ -57,7 +57,8 @@ model VisitorMessages {
   id         String   @id @default(uuid())
 }
 
-model UsersDocuments {
+// Files uploaded by user
+model UserFiles {
   id              String    @id
   organization_id String
   file_name       String
@@ -68,6 +69,17 @@ model UsersDocuments {
 
   @@unique([id, organization_id])
   @@index([organization_id])
+}
+
+// Documents from CMS
+model UserDocuments {
+  id              BigInt    @id @default(autoincrement())
+  public_id       String    @default(cuid())
+  organization_id String
+  title           String
+  content         String
+  created_at      DateTime? @default(now())
+  updated_at      DateTime?
 }
 
 // Organizations, Projects and ApiKeys ids will be used in Redis for store:
