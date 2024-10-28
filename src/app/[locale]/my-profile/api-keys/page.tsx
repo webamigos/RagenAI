@@ -1,14 +1,16 @@
+import { Suspense } from 'react';
 import Link from 'next/link';
+import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { getTranslations } from 'next-intl/server';
+import { format } from 'date-fns';
 
 import { Card } from '@salesyy/common-ui/Card';
-import { getTranslations } from 'next-intl/server';
+import * as CommonUi from '@salesyy/common-ui';
+
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer/ApiKeysSynchronizer';
-import { Suspense } from 'react';
 import { Fallback } from '@/app/components/Fallback';
-import * as CommonUi from '@salesyy/common-ui';
 import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
-import { format } from 'date-fns';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'api-keys' });
@@ -18,7 +20,10 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default async function ApiKeysPage() {
+export default async function ApiKeysPage({
+  params: { locale },
+}: PropsWihLocale) {
+  setRequestLocale(locale);
   const t = await getTranslations('api-keys');
   const result = await fetchApiKeys();
 
