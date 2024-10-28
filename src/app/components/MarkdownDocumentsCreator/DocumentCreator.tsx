@@ -10,13 +10,11 @@ import { useOrganization } from '@clerk/nextjs';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
-
+import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
+import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
 import { saveMarkdownWithMeta } from './action';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
-
-import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
-import { logger } from '@/app/lib/utils/logger';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -39,6 +37,7 @@ export const DocumentCreator = () => {
   const t = useTranslations('create-document');
   const { successToast, errorToast } = statusToast();
   const { organization } = useOrganization();
+  const { addDocument } = useUserDocumentsContext();
 
   useEffect(() => {
     register('content', { required: true, minLength: 11 });
@@ -55,17 +54,17 @@ export const DocumentCreator = () => {
     }
 
     try {
-      const organizationId = organization?.id.toLowerCase();
+      const organizationId = organization.id.toLowerCase();
       const response = await saveMarkdownWithMeta(data, organizationId);
 
-      if (response.success) {
+      if (response.success && response.document) {
         successToast({ message: 'Document created' });
-      }
-      if (!response.success && response.message) {
+        addDocument(response.document);
+      } else if (response.message) {
         errorToast({ message: response.message });
       }
     } catch (error) {
-      logger.error(error);
+      errorToast({ message: 'Error creating document' });
     }
   };
 
@@ -100,9 +99,7 @@ export const DocumentCreator = () => {
           </Text>
         )}
         <button type="submit" className="mt-2 rounded-full cursor-pointer">
-          <ArrowRightCircleIcon
-            className={`fill-green-300 hover:fill-green-400 stroke-1`}
-          />
+          <ArrowRightCircleIcon className="fill-green-300 hover:fill-green-400 stroke-1" />
         </button>
       </form>
     </Card>

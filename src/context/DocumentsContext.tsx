@@ -1,12 +1,52 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useReducer, useEffect } from 'react';
 import { useOrganization } from '@clerk/nextjs';
-
 import { getUserDocuments } from '@/app/actions';
 import { type UserFileType } from '@/app/contracts/Documents';
 
+type State = {
+  documents: UserFileType[];
+  isLoading: boolean;
+  isError: boolean;
+};
+
+type Action =
+  | { type: 'LOAD_START' }
+  | { type: 'LOAD_SUCCESS'; payload: UserFileType[] }
+  | { type: 'LOAD_ERROR' }
+  | { type: 'ADD_DOCUMENT'; payload: UserFileType }
+  | { type: 'REMOVE_DOCUMENT'; payload: string };
+
+const initialState: State = {
+  documents: [],
+  isLoading: true,
+  isError: false,
+};
+
+function documentsReducer(state: State, action: Action): State {
+  switch (action.type) {
+    case 'LOAD_START':
+      return { ...state, isLoading: true, isError: false };
+    case 'LOAD_SUCCESS':
+      return { ...state, isLoading: false, documents: action.payload };
+    case 'LOAD_ERROR':
+      return { ...state, isLoading: false, isError: true };
+    case 'ADD_DOCUMENT':
+      return { ...state, documents: [...state.documents, action.payload] };
+    case 'REMOVE_DOCUMENT':
+      return {
+        ...state,
+        documents: state.documents.filter((doc) => doc.id !== action.payload),
+      };
+    default:
+      return state;
+  }
+}
+
 type DocumentsContextType = {
-  documents: UserFileType[] | null;
+  documents: UserFileType[];
   refreshDocuments: () => void;
+  addDocument: (newDocument: UserFileType) => void;
+  removeDocument: (documentId: string) => void;
   isLoading: boolean;
   isError: boolean;
 };
@@ -20,44 +60,46 @@ export const DocumentsContext = createContext<DocumentsContextType | undefined>(
 );
 
 export const DocumentsProvider = ({ children }: Props) => {
-  const [documents, setDocuments] = useState<UserFileType[] | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isError, setIsError] = useState<boolean>(false);
-
   const { organization } = useOrganization();
-
   const orgId = organization?.id.toLowerCase();
+
+  const [state, dispatch] = useReducer(documentsReducer, initialState);
+
+  const refreshDocuments = async () => {
+    if (!orgId) return;
+
+    dispatch({ type: 'LOAD_START' });
+    try {
+      const { documentDetails } = await getUserDocuments(orgId);
+      dispatch({ type: 'LOAD_SUCCESS', payload: documentDetails ?? [] });
+    } catch (error) {
+      dispatch({ type: 'LOAD_ERROR' });
+    }
+  };
 
   useEffect(() => {
     if (orgId) {
       refreshDocuments();
     } else {
-      setIsLoading(false);
+      dispatch({ type: 'LOAD_ERROR' });
     }
   }, [orgId]);
 
-  const refreshDocuments = async () => {
-    setIsLoading(true);
-    try {
-      if (!orgId) {
-        return;
-      }
+  const addDocument = (newDocument: UserFileType) => {
+    dispatch({ type: 'ADD_DOCUMENT', payload: newDocument });
+  };
 
-      const { documentDetails } = await getUserDocuments(orgId);
-      setDocuments(documentDetails ?? null);
-      setIsError(false);
-    } catch (error) {
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-    }
+  const removeDocument = (documentId: string) => {
+    dispatch({ type: 'REMOVE_DOCUMENT', payload: documentId });
   };
 
   const value = {
-    documents,
+    documents: state.documents,
     refreshDocuments,
-    isLoading,
-    isError,
+    addDocument,
+    removeDocument,
+    isLoading: state.isLoading,
+    isError: state.isError,
   };
 
   return (

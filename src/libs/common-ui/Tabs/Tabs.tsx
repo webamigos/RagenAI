@@ -45,7 +45,7 @@ const Tabs = ({ children, activeTab, setActiveTab }: TabListProps) => {
 };
 
 const TabList = ({ children, activeTab, setActiveTab }: TabListProps) => (
-  <div className="flex border-b border-gray-200">
+  <div className="flex ml-[18px] border-b border-gray-200">
     {children.map((child, index) =>
       React.isValidElement(child)
         ? React.cloneElement(child as ReactElement<TabPropsInterface>, {

@@ -32,7 +32,17 @@ export async function saveMarkdownWithMeta(
       organizationId,
       uniqueFileId
     );
-    return { success: true };
+    return {
+      success: true,
+      document: {
+        id: uniqueFileId,
+        title: data.title,
+        file_size: markdownDataSize,
+        organization_id: organizationId,
+        file_name: data.title,
+        created_at: new Date(),
+      },
+    };
   } catch (error) {
     return { success: false, message: 'Failed to create document:', error };
   }
