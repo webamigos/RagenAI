@@ -9,41 +9,25 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@salesyy/common-ui';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { toast } from 'react-toastify';
-
-import { removeApiKey } from './actions';
 
 type Props = {
-  keyId: ApiKey['id'];
+  isOpen: boolean;
+  isPending: boolean;
+  onClose: () => void;
+  onCancel: () => void;
+  onConfirm: () => void;
 };
 
-export const RemoveApiKeyDialog = ({ keyId }: Props) => {
-  const [idOpened, setIsOpened] = useState(false);
-  const { refresh } = useRouter();
-
-  const handleClose = () => {
-    setIsOpened(false);
-  };
-
-  const handleCancel = () => {
-    setIsOpened(false);
-  };
-
-  const handleConfirm = async () => {
-    const { success } = await removeApiKey(keyId);
-    if (success) {
-      toast.success('Key was removed');
-      refresh();
-      setIsOpened(false);
-    } else {
-      toast.error('Error during removing API Key');
-    }
-  };
-
+// TODO: translations
+export const RemoveApiKeyDialog = ({
+  isOpen,
+  onClose,
+  onCancel,
+  onConfirm,
+  isPending = false,
+}: Props) => {
   return (
-    <Dialog onClose={handleClose} size="sm" open={idOpened}>
+    <Dialog onClose={onClose} size="sm" open={isOpen}>
       <DialogTitle>Dialog Title</DialogTitle>
       <DialogBody>
         <DialogDescription>
@@ -52,8 +36,8 @@ export const RemoveApiKeyDialog = ({ keyId }: Props) => {
         </DialogDescription>
       </DialogBody>
       <DialogActions>
-        <Button label="Cancel" onClick={handleCancel} />
-        <Button label="Confirm" onClick={handleConfirm} />
+        <Button label="Cancel" onClick={onCancel} />
+        <Button label="Confirm" onClick={onConfirm} isLoading={isPending} />
       </DialogActions>
     </Dialog>
   );

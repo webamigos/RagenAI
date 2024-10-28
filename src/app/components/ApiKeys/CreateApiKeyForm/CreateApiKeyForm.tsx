@@ -28,8 +28,8 @@ export const CreateApiKeyForm = () => {
     const result = await createApiKey(data);
     if (result.success) {
       // TODO: display key from backend in dialog
-      toast.success('Key was created');
       startTransition(() => router.push('/my-profile/api-keys'));
+      toast.success('Key was created');
     } else {
       toast.error(result.message);
     }
