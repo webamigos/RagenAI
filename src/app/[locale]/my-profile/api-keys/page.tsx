@@ -43,9 +43,9 @@ export default async function ApiKeysPage() {
                       {t('secret-key')}
                     </CommonUi.TableHeader>
                     <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
-                    <CommonUi.TableHeader>
+                    {/* <CommonUi.TableHeader>
                       {t('created-by')}
-                    </CommonUi.TableHeader>
+                    </CommonUi.TableHeader> */}
                     <CommonUi.TableHeader>
                       <span className="sr-only">Actions</span>
                     </CommonUi.TableHeader>
@@ -64,9 +64,9 @@ export default async function ApiKeysPage() {
                       <CommonUi.TableCell>
                         {format(apiKey.created_at, 'dd.mm.yyyy HH:mm:ss')}
                       </CommonUi.TableCell>
-                      <CommonUi.TableCell>
+                      {/* <CommonUi.TableCell>
                         {apiKey.created_by}
-                      </CommonUi.TableCell>
+                      </CommonUi.TableCell> */}
                       <CommonUi.TableCell>
                         <div className="-mx-3 -my-1.5 sm:-mx-2.5">
                           <CommonUi.Tooltip

@@ -99,6 +99,7 @@ model Organization {
   created_at  DateTime  @default(now())
   updated_at  DateTime  @updatedAt
   project     Project[]
+  ApiKey      ApiKey[]
 
   @@index([public_id])
   @@index([provider_id])
@@ -120,18 +121,21 @@ model Project {
 
 model ApiKey {
   // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
-  id           Int       @id @default(autoincrement())
-  name         String
-  public_id    String    @unique @default(cuid())
-  masked_value String
-  last_used_at DateTime?
-  created_at   DateTime  @default(now())
-  created_by   String
-  updated_at   DateTime  @updatedAt
-  project      Project?  @relation(fields: [project_id], references: [id], onDelete: SetNull)
-  project_id   Int?
+  id              Int           @id @default(autoincrement())
+  name            String
+  public_id       String        @unique @default(cuid())
+  masked_value    String
+  last_used_at    DateTime?
+  created_at      DateTime      @default(now())
+  created_by      String?
+  updated_at      DateTime      @updatedAt
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  organization_id Int?
+  project         Project?      @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  project_id      Int?
 
   @@index([public_id])
+  @@index([organization_id])
 }
 
 enum Role {

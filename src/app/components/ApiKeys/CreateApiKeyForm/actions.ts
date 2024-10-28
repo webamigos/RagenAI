@@ -77,8 +77,9 @@ export const createApiKey = async (
       data: {
         name: data.name,
         masked_value: 'sk_sdr*******nhg', // TODO: change after backend API call
-        created_by: user?.fullName || 'Org Person', // TODO: change
+        // created_by: user?.fullName || 'Org Person', // TODO: change?
         project_id: defaultProject.id,
+        organization_id: organization.id,
       },
     });
 

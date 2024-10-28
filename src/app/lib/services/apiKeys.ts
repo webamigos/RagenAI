@@ -57,13 +57,14 @@ export const fetchApiKeysFromDb = async (
     organizationProviderId
   );
 
-  const defaultProject = await fetchOrganizationDefaultProject(
-    organization['id']
-  );
+  // TODO: not necessary now
+  // const defaultProject = await fetchOrganizationDefaultProject(
+  //   organization['id']
+  // );
 
   return await db.apiKey.findMany({
     where: {
-      project_id: defaultProject.id,
+      organization_id: organization.id,
     },
     orderBy: {
       created_at: 'desc',
