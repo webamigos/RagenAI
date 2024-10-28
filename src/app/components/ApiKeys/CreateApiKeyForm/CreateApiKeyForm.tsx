@@ -36,16 +36,23 @@ export const CreateApiKeyForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleCreateKey)} className="w-full space-y-6">
-      <Input
-        label={t('name')}
-        {...register('name')}
-        disabled={isPending}
-        error={errors.name}
-      />
-      <div className="flex justify-end">
-        <Button isLoading={isSubmitting}>{t('create')}</Button>
+    <div className="flex w-full flex-col">
+      <div className="mt-4">
+        <form
+          onSubmit={handleSubmit(handleCreateKey)}
+          className="w-full space-y-6"
+        >
+          <Input
+            label={t('name')}
+            {...register('name')}
+            disabled={isPending}
+            error={errors.name}
+          />
+          <div className="flex justify-end">
+            <Button isLoading={isSubmitting}>{t('create')}</Button>
+          </div>
+        </form>
       </div>
-    </form>
+    </div>
   );
 };

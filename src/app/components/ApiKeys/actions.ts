@@ -8,11 +8,8 @@ import {
   fetchApiKeysFromDb,
 } from '@/app/lib/services/apiKeys';
 import {
-  setSentryContext,
-  setSentryOrganizationTag,
   setSentryServiceTag,
-  setSentrySessionTag,
-  setSentryUserId,
+  setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';
 
 const serviceName = 'apiKeysList';
@@ -28,13 +25,8 @@ export const fetchApiKeys = async () => {
   }
 
   try {
-    setSentryUserId(userId);
-    setSentrySessionTag(sessionId);
-    setSentryOrganizationTag(orgId);
     setSentryServiceTag(serviceName);
-    setSentryContext(serviceName, 'fetchApiKeys', {
-      organization: orgId,
-    });
+    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
     const keys = await fetchApiKeysFromDb(orgId);
 

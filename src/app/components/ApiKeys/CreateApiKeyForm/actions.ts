@@ -7,11 +7,8 @@ import db from '@salesyy/prisma-client';
 
 import { ApiKeyDto } from './types';
 import {
-  setSentryContext,
-  setSentryOrganizationTag,
   setSentryServiceTag,
-  setSentrySessionTag,
-  setSentryUserId,
+  setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import {
@@ -52,14 +49,10 @@ export const createApiKey = async (
   }
 
   try {
-    setSentryUserId(userId);
-    setSentrySessionTag(sessionId);
-    setSentryOrganizationTag(orgId);
     setSentryServiceTag(serviceName);
-    setSentryContext(serviceName, 'createApiKey', {
-      organization: orgId,
-      ...data,
-    });
+    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+
+    throw new Error('Make Sentry great again second');
 
     const organization = await fetchOrganizationByProviderId(orgId);
 

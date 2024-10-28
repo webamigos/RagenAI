@@ -4,9 +4,9 @@ import * as Sentry from '@sentry/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import {
   setSentryContext,
-  setSentryOrganizationTag,
+  setSentryClerkOrganizationTag,
   setSentryServiceTag,
-  setSentrySessionTag,
+  setSentryClerkSessionTag,
   setSentryUserId,
 } from '@/app/lib/services/sentry';
 import { removeApiKeyFromDb } from '@/app/lib/services/apiKeys';
@@ -31,8 +31,8 @@ export const removeApiKey = async (keyId: ApiKey['id']) => {
 
   try {
     setSentryUserId(userId);
-    setSentrySessionTag(sessionId);
-    setSentryOrganizationTag(orgId);
+    setSentryClerkSessionTag(sessionId);
+    setSentryClerkOrganizationTag(orgId);
     setSentryServiceTag(serviceName);
     setSentryContext(serviceName, 'removeApiKey', {
       organization: orgId,

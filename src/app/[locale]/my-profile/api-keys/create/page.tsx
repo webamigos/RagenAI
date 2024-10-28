@@ -27,11 +27,7 @@ export default async function CreateApiKeyPage({
     <Card title={t('title-create')} size="full" className="mb-5">
       <Suspense fallback={<Fallback />}>
         <ApiKeysSynchronizer>
-          <div className="flex w-full flex-col">
-            <div className="mt-4">
-              <CreateApiKeyForm />
-            </div>
-          </div>
+          <CreateApiKeyForm />
         </ApiKeysSynchronizer>
       </Suspense>
     </Card>
