@@ -3,7 +3,10 @@
 import * as Sentry from '@sentry/nextjs';
 import { auth } from '@clerk/nextjs/server';
 
-import { fetchApiKeysFromDb } from '@/app/lib/services/apiKeys';
+import {
+  createOrganizationWithDefaultProject,
+  fetchApiKeysFromDb,
+} from '@/app/lib/services/apiKeys';
 import {
   setSentryContext,
   setSentryOrganizationTag,
@@ -42,9 +45,11 @@ export const fetchApiKeys = async () => {
   } catch (error) {
     Sentry.captureException(error);
 
+    await createOrganizationWithDefaultProject(orgId);
+
     return {
-      success: false,
-      message: 'Failed to fetch keys',
+      success: true,
+      payload: [],
     };
   }
 };
