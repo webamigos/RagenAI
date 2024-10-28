@@ -1,6 +1,6 @@
 import db from '@salesyy/prisma-client';
 
-import { type Organization, type Project } from '@prisma/client';
+import { ApiKey, type Organization, type Project } from '@prisma/client';
 
 export const fetchOrganizationByProviderId = async (
   organizationProviderId: Organization['provider_id']
@@ -44,12 +44,6 @@ export const createOrganizationWithDefaultProject = async (
   });
 };
 
-/**
- * TODO: optimize
- *
- * @param organizationProviderId
- * @returns
- */
 export const fetchApiKeysFromDb = async (
   organizationProviderId: Organization['provider_id']
 ) => {
@@ -68,6 +62,36 @@ export const fetchApiKeysFromDb = async (
     },
     orderBy: {
       created_at: 'desc',
+    },
+  });
+};
+
+/**
+ * Consider if it's safe to pass organizationId by argument
+ * Maybe it'd be safer to fetch it from clerk auth function here? 🤔
+ *
+ * @param organizationProviderId
+ * @param apiKeyId
+ */
+export const removeApiKeyFromDb = async (
+  organizationProviderId: Organization['provider_id'],
+  apiKeyId: ApiKey['id']
+) => {
+  const organization = await fetchOrganizationByProviderId(
+    organizationProviderId
+  );
+
+  // check if combination of organization and key id exists
+  const apiKey = await db.apiKey.findUniqueOrThrow({
+    where: {
+      id: apiKeyId,
+      organization_id: organization.id,
+    },
+  });
+
+  return await db.apiKey.delete({
+    where: {
+      id: apiKey.id,
     },
   });
 };

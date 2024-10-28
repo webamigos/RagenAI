@@ -11,6 +11,7 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer/ApiKeysSynchronizer';
 import { Fallback } from '@/app/components/Fallback';
 import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
+import { RemoveApiKeyDialog } from '@/app/components/ApiKeys/RemoveApiKey/RemoveApiKeyDialog';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'api-keys' });
@@ -81,6 +82,8 @@ export default async function ApiKeysPage({
                           >
                             <CommonUi.TrashIcon className="cursor-pointer" />
                           </CommonUi.Tooltip>
+
+                          <RemoveApiKeyDialog keyId={apiKey.id} />
                         </div>
                       </CommonUi.TableCell>
                     </CommonUi.TableRow>
