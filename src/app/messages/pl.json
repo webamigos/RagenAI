@@ -211,6 +211,14 @@
     "form_password_pwned": "Twoje hasło zostało upublicznione. Dla bezpieczństwa konta, użyj innego hasła."
   },
   "api-keys": {
-    "title": "Klucze API"
+    "title": "Klucze API",
+    "title-create": "Stwórz nowy klucz",
+    "create-key": "Nowy klucz",
+    "name": "Nazwa",
+    "secret-key": "Klucz",
+    "created": "Data stworzenia",
+    "created-by": "Stworzony przez",
+    "create": "Stwórz",
+    "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków"
   }
 }

@@ -1,9 +1,14 @@
-import type { Metadata } from 'next';
+import Link from 'next/link';
 
 import { Card } from '@salesyy/common-ui/Card';
 import { getTranslations } from 'next-intl/server';
 import { PropsWihLocale } from '@/app/lib/types/types';
-import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer';
+import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer/ApiKeysSynchronizer';
+import { Suspense } from 'react';
+import { Fallback } from '@/app/components/Fallback';
+import * as CommonUi from '@salesyy/common-ui';
+import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
+import { format } from 'date-fns';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'api-keys' });
@@ -15,12 +20,72 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 
 export default async function ApiKeysPage() {
   const t = await getTranslations('api-keys');
+  const result = await fetchApiKeys();
+
+  if (!result.success) {
+    return 'Fail to load keys';
+  }
 
   return (
     <Card title={t('title')} size="full" className="mb-5">
-      <ApiKeysSynchronizer>
-        <div>sth</div>
-      </ApiKeysSynchronizer>
+      <Suspense fallback={<Fallback />}>
+        <ApiKeysSynchronizer>
+          <div className="flex w-full flex-col">
+            <div className="flex justify-end">
+              <Link href="/my-profile/api-keys/create">{t('create-key')}</Link>
+            </div>
+            <div className="mt-4">
+              <CommonUi.Table>
+                <CommonUi.TableHead>
+                  <CommonUi.TableRow className="text-base">
+                    <CommonUi.TableHeader>{t('name')}</CommonUi.TableHeader>
+                    <CommonUi.TableHeader>
+                      {t('secret-key')}
+                    </CommonUi.TableHeader>
+                    <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
+                    <CommonUi.TableHeader>
+                      {t('created-by')}
+                    </CommonUi.TableHeader>
+                    <CommonUi.TableHeader>
+                      <span className="sr-only">Actions</span>
+                    </CommonUi.TableHeader>
+                  </CommonUi.TableRow>
+                </CommonUi.TableHead>
+                <CommonUi.TableBody>
+                  {result.payload?.map((apiKey) => (
+                    <CommonUi.TableRow
+                      className="text-sm"
+                      key={apiKey.public_id}
+                    >
+                      <CommonUi.TableCell>{apiKey.name}</CommonUi.TableCell>
+                      <CommonUi.TableCell>
+                        {apiKey.masked_value}
+                      </CommonUi.TableCell>
+                      <CommonUi.TableCell>
+                        {format(apiKey.created_at, 'dd.mm.yyyy HH:mm:ss')}
+                      </CommonUi.TableCell>
+                      <CommonUi.TableCell>
+                        {apiKey.created_by}
+                      </CommonUi.TableCell>
+                      <CommonUi.TableCell>
+                        <div className="-mx-3 -my-1.5 sm:-mx-2.5">
+                          <CommonUi.Tooltip
+                            id="delete doc"
+                            place="top"
+                            content={'delete'}
+                          >
+                            <CommonUi.TrashIcon className="cursor-pointer" />
+                          </CommonUi.Tooltip>
+                        </div>
+                      </CommonUi.TableCell>
+                    </CommonUi.TableRow>
+                  ))}
+                </CommonUi.TableBody>
+              </CommonUi.Table>
+            </div>
+          </div>
+        </ApiKeysSynchronizer>
+      </Suspense>
     </Card>
   );
 }

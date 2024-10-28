@@ -211,6 +211,14 @@
     "form_password_pwned": "Password has been found in an online data breach. For account safety, please use a different password."
   },
   "api-keys": {
-    "title": "API Keys"
+    "title": "API Keys",
+    "title-create": "Create API Key",
+    "create-key": "Create Key",
+    "name": "Name",
+    "secret-key": "Secret Key",
+    "created": "Created",
+    "created-by": "Created By",
+    "create": "Create",
+    "name-is-to-short": "Name is to short - use at least 3 characters"
   }
 }

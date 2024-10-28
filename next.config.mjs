@@ -40,7 +40,7 @@ export default !process.env.SENTRY_DSN
       // https://github.com/getsentry/sentry-webpack-plugin#options
 
       org: 'web-amigos',
-      project: 'salesyy-assistant',
+      project: 'smartrag',
 
       // Only print logs for uploading source maps in CI
       silent: !process.env.CI,
