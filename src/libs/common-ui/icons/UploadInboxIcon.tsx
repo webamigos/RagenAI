@@ -1,4 +1,8 @@
-export const UploadInboxIcon = () => {
+import { type ComponentProps } from 'react';
+
+import { classMerge } from '../utils/cn';
+
+export const UploadInboxIcon = ({ className }: ComponentProps<'svg'>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -6,7 +10,7 @@ export const UploadInboxIcon = () => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className="w-5 h-5"
+      className={classMerge('h-5 w-5', className)}
     >
       <path
         strokeLinecap="round"

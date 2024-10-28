@@ -63,16 +63,20 @@ export const FileUploader = ({
         ref={setNodeRef}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        className={`mb-5 p-5 text-center border-2 border-dashed rounded-md ${className}`}
+        className={`mb-5 p-5 text-center border-2 border-dashed dark:border-gray-600 rounded-md ${className}`}
         {...props}
       >
         <div className="flex justify-center items-center cursor-pointer">
-          <Text fontSize="sm" fontWeight="medium" className="mr-2">
+          <Text
+            fontSize="sm"
+            fontWeight="medium"
+            className="mr-2 dark:text-gray-200"
+          >
             {t('drag-n-drop')}
           </Text>
-          <UploadInboxIcon />
+          <UploadInboxIcon className="dark:text-gray-200" />
         </div>
-        <Text fontSize="sm" fontWeight="medium">
+        <Text fontSize="sm" fontWeight="medium" className="dark:text-gray-200">
           {t('or')}
         </Text>
         <Text
