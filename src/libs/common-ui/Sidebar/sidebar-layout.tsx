@@ -122,7 +122,7 @@ export function SidebarLayout({
       {isMyProfile ? (
         <main className="flex flex-1 flex-col pb-6 px-2.5 lg:ml-[22rem] lg:pt-2 bg-primary-light dark:bg-primary-dark overflow-y-auto">
           <div className="flex flex-1 h-full items-start sm:px-0 pt-5 lg:rounded-lg lg:bg-primary-light lg:py-3.5 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-primary-dark dark:lg:ring-white/10">
-            <div className="w-full max-w-6xl lg:ml-5 pb-5 mx-auto">
+            <div className="w-full max-w-7xl lg:ml-5 pb-5 mx-auto">
               {children}
             </div>
           </div>
@@ -130,7 +130,7 @@ export function SidebarLayout({
       ) : (
         <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light dark:bg-primary-dark">
           <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:dark:bg-primary-dark lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:ring-white/10">
-            <div className="w-full mx-auto max-w-6xl">{children}</div>
+            <div className="w-full mx-auto max-w-7xl">{children}</div>
           </div>
         </main>
       )}

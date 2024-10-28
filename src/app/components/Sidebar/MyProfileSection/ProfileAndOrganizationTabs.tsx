@@ -15,6 +15,7 @@ import {
 } from '@salesyy/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
+import { useEffect, useMemo } from 'react';
 
 type Props = {
   membership?: OrganizationRoles;
@@ -50,7 +51,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     {
       icon: OpenBookIcon,
       label: t('manage-knowledge'),
-      path: '/admin',
+      path: '/manage-knowledge',
     },
     {
       icon: SettingsIcon,
@@ -84,22 +85,30 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     return organizationTabsForNoRole;
   };
 
-  const organizationTabs = getOrganizationTabs();
+  const tabs = useMemo(() => {
+    const organizationTabs = getOrganizationTabs();
 
-  const tabs = [
-    { icon: UserCircleIcon, label: t('profile'), path: '/my-profile' },
-    {
-      icon: SheffieldCheck,
-      label: t('security'),
-      path: '/my-profile/security',
-    },
-    ...organizationTabs,
-  ];
+    return [
+      { icon: UserCircleIcon, label: t('profile'), path: '/my-profile' },
+      {
+        icon: SheffieldCheck,
+        label: t('security'),
+        path: '/my-profile/security',
+      },
+      ...organizationTabs,
+    ];
+  }, [t, orgRole]);
 
   const handleTabClick = (path: string) => {
     router.push(path);
     closeSidebar();
   };
+
+  useEffect(() => {
+    tabs.forEach((tab) => {
+      router.prefetch(tab.path);
+    });
+  }, [tabs, router]);
 
   return (
     <div>

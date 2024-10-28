@@ -17,6 +17,7 @@ import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
 import {
   deleteDocumentFromDB,
+  deleteDocumentFromUserDocument,
   fetchUserDocumentsDetails,
 } from '../lib/services/document';
 import { deleteFile } from '../lib/services/api';
@@ -118,7 +119,7 @@ export const deleteDocument = async (
   try {
     const { count } = await deleteDocumentFromDB(organizationId, documentId);
     await deleteFile(organizationId, documentId);
-
+    await deleteDocumentFromUserDocument(organizationId, documentId);
     if (count === 0) {
       return {
         error:
@@ -145,7 +146,7 @@ export const saveUserIdToClerk = async (
   visitorId: string
 ) => {
   try {
-    await clerkClient.users.updateUser(clerkUserId, {
+    await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
         visitorId,
         userRole: 'USER',

@@ -5,13 +5,14 @@ import {
   type ForwardedRef,
 } from 'react';
 import { classMerge } from '../utils/cn';
-import { SpinnerSVG, ArrowPath } from '../icons';
+import { SpinnerSVG, ArrowRightCircleIcon, ArrowPath } from '../icons';
 
 type Props = Readonly<{
   label?: string;
   isLoading?: boolean;
   iconRight?: React.ReactNode;
   iconLeft?: React.ReactNode;
+  isSubmit?: boolean;
   isError?: boolean;
   children?: React.ReactNode;
 }> &

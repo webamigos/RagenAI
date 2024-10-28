@@ -1,5 +1,4 @@
-import { format } from 'date-fns';
-import { SpinnerSVG, Text, Avatar } from '@salesyy/common-ui';
+import { SpinnerSVG, Text } from '@salesyy/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';
@@ -33,19 +32,19 @@ export const ChatOutput = ({
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group max-w-10/12 mb-6 py-2 px-4 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none ${
+            className={`group max-w-10/12 mb-6 px-4 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none${
               message.role === 'USER'
                 ? 'text-right self-end border border-slate-100 dark:border-gray-800 bg-white dark:bg-secondary-dark'
                 : 'text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
             }`}
           >
             {message.role === 'ASSISTANT' ? (
-              <Text fontSize="sm" fontWeight="medium">
+              <Text fontSize="sm" fontWeight="bold">
                 {t(message.role)}
               </Text>
             ) : null}
             <div
-              className={`chat-response relative leading-7 ${
+              className={`chat-response relative ${
                 message.role === 'USER' ? 'user-message' : 'assistant-message'
               }`}
             >
@@ -69,10 +68,12 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 border-solid rounded-md p-2 self-start max-w-10/12 w-auto">
+          <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base">
             <div className="chat-response">
-              <div className="mb-6">
-                <strong>{t('ASSISTANT')}</strong>
+              <div>
+                <Text fontSize="sm" fontWeight="semibold">
+                  {t('ASSISTANT')}
+                </Text>
               </div>
               <div
                 dangerouslySetInnerHTML={{
