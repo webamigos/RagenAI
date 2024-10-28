@@ -120,7 +120,7 @@ export const Textarea = forwardRef(
                 <ArrowRightCircleIcon
                   className={`h-9 w-9 ${
                     value?.trim()
-                      ? 'text-blue-500 dark:text-primary-blue-500 hover:text-blue-600 hover:dark:text-primary-blue-400'
+                      ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
                       : 'text-gray-400'
                   }`}
                   aria-hidden="true"
