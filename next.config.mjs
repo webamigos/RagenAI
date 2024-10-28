@@ -15,10 +15,6 @@ const nextConfig = {
     serverComponentsExternalPackages: ['pino', 'pino-pretty'],
   },
 
-  images: {
-    domains: ['img.clerk.com'],
-  },
-
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Setting `resolve.alias` to `false` will tell webpack to ignore a module.
