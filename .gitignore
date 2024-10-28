@@ -46,3 +46,6 @@ next-env.d.ts
 /ctrf
 /dist
 node_modules/
+
+# Docker
+/volumes
