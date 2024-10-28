@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <div className="h-full bg-primary-light">
+      <div className="h-full bg-primary-light dark:bg-primary-dark">
         <main className="flex h-screen w-screen items-center justify-center">
           {children}
         </main>
