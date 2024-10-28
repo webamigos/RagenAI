@@ -71,7 +71,7 @@ export const ChatModelSelect = ({}) => {
             id="model"
             value={model}
             onChange={handleModelChange}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+            className="mt-1 block w-full p-2 border border-primary-blue-500 dark:border-gray-600 dark:bg-accent-dark-500 rounded-md shadow-sm cursor-pointer"
           >
             {availableModels.map(({ value, label }) => (
               <option key={value} value={value}>

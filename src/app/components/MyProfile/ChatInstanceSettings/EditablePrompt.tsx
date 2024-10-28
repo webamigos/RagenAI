@@ -89,13 +89,13 @@ export const EditablePrompt = () => {
             {...register('editablePrompt')}
             errorMessage={errors.editablePrompt?.message}
             label="Available variables you can use in the prompt: {question}, {context}, {chat_history}"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-1 block w-full dark:bg-accent-dark-500 border border-primary-blue-500 dark:border-gray-600 shadow-none focus:ring-primary-blue-500 focus:border-primary-blue-500 sm:text-sm"
           />
         </div>
         <Button
           type="submit"
           label="Update Prompt"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+          className="px-4 py-2 bg-primary-blue-500 dark:bg-accent-dark-500 text-white hover:bg-blue-600 dark:hover:bg-accent-dark-700"
         />
       </form>
     </Card>

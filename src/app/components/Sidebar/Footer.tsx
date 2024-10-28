@@ -47,7 +47,7 @@ export const Footer = ({ isSignedIn, userEmail, userAvatar }: Props) => {
                     className="cursor-pointer"
                   >
                     <Libs.UserCircleIcon />
-                    <Libs.Text className="font-sans font-semibold hover:text-gray-600 text-sm text-gray-500 ml-2.5">
+                    <Libs.Text className="font-sans font-semibold hover:text-gray-600 text-sm text-gray-500 dark:text-gray-300 dark:hover:text-white ml-2.5">
                       {t('my-profile')}
                     </Libs.Text>
                   </Libs.DropdownItem>

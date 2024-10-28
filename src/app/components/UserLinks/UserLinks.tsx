@@ -17,7 +17,7 @@ export const UserLinks = () => {
         <div>
           <SignOutButton>
             <Text>
-              <span className="flex font-sans text-sm font-semibold text-gray-500 hover:text-gray-600 dark:text-slate-200   cursor-pointer">
+              <span className="flex font-sans text-sm font-semibold text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white   cursor-pointer">
                 <LogoutIcon className="-ml-2 mr-2" />
                 {t('common.sign-out')}
               </span>
@@ -27,7 +27,7 @@ export const UserLinks = () => {
       </SignedIn>
       <SignedOut>
         <SignInButton mode="redirect">
-          <span className="flex text-sm dark:text-slate-200 text-slate-900 cursor-pointer">
+          <span className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
             <LogoutIcon className="mr-4" />
             {t('common.sign-in')}
           </span>

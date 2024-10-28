@@ -65,7 +65,7 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
         transition
         className="fixed inset-y-0 w-full sm:w-1/2 max-w-80 p-2 transition duration-300 ease-in-out data-[closed]:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-3xl bg-white shadow-sm dark:bg-slate-900 dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-3xl bg-white dark:bg-secondary-dark shadow-sm dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
             <Headless.CloseButton as={NavbarItem} aria-label="Close navigation">
               <CloseMenuIcon />
@@ -95,9 +95,9 @@ export function SidebarLayout({
     pathname.startsWith(`/${locale}/admin`);
 
   return (
-    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-slate-900 dark:bg-zinc-900 dark:lg:bg-zinc-950">
+    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-primary-dark dark:bg-primary-dark">
       {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-5 top-5 bottom-5 w-88 rounded-3xl bg-white dark:bg-slate-900 max-lg:hidden">
+      <div className="fixed inset-y-0 left-5 top-5 bottom-5 w-88 rounded-3xl bg-white dark:bg-secondary-dark max-lg:hidden">
         {sidebar}
       </div>
 
@@ -105,13 +105,13 @@ export function SidebarLayout({
       <MobileSidebar>{sidebar}</MobileSidebar>
 
       {/* Navbar on mobile */}
-      <header className="flex items-center px-4 lg:hidden bg-primary-light">
+      <header className="flex items-center px-4 lg:hidden bg-primary-light dark:bg-primary-dark">
         <NavbarItem
           className="relative"
           onClick={openSidebar}
           aria-label="Open navigation"
         >
-          <div className="absolute -top-6 py-3 px-6 rounded-2xl bg-primary-blue-400 z-50">
+          <div className="absolute -top-6 py-3 px-6 rounded-2xl bg-primary-blue-400 dark:bg-secondary-dark z-50 ">
             <OpenMenuIcon className="mt-4 text-white" />
           </div>
         </NavbarItem>
@@ -120,17 +120,17 @@ export function SidebarLayout({
 
       {/* content */}
       {isMyProfile ? (
-        <main className="flex flex-1 flex-col pb-6 px-2.5 lg:ml-[22rem] lg:pt-2 bg-primary-light overflow-y-auto">
-          <div className="flex flex-1 h-full items-start sm:px-0 pt-5 lg:rounded-lg lg:bg-primary-light lg:py-3.5 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
+        <main className="flex flex-1 flex-col pb-6 px-2.5 lg:ml-[22rem] lg:pt-2 bg-primary-light dark:bg-primary-dark overflow-y-auto">
+          <div className="flex flex-1 h-full items-start sm:px-0 pt-5 lg:rounded-lg lg:bg-primary-light lg:py-3.5 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-primary-dark dark:lg:ring-white/10">
             <div className="w-full max-w-7xl lg:ml-5 pb-5 mx-auto">
               {children}
             </div>
           </div>
         </main>
       ) : (
-        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light">
-          <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
-            <div className="w-full max-w-7xl mx-auto">{children}</div>
+        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light dark:bg-primary-dark">
+          <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:dark:bg-primary-dark lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:ring-white/10">
+            <div className="w-full mx-auto max-w-7xl">{children}</div>
           </div>
         </main>
       )}

@@ -28,14 +28,14 @@ export const Card = ({ children, title, size = 'sm', className }: Props) => {
     <div
       className={clsx(
         sizeClass(),
-        'p-6 bg-white border border-gray-200 rounded-2xl shadow-lg dark:bg-gray-800 dark:border-gray-700 font-sans',
+        'p-6 bg-white border border-gray-200 rounded-2xl shadow-lg dark:bg-secondary-dark dark:border-gray-700 font-sans',
         className
       )}
     >
       {title && (
         <Text
           color="gray-700"
-          className="mb-2"
+          className="mb-2 dark:text-gray-300"
           fontWeight="medium"
           fontSize="md"
         >

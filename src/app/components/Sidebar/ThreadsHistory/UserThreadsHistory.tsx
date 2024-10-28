@@ -97,13 +97,6 @@ export const UserThreadsHistory = ({
 
   return (
     <SidebarSection>
-      {/* <div className="flex items-center ml-2 mt-2.5 mb-2 gap-2"> */}
-      {/* <ClockIcon className="w-5 h-5" /> */}
-      {/* <Text className="font-sans text-sm text-gray-600 font-medium tracking-wide"> */}
-      {/* {t('chat-history')} */}
-      {/* </Text> */}
-      {/* </div> */}
-
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <SpinnerSVG size="md" />
