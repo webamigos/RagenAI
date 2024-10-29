@@ -45,7 +45,14 @@ const nextConfig = {
   },
 };
 
-export default !process.env.SENTRY_DSN
+const sentryDsn = process.env.SENTRY_DSN;
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isProduction && !sentryDsn) {
+  throw new Error('SENTRY_DSN env variable is missing');
+}
+
+export default !isProduction
   ? withNextIntl(nextConfig)
   : withSentryConfig(withNextIntl(nextConfig), {
       // For all available options, see:
