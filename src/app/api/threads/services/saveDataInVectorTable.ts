@@ -101,8 +101,8 @@ export const convertAndStoreDocument = async (
       }
     }
     const textSplitterEPub = new RecursiveCharacterTextSplitter({
-      chunkSize: 500,
-      chunkOverlap: 50,
+      chunkSize: 1500,
+      chunkOverlap: 250,
       keepSeparator: true,
     });
 
