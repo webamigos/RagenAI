@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, dev]
 jobs:
-  test:
+  test-e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
 
@@ -73,6 +73,7 @@ jobs:
           TESTS_CLERK_USER_EMAIL: ${{ vars.TESTS_CLERK_USER_EMAIL }}
           TESTS_CLERK_USER_PASSWORD: ${{ vars.TESTS_CLERK_USER_PASSWORD }}
           OPENAI_API_KEY: ${{ vars.OPENAI_API_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           NEXT_PUBLIC_ENABLE_MSW_MOCKING: 'enabled'
           NEXT_PUBLIC_TEST_ENV: 'enabled'
           CLERK_JWT_KEY: 'dummy'
