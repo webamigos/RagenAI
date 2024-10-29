@@ -14,6 +14,7 @@ import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
 import { saveMarkdownWithMeta } from './action';
 import { clientLogger } from '@/app/lib/utils/clientLogger';
+import { clientLogger } from '@/app/lib/utils/clientLogger';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
