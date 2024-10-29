@@ -59,11 +59,12 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
     },
-    {
-      icon: KeyIcon,
-      label: t('api-keys'),
-      path: '/my-profile/api-keys',
-    },
+    // TODO: enable when ready
+    // {
+    //   icon: KeyIcon,
+    //   label: t('api-keys'),
+    //   path: '/my-profile/api-keys',
+    // },
   ];
 
   const organizationTabsForMember = [
