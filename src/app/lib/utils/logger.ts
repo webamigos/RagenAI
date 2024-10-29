@@ -1,8 +1,7 @@
 import pino from 'pino';
-import { SentryContext, SentryTag } from '../services/sentry';
 import { createWriteStream } from 'pino-sentry';
 
-const isProduction = process.env.NODE_ENV === 'production';
+import { isProduction, isTest } from '@/libs/utils/env';
 
 const streams = [];
 
@@ -11,13 +10,13 @@ if (typeof window !== 'undefined') {
   throw new Error('This module should only be used on the server side');
 }
 
-if (!isProduction) {
-  // Dynamically import pino-pretty only on the server
-  const pretty = require('pino-pretty');
+if (isTest) {
+  // Add silent logger to streams for test environment
   streams.push({
-    stream: pretty({
-      colorize: true,
-    }),
+    level: 'silent',
+    stream: {
+      write: () => {}, // no-op write function
+    },
   });
 }
 
@@ -33,9 +32,19 @@ if (isProduction && process.env.SENTRY_DSN) {
   });
 }
 
+if (!isProduction) {
+  // Dynamically import pino-pretty only on the server
+  const pretty = require('pino-pretty');
+  streams.push({
+    stream: pretty({
+      colorize: true,
+    }),
+  });
+}
+
 export const logger = pino(
   {
-    level: isProduction ? 'info' : 'debug',
+    level: isTest ? 'silent' : isProduction ? 'info' : 'debug',
   },
-  pino.multistream(streams)
+  streams.length ? pino.multistream(streams) : undefined
 );

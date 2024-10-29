@@ -3,6 +3,14 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
 
+const sentryDsn = process.env.SENTRY_DSN;
+const isProduction = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
+
+if (isProduction && !sentryDsn) {
+  throw new Error('SENTRY_DSN env variable is missing');
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
@@ -12,24 +20,13 @@ const nextConfig = {
   },
 
   experimental: {
-    serverComponentsExternalPackages: [
-      'pino',
-      'pino-pretty',
-      'pino-sentry',
-      '@sentry/node',
-    ],
+    serverComponentsExternalPackages: !isTest
+      ? ['pino', 'pino-pretty', 'pino-sentry', '@sentry/node']
+      : [],
   },
 
   webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Setting `resolve.alias` to `false` will tell webpack to ignore a module.
-      // `msw/node` is a server-only module that exports methods not available in
-      // the `browser`.
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'msw/browser': false,
-      };
-    } else {
+    if (!isServer || isTest) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         child_process: false, // for pino-sentry server logging
@@ -39,18 +36,20 @@ const nextConfig = {
         net: false, // for pino-sentry server logging
         async_hooks: false, // for pino-sentry server logging
         diagnostics_channel: false, // for playwright
+        worker_threads: false,
+      };
+    } else {
+      // Setting `resolve.alias` to `false` will tell webpack to ignore a module.
+      // `msw/node` is a server-only module that exports methods not available in
+      // the `browser`.
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'msw/browser': false,
       };
     }
     return config;
   },
 };
-
-const sentryDsn = process.env.SENTRY_DSN;
-const isProduction = process.env.NODE_ENV === 'production';
-
-if (isProduction && !sentryDsn) {
-  throw new Error('SENTRY_DSN env variable is missing');
-}
 
 export default !isProduction
   ? withNextIntl(nextConfig)
