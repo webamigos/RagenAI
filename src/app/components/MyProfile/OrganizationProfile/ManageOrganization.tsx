@@ -20,7 +20,8 @@ export const ManageOrganization = () => {
               colorText: resolvedTheme === 'dark' ? '#e5e7eb' : '',
             },
             elements: {
-              cardBox: 'grid-cols-1 h-1/2 shadow-none border-none',
+              cardBox: 'grid-cols-1 h-1/2 w-full shadow-none border-none',
+              rootBox: 'w-full',
               actionCard: 'dark:bg-secondary-dark',
               navbar: 'hidden',
               footer: 'hidden',
