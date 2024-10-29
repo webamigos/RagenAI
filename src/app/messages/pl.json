@@ -119,7 +119,14 @@
     "title": "Stwórz dokument",
     "input-label": "Tytuł",
     "input-placeholder": "Wpisz tytuł dokumentu",
-    "editor-label": "Treść"
+    "editor-label": "Treść",
+    "content": "Treść",
+    "edit": "Edytuj",
+    "preview": "Podgląd",
+    "title-error": "Tytuł jest wymagany",
+    "content-error": "Treść jest wymagana",
+    "created-successful": "Stworzono dokument",
+    "send-error": "Błąd podczas tworzenia dokumentu"
   },
   "sidebar": {
     "profile": "Profil",
@@ -149,5 +156,6 @@
   },
   "set-temperature": {
     "set-temperature": "Poziom kreatywności odpowiedzi"
-  }
+  },
+  "document-creator": {}
 }

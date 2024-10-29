@@ -1,8 +1,7 @@
-'use client';
 import './editor-styles.css';
-
-import dynamic from 'next/dynamic';
-import React, { useEffect } from 'react';
+import parse from 'html-react-parser';
+import DOMPurify from 'dompurify';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -11,10 +10,18 @@ import { useOrganization } from '@clerk/nextjs';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
-import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
-import { saveMarkdownWithMeta } from './action';
+import {
+  Card,
+  ArrowRightCircleIcon,
+  Input,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanel,
+  WysywigEditor,
+} from '@salesyy/common-ui';
 
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import { saveMarkdownWithMeta } from './action';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -24,84 +31,87 @@ const schema = z.object({
 export type DocumentSchema = z.infer<typeof schema>;
 
 export const DocumentCreator = () => {
-  const {
-    handleSubmit,
-    register,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<DocumentSchema>({
-    resolver: zodResolver(schema),
-  });
+  const [activeTab, setActiveTab] = useState(0);
 
   const t = useTranslations('create-document');
   const { successToast, errorToast } = statusToast();
   const { organization } = useOrganization();
   const { addDocument } = useUserDocumentsContext();
 
-  useEffect(() => {
-    register('content', { required: true, minLength: 11 });
-  }, [register]);
+  const {
+    handleSubmit,
+    register,
+    setValue,
+    watch,
+    reset,
+    formState: { errors, touchedFields },
+  } = useForm<DocumentSchema>({
+    resolver: zodResolver(schema),
+  });
+
+  const editorContent = watch('content');
+  const sanitizedContent = DOMPurify.sanitize(editorContent);
 
   const onEditorStateChange = (editorState: string) => {
     setValue('content', editorState);
   };
-  const editorContent = watch('content');
 
   const onSubmit = async (data: DocumentSchema) => {
-    if (!organization) {
-      return;
-    }
-
+    if (!organization) return;
     try {
       const organizationId = organization.id.toLowerCase();
       const response = await saveMarkdownWithMeta(data, organizationId);
 
       if (response.success && response.document) {
-        successToast({ message: 'Document created' });
+        successToast({ message: t('created-successful') });
         addDocument(response.document);
+        reset();
       } else if (response.message) {
         errorToast({ message: response.message });
       }
     } catch (error) {
-      errorToast({ message: 'Error creating document' });
+      errorToast({ message: t('send-error') });
     }
   };
 
   return (
     <Card title={t('title')} size="full">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          mandatory={true}
-          label={t('input-label')}
-          type="text"
-          placeholder={t('input-placeholder')}
-          {...register('title')}
-          className="mb-2 w-full p-2 border-gray-300"
-          error={errors.title}
-          errorMessage={errors.title?.message}
-        />
-        <div className="flex text-sm items-center font-medium mb-2">
-          <Text className="text-red-600 mt-1">*</Text>
-          <label className="block leading-6 dark:text-gray-300">
-            {t('editor-label')}
-          </label>
-        </div>
-        <ReactQuill
-          className="custom-quill w-full"
-          theme="snow"
-          value={editorContent}
-          onChange={onEditorStateChange}
-        />
-        {errors.content && (
-          <Text className="mt-2" fontSize="sm" color="red-500">
-            {errors.content.message}
-          </Text>
-        )}
-        <button type="submit" className="mt-2 rounded-full cursor-pointer">
-          <ArrowRightCircleIcon
-            className={`fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1`}
-          />
+        <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
+          <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
+            <Tab>{t('edit')}</Tab>
+            <Tab>{t('preview')}</Tab>
+          </TabList>
+          <TabPanel>
+            <Input
+              mandatory={true}
+              label={t('input-label')}
+              type="text"
+              placeholder={t('input-placeholder')}
+              {...register('title')}
+              className="mb-2 w-full p-2 border-gray-300"
+              error={touchedFields.title ? errors.title : undefined}
+              errorMessage={errors.title?.message}
+            />
+            <WysywigEditor
+              label={t('content')}
+              onChange={onEditorStateChange}
+              value={editorContent}
+              error={touchedFields.content ? errors.content : undefined}
+              errorMessage={errors.content?.message}
+            />
+          </TabPanel>
+          <TabPanel>
+            <div className="preview-content h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-2xl bg-gray-50 dark:bg-accent-dark-300">
+              <h2 className="text-xl font-semibold mb-4">{watch('title')}</h2>
+              <div className="prose prose-lg dark:prose-invert">
+                {parse(sanitizedContent)}
+              </div>
+            </div>
+          </TabPanel>
+        </Tabs>
+        <button type="submit" className="rounded-full cursor-pointer">
+          <ArrowRightCircleIcon className="ml-3 fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1" />
         </button>
       </form>
     </Card>

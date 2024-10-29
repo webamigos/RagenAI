@@ -22,7 +22,7 @@ export const AdminPanel = () => {
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
         <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
           <Tab key="add-files">
-            {t('add-files')} <CloudArrowUp className="ml-3" />
+            {t('add-files')} <CloudArrowUp className="ml-3 md:none" />
           </Tab>
           <Tab key="create-file">
             {t('create-file')} <PencilSquareIcon className="ml-3" />
