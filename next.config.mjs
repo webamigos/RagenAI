@@ -16,6 +16,7 @@ const nextConfig = {
       'pino',
       'pino-pretty',
       'pino-sentry',
+      '@sentry/node',
       // 'pino-sentry-transport',
     ],
   },
@@ -39,6 +40,7 @@ const nextConfig = {
         worker_threads: false, // for pino-sentry server logging
         net: false, // for pino-sentry server logging
         async_hooks: false, // for pino-sentry server logging
+        diagnostics_channel: false, // for playwright
       };
     }
     return config;
