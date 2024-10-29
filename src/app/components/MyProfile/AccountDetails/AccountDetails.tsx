@@ -21,6 +21,7 @@ export const AccountDetails = () => {
           },
           elements: {
             cardBox: 'h-full w-full shadow-none border-none font-sans',
+            rootBox: 'w-full',
             actionCard: 'dark:bg-secondary-dark',
             navbar: 'hidden',
             navbarMobileMenuRow: 'hidden',
