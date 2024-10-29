@@ -101,7 +101,7 @@ export const DocumentCreator = () => {
         )}
         <button type="submit" className="mt-2 rounded-full cursor-pointer">
           <ArrowRightCircleIcon
-            className={`fill-accent-dark-400 hover:fill-accent-dark-300 stroke-1`}
+            className={`fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1`}
           />
         </button>
       </form>
