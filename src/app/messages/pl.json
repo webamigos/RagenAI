@@ -191,13 +191,10 @@
   "set-temperature": {
     "set-temperature": "Poziom kreatywności odpowiedzi"
   },
-  "clerk-errors": {
+  "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",
-    "form_password_length_too_short": "Hasło musi mieć co najmniej 8 znaków.",
     "form_password_invalid": "Hasło jest nieprawidłowe.",
     "form_identifier_not_found": "Nie znaleziono konta z tym adresem e-mail.",
-    "form_param_format_invalid": "Nieprawidłowy format.",
-    "form_param_nil": "To pole jest wymagane.",
     "form_code_incorrect": "Nieprawidłowy kod",
     "form_password_incorrect": "Nieprawidłowe hasło."
   }

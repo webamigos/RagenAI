@@ -6,7 +6,7 @@ type Props = {
 };
 
 export const ClerkErrorsInterface = ({ apiErrors }: Props) => {
-  const t = useTranslations('clerk-errors');
+  const t = useTranslations('clerk-api-errors');
 
   if (!apiErrors || apiErrors.length === 0) {
     return null;
