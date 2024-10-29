@@ -52,7 +52,48 @@
     "sign-out": "Wyloguj"
   },
   "Metadata": {
-    "index": "Asystent SalesYY"
+    "index": {
+      "title": "Czat z Asystentem | SalesYY"
+    },
+    "sign-in": {
+      "title": "Zaloguj się | SalesYY"
+    },
+    "sign-up": {
+      "title": "Zarejestruj się | SalesYY"
+    },
+    "enter-code": {
+      "title": "Zweryfikuj swoje konto | SalesYY"
+    },
+    "forgot-password": {
+      "title": "Zapomniałeś hasła | SalesYY"
+    },
+    "reset-password": {
+      "title": "Zresetuj hasło | SalesYY"
+    },
+    "guest-threads": {
+      "title": "Czat z Asystentem | SalesYY"
+    },
+    "manage-knowledge": {
+      "title": "Zarządzaj wiedzą | SalesYY"
+    },
+    "my-profile": {
+      "title": "Mój profil | SalesYY"
+    },
+    "my-profile:security": {
+      "title": "Bezpieczeństwo profilu | SalesYY"
+    },
+    "create-organization": {
+      "title": "Utwórz organizację | SalesYY"
+    },
+    "organization-profile": {
+      "title": "Zarządzaj organizacją | SalesYY"
+    },
+    "organization-profile:organization-members": {
+      "title": "Zarządzaj członkami | SalesYY"
+    },
+    "prompt-management": {
+      "title": "Zarządzanie asystentem | SalesYY"
+    }
   },
   "chat": {
     "USER": "Ty",

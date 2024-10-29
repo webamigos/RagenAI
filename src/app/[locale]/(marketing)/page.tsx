@@ -2,7 +2,6 @@ import {
   getTranslations,
   unstable_setRequestLocale as setRequestLocale,
 } from 'next-intl/server';
-import { useTranslations } from 'next-intl';
 
 import { Start } from '../../components/Start';
 
@@ -16,13 +15,12 @@ export async function generateMetadata({ params: { locale } }: Props) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
-    title: t('index'),
+    title: t('index.title'),
   };
 }
 
 export default function Index({ params: { locale } }: Props) {
   setRequestLocale(locale);
-  const t = useTranslations('Index');
 
   /*
    * Replace the elements below with your own.
