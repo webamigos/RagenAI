@@ -1,7 +1,7 @@
 import './editor-styles.css';
 import parse from 'html-react-parser';
 import DOMPurify from 'dompurify';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -28,6 +28,11 @@ const schema = z.object({
   content: z.string().min(1, 'Content is required'),
 });
 
+const initialValues = {
+  title: '',
+  content: '',
+};
+
 export type DocumentSchema = z.infer<typeof schema>;
 
 export const DocumentCreator = () => {
@@ -47,13 +52,17 @@ export const DocumentCreator = () => {
     formState: { errors, touchedFields },
   } = useForm<DocumentSchema>({
     resolver: zodResolver(schema),
+    defaultValues: initialValues,
   });
 
   const editorContent = watch('content');
-  const sanitizedContent = DOMPurify.sanitize(editorContent);
+  const sanitizedContent = DOMPurify.sanitize(editorContent || '');
 
   const onEditorStateChange = (editorState: string) => {
-    setValue('content', editorState);
+    setValue('content', editorState, {
+      shouldValidate: true,
+      shouldTouch: true,
+    });
   };
 
   const onSubmit = async (data: DocumentSchema) => {
@@ -95,8 +104,9 @@ export const DocumentCreator = () => {
             />
             <WysywigEditor
               label={t('content')}
+              mandatory={true}
               onChange={onEditorStateChange}
-              value={editorContent}
+              value={editorContent || ''}
               error={touchedFields.content ? errors.content : undefined}
               errorMessage={errors.content?.message}
             />

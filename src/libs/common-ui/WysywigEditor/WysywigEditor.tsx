@@ -39,7 +39,6 @@ export const formats = [
   'strike',
   'blockquote',
   'list',
-  'bullet',
   'link',
   'image',
   'code-block',
