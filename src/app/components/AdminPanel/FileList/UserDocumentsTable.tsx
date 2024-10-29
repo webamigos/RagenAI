@@ -11,6 +11,7 @@ import { type UserFileType } from '@/app/contracts/Documents';
 import { classMerge } from '@salesyy/common-ui';
 
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
+import { fetchDocumentByOrganization } from '../../MarkdownDocumentsCreator/action';
 
 type Props = {
   documents: UserFileType[];
@@ -31,7 +32,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
 
   const successTranslatedMessage = useTranslations('success-toast');
   const errorTranslatedMessage = useTranslations('error-toast');
-  const translatedTable = useTranslations('files-table');
 
   const formattedCreatedAt = created_at
     ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
@@ -62,6 +62,14 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     }
   };
 
+  const handleGetPreview = async (orgId: string, title: string) => {
+    try {
+      const response = await fetchDocumentByOrganization(orgId, title);
+      if (response.success) {
+      }
+    } catch (err) {}
+  };
+
   return (
     <CommonUi.TableRow className="text-sm overflow-x-hidden">
       <CommonUi.TableCell title={file_name}>
@@ -70,6 +78,20 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+      <CommonUi.TableCell>
+        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+          {isLoading ? (
+            <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+          ) : (
+            <CommonUi.OpenEyeIcon
+              onClick={() =>
+                handleGetPreview(document.organization_id, document.id)
+              }
+              className="cursor-pointer"
+            />
+          )}
+        </div>
+      </CommonUi.TableCell>
       <CommonUi.TableCell>
         <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
           {isLoading ? (

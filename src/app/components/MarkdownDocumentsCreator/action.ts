@@ -3,7 +3,10 @@
 import TurndownService from 'turndown';
 import { v4 as uuidv4 } from 'uuid';
 
-import { createMarkdownDocument } from '@/app/lib/services/document';
+import {
+  createMarkdownDocument,
+  getDocumentPreview,
+} from '@/app/lib/services/document';
 import { createDocumentDetailsInDB } from '@/app/lib/services/document';
 import { type DocumentSchema } from './DocumentCreator';
 
@@ -45,5 +48,24 @@ export async function saveMarkdownWithMeta(
     };
   } catch (error) {
     return { success: false, message: 'Failed to create document:', error };
+  }
+}
+
+export async function fetchDocumentByOrganization(
+  organizationId: string,
+  documentId: string
+) {
+  try {
+    const response = await getDocumentPreview({
+      orgId: organizationId,
+      documentId,
+    });
+
+    return {
+      success: true,
+      documents: response,
+    };
+  } catch (error) {
+    return { success: false, message: 'Failed to fetch documents:', error };
   }
 }
