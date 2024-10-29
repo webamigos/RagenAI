@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatOutput } from './ChatOutput';
-import { PromptForm } from './PromptForm';
+import { CloseThread, PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
 

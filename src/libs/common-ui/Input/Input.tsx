@@ -118,9 +118,9 @@ export const Input = forwardRef(
                 max={max}
                 step={step}
                 className={classMerge(
-                  'block w-full px-3 pr-12 dark:bg-slate-900 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
+                  'block w-full dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
                   {
-                    'ring-1 ring-inset ring-primary-blue-500 rounded-2xl cursor-pointer':
+                    'px-3  pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-2xl cursor-pointer':
                       type !== 'range',
                     'text-red-900 ring-red-300 placeholder:text-red-300 focus-visible:ring-red-500 focus-visible:ring-2':
                       error,
@@ -135,7 +135,7 @@ export const Input = forwardRef(
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-2 px-3 flex items-center dark:bg-slate-700 dark:border-slate-600"
+                className="absolute inset-y-0 right-2 px-3 flex items-center dark:border-slate-600"
               >
                 {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
               </button>
