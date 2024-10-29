@@ -1,6 +1,7 @@
-name: Assistant
+name: SmartRAG App
 
 env:
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
   SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: 'dummy'
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
