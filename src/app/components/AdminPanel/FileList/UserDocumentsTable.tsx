@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import format from 'date-fns-tz/format';
@@ -13,15 +14,18 @@ import { truncateFileName } from '../../../lib/utils/truncateFileName';
 
 type Props = {
   documents: UserFileType[];
-  onDocumentsUpdate: () => void;
+  onAddDocument: (newDocument: UserFileType) => void;
+  onRemoveDocument: (documentId: string) => void;
 };
 
 type DocumentRowProps = {
   document: UserFileType;
-  onDocumentsUpdate: () => void;
+  onRemoveDocument: (documentId: string) => void;
 };
 
-const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
+const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
 
@@ -32,64 +36,66 @@ const DocumentRow = ({ document, onDocumentsUpdate }: DocumentRowProps) => {
   const formattedCreatedAt = created_at
     ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
     : '-';
-
   const formattedUpdatedAt = updated_at
     ? format(new Date(updated_at), 'dd.MM.yyyy HH:mm:ss')
     : '-';
-
   const truncatedFileName = truncateFileName(file_name, 20);
 
-  const handleDelete = async (
-    organization_id: string,
-    document_id: string,
-    onDocumentsUpdate: () => void
-  ) => {
+  const handleDelete = async () => {
+    setIsLoading(true);
     const { errorToast, successToast } = statusToast();
 
     try {
-      const { status } = await deleteDocument(organization_id, document_id);
+      const { status } = await deleteDocument(organization_id, id);
       if (status === 200) {
-        onDocumentsUpdate();
+        onRemoveDocument(id);
         successToast({
-          message: `${successTranslatedMessage('deleted')} :${document_id}`,
+          message: `${successTranslatedMessage('deleted')} ${file_name}`,
         });
       }
     } catch (error) {
       errorToast({
         message: `${errorTranslatedMessage('error-during-deleting-file')}`,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <CommonUi.TableRow className="text-sm">
-        <CommonUi.TableCell title={file_name}>
-          {truncatedFileName}
-        </CommonUi.TableCell>
-        <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
-        <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-        <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-        <CommonUi.TableCell>
-          <div className="-mx-3 -my-1.5 sm:-mx-2.5">
-            <CommonUi.Tooltip
-              id="delete doc"
-              place="top"
-              content={translatedTable('delete')}
-            >
-              <CommonUi.TrashIcon className="cursor-pointer" />
-            </CommonUi.Tooltip>
-          </div>
-        </CommonUi.TableCell>
-      </CommonUi.TableRow>
-    </>
+    <CommonUi.TableRow className="text-sm">
+      <CommonUi.TableCell title={file_name}>
+        {truncatedFileName}
+      </CommonUi.TableCell>
+      <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
+      <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
+      <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+      <CommonUi.TableCell>
+        <div className="-mx-3 -my-1.5 sm:-mx-2.5">
+          <CommonUi.Tooltip
+            id="delete doc"
+            place="top"
+            content={translatedTable('delete')}
+          >
+            {isLoading ? (
+              <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+            ) : (
+              <CommonUi.TrashIcon
+                onClick={handleDelete}
+                className="cursor-pointer"
+              />
+            )}
+          </CommonUi.Tooltip>
+        </div>
+      </CommonUi.TableCell>
+    </CommonUi.TableRow>
   );
 };
 
 export const UserDocumentsTable = ({
   className,
   documents,
-  onDocumentsUpdate,
+  onRemoveDocument,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   return (
@@ -110,7 +116,7 @@ export const UserDocumentsTable = ({
           <DocumentRow
             key={document.id}
             document={document}
-            onDocumentsUpdate={onDocumentsUpdate}
+            onRemoveDocument={onRemoveDocument}
           />
         ))}
       </CommonUi.TableBody>

@@ -1,12 +1,11 @@
 import { memo } from 'react';
-
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { UserDocumentsTable } from './UserDocumentsTable';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 
 export const FileList = memo(() => {
-  const { documents, isLoading, isError, refreshDocuments } =
+  const { documents, isLoading, isError, addDocument, removeDocument } =
     useUserDocumentsContext();
   const { errorToast } = statusToast();
 
@@ -22,7 +21,8 @@ export const FileList = memo(() => {
     <UserDocumentsTable
       className="font-sans"
       documents={documents || []}
-      onDocumentsUpdate={refreshDocuments}
+      onAddDocument={addDocument}
+      onRemoveDocument={removeDocument}
     />
   );
 });
