@@ -12,7 +12,12 @@ const nextConfig = {
   },
 
   experimental: {
-    serverComponentsExternalPackages: ['pino', 'pino-pretty'],
+    serverComponentsExternalPackages: [
+      'pino',
+      'pino-pretty',
+      'pino-sentry',
+      // 'pino-sentry-transport',
+    ],
   },
 
   webpack: (config, { isServer }) => {

@@ -1,16 +1,14 @@
 import * as Sentry from '@sentry/nextjs';
 
-// DO NOT USE below const in logger.ts
-// Otherwise pino doesn't logs anything 🤦
-const SentryTag = {
+export const SentryTag = {
   CLERK_SESSION_ID: 'clerk_session_id',
   CLERK_ORGANIZATION_ID: 'clerk_organization_id',
   CLERK_USER_ID: 'clerk_user_id',
   APP_SERVICE: 'app_service',
 };
 
-const SentryContext = {
-  CLERK: 'clerk',
+export const SentryContext = {
+  CLERK: 'Clerk',
 };
 
 type SentryContextKey = keyof typeof SentryContext;

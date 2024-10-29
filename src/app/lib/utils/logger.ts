@@ -1,36 +1,27 @@
 import pino from 'pino';
+import { SentryContext, SentryTag } from '../services/sentry';
+import { createWriteStream } from 'pino-sentry';
 
-export const logger = pino({
-  transport: {
-    targets: [
-      {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-        },
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-      },
-      // Pros: Below configuration automatically creates Pinot context in Sentry using logger.error
-      {
-        target: 'pino-sentry-transport',
-        options: {
-          sentry: {
-            dsn: process.env.SENTRY_DSN,
-          },
-          withLogRecord: true,
-          tags: [
-            'level',
-            // IMPORTANT: do not import consts from sentry.ts
-            'clerk_session_id',
-            'clerk_organization_id',
-            'clerk_user_id',
-            'app_service',
-          ],
-          context: ['hostname', 'clerk'],
-          minLevel: 40, // Captures warnings (40) and errors (50)
-        },
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-      },
-    ],
-  },
+// Create Sentry stream
+const sentryStream = createWriteStream({
+  dsn: process.env.SENTRY_DSN,
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  // Optional: configure environment
+  environment: process.env.NODE_ENV,
 });
+
+export const logger = pino(
+  {
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  },
+  pino.multistream([
+    {
+      stream: require('pino-pretty')({
+        colorize: true,
+      }),
+    },
+    {
+      stream: sentryStream,
+    },
+  ])
+);

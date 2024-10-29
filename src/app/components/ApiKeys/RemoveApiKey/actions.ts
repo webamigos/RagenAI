@@ -3,11 +3,8 @@
 import * as Sentry from '@sentry/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import {
-  setSentryContext,
-  setSentryClerkOrganizationTag,
   setSentryServiceTag,
-  setSentryClerkSessionTag,
-  setSentryUserId,
+  setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';
 import { removeApiKeyFromDb } from '@/app/lib/services/apiKeys';
 import { ApiKey } from '@prisma/client';
@@ -30,13 +27,8 @@ export const removeApiKey = async (keyId: ApiKey['id']) => {
   }
 
   try {
-    setSentryUserId(userId);
-    setSentryClerkSessionTag(sessionId);
-    setSentryClerkOrganizationTag(orgId);
-    setSentryServiceTag(serviceName);
-    setSentryContext(serviceName, 'removeApiKey', {
-      organization: orgId,
-    });
+    // setSentryServiceTag(serviceName);
+    // setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
     await removeApiKeyFromDb(orgId, keyId);
 

@@ -147,7 +147,7 @@
     "openai": "^4.55.4",
     "pino": "^9.3.2",
     "pino-pretty": "^11.2.2",
-    "pino-sentry-transport": "^1.4.0",
+    "pino-sentry": "^0.15.0",
     "pretty-bytes": "^6.1.1",
     "quill": "^2.0.2",
     "react": "18.2.0",

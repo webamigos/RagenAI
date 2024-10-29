@@ -7,6 +7,7 @@ import db from '@salesyy/prisma-client';
 
 import { ApiKeyDto } from './types';
 import {
+  SentryTag,
   setSentryServiceTag,
   setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';
@@ -52,8 +53,6 @@ export const createApiKey = async (
     setSentryServiceTag(serviceName);
     setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
-    throw new Error('Make Sentry great again second');
-
     const organization = await fetchOrganizationByProviderId(orgId);
 
     // by now organization have only one default project
@@ -88,14 +87,12 @@ export const createApiKey = async (
     // Log error with additional context
     logger.error(
       {
+        extra: {
+          sth: 'ok',
+        },
         err: error,
-        userId,
-        orgId,
-        sessionId,
-        service: serviceName,
-        action: 'createApiKey',
       },
-      'Failed to create API key'
+      'Failed to create API key 31'
     );
 
     return {
@@ -104,3 +101,5 @@ export const createApiKey = async (
     };
   }
 };
+
+createApiKey.displayName = 'createApiKey';
