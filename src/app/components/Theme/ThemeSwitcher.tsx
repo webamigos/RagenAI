@@ -12,7 +12,7 @@ type Props = {
 
 export const ThemeSwitcher = ({ className }: Props) => {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -22,12 +22,12 @@ export const ThemeSwitcher = ({ className }: Props) => {
     return null;
   }
 
-  const handleClick = (theme: string) => {
-    setTheme(theme);
+  const handleClick = (newTheme: string) => {
+    setTheme(newTheme);
   };
 
   const icon =
-    theme === 'light' ? (
+    resolvedTheme === 'light' ? (
       <MoonIcon
         className="h-5 w-5 flex-none cursor-pointer"
         aria-hidden="true"
