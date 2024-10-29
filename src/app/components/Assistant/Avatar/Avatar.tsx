@@ -1,13 +1,14 @@
 'use client';
 
-import { Button } from '@salesyy/common-ui';
 import axios from 'axios';
-import { logger } from '../../../lib/utils/logger';
+
+import { clientLogger } from '@/app/lib/utils/clientLogger';
+import { Button } from '@salesyy/common-ui';
 
 export const Avatar = () => {
   const handleClick = async () => {
     const avatarResponse = await axios.post('/api/avatar');
-    logger.info('Avatar response: %o', avatarResponse);
+    clientLogger.info('Avatar response: %o', avatarResponse);
   };
 
   return (

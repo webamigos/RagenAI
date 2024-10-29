@@ -4,11 +4,12 @@ import Image from 'next/image';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { Divider } from '@salesyy/common-ui/Divider';
-import { logger } from '@/app/lib/utils/logger';
+// import { logger } from '@/app/lib/utils/logger';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { memo, useTransition } from 'react';
 
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
+import { clientLogger } from '@/app/lib/utils/clientLogger';
 
 type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
 
@@ -74,7 +75,7 @@ export const SocialAuthOptions = memo(
             });
           }
         } catch (error) {
-          logger.error(
+          clientLogger.error(
             `Error during ${isSignUp ? 'sign-up' : 'sign-in'} with ${strategy}`,
             error
           );
