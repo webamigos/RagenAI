@@ -29,6 +29,17 @@ const nextConfig = {
         ...config.resolve.alias,
         'msw/browser': false,
       };
+    } else {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        child_process: false, // for pino-sentry server logging
+        fs: false, // for pino-sentry server logging
+        inspector: false, // for pino-sentry server logging
+        tls: false, // for pino-sentry server logging
+        worker_threads: false, // for pino-sentry server logging
+        net: false, // for pino-sentry server logging
+        async_hooks: false, // for pino-sentry server logging
+      };
     }
     return config;
   },
