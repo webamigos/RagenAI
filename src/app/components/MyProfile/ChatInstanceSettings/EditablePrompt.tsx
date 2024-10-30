@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 
 import { Button, Card, Textarea } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -22,6 +23,7 @@ export const EditablePrompt = () => {
   const [nonEditablePrompt, setNonEditablePrompt] = useState('');
 
   const { successToast, errorToast } = statusToast();
+  const t = useTranslations('editable-prompt');
 
   const {
     register,
@@ -75,11 +77,7 @@ export const EditablePrompt = () => {
   };
 
   return (
-    <Card
-      size="full"
-      className="py-4 max-h-fit"
-      title="Update Assistant Editable Prompt"
-    >
+    <Card size="full" className="py-4 max-h-fit" title={t('title')}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Textarea
@@ -88,13 +86,13 @@ export const EditablePrompt = () => {
             error={errors.editablePrompt}
             {...register('editablePrompt')}
             errorMessage={errors.editablePrompt?.message}
-            label="Available variables you can use in the prompt: {question}, {context}, {chat_history}"
+            label={`${t('label')} {question}, {context}, {chat_history}`}
             className="mt-1 block w-full dark:bg-accent-dark-500 border border-primary-blue-500 dark:border-gray-600 shadow-none focus:ring-primary-blue-500 focus:border-primary-blue-500 sm:text-sm"
           />
         </div>
         <Button
           type="submit"
-          label="Update Prompt"
+          label={`${t('update')}`}
           className="px-4 py-2 bg-primary-blue-500 dark:bg-accent-dark-500 text-white hover:bg-blue-600 dark:hover:bg-accent-dark-700"
         />
       </form>
