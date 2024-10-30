@@ -98,7 +98,10 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-auto" onDoubleClick={handleDoubleClick}>
+        <div
+          className="flex-1 prose prose-lg dark:prose-invert overflow-auto"
+          onDoubleClick={handleDoubleClick}
+        >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {documentContent}
           </ReactMarkdown>

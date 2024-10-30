@@ -53,7 +53,7 @@ export async function saveMarkdownWithMeta(
 
 type DocumentSuccessResponse = {
   success: true;
-  documents: { content: string }[];
+  documents: { content: string; title: string }[];
 };
 
 type DocumentErrorResponse = {
@@ -69,10 +69,11 @@ export async function fetchDocumentByOrganization(
   documentId: string
 ): Promise<DocumentResponse> {
   try {
-    const response: { content: string }[] = await getDocumentPreview({
-      orgId: organizationId,
-      documentId,
-    });
+    const response: { content: string; title: string }[] =
+      await getDocumentPreview({
+        orgId: organizationId,
+        documentId,
+      });
 
     return {
       success: true,

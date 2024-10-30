@@ -94,6 +94,7 @@ export const getDocumentPreview = async ({
     },
     select: {
       content: true,
+      title: true,
     },
   });
 };
