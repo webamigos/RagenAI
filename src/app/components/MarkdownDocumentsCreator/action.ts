@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   createMarkdownDocument,
   getDocumentPreview,
+  saveEditedDocumentTitle,
 } from '@/app/lib/services/document';
 import { createDocumentDetailsInDB } from '@/app/lib/services/document';
 import { type DocumentSchema } from './DocumentCreator';
@@ -87,3 +88,42 @@ export async function fetchDocumentByOrganization(
     };
   }
 }
+
+type UpdateDocumentTitleProps = {
+  orgId: string;
+  documentId: string;
+  title: string;
+};
+
+type UpdateSuccessResponse = {
+  success: true;
+  message: string;
+};
+
+type UpdateErrorResponse = {
+  success: false;
+  message: string;
+  error: unknown;
+};
+
+type UpdateResponse = UpdateSuccessResponse | UpdateErrorResponse;
+
+export const updateDocumentTitle = async ({
+  orgId,
+  documentId,
+  title,
+}: UpdateDocumentTitleProps): Promise<UpdateResponse> => {
+  try {
+    await saveEditedDocumentTitle({ orgId, documentId, title });
+    return {
+      success: true,
+      message: 'Title updated successfully',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Failed to update document title',
+      error,
+    };
+  }
+};

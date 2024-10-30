@@ -7,8 +7,11 @@ import { useOrganization } from '@clerk/nextjs';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
 import { statusToast } from '@/app/lib/utils/toast';
-import { SpinnerSVG, WysywigEditor, Text } from '@salesyy/common-ui';
-import { fetchDocumentByOrganization } from '@/app/components/MarkdownDocumentsCreator/action';
+import { SpinnerSVG, WysywigEditor, Text, Input } from '@salesyy/common-ui';
+import {
+  fetchDocumentByOrganization,
+  updateDocumentTitle,
+} from '@/app/components/MarkdownDocumentsCreator/action';
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -25,9 +28,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   const { organization } = useOrganization();
 
   const [documentContent, setDocumentContent] = useState<string | null>(null);
+  const [documentTitle, setDocumentTitle] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editableContent, setEditableContent] = useState<string | null>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editableTitle, setEditableTitle] = useState<string | null>(null);
 
   const { errorToast } = statusToast();
   const orgId = organization?.id.toLowerCase();
@@ -43,7 +49,11 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             const documentText = content.documents
               .map((doc) => doc.content)
               .join('\n');
+            const documentTitle = content.documents
+              .map((document) => document.title)
+              .join('\n');
             setDocumentContent(documentText);
+            setDocumentTitle(documentTitle);
           } else {
             errorToast({ message: `${content.message}: ${content.error}` });
             setDocumentContent(null);
@@ -72,12 +82,65 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     setIsEditing(false);
   };
 
-  if (isLoading) return <SpinnerSVG />;
-  if (!documentContent) return <p>Nie znaleziono dokumentu</p>;
+  const handleTitleDoubleClick = () => {
+    setIsEditingTitle(true);
+    setEditableTitle(documentTitle);
+  };
+
+  const handleEdit = async () => {
+    if (!orgId) {
+      return;
+    }
+
+    if (editableTitle !== null) {
+      const response = await updateDocumentTitle({
+        orgId,
+        documentId: id,
+        title: editableTitle,
+      });
+
+      if (response.success) {
+        setDocumentTitle(editableTitle);
+      } else {
+        errorToast({ message: response.message });
+      }
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleEdit();
+    }
+  };
+
+  if (isLoading) {
+    return <SpinnerSVG />;
+  }
+  if (!documentContent) {
+    return <Text>Nie znaleziono dokumentu</Text>;
+  }
 
   return (
-    <div className="h-full flex flex-col flex-1 overflow-hidden px-4">
-      <Text className="text-2xl font-bold mb-4">Podgląd dokumentu</Text>
+    <div className="h-full flex flex-col flex-1 overflow-auto px-4">
+      {isEditingTitle ? (
+        <Input
+          type="text"
+          value={editableTitle || ''}
+          onChange={(e) => setEditableTitle(e.target.value)}
+          onBlur={handleEdit}
+          onKeyDown={handleTitleKeyDown}
+          className="text-2xl p-2 font-bold mb-4 w-full"
+          autoFocus
+        />
+      ) : (
+        <Text
+          className="text-2xl font-bold mb-4 cursor-pointer"
+          onDoubleClick={handleTitleDoubleClick}
+        >
+          {documentTitle}
+        </Text>
+      )}
 
       {isEditing ? (
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -99,7 +162,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         </div>
       ) : (
         <div
-          className="flex-1 prose prose-lg dark:prose-invert overflow-auto"
+          className="flex-1 prose prose-lg dark:prose-invert"
           onDoubleClick={handleDoubleClick}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
