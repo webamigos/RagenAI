@@ -3,9 +3,9 @@
 }
 
 .custom-quill .ql-container {
-  @apply h-60  bg-white dark:bg-accent-dark-500 border border-gray-300 dark:border-gray-600 rounded-b-2xl;
+  @apply bg-white dark:bg-accent-dark-500 border border-gray-300 dark:border-gray-600 rounded-b-2xl;
 }
 
 .custom-quill .ql-editor {
-  @apply p-4 text-gray-800 dark:text-gray-200 bg-transparent;
+  @apply flex-1 overflow-y-auto p-4 text-gray-800 dark:text-gray-200 bg-transparent;
 }

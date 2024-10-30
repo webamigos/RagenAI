@@ -1,7 +1,6 @@
-import './editor-styles.css';
 import parse from 'html-react-parser';
 import DOMPurify from 'dompurify';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';

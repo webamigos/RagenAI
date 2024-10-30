@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: Props) {
       messages={messages}
       locale={locale}
     >
-      <div className="h-screen flex flex-col">
+      <div className="h-screen flex overflow-hidden">
         <Toast />
         <DocumentsProvider>
           <Sidebar>{children}</Sidebar>
