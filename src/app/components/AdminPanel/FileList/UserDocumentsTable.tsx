@@ -1,3 +1,5 @@
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useState } from 'react';
 import { ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
@@ -6,12 +8,12 @@ import { useTranslations } from 'next-intl';
 
 import * as CommonUi from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
-import { statusToast } from '@/app/lib/utils/toast';
 import { type UserFileType } from '@/app/contracts/Documents';
 import { classMerge } from '@salesyy/common-ui';
-
+import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 import { fetchDocumentByOrganization } from '../../MarkdownDocumentsCreator/action';
+import { P } from 'pino';
 
 type Props = {
   documents: UserFileType[];
@@ -26,12 +28,18 @@ type DocumentRowProps = {
 
 const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [previewsDocument, setPreviewsDocument] = useState<
+    string[] | undefined
+  >();
 
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
 
   const successTranslatedMessage = useTranslations('success-toast');
   const errorTranslatedMessage = useTranslations('error-toast');
+  const { errorToast, successToast } = statusToast();
 
   const formattedCreatedAt = created_at
     ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
@@ -43,7 +51,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const { errorToast, successToast } = statusToast();
 
     try {
       const { status } = await deleteDocument(organization_id, id);
@@ -62,49 +69,89 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     }
   };
 
-  const handleGetPreview = async (orgId: string, title: string) => {
-    try {
-      const response = await fetchDocumentByOrganization(orgId, title);
-      if (response.success) {
-      }
-    } catch (err) {}
+  const handlePreviewModal = async (orgId: string, title: string) => {
+    setIsLoadingPreview(true);
+    const documentContent = await handleGetPreview(orgId, title);
+    if (documentContent) {
+      setPreviewsDocument(documentContent);
+      setIsPreview(true);
+    }
+    setIsLoadingPreview(false);
+  };
+
+  const handleGetPreview = async (
+    orgId: string,
+    title: string
+  ): Promise<string[] | undefined> => {
+    const response = await fetchDocumentByOrganization(orgId, title);
+
+    if (response.success) {
+      return response.documents.map((doc) => doc.content);
+    }
+
+    if (!response.success) {
+      errorToast({ message: `${(response.error, response.message)}` });
+    }
   };
 
   return (
-    <CommonUi.TableRow className="text-sm overflow-x-hidden">
-      <CommonUi.TableCell title={file_name}>
-        {truncatedFileName}
-      </CommonUi.TableCell>
-      <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
-      <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
-          {isLoading ? (
-            <CommonUi.SpinnerSVG size="sm" className="ml-1" />
-          ) : (
-            <CommonUi.OpenEyeIcon
-              onClick={() =>
-                handleGetPreview(document.organization_id, document.id)
-              }
-              className="cursor-pointer"
-            />
-          )}
-        </div>
-      </CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
-          {isLoading ? (
-            <CommonUi.SpinnerSVG size="sm" className="ml-1" />
-          ) : (
-            <CommonUi.TrashIcon
-              onClick={handleDelete}
-              className="cursor-pointer"
-            />
-          )}
-        </div>
-      </CommonUi.TableCell>
-    </CommonUi.TableRow>
+    <>
+      <CommonUi.TableRow className="text-sm overflow-x-hidden">
+        <CommonUi.TableCell title={file_name}>
+          {truncatedFileName}
+        </CommonUi.TableCell>
+        <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
+        <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>
+          <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+            {isLoadingPreview ? (
+              <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+            ) : (
+              <CommonUi.OpenEyeIcon
+                onClick={() =>
+                  handlePreviewModal(document.organization_id, document.id)
+                }
+                className="cursor-pointer"
+              />
+            )}
+          </div>
+        </CommonUi.TableCell>
+        <CommonUi.TableCell>
+          <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+            {isLoading ? (
+              <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+            ) : (
+              <CommonUi.TrashIcon
+                onClick={handleDelete}
+                className="cursor-pointer"
+              />
+            )}
+          </div>
+        </CommonUi.TableCell>
+      </CommonUi.TableRow>
+
+      {isPreview && (
+        <CommonUi.Dialog
+          className="h-screen overflow-auto"
+          open={isPreview}
+          onClose={() => setIsPreview(false)}
+        >
+          <div className="p-4 prose">
+            <h2 className="text-xl font-semibold mb-2">Document Preview</h2>
+            {isLoadingPreview ? (
+              <CommonUi.SpinnerSVG size="lg" />
+            ) : (
+              previewsDocument?.map((content, index) => (
+                <ReactMarkdown key={index} remarkPlugins={[remarkGfm]}>
+                  {content}
+                </ReactMarkdown>
+              ))
+            )}
+          </div>
+        </CommonUi.Dialog>
+      )}
+    </>
   );
 };
 

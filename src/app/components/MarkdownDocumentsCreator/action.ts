@@ -51,12 +51,25 @@ export async function saveMarkdownWithMeta(
   }
 }
 
+type DocumentSuccessResponse = {
+  success: true;
+  documents: { content: string }[];
+};
+
+type DocumentErrorResponse = {
+  success: false;
+  message: string;
+  error: unknown;
+};
+
+type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
+
 export async function fetchDocumentByOrganization(
   organizationId: string,
   documentId: string
-) {
+): Promise<DocumentResponse> {
   try {
-    const response = await getDocumentPreview({
+    const response: { content: string }[] = await getDocumentPreview({
       orgId: organizationId,
       documentId,
     });
@@ -66,6 +79,10 @@ export async function fetchDocumentByOrganization(
       documents: response,
     };
   } catch (error) {
-    return { success: false, message: 'Failed to fetch documents:', error };
+    return {
+      success: false,
+      message: 'Failed to fetch documents',
+      error,
+    };
   }
 }
