@@ -9,7 +9,7 @@ import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { memo, useTransition } from 'react';
 
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
-import { clientLogger } from '@/app/lib/utils/clientLogger';
+import { logger } from '@/app/lib/utils/logger';
 
 type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
 
@@ -75,7 +75,7 @@ export const SocialAuthOptions = memo(
             });
           }
         } catch (error) {
-          clientLogger.error(
+          logger.error(
             `Error during ${isSignUp ? 'sign-up' : 'sign-in'} with ${strategy}`,
             error
           );

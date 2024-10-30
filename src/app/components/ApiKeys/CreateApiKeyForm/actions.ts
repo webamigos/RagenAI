@@ -7,7 +7,6 @@ import db from '@salesyy/prisma-client';
 
 import { ApiKeyDto } from './types';
 import {
-  SentryTag,
   setSentryServiceTag,
   setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';

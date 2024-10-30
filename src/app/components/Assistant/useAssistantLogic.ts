@@ -18,7 +18,7 @@ import { loadFingerprint } from '../../lib/utils/fingerprint';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
-import { clientLogger } from '@/app/lib/utils/clientLogger';
+import { logger } from '@/app/lib/utils/logger';
 
 const {
   SET_INITIAL_LOAD,
@@ -137,7 +137,7 @@ export const useAssistantLogic = (threadId: string) => {
         dispatch({ type: SET_MESSAGES, payload: response.data });
       }
     } catch (error) {
-      clientLogger.error('Error fetching messages: %o', error);
+      logger.error('Error fetching messages: %o', error);
     }
   };
 
@@ -174,7 +174,7 @@ export const useAssistantLogic = (threadId: string) => {
         dispatch({ type: SET_LIMIT_LOCK, payload: true });
       }
     } catch (error) {
-      clientLogger.error('Error loading visitor messages: %o', error);
+      logger.error('Error loading visitor messages: %o', error);
     }
   };
 
@@ -220,8 +220,8 @@ export const useAssistantLogic = (threadId: string) => {
     });
 
     eventSource.addEventListener('error', (error) => {
-      clientLogger.error('Stream error: %o', error);
-      clientLogger.error('EventSource State: %d', eventSource.readyState);
+      logger.error('Stream error: %o', error);
+      logger.error('EventSource State: %d', eventSource.readyState);
       eventSource.close();
     });
 
@@ -295,7 +295,7 @@ export const useAssistantLogic = (threadId: string) => {
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
       }
-      clientLogger.error('Error submitting message: %o', error);
+      logger.error('Error submitting message: %o', error);
     }
   };
 

@@ -13,8 +13,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 import { Card, Text, ArrowRightCircleIcon, Input } from '@salesyy/common-ui';
 import { saveMarkdownWithMeta } from './action';
-import { clientLogger } from '@/app/lib/utils/clientLogger';
-import { clientLogger } from '@/app/lib/utils/clientLogger';
+import { logger } from '@/app/lib/utils/logger';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
@@ -66,8 +65,8 @@ export const DocumentCreator = () => {
         errorToast({ message: response.message });
       }
     } catch (error) {
+      logger.error('Error creating document', error);
       errorToast({ message: 'Error creating document' });
-      clientLogger.error('Fail during creating document', error);
     }
   };
 

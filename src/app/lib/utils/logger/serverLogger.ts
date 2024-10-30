@@ -32,9 +32,17 @@ if (!isProduction) {
   });
 }
 
-export const logger = pino(
+const logger = pino(
   {
     level: isProduction ? 'info' : 'debug',
+    base: {
+      pid: process.pid,
+      hostname: process.env.HOSTNAME,
+    },
   },
-  streams.length ? pino.multistream(streams) : undefined
+  streams.length ? pino.multistream(streams) : pino.destination()
 );
+
+logger.info('Server logger initialized');
+
+export { logger };

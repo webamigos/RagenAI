@@ -1,5 +1,6 @@
 import { isDevelopment, isProduction } from '@/libs/utils/env';
 import * as Sentry from '@sentry/browser';
+import { AppLogger } from './interface';
 
 // Initialize Sentry for browser
 Sentry.init({
@@ -9,7 +10,7 @@ Sentry.init({
 
 type LogLevel = 'info' | 'error' | 'warn' | 'debug';
 
-class ClientLogger {
+class ClientLogger implements AppLogger {
   private log(level: LogLevel, message: string, ...args: any[]) {
     // Development logging to console
     if (isDevelopment) {
@@ -30,21 +31,25 @@ class ClientLogger {
     }
   }
 
-  info(message: string, ...args: any[]) {
-    this.log('info', message, ...args);
+  info(message: string | object, ...args: any[]) {
+    this.log('info', message as string, ...args);
   }
 
-  error(message: string, ...args: any[]) {
-    this.log('error', message, ...args);
+  error(message: string | object, ...args: any[]) {
+    this.log('error', message as string, ...args);
   }
 
-  warn(message: string, ...args: any[]) {
-    this.log('warn', message, ...args);
+  warn(message: string | object, ...args: any[]) {
+    this.log('warn', message as string, ...args);
   }
 
-  debug(message: string, ...args: any[]) {
-    this.log('debug', message, ...args);
+  debug(message: string | object, ...args: any[]) {
+    this.log('debug', message as string, ...args);
   }
 }
 
-export const clientLogger = new ClientLogger();
+const logger = new ClientLogger();
+
+logger.info('Client logger initialized');
+
+export { logger };
