@@ -572,7 +572,7 @@ export const plPL: LocalizationResource = {
     form_password_incorrect: undefined,
     form_password_length_too_short: undefined,
     form_password_not_strong_enough: 'Twoje hasło jest wystarczająco silne.',
-    form_password_pwned: undefined,
+    form_password_pwned: 'Twoje hasło wyciekło',
     form_password_pwned__sign_in: undefined,
     form_password_size_in_bytes_exceeded:
       'Twoje hasło przekroczyło maksymalną liczbę bajtów dozwoloną, skróć je lub usuń niektóre znaki specjalne.',
