@@ -1,13 +1,8 @@
 import { LoginForm } from '@/app/components/Forms/LoginForm';
+import { PropsWihLocale } from '@/app/lib/types/types';
 import { getTranslations } from 'next-intl/server';
 
-type Props = {
-  params: {
-    locale: string;
-  };
-};
-
-export async function generateMetadata({ params: { locale } }: Props) {
+export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
