@@ -191,6 +191,14 @@
   "set-temperature": {
     "set-temperature": "Poziom kreatywności odpowiedzi"
   },
+  "model-select": {
+    "select-model": "Wybierz model"
+  },
+  "editable-prompt": {
+    "title": "Zaktualizuj prompt",
+    "label": "Dostępne zmienne, które możesz użyć:",
+    "update": "Zaktualizuj"
+  },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",
     "form_password_invalid": "Hasło jest nieprawidłowe.",

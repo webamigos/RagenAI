@@ -191,6 +191,14 @@
   "set-temperature": {
     "set-temperature": "Set temperature"
   },
+  "model-select": {
+    "select-model": "Select model"
+  },
+  "editable-prompt": {
+    "title": "Update prompt",
+    "label": "Available variables you can use in the prompt:",
+    "update": "Update"
+  },
   "clerk-api-errors": {
     "form_identifier_exists": "An account with this email already exists.",
     "form_password_invalid": "Password is invalid.",
