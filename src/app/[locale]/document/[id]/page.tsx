@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { useOrganization } from '@clerk/nextjs';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
+import { useSearchParams } from 'next/navigation';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import {
@@ -42,6 +43,9 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editableTitle, setEditableTitle] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get('edit') === 'true';
+
   const { errorToast } = statusToast();
   const orgId = organization?.id.toLowerCase();
 
@@ -59,6 +63,13 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             const documentTitle = content.documents
               .map((document) => document.title)
               .join('\n');
+
+            if (isEditMode) {
+              setIsEditing(true);
+              const htmlContent = mdParser.render(documentText || '');
+              setEditableContent(htmlContent);
+              setDocumentTitle(documentTitle);
+            }
             setDocumentContent(documentText);
             setDocumentTitle(documentTitle);
           } else {
@@ -75,7 +86,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
       loadDocument();
     }
-  }, [id, orgId]);
+  }, [id, orgId, isEditMode]);
 
   const handleDoubleClick = () => {
     setIsEditing(true);
