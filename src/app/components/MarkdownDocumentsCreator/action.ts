@@ -9,7 +9,6 @@ import {
   saveEditedDocumentContent,
   saveEditedDocumentTitle,
 } from '@/app/lib/services/document';
-import { createDocumentDetailsInDB } from '@/app/lib/services/document';
 import { type DocumentSchema } from './DocumentCreator';
 
 export async function saveMarkdownWithMeta(
@@ -31,12 +30,6 @@ export async function saveMarkdownWithMeta(
 
   try {
     createMarkdownDocument(markdownData);
-    createDocumentDetailsInDB(
-      data.title,
-      markdownDataSize,
-      organizationId,
-      uniqueFileId
-    );
     return {
       success: true,
       document: {
@@ -93,7 +86,7 @@ export async function fetchDocumentByOrganization(
 type UpdateDocumentTitleProps = {
   orgId: string;
   documentId: string;
-  title?: string;
+  title: string;
   content?: string;
 };
 
@@ -117,12 +110,13 @@ export const updateDocument = async ({
   content,
 }: UpdateDocumentTitleProps): Promise<UpdateResponse> => {
   try {
-    if (title) {
+    if (!content) {
       await saveEditedDocumentTitle({ orgId, documentId, title });
     }
     if (content) {
       await saveEditedDocumentContent({ orgId, documentId, content });
     }
+
     return {
       success: true,
       message: 'Document updated successfully',

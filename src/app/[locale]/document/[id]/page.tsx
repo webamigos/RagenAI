@@ -8,7 +8,13 @@ import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
 
 import { statusToast } from '@/app/lib/utils/toast';
-import { SpinnerSVG, WysywigEditor, Text, Input } from '@salesyy/common-ui';
+import {
+  SpinnerSVG,
+  WysiwygEditor,
+  Text,
+  Input,
+  Button,
+} from '@salesyy/common-ui';
 import {
   fetchDocumentByOrganization,
   updateDocument,
@@ -78,13 +84,14 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   };
 
   const handleSave = async () => {
-    if (!orgId || !editableContent) return;
+    if (!orgId || !editableContent || !documentTitle) return;
 
     const markdownContent = turndownService.turndown(editableContent);
     const response = await updateDocument({
       orgId,
       documentId: id,
       content: markdownContent,
+      title: documentTitle,
     });
 
     if (response.success) {
@@ -154,19 +161,18 @@ export default function DocumentPage({ params }: DocumentPageProps) {
       {isEditing ? (
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex-1 overflow-auto">
-            <WysywigEditor
+            <WysiwygEditor
               value={editableContent || ''}
               onChange={(content) => setEditableContent(content)}
               className="flex-1"
             />
           </div>
           <div className="mt-2">
-            <button
+            <Button
+              label="Zapisz"
               onClick={handleSave}
-              className="bg-blue-500 text-white py-2 px-4 rounded w-full md:w-auto self-center"
-            >
-              Zapisz
-            </button>
+              className="bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center"
+            />
           </div>
         </div>
       ) : (

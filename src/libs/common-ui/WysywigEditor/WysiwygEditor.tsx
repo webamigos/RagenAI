@@ -49,7 +49,7 @@ export const formats = [
   'indent',
   'direction',
 ];
-export const WysywigEditor = ({
+export const WysiwygEditor = ({
   value,
   label,
   error,

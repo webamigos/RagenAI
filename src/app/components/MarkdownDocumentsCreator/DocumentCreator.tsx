@@ -17,10 +17,11 @@ import {
   TabList,
   Tab,
   TabPanel,
-  WysywigEditor,
+  WysiwygEditor,
 } from '@salesyy/common-ui';
 
 import { saveMarkdownWithMeta } from './action';
+import { uploadFiles } from '@/app/lib/services/api';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -70,6 +71,16 @@ export const DocumentCreator = () => {
       const organizationId = organization.id.toLowerCase();
       const response = await saveMarkdownWithMeta(data, organizationId);
 
+      const formData = new FormData();
+      formData.append(
+        'files',
+        new File([editorContent], `${data.title}.md`, {
+          type: 'text/markdown',
+        })
+      );
+      formData.append('organizationId', organization.id);
+      await uploadFiles(organizationId, formData);
+
       if (response.success && response.document) {
         successToast({ message: t('created-successful') });
         addDocument(response.document);
@@ -101,7 +112,7 @@ export const DocumentCreator = () => {
               error={touchedFields.title ? errors.title : undefined}
               errorMessage={errors.title?.message}
             />
-            <WysywigEditor
+            <WysiwygEditor
               label={t('content')}
               mandatory={true}
               onChange={onEditorStateChange}
