@@ -102,7 +102,8 @@ export const getDocumentPreview = async ({
 type UpdateDocumentTitleProps = {
   orgId: string;
   documentId: string;
-  title: string;
+  title?: string;
+  content?: string;
 };
 
 export const saveEditedDocumentTitle = async ({
@@ -127,6 +128,32 @@ export const saveEditedDocumentTitle = async ({
     },
     data: {
       file_name: title,
+      updated_at: new Date(),
+    },
+  });
+};
+
+export const saveEditedDocumentContent = async ({
+  orgId,
+  documentId,
+  content,
+}: UpdateDocumentTitleProps) => {
+  await db.userDocument.updateMany({
+    where: {
+      organization_id: orgId,
+      public_id: documentId,
+    },
+    data: {
+      content,
+      updated_at: new Date(),
+    },
+  });
+  await db.userFile.updateMany({
+    where: {
+      organization_id: orgId,
+      id: documentId,
+    },
+    data: {
       updated_at: new Date(),
     },
   });

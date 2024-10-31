@@ -6,11 +6,12 @@ import remarkGfm from 'remark-gfm';
 import { useOrganization } from '@clerk/nextjs';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
+
 import { statusToast } from '@/app/lib/utils/toast';
 import { SpinnerSVG, WysywigEditor, Text, Input } from '@salesyy/common-ui';
 import {
   fetchDocumentByOrganization,
-  updateDocumentTitle,
+  updateDocument,
 } from '@/app/components/MarkdownDocumentsCreator/action';
 
 const turndownService = new TurndownService();
@@ -76,9 +77,21 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     setEditableContent(htmlContent);
   };
 
-  const handleSave = () => {
-    const markdownContent = turndownService.turndown(editableContent || '');
-    setDocumentContent(markdownContent);
+  const handleSave = async () => {
+    if (!orgId || !editableContent) return;
+
+    const markdownContent = turndownService.turndown(editableContent);
+    const response = await updateDocument({
+      orgId,
+      documentId: id,
+      content: markdownContent,
+    });
+
+    if (response.success) {
+      setDocumentContent(markdownContent);
+    } else {
+      errorToast({ message: response.message });
+    }
     setIsEditing(false);
   };
 
@@ -87,30 +100,26 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     setEditableTitle(documentTitle);
   };
 
-  const handleEdit = async () => {
-    if (!orgId) {
-      return;
-    }
+  const handleEditTitle = async () => {
+    if (!orgId || editableTitle === null) return;
 
-    if (editableTitle !== null) {
-      const response = await updateDocumentTitle({
-        orgId,
-        documentId: id,
-        title: editableTitle,
-      });
+    const response = await updateDocument({
+      orgId,
+      documentId: id,
+      title: editableTitle,
+    });
 
-      if (response.success) {
-        setDocumentTitle(editableTitle);
-      } else {
-        errorToast({ message: response.message });
-      }
+    if (response.success) {
+      setDocumentTitle(editableTitle);
+    } else {
+      errorToast({ message: response.message });
     }
     setIsEditingTitle(false);
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleEdit();
+      handleEditTitle();
     }
   };
 
@@ -128,7 +137,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           type="text"
           value={editableTitle || ''}
           onChange={(e) => setEditableTitle(e.target.value)}
-          onBlur={handleEdit}
+          onBlur={handleEditTitle}
           onKeyDown={handleTitleKeyDown}
           className="text-2xl p-2 font-bold mb-4 w-full"
           autoFocus
