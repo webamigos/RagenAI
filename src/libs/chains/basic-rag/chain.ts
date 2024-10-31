@@ -44,7 +44,7 @@ export const basicRagChain = ({
     RunnablePassthrough.assign({
       context: retrieveRelevantDocuments(
         vectorStore,
-        config?.retreivalMaxDocuments
+        config?.maxDocumentsToRetrieve
       ),
     }),
 

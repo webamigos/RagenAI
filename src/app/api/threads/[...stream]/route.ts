@@ -18,6 +18,7 @@ import {
 import { logger } from '../../../lib/utils/logger';
 import { getAuth } from '@clerk/nextjs/server';
 import { initializeRagChain } from '../services/initializeBasicRag';
+import { getAllSettings } from '@/app/lib/services/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,7 +42,16 @@ export async function GET(request: NextRequest, { params }: Params) {
       throw new Error('Unauthorized');
     }
 
-    const { chain, finalAnswerRunName } = await initializeRagChain(orgId);
+    const rawSettings = await getAllSettings(orgId);
+
+    if (!rawSettings.apiKey) {
+      throw new Error('LLM API Key not found');
+    }
+
+    const { chain, finalAnswerRunName } = await initializeRagChain({
+      orgId,
+      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+    });
 
     const [publicThreadId, publicMessageId] = params.stream;
 

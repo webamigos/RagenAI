@@ -1,7 +1,16 @@
+import { RawOrganizationSettings } from '../types/types';
 import { decryptApiKey, encryptApiKey } from '../utils/hashApiKey';
 import { getRedisInstance } from './redis';
 
 const redis = getRedisInstance();
+
+export const defaultSettings: RawOrganizationSettings = {
+  apiKey: null,
+  prompt: '',
+  model: 'gpt-3.5-turbo',
+  temperature: 0.5,
+  maxDocumentsToRetrieve: 3,
+} as const;
 
 export async function saveTemperatureSetting(
   orgId: string,
@@ -14,7 +23,7 @@ export async function saveTemperatureSetting(
 
 export async function getTemperatureSetting(orgId: string): Promise<number> {
   const temperature = await redis.hget(`org:${orgId}`, 'temperature');
-  return temperature ? parseFloat(temperature) : 0.5;
+  return temperature ? parseFloat(temperature) : defaultSettings.temperature;
 }
 
 export async function saveOpenaiAPIKey(
@@ -46,7 +55,7 @@ export async function saveModel(
 
 export async function getModel(orgId: string): Promise<string | null> {
   const model = await redis.hget(`org:${orgId}`, 'model');
-  return model ? model : 'gpt-3.5-turbo';
+  return model ?? defaultSettings.model;
 }
 
 export async function saveAssistantPrompt(
@@ -62,4 +71,23 @@ export async function getAssistantPrompt(
   orgId: string
 ): Promise<string | null> {
   return await redis.hget(`org:${orgId}`, 'prompt');
+}
+
+export async function getAllSettings(
+  orgId: string
+): Promise<RawOrganizationSettings> {
+  const result = await redis.hgetall(`org:${orgId}`);
+
+  const decryptedApiKey = result.openai
+    ? decryptApiKey(result.openai)
+    : defaultSettings.apiKey;
+
+  return {
+    apiKey: decryptedApiKey,
+    model: result.model ?? defaultSettings.model,
+    temperature: +result.temperature ?? defaultSettings.temperature,
+    prompt: result.prompt ?? defaultSettings.prompt,
+    maxDocumentsToRetrieve:
+      +result.maxDocumentsToRetrieve ?? defaultSettings.maxDocumentsToRetrieve,
+  };
 }

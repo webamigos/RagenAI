@@ -28,6 +28,6 @@ export interface BasicRagChainOutput {
 }
 
 export interface BasicRagChainConfig {
-  retreivalMaxDocuments?: number;
+  maxDocumentsToRetrieve?: number;
   answerInstructions?: string | null;
 }
