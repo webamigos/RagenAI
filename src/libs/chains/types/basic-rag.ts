@@ -15,6 +15,7 @@ export interface BasicRagChainParams {
     questionRephraser: BaseChatModel;
     answerGenerator: BaseChatModel;
   };
+  config?: BasicRagChainConfig;
 }
 
 export interface BasicRagChainOutput {
@@ -24,4 +25,9 @@ export interface BasicRagChainOutput {
     RunnableConfig<Record<string, any>>
   >;
   finalAnswerRunName: string;
+}
+
+export interface BasicRagChainConfig {
+  retreivalMaxDocuments?: number;
+  answerInstructions?: string | null;
 }

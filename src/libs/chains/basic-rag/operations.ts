@@ -3,6 +3,7 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import {
   Runnable,
   RunnableLambda,
+  RunnablePassthrough,
   RunnableSequence,
 } from '@langchain/core/runnables';
 import {
@@ -10,6 +11,7 @@ import {
   MessagesPlaceholder,
 } from '@langchain/core/prompts';
 import {
+  DEFAULT_ANSWER_INSTRUCTIONS,
   HISTORY_CHARACTER_LIMIT,
   humanTemplates,
   MAX_USER_INPUT_LENGTH,
@@ -98,7 +100,11 @@ export const retrieveRelevantDocuments = (
   });
 };
 
-export const generateFinalAnswer = (model: BaseChatModel, runName: string) => {
+export const generateFinalAnswer = (
+  model: BaseChatModel,
+  runName: string,
+  answerInstructions?: string | null
+) => {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
   }
@@ -110,6 +116,10 @@ export const generateFinalAnswer = (model: BaseChatModel, runName: string) => {
   ]);
 
   return RunnableSequence.from([
+    RunnablePassthrough.assign({
+      answer_instructions: () =>
+        answerInstructions ?? DEFAULT_ANSWER_INSTRUCTIONS,
+    }),
     promptTemplate,
     model,
     new StringOutputParser().withConfig({

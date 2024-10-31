@@ -18,7 +18,6 @@ import {
 import { logger } from '../../../lib/utils/logger';
 import { getAuth } from '@clerk/nextjs/server';
 import { initializeRagChain } from '../services/initializeBasicRag';
-import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,16 +41,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       throw new Error('Unauthorized');
     }
 
-    const llmApiKey = await getOpenaiAPIKey(orgId);
-
-    if (!llmApiKey) {
-      throw new Error('LLM API key is required.');
-    }
-
-    const { chain, finalAnswerRunName } = await initializeRagChain(
-      orgId,
-      llmApiKey
-    );
+    const { chain, finalAnswerRunName } = await initializeRagChain(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
 

@@ -10,6 +10,12 @@ import {
   createModerationInstance,
   createEmbeddingsInstance,
 } from '../../../lib/services/llm';
+import {
+  getAssistantPrompt,
+  getModel,
+  getOpenaiAPIKey,
+  getTemperatureSetting,
+} from '@/app/lib/services/settings';
 
 const createVectorStore = (
   orgId: string,
@@ -27,19 +33,24 @@ const createVectorStore = (
   });
 };
 
-const modelParams = {
-  answer: {
-    modelName: 'gpt-4o',
-    temperature: 0.7,
-  },
+export const initializeRagChain = async (orgId: string) => {
+  const {
+    llmApiKey,
+    model,
+    temperature,
+    answerInstructions,
+    retreivalMaxDocuments,
+  } = await fetchOrganizationSettings(orgId);
 
-  standaloneQuestion: {
-    modelName: 'gpt-4o',
-    temperature: 0.5,
-  },
-};
+  if (!llmApiKey) {
+    throw new Error('LLM API key is required.');
+  }
 
-export const initializeRagChain = (orgId: string, llmApiKey: string) => {
+  const modelParams = getModelParams({
+    answerModel: model,
+    answerTemperature: temperature,
+  });
+
   const embeddigModel = createEmbeddingsInstance({ apiKey: llmApiKey });
   const contentModerator = createModerationInstance({ apiKey: llmApiKey });
 
@@ -64,6 +75,46 @@ export const initializeRagChain = (orgId: string, llmApiKey: string) => {
       questionRephraser,
       answerGenerator,
     },
+    config: {
+      retreivalMaxDocuments,
+      answerInstructions,
+    },
     vectorStore,
   });
+};
+
+const fetchOrganizationSettings = async (orgId: string) => {
+  const llmApiKey = await getOpenaiAPIKey(orgId);
+  const model = await getModel(orgId);
+  const temperature = await getTemperatureSetting(orgId);
+  const answerInstructions = await getAssistantPrompt(orgId);
+  const retreivalMaxDocuments = 3;
+
+  return {
+    llmApiKey,
+    model,
+    temperature,
+    answerInstructions,
+    retreivalMaxDocuments,
+  };
+};
+
+const getModelParams = ({
+  answerModel,
+  answerTemperature,
+}: {
+  answerModel: string | null;
+  answerTemperature: number;
+}) => {
+  return {
+    answer: {
+      modelName: answerModel ?? 'gpt-4o',
+      temperature: answerTemperature ?? 1,
+    },
+
+    standaloneQuestion: {
+      modelName: 'gpt-4o',
+      temperature: 0.5,
+    },
+  };
 };

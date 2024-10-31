@@ -24,11 +24,13 @@ import type {
  * @param {ContentModerator} params.models.contentModerator - Model for content moderation, any BaseChain instance can be used.
  * @param {QuestionRephraser} params.models.questionRephraser - Model for rephrasing questions, any BaseChatModel instance can be used.
  * @param {AnswerGenerator} params.models.answerGenerator - Model for generating final answers, any BaseChatModel instance can be used.
+ * @param {BasicRagChainConfig} params.config - Configuration for the chain.
  * @returns {BasicRagChainOutput} An object containing the chain and the final answer run name. Final answer run name can be used to filter events while stream processing.
  */
 export const basicRagChain = ({
   vectorStore,
   models,
+  config,
 }: BasicRagChainParams): BasicRagChainOutput => {
   const chain = RunnableSequence.from<BasicRagChainInput, string>([
     sanitizeAndValidateInput,
@@ -40,10 +42,17 @@ export const basicRagChain = ({
     }),
 
     RunnablePassthrough.assign({
-      context: retrieveRelevantDocuments(vectorStore),
+      context: retrieveRelevantDocuments(
+        vectorStore,
+        config?.retreivalMaxDocuments
+      ),
     }),
 
-    generateFinalAnswer(models.answerGenerator, CHAIN_FINAL_ANSWER_RUN_NAME),
+    generateFinalAnswer(
+      models.answerGenerator,
+      CHAIN_FINAL_ANSWER_RUN_NAME,
+      config?.answerInstructions
+    ),
   ]).withConfig({
     runName: 'Basic RAG chain',
   });
