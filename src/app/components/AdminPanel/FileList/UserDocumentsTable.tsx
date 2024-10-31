@@ -6,11 +6,12 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 
 import * as CommonUi from '@salesyy/common-ui';
-import { deleteDocument } from '@/app/actions';
-import { type UserFileType } from '@/app/contracts/Documents';
 import { classMerge } from '@salesyy/common-ui';
+import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
+
+import { type UserFileType } from '@/app/contracts/Documents';
 
 type Props = {
   documents: UserFileType[];
@@ -25,6 +26,7 @@ type DocumentRowProps = {
 
 const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
 
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
@@ -70,31 +72,55 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
-          <CommonUi.Link href={`/${locale}/document/${id}`}>
-            <a className="text-blue-500 hover:underline">
+      <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+        <div
+          onMouseEnter={() => setShowToolbar(true)}
+          onMouseLeave={() => setShowToolbar(false)}
+          className="relative flex items-center space-x-2"
+        >
+          <div
+            className={`absolute -left-10 flex space-x-2 transition-all duration-300 ${
+              showToolbar
+                ? 'opacity-100 -translate-x-0'
+                : 'opacity-0 -translate-x-4'
+            }`}
+          >
+            <CommonUi.Link
+              className="text-white"
+              href={`/${locale}/document/${id}`}
+            >
+              <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
+            </CommonUi.Link>
+
+            <CommonUi.Link
+              className="text-white"
+              href={`/${locale}/document/${id}`}
+            >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
-            </a>
-          </CommonUi.Link>
-        </div>
-      </CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
-          {isLoading ? (
-            <CommonUi.SpinnerSVG size="sm" className="ml-1" />
-          ) : (
-            <CommonUi.TrashIcon
-              onClick={handleDelete}
-              className="cursor-pointer"
-            />
-          )}
+            </CommonUi.Link>
+            {isLoading ? (
+              <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+            ) : (
+              <CommonUi.TrashIcon
+                onClick={handleDelete}
+                className="cursor-pointer"
+              />
+            )}
+          </div>
+          <div
+            className={`transition-all duration-300 ${
+              showToolbar
+                ? 'opacity-0 translate-x-4'
+                : 'opacity-100 translate-x-0'
+            }`}
+          >
+            <CommonUi.ArrowIcon className="cursor-pointer" />
+          </div>
         </div>
       </CommonUi.TableCell>
     </CommonUi.TableRow>
   );
 };
-
 export const UserDocumentsTable = ({
   className,
   documents,

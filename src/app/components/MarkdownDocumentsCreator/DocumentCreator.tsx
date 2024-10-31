@@ -94,8 +94,8 @@ export const DocumentCreator = () => {
   };
 
   return (
-    <Card title={t('title')} size="full">
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <Card title={t('title')} size="full" className="h-full">
+      <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
         <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
           <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
             <Tab>{t('edit')}</Tab>
@@ -112,14 +112,16 @@ export const DocumentCreator = () => {
               error={touchedFields.title ? errors.title : undefined}
               errorMessage={errors.title?.message}
             />
-            <WysiwygEditor
-              label={t('content')}
-              mandatory={true}
-              onChange={onEditorStateChange}
-              value={editorContent || ''}
-              error={touchedFields.content ? errors.content : undefined}
-              errorMessage={errors.content?.message}
-            />
+            <div className="h-full flex-1 flex flex-col">
+              <WysiwygEditor
+                label={t('content')}
+                mandatory={true}
+                onChange={onEditorStateChange}
+                value={editorContent || ''}
+                error={touchedFields.content ? errors.content : undefined}
+                errorMessage={errors.content?.message}
+              />
+            </div>
           </TabPanel>
           <TabPanel>
             <div className="preview-content h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-2xl bg-gray-50 dark:bg-accent-dark-300">

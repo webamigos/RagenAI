@@ -131,10 +131,18 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   };
 
   if (isLoading) {
-    return <SpinnerSVG />;
+    return (
+      <div className="h-screen flex items-center justify-center align-middle">
+        <SpinnerSVG />
+      </div>
+    );
   }
   if (!documentContent) {
-    return <Text>Nie znaleziono dokumentu</Text>;
+    return (
+      <div className="h-screen flex items-center justify-center align-middle">
+        <Text>Nie znaleziono dokumentu</Text>
+      </div>
+    );
   }
 
   return (
