@@ -7,6 +7,7 @@ import { deleteDocument } from '../services/TableService';
 import { logger } from '../../../lib/utils/logger';
 import {
   createDocumentDetailsInDB,
+  createMarkdownDocument,
   deleteDocumentFromUserDocument,
 } from '../../../lib/services/document';
 
@@ -54,12 +55,20 @@ export async function POST(request: NextRequest, { params }: Params) {
           organizationId,
           uniqueFileId
         );
-        await createDocumentDetailsInDB(
+        createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
           uniqueFileId
         );
+
+        await createMarkdownDocument({
+          public_id: uniqueFileId,
+          title: file.name,
+          organization_id: organizationId.toLowerCase(),
+          content: content as string,
+        });
+
         if (!success) {
           logger.error(
             `Błąd podczas przetwarzania pliku ${file.name}:%o`,
@@ -76,10 +85,10 @@ export async function POST(request: NextRequest, { params }: Params) {
       }
     }
 
-    return NextResponse.json(
-      { message: 'Pliki zostały przetworzone' },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      message: 'Pliki zostały przetworzone',
+      status: 200,
+    });
   } catch (error) {
     logger.error('Błąd podczas przetwarzania plików:', error);
     return NextResponse.json(

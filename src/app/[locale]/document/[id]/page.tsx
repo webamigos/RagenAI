@@ -20,6 +20,8 @@ import {
   fetchDocumentByOrganization,
   updateDocument,
 } from '@/app/components/MarkdownDocumentsCreator/action';
+import { deleteDocument } from '@/app/actions';
+import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -106,13 +108,23 @@ export default function DocumentPage({ params }: DocumentPageProps) {
       title: documentTitle,
     });
 
+    const formData = new FormData();
+    formData.append(
+      'files',
+      new File([markdownContent], `${documentTitle}.md`, {
+        type: 'text/markdown',
+      })
+    );
+    formData.append('organizationId', organization!.id);
+
+    await deleteDocument(orgId, id);
+    await uploadFiles(orgId, formData);
     if (response.success) {
       setDocumentContent(markdownContent);
     } else {
       errorToast({ message: response.message });
     }
     setIsEditing(false);
-    router.replace(`/${params.locale}/document/${id}`);
   };
 
   const handleTitleDoubleClick = () => {

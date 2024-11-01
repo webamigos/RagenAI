@@ -19,8 +19,6 @@ import {
   TabPanel,
   WysiwygEditor,
 } from '@salesyy/common-ui';
-
-import { saveMarkdownWithMeta } from './action';
 import { uploadFiles } from '@/app/lib/services/api';
 
 const schema = z.object({
@@ -69,7 +67,6 @@ export const DocumentCreator = () => {
     if (!organization) return;
     try {
       const organizationId = organization.id.toLowerCase();
-      const response = await saveMarkdownWithMeta(data, organizationId);
 
       const formData = new FormData();
       formData.append(
@@ -79,14 +76,15 @@ export const DocumentCreator = () => {
         })
       );
       formData.append('organizationId', organization.id);
-      await uploadFiles(organizationId, formData);
 
-      if (response.success && response.document) {
+      const response = await uploadFiles(organizationId, formData);
+
+      if (response.status === 200) {
         successToast({ message: t('created-successful') });
-        addDocument(response.document);
+        //   addDocument(response.document);
         reset();
-      } else if (response.message) {
-        errorToast({ message: response.message });
+        // } else if (response.message) {
+        //   errorToast({ message: response.message });
       }
     } catch (error) {
       errorToast({ message: t('send-error') });

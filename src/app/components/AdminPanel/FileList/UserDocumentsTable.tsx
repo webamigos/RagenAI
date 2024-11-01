@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
-import format from 'date-fns-tz/format';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 
@@ -10,6 +9,7 @@ import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 
+import { formatDates } from '@/app/lib/utils/formatDate';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type Props = {
@@ -30,34 +30,31 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
 
-  const successTranslatedMessage = useTranslations('success-toast');
-  const errorTranslatedMessage = useTranslations('error-toast');
-  const { errorToast, successToast } = statusToast();
+  const { successToast, errorToast } = statusToast();
   const locale = useLocale();
+  const tSuccess = useTranslations('success-toast');
+  const tError = useTranslations('error-toast');
 
-  const formattedCreatedAt = created_at
-    ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
-    : '-';
-  const formattedUpdatedAt = updated_at
-    ? format(new Date(updated_at), 'dd.MM.yyyy HH:mm:ss')
-    : '-';
-  const truncatedFileName = truncateFileName(file_name, 20);
+  const { created_at: formattedCreatedAt, updated_at: formattedUpdatedAt } =
+    useMemo(
+      () => formatDates({ created_at, updated_at }),
+      [created_at, updated_at]
+    );
+  const truncatedFileName = useMemo(
+    () => truncateFileName(file_name, 20),
+    [file_name]
+  );
 
   const handleDelete = async () => {
     setIsLoading(true);
-
     try {
       const { status } = await deleteDocument(organization_id, id);
       if (status === 200) {
         onRemoveDocument(id);
-        successToast({
-          message: `${successTranslatedMessage('deleted')} ${file_name}`,
-        });
+        successToast({ message: `${tSuccess('deleted')} ${file_name}` });
       }
-    } catch (error) {
-      errorToast({
-        message: `${errorTranslatedMessage('error-during-deleting-file')}`,
-      });
+    } catch {
+      errorToast({ message: tError('error-during-deleting-file') });
     } finally {
       setIsLoading(false);
     }
@@ -97,14 +94,13 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
             >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
             </CommonUi.Link>
-            {isLoading ? (
-              <CommonUi.SpinnerSVG size="sm" className="ml-1 mt-0.5" />
-            ) : (
-              <CommonUi.TrashIcon
-                onClick={handleDelete}
-                className="cursor-pointer"
-              />
-            )}
+            <div onClick={handleDelete} className="cursor-pointer">
+              {isLoading ? (
+                <CommonUi.SpinnerSVG size="sm" />
+              ) : (
+                <CommonUi.TrashIcon />
+              )}
+            </div>
           </div>
           <div
             className={`transition-all duration-300 ${
