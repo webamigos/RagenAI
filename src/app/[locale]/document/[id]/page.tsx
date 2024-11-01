@@ -6,7 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { useOrganization } from '@clerk/nextjs';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import {
@@ -45,6 +45,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
+  const router = useRouter();
 
   const { errorToast } = statusToast();
   const orgId = organization?.id.toLowerCase();
@@ -111,6 +112,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
       errorToast({ message: response.message });
     }
     setIsEditing(false);
+    router.replace(`/${params.locale}/document/${id}`);
   };
 
   const handleTitleDoubleClick = () => {

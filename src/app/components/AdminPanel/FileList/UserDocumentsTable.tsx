@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 
 import * as CommonUi from '@salesyy/common-ui';
-import { classMerge } from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
@@ -99,7 +98,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
             </CommonUi.Link>
             {isLoading ? (
-              <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+              <CommonUi.SpinnerSVG size="sm" className="ml-1 mt-0.5" />
             ) : (
               <CommonUi.TrashIcon
                 onClick={handleDelete}
@@ -122,13 +121,12 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   );
 };
 export const UserDocumentsTable = ({
-  className,
   documents,
   onRemoveDocument,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   return (
-    <CommonUi.Table className={classMerge(className)}>
+    <CommonUi.Table className="overflow-x-auto">
       <CommonUi.TableHead>
         <CommonUi.TableRow className="text-base">
           <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
