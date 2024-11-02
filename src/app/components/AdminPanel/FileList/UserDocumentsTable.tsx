@@ -94,9 +94,9 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
             >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
             </CommonUi.Link>
-            <div onClick={handleDelete} className="cursor-pointer">
+            <div onClick={handleDelete} className="mt-0.5cursor-pointer">
               {isLoading ? (
-                <CommonUi.SpinnerSVG size="sm" />
+                <CommonUi.SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
               ) : (
                 <CommonUi.TrashIcon />
               )}

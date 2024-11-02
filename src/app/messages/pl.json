@@ -157,5 +157,9 @@
   "set-temperature": {
     "set-temperature": "Poziom kreatywności odpowiedzi"
   },
-  "document-creator": {}
+  "document-preview": {
+    "document-not-found": "Nie znaleziono dokumentu",
+    "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
+    "save": "Zapisz"
+  }
 }

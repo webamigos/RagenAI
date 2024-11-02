@@ -6,7 +6,8 @@ import remarkGfm from 'remark-gfm';
 import { useOrganization } from '@clerk/nextjs';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import {
@@ -36,6 +37,7 @@ type DocumentPageProps = {
 export default function DocumentPage({ params }: DocumentPageProps) {
   const { id } = params;
   const { organization } = useOrganization();
+  const t = useTranslations('document-preview');
 
   const [documentContent, setDocumentContent] = useState<string | null>(null);
   const [documentTitle, setDocumentTitle] = useState<string | null>(null);
@@ -47,7 +49,6 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
-  const router = useRouter();
 
   const { errorToast } = statusToast();
   const orgId = organization?.id.toLowerCase();
@@ -80,7 +81,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             setDocumentContent(null);
           }
         } catch (error) {
-          errorToast({ message: 'Wystąpił błąd podczas pobierania dokumentu' });
+          errorToast({ message: t('fetching-error') });
           setDocumentContent(null);
         } finally {
           setIsLoading(false);
@@ -165,13 +166,13 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   if (!documentContent) {
     return (
       <div className="h-screen flex items-center justify-center align-middle">
-        <Text>Nie znaleziono dokumentu</Text>
+        <Text>{t('document-not-found')}</Text>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col flex-1 overflow-auto px-4">
+    <div className="h-full flex flex-col items-center flex-1 overflow-auto px-4">
       {isEditingTitle ? (
         <Input
           type="text"
@@ -179,12 +180,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           onChange={(e) => setEditableTitle(e.target.value)}
           onBlur={handleEditTitle}
           onKeyDown={handleTitleKeyDown}
-          className="text-2xl p-2 font-bold mb-4 w-full"
+          className="w-full mb-4 p-2 text-2xl font-bold"
           autoFocus
         />
       ) : (
         <Text
-          className="text-2xl font-bold mb-4 cursor-pointer"
+          className="mb-4 text-2xl font-bold cursor-pointer"
           onDoubleClick={handleTitleDoubleClick}
         >
           {documentTitle}
@@ -202,7 +203,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           </div>
           <div className="mt-2">
             <Button
-              label="Zapisz"
+              label={t('save')}
               onClick={handleSave}
               className="bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center"
             />
@@ -210,7 +211,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         </div>
       ) : (
         <div
-          className="flex-1 prose prose-lg dark:prose-invert"
+          className="flex-1 prose justify-center prose-lg dark:prose-invert"
           onDoubleClick={handleDoubleClick}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>

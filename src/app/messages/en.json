@@ -156,5 +156,10 @@
   },
   "set-temperature": {
     "set-temperature": "Set temperature"
+  },
+  "document-preview": {
+    "document-not-found": "Document not found",
+    "fetching-error": "An error occurred while downloading the document",
+    "save": "Save"
   }
 }
