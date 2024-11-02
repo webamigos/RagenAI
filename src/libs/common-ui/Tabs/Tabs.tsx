@@ -2,6 +2,7 @@ import React, {
   type ReactNode,
   type ReactElement,
   type ComponentProps,
+  type ComponentPropsWithRef,
 } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -80,16 +81,19 @@ const Tab = ({
   children,
   isActive,
   onClick,
-}: TabPropsInterface & ComponentProps<'div'>) => (
+  ...props
+}: TabPropsInterface & ComponentPropsWithRef<'button'>) => (
   <button
+    type="button"
     className={classMerge(
-      'flex px-4 py-2 text-sm font-medium transition',
-      isActive
-        ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-primary-blue-500 dark:text-gray-200'
-        : 'text-gray-600',
-      className
-    )}
+  'flex px-4 py-2 text-sm font-medium transition',
+  isActive
+    ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-primary-blue-500 dark:text-gray-200'
+    : 'text-gray-600',
+  className
+)}
     onClick={onClick}
+    {...props}
   >
     {children}
   </button>

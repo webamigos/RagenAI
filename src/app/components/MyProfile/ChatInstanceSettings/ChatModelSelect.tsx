@@ -17,6 +17,7 @@ export const ChatModelSelect = ({}) => {
   const { successToast, errorToast } = statusToast();
   const successMessage = useTranslations('success-toast');
   const errorMessage = useTranslations('error-toast');
+  const t = useTranslations('model-select');
 
   useEffect(() => {
     const fetchModel = async () => {
@@ -57,11 +58,8 @@ export const ChatModelSelect = ({}) => {
   };
 
   return (
-    <Card title="Select Model" size="full">
+    <Card title={t('select-model')} size="full">
       <div className="mt-4">
-        <label htmlFor="model" className="block text-sm font-medium leading-6">
-          Choose Model:
-        </label>
         {isLoading ? (
           <div
             className={`animate-pulse h-11 w-auto bg-gray-300 dark:bg-slate-700 rounded-md`}

@@ -106,10 +106,10 @@ export const plPL: LocalizationResource = {
   formFieldError__matchingPasswords: 'Hasła się zgadzają.',
   formFieldError__notMatchingPasswords: 'Hasła się nie zgadzają.',
   formFieldError__verificationLinkExpired:
-    'The verification link expired. Please request a new link.',
+    'Link do weryfikacji wygasł. Wygeneruj nowy link.',
   formFieldHintText__optional: 'Opcjonalne',
   formFieldHintText__slug:
-    'A slug is a human-readable ID that must be unique. It’s often used in URLs.',
+    'Slug to czytelny dla ludzi identyfikator, który musi być unikalny. Często jest używany w URL.',
   formFieldInputPlaceholder__backupCode: undefined,
   formFieldInputPlaceholder__confirmDeletionUserAccount: 'Usuń konto',
   formFieldInputPlaceholder__emailAddress: undefined,
@@ -137,12 +137,12 @@ export const plPL: LocalizationResource = {
   formFieldLabel__firstName: 'Imię',
   formFieldLabel__lastName: 'Nazwisko',
   formFieldLabel__newPassword: 'Nowe hasło',
-  formFieldLabel__organizationDomain: 'Domain',
+  formFieldLabel__organizationDomain: 'Domena',
   formFieldLabel__organizationDomainDeletePending:
-    'Delete pending invitations and suggestions',
-  formFieldLabel__organizationDomainEmailAddress: 'Verification email address',
+    'Usuń zaproszenia i sugestie oczekujące',
+  formFieldLabel__organizationDomainEmailAddress: 'Adres e-mail do weryfikacji',
   formFieldLabel__organizationDomainEmailAddressDescription:
-    'Enter an email address under this domain to receive a code and verify this domain.',
+    'Wprowadź adres e-mail pod tą domeną, aby otrzymać kod i zweryfikować tę domenę.',
   formFieldLabel__organizationName: 'Nazwa organizacji',
   formFieldLabel__organizationSlug: 'Slug URL',
   formFieldLabel__passkeyName: undefined,
@@ -166,19 +166,19 @@ export const plPL: LocalizationResource = {
     action__suggestionsAccept: 'Poproś o dołączenie',
     createOrganization: 'Stwórz organizację',
     invitationAcceptedLabel: 'Dołączono',
-    subtitle: 'to continue to {{applicationName}}',
-    suggestionsAcceptedLabel: 'Pending approval',
+    subtitle: 'aby kontynuować w {{applicationName}}',
+    suggestionsAcceptedLabel: 'Oczekujące',
     title: 'Wybierz konto',
     titleWithoutPersonal: 'Wybierz organizację',
   },
   organizationProfile: {
     badge__automaticInvitation: 'Automatic invitations',
-    badge__automaticSuggestion: 'Automatic suggestions',
-    badge__manualInvitation: 'No automatic enrollment',
-    badge__unverified: 'Unverified',
+    badge__automaticSuggestion: 'Sugestie automatyczne',
+    badge__manualInvitation: 'Brak automatycznego dołączania',
+    badge__unverified: 'Niezweryfikowany',
     createDomainPage: {
       subtitle:
-        'Add the domain to verify. Users with email addresses at this domain can join the organization automatically or request to join.',
+        'Dodaj domenę do weryfikacji. Użytkownicy z adresem e-mail pod tą domeną mogą dołączyć do organizacji automatycznie lub poprosić o dołączenie.',
       title: 'Dodaj domenę',
     },
     invitePage: {
@@ -203,11 +203,11 @@ export const plPL: LocalizationResource = {
       invitationsTab: {
         autoInvitations: {
           headerSubtitle:
-            'Invite users by connecting an email domain with your organization. Anyone who signs up with a matching email domain will be able to join the organization anytime.',
-          headerTitle: 'Automatic invitations',
-          primaryButton: 'Manage verified domains',
+            'Zaproś użytkowników poprzez połączenie domeny e-mail z organizacją. Każdy, kto się zarejestruje z adresem e-mail pasującym do tej domeny, może dołączyć do organizacji w każdej chwili.',
+          headerTitle: 'Automatyczne zaproszenia',
+          primaryButton: 'Zarządzaj zweryfikowanymi domenami',
         },
-        table__emptyRow: 'No invitations to display',
+        table__emptyRow: 'Brak zaproszeń do wyświetlenia',
       },
       invitedMembersTab: {
         menuAction__revoke: 'Anuluj zaproszenie',
@@ -216,14 +216,14 @@ export const plPL: LocalizationResource = {
       requestsTab: {
         autoSuggestions: {
           headerSubtitle:
-            'Users who sign up with a matching email domain, will be able to see a suggestion to request to join your organization.',
-          headerTitle: 'Automatic suggestions',
-          primaryButton: 'Manage verified domains',
+            'Użytkownicy, których adres e-mail pasuje do domeny, zobaczą sugestię dotyczącą poproszenia o dołączenie do organizacji.',
+          headerTitle: 'Sugestie automatyczne',
+          primaryButton: 'Zarządzaj zweryfikowanymi domenami',
         },
         menuAction__approve: 'Zatwierdź',
         menuAction__reject: 'Odrzuć',
-        tableHeader__requested: 'Requested access',
-        table__emptyRow: 'No requests to display',
+        tableHeader__requested: 'Poproszono o dostęp',
+        table__emptyRow: 'Brak oczekujących poproszeń do wyświetlenia',
       },
       start: {
         headerTitle__invitations: 'Zaproszenia',
@@ -264,7 +264,7 @@ export const plPL: LocalizationResource = {
         menuAction__verify: 'Zweryfikuj',
         primaryButton: 'Dodaj domenę',
         subtitle:
-          'Allow users to join the organization automatically or request to join based on a verified email domain.',
+          'Zezwól użytkownikom na dołączenie do organizacji automatycznie lub poproszenie o dołączenie na podstawie zweryfikowanej domeny e-mail.',
         title: 'Zweryfikowane domeny',
       },
       successMessage: 'Organizacja została zaktualizowana.',
@@ -273,60 +273,62 @@ export const plPL: LocalizationResource = {
     removeDomainPage: {
       messageLine1: 'The email domain {{domain}} will be removed.',
       messageLine2:
-        'Users won’t be able to join the organization automatically after this.',
-      successMessage: '{{domain}} has been removed.',
-      title: 'Remove domain',
+        'Użytkownicy nie będą mogli dołączyć do organizacji automatycznie po tym.',
+      successMessage: '{{domain}} został usunięty.',
+      title: 'Usuń domenę',
     },
     start: {
       headerTitle__general: 'Konto organizacji',
       headerTitle__members: 'Członkowie',
       profileSection: {
-        primaryButton: undefined,
+        primaryButton: 'Zaktualizuj profil',
         title: 'Profil organizacji',
         uploadAction__title: 'Logo',
       },
     },
     verifiedDomainPage: {
       dangerTab: {
-        calloutInfoLabel: 'Removing this domain will affect invited users.',
+        calloutInfoLabel:
+          'Usuwanie tej domeny wpłynie na zaproszonych użytkowników.',
         removeDomainActionLabel__remove: 'Usuń domenę',
         removeDomainSubtitle: 'Usuń tą domenę ze zweryfikowanych domen',
         removeDomainTitle: 'Usuń domenę',
       },
       enrollmentTab: {
         automaticInvitationOption__description:
-          'Users are automatically invited to join the organization when they sign-up and can join anytime.',
-        automaticInvitationOption__label: 'Automatic invitations',
+          'Użytkownicy są automatycznie zapraszani do dołączenia do organizacji po zarejestrowaniu się i mogą dołączyć w każdej chwili.',
+        automaticInvitationOption__label: 'Automatyczne zaproszenia',
         automaticSuggestionOption__description:
-          'Users receive a suggestion to request to join, but must be approved by an admin before they are able to join the organization.',
-        automaticSuggestionOption__label: 'Automatic suggestions',
+          'Użytkownicy otrzymują sugestię dotyczącą poproszenia o dołączenie, ale muszą być zaakceptowane przez administratora, zanim będą mogli dołączyć do organizacji.',
+        automaticSuggestionOption__label: 'Sugestie automatyczne',
         calloutInfoLabel:
-          'Changing the enrollment mode will only affect new users.',
+          'Zmiana trybu dołączania wpłynie tylko na nowych użytkowników.',
         calloutInvitationCountLabel:
-          'Pending invitations sent to users: {{count}}',
+          'Oczekujące zaproszenia wysłane do użytkowników: {{count}}',
         calloutSuggestionCountLabel:
-          'Pending suggestions sent to users: {{count}}',
+          'Oczekujące sugestie wysłane do użytkowników: {{count}}',
         manualInvitationOption__description:
-          'Users can only be invited manually to the organization.',
-        manualInvitationOption__label: 'No automatic enrollment',
+          'Użytkowników można zapraszać tylko ręcznie do organizacji.',
+        manualInvitationOption__label: 'Brak automatycznego dołączania',
         subtitle:
-          'Choose how users from this domain can join the organization.',
+          'Wybierz, jak użytkownicy z tej domeny mogą dołączyć do organizacji.',
       },
       start: {
-        headerTitle__danger: 'Danger',
-        headerTitle__enrollment: 'Enrollment options',
+        headerTitle__danger: 'Ostrzeżenie',
+        headerTitle__enrollment: 'Opcje dołączania',
       },
       subtitle:
-        'The domain {{domain}} is now verified. Continue by selecting enrollment mode.',
-      title: 'Update {{domain}}',
+        'Domena {{domain}} jest teraz zweryfikowana. Kontynuuj, wybierając tryb dołączania.',
+      title: 'Aktualizuj {{domain}}',
     },
     verifyDomainPage: {
-      formSubtitle: 'Enter the verification code sent to your email address',
+      formSubtitle: 'Wprowadź kod weryfikacyjny wysłany na Twój adres e-mail',
       formTitle: 'Kod weryfikacyjny',
-      resendButton: "Didn't receive a code? Resend",
-      subtitle: 'The domain {{domainName}} needs to be verified via email.',
+      resendButton: 'Nie otrzymałeś kodu? Wyślij ponownie',
+      subtitle:
+        'Domena {{domainName}} musi zostać zweryfikowana poprzez e-mail.',
       subtitleVerificationCodeScreen:
-        'A verification code was sent to {{emailAddress}}. Enter the code to continue.',
+        'Kod weryfikacyjny został wysłany na {{emailAddress}}. Wprowadź kod, aby kontynuować.',
       title: 'Zweryfikuj domenę',
     },
   },
@@ -337,7 +339,7 @@ export const plPL: LocalizationResource = {
     action__suggestionsAccept: 'Request to join',
     notSelected: 'Nie wybrano organizacji',
     personalWorkspace: 'Przestrzeń osobista',
-    suggestionsAcceptedLabel: 'Pending approval',
+    suggestionsAcceptedLabel: 'Oczekujące zatwierdzenie',
   },
   paginationButton__next: 'Następny',
   paginationButton__previous: 'Poprzedni',
@@ -347,12 +349,12 @@ export const plPL: LocalizationResource = {
     accountSwitcher: {
       action__addAccount: 'Dodaj konto',
       action__signOutAll: 'Wyloguj się ze wszystkich kont',
-      subtitle: 'Select the account with which you wish to continue.',
+      subtitle: 'Wybierz konto, z którego chcesz kontynuować.',
       title: 'Wybierz konto',
     },
     alternativeMethods: {
       actionLink: 'Uzyskaj pomoc',
-      actionText: 'Don’t have any of these?',
+      actionText: 'Nie masz żadnego z wymienionych?',
       blockButton__backupCode: 'Użyj kodu zapasowego',
       blockButton__emailCode: 'Wyślij kod do {{identifier}}',
       blockButton__emailLink: 'Wyślij link do {{identifier}}',
@@ -415,16 +417,16 @@ export const plPL: LocalizationResource = {
       },
     },
     forgotPassword: {
-      formTitle: 'Reset password code',
-      resendButton: "Didn't receive a code? Resend",
-      subtitle: 'to reset your password',
-      subtitle_email: 'First, enter the code sent to your email ID',
-      subtitle_phone: 'First, enter the code sent to your phone',
+      formTitle: 'Kod resetowania hasła',
+      resendButton: 'Nie otrzymałeś kodu? Wyślij ponownie',
+      subtitle: 'aby zresetować hasło',
+      subtitle_email: 'Najpierw wprowadź kod wysłany na Twój adres e-mail',
+      subtitle_phone: 'Najpierw wprowadź kod wysłany na Twój numer telefonu',
       title: 'Zmień hasło',
     },
     forgotPasswordAlternativeMethods: {
-      blockButton__resetPassword: 'Reset your password',
-      label__alternativeMethods: 'Or, sign in with another method',
+      blockButton__resetPassword: 'Zresetuj hasło',
+      label__alternativeMethods: 'Lub, zaloguj się innym sposobem',
       title: 'Zapomniałeś hasła?',
     },
     noAvailableMethods: {
@@ -460,14 +462,13 @@ export const plPL: LocalizationResource = {
     resetPassword: {
       formButtonPrimary: 'Zmień hasło',
       requiredMessage:
-        'For security reasons, it is required to reset your password.',
+        'Z powodu zabezpieczeń wymagane jest zresetowanie hasła.',
       successMessage:
-        'Your password was successfully changed. Signing you in, please wait a moment.',
+        'Twoje hasło zostało pomyślnie zmienione. Logowanie, proszę czekać.',
       title: 'Ustaw nowe hasło',
     },
     resetPasswordMfa: {
-      detailsLabel:
-        'We need to verify your identity before resetting your password.',
+      detailsLabel: 'Z powodu zabezpieczeń wymagane jest zresetowanie hasła.',
     },
     start: {
       actionLink: 'Zarejestruj się',
@@ -545,40 +546,41 @@ export const plPL: LocalizationResource = {
   unstable__errors: {
     already_a_member_in_organization: undefined,
     captcha_invalid:
-      'Sign up unsuccessful due to failed security validations. Please refresh the page to try again or reach out to support for more assistance.',
+      'Rejestracja nie powiodła się z powodu niepowodzenia weryfikacji zabezpieczeń. Odśwież stronę, aby spróbować ponownie lub skontaktuj się z pomocą techniczną.',
     captcha_unavailable:
-      'Sign up unsuccessful due to failed bot validation. Please refresh the page to try again or reach out to support for more assistance.',
+      'Rejestracja nie powiodła się z powodu niepowodzenia weryfikacji botów. Odśwież stronę, aby spróbować ponownie lub skontaktuj się z pomocą techniczną.',
     form_code_incorrect: undefined,
-    form_identifier_exists: 'Ten adres email jest zajęty.',
-    form_identifier_exists__email_address: undefined,
+    form_identifier_exists: 'Ten adres e-mail jest już zajęty. Spróbuj inny.',
+    form_identifier_exists__email_address:
+      'Podany adres e-mail jest już zajęty. Spróbuj inny.',
     form_identifier_exists__phone_number: undefined,
     form_identifier_exists__username: undefined,
     form_identifier_not_found: undefined,
     form_param_format_invalid: undefined,
     form_param_format_invalid__email_address:
-      'Email address must be a valid email address.',
+      'Adres e-mail musi być prawidłowym adresem e-mail.',
     form_param_format_invalid__phone_number:
-      'Phone number must be in a valid international format',
+      'Numer telefonu musi być w prawidłowym międzynarodowym formacie',
     form_param_max_length_exceeded__first_name:
-      'First name should not exceed 256 characters.',
+      'Imię nie może być dłuższe niż 256 znaków.',
     form_param_max_length_exceeded__last_name:
-      'Last name should not exceed 256 characters.',
+      'Nazwisko nie może być dłuższe niż 256 znaków.',
     form_param_max_length_exceeded__name:
-      'Name should not exceed 256 characters.',
+      'Nazwa nie może być dłuższa niż 256 znaków.',
     form_param_nil: undefined,
     form_param_value_invalid: undefined,
     form_password_incorrect: undefined,
     form_password_length_too_short: undefined,
-    form_password_not_strong_enough: 'Your password is not strong enough.',
-    form_password_pwned: undefined,
+    form_password_not_strong_enough: 'Twoje hasło jest wystarczająco silne.',
+    form_password_pwned: 'Twoje hasło wyciekło',
     form_password_pwned__sign_in: undefined,
     form_password_size_in_bytes_exceeded:
-      'Your password has exceeded the maximum number of bytes allowed, please shorten it or remove some special characters.',
+      'Twoje hasło przekroczyło maksymalną liczbę bajtów dozwoloną, skróć je lub usuń niektóre znaki specjalne.',
     form_password_validation_failed: 'Podane hasło jest nieprawidłowe',
     form_username_invalid_character: undefined,
     form_username_invalid_length: undefined,
     identification_deletion_failed:
-      'You cannot delete your last identification.',
+      'Nie możesz usunąć ostatniej identyfikacji.',
     not_allowed_access: undefined,
     organization_domain_blocked: undefined,
     organization_domain_common: undefined,
@@ -598,49 +600,53 @@ export const plPL: LocalizationResource = {
       requireUppercase: 'wielką literę',
       sentencePrefix: 'Twoje hasło musi zawierać',
     },
-    phone_number_exists: 'This phone number is taken. Please try another.',
+    phone_number_exists: 'Ten numer telefonu jest zajęty. Spróbuj inny.',
     zxcvbn: {
       couldBeStronger:
-        'Your password works, but could be stronger. Try adding more characters.',
-      goodPassword: 'Your password meets all the necessary requirements.',
-      notEnough: 'Your password is not strong enough.',
+        'Twoje hasło działa, ale może być silniejsze. Spróbuj dodać więcej znaków.',
+      goodPassword: 'Twoje hasło spełnia wszystkie wymagania.',
+      notEnough: 'Twoje hasło jest wystarczająco silne.',
       suggestions: {
         allUppercase: 'Capitalize some, but not all letters.',
-        anotherWord: 'Add more words that are less common.',
-        associatedYears: 'Avoid years that are associated with you.',
-        capitalization: 'Capitalize more than the first letter.',
-        dates: 'Avoid dates and years that are associated with you.',
-        l33t: "Avoid predictable letter substitutions like '@' for 'a'.",
+        anotherWord: 'Dodaj więcej słów, które są mniej powszechne.',
+        associatedYears: 'Unikaj lat, które są związane z Tobą.',
+        capitalization: 'Zwiększ wielkość liter, ale nie wszystkie.',
+        dates: 'Unikaj dat i lat, które są związane z Tobą.',
+        l33t: "Unikaj przewidywalnych zamian liter, np. '@' zamiast 'a'.",
         longerKeyboardPattern:
-          'Use longer keyboard patterns and change typing direction multiple times.',
+          'Użyj dłuższych wzorów klawiatury i zmieniaj kierunek pisania wiele razy.',
         noNeed:
-          'You can create strong passwords without using symbols, numbers, or uppercase letters.',
-        pwned: 'If you use this password elsewhere, you should change it.',
-        recentYears: 'Avoid recent years.',
-        repeated: 'Avoid repeated words and characters.',
-        reverseWords: 'Avoid reversed spellings of common words.',
-        sequences: 'Avoid common character sequences.',
-        useWords: 'Use multiple words, but avoid common phrases.',
+          'Możesz tworzyć silne hasła bez użycia symboli, cyfr lub wielkich liter.',
+        pwned: 'Jeśli używasz tego hasła gdzie indziej, powinieneś je zmienić.',
+        recentYears: 'Unikaj ostatnich lat.',
+        repeated: 'Unikaj powtarzających się słów i znaków.',
+        reverseWords: 'Unikaj odwróconych pisowni słów powszechnych.',
+        sequences: 'Unikaj wspólnych sekwencji znaków.',
+        useWords: 'Użyj wielu słów, ale unikaj wspólnych fraz.',
       },
       warnings: {
-        common: 'This is a commonly used password.',
-        commonNames: 'Common names and surnames are easy to guess.',
-        dates: 'Dates are easy to guess.',
+        common: 'To jest powszechnie używane hasło.',
+        commonNames: 'Nazwiska i imiona są łatwe do odgadnięcia.',
+        dates: 'Daty są łatwe do odgadnięcia.',
         extendedRepeat:
-          'Repeated character patterns like "abcabcabc" are easy to guess.',
-        keyPattern: 'Short keyboard patterns are easy to guess.',
-        namesByThemselves: 'Single names or surnames are easy to guess.',
-        pwned: 'Your password was exposed by a data breach on the Internet.',
-        recentYears: 'Recent years are easy to guess.',
-        sequences: 'Common character sequences like "abc" are easy to guess.',
-        similarToCommon: 'This is similar to a commonly used password.',
-        simpleRepeat: 'Repeated characters like "aaa" are easy to guess.',
+          'Powtarzające się wzory znaków, np. "abcabcabc", są łatwe do odgadnięcia.',
+        keyPattern: 'Krótkie wzory klawiatury są łatwe do odgadnięcia.',
+        namesByThemselves:
+          'Pojedyncze nazwiska lub imiona są łatwe do odgadnięcia.',
+        pwned: 'Twoje hasło zostało ujawnione w wyniku naruszenia danych.',
+        recentYears: 'Ostatnie lata są łatwe do odgadnięcia.',
+        sequences:
+          'Wspólne sekwencje znaków, np. "abc", są łatwe do odgadnięcia.',
+        similarToCommon: 'To jest podobne do powszechnie używanego hasła.',
+        simpleRepeat:
+          'Powtarzające się znaki, np. "aaa", są łatwe do odgadnięcia.',
         straightRow:
-          'Straight rows of keys on your keyboard are easy to guess.',
+          'Bezpośrednie wiersze klawiszy na Twojej klawiaturze są łatwe do odgadnięcia.',
         topHundred: 'This is a frequently used password.',
-        topTen: 'This is a heavily used password.',
-        userInputs: 'There should not be any personal or page related data.',
-        wordByItself: 'Single words are easy to guess.',
+        topTen: 'To jest powszechnie używane hasło.',
+        userInputs:
+          'Nie powinno być żadnych danych osobistych ani powiązanych z stroną.',
+        wordByItself: 'Pojedyncze słowa są łatwe do odgadnięcia.',
       },
     },
   },
@@ -685,7 +691,7 @@ export const plPL: LocalizationResource = {
       actionDescription: 'Wpisz "Delete account" poniżej aby kontynuować.',
       confirm: 'Usuń konto',
       messageLine1: 'Czy na pewno chcesz usunąć to konto?',
-      messageLine2: 'This action is permanent and irreversible.',
+      messageLine2: 'To działanie jest nieodwracalne.',
       title: 'Usuń konto',
     },
     emailAddressPage: {
@@ -746,10 +752,11 @@ export const plPL: LocalizationResource = {
       subtitle__unavailablePhoneNumbers:
         'Brak dostępnych numerów telefonów do zarejestrowania weryfikacji kodem SMS w dwustopniowym procesie uwierzytelniania.',
       successMessage1:
-        'When signing in, you will need to enter a verification code sent to this phone number as an additional step.',
+        'Podczas logowania będziesz musiał wprowadzić kod weryfikacyjny wysłany na ten numer telefonu.',
       successMessage2:
-        'Save these backup codes and store them somewhere safe. If you lose access to your authentication device, you can use backup codes to sign in.',
-      successTitle: 'SMS code verification enabled',
+        'Zapisz te kody zapasowe i przechowuj je w bezpiecznym miejscu. Jeśli utracisz dostęp do urządzenia uwierzytelniającego, możesz użyć kodów zapasowych do zalogowania.',
+      successTitle:
+        'Weryfikacja kodem SMS w dwustopniowym procesie uwierzytelniania włączona',
       title: 'Dodaj weryfikację kodem SMS',
     },
     mfaTOTPPage: {
@@ -798,9 +805,9 @@ export const plPL: LocalizationResource = {
     },
     passwordPage: {
       checkboxInfoText__signOutOfOtherSessions:
-        'It is recommended to sign out of all other devices which may have used your old password.',
+        'Zaleca się wylogowanie się z wszystkich innych urządzeń, które mogły używać Twojego starego hasła.',
       readonly:
-        'Your password can currently not be edited because you can sign in only via the enterprise connection.',
+        'Twoje hasło nie może być obecnie edytowane, ponieważ możesz się tylko logować za pośrednictwem połączenia firmowego.',
       successMessage__set: 'Twoje hasło zostało ustawione.',
       successMessage__signOutOfOtherSessions:
         'Wylogowano z wszystkich innych urządzeń.',
@@ -830,7 +837,7 @@ export const plPL: LocalizationResource = {
       imageFormSubtitle: 'Prześlij zdjęcie',
       imageFormTitle: 'Zdjęcie profilowe',
       readonly:
-        'Your profile information has been provided by the enterprise connection and cannot be edited.',
+        'Informacje o Twoim profilu zostały dostarczone za pośrednictwem połączenia firmowego i nie mogą być edytowane.',
       successMessage: 'Twój profil został zaktualizowany.',
       title: 'Edytuj profil',
     },
@@ -846,7 +853,7 @@ export const plPL: LocalizationResource = {
         primaryButton: 'Połącz konto',
         subtitle__disconnected: undefined,
         subtitle__reauthorize:
-          'The required scopes have been updated, and you may be experiencing limited functionality. Please re-authorize this application to avoid any issues',
+          'Wymagane zakresy zostały zaktualizowane, a możesz doświadczać ograniczonej funkcjonalności. Proszę ponownie autoryzować tę aplikację, aby uniknąć jakichkolwiek problemów',
         title: 'Połączone konta',
       },
       dangerSection: {
@@ -904,7 +911,7 @@ export const plPL: LocalizationResource = {
         title: 'Numery telefonów',
       },
       profileSection: {
-        primaryButton: undefined,
+        primaryButton: 'Zaktualizuj profil',
         title: 'Profil',
       },
       usernameSection: {

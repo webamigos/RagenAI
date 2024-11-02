@@ -66,6 +66,10 @@ export const DocumentCreator = () => {
     });
   };
 
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+  };
+
   const onSubmit = async (data: DocumentSchema) => {
     if (!organization) return;
     try {

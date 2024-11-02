@@ -17,7 +17,7 @@ type Props = {
 export async function generateMetadata({ params: { locale } }: Props) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
-    title: t('index'),
+    title: t('index.title'),
   };
 }
 
@@ -28,7 +28,6 @@ export default function ThreadPage({ params: { publicId, locale } }: Props) {
   }
 
   setRequestLocale(locale);
-  const t = useTranslations('Index');
 
   return <Assistant threadId={threadPublicId} />;
 }

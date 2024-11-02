@@ -40,7 +40,7 @@
     "Send-reset-code": "Send password reset code",
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
-    "Reset-password": "Zresetuj hasło"
+    "Reset-password": "Reset password"
   },
   "admin-panel-page": {
     "add-files": "Add files",
@@ -52,16 +52,57 @@
     "sign-out": "Sign out"
   },
   "Metadata": {
-    "index": "SalesYY Assistant"
+    "index": {
+      "title": "Chat with Assistant | SalesYY"
+    },
+    "sign-in": {
+      "title": "Sign In | SalesYY"
+    },
+    "sign-up": {
+      "title": "Sign Up | SalesYY"
+    },
+    "enter-code": {
+      "title": "Verify Your Account | SalesYY"
+    },
+    "forgot-password": {
+      "title": "Forgot Password | SalesYY"
+    },
+    "reset-password": {
+      "title": "Reset Password | SalesYY"
+    },
+    "guest-threads": {
+      "title": "Chat with Assistant | SalesYY"
+    },
+    "manage-knowledge": {
+      "title": "Manage Knowledge | SalesYY"
+    },
+    "my-profile": {
+      "title": "My Profile | SalesYY"
+    },
+    "my-profile:security": {
+      "title": "Profile Security | SalesYY"
+    },
+    "create-organization": {
+      "title": "Create Organization | SalesYY"
+    },
+    "organization-profile": {
+      "title": "Manage Organization | SalesYY"
+    },
+    "organization-profile:organization-members": {
+      "title": "Manage Members | SalesYY"
+    },
+    "prompt-management": {
+      "title": "Assistant Management | SalesYY"
+    }
   },
   "chat": {
     "USER": "You",
     "ASSISTANT": "Assistant",
     "loading": "Loading...",
     "create-new-thread": "Create a new thread",
-    "today": "today",
-    "yesterday": "yesterday",
-    "older": "older"
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "older": "Older"
   },
   "form": {
     "enter-your-question": "Enter your question",
@@ -160,6 +201,22 @@
   "document-preview": {
     "document-not-found": "Document not found",
     "fetching-error": "An error occurred while downloading the document",
-    "save": "Save"
+    "save": "Save",
+  }
+    "model-select": {
+    "select-model": "Select model"
+  },
+  "editable-prompt": {
+    "title": "Update prompt",
+    "label": "Available variables you can use in the prompt:",
+    "update": "Update"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "An account with this email already exists.",
+    "form_password_invalid": "Password is invalid.",
+    "form_identifier_not_found": "No account found with this email.",
+    "form_code_incorrect": "Incorrect code.",
+    "form_password_incorrect": "Incorrect password.",
+    "form_password_pwned": "Password has been found in an online data breach. For account safety, please use a different password."
   }
 }
