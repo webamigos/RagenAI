@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useOrganization } from '@clerk/nextjs';
+import TurndownService from 'turndown';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -20,6 +21,8 @@ import {
   WysiwygEditor,
 } from '@salesyy/common-ui';
 import { uploadFiles } from '@/app/lib/services/api';
+
+const turndownService = new TurndownService();
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -67,11 +70,12 @@ export const DocumentCreator = () => {
     if (!organization) return;
     try {
       const organizationId = organization.id.toLowerCase();
+      const markdownContent = turndownService.turndown(editorContent);
 
       const formData = new FormData();
       formData.append(
         'files',
-        new File([editorContent], `${data.title}.md`, {
+        new File([markdownContent], `${data.title}.md`, {
           type: 'text/markdown',
         })
       );
@@ -92,14 +96,14 @@ export const DocumentCreator = () => {
   };
 
   return (
-    <Card title={t('title')} size="full" className="h-full">
+    <Card title={t('title')} size="full" className="h-full flex flex-col">
       <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
         <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
           <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
             <Tab>{t('edit')}</Tab>
             <Tab>{t('preview')}</Tab>
           </TabList>
-          <TabPanel>
+          <TabPanel className="h-full">
             <Input
               mandatory={true}
               label={t('input-label')}
@@ -110,7 +114,7 @@ export const DocumentCreator = () => {
               error={touchedFields.title ? errors.title : undefined}
               errorMessage={errors.title?.message}
             />
-            <div className="h-full flex-1 flex flex-col">
+            <div className="h-[25.2rem] flex-1 flex flex-col">
               <WysiwygEditor
                 label={t('content')}
                 mandatory={true}
@@ -118,13 +122,14 @@ export const DocumentCreator = () => {
                 value={editorContent || ''}
                 error={touchedFields.content ? errors.content : undefined}
                 errorMessage={errors.content?.message}
+                className="flex-1 "
               />
             </div>
           </TabPanel>
-          <TabPanel>
-            <div className="preview-content h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-2xl bg-gray-50 dark:bg-accent-dark-300">
+          <TabPanel className="h-full flex-1">
+            <div className="flex-1 preview-content  h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-2xl bg-gray-50 dark:bg-accent-dark-300">
               <h2 className="text-xl font-semibold mb-4">{watch('title')}</h2>
-              <div className="prose prose-lg dark:prose-invert">
+              <div className="h-full flex-1 prose prose-lg dark:prose-invert">
                 {parse(sanitizedContent)}
               </div>
             </div>

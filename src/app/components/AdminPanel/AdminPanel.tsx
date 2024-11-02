@@ -18,7 +18,7 @@ export const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="h-full flex-1 flex flex-col gap-4">
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
         <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
           <Tab key="add-files">

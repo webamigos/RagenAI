@@ -1,6 +1,11 @@
-import React, { type ReactNode, type ReactElement } from 'react';
+import React, {
+  type ReactNode,
+  type ReactElement,
+  type ComponentProps,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { classMerge } from '../utils/cn';
 type TabListProps = {
   children: ReactNode[];
   activeTab: number;
@@ -17,9 +22,14 @@ type TabPanelProps = {
   children: ReactNode;
 };
 
-const Tabs = ({ children, activeTab, setActiveTab }: TabListProps) => {
+const Tabs = ({
+  className,
+  children,
+  activeTab,
+  setActiveTab,
+}: TabListProps & ComponentProps<'div'>) => {
   return (
-    <div className="w-full">
+    <div className={classMerge('w-full', className)}>
       {children.map((child, index) =>
         React.isValidElement(child) && child.type === TabList
           ? React.cloneElement(child as ReactElement<TabListProps>, {
@@ -44,8 +54,13 @@ const Tabs = ({ children, activeTab, setActiveTab }: TabListProps) => {
   );
 };
 
-const TabList = ({ children, activeTab, setActiveTab }: TabListProps) => (
-  <div className="flex ml-[18px]">
+const TabList = ({
+  className,
+  children,
+  activeTab,
+  setActiveTab,
+}: TabListProps & ComponentProps<'div'>) => (
+  <div className={classMerge('flex ml-[18px]', className)}>
     {children.map((child, index) =>
       React.isValidElement(child)
         ? React.cloneElement(child as ReactElement<TabPropsInterface>, {
@@ -60,22 +75,32 @@ const TabList = ({ children, activeTab, setActiveTab }: TabListProps) => (
   </div>
 );
 
-const Tab = ({ children, isActive, onClick }: TabPropsInterface) => (
+const Tab = ({
+  className,
+  children,
+  isActive,
+  onClick,
+}: TabPropsInterface & ComponentProps<'div'>) => (
   <button
-    className={`flex px-4 py-2 text-sm font-medium transition ${
+    className={classMerge(
+      'flex px-4 py-2 text-sm font-medium transition',
       isActive
         ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-primary-blue-500 dark:text-gray-200'
-        : 'text-gray-600'
-    }`}
+        : 'text-gray-600',
+      className
+    )}
     onClick={onClick}
   >
     {children}
   </button>
 );
 
-const TabPanel = ({ children }: TabPanelProps) => (
+const TabPanel = ({
+  className,
+  children,
+}: TabPanelProps & ComponentProps<'div'>) => (
   <motion.div
-    className="p-4"
+    className={classMerge('p-4', className)}
     initial={{ opacity: 0, x: 20 }}
     animate={{ opacity: 1, x: 0 }}
     exit={{ opacity: 0, x: -20 }}

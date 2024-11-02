@@ -68,8 +68,10 @@ export const WysiwygEditor = ({
         </div>
       )}
       <ReactQuill
-        className={classMerge('custom-quill w-full flex-1', className)}
-        style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+        className={classMerge(
+          'custom-quill h-full w-full flex flex-col flex-1 full-width-prose',
+          className
+        )}
         theme="snow"
         value={value}
         onChange={(content: string) => onChange(content)}
