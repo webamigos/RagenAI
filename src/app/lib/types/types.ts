@@ -14,15 +14,3 @@ export type VectorStoreDocumentMetadata = {
 };
 
 export type VectorStoreMetadataFilter = Partial<VectorStoreDocumentMetadata>;
-
-export type OrganizationSettings = {
-  apiKey: string;
-  prompt: string;
-  model: string;
-  temperature: number;
-  maxDocumentsToRetrieve: number;
-};
-
-export type RawOrganizationSettings = Omit<OrganizationSettings, 'apiKey'> & {
-  apiKey: string | null;
-};

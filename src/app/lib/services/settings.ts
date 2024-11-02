@@ -1,16 +1,9 @@
-import { RawOrganizationSettings } from '../types/types';
+import { defaultOrganizationSettings } from '../constants/settings';
+import { RawOrganizationSettings } from '../types/settings';
 import { decryptApiKey, encryptApiKey } from '../utils/hashApiKey';
 import { getRedisInstance } from './redis';
 
 const redis = getRedisInstance();
-
-export const defaultSettings: RawOrganizationSettings = {
-  apiKey: null,
-  prompt: '',
-  model: 'gpt-3.5-turbo',
-  temperature: 0.5,
-  maxDocumentsToRetrieve: 3,
-} as const;
 
 export async function saveTemperatureSetting(
   orgId: string,
@@ -23,7 +16,9 @@ export async function saveTemperatureSetting(
 
 export async function getTemperatureSetting(orgId: string): Promise<number> {
   const temperature = await redis.hget(`org:${orgId}`, 'temperature');
-  return temperature ? parseFloat(temperature) : defaultSettings.temperature;
+  return temperature
+    ? parseFloat(temperature)
+    : defaultOrganizationSettings.temperature;
 }
 
 export async function saveOpenaiAPIKey(
@@ -55,7 +50,7 @@ export async function saveModel(
 
 export async function getModel(orgId: string): Promise<string | null> {
   const model = await redis.hget(`org:${orgId}`, 'model');
-  return model ?? defaultSettings.model;
+  return model ?? defaultOrganizationSettings.model;
 }
 
 export async function saveAssistantPrompt(
@@ -73,6 +68,27 @@ export async function getAssistantPrompt(
   return await redis.hget(`org:${orgId}`, 'prompt');
 }
 
+export async function saveMaxDocumentsToRetrieve(
+  orgId: string,
+  maxDocumentsToRetrieve: number
+): Promise<{ success: boolean; status: string }> {
+  return await redis.hsetWithStatus(`org:${orgId}`, {
+    maxDocumentsToRetrieve: maxDocumentsToRetrieve.toString(),
+  });
+}
+
+export async function getMaxDocumentsToRetrieve(
+  orgId: string
+): Promise<number> {
+  const maxDocumentsToRetrieve = await redis.hget(
+    `org:${orgId}`,
+    'maxDocumentsToRetrieve'
+  );
+  return maxDocumentsToRetrieve
+    ? parseInt(maxDocumentsToRetrieve)
+    : defaultOrganizationSettings.maxDocumentsToRetrieve;
+}
+
 export async function getAllSettings(
   orgId: string
 ): Promise<RawOrganizationSettings> {
@@ -80,14 +96,15 @@ export async function getAllSettings(
 
   const decryptedApiKey = result.openai
     ? decryptApiKey(result.openai)
-    : defaultSettings.apiKey;
+    : defaultOrganizationSettings.apiKey;
 
   return {
     apiKey: decryptedApiKey,
-    model: result.model ?? defaultSettings.model,
-    temperature: +result.temperature ?? defaultSettings.temperature,
-    prompt: result.prompt ?? defaultSettings.prompt,
+    model: result.model || defaultOrganizationSettings.model,
+    temperature: +result.temperature || defaultOrganizationSettings.temperature,
+    prompt: result.prompt || defaultOrganizationSettings.prompt,
     maxDocumentsToRetrieve:
-      +result.maxDocumentsToRetrieve ?? defaultSettings.maxDocumentsToRetrieve,
+      +result.maxDocumentsToRetrieve ||
+      defaultOrganizationSettings.maxDocumentsToRetrieve,
   };
 }

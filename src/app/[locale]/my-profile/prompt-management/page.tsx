@@ -6,6 +6,7 @@ import {
 } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { PropsWihLocale } from '@/app/lib/types/types';
+import { SetMaxDocumentsToRetrieve } from '@/app/components/MyProfile/ChatInstanceSettings/SetMaxDocumentsToRetrieve';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,9 +23,10 @@ export default function PromptManagementPage() {
     <div className="container flex flex-col">
       <SetApiKeyWrapper />
 
-      <div className="flex md:justify-between mb-5 flex-col md:flex-row">
-        <SetChatTemperature />
+      <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
         <ChatModelSelect />
+        <SetChatTemperature />
+        <SetMaxDocumentsToRetrieve />
       </div>
 
       <EditablePrompt />

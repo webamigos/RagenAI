@@ -118,7 +118,7 @@ export const generateFinalAnswer = (
   return RunnableSequence.from([
     RunnablePassthrough.assign({
       answer_instructions: () =>
-        answerInstructions ?? DEFAULT_ANSWER_INSTRUCTIONS,
+        answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
     }),
     promptTemplate,
     model,

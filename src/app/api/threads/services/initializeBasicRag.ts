@@ -1,9 +1,7 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import {
-  OrganizationSettings,
-  VectorStoreMetadataFilter,
-} from '@/app/lib/types/types';
+import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
+import { OrganizationSettings } from '@/app/lib/types/settings';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import { Embeddings } from '@langchain/core/embeddings';
