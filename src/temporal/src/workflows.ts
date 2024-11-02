@@ -5,7 +5,7 @@ import type * as activities from './activities';
 // Reference code: https://github.dev/temporalio/samples-typescript/tree/main/nextjs-ecommerce-oneclick
 const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
   wf.proxyActivities<typeof activities>({
-    startToCloseTimeout: '1 minute',
+    startToCloseTimeout: '5s',
   });
 
 type EmbeddingState =
