@@ -64,6 +64,10 @@ try {
 }
 ```
 
+### How to test
+
+You can launch the application and open route: `/api/run-workflow`
+
 ### [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
 
 Command to start temporal dev server:
