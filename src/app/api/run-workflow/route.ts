@@ -14,7 +14,7 @@ export const GET = async (request: NextRequest) => {
   const itemId = '5432';
 
   const workflow = await getTemporalClient().workflow.start(EmbeddingWorkflow, {
-    taskQueue: 'smartrag-embeddings',
+    taskQueue: 'smartrag-tasks',
     workflowId: workflowId,
     args: [itemId], // this will be passed as an argument to cancelEmbeddingProcess and cancelEmbeddingProcess
   });
