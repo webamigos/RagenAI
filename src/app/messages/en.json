@@ -201,9 +201,9 @@
   "document-preview": {
     "document-not-found": "Document not found",
     "fetching-error": "An error occurred while downloading the document",
-    "save": "Save",
-  }
-    "model-select": {
+    "save": "Save"
+  },
+  "model-select": {
     "select-model": "Select model"
   },
   "editable-prompt": {
