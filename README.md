@@ -20,7 +20,7 @@ DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 
 ## Working with Temporal
 
-Temporal is a great tool for managing async tasks without complexity of managing queues and preparing, testing, maintaining distributed architecture. One workflow can be used by many apps.
+Temporal is a great tool for managing async tasks without the complexity of managing queues and architecture. I allow easily testing and maintaining distributed architecture. One workflow can be used by many apps.
 
 We can use it for:
 * Document processing workflow
@@ -64,7 +64,7 @@ try {
 }
 ```
 
-* [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
+### [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
 
 Command to start temporal dev server:
 
@@ -75,3 +75,16 @@ temporal server start-dev
 In production probably we will use Temporal Cloud.
 
 There is a new temporal directory and couple of scripts
+
+### Using docker
+
+There is example repo https://github.com/temporalio/edu-101-typescript-code from which we can use docker compose files.
+
+You can run
+
+```bash
+cd temporal-server
+docker compose up
+```
+
+to launch local dev server.
