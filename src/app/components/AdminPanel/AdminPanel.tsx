@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { FileListWrapper } from './FileList/FileListWrapper';
 import { UploadKnowledge } from './UploadKnowledge/';

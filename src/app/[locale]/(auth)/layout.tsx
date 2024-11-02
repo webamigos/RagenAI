@@ -1,8 +1,4 @@
-import Link from 'next/link';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
-
-import { timezone } from '@/app/config';
-import { Logo } from '../../components/Logo';
 
 type Props = {
   readonly children: React.ReactNode;
