@@ -23,7 +23,7 @@ async function run() {
       connection,
       workflowsPath: require.resolve('./workflows'),
       activities,
-      taskQueue: 'smartrag-embeddings',
+      taskQueue: 'smartrag-tasks',
     });
     await worker.run();
   } finally {

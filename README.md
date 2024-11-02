@@ -25,12 +25,12 @@ Temporal is a great tool for managing async tasks without the complexity of mana
 We can use it for:
 * Document processing workflow
 * File upload process
-* Creating organization with numeric id
-* Send mails to users on defined interval (eg. sequence of onboarding e-mails with every three days in first 10 days)
+* Creating organization with numeric ID
+* Send mails to users on defined interval (e.g. sequence of onboarding e-mails with every three days in first 10 days)
 * End free trial after 14 days
 * Exchange events between backend events (separate project/repo)
 
-In the App we can use Signals and Queries from workflows. Signals and Queries need to be defined in `src/temporal/src/workflows.ts`
+In the App, we can use Signals and Queries from workflows. Signals and Queries need to be defined in `src/temporal/src/workflows.ts`
 
 ```ts
 // signal - run action
@@ -72,13 +72,13 @@ Command to start temporal dev server:
 temporal server start-dev
 ```
 
-In production probably we will use Temporal Cloud.
+In production, we will probably use Temporal Cloud.
 
-There is a new temporal directory and couple of scripts
+There is a new temporal directory and a couple of scripts
 
 ### Using docker
 
-There is example repo https://github.com/temporalio/edu-101-typescript-code from which we can use docker compose files.
+There is an example repo https://github.com/temporalio/docker-compose from which we can use docker compose files.
 
 You can run
 
@@ -88,3 +88,8 @@ docker compose up
 ```
 
 to launch local dev server.
+
+### Debugging using VSCode
+
+You can use VSCode extension: https://www.youtube.com/watch?v=3IjQde9HMNY
+
