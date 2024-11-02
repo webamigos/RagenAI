@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getTemporalClient } from '@/temporal/src/client';
 import { EmbeddingWorkflow } from '@/temporal/src/workflows';
+import { TASK_QUEUE_NAME } from '@/temporal/src/shared';
 import { logger } from '@/app/lib/utils/logger';
 
 /**
@@ -10,26 +11,31 @@ import { logger } from '@/app/lib/utils/logger';
  * @returns
  */
 export const GET = async (request: NextRequest) => {
-  const workflowId = 'doc-123567';
-  const itemId = '5432';
+  const workflowId = 'doc-654321';
+  const itemId = '654321';
 
-  const workflow = await getTemporalClient().workflow.start(EmbeddingWorkflow, {
-    taskQueue: 'smartrag-tasks',
+  const client = getTemporalClient();
+
+  // Workflow Execution Request
+  const handle = await client.workflow.start(EmbeddingWorkflow, {
+    taskQueue: TASK_QUEUE_NAME,
     workflowId: workflowId,
-    args: [itemId], // this will be passed as an argument to cancelEmbeddingProcess and cancelEmbeddingProcess
+    args: [{ documentId: itemId }], // this will be passed as an argument to cancelEmbeddingProcess and cancelEmbeddingProcess
   });
 
-  logger.info('workflow: %j', workflow, 2);
+  logger.info('handle: %j', handle, 2);
 
   // for fetching workflow from another part of the app(s)
   // const workflow = await getTemporalClient().workflow.getHandle(transactionId);
 
-  let embeddingState = await workflow.query('embeddingState');
+  // logger.info('handle: %j', await handle.result(), 2);
+
+  let embeddingState = await handle.query('embeddingState');
   logger.info('embeddingState before cancel signal: %o', { embeddingState });
 
-  await workflow.signal('cancelEmbedding');
+  await handle.signal('cancelEmbedding');
 
-  embeddingState = await workflow.query('embeddingState');
+  embeddingState = await handle.query('embeddingState');
   logger.info('embeddingState after cancel signal: %o', { embeddingState });
 
   return NextResponse.json({ embeddingState });

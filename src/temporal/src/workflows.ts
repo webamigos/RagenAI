@@ -1,6 +1,10 @@
+/**
+ * Workflow Definition
+ */
 import * as wf from '@temporalio/workflow';
 
 import type * as activities from './activities';
+import { type StartEmbeddingProcessInput } from './shared';
 
 // Reference code: https://github.dev/temporalio/samples-typescript/tree/main/nextjs-ecommerce-oneclick
 const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
@@ -18,7 +22,9 @@ export const cancelEmbeddingSignal = wf.defineSignal('cancelEmbedding');
 export const embeddingStateQuery =
   wf.defineQuery<EmbeddingState>('embeddingState');
 
-export const EmbeddingWorkflow = async (documentId: string) => {
+export const EmbeddingWorkflow = async ({
+  documentId,
+}: StartEmbeddingProcessInput) => {
   let embeddingState: EmbeddingState = 'EMBEDDING_PENDING';
 
   // handler when state has changed to EMBEDDING_CANCELED
@@ -33,10 +39,10 @@ export const EmbeddingWorkflow = async (documentId: string) => {
   // check if embedding process is canceled or after 5 seconds
   // TODO: change timeout, currently we need to test if this flow works with temporal
   if (await wf.condition(() => embeddingState === 'EMBEDDING_CANCELED', '5s')) {
-    return await cancelEmbeddingProcess(documentId);
+    return await cancelEmbeddingProcess({ documentId });
   } else {
     // if embedding is done, call onEmbeddingProcessCompleted function
     embeddingState = 'EMBEDDING_DONE';
-    return await onEmbeddingProcessCompleted(documentId);
+    return await onEmbeddingProcessCompleted({ documentId });
   }
 };

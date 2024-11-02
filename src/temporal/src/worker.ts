@@ -3,6 +3,7 @@ import * as path from 'path';
 import { NativeConnection, Worker } from '@temporalio/worker';
 
 import * as activities from './activities';
+import { TASK_QUEUE_NAME } from './shared';
 
 dotenvFlow.config({
   path: path.resolve(__dirname, '../../..'),
@@ -23,7 +24,7 @@ async function run() {
       connection,
       workflowsPath: require.resolve('./workflows'),
       activities,
-      taskQueue: 'smartrag-tasks',
+      taskQueue: TASK_QUEUE_NAME,
     });
     await worker.run();
   } finally {
