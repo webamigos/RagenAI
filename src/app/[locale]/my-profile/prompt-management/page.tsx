@@ -3,10 +3,10 @@ import {
   ChatModelSelect,
   EditablePrompt,
   SetChatTemperature,
+  SetMaxDocumentsToRetrieve,
 } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { PropsWihLocale } from '@/app/lib/types/types';
-import { SetMaxDocumentsToRetrieve } from '@/app/components/MyProfile/ChatInstanceSettings/SetMaxDocumentsToRetrieve';
 
 export const dynamic = 'force-dynamic';
 
