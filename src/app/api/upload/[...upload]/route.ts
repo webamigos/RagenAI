@@ -62,12 +62,13 @@ export async function POST(request: NextRequest, { params }: Params) {
           uniqueFileId
         );
 
-        await createMarkdownDocument({
-          public_id: uniqueFileId,
-          title: file.name,
-          organization_id: organizationId.toLowerCase(),
-          content: content as string,
-        });
+        if (file.name.endsWith('.md'))
+          await createMarkdownDocument({
+            public_id: uniqueFileId,
+            title: file.name,
+            organization_id: organizationId.toLowerCase(),
+            content: content as string,
+          });
 
         if (!success) {
           logger.error(

@@ -182,7 +182,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     const formData = new FormData();
     formData.append(
       'files',
-      new File([markdownContent], `${documentTitle}.md`, {
+      new File([markdownContent], `${documentTitle}`, {
         type: 'text/markdown',
       })
     );
