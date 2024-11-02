@@ -1,7 +1,7 @@
 import './editor-styles.css';
 import parse from 'html-react-parser';
 import DOMPurify from 'dompurify';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -65,6 +65,10 @@ export const DocumentCreator = () => {
     });
   };
 
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+  };
+
   const onSubmit = async (data: DocumentSchema) => {
     if (!organization) return;
     try {
@@ -86,10 +90,11 @@ export const DocumentCreator = () => {
   return (
     <Card title={t('title')} size="full">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
-          <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
-            <Tab>{t('edit')}</Tab>
-            <Tab>{t('preview')}</Tab>
+        <Tabs activeTab={activeTab} setActiveTab={handleTabChange}>
+          <TabList activeTab={activeTab} setActiveTab={handleTabChange}>
+            {/* Upewnij się, że komponent Tab przekazuje type="button" */}
+            <Tab type="button">{t('edit')}</Tab>
+            <Tab type="button">{t('preview')}</Tab>
           </TabList>
           <TabPanel>
             <Input
