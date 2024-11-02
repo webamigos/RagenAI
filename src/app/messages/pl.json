@@ -201,8 +201,9 @@
   "document-preview": {
     "document-not-found": "Nie znaleziono dokumentu",
     "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
-    "save": "Zapisz"
-},
+    "save": "Zapisz",
+    "edit-successfully": "Dokument został zedytowany"
+  },
   "model-select": {
     "select-model": "Wybierz model"
   },

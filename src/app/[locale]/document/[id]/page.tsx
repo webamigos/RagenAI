@@ -46,11 +46,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   const [editableContent, setEditableContent] = useState<string | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editableTitle, setEditableTitle] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
 
-  const { errorToast } = statusToast();
+  const { errorToast, successToast } = statusToast();
   const orgId = organization?.id.toLowerCase();
 
   useEffect(() => {
@@ -100,6 +101,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
   const handleSave = async () => {
     if (!orgId || !editableContent || !documentTitle) return;
+    setIsSaving(true);
 
     const markdownContent = turndownService.turndown(editableContent);
     const response = await updateDocument({
@@ -122,10 +124,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     await uploadFiles(orgId, formData);
     if (response.success) {
       setDocumentContent(markdownContent);
+      successToast({ message: t('edit-successfully') });
     } else {
       errorToast({ message: response.message });
     }
     setIsEditing(false);
+    setIsSaving(false);
   };
 
   const handleTitleDoubleClick = () => {
@@ -135,7 +139,6 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
   const handleEditTitle = async () => {
     if (!orgId || editableTitle === null) return;
-
     const response = await updateDocument({
       orgId,
       documentId: id,
@@ -203,10 +206,15 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           </div>
           <div className="mt-2">
             <Button
-              label={t('save')}
               onClick={handleSave}
-              className="bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center"
-            />
+              disabled={isSaving}
+              isLoading={isSaving}
+              className={`bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center ${
+                isSaving ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              {t('save')}
+            </Button>
           </div>
         </div>
       ) : (
