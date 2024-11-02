@@ -1,11 +1,21 @@
+import dotenvFlow from 'dotenv-flow';
+import * as path from 'path';
 import { NativeConnection, Worker } from '@temporalio/worker';
+
 import * as activities from './activities';
 
-run().catch((err) => console.log(err));
+dotenvFlow.config({
+  path: path.resolve(__dirname, '../../..'),
+});
+
+run().catch((err) => console.error(err));
 
 async function run() {
+  const TEMPORAL_SERVER_ADDRESS =
+    process.env.TEMPORAL_SERVER_ADDRESS || 'localhost:7233';
+
   const connection = await NativeConnection.connect({
-    address: 'localhost:7233',
+    address: TEMPORAL_SERVER_ADDRESS,
     // In production, pass options to configure TLS and other settings.
   });
   try {

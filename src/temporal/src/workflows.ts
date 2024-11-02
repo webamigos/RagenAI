@@ -1,9 +1,8 @@
 import * as wf from '@temporalio/workflow';
-// Only import the activity types
+
 import type * as activities from './activities';
 
 // Reference code: https://github.dev/temporalio/samples-typescript/tree/main/nextjs-ecommerce-oneclick
-
 const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
   wf.proxyActivities<typeof activities>({
     startToCloseTimeout: '1 minute',
@@ -32,7 +31,7 @@ export const EmbeddingWorkflow = async (documentId: string) => {
   wf.setHandler(embeddingStateQuery, () => embeddingState);
 
   // check if embedding process is canceled or after 5 seconds
-  // TODO: change timeout
+  // TODO: change timeout, currently we need to test if this flow works with temporal
   if (await wf.condition(() => embeddingState === 'EMBEDDING_CANCELED', '5s')) {
     return await cancelEmbeddingProcess(documentId);
   } else {

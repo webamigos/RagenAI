@@ -38,5 +38,5 @@
     "src/app/api/settings/api-key/route.ts",
     "storybook/main.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/temporal"]
 }
