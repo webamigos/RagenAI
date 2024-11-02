@@ -1,5 +1,6 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 const TailwindAnimate = require('tailwindcss-animate');
+const TailwindTypography = require('@tailwindcss/typography');
 
 module.exports = {
   content: [
@@ -95,5 +96,5 @@ module.exports = {
       },
     },
   },
-  plugins: [TailwindAnimate],
+  plugins: [TailwindAnimate, TailwindTypography],
 };

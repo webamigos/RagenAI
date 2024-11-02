@@ -160,7 +160,14 @@
     "title": "Create document",
     "input-label": "Title",
     "input-placeholder": "Enter document title",
-    "editor-label": "Content"
+    "editor-label": "Content",
+    "content": "Content",
+    "edit": "Edit",
+    "preview": "Preview",
+    "title-error": "Title is required",
+    "content-error": "Content is required",
+    "created-successful": "Document created",
+    "send-error": "Error creating document"
   },
   "sidebar": {
     "profile": "Profile",

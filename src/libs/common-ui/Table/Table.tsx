@@ -46,10 +46,7 @@ export function Table({
       <div className="flow-root">
         <div
           {...props}
-          className={clsx(
-            className,
-            '-mx-[--gutter] overflow-x-auto whitespace-nowrap'
-          )}
+          className={clsx(className, '-mx-[--gutter] whitespace-nowrap')}
         >
           <div
             className={clsx(
