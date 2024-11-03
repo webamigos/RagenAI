@@ -1,5 +1,4 @@
 import * as activity from '@temporalio/activity';
-import { log } from '@temporalio/workflow';
 import {
   type CancelEmbeddingProcessInput,
   type OnEmbeddingProcessCompletedInput,
@@ -8,7 +7,8 @@ import {
 export const onEmbeddingProcessCompleted = async ({
   documentId,
 }: OnEmbeddingProcessCompletedInput): Promise<string> => {
-  log.info('Calling onEmbeddingProcessCompleted: ', { documentId });
+  const context = activity.Context.current();
+  context.log.info('Calling onEmbeddingProcessCompleted: ', { documentId });
   return `embedding for document #${documentId} has been completed`;
 };
 
