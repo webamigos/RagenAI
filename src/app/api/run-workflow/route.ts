@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getTemporalClient } from '@/temporal/src/client';
 import { EmbeddingWorkflow } from '@/temporal/src/workflows';
-import { TASK_QUEUE_NAME } from '@/temporal/src/shared';
+import {
+  ACTIVITY_CANCEL_EMBEDDING_COMMAND,
+  ACTIVITY_EMBEDDING_STATE_QUERY,
+  TASK_QUEUE_NAME,
+} from '@/temporal/src/shared';
 import { logger } from '@/app/lib/utils/logger';
 
 /**
@@ -30,12 +34,12 @@ export const GET = async (request: NextRequest) => {
 
   // logger.info('handle: %j', await handle.result(), 2);
 
-  let embeddingState = await handle.query('embeddingState');
+  let embeddingState = await handle.query(ACTIVITY_EMBEDDING_STATE_QUERY);
   logger.info('embeddingState before cancel signal: %o', { embeddingState });
 
-  await handle.signal('cancelEmbedding');
+  await handle.signal(ACTIVITY_CANCEL_EMBEDDING_COMMAND);
 
-  embeddingState = await handle.query('embeddingState');
+  embeddingState = await handle.query(ACTIVITY_EMBEDDING_STATE_QUERY);
   logger.info('embeddingState after cancel signal: %o', { embeddingState });
 
   return NextResponse.json({ embeddingState });

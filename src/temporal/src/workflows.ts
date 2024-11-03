@@ -4,7 +4,11 @@
 import * as wf from '@temporalio/workflow';
 
 import type * as activities from './activities';
-import { type StartEmbeddingProcessInput } from './shared';
+import {
+  ACTIVITY_EMBEDDING_STATE_QUERY,
+  ACTIVITY_CANCEL_EMBEDDING_COMMAND,
+  type StartEmbeddingProcessInput,
+} from './shared';
 
 // Reference code: https://github.dev/temporalio/samples-typescript/tree/main/nextjs-ecommerce-oneclick
 const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
@@ -17,10 +21,13 @@ type EmbeddingState =
   | 'EMBEDDING_DONE'
   | 'EMBEDDING_CANCELED';
 
-export const cancelEmbeddingSignal = wf.defineSignal('cancelEmbedding');
+export const cancelEmbeddingSignal = wf.defineSignal(
+  ACTIVITY_CANCEL_EMBEDDING_COMMAND
+);
 
-export const embeddingStateQuery =
-  wf.defineQuery<EmbeddingState>('embeddingState');
+export const embeddingStateQuery = wf.defineQuery<EmbeddingState>(
+  ACTIVITY_EMBEDDING_STATE_QUERY
+);
 
 export const EmbeddingWorkflow = async ({
   documentId,
