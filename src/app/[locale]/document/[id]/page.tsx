@@ -267,7 +267,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
       )}
 
       {isEditing ? (
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="flex flex-col flex-1">
           <div className="flex-1 overflow-auto">
             <WysiwygEditor
               value={editableContent || ''}
