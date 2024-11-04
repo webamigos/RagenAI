@@ -66,10 +66,6 @@ export const DocumentCreator = () => {
     });
   };
 
-  const handleTabChange = (index: number) => {
-    setActiveTab(index);
-  };
-
   const onSubmit = async (data: DocumentSchema) => {
     if (!organization) return;
     try {
@@ -87,12 +83,18 @@ export const DocumentCreator = () => {
 
       const response = await uploadFiles(organizationId, formData);
 
-      if (response.status === 200) {
-        successToast({ message: t('created-successful') });
-        //   addDocument(response.document);
+      if (response.status === 200 && response.files) {
+        const document = response.files[0];
+        addDocument({
+          id: document.uniqueFileId,
+          organization_id: organizationId,
+          file_name: document.fileName,
+          file_size: document.fileSize,
+        });
         reset();
-        // } else if (response.message) {
-        //   errorToast({ message: response.message });
+        successToast({ message: t('created-successful') });
+      } else if (response.message) {
+        errorToast({ message: response.message });
       }
     } catch (error) {
       errorToast({ message: t('send-error') });
