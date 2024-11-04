@@ -9,6 +9,15 @@ dotenvFlow.config({
   path: path.resolve(__dirname, '../../..'),
 });
 
+const workflowOption = () =>
+  process.env.NODE_ENV === 'production'
+    ? {
+        workflowBundle: {
+          codePath: require.resolve('../lib/workflow-bundle.js'),
+        },
+      }
+    : { workflowsPath: require.resolve('./workflows') };
+
 run().catch((err) => console.error(err));
 
 async function run() {
@@ -22,7 +31,8 @@ async function run() {
   try {
     const worker = await Worker.create({
       connection,
-      workflowsPath: require.resolve('./workflows'),
+      // workflowsPath: require.resolve('./workflows'),
+      ...workflowOption(),
       activities,
       taskQueue: TASK_QUEUE_NAME,
     });
