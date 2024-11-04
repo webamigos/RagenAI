@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useDebouncedCallback } from 'use-debounce';
 
 import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -66,13 +67,18 @@ export const SetMaxDocumentsToRetrieve = () => {
     fetchMaxDocuments();
   }, []);
 
+  const debouncedUpdate = useDebouncedCallback(
+    (value: number) => update(value),
+    300
+  );
+
   const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(event.target.value);
     setMaxDocuments(value);
   };
 
   const handleSliderInteractionEnd = () => {
-    update(maxDocuments);
+    debouncedUpdate(maxDocuments);
   };
 
   return (
