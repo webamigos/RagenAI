@@ -63,7 +63,7 @@ export const UploadKnowledge = () => {
         setFiles([]);
         refreshDocuments();
       } else {
-        errorToast({ message: `${t('error')}: ${response.statusText}` });
+        errorToast({ message: `${t('error')}: ${response.message}` });
       }
     } catch (error) {
       errorToast({ message: `${t('sending-files-error')}: ${error}` });
