@@ -19,3 +19,11 @@ export const cancelEmbeddingProcess = async ({
   context.log.info('Calling cancelEmbeddingProcess: ', { documentId });
   return `canceled embedding for document #${documentId}`;
 };
+
+// temporary for check test settings
+export const estimateAge = async (name: string) => {
+  if (name === 'Stefan') {
+    return 50;
+  }
+  return NaN;
+};

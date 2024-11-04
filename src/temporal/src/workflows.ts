@@ -16,6 +16,10 @@ const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
     startToCloseTimeout: '5s',
   });
 
+const { estimateAge } = wf.proxyActivities<typeof activities>({
+  startToCloseTimeout: '5 seconds',
+});
+
 type EmbeddingState =
   | 'EMBEDDING_PENDING'
   | 'EMBEDDING_DONE'
@@ -53,3 +57,8 @@ export const EmbeddingWorkflow = async ({
     return await onEmbeddingProcessCompleted({ documentId });
   }
 };
+
+export async function estimateAgeWorkflow(name: string): Promise<string> {
+  const age = await estimateAge(name);
+  return `${name} has an estimated age of ${age}`;
+}
