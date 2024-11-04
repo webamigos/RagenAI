@@ -122,6 +122,7 @@
     "no-user-id": "Brak id użytkownika",
     "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
     "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+    "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
     "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
   },
   "my-profile-dialog": {
@@ -198,12 +199,15 @@
   "set-temperature": {
     "set-temperature": "Poziom kreatywności odpowiedzi"
   },
+  "max-documents-to-retreive": {
+    "input-label": "Maks. liczba fragmentów wyszukiwania"
+  },
   "model-select": {
-    "select-model": "Wybierz model"
+    "select-model": "Model językowy"
   },
   "editable-prompt": {
-    "title": "Zaktualizuj prompt",
-    "label": "Dostępne zmienne, które możesz użyć:",
+    "title": "Instrukcje personalizacji asystenta",
+    "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
     "update": "Zaktualizuj"
   },
   "clerk-api-errors": {

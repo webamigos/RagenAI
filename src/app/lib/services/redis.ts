@@ -27,6 +27,15 @@ class RedisService {
     }
   }
 
+  async hgetall(key: string): Promise<Record<string, string>> {
+    try {
+      return await this.client.hgetall(key);
+    } catch (error) {
+      logger.error(error, 'Redis error (hgetall)');
+      throw new Error('Failed to retrieve data from Redis');
+    }
+  }
+
   async hsetWithStatus(
     key: string,
     hash: Record<string, string>

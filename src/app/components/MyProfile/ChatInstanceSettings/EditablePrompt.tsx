@@ -10,6 +10,7 @@ import { Button, Card, Textarea } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
+import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
 
 const promptSchema = z.object({
   editablePrompt: z
@@ -20,7 +21,9 @@ const promptSchema = z.object({
 type PromptFormValues = z.infer<typeof promptSchema>;
 
 export const EditablePrompt = () => {
-  const [nonEditablePrompt, setNonEditablePrompt] = useState('');
+  const [nonEditablePrompt, setNonEditablePrompt] = useState(
+    defaultOrganizationSettings.prompt
+  );
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('editable-prompt');
@@ -86,7 +89,7 @@ export const EditablePrompt = () => {
             error={errors.editablePrompt}
             {...register('editablePrompt')}
             errorMessage={errors.editablePrompt?.message}
-            label={`${t('label')} {question}, {context}, {chat_history}`}
+            label={t('label')}
             className="mt-1 block w-full dark:bg-accent-dark-500 border border-primary-blue-500 dark:border-gray-600 shadow-none focus:ring-primary-blue-500 focus:border-primary-blue-500 sm:text-sm"
           />
         </div>
