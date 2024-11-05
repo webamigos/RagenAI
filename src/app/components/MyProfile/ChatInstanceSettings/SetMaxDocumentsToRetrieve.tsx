@@ -2,27 +2,37 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useDebouncedCallback } from 'use-debounce';
 
 import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Input, Text, Card } from '@salesyy/common-ui';
 import { SettingsType } from './types';
-import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
+import {
+  defaultOrganizationSettings,
+  organizationSettingsLimits,
+} from '@/app/lib/constants/settings';
 
-export const SetChatTemperature = () => {
-  const [temperature, setTemperature] = useState<number>(
-    defaultOrganizationSettings.temperature
+export const SetMaxDocumentsToRetrieve = () => {
+  const [maxDocuments, setMaxDocuments] = useState<number>(
+    defaultOrganizationSettings.maxDocumentsToRetrieve
   );
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { successToast, errorToast } = statusToast();
   const successMessage = useTranslations('success-toast');
   const errorMessage = useTranslations('error-toast');
-  const t = useTranslations('set-temperature');
+  const t = useTranslations('max-documents-to-retreive');
 
-  const updateTemperature = async (temp: number) => {
+  const { min, max, step } = organizationSettingsLimits.maxDocumentsToRetrieve;
+
+  const update = async (value: number) => {
     try {
-      const { success } = await saveSetting(SettingsType.temperature, temp);
+      const { success } = await saveSetting(
+        SettingsType.maxDocumentsToRetrieve,
+        value
+      );
 
       if (success) {
         successToast({
@@ -31,19 +41,19 @@ export const SetChatTemperature = () => {
       }
     } catch (error) {
       errorToast({
-        message: `${errorMessage('failed-to-update-temperature')} ${error}`,
+        message: `${errorMessage('failed-to-update-max-documents')} ${error}`,
       });
     }
   };
 
   useEffect(() => {
-    const fetchTemperature = async () => {
+    const fetchMaxDocuments = async () => {
       setIsLoading(true);
       try {
         const response = await fetchSettings();
 
         if (response.success) {
-          setTemperature(response.data.temperature);
+          setMaxDocuments(response.data.maxDocumentsToRetrieve);
         }
       } catch (error) {
         errorToast({
@@ -54,22 +64,25 @@ export const SetChatTemperature = () => {
       }
     };
 
-    fetchTemperature();
+    fetchMaxDocuments();
   }, []);
 
-  const handleTemperatureChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const temp = parseFloat(event.target.value);
-    setTemperature(temp);
+  const debouncedUpdate = useDebouncedCallback(
+    (value: number) => update(value),
+    300
+  );
+
+  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(event.target.value);
+    setMaxDocuments(value);
   };
 
   const handleSliderInteractionEnd = () => {
-    updateTemperature(temperature);
+    debouncedUpdate(maxDocuments);
   };
 
   return (
-    <Card title={t('set-temperature')} size="full">
+    <Card title={t('input-label')} size="full">
       <div className="flex items-center">
         <Input
           className="cursor-pointer"
@@ -77,17 +90,17 @@ export const SetChatTemperature = () => {
           isLoading={isLoading}
           skeletonHeight="h-5"
           skeletonWidth="w-50"
-          id="temperature"
+          id="max-documents"
           type="range"
-          min={0}
-          max={1}
-          step={0.1}
-          value={temperature}
-          onChange={handleTemperatureChange}
+          min={min}
+          max={max}
+          step={step}
+          value={maxDocuments}
+          onChange={handleValueChange}
           onMouseUp={handleSliderInteractionEnd}
           onTouchEnd={handleSliderInteractionEnd}
         />
-        <Text className="ml-3 mt-4">{temperature}</Text>
+        <Text className="ml-3 mt-4">{maxDocuments}</Text>
       </div>
     </Card>
   );

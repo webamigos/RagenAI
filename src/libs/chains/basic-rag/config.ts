@@ -3,10 +3,14 @@ export const CHAIN_FINAL_ANSWER_RUN_NAME = 'final_answer';
 export const HISTORY_CHARACTER_LIMIT = 60000;
 export const MAX_USER_INPUT_LENGTH = 10000;
 
+export const DEFAULT_ANSWER_INSTRUCTIONS =
+  'Jesteś ekspertem w interpretowaniu i odpowiadaniu na pytania na podstawie dostarczonych źródeł.';
+
 export const systemTemplates = {
   rephraseQuestion: `Na podstawie historii czatu i pytania użytkownika, przeformułuj to pytanie tak, aby było samodzielnym pytaniem. Stwórz tylko samodzielne pytanie bez dodatkowego komentarza.`,
   answerChain: `
-      Jesteś ekspertem w interpretowaniu i odpowiadaniu na pytania na podstawie dostarczonych źródeł.
+      {answer_instructions}
+      
       Korzystając z poniższego kontekstu i historii czatu, odpowiedz na pytanie użytkownika najlepiej jak potrafisz, jednocześnie dokładnie przestrzegając zasad.
       
       <kontekst>

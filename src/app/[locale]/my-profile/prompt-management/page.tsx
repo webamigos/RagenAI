@@ -3,6 +3,7 @@ import {
   ChatModelSelect,
   EditablePrompt,
   SetChatTemperature,
+  SetMaxDocumentsToRetrieve,
 } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { PropsWihLocale } from '@/app/lib/types/types';
@@ -26,12 +27,11 @@ export default function PromptManagementPage() {
         <SetApiKeyWrapper />
       </Suspense>
 
-      <div className="flex md:justify-between mb-5 flex-col md:flex-row">
-        <Suspense fallback={<Fallback />}>
-          <SetChatTemperature />
-        </Suspense>
+      <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
         <Suspense fallback={<Fallback />}>
           <ChatModelSelect />
+          <SetChatTemperature />
+          <SetMaxDocumentsToRetrieve />
         </Suspense>
       </div>
 

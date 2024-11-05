@@ -83,7 +83,7 @@ export const UploadKnowledge = () => {
         disabled={uploading || files.length < 1}
       >
         <ArrowRightCircleIcon
-          className={`fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1`}
+          className={`-ml-1 fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1`}
         />
       </button>
     </Card>

@@ -63,7 +63,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   };
 
   return (
-    <CommonUi.TableRow className="text-sm">
+    <CommonUi.TableRow className="text-sm overflow-x-hidden">
       <CommonUi.TableCell title={file_name}>
         {truncatedFileName}
       </CommonUi.TableCell>
@@ -71,21 +71,15 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
       <CommonUi.TableCell>
-        <div className="-mx-3 -my-1.5 sm:-mx-2.5">
-          <CommonUi.Tooltip
-            id="delete doc"
-            place="top"
-            content={translatedTable('delete')}
-          >
-            {isLoading ? (
-              <CommonUi.SpinnerSVG size="sm" className="ml-1" />
-            ) : (
-              <CommonUi.TrashIcon
-                onClick={handleDelete}
-                className="cursor-pointer"
-              />
-            )}
-          </CommonUi.Tooltip>
+        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+          {isLoading ? (
+            <CommonUi.SpinnerSVG size="sm" className="ml-1" />
+          ) : (
+            <CommonUi.TrashIcon
+              onClick={handleDelete}
+              className="cursor-pointer"
+            />
+          )}
         </div>
       </CommonUi.TableCell>
     </CommonUi.TableRow>

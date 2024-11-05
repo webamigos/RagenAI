@@ -3,4 +3,5 @@ export enum SettingsType {
   temperature = 'temperature',
   model = 'model',
   prompt = 'prompt',
+  maxDocumentsToRetrieve = 'maxDocumentsToRetrieve',
 }

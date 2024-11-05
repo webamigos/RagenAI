@@ -88,12 +88,14 @@ export const useNewThread = () => {
           LOCAL_STORAGE_THREAD_KEY
         );
 
-        const visitorMessagesResponse = await checkVisitorVisits(
-          state.visitorId
-        );
+        if (!isSignedIn) {
+          const visitorMessagesResponse = await checkVisitorVisits(
+            state.visitorId
+          );
 
-        if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
-          dispatch({ type: 'SET_IS_LIMIT_LOCK', payload: true });
+          if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
+            dispatch({ type: 'SET_IS_LIMIT_LOCK', payload: true });
+          }
         }
 
         if (localStorageThreadId && !pathname.includes('/threads')) {

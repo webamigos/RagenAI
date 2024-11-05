@@ -26,14 +26,14 @@ export const Tooltip = ({
 }: TooltipProps) => {
   return (
     <>
-      <div
+      <span
         data-tooltip-id={id}
         data-tooltip-content={content}
         className={className}
         style={{ display: 'inline-block' }}
       >
         {children}
-      </div>
+      </span>
       <ReactTooltip
         id={id}
         place={place}

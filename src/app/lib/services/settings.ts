@@ -1,3 +1,5 @@
+import { defaultOrganizationSettings } from '../constants/settings';
+import { RawOrganizationSettings } from '../types/settings';
 import { decryptApiKey, encryptApiKey } from '../utils/hashApiKey';
 import { getRedisInstance } from './redis';
 
@@ -14,7 +16,9 @@ export async function saveTemperatureSetting(
 
 export async function getTemperatureSetting(orgId: string): Promise<number> {
   const temperature = await redis.hget(`org:${orgId}`, 'temperature');
-  return temperature ? parseFloat(temperature) : 0.5;
+  return temperature
+    ? parseFloat(temperature)
+    : defaultOrganizationSettings.temperature;
 }
 
 export async function saveOpenaiAPIKey(
@@ -46,7 +50,7 @@ export async function saveModel(
 
 export async function getModel(orgId: string): Promise<string | null> {
   const model = await redis.hget(`org:${orgId}`, 'model');
-  return model ? model : 'gpt-3.5-turbo';
+  return model ?? defaultOrganizationSettings.model;
 }
 
 export async function saveAssistantPrompt(
@@ -62,4 +66,45 @@ export async function getAssistantPrompt(
   orgId: string
 ): Promise<string | null> {
   return await redis.hget(`org:${orgId}`, 'prompt');
+}
+
+export async function saveMaxDocumentsToRetrieve(
+  orgId: string,
+  maxDocumentsToRetrieve: number
+): Promise<{ success: boolean; status: string }> {
+  return await redis.hsetWithStatus(`org:${orgId}`, {
+    maxDocumentsToRetrieve: maxDocumentsToRetrieve.toString(),
+  });
+}
+
+export async function getMaxDocumentsToRetrieve(
+  orgId: string
+): Promise<number> {
+  const maxDocumentsToRetrieve = await redis.hget(
+    `org:${orgId}`,
+    'maxDocumentsToRetrieve'
+  );
+  return maxDocumentsToRetrieve
+    ? parseInt(maxDocumentsToRetrieve)
+    : defaultOrganizationSettings.maxDocumentsToRetrieve;
+}
+
+export async function getAllSettings(
+  orgId: string
+): Promise<RawOrganizationSettings> {
+  const result = await redis.hgetall(`org:${orgId}`);
+
+  const decryptedApiKey = result.openai
+    ? decryptApiKey(result.openai)
+    : defaultOrganizationSettings.apiKey;
+
+  return {
+    apiKey: decryptedApiKey,
+    model: result.model || defaultOrganizationSettings.model,
+    temperature: +result.temperature || defaultOrganizationSettings.temperature,
+    prompt: result.prompt || defaultOrganizationSettings.prompt,
+    maxDocumentsToRetrieve:
+      +result.maxDocumentsToRetrieve ||
+      defaultOrganizationSettings.maxDocumentsToRetrieve,
+  };
 }

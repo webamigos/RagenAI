@@ -169,6 +169,9 @@ export const useAssistantLogic = (threadId: string) => {
 
   const loadVisitorMessages = async (id: string) => {
     try {
+      if (isSignedIn) {
+        return;
+      }
       const { data } = await checkVisitorVisits(id);
       if (data.messages >= dailyMessageLimit) {
         dispatch({ type: SET_LIMIT_LOCK, payload: true });

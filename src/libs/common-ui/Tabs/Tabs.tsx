@@ -1,4 +1,8 @@
-import React, { type ReactNode, type ReactElement } from 'react';
+import React, {
+  type ReactNode,
+  type ReactElement,
+  type ComponentPropsWithRef,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type TabListProps = {
@@ -60,14 +64,21 @@ const TabList = ({ children, activeTab, setActiveTab }: TabListProps) => (
   </div>
 );
 
-const Tab = ({ children, isActive, onClick }: TabPropsInterface) => (
+const Tab = ({
+  children,
+  isActive,
+  onClick,
+  ...props
+}: TabPropsInterface & ComponentPropsWithRef<'button'>) => (
   <button
+    type="button"
     className={`flex px-4 py-2 text-sm font-medium transition ${
       isActive
         ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-primary-blue-500 dark:text-gray-200'
         : 'text-gray-600'
     }`}
     onClick={onClick}
+    {...props}
   >
     {children}
   </button>
