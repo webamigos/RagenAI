@@ -230,6 +230,12 @@
     "created": "Data stworzenia",
     "created-by": "Stworzony przez",
     "create": "Stwórz",
-    "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków"
+    "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "dialog": {
+      "remove-key": {
+        "title": "Usuń klucz API",
+        "description": "Ta operacja jest nieodwracalna. Czy na pewno usunąć ten klucz?"
+      }
+    }
   }
 }

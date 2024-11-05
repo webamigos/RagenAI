@@ -27,8 +27,8 @@ export const removeApiKey = async (keyId: ApiKey['id']) => {
   }
 
   try {
-    // setSentryServiceTag(serviceName);
-    // setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+    setSentryServiceTag(serviceName);
+    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
     await removeApiKeyFromDb(orgId, keyId);
 

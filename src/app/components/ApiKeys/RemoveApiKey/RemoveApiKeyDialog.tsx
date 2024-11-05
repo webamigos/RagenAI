@@ -1,6 +1,5 @@
 'use client';
 
-import { ApiKey } from '@prisma/client';
 import {
   Button,
   Dialog,
@@ -9,6 +8,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@salesyy/common-ui';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   isOpen: boolean;
@@ -26,14 +26,13 @@ export const RemoveApiKeyDialog = ({
   onConfirm,
   isPending = false,
 }: Props) => {
+  const t = useTranslations('api-keys');
+
   return (
     <Dialog onClose={onClose} size="sm" open={isOpen}>
-      <DialogTitle>Dialog Title</DialogTitle>
+      <DialogTitle>{t('remove-key.title')}</DialogTitle>
       <DialogBody>
-        <DialogDescription>
-          This is the description for the dialog. You can provide more details
-          here.
-        </DialogDescription>
+        <DialogDescription>{t('remove-key.description')}</DialogDescription>
       </DialogBody>
       <DialogActions>
         <Button label="Cancel" onClick={onCancel} />

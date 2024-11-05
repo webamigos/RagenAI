@@ -42,6 +42,10 @@ export const createOrganizationWithDefaultProject = async (
 
     return organization;
   });
+
+  return {
+    publicId: organization.public_id,
+  };
 };
 
 export const fetchApiKeysFromDb = async (

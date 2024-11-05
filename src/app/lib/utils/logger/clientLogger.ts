@@ -11,7 +11,7 @@ Sentry.init({
 type LogLevel = 'info' | 'error' | 'warn' | 'debug';
 
 class ClientLogger implements AppLogger {
-  private log(level: LogLevel, message: string, ...args: any[]) {
+  private log(level: LogLevel, message: string | object, ...args: any[]) {
     // Development logging to console
     if (isDevelopment) {
       // eslint-disable-next-line no-console
@@ -23,7 +23,12 @@ class ClientLogger implements AppLogger {
       if (level === 'error') {
         Sentry.captureException(args[0] || message);
       } else {
-        Sentry.captureMessage(message, {
+        let logMessage =
+          typeof message === 'string'
+            ? message
+            : `Object: ${JSON.stringify(message, null, 2)}`;
+
+        Sentry.captureMessage(logMessage, {
           level: level === 'warn' ? 'warning' : level,
           extra: args.length ? { extra: args } : undefined,
         });

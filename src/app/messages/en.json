@@ -230,6 +230,12 @@
     "created": "Created",
     "created-by": "Created By",
     "create": "Create",
-    "name-is-to-short": "Name is to short - use at least 3 characters"
+    "name-is-to-short": "Name is to short - use at least 3 characters",
+    "dialog": {
+      "remove-key": {
+        "title": "Remove API key",
+        "description": "This operation cannot be inverted. Are you sure to remove this API key?"
+      }
+    }
   }
 }
