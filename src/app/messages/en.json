@@ -19,9 +19,10 @@
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
     "sign-in": "Sign in",
-    "Verification-code": "Verification code",
+    "verification-code": "Verification code",
     "confirm": "Confirm code",
-    "or": "or"
+    "or": "or",
+    "verification-code-hint": "A verification code has been sent to your email address. Please enter it in the field below."
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -49,7 +50,8 @@
   },
   "common": {
     "sign-in": "Sign in",
-    "sign-out": "Sign out"
+    "sign-out": "Sign out",
+    "loading": "Loading..."
   },
   "Metadata": {
     "index": {
@@ -178,7 +180,8 @@
     "manage-members": "Manage members",
     "manage-knowledge": "Manage knowledge",
     "organization-list": "Organization list",
-    "assistant-management": "Assistant management"
+    "assistant-management": "Assistant management",
+    "api-keys": "API Keys"
   },
   "files-table": {
     "delete": "Delete",
@@ -217,5 +220,22 @@
     "form_code_incorrect": "Incorrect code.",
     "form_password_incorrect": "Incorrect password.",
     "form_password_pwned": "Password has been found in an online data breach. For account safety, please use a different password."
+  },
+  "api-keys": {
+    "title": "API Keys",
+    "title-create": "Create API Key",
+    "create-key": "Create Key",
+    "name": "Name",
+    "secret-key": "Secret Key",
+    "created": "Created",
+    "created-by": "Created By",
+    "create": "Create",
+    "name-is-to-short": "Name is to short - use at least 3 characters",
+    "dialog": {
+      "remove-key": {
+        "title": "Remove API key",
+        "description": "This operation cannot be inverted. Are you sure to remove this API key?"
+      }
+    }
   }
 }

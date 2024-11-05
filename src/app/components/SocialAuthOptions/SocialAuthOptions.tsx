@@ -1,14 +1,15 @@
 'use client';
 
 import Image from 'next/image';
+import { memo, useTransition } from 'react';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
-import { Divider } from '@salesyy/common-ui/Divider';
-import { logger } from '@/app/lib/utils/logger';
-import { loadFingerprint } from '@/app/lib/utils/fingerprint';
-import { memo, useTransition } from 'react';
 
+import { Divider } from '@salesyy/common-ui/Divider';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
+
+import { loadFingerprint } from '@/app/lib/utils/fingerprint';
+import { logger } from '@/app/lib/utils/logger';
 
 type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
 
