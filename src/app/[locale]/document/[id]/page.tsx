@@ -33,9 +33,8 @@ import {
   SET_EDITING,
   SET_SAVING,
   SET_EDITABLE_CONTENT,
-  SET_EDITABLE_TITLE,
   SET_DOCUMENT_TITLE,
-  SET_EDITING_TITLE,
+  EDIT_TITLE_MODE,
 } from './documentReducer';
 
 const turndownService = new TurndownService();
@@ -119,8 +118,10 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   };
 
   const handleTitleDoubleClick = () => {
-    dispatch({ type: SET_EDITING_TITLE, payload: true });
-    dispatch({ type: SET_EDITABLE_TITLE, payload: documentTitle });
+    dispatch({
+      type: EDIT_TITLE_MODE,
+      payload: { isEditing: true, title: documentTitle },
+    });
   };
 
   const handleSave = async () => {
@@ -173,7 +174,10 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     } else {
       errorToast({ message: response.message });
     }
-    dispatch({ type: SET_EDITING_TITLE, payload: false });
+    dispatch({
+      type: EDIT_TITLE_MODE,
+      payload: { isEditing: false, title: null },
+    });
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -205,7 +209,10 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             type="text"
             value={editableTitle || ''}
             onChange={(e) =>
-              dispatch({ type: SET_EDITABLE_TITLE, payload: e.target.value })
+              dispatch({
+                type: EDIT_TITLE_MODE,
+                payload: { isEditing: true, title: e.target.value },
+              })
             }
             onBlur={handleEditTitle}
             onKeyDown={handleTitleKeyDown}

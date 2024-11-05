@@ -3,9 +3,8 @@ export const SET_EDITING = 'SET_EDITING';
 export const SET_LOADING = 'SET_LOADING';
 export const SET_EDITABLE_CONTENT = 'SET_EDITABLE_CONTENT';
 export const SET_SAVING = 'SET_SAVING';
-export const SET_EDITABLE_TITLE = 'SET_EDITABLE_TITLE';
 export const SET_DOCUMENT_TITLE = 'SET_DOCUMENT_TITLE';
-export const SET_EDITING_TITLE = 'SET_EDITING_TITLE';
+export const EDIT_TITLE_MODE = 'EDIT_TITLE_MODE';
 
 export type State = {
   documentContent: string | null;
@@ -24,9 +23,11 @@ export type Action =
   | { type: typeof SET_LOADING; payload: boolean }
   | { type: typeof SET_EDITABLE_CONTENT; payload: string }
   | { type: typeof SET_SAVING; payload: boolean }
-  | { type: typeof SET_EDITABLE_TITLE; payload: string | null }
   | { type: typeof SET_DOCUMENT_TITLE; payload: string }
-  | { type: typeof SET_EDITING_TITLE; payload: boolean };
+  | {
+      type: typeof EDIT_TITLE_MODE;
+      payload: { isEditing: boolean; title: string | null };
+    };
 
 export const initialState: State = {
   documentContent: null,
@@ -56,12 +57,14 @@ export function reducer(state: State, action: Action): State {
       return { ...state, editableContent: action.payload };
     case SET_SAVING:
       return { ...state, isSaving: action.payload };
-    case SET_EDITABLE_TITLE:
-      return { ...state, editableTitle: action.payload };
     case SET_DOCUMENT_TITLE:
       return { ...state, documentTitle: action.payload };
-    case SET_EDITING_TITLE:
-      return { ...state, isEditingTitle: action.payload };
+    case EDIT_TITLE_MODE:
+      return {
+        ...state,
+        isEditingTitle: action.payload.isEditing,
+        editableTitle: action.payload.title,
+      };
     default:
       return state;
   }
