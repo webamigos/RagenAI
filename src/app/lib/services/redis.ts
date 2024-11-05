@@ -31,7 +31,7 @@ class RedisService {
     try {
       return await this.client.hgetall(key);
     } catch (error) {
-      logger.error(error, 'Redis error (hgetall)');
+      logger.error('Redis error (hgetall) %o', error);
       throw new Error('Failed to retrieve data from Redis');
     }
   }
