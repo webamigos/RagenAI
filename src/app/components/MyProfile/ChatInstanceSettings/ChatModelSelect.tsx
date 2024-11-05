@@ -9,9 +9,10 @@ import { fetchSettings, saveSetting } from './actions';
 
 import { availableModels } from '../../config';
 import { SettingsType } from './types';
+import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
 
 export const ChatModelSelect = ({}) => {
-  const [model, setModel] = useState<string>('gpt-3.5-turbo');
+  const [model, setModel] = useState<string>(defaultOrganizationSettings.model);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { successToast, errorToast } = statusToast();

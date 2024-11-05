@@ -122,7 +122,8 @@
     "no-user-id": "user id missing",
     "error-during-deleting-file": "Error deleting document",
     "failed-to-update-temperature": "Failed to update temperature:",
-    "failed-to-fetch-settings": "Failed to fetch settings:"
+    "failed-to-fetch-settings": "Failed to fetch settings:",
+    "failed-to-update-max-documents": "Failed to update max document to retreive:"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
@@ -204,12 +205,15 @@
     "save": "Save",
     "edit-successfully": "The document has been edited"
   },
+  "max-documents-to-retreive": {
+    "input-label": "Max fragments retrieved in search"
+  },
   "model-select": {
-    "select-model": "Select model"
+    "select-model": "Language model"
   },
   "editable-prompt": {
-    "title": "Update prompt",
-    "label": "Available variables you can use in the prompt:",
+    "title": "Assistant personalization instructions",
+    "label": "Set the assistant's response style or tone. Example: \"Respond professionally and concisely.\"",
     "update": "Update"
   },
   "clerk-api-errors": {

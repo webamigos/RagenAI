@@ -3,10 +3,12 @@ import { auth } from '@clerk/nextjs/server';
 
 import {
   getAssistantPrompt,
+  getMaxDocumentsToRetrieve,
   getModel,
   getOpenaiAPIKey,
   getTemperatureSetting,
   saveAssistantPrompt,
+  saveMaxDocumentsToRetrieve,
   saveModel,
   saveOpenaiAPIKey,
   saveTemperatureSetting,
@@ -25,10 +27,12 @@ type ActionResponse =
         temperature: number;
         model: string;
         prompt: string;
+        maxDocumentsToRetrieve: number;
       };
     };
 
-const { apiKey, model, prompt, temperature } = SettingsType;
+const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
+  SettingsType;
 
 //to replace by:
 // https://www.npmjs.com/package/crypto-js
@@ -49,6 +53,7 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
     const temperature = await getTemperatureSetting(orgId);
     const model = (await getModel(orgId)) ?? '';
     const prompt = (await getAssistantPrompt(orgId)) ?? '';
+    const maxDocumentsToRetrieve = await getMaxDocumentsToRetrieve(orgId);
 
     if (!apiKey) {
       return { success: false, message: 'No API Key found' };
@@ -56,7 +61,7 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
 
     return {
       success: true,
-      data: { apiKey, temperature, model, prompt },
+      data: { apiKey, temperature, model, prompt, maxDocumentsToRetrieve },
     };
   } catch (error) {
     logger.error('Failed to fetch settings:', error);
@@ -96,6 +101,13 @@ export const saveSetting = async (
         return {
           success: true,
           message: 'Assistant prompt saved successfully',
+        };
+
+      case maxDocumentsToRetrieve:
+        await saveMaxDocumentsToRetrieve(orgId, value as number);
+        return {
+          success: true,
+          message: 'Max documents to retrieve saved successfully',
         };
 
       default:
