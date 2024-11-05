@@ -23,6 +23,20 @@ import {
 } from '@/app/components/MarkdownDocumentsCreator/action';
 import { deleteDocument } from '@/app/actions';
 import { uploadFiles } from '@/app/lib/services/api';
+import {
+  reducer,
+  initialState,
+  State,
+  Action,
+  SET_DOCUMENT,
+  SET_LOADING,
+  SET_EDITING,
+  SET_SAVING,
+  SET_EDITABLE_CONTENT,
+  SET_EDITABLE_TITLE,
+  SET_DOCUMENT_TITLE,
+  SET_EDITING_TITLE,
+} from './documentReducer';
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -34,72 +48,12 @@ type DocumentPageProps = {
   };
 };
 
-type State = {
-  documentContent: string | null;
-  documentTitle: string | null;
-  isLoading: boolean;
-  isEditing: boolean;
-  editableContent: string | null;
-  isEditingTitle: boolean;
-  editableTitle: string | null;
-  isSaving: boolean;
-};
-
-type Action =
-  | { type: 'SET_DOCUMENT'; payload: { content: string; title: string } }
-  | { type: 'SET_EDITING'; payload: boolean }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_EDITABLE_CONTENT'; payload: string }
-  | { type: 'SET_SAVING'; payload: boolean }
-  | { type: 'SET_EDITABLE_TITLE'; payload: string | null }
-  | { type: 'SET_DOCUMENT_TITLE'; payload: string }
-  | { type: 'SET_EDITING_TITLE'; payload: boolean };
-
-const initialState: State = {
-  documentContent: null,
-  documentTitle: null,
-  isLoading: true,
-  isEditing: false,
-  editableContent: null,
-  isEditingTitle: false,
-  editableTitle: null,
-  isSaving: false,
-};
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'SET_DOCUMENT':
-      return {
-        ...state,
-        documentContent: action.payload.content,
-        documentTitle: action.payload.title,
-        isLoading: false,
-      };
-    case 'SET_EDITING':
-      return { ...state, isEditing: action.payload };
-    case 'SET_LOADING':
-      return { ...state, isLoading: action.payload };
-    case 'SET_EDITABLE_CONTENT':
-      return { ...state, editableContent: action.payload };
-    case 'SET_SAVING':
-      return { ...state, isSaving: action.payload };
-    case 'SET_EDITABLE_TITLE':
-      return { ...state, editableTitle: action.payload };
-    case 'SET_DOCUMENT_TITLE':
-      return { ...state, documentTitle: action.payload };
-    case 'SET_EDITING_TITLE':
-      return { ...state, isEditingTitle: action.payload };
-    default:
-      return state;
-  }
-}
-
 export default function DocumentPage({ params }: DocumentPageProps) {
-  const { id } = params;
-  const { organization } = useOrganization();
-  const t = useTranslations('document-preview');
+  const [state, dispatch] = useReducer(reducer, initialState) as [
+    State,
+    React.Dispatch<Action>
+  ];
 
-  const [state, dispatch] = useReducer(reducer, initialState);
   const {
     documentContent,
     documentTitle,
@@ -111,16 +65,18 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     isSaving,
   } = state;
 
+  const { id } = params;
+  const { organization } = useOrganization();
+  const t = useTranslations('document-preview');
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
-
   const { errorToast, successToast } = statusToast();
   const orgId = organization?.id.toLowerCase();
 
   useEffect(() => {
     if (id && orgId) {
       const loadDocument = async () => {
-        dispatch({ type: 'SET_LOADING', payload: true });
+        dispatch({ type: SET_LOADING, payload: true });
 
         try {
           const content = await fetchDocumentByOrganization(orgId, id);
@@ -133,14 +89,14 @@ export default function DocumentPage({ params }: DocumentPageProps) {
               .join('\n');
 
             dispatch({
-              type: 'SET_DOCUMENT',
+              type: SET_DOCUMENT,
               payload: { content: documentText, title: documentTitle },
             });
 
             if (isEditMode) {
-              dispatch({ type: 'SET_EDITING', payload: true });
+              dispatch({ type: SET_EDITING, payload: true });
               const htmlContent = mdParser.render(documentText || '');
-              dispatch({ type: 'SET_EDITABLE_CONTENT', payload: htmlContent });
+              dispatch({ type: SET_EDITABLE_CONTENT, payload: htmlContent });
             }
           } else {
             errorToast({ message: `${content.message}: ${content.error}` });
@@ -148,7 +104,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         } catch (error) {
           errorToast({ message: t('fetching-error') });
         } finally {
-          dispatch({ type: 'SET_LOADING', payload: false });
+          dispatch({ type: SET_LOADING, payload: false });
         }
       };
 
@@ -157,19 +113,19 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   }, [id, orgId, isEditMode]);
 
   const handleDoubleClick = () => {
-    dispatch({ type: 'SET_EDITING', payload: true });
+    dispatch({ type: SET_EDITING, payload: true });
     const htmlContent = mdParser.render(documentContent || '');
-    dispatch({ type: 'SET_EDITABLE_CONTENT', payload: htmlContent });
+    dispatch({ type: SET_EDITABLE_CONTENT, payload: htmlContent });
   };
 
   const handleTitleDoubleClick = () => {
-    dispatch({ type: 'SET_EDITING_TITLE', payload: true });
-    dispatch({ type: 'SET_EDITABLE_TITLE', payload: documentTitle });
+    dispatch({ type: SET_EDITING_TITLE, payload: true });
+    dispatch({ type: SET_EDITABLE_TITLE, payload: documentTitle });
   };
 
   const handleSave = async () => {
     if (!orgId || !editableContent || !documentTitle) return;
-    dispatch({ type: 'SET_SAVING', payload: true });
+    dispatch({ type: SET_SAVING, payload: true });
 
     const markdownContent = turndownService.turndown(editableContent);
     const response = await updateDocument({
@@ -193,15 +149,15 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
     if (response.success) {
       dispatch({
-        type: 'SET_DOCUMENT',
+        type: SET_DOCUMENT,
         payload: { content: markdownContent, title: documentTitle },
       });
       successToast({ message: t('edit-successfully') });
     } else {
       errorToast({ message: response.message });
     }
-    dispatch({ type: 'SET_EDITING', payload: false });
-    dispatch({ type: 'SET_SAVING', payload: false });
+    dispatch({ type: SET_EDITING, payload: false });
+    dispatch({ type: SET_SAVING, payload: false });
   };
 
   const handleEditTitle = async () => {
@@ -213,11 +169,11 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     });
 
     if (response.success) {
-      dispatch({ type: 'SET_DOCUMENT_TITLE', payload: editableTitle });
+      dispatch({ type: SET_DOCUMENT_TITLE, payload: editableTitle });
     } else {
       errorToast({ message: response.message });
     }
-    dispatch({ type: 'SET_EDITING_TITLE', payload: false });
+    dispatch({ type: SET_EDITING_TITLE, payload: false });
   };
 
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -249,7 +205,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             type="text"
             value={editableTitle || ''}
             onChange={(e) =>
-              dispatch({ type: 'SET_EDITABLE_TITLE', payload: e.target.value })
+              dispatch({ type: SET_EDITABLE_TITLE, payload: e.target.value })
             }
             onBlur={handleEditTitle}
             onKeyDown={handleTitleKeyDown}
@@ -272,7 +228,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             <WysiwygEditor
               value={editableContent || ''}
               onChange={(content) =>
-                dispatch({ type: 'SET_EDITABLE_CONTENT', payload: content })
+                dispatch({ type: SET_EDITABLE_CONTENT, payload: content })
               }
               className="flex-1"
             />
