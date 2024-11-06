@@ -1,10 +1,11 @@
 name: E2E Tests
 
 env:
+  NEXT_PUBLIC_API_URL: 'http://example.com'
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-  NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-  SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
-  OPENAI_API_KEY: 'dummy'
+  NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -75,9 +76,6 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          TESTS_CLERK_USER_USERNAME: ${{ vars.TESTS_CLERK_USER_USERNAME }}
-          TESTS_CLERK_USER_EMAIL: ${{ vars.TESTS_CLERK_USER_EMAIL }}
-          TESTS_CLERK_USER_PASSWORD: ${{ vars.TESTS_CLERK_USER_PASSWORD }}
           NEXT_PUBLIC_ENABLE_MSW_MOCKING: 'enabled'
           NEXT_PUBLIC_TEST_ENV: 'enabled'
           CLERK_JWT_KEY: 'dummy'
