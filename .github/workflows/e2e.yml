@@ -5,8 +5,8 @@ env:
   NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
   SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: 'dummy'
-  SUPABASE_URL: 'http://example.com'
-  SUPABASE_ANON_KEY: 'dummy'
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
   CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
@@ -15,7 +15,7 @@ env:
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
   LANGCHAIN_API_KEY: 'dummy'
   LANGCHAIN_ENDPOINT: 'http://example.com'
-  REDIS_URL: 'http://example.com'
+  REDIS_URL: ${{ secrets.REDIS_URL }}
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'ci'
 
