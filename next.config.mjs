@@ -3,6 +3,8 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
@@ -12,15 +14,28 @@ const nextConfig = {
   },
 
   experimental: {
-    serverComponentsExternalPackages: ['pino', 'pino-pretty'],
-  },
-
-  images: {
-    domains: ['img.clerk.com'],
+    serverComponentsExternalPackages: [
+      'pino',
+      'pino-pretty',
+      'pino-sentry',
+      '@sentry/node',
+    ],
   },
 
   webpack: (config, { isServer }) => {
-    if (isServer) {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        child_process: false, // for pino-sentry server logging
+        fs: false, // for pino-sentry server logging
+        inspector: false, // for pino-sentry server logging
+        tls: false, // for pino-sentry server logging
+        net: false, // for pino-sentry server logging
+        async_hooks: false, // for pino-sentry server logging
+        diagnostics_channel: false, // for playwright
+        worker_threads: false,
+      };
+    } else {
       // Setting `resolve.alias` to `false` will tell webpack to ignore a module.
       // `msw/node` is a server-only module that exports methods not available in
       // the `browser`.
@@ -33,14 +48,14 @@ const nextConfig = {
   },
 };
 
-export default !process.env.SENTRY_DSN
+export default !isProduction
   ? withNextIntl(nextConfig)
   : withSentryConfig(withNextIntl(nextConfig), {
       // For all available options, see:
       // https://github.com/getsentry/sentry-webpack-plugin#options
 
       org: 'web-amigos',
-      project: 'salesyy-assistant',
+      project: 'smartrag-app',
 
       // Only print logs for uploading source maps in CI
       silent: !process.env.CI,

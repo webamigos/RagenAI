@@ -2,19 +2,19 @@ version: '3'
 services:
   db:
     image: postgres
-    container_name: salesyy-postgres
+    container_name: smartrag-postgres
     restart: always
     ports:
       - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pass123
-      POSTGRES_DB: salesyy-avatar
+      POSTGRES_DB: smartrag
     volumes:
       - ./volumes/postgres:/var/lib/postgresql/data
   redis:
     image: redis
-    container_name: salesyy-redis
+    container_name: smartrag-redis
     ports:
       - 6379:6379
     restart: always

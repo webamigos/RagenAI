@@ -7,6 +7,8 @@ import {
 } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { PropsWihLocale } from '@/app/lib/types/types';
+import { Fallback } from '@/app/components/Fallback';
+import { Suspense } from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,15 +23,21 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 export default function PromptManagementPage() {
   return (
     <div className="container flex flex-col">
-      <SetApiKeyWrapper />
+      <Suspense fallback={<Fallback />}>
+        <SetApiKeyWrapper />
+      </Suspense>
 
       <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
-        <ChatModelSelect />
-        <SetChatTemperature />
-        <SetMaxDocumentsToRetrieve />
+        <Suspense fallback={<Fallback />}>
+          <ChatModelSelect />
+          <SetChatTemperature />
+          <SetMaxDocumentsToRetrieve />
+        </Suspense>
       </div>
 
-      <EditablePrompt />
+      <Suspense fallback={<Fallback />}>
+        <EditablePrompt />
+      </Suspense>
     </div>
   );
 }

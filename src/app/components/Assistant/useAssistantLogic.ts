@@ -15,10 +15,10 @@ import {
   fetchMessagesFromApi,
 } from '../../lib/services/api';
 import { loadFingerprint } from '../../lib/utils/fingerprint';
-import { logger } from '../../lib/utils/logger';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import { type State, type Action, reducerActions } from './types';
+import { logger } from '@/app/lib/utils/logger';
 
 const {
   SET_INITIAL_LOAD,

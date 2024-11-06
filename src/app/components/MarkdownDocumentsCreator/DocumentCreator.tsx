@@ -23,6 +23,8 @@ import {
 import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
+import { saveMarkdownWithMeta } from './action';
+import { logger } from '@/app/lib/utils/logger';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -97,6 +99,7 @@ export const DocumentCreator = () => {
         errorToast({ message: response.message });
       }
     } catch (error) {
+      logger.error('Error creating document', error);
       errorToast({ message: t('send-error') });
     }
   };

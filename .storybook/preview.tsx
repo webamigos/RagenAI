@@ -1,19 +1,14 @@
-import type { Preview } from '@storybook/react';
-import '../src/app/[locale]/global.css';
-import nextIntl from './next-intl';
-import { ClerkProvider, ClerkProviderProps } from '@clerk/clerk-react';
-import { StoryFn, StoryContext } from '@storybook/react';
 import React from 'react';
+import type { Preview } from '@storybook/react';
+import { ClerkProvider } from '@clerk/nextjs';
+import { StoryFn, StoryContext } from '@storybook/react';
 
-const CLERK_API_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+import nextIntl from './next-intl';
+import '../src/app/[locale]/global.css';
 
 const withClerkProvider = (Story: StoryFn, context: StoryContext) => {
-  const clerkProps: ClerkProviderProps = {
-    frontendApi: CLERK_API_KEY,
-  };
-
   return (
-    <ClerkProvider {...clerkProps}>
+    <ClerkProvider>
       <Story {...context} />
     </ClerkProvider>
   );

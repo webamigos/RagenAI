@@ -13,15 +13,16 @@
     "to-still-use": "aby korzystać dalej"
   },
   "sign-up": {
-    "create-account": "Utwórz konto",
+    "create-account": "Załóż konto",
     "to-continue": "aby kontynuować w SalesYY Assistant",
     "sign-up": "Zarejestruj się",
     "password": "Hasło",
     "Already-have-an-account": "Masz już konto?",
     "sign-in": "Zaloguj się",
-    "Verification-code": "Kod weryfikacyjny",
+    "verification-code": "Kod weryfikacyjny",
     "confirm": "Potwierdź kod",
-    "or": "lub"
+    "or": "lub",
+    "verification-code-hint": "Na Twój adres e-mail został wysłany kod weryfikacyjny. Wprowadź go w pole poniżej."
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -49,7 +50,8 @@
   },
   "common": {
     "sign-in": "Zaloguj",
-    "sign-out": "Wyloguj"
+    "sign-out": "Wyloguj",
+    "loading": "Chileczkę..."
   },
   "Metadata": {
     "index": {
@@ -99,7 +101,7 @@
     "USER": "Ty",
     "ASSISTANT": "Asystent",
     "loading": "Chwileczkę...",
-    "create-new-thread": "Utwórz nowy wątek",
+    "create-new-thread": "Załóż nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni"
@@ -175,10 +177,11 @@
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
     "manage-organization": "Zarządzaj organizacją",
-    "manage-members": "Zarządzaj członkami",
+    "manage-members": "Zarządzaj użytkownikami",
     "manage-knowledge": "Zarządzaj wiedzą",
     "organization-list": "Lista organizacji",
-    "assistant-management": "Zarządzanie asystentem"
+    "assistant-management": "Zarządzanie asystentem",
+    "api-keys": "Klucze API"
   },
   "files-table": {
     "delete": "Usuń",
@@ -223,5 +226,22 @@
     "form_code_incorrect": "Nieprawidłowy kod",
     "form_password_incorrect": "Nieprawidłowe hasło.",
     "form_password_pwned": "Twoje hasło zostało upublicznione. Dla bezpieczństwa konta, użyj innego hasła."
+  },
+  "api-keys": {
+    "title": "Klucze API",
+    "title-create": "Stwórz nowy klucz",
+    "create-key": "Nowy klucz",
+    "name": "Nazwa",
+    "secret-key": "Klucz",
+    "created": "Data stworzenia",
+    "created-by": "Stworzony przez",
+    "create": "Stwórz",
+    "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "dialog": {
+      "remove-key": {
+        "title": "Usuń klucz API",
+        "description": "Ta operacja jest nieodwracalna. Czy na pewno usunąć ten klucz?"
+      }
+    }
   }
 }

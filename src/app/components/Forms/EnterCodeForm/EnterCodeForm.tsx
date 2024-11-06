@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { saveUserIdToClerk } from '@/app/actions';
-import { Button, Card } from '@salesyy/common-ui';
+import { Button, Card, Text } from '@salesyy/common-ui';
 import { Input } from '@salesyy/common-ui';
 
 import { type VerificationFormData, verificationSchema } from './schema';
@@ -22,7 +22,7 @@ export const EnterCodeForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signUp, setActive } = useSignUp();
 
-  const t = useTranslations('Sign-up');
+  const t = useTranslations('sign-up');
   const { push } = useRouter();
 
   const {
@@ -67,10 +67,11 @@ export const EnterCodeForm = () => {
   return (
     <Card>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <Text>{t('verification-code-hint')}</Text>
         <Input
           className="w-full px-3 py-2 border rounded"
           errorMessage={errors.email_code?.message}
-          label={t('Verification-code')}
+          label={t('verification-code')}
           error={errors.email_code}
           type="text"
           id="email_code"
