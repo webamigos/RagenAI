@@ -24,9 +24,10 @@ const envSchema = z.object({
 
   // Redis for organization settings
   REDIS_URL: z.string().url(),
+  SECRET_KEY: z.string().url(), // for hashing organization settings in Redis
 
   // Target env
-  TARGET_ENV: z.enum(['local', 'test', 'staging', 'production']),
+  TARGET_ENV: z.enum(['local', 'test', 'ci', 'staging', 'production']),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);
