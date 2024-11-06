@@ -1,7 +1,7 @@
 import pino from 'pino';
 import { createWriteStream } from 'pino-sentry';
 
-import { isProduction } from '@/libs/utils/env';
+import { isProductionTargetEnv, isStagingTargetEnv } from '@/libs/utils/env';
 
 const streams = [];
 
@@ -10,11 +10,13 @@ if (typeof window !== 'undefined') {
   throw new Error('This module should only be used on the server side');
 }
 
-if (isProduction && process.env.SENTRY_DSN) {
+if ((isProductionTargetEnv || isStagingTargetEnv) && process.env.SENTRY_DSN) {
   const sentryStream = createWriteStream({
     dsn: process.env.SENTRY_DSN,
     level: 'info',
-    environment: process.env.NODE_ENV,
+    environment: process.env.TARGET_ENV
+      ? process.env.TARGET_ENV
+      : process.env.NODE_ENV,
   });
 
   streams.push({
@@ -22,7 +24,7 @@ if (isProduction && process.env.SENTRY_DSN) {
   });
 }
 
-if (!isProduction) {
+if (!isProductionTargetEnv) {
   // Dynamically import pino-pretty only on the server
   const pretty = require('pino-pretty');
   streams.push({
@@ -34,7 +36,7 @@ if (!isProduction) {
 
 const logger = pino(
   {
-    level: isProduction ? 'info' : 'debug',
+    level: isProductionTargetEnv ? 'info' : 'debug',
     base: {
       pid: process.pid,
       hostname: process.env.HOSTNAME,
