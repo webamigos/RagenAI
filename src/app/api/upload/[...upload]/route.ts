@@ -58,7 +58,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           uniqueFileId
         );
 
-        createDocumentDetailsInDB(
+        await createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
