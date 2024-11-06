@@ -24,7 +24,7 @@ if ((isProductionTargetEnv || isStagingTargetEnv) && process.env.SENTRY_DSN) {
   });
 }
 
-if (!isProduction) {
+if (!isProductionTargetEnv) {
   // Dynamically import pino-pretty only on the server
   const pretty = require('pino-pretty');
   streams.push({
@@ -36,7 +36,7 @@ if (!isProduction) {
 
 const logger = pino(
   {
-    level: isProduction ? 'info' : 'debug',
+    level: isProductionTargetEnv ? 'info' : 'debug',
     base: {
       pid: process.pid,
       hostname: process.env.HOSTNAME,
