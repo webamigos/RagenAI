@@ -17,7 +17,10 @@ env:
   LANGCHAIN_ENDPOINT: 'http://example.com'
   REDIS_URL: ${{ secrets.REDIS_URL }}
   SECRET_KEY: 'dummy'
-  TARGET_ENV: 'ci'
+  TARGET_ENV: 'test'
+  TESTS_CLERK_USER_EMAIL: ${{ vars.TESTS_CLERK_USER_EMAIL }}
+  TESTS_CLERK_USER_PASSWORD: ${{ vars.TESTS_CLERK_USER_PASSWORD }}
+  TESTS_CLERK_USER_USERNAME: ${{ vars.TESTS_CLERK_USER_USERNAME }}
 
 on:
   push:
