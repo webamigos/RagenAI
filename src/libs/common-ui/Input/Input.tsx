@@ -97,8 +97,8 @@ export const Input = forwardRef(
             htmlFor={id}
             className="block text-sm text-gray-600 font-medium leading-6 dark:text-gray-300"
           >
-            {mandatory && <span className="text-red-600">*</span>}
             {label}
+            {mandatory && <span className="text-red-600">*</span>}
           </label>
         )}
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>

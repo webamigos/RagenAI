@@ -7,6 +7,7 @@ import { deleteDocument } from '../services/TableService';
 import { logger } from '../../../lib/utils/logger';
 import {
   createDocumentDetailsInDB,
+  createMarkdownDocument,
   deleteDocumentFromUserDocument,
 } from '../../../lib/services/document';
 
@@ -32,6 +33,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
+    const processedFiles = [];
+
     for (const file of files) {
       if (!file.size) {
         return NextResponse.json(
@@ -43,8 +46,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       let content;
       const arrayBuffer = await file.arrayBuffer();
       content = file.name.endsWith('.epub')
-        ? (content = Buffer.from(arrayBuffer))
-        : (content = await file.text());
+        ? Buffer.from(arrayBuffer)
+        : await file.text();
 
       try {
         const uniqueFileId = uuidv4();
@@ -54,12 +57,23 @@ export async function POST(request: NextRequest, { params }: Params) {
           organizationId,
           uniqueFileId
         );
+
         await createDocumentDetailsInDB(
           file.name,
           file.size,
           uploaderId,
           uniqueFileId
         );
+
+        if (file.name.endsWith('.md')) {
+          await createMarkdownDocument({
+            public_id: uniqueFileId,
+            title: file.name,
+            organization_id: organizationId.toLowerCase(),
+            content: content as string,
+          });
+        }
+
         if (!success) {
           logger.error(
             `Błąd podczas przetwarzania pliku ${file.name}:%o`,
@@ -67,6 +81,13 @@ export async function POST(request: NextRequest, { params }: Params) {
           );
           return NextResponse.json({ message }, { status: 500 });
         }
+
+        processedFiles.push({
+          fileName: file.name,
+          fileSize: file.size,
+          uniqueFileId,
+          content,
+        });
       } catch (error) {
         logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
         return NextResponse.json(
@@ -76,10 +97,11 @@ export async function POST(request: NextRequest, { params }: Params) {
       }
     }
 
-    return NextResponse.json(
-      { message: 'Pliki zostały przetworzone' },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      message: 'Pliki zostały przetworzone',
+      status: 200,
+      files: processedFiles,
+    });
   } catch (error) {
     logger.error('Błąd podczas przetwarzania plików:', error);
     return NextResponse.json(

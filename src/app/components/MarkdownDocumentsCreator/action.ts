@@ -3,8 +3,12 @@
 import TurndownService from 'turndown';
 import { v4 as uuidv4 } from 'uuid';
 
-import { createMarkdownDocument } from '@/app/lib/services/document';
-import { createDocumentDetailsInDB } from '@/app/lib/services/document';
+import {
+  createMarkdownDocument,
+  getDocumentPreview,
+  saveEditedDocumentContent,
+  saveEditedDocumentTitle,
+} from '@/app/lib/services/document';
 import { type DocumentSchema } from './DocumentCreator';
 
 export async function saveMarkdownWithMeta(
@@ -26,12 +30,6 @@ export async function saveMarkdownWithMeta(
 
   try {
     createMarkdownDocument(markdownData);
-    createDocumentDetailsInDB(
-      data.title,
-      markdownDataSize,
-      organizationId,
-      uniqueFileId
-    );
     return {
       success: true,
       document: {
@@ -47,3 +45,87 @@ export async function saveMarkdownWithMeta(
     return { success: false, message: 'Failed to create document:', error };
   }
 }
+
+type DocumentSuccessResponse = {
+  success: true;
+  documents: { content: string; title: string }[];
+};
+
+type DocumentErrorResponse = {
+  success: false;
+  message: string;
+  error: unknown;
+};
+
+type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
+
+export async function fetchDocumentByOrganization(
+  organizationId: string,
+  documentId: string
+): Promise<DocumentResponse> {
+  try {
+    const response: { content: string; title: string }[] =
+      await getDocumentPreview({
+        orgId: organizationId,
+        documentId,
+      });
+
+    return {
+      success: true,
+      documents: response,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Failed to fetch documents',
+      error,
+    };
+  }
+}
+
+type UpdateDocumentTitleProps = {
+  orgId: string;
+  documentId: string;
+  title: string;
+  content?: string;
+};
+
+type UpdateSuccessResponse = {
+  success: true;
+  message: string;
+};
+
+type UpdateErrorResponse = {
+  success: false;
+  message: string;
+  error: unknown;
+};
+
+type UpdateResponse = UpdateSuccessResponse | UpdateErrorResponse;
+
+export const updateDocument = async ({
+  orgId,
+  documentId,
+  title,
+  content,
+}: UpdateDocumentTitleProps): Promise<UpdateResponse> => {
+  try {
+    if (!content) {
+      await saveEditedDocumentTitle({ orgId, documentId, title });
+    }
+    if (content) {
+      await saveEditedDocumentContent({ orgId, documentId, content });
+    }
+
+    return {
+      success: true,
+      message: 'Document updated successfully',
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: 'Failed to update document',
+      error,
+    };
+  }
+};

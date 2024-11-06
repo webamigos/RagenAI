@@ -1,1 +1,1 @@
-export { WysywigEditor } from './WysywigEditor';
+export { WysiwygEditor } from './WysiwygEditor';

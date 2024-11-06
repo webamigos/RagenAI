@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useUser, useOrganization } from '@clerk/nextjs';
 
-import { Card, FileUploader, ArrowRightCircleIcon } from '@salesyy/common-ui';
+import {
+  Card,
+  FileUploader,
+  ArrowRightCircleIcon,
+  classMerge,
+} from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
@@ -58,7 +63,7 @@ export const UploadKnowledge = () => {
         setFiles([]);
         refreshDocuments();
       } else {
-        errorToast({ message: `${t('error')}: ${response.statusText}` });
+        errorToast({ message: `${t('error')}: ${response.message}` });
       }
     } catch (error) {
       errorToast({ message: `${t('sending-files-error')}: ${error}` });
@@ -66,6 +71,8 @@ export const UploadKnowledge = () => {
       setUploading(false);
     }
   };
+
+  const disabledClasses = 'cursor-not-allowed text-gray-300';
 
   return (
     <Card className="p-6" size="full" title={t('Add-files')}>
@@ -78,7 +85,10 @@ export const UploadKnowledge = () => {
         />
       )}
       <button
-        className="mt-2 rounded-full cursor-pointer"
+        className={classMerge(
+          'mt-2 rounded-full cursor-pointer',
+          uploading || files.length < 1 ? disabledClasses : ''
+        )}
         onClick={handleSend}
         disabled={uploading || files.length < 1}
       >

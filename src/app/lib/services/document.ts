@@ -77,3 +77,84 @@ export const createMarkdownDocument = async ({
     },
   });
 };
+
+type getDocumentPreviewProps = {
+  orgId: string;
+  documentId: string;
+};
+
+export const getDocumentPreview = async ({
+  orgId,
+  documentId,
+}: getDocumentPreviewProps) => {
+  return await db.userDocument.findMany({
+    where: {
+      organization_id: orgId,
+      public_id: documentId,
+    },
+    select: {
+      content: true,
+      title: true,
+    },
+  });
+};
+
+type UpdateDocumentTitleProps = {
+  orgId: string;
+  documentId: string;
+  title?: string;
+  content?: string;
+};
+
+export const saveEditedDocumentTitle = async ({
+  orgId,
+  documentId,
+  title,
+}: UpdateDocumentTitleProps) => {
+  await db.userDocument.updateMany({
+    where: {
+      organization_id: orgId,
+      public_id: documentId,
+    },
+    data: {
+      title,
+      updated_at: new Date(),
+    },
+  });
+  await db.userFile.updateMany({
+    where: {
+      organization_id: orgId,
+      id: documentId,
+    },
+    data: {
+      file_name: title,
+      updated_at: new Date(),
+    },
+  });
+};
+
+export const saveEditedDocumentContent = async ({
+  orgId,
+  documentId,
+  content,
+}: UpdateDocumentTitleProps) => {
+  await db.userDocument.updateMany({
+    where: {
+      organization_id: orgId,
+      public_id: documentId,
+    },
+    data: {
+      content,
+      updated_at: new Date(),
+    },
+  });
+  await db.userFile.updateMany({
+    where: {
+      organization_id: orgId,
+      id: documentId,
+    },
+    data: {
+      updated_at: new Date(),
+    },
+  });
+};

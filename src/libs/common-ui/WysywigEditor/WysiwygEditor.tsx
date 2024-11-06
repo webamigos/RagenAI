@@ -1,16 +1,16 @@
 import dynamic from 'next/dynamic';
 import { ComponentProps } from 'react';
 import { FieldError } from 'react-hook-form';
-
 import { Text } from '../Text';
 import { classMerge } from '../utils/cn';
+import './editor-styles.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 type Props = {
   value: string;
   onChange: (editorState: string) => void;
-  label: string;
+  label?: string;
   mandatory?: boolean;
   error?: FieldError;
   errorMessage?: string;
@@ -49,8 +49,7 @@ export const formats = [
   'indent',
   'direction',
 ];
-
-export const WysywigEditor = ({
+export const WysiwygEditor = ({
   value,
   label,
   error,
@@ -61,13 +60,18 @@ export const WysywigEditor = ({
   ...rest
 }: Props & ComponentProps<typeof ReactQuill>) => {
   return (
-    <>
-      <div className="flex text-sm items-center font-medium mb-2">
-        {mandatory && <Text className="text-red-600 mt-1">*</Text>}
-        <label className="block leading-6 dark:text-gray-300">{label}</label>
-      </div>
+    <div className="flex flex-col h-full">
+      {label && (
+        <div className="flex text-sm items-center font-medium mb-2">
+          <label className="block leading-6 dark:text-gray-300">{label}</label>
+          {mandatory && <Text className="text-red-600 mt-1">*</Text>}
+        </div>
+      )}
       <ReactQuill
-        className={classMerge('custom-quill w-full', className)}
+        className={classMerge(
+          'custom-quill h-full w-full flex flex-col flex-1 full-width-prose',
+          className
+        )}
         theme="snow"
         value={value}
         onChange={(content: string) => onChange(content)}
@@ -80,6 +84,6 @@ export const WysywigEditor = ({
           {errorMessage}
         </Text>
       )}
-    </>
+    </div>
   );
 };

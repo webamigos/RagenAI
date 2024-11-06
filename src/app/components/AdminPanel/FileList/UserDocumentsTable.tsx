@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
-import format from 'date-fns-tz/format';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
 import * as CommonUi from '@salesyy/common-ui';
 import { deleteDocument } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { type UserFileType } from '@/app/contracts/Documents';
-import { classMerge } from '@salesyy/common-ui';
-
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
+
+import { formatDates } from '@/app/lib/utils/formatDate';
+import { type UserFileType } from '@/app/contracts/Documents';
 
 type Props = {
   documents: UserFileType[];
@@ -25,38 +25,36 @@ type DocumentRowProps = {
 
 const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
 
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
 
-  const successTranslatedMessage = useTranslations('success-toast');
-  const errorTranslatedMessage = useTranslations('error-toast');
-  const translatedTable = useTranslations('files-table');
+  const { successToast, errorToast } = statusToast();
+  const locale = useLocale();
+  const tSuccess = useTranslations('success-toast');
+  const tError = useTranslations('error-toast');
 
-  const formattedCreatedAt = created_at
-    ? format(new Date(created_at), 'dd.MM.yyyy HH:mm:ss')
-    : '-';
-  const formattedUpdatedAt = updated_at
-    ? format(new Date(updated_at), 'dd.MM.yyyy HH:mm:ss')
-    : '-';
-  const truncatedFileName = truncateFileName(file_name, 20);
+  const { created_at: formattedCreatedAt, updated_at: formattedUpdatedAt } =
+    useMemo(
+      () => formatDates({ created_at, updated_at }),
+      [created_at, updated_at]
+    );
+  const truncatedFileName = useMemo(
+    () => truncateFileName(file_name, 20),
+    [file_name]
+  );
 
   const handleDelete = async () => {
     setIsLoading(true);
-    const { errorToast, successToast } = statusToast();
-
     try {
       const { status } = await deleteDocument(organization_id, id);
       if (status === 200) {
         onRemoveDocument(id);
-        successToast({
-          message: `${successTranslatedMessage('deleted')} ${file_name}`,
-        });
+        successToast({ message: `${tSuccess('deleted')} ${file_name}` });
       }
-    } catch (error) {
-      errorToast({
-        message: `${errorTranslatedMessage('error-during-deleting-file')}`,
-      });
+    } catch {
+      errorToast({ message: tError('error-during-deleting-file') });
     } finally {
       setIsLoading(false);
     }
@@ -70,30 +68,61 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
       <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
-      <CommonUi.TableCell>
-        <div className="-mx-3 mr-10 -my-1.5 sm:-mx-2.5">
-          {isLoading ? (
-            <CommonUi.SpinnerSVG size="sm" className="ml-1" />
-          ) : (
-            <CommonUi.TrashIcon
-              onClick={handleDelete}
-              className="cursor-pointer"
-            />
-          )}
+      <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+        <div
+          onMouseEnter={() => setShowToolbar(true)}
+          onMouseLeave={() => setShowToolbar(false)}
+          className="relative flex items-center space-x-2"
+        >
+          <div
+            className={`absolute -left-10 flex space-x-2 transition-all duration-300 ${
+              showToolbar
+                ? 'opacity-100 -translate-x-0'
+                : 'opacity-0 -translate-x-4'
+            }`}
+          >
+            <CommonUi.Link
+              className="text-black dark:text-white"
+              href={`/${locale}/document/${id}?edit=true`}
+            >
+              <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
+            </CommonUi.Link>
+
+            <CommonUi.Link
+              className="text-black dark:text-white"
+              href={`/${locale}/document/${id}`}
+            >
+              <CommonUi.OpenEyeIcon className="cursor-pointer" />
+            </CommonUi.Link>
+            <div onClick={handleDelete} className="mt-0.5cursor-pointer">
+              {isLoading ? (
+                <CommonUi.SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
+              ) : (
+                <CommonUi.TrashIcon />
+              )}
+            </div>
+          </div>
+          <div
+            className={`transition-all duration-300 ${
+              showToolbar
+                ? 'opacity-0 translate-x-4'
+                : 'opacity-100 translate-x-0'
+            }`}
+          >
+            <CommonUi.ArrowIcon className="cursor-pointer" />
+          </div>
         </div>
       </CommonUi.TableCell>
     </CommonUi.TableRow>
   );
 };
-
 export const UserDocumentsTable = ({
-  className,
   documents,
   onRemoveDocument,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   return (
-    <CommonUi.Table className={classMerge(className)}>
+    <CommonUi.Table className="overflow-x-auto">
       <CommonUi.TableHead>
         <CommonUi.TableRow className="text-base">
           <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>

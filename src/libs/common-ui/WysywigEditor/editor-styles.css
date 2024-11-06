@@ -1,0 +1,15 @@
+.custom-quill .ql-toolbar {
+  @apply bg-primary-gray-200 dark:bg-gray-300 border border-gray-300 dark:border-gray-600 rounded-t-2xl;
+}
+
+.custom-quill .ql-container {
+  @apply h-full w-full bg-white dark:bg-accent-dark-500 border border-gray-300 dark:border-gray-600 rounded-b-2xl;
+}
+
+.custom-quill .ql-editor {
+  @apply h-full flex-1 p-4  text-gray-800 dark:text-gray-200 bg-transparent;
+}
+
+.full-width-prose {
+  @apply prose prose-lg dark:prose-invert h-full w-full max-w-none;
+}

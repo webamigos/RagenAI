@@ -202,7 +202,13 @@
   "set-temperature": {
     "set-temperature": "Poziom kreatywności odpowiedzi"
   },
-  "max-documents-to-retreive": {
+  "document-preview": {
+    "document-not-found": "Nie znaleziono dokumentu",
+    "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
+    "save": "Zapisz",
+    "edit-successfully": "Dokument został zedytowany"
+  },
+    "max-documents-to-retreive": {
     "input-label": "Maks. liczba fragmentów wyszukiwania"
   },
   "model-select": {

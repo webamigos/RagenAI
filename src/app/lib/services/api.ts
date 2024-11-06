@@ -24,10 +24,6 @@ export const submitFeedback = async (
   return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
 };
 
-// export const runAssistant = async (threadId: string) => {
-//   return api.post<void>(`/assistant/${threadId}`);
-// };
-
 export const createThreadForGuest = () => {
   return api.post<CreateThreadDto>(`/guest-threads/`);
 };
@@ -40,12 +36,33 @@ export const clearVisitorMessagesStats = async () => {
   return api.post<void>(`/visitor/hejho`);
 };
 
-export const uploadFiles = async (uploaderId: string, data: FormData) => {
-  return api.post<void>(`/upload/${uploaderId}`, data, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+type UploadedFile = {
+  fileName: string;
+  fileSize: number;
+  uniqueFileId: string;
+  content: string;
+};
+
+type UploadResponse = {
+  message: string;
+  status: number;
+  files: UploadedFile[];
+};
+
+export const uploadFiles = async (
+  uploaderId: string,
+  data: FormData
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    `/upload/${uploaderId}`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
 };
 
 export const deleteFile = async (uploaderId: string, documentId: string) => {

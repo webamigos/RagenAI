@@ -202,6 +202,12 @@
   "set-temperature": {
     "set-temperature": "Set temperature"
   },
+  "document-preview": {
+    "document-not-found": "Document not found",
+    "fetching-error": "An error occurred while downloading the document",
+    "save": "Save",
+    "edit-successfully": "The document has been edited"
+  },
   "max-documents-to-retreive": {
     "input-label": "Max fragments retrieved in search"
   },
