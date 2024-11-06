@@ -63,8 +63,8 @@ export const WysiwygEditor = ({
     <div className="flex flex-col h-full">
       {label && (
         <div className="flex text-sm items-center font-medium mb-2">
-          {mandatory && <Text className="text-red-600 mt-1">*</Text>}
           <label className="block leading-6 dark:text-gray-300">{label}</label>
+          {mandatory && <Text className="text-red-600 mt-1">*</Text>}
         </div>
       )}
       <ReactQuill

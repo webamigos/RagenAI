@@ -222,13 +222,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         </div>
       ) : (
         <Text
-          className="mb-4 text-2xl font-bold cursor-pointer"
-          onDoubleClick={handleTitleDoubleClick}
+          className="mb-4 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+          onClick={handleTitleDoubleClick}
         >
           {documentTitle}
         </Text>
       )}
-
       {isEditing ? (
         <div className="flex flex-col w-full flex-1">
           <div className="flex-1 overflow-auto">
