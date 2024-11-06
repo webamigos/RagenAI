@@ -7,14 +7,14 @@ env:
   OPENAI_API_KEY: 'dummy'
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  DATABASE_URL: 'http://example.com'
-  DATABASE_DIRECT_URL: 'http://example.com'
+  DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   CLERK_SECRET_KEY: 'dummy'
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'dummy'
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/dummy'
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/dummy'
   LANGCHAIN_API_KEY: 'dummy'
-  LANGCHAIN_ENDPOINT: 'dummy'
+  LANGCHAIN_ENDPOINT: 'http://example.com'
   REDIS_URL: 'http://example.com'
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'ci'

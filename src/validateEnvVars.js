@@ -24,7 +24,7 @@ const envSchema = z.object({
 
   // Redis for organization settings
   REDIS_URL: z.string().url(),
-  SECRET_KEY: z.string().url(), // for hashing organization settings in Redis
+  SECRET_KEY: z.string(), // for hashing organization settings in Redis
 
   // Target env
   TARGET_ENV: z.enum(['local', 'test', 'ci', 'staging', 'production']),
