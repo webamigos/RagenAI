@@ -3,13 +3,13 @@
 }
 
 .custom-quill .ql-container {
-  @apply h-full w-full bg-white overflow-auto dark:bg-accent-dark-500 border border-gray-300 dark:border-gray-600 rounded-b-2xl;
+  @apply h-full w-full bg-white dark:bg-accent-dark-500 border border-gray-300 dark:border-gray-600 rounded-b-2xl;
 }
 
 .custom-quill .ql-editor {
-  @apply h-full max-h-[20rem] flex-1 p-4 text-gray-800 dark:text-gray-200 bg-transparent;
+  @apply h-full flex-1 p-4  text-gray-800 dark:text-gray-200 bg-transparent;
 }
 
 .full-width-prose {
-  @apply prose prose-lg dark:prose-invert w-full max-w-none;
+  @apply prose prose-lg dark:prose-invert h-full w-full max-w-none;
 }

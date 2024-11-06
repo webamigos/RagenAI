@@ -126,7 +126,7 @@ export function SidebarLayout({
           </div>
         </main>
       ) : (
-        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light dark:bg-primary-dark">
+        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light overflow-auto dark:bg-primary-dark">
           <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:dark:bg-primary-dark lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:ring-white/10">
             <div className="w-full mx-auto">{children}</div>
           </div>

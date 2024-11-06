@@ -131,7 +131,7 @@ export const DocumentCreator = () => {
                 value={editorContent || ''}
                 error={touchedFields.content ? errors.content : undefined}
                 errorMessage={errors.content?.message}
-                className="flex-1 "
+                className="flex-1 max-h-[20.5rem]"
               />
             </div>
           </TabPanel>
