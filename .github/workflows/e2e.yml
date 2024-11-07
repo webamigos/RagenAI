@@ -1,5 +1,29 @@
 name: E2E Tests
 
+env:
+  NEXT_PUBLIC_API_URL: 'http://example.com'
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
+  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
+  LANGCHAIN_API_KEY: 'e2e'
+  LANGCHAIN_ENDPOINT: 'http://example.com'
+  LANGCHAIN_PROJECT: 'e2e'
+  REDIS_URL: ${{ secrets.REDIS_URL }}
+  SECRET_KEY: 'dummy'
+  TARGET_ENV: 'test'
+  TESTS_CLERK_USER_EMAIL: ${{ vars.TESTS_CLERK_USER_EMAIL }}
+  TESTS_CLERK_USER_PASSWORD: ${{ vars.TESTS_CLERK_USER_PASSWORD }}
+  TESTS_CLERK_USER_USERNAME: ${{ vars.TESTS_CLERK_USER_USERNAME }}
+
 on:
   push:
     branches: [main, dev]
@@ -36,21 +60,12 @@ jobs:
 
       # - name: Prisma Migrate Deploy
       #   run: npx prisma migrate dev
-      #   env:
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      #     DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
 
       - name: Prisma Generate Types
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
 
       - name: Prisma Migrate Deploy
         run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
@@ -62,18 +77,6 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-          CLERK_SECRET_KEY: ${{ vars.CLERK_SECRET_KEY }}
-          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-          TESTS_CLERK_USER_USERNAME: ${{ vars.TESTS_CLERK_USER_USERNAME }}
-          TESTS_CLERK_USER_EMAIL: ${{ vars.TESTS_CLERK_USER_EMAIL }}
-          TESTS_CLERK_USER_PASSWORD: ${{ vars.TESTS_CLERK_USER_PASSWORD }}
-          OPENAI_API_KEY: ${{ vars.OPENAI_API_KEY }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           NEXT_PUBLIC_ENABLE_MSW_MOCKING: 'enabled'
           NEXT_PUBLIC_TEST_ENV: 'enabled'
           CLERK_JWT_KEY: 'dummy'
