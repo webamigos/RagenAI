@@ -6,7 +6,6 @@ import {
   createThread,
   createThreadForGuest,
 } from '../lib/services/api';
-import { loadFingerprint } from '../lib/utils/fingerprint';
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
 import { useLocale } from 'next-intl';
@@ -62,14 +61,11 @@ export const useNewThread = () => {
   useEffect(() => {
     const setId = async () => {
       try {
-        if (isSignedIn && user?.publicMetadata?.visitorId) {
+        if (isSignedIn && user?.id) {
           dispatch({
             type: 'SET_VISITOR_ID',
-            payload: user.publicMetadata.visitorId as string,
+            payload: user?.id as string,
           });
-        } else {
-          const fingerprintId = await loadFingerprint();
-          dispatch({ type: 'SET_VISITOR_ID', payload: fingerprintId });
         }
       } catch (err) {
         dispatch({ type: 'SET_ERROR', payload: 'Failed to set visitor ID.' });

@@ -8,7 +8,6 @@ import { useTranslations } from 'next-intl';
 import { Divider } from '@salesyy/common-ui/Divider';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 
-import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { logger } from '@/app/lib/utils/logger';
 
 type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
@@ -50,15 +49,8 @@ export const SocialAuthOptions = memo(
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
-      const visitorId = await loadFingerprint();
-
       startTransition(() => {
-        if (
-          (!isSignUp && !signInLoaded) ||
-          (isSignUp && !signUpLoaded) ||
-          !visitorId
-        )
-          return;
+        if ((!isSignUp && !signInLoaded) || (isSignUp && !signUpLoaded)) return;
 
         try {
           if (isSignUp) {
