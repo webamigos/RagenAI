@@ -17,10 +17,11 @@ const envSchema = z.object({
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string(),
 
   // Langsmith?
-  LANGCHAIN_API_KEY: z.string(),
   LANGCHAIN_TRACING_V2: z.coerce.boolean(),
-  LANGCHAIN_CALLBACKS_BACKGROUND: z.coerce.boolean(),
   LANGCHAIN_ENDPOINT: z.string().url(),
+  LANGCHAIN_API_KEY: z.string(),
+  LANGCHAIN_PROJECT: z.string(),
+  LANGCHAIN_CALLBACKS_BACKGROUND: z.coerce.boolean(),
 
   // Redis for organization settings
   REDIS_URL: z.string().url(),
