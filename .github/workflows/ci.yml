@@ -31,7 +31,7 @@ on:
       - main
 
 jobs:
-  build-lint-test:
+  lint-test-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -58,8 +58,8 @@ jobs:
       - name: Lint app
         run: npm run lint
 
-      - name: Build Next.js app
-        run: npm run build
-
       - name: Run tests
         run: npm run test
+
+      - name: Build Next.js app
+        run: npm run build
