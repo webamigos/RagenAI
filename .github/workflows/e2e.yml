@@ -16,7 +16,7 @@ env:
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
   LANGCHAIN_API_KEY: 'e2e'
   LANGCHAIN_ENDPOINT: 'http://example.com'
-  LANGCHAIN_PROJECT: 'dummy'
+  LANGCHAIN_PROJECT: 'e2e'
   REDIS_URL: ${{ secrets.REDIS_URL }}
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'test'
