@@ -1,5 +1,7 @@
 const { z } = require('zod');
 
+const TARGET_ENV = ['local', 'test', 'e2e', 'ci', 'staging', 'production'];
+
 // TODO: use this schema instead process.env as source of truth?
 const envSchema = z.object({
   // Supabase for the App
@@ -20,7 +22,7 @@ const envSchema = z.object({
   LANGCHAIN_TRACING_V2: z.coerce.boolean(),
   LANGCHAIN_ENDPOINT: z.string().url(),
   LANGCHAIN_API_KEY: z.string(),
-  LANGCHAIN_PROJECT: z.enum(['local', 'test', 'ci', 'staging', 'production']),
+  LANGCHAIN_PROJECT: z.enum(TARGET_ENV),
   LANGCHAIN_CALLBACKS_BACKGROUND: z.coerce.boolean(),
 
   // Redis for organization settings
@@ -28,7 +30,7 @@ const envSchema = z.object({
   SECRET_KEY: z.string(), // for hashing organization settings in Redis
 
   // Target env
-  TARGET_ENV: z.enum(['local', 'test', 'ci', 'staging', 'production']),
+  TARGET_ENV: z.enum(TARGET_ENV),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);
