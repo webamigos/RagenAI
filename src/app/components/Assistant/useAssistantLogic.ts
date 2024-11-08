@@ -1,4 +1,10 @@
-import { useReducer, useEffect, useState, useRef } from 'react';
+import {
+  useReducer,
+  useEffect,
+  useRef,
+  useTransition,
+  startTransition,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
@@ -63,6 +69,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const t = useTranslations('Index');
   const { dispatch: threadsDispatch } = useThreadsContext();
+  const [setTransition] = useTransition();
 
   const [
     {
@@ -122,7 +129,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const fetchData = async (id: string | undefined) => {
     if (!id) {
-      router.push('/sign-in');
+      startTransition(() => router.push('/sign-in'));
       return;
     }
 
@@ -240,7 +247,7 @@ export const useAssistantLogic = (threadId: string) => {
     // TODO: Temporary restriction - only authenticated users can send messages
     // Future implementation should include guest user support or a clear user journey for non-authenticated users
     if (!userVisitorId) {
-      router.push('/sign-in');
+      startTransition(() => router.push('/sign-in'));
       return;
     }
 
