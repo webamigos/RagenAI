@@ -1,4 +1,5 @@
 import { type MessageDto } from './Message';
+import type { ChainErrorCode } from '@/libs/chains/types/errors';
 
 export type SseInitEvent = {
   type: 'init';
@@ -20,4 +21,6 @@ export type SseMessageDelta = {
 export type SseMessageError = {
   type: 'error';
   message: string;
+  originalErrorMessage?: string;
+  code: ChainErrorCode;
 };

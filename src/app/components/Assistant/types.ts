@@ -1,5 +1,7 @@
 import type { MessageDto, StreamedMessageDto } from '../../contracts/Message';
 
+export type ErrorEvent = Event & { data?: string };
+
 export type State = {
   isInitialLoad: boolean;
   isMessageLoading: boolean;
@@ -9,6 +11,7 @@ export type State = {
   isMessageError: boolean;
   streamedMessage: StreamedMessageDto | null;
   messages: MessageDto[];
+  isError: boolean;
 };
 
 export enum reducerActions {
@@ -22,7 +25,10 @@ export enum reducerActions {
   APPEND_TO_STREAMED_MESSAGE,
   SET_MESSAGES,
   ADD_MESSAGE,
+  SET_IS_ERROR,
+  REMOVE_MESSAGE,
 }
+
 const {
   SET_INITIAL_LOAD,
   SET_MESSAGE_LOADING,
@@ -34,6 +40,8 @@ const {
   APPEND_TO_STREAMED_MESSAGE,
   SET_MESSAGES,
   ADD_MESSAGE,
+  SET_IS_ERROR,
+  REMOVE_MESSAGE,
 } = reducerActions;
 
 export type Action =
@@ -52,4 +60,6 @@ export type Action =
       payload: { content: string; run_id: string };
     }
   | { type: typeof SET_MESSAGES; payload: MessageDto[] }
-  | { type: typeof ADD_MESSAGE; payload: MessageDto };
+  | { type: typeof ADD_MESSAGE; payload: MessageDto }
+  | { type: typeof SET_IS_ERROR; payload: boolean }
+  | { type: typeof REMOVE_MESSAGE; payload: string };

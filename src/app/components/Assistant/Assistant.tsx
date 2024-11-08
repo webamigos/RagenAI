@@ -1,7 +1,7 @@
 'use client';
 
 import { ChatOutput } from './ChatOutput';
-import { CloseThread, PromptForm } from './PromptForm';
+import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
 
@@ -20,6 +20,7 @@ export const Assistant = ({ threadId }: Props) => {
     messages,
     onSubmit,
     isLocked,
+    promptFormRef,
   } = useAssistantLogic(threadId);
 
   return (
@@ -37,6 +38,7 @@ export const Assistant = ({ threadId }: Props) => {
         {isLimitLock && !isSignedIn && <LimitReached />}
         {!isLocked() && threadId && (
           <PromptForm
+            ref={promptFormRef}
             isUserLogged={!!isSignedIn}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}

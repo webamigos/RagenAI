@@ -140,3 +140,9 @@ export const saveRateInDB = async (messagePublicId: string, rate: number) => {
     },
   });
 };
+
+export const deleteMessageByPublicId = (publicId: string) => {
+  return db.message.delete({
+    where: { public_id: publicId },
+  });
+};

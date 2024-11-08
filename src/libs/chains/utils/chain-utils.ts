@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { VectorStoreDocument } from '../types/chain-utils';
 import { BaseChain } from 'langchain/chains';
+import { ModerationError } from '../errors';
 
 export const normalizeAndSanitizeText = (input: string) => {
   return input
@@ -41,10 +42,10 @@ export const runModeration = async (
 
   const moderationResult = results[0];
   if (!moderationResult) {
-    throw new Error('No results returned');
+    throw new ModerationError('No results returned from moderation model');
   }
 
   if (moderationResult.flagged) {
-    throw new Error('Input is flagged by moderation model');
+    throw new ModerationError();
   }
 };

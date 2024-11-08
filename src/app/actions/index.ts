@@ -13,7 +13,10 @@ import {
 } from '../contracts/Message';
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
-import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
+import {
+  createAndStoreOpenAIThreadMessage,
+  deleteMessageByPublicId,
+} from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
 import {
   deleteDocumentFromDB,
@@ -171,3 +174,13 @@ export const rateMessage = async (
     return { success: error };
   }
 };
+
+export async function deleteUserMessage(messagePublicId: string) {
+  try {
+    await deleteMessageByPublicId(messagePublicId);
+    return { success: true };
+  } catch (error) {
+    logger.error('Error deleting user message: %o', error);
+    return { success: false };
+  }
+}
