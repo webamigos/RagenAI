@@ -112,7 +112,7 @@ export const ThreadsContextProvider = ({
   const hasInitialLoadCompleted = useRef(false);
   const { user, isSignedIn } = useUser();
 
-  const visitorId = user?.publicMetadata?.visitorId as string | undefined;
+  const visitorId = user?.id;
 
   const loadMoreThreads = useCallback(async () => {
     if (state.isLoading || !state.hasMore || !visitorId) return;

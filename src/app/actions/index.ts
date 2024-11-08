@@ -141,14 +141,10 @@ export const deleteDocument = async (
 };
 
 //save data to clerk user profile
-export const saveUserIdToClerk = async (
-  clerkUserId: string,
-  visitorId: string
-) => {
+export const saveUserIdToClerk = async (clerkUserId: string) => {
   try {
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
-        visitorId,
         userRole: 'USER',
       },
     });
