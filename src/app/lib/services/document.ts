@@ -31,7 +31,7 @@ export const fetchUserDocumentsDetails = async (uploaderId: string) => {
   });
 };
 
-export const deleteDocumentFromDB = async (
+export const deleteDocumentFromUserFile = async (
   orgId: string,
   documentId: string
 ) => {

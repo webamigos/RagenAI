@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-import { deleteDocument } from '../services/TableService';
 
 import { logger } from '../../../lib/utils/logger';
 import {
   createDocumentDetailsInDB,
   createMarkdownDocument,
-  deleteDocumentFromUserDocument,
 } from '../../../lib/services/document';
 
 export const dynamic = 'force-dynamic';
@@ -111,38 +109,5 @@ export async function POST(request: NextRequest, { params }: Params) {
       },
       { status: 500 }
     );
-  }
-}
-
-export async function DELETE(_request: Request, { params }: { params: any }) {
-  const visitor_id = params.upload[0];
-  const document_id = params.upload[1];
-
-  if (!visitor_id || !document_id) {
-    return new Response(
-      JSON.stringify({ error: 'Missing visitor_id or document_id' }),
-      {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  }
-
-  try {
-    await deleteDocument(document_id);
-    await deleteDocumentFromUserDocument(document_id, visitor_id);
-    return new Response(
-      JSON.stringify({ message: 'Document successfully deleted' }),
-      {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-  } catch (error) {
-    logger.error('Error in DELETE handler:', error);
-    return new Response(JSON.stringify({ error: 'Error deleting document' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
   }
 }
