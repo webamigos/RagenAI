@@ -112,7 +112,7 @@ export const getUserDocuments = async (orgId: string) => {
 };
 
 //remove user document
-export const deleteDocumentHandler = async (
+export const deleteDocumentAction = async (
   organizationId: string,
   documentId: string
 ) => {
