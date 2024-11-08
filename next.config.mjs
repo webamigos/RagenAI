@@ -1,6 +1,19 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+import validateEnvs from './src/validateEnvVars.js';
+
+const validateEnvsResult = validateEnvs();
+
+if (!validateEnvsResult.success) {
+  // eslint-disable-next-line no-console
+  console.error(
+    'Environment variable validation errors:',
+    validateEnvsResult.error.format()
+  );
+  process.exit(1);
+}
+
 const withNextIntl = createNextIntlPlugin();
 
 const isProduction = process.env.NODE_ENV === 'production';

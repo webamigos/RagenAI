@@ -1,9 +1,16 @@
-import { useReducer, useEffect, useState, useRef } from 'react';
+import {
+  useReducer,
+  useEffect,
+  useRef,
+  useTransition,
+  startTransition,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
@@ -14,7 +21,6 @@ import {
   checkVisitorVisits,
   fetchMessagesFromApi,
 } from '../../lib/services/api';
-import { loadFingerprint } from '../../lib/utils/fingerprint';
 
 import type { CreateMessageDto } from '../../contracts/Message';
 import {
@@ -45,8 +51,8 @@ const {
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
+  const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
-  const [visitorId, setVisitorId] = useState<string | null>(null);
 
   const initialState: State = {
     isInitialLoad: true,
@@ -60,17 +66,9 @@ export const useAssistantLogic = (threadId: string) => {
     messages: [],
   };
 
-  const userVisitorId = (user?.publicMetadata.visitorId as string) || undefined;
+  const userVisitorId = user?.id;
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn && !visitorId) {
-      loadFingerprint().then((id) => {
-        setVisitorId(id);
-      });
-    }
-  }, [isLoaded, isSignedIn, visitorId]);
-
-  const id = userVisitorId || visitorId;
+  const id = user?.id;
 
   const { isLoading } = useApi(() => {
     if (id) {
@@ -84,6 +82,7 @@ export const useAssistantLogic = (threadId: string) => {
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const { dispatch: threadsDispatch } = useThreadsContext();
+  const [setTransition] = useTransition();
 
   const [
     {
@@ -152,7 +151,12 @@ export const useAssistantLogic = (threadId: string) => {
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  const fetchData = async (id: string) => {
+  const fetchData = async (id: string | undefined) => {
+    if (!id) {
+      startTransition(() => router.push('/sign-in'));
+      return;
+    }
+
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
     try {
       const response = await fetchMessagesFromApi(threadId, id);
@@ -167,12 +171,12 @@ export const useAssistantLogic = (threadId: string) => {
 
   useEffect(() => {
     if (isLoaded) {
-      const id = userVisitorId || visitorId;
+      const id = userVisitorId;
       if (id) {
         fetchData(id);
       }
     }
-  }, [isLoaded, userVisitorId, visitorId]);
+  }, [isLoaded, userVisitorId]);
 
   useEffect(() => {
     const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
@@ -184,12 +188,12 @@ export const useAssistantLogic = (threadId: string) => {
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
-      const id = userVisitorId || visitorId;
+      const id = userVisitorId;
       if (id) {
         loadVisitorMessages(id);
       }
     }
-  }, [messages, userVisitorId, visitorId]);
+  }, [messages, userVisitorId]);
 
   const loadVisitorMessages = async (id: string) => {
     try {
@@ -288,6 +292,13 @@ export const useAssistantLogic = (threadId: string) => {
   }, [userMessageId]);
 
   const onSubmit = async (data: CreateMessageDto) => {
+    // TODO: Temporary restriction - only authenticated users can send messages
+    // Future implementation should include guest user support or a clear user journey for non-authenticated users
+    if (!userVisitorId) {
+      startTransition(() => router.push('/sign-in'));
+      return;
+    }
+
     scrollToBottom();
     const userMessage = {
       public_id: `user-${Date.now()}`,
@@ -306,17 +317,16 @@ export const useAssistantLogic = (threadId: string) => {
       payload: t('status-thinking'),
     });
 
-    const id = userVisitorId || visitorId || (await loadFingerprint());
-    const messageResponse = await sendMessage(threadId, data, id);
-    const response = await getUserMessages(id);
-    const threads = response.threads;
-    const newThread = {
-      public_id: threads![0].public_id,
-      messages: [userMessage],
-      created_at: new Date(),
-    };
-
     try {
+      const messageResponse = await sendMessage(threadId, data, userVisitorId);
+      const response = await getUserMessages(userVisitorId);
+      const threads = response.threads;
+      const newThread = {
+        public_id: threads![0].public_id,
+        messages: [userMessage],
+        created_at: new Date(),
+      };
+
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
         errorToast({ message: 'Error occured while sending message' });

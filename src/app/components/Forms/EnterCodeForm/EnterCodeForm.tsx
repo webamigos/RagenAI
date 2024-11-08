@@ -9,7 +9,6 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
-import { loadFingerprint } from '@/app/lib/utils/fingerprint';
 import { saveUserIdToClerk } from '@/app/actions';
 import { Button, Card, Text } from '@salesyy/common-ui';
 import { Input } from '@salesyy/common-ui';
@@ -36,7 +35,6 @@ export const EnterCodeForm = () => {
   const onSubmit = async (data: VerificationFormData) => {
     if (!isLoaded) return;
     setIsSubmitting(true);
-    const visitorId = await loadFingerprint();
 
     const { email_code } = data;
     try {
@@ -46,8 +44,7 @@ export const EnterCodeForm = () => {
 
       if (completeSignUp.status === 'complete') {
         const { success } = await saveUserIdToClerk(
-          completeSignUp.createdUserId as string,
-          visitorId
+          completeSignUp.createdUserId as string
         );
 
         if (success) {
