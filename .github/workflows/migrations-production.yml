@@ -1,0 +1,35 @@
+name: Migrations on production
+
+env:
+  DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+  DATABASE_DIRECT_URL: ${{ secrets.PROD_DATABASE_DIRECT_URL }}
+  SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+  SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
+
+on:
+  push:
+    paths:
+      # Only run this workflow when migrations are updated
+      - prisma/migrations/**
+      - supabase/migrations/**
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Apply all pending migrations to the database
+        run: npx prisma migrate deploy
+
+      - name: Apply all pending migrations to the vector store
+        run: npm run vectorstore:migrate
