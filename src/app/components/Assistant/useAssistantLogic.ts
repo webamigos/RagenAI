@@ -1,10 +1,4 @@
-import {
-  useReducer,
-  useEffect,
-  useRef,
-  useTransition,
-  startTransition,
-} from 'react';
+import { useReducer, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
@@ -82,7 +76,6 @@ export const useAssistantLogic = (threadId: string) => {
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const { dispatch: threadsDispatch } = useThreadsContext();
-  const [setTransition] = useTransition();
 
   const [
     {
