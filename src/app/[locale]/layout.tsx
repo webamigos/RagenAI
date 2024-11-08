@@ -5,10 +5,10 @@ import { NextIntlClientProvider, useMessages } from 'next-intl';
 
 import { Providers } from '../components/Providers';
 import { ThreadsContextProvider } from '../../context/ThreadsContext';
+import { JoyrideProvider } from '@/context/OnboardingContext';
 import { plPL } from '../messages/pl-PL-clerk';
 import { locales, timezone } from '../config';
 import './global.css';
-
 import { Inter } from 'next/font/google';
 
 type Props = {
@@ -34,7 +34,9 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
         <html lang={locale} className="h-full" suppressHydrationWarning>
           <body className={`${inter.className} h-full`}>
             <ThreadsContextProvider>
-              <Providers>{children}</Providers>
+              <Providers>
+                <JoyrideProvider>{children}</JoyrideProvider>
+              </Providers>
             </ThreadsContextProvider>
           </body>
         </html>

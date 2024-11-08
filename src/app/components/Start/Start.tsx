@@ -8,6 +8,7 @@ import { useNewThread } from '@/app/hooks/useNewThread';
 
 export const Start = () => {
   const { isSignedIn } = useUser();
+
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
 
@@ -17,7 +18,7 @@ export const Start = () => {
         {!isPending && (
           <Button
             label={t('start-new-thread')}
-            className="px-8 py-4 sm:mb-12 mb-8  bg-primary-blue-400 hover:bg-primary-blue-500 disabled:bg-primary-blue-500 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300 font-sans tracking-wide rounded-3xl"
+            className="px-8 py-4 sm:mb-12 mb-8 bg-primary-blue-400 hover:bg-primary-blue-500 disabled:bg-primary-blue-500 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300 font-sans tracking-wide rounded-3xl"
             onClick={handleNewThread}
             isLoading={isLoading}
             disabled={isLoading || isLimitLock}
