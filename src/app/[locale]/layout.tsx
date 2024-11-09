@@ -2,14 +2,21 @@ import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server'
 import { ClerkProvider } from '@clerk/nextjs';
 import { enUS } from '@clerk/localizations';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
+import dynamic from 'next/dynamic';
 
 import { Providers } from '../components/Providers';
 import { ThreadsContextProvider } from '../../context/ThreadsContext';
-import { JoyrideProvider } from '@/context/OnboardingContext';
 import { plPL } from '../messages/pl-PL-clerk';
 import { locales, timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
+const JoyrideProvider = dynamic(
+  () =>
+    import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
+  {
+    ssr: false,
+  }
+);
 
 type Props = {
   children: React.ReactNode;
