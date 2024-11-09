@@ -20,6 +20,7 @@ export const CreateOrganizationComponent = () => {
           cardBox: 'h-1/2 w-full shadow-none border-none',
           rootBox: 'w-full',
           footer: 'hidden',
+          formButtonPrimary: 'create-organization-button',
         },
       }}
     />

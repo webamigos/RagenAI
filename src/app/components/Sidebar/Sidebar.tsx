@@ -20,7 +20,6 @@ import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
-
 type Props = {
   children: React.ReactNode;
   membership?: OrganizationRoles;

@@ -22,6 +22,13 @@ type Props = {
   membership?: OrganizationRoles;
 };
 
+type TabItem = {
+  icon: () => JSX.Element;
+  label: string;
+  path: string;
+  className?: string;
+};
+
 export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   const { closeSidebar } = useSidebar();
   const router = useRouter();
@@ -30,15 +37,16 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
 
   useSyncActiveOrganization({ membership });
 
-  const organizationTabsForNoRole = [
+  const organizationTabsForNoRole: TabItem[] = [
     {
       icon: Briefcase,
       label: t('create-organization'),
       path: '/my-profile/create-organization',
+      className: 'create-organization-tab',
     },
   ];
 
-  const organizationTabsForAdminAndOwner = [
+  const organizationTabsForAdminAndOwner: TabItem[] = [
     {
       icon: Briefcase,
       label: t('manage-organization'),
@@ -59,15 +67,9 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
     },
-    // TODO: enable when ready
-    // {
-    //   icon: KeyIcon,
-    //   label: t('api-keys'),
-    //   path: '/my-profile/api-keys',
-    // },
   ];
 
-  const organizationTabsForMember = [
+  const organizationTabsForMember: TabItem[] = [
     {
       icon: Briefcase,
       label: t('organization-list'),
@@ -77,6 +79,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: Briefcase,
       label: t('create-organization'),
       path: '/my-profile/create-organization',
+      className: 'create-organization-tab',
     },
   ];
 
@@ -92,7 +95,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     return organizationTabsForNoRole;
   };
 
-  const tabs = useMemo(() => {
+  const tabs: TabItem[] = useMemo(() => {
     const organizationTabs = getOrganizationTabs();
 
     return [
@@ -119,11 +122,12 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
 
   return (
     <div>
-      {tabs.map(({ icon: Icon, label, path }) => (
+      {tabs.map(({ icon: Icon, label, path, className }) => (
         <SidebarItem
           hasIcon={true}
           key={path}
           onClick={() => handleTabClick(path)}
+          className={className}
         >
           <Icon />
           {label}

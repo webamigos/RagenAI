@@ -112,6 +112,7 @@ export const SetApiKeys = () => {
           disabled={!isEditable}
           {...register('apiKey')}
           containerClassName="w-full min-w-full"
+          className="setApiKeyInput"
         />
         {!isEditable ? (
           <button
