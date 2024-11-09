@@ -13,14 +13,17 @@ import {
 } from '../contracts/Message';
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
-import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
+import {
+  createAndStoreOpenAIThreadMessage,
+  deleteMessageByPublicId,
+} from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
 import {
-  deleteDocumentFromDB,
+  deleteDocumentFromUserFile,
   deleteDocumentFromUserDocument,
   fetchUserDocumentsDetails,
 } from '../lib/services/document';
-import { deleteFile } from '../lib/services/api';
+import { deleteDocument } from '../api/upload/services/TableService';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -112,14 +115,21 @@ export const getUserDocuments = async (orgId: string) => {
 };
 
 //remove user document
-export const deleteDocument = async (
+export const deleteDocumentAction = async (
   organizationId: string,
   documentId: string
 ) => {
   try {
-    const { count } = await deleteDocumentFromDB(organizationId, documentId);
-    await deleteFile(organizationId, documentId);
+    //  removal document from `UserFile`
+    const { count } = await deleteDocumentFromUserFile(
+      organizationId,
+      documentId
+    );
+    // removal from `UserDocument`
     await deleteDocumentFromUserDocument(organizationId, documentId);
+    // removal vector's
+    await deleteDocument(documentId);
+
     if (count === 0) {
       return {
         error:
@@ -133,6 +143,8 @@ export const deleteDocument = async (
       status: StatusCodes.OK,
     };
   } catch (error) {
+    logger.error('Error deleting document:', error);
+
     return {
       error: 'Failed to delete document',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -167,3 +179,13 @@ export const rateMessage = async (
     return { success: error };
   }
 };
+
+export async function deleteUserMessage(messagePublicId: string) {
+  try {
+    await deleteMessageByPublicId(messagePublicId);
+    return { success: true };
+  } catch (error) {
+    logger.error('Error deleting user message: %o', error);
+    return { success: false };
+  }
+}

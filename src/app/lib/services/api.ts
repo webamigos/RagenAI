@@ -64,9 +64,3 @@ export const uploadFiles = async (
   );
   return response.data;
 };
-
-export const deleteFile = async (uploaderId: string, documentId: string) => {
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  const fullUrl = `${url}/api/upload/${uploaderId}/${documentId}`;
-  return await api.delete<void>(fullUrl);
-};

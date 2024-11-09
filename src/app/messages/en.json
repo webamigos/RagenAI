@@ -118,7 +118,8 @@
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
-    "saved": "Saved"
+    "saved": "Saved",
+    "model-updated-successfully": "Model updated successfully"
   },
   "error-toast": {
     "no-user-id": "user id missing",
@@ -243,5 +244,11 @@
         "description": "This operation cannot be inverted. Are you sure to remove this API key?"
       }
     }
+  },
+  "chain-errors": {
+    "moderation-error": "The content was flagged as inappropriate by our moderation system and cannot be processed",
+    "api-key-error": "The API key configuration is missing - please check your settings",
+    "unknown-error": "An unexpected error occurred while processing your request - please try again",
+    "llm-api-error": "The language model API request failed"
   }
 }

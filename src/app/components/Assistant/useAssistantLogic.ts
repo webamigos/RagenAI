@@ -1,10 +1,4 @@
-import {
-  useReducer,
-  useEffect,
-  useRef,
-  useTransition,
-  startTransition,
-} from 'react';
+import { useReducer, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
@@ -14,7 +8,7 @@ import { useRouter } from 'next/navigation';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
-import { getUserMessages, sendMessage } from '../../actions';
+import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import {
@@ -23,9 +17,18 @@ import {
 } from '../../lib/services/api';
 
 import type { CreateMessageDto } from '../../contracts/Message';
-import { type State, type Action, reducerActions } from './types';
+import {
+  type State,
+  type Action,
+  reducerActions,
+  type ErrorEvent,
+} from './types';
 import { logger } from '@/app/lib/utils/logger';
+import { statusToast } from '@/app/lib/utils/toast';
+import { PromptFormRef } from './PromptForm/PromptForm';
+import { getErrorMessage } from './utils';
 
+const { errorToast } = statusToast();
 const {
   SET_INITIAL_LOAD,
   ADD_MESSAGE,
@@ -37,6 +40,8 @@ const {
   SET_MESSAGE_ID,
   SET_MESSAGE_LOADING,
   SET_STREAMED_MESSAGE,
+  SET_IS_ERROR,
+  REMOVE_MESSAGE,
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
@@ -50,6 +55,7 @@ export const useAssistantLogic = (threadId: string) => {
     isLimitLock: false,
     messageLoadingText: '',
     isMessageError: false,
+    isError: false,
     streamedMessage: null,
     messages: [],
   };
@@ -68,8 +74,8 @@ export const useAssistantLogic = (threadId: string) => {
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
   const t = useTranslations('Index');
+  const tChainErrors = useTranslations('chain-errors');
   const { dispatch: threadsDispatch } = useThreadsContext();
-  const [setTransition] = useTransition();
 
   const [
     {
@@ -79,11 +85,13 @@ export const useAssistantLogic = (threadId: string) => {
       messageLoadingText,
       streamedMessage,
       messages,
+      isError,
     },
     dispatch,
   ] = useReducer(reducer, initialState);
 
-  const isGlobalLoading = isMessageLoading || isLoading;
+  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
+  const promptFormRef = useRef<PromptFormRef>(null);
 
   function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -118,6 +126,15 @@ export const useAssistantLogic = (threadId: string) => {
         return {
           ...state,
           messages: [...state.messages, action.payload],
+        };
+      case SET_IS_ERROR:
+        return { ...state, isError: action.payload };
+      case REMOVE_MESSAGE:
+        return {
+          ...state,
+          messages: state.messages.filter(
+            (message) => message.public_id !== action.payload
+          ),
         };
       default:
         return state;
@@ -226,10 +243,34 @@ export const useAssistantLogic = (threadId: string) => {
       }
     });
 
-    eventSource.addEventListener('error', (error) => {
-      logger.error('Stream error: %o', error);
-      logger.error('EventSource State: %d', eventSource.readyState);
+    eventSource.addEventListener('error', async (event: ErrorEvent) => {
       eventSource.close();
+
+      const errorMessage = getErrorMessage(event, tChainErrors);
+      const lastUserMessage = messages.findLast(
+        (message) => message.role === Role.USER
+      );
+
+      if (lastUserMessage) {
+        try {
+          //Move to backend after refactoring message handling
+          await deleteUserMessage(userMessageId);
+          dispatch({
+            type: REMOVE_MESSAGE,
+            payload: lastUserMessage.public_id,
+          });
+        } catch (error) {
+          logger.error('Error removing message: %o', error);
+        }
+      }
+
+      //Update user prompt input with last message data
+      dispatch({ type: SET_IS_ERROR, payload: true });
+
+      promptFormRef.current?.reset(lastUserMessage?.content || '');
+      errorToast({ message: errorMessage });
+
+      logger.error('Stream error:', errorMessage);
     });
 
     return eventSource;
@@ -259,7 +300,7 @@ export const useAssistantLogic = (threadId: string) => {
       created_at: new Date(),
     };
     dispatch({ type: ADD_MESSAGE, payload: userMessage });
-
+    dispatch({ type: SET_IS_ERROR, payload: false });
     dispatch({
       type: SET_MESSAGE_LOADING,
       payload: true,
@@ -281,6 +322,7 @@ export const useAssistantLogic = (threadId: string) => {
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        errorToast({ message: 'Error occured while sending message' });
         return;
       }
 
@@ -307,6 +349,7 @@ export const useAssistantLogic = (threadId: string) => {
         error.status === StatusCodes.BAD_REQUEST
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        errorToast({ message: 'Error occured while sending message' });
       }
       logger.error('Error submitting message: %o', error);
     }
@@ -330,5 +373,7 @@ export const useAssistantLogic = (threadId: string) => {
     isLocked,
     dispatch,
     onSubmit,
+    isError,
+    promptFormRef,
   };
 };

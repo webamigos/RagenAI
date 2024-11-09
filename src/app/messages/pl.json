@@ -118,7 +118,8 @@
   "success-toast": {
     "copied": "Skopiowano!",
     "deleted": "Usunięto!",
-    "saved": "Zapisano!"
+    "saved": "Zapisano!",
+    "model-updated-successfully": "Model zaktualizowany pomyślnie"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
@@ -208,7 +209,7 @@
     "save": "Zapisz",
     "edit-successfully": "Dokument został zedytowany"
   },
-    "max-documents-to-retreive": {
+  "max-documents-to-retreive": {
     "input-label": "Maks. liczba fragmentów wyszukiwania"
   },
   "model-select": {
@@ -243,5 +244,11 @@
         "description": "Ta operacja jest nieodwracalna. Czy na pewno usunąć ten klucz?"
       }
     }
+  },
+  "chain-errors": {
+    "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
+    "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
+    "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
+    "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego"
   }
 }

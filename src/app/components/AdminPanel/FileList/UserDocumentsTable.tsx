@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 
 import * as CommonUi from '@salesyy/common-ui';
-import { deleteDocument } from '@/app/actions';
+import { deleteDocumentAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 
@@ -48,7 +48,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      const { status } = await deleteDocument(organization_id, id);
+      const { status } = await deleteDocumentAction(organization_id, id);
       if (status === 200) {
         onRemoveDocument(id);
         successToast({ message: `${tSuccess('deleted')} ${file_name}` });

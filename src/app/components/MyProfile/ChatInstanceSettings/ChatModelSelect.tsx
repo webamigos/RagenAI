@@ -49,7 +49,7 @@ export const ChatModelSelect = ({}) => {
     try {
       const { success } = await saveSetting(SettingsType.model, newModel);
       if (success) {
-        successToast({ message: successMessage('Model updated successfully') });
+        successToast({ message: successMessage('model-updated-successfully') });
       }
     } catch (error) {
       errorToast({
