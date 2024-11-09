@@ -118,7 +118,8 @@
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
-    "saved": "Saved"
+    "saved": "Saved",
+    "model-updated-successfully": "Model updated successfully"
   },
   "error-toast": {
     "no-user-id": "user id missing",

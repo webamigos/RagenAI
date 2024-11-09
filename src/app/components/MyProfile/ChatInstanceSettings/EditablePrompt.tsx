@@ -15,7 +15,7 @@ import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
 const promptSchema = z.object({
   editablePrompt: z
     .string()
-    .min(50, 'Prompt must be at least 50 characters long'),
+    .min(25, 'Prompt must be at least 25 characters long'),
 });
 
 type PromptFormValues = z.infer<typeof promptSchema>;

@@ -68,7 +68,7 @@ export const ChatOutput = ({
         ))}
 
         {streamedMessage && (
-          <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base">
+          <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base dark:shadow-none dark:text-gray-200">
             <div className="chat-response">
               <div>
                 <Text fontSize="sm" fontWeight="semibold">
