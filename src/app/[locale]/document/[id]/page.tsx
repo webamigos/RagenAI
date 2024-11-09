@@ -21,7 +21,7 @@ import {
   fetchDocumentByOrganization,
   updateDocument,
 } from '@/app/components/MarkdownDocumentsCreator/action';
-import { deleteDocument } from '@/app/actions';
+import { deleteDocumentAction } from '@/app/actions';
 import { uploadFiles } from '@/app/lib/services/api';
 import {
   reducer,
@@ -145,7 +145,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     );
     formData.append('organizationId', organization!.id);
 
-    await deleteDocument(orgId, id);
+    await deleteDocumentAction(orgId, id);
     await uploadFiles(orgId, formData);
 
     if (response.success) {
