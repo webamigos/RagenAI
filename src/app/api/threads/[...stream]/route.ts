@@ -19,6 +19,8 @@ import { logger } from '../../../lib/utils/logger';
 import { getAuth } from '@clerk/nextjs/server';
 import { initializeRagChain } from '../services/initializeBasicRag';
 import { getAllSettings } from '@/app/lib/services/settings';
+import { ApiKeyError } from '@/libs/chains/errors';
+import { SseExceptionFilter } from '../services/sseExceptionFilter';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,19 +44,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       throw new Error('Unauthorized');
     }
 
-    const rawSettings = await getAllSettings(orgId);
-
-    if (!rawSettings.apiKey) {
-      throw new Error('LLM API Key not found');
-    }
-
-    const { chain, finalAnswerRunName } = await initializeRagChain({
-      orgId,
-      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
-    });
-
     const [publicThreadId, publicMessageId] = params.stream;
-
     const encoder = new TextEncoder();
     return new Response(
       new ReadableStream({
@@ -64,6 +54,16 @@ export async function GET(request: NextRequest, { params }: Params) {
           );
 
           try {
+            const rawSettings = await getAllSettings(orgId);
+            if (!rawSettings.apiKey) {
+              throw new ApiKeyError();
+            }
+
+            const { chain, finalAnswerRunName } = await initializeRagChain({
+              orgId,
+              settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+            });
+
             const threadMessage = await getMessageById(publicMessageId);
 
             if (!threadMessage) {
@@ -148,14 +148,8 @@ export async function GET(request: NextRequest, { params }: Params) {
             }
           } catch (error) {
             logger.error('Error processing SSE: %o', error);
-            controller.enqueue(
-              encoder.encode(
-                prepareSseMessage('error', {
-                  type: 'error',
-                  message: 'Internal Server Error',
-                })
-              )
-            );
+            const exceptionFilter = new SseExceptionFilter();
+            exceptionFilter.handleError(error, controller);
           }
         },
       }),
