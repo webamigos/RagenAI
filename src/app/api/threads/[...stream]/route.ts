@@ -21,6 +21,12 @@ import { initializeRagChain } from '../services/initializeBasicRag';
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryContext,
+} from '@/app/lib/services/sentry';
+import { setSentryServiceTag } from '@/app/lib/services/sentry';
+import { Sentry } from 'pino-sentry';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,11 +46,17 @@ let runId: string;
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { orgId } = getAuth(request);
+    setSentryServiceTag('threads');
     if (!orgId) {
       throw new Error('Unauthorized');
     }
+    setSentryClerkOrganizationTag(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
+    setSentryContext('EXTRA_DATA', {
+      publicThreadId,
+      publicMessageId,
+    });
     const encoder = new TextEncoder();
     return new Response(
       new ReadableStream({
@@ -147,6 +159,7 @@ export async function GET(request: NextRequest, { params }: Params) {
               }
             }
           } catch (error) {
+            Sentry.captureException(error);
             logger.error('Error processing SSE: %o', error);
             const exceptionFilter = new SseExceptionFilter();
             exceptionFilter.handleError(error, controller);
@@ -163,6 +176,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     );
   } catch (error) {
+    Sentry.captureException(error);
     logger.error('Unexpected error in GET handler: %o', error);
     return new Response('Internal Server Error', { status: 500 });
   }

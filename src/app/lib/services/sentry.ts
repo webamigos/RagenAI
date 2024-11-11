@@ -9,6 +9,8 @@ export const SentryTag = {
 
 export const SentryContext = {
   CLERK: 'Clerk',
+  THREAD_ID: 'ThreadId',
+  EXTRA_DATA: 'ExtraData',
 };
 
 type SentryContextKey = keyof typeof SentryContext;

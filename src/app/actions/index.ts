@@ -24,6 +24,15 @@ import {
   fetchUserDocumentsDetails,
 } from '../lib/services/document';
 import { deleteDocument } from '../api/upload/services/TableService';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryClerkUserTag,
+  setSentryContext,
+} from '../lib/services/sentry';
+import { setSentryServiceTag } from '../lib/services/sentry';
+import { Sentry } from 'pino-sentry';
+
+const serviceName = 'actions';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -62,6 +71,11 @@ export const sendMessage = async (
 
   // get or create thread
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      threadPublicId,
+      visitorId,
+    });
     const { thread, threadEntity } = await findOrCreateOpenAIThread(
       threadPublicId,
       visitorId
@@ -77,6 +91,7 @@ export const sendMessage = async (
 
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
+    Sentry.captureException(e);
     logger.error('processing error: %o', e);
     return {
       error: 'Problem during processing',
@@ -91,10 +106,15 @@ export const getUserMessages = async (
   take?: number
 ): Promise<ResponseHistory> => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      visitorId,
+    });
     const userThreads = await getUserThreads(visitorId, skip, take);
 
     return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
+    Sentry.captureException(err);
     const errorMessage =
       err instanceof Error ? err.message : 'An error occurred';
     return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
@@ -104,6 +124,8 @@ export const getUserMessages = async (
 //get user documents
 export const getUserDocuments = async (orgId: string) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(orgId);
     const documentDetails = await fetchUserDocumentsDetails(orgId);
     return { documentDetails };
   } catch (error) {
@@ -120,6 +142,11 @@ export const deleteDocumentAction = async (
   documentId: string
 ) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(organizationId);
+    setSentryContext('EXTRA_DATA', {
+      documentId,
+    });
     //  removal document from `UserFile`
     const { count } = await deleteDocumentFromUserFile(
       organizationId,
@@ -143,6 +170,7 @@ export const deleteDocumentAction = async (
       status: StatusCodes.OK,
     };
   } catch (error) {
+    Sentry.captureException(error);
     logger.error('Error deleting document:', error);
 
     return {
@@ -155,6 +183,8 @@ export const deleteDocumentAction = async (
 //save data to clerk user profile
 export const saveUserIdToClerk = async (clerkUserId: string) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkUserTag(clerkUserId);
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
         userRole: 'USER',
@@ -162,6 +192,7 @@ export const saveUserIdToClerk = async (clerkUserId: string) => {
     });
     return { success: true };
   } catch (error) {
+    Sentry.captureException(error);
     return { success: false };
   }
 };
@@ -173,18 +204,30 @@ export const rateMessage = async (
   runId: string
 ) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      messageId,
+      feedback,
+      runId,
+    });
     await submitFeedbackDirectly(messageId, feedback, runId);
     return { success: true };
   } catch (error) {
-    return { success: error };
+    Sentry.captureException(error);
+    return { success: false };
   }
 };
 
 export async function deleteUserMessage(messagePublicId: string) {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      messagePublicId,
+    });
     await deleteMessageByPublicId(messagePublicId);
     return { success: true };
   } catch (error) {
+    Sentry.captureException(error);
     logger.error('Error deleting user message: %o', error);
     return { success: false };
   }

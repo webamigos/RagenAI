@@ -3,6 +3,11 @@ import { NextResponse } from 'next/server';
 import { Client } from 'langsmith';
 
 import { logger } from '@/app/lib/utils/logger';
+import {
+  setSentryContext,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+import { Sentry } from 'pino-sentry';
 
 type Params = {
   params: { messageId: string };
@@ -12,6 +17,10 @@ export const POST = async (request: Request, { params }: Params) => {
   const { messageId } = params;
 
   try {
+    setSentryServiceTag('messages-feedback');
+    setSentryContext('EXTRA_DATA', {
+      messageId,
+    });
     const body = await request.json();
     const { feedback, runId } = body;
 
@@ -39,6 +48,7 @@ export const POST = async (request: Request, { params }: Params) => {
 
     return NextResponse.json({ message: 'Feedback submitted' });
   } catch (error) {
+    Sentry.captureException(error);
     logger.error('Error submitting feedback:', error);
     return NextResponse.json(
       { error: 'Internal Server Error' },

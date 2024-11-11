@@ -15,6 +15,14 @@ import {
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
 import { getOpenaiAPIKey } from '@/app/lib/services/settings';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryContext,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+import { Sentry } from 'pino-sentry';
+
+const serviceName = 'saveDataInVectorTable';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -27,6 +35,7 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
   const filePath = path.join(projectDir, `temp-${Date.now()}.epub`);
 
   try {
+    setSentryServiceTag(serviceName);
     const data = content instanceof Buffer ? new Uint8Array(content) : content;
     await fs.promises.writeFile(filePath, data);
     await fs.promises
@@ -38,6 +47,7 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
       filePath,
     };
   } catch (error) {
+    Sentry.captureException(error);
     if (error) {
       return {
         success: false,
@@ -55,6 +65,13 @@ export const convertAndStoreDocument = async (
   fileId: string
 ): Promise<ConvertAndStoreResult> => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(organizationId);
+    setSentryContext('EXTRA_DATA', {
+      fileName,
+      fileId,
+    });
+
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }
@@ -75,6 +92,7 @@ export const convertAndStoreDocument = async (
           const load = new EPubLoader(filePath);
           rawDocs = await load.load();
         } catch (error) {
+          Sentry.captureException(error);
           return {
             success: false,
             message: `File is not accessible at: ${filePath}`,
@@ -158,6 +176,7 @@ export const convertAndStoreDocument = async (
       message: 'Document processed and stored successfully!',
     };
   } catch (error) {
+    Sentry.captureException(error);
     return {
       success: false,
       message: `Error processing document: ${error}`,

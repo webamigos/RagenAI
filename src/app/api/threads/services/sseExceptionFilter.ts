@@ -5,6 +5,7 @@ import {
 } from '@/libs/chains/errors';
 import { SseMessageError } from '@/app/contracts/Events';
 import { TextEncoder } from 'util';
+import { setSentryContext } from '@/app/lib/services/sentry';
 
 export class SseExceptionFilter {
   private encoder = new TextEncoder();
@@ -34,6 +35,9 @@ export class SseExceptionFilter {
       originalErrorMessage: chainError.originalErrorMessage,
     };
 
+    setSentryContext('EXTRA_DATA', {
+      errorMessage,
+    });
     controller.enqueue(
       this.encoder.encode(this.prepareSseMessage('error', errorMessage))
     );
