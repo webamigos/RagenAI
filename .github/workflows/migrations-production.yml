@@ -10,10 +10,10 @@ env:
 
 on:
   push:
-    paths:
-      # Only run this workflow when migrations are updated
-      - prisma/migrations/**
-      - supabase/migrations/**
+    # paths:
+    #   # Only run this workflow when migrations are updated
+    #   - prisma/migrations/**
+    #   - supabase/migrations/**
     branches: [main]
 
 jobs:
