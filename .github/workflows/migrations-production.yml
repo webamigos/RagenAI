@@ -6,6 +6,7 @@ env:
   SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
   SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.PROD_SUPABASE_ACCESS_TOKEN }}
 
 on:
   push:
@@ -16,7 +17,7 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  deploy-on-production:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
