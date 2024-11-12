@@ -158,6 +158,7 @@ export const saveUserIdToClerk = async (clerkUserId: string) => {
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
         userRole: 'USER',
+        onboardingComplete: false,
       },
     });
     return { success: true };

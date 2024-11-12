@@ -55,7 +55,6 @@ export const SetApiKeys = () => {
             setIsWarning(true);
           } else {
             setIsWarning(true);
-            errorToast({ message: t('failed-to-fetch') });
           }
         } else {
           const fetchedApiKey = response.data.apiKey;
@@ -139,7 +138,7 @@ export const SetApiKeys = () => {
         {isWarning && (
           <span>
             <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
-              <WarningIcon className="-mb-0.5 ml-2 text-yellow-600 cursor-pointer" />
+              <WarningIcon className="-mb-1.5 ml-2 text-yellow-600 cursor-pointer" />
             </Tooltip>
           </span>
         )}
