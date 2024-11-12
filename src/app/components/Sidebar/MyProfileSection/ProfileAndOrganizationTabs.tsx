@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
@@ -16,7 +17,7 @@ import {
 } from '@salesyy/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
-import { useEffect, useMemo } from 'react';
+import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 
 type Props = {
   membership?: OrganizationRoles;
@@ -34,6 +35,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   const router = useRouter();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();
+  const { showOnboarding } = useOnboardingContext();
 
   useSyncActiveOrganization({ membership });
 
@@ -92,7 +94,23 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       return organizationTabsForMember;
     }
 
-    return organizationTabsForNoRole;
+    const tabsForNoRole = [...organizationTabsForNoRole];
+    if (showOnboarding) {
+      tabsForNoRole.push(
+        {
+          icon: SettingsIcon,
+          label: t('assistant-management'),
+          path: '/my-profile/prompt-management',
+        },
+        {
+          icon: OpenBookIcon,
+          label: t('manage-knowledge'),
+          path: '/manage-knowledge',
+        }
+      );
+    }
+
+    return tabsForNoRole;
   };
 
   const tabs: TabItem[] = useMemo(() => {
