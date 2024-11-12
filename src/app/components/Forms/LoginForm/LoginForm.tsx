@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useSignIn } from '@clerk/nextjs';
 import { useState } from 'react';
-import Link from 'next/link';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { Button, Card, Input } from '@salesyy/common-ui';
+import { Button, Card, Input, Link, Text } from '@salesyy/common-ui';
+import { Logo } from '../../Logo';
 
 import { type LoginFormData, loginSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
@@ -21,7 +21,7 @@ export const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
 
-  const t = useTranslations('Sign-in');
+  const t = useTranslations('sign-in');
   const { push } = useRouter();
 
   const {
@@ -59,54 +59,55 @@ export const LoginForm = () => {
   };
 
   return (
-    <Card>
+    <Card className="w-screen">
+      <Logo />
       <div className="flex flex-col mb-4 text-center">
-        <p className="font-bold text-lg	">{t('sign-in')}</p>
-        <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
+        <Text fontSize="md" fontWeight="medium">
+          {t('sign-in')}
+        </Text>
+        <Text color="gray-400" fontSize="xs" fontWeight="light">
+          {t('to-continue')}
+        </Text>
       </div>
       <SocialAuthOptions isSignUp={false} />
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <Input
-            type="email"
-            id="email"
-            {...register('email')}
-            className="w-full px-3 py-2 border rounded"
-            label="Email"
-            error={errors.email}
-            errorMessage={errors.email?.message}
-          />
-        </div>
-        <div>
-          <Input
-            type="password"
-            id="password"
-            {...register('password')}
-            className="w-full px-3 py-2 border rounded"
-            label={t('Password')}
-            error={errors.password}
-            errorMessage={errors.password?.message}
-          />
-        </div>
+        <Input
+          type="email"
+          id="email"
+          {...register('email')}
+          className="w-full px-3 py-2 border "
+          label="Email"
+          error={errors.email}
+          errorMessage={errors.email?.message}
+        />
+        <Input
+          type="password"
+          id="password"
+          {...register('password')}
+          className="w-full px-3 py-2 border"
+          label={t('Password')}
+          error={errors.password}
+          errorMessage={errors.password?.message}
+        />
         <Link
           href="/forgot-password"
-          className="text-end text-sm font-light text-blue-500 hover:underline"
+          className="text-end text-sm font-light hover:underline"
         >
           {t('Forgot-password')}
         </Link>
         <Button
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           isLoading={isSubmitting}
           label={t('sign-in')}
           type="submit"
         />
         <ClerkErrorsInterface apiErrors={apiErrors} />
-        <p className="text-start">
-          {t('Dont-have-an-account')}{' '}
-          <Link href="/sign-up" className="text-blue-500 hover:underline">
-            {t('Sign-up')}
+        <div className="flex items-baseline">
+          <Text className="text-start mr-2">{t('Dont-have-an-account')}</Text>
+          <Link underline href="/sign-up">
+            {t('sign-up')}
           </Link>
-        </p>
+        </div>
       </form>
     </Card>
   );

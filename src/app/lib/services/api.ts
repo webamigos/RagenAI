@@ -1,5 +1,5 @@
-import { MessageDto } from '../../contracts/Message';
 import { api } from './config';
+import { MessageDto } from '../../contracts/Message';
 import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 export const fetchMessagesFromApi = async (
@@ -16,6 +16,14 @@ export const createThread = () => {
   return api.post<CreateThreadDto>('/threads');
 };
 
+export const submitFeedback = async (
+  messageId: string,
+  feedback: 'up' | 'down',
+  runId: string
+) => {
+  return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
+};
+
 export const createThreadForGuest = () => {
   return api.post<CreateThreadDto>(`/guest-threads/`);
 };
@@ -26,4 +34,33 @@ export const checkVisitorVisits = async (visitorId: string) => {
 
 export const clearVisitorMessagesStats = async () => {
   return api.post<void>(`/visitor/hejho`);
+};
+
+type UploadedFile = {
+  fileName: string;
+  fileSize: number;
+  uniqueFileId: string;
+  content: string;
+};
+
+type UploadResponse = {
+  message: string;
+  status: number;
+  files: UploadedFile[];
+};
+
+export const uploadFiles = async (
+  uploaderId: string,
+  data: FormData
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    `/upload/${uploaderId}`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
 };

@@ -1,64 +1,47 @@
-import { useState, useRef, type ReactNode } from 'react';
+'use client';
 
-type TooltipProps = {
-  children: ReactNode;
+import { ReactNode } from 'react';
+import { Tooltip as ReactTooltip } from 'react-tooltip';
+
+export type TooltipProps = {
+  id: string;
   content: string;
-  position?: 'top' | 'bottom' | 'left' | 'right';
-  delay?: number;
+  children: ReactNode;
+  place?: 'top' | 'right' | 'bottom' | 'left';
+  offset?: number;
+  delayShow?: number;
+  delayHide?: number;
+  className?: string;
 };
 
 export const Tooltip = ({
-  children,
+  id,
   content,
-  position = 'top',
-  delay = 0,
+  children,
+  place = 'top',
+  offset = 10,
+  delayShow = 300,
+  delayHide = 300,
+  className,
 }: TooltipProps) => {
-  const [visible, setVisible] = useState(false);
-  const timeoutRef = useRef<number | null>(null);
-
-  const showTooltip = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = window.setTimeout(() => {
-      setVisible(true);
-    }, delay);
-  };
-
-  const hideTooltip = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setVisible(false);
-  };
-
   return (
-    <div
-      className="relative flex items-center"
-      onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
-    >
-      {children}
-      {visible && (
-        <div
-          className={`absolute ${getTooltipPosition(
-            position
-          )} z-10 w-max p-2 bg-black text-white text-xs rounded shadow-lg`}
-        >
-          {content}
-        </div>
-      )}
-    </div>
+    <>
+      <span
+        data-tooltip-id={id}
+        data-tooltip-content={content}
+        className={className}
+        style={{ display: 'inline-block' }}
+      >
+        {children}
+      </span>
+      <ReactTooltip
+        id={id}
+        place={place}
+        offset={offset}
+        delayShow={delayShow}
+        delayHide={delayHide}
+        anchorSelect={`[data-tooltip-id="${id}"]`}
+      />
+    </>
   );
-};
-
-const getTooltipPosition = (position: 'top' | 'bottom' | 'left' | 'right') => {
-  switch (position) {
-    case 'top':
-      return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
-    case 'bottom':
-      return 'top-full left-1/2 transform -translate-x-1/2 mt-2';
-    case 'left':
-      return 'right-full top-1/2 transform -translate-y-1/2 mr-2';
-    case 'right':
-      return 'left-full top-1/2 transform -translate-y-1/2 ml-2';
-    default:
-      return 'bottom-full left-1/2 transform -translate-x-1/2 mb-2';
-  }
 };

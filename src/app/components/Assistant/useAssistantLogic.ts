@@ -1,33 +1,34 @@
-import {
-  useReducer,
-  useEffect,
-  useState,
-  useRef,
-  type MouseEventHandler,
-} from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useReducer, useEffect, useRef, startTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
-
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
-import { getUserMessages, sendMessage } from '../../actions';
+import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import {
   checkVisitorVisits,
   fetchMessagesFromApi,
 } from '../../lib/services/api';
-import { loadFingerprint } from '../../lib/utils/fingerprint';
-import { logger } from '../../lib/utils/logger';
 
 import type { CreateMessageDto } from '../../contracts/Message';
-import { type State, type Action, reducerActions } from './types';
+import {
+  type State,
+  type Action,
+  reducerActions,
+  type ErrorEvent,
+} from './types';
+import { logger } from '@/app/lib/utils/logger';
+import { statusToast } from '@/app/lib/utils/toast';
+import { PromptFormRef } from './PromptForm/PromptForm';
+import { getErrorMessage } from './utils';
 
+const { errorToast } = statusToast();
 const {
   SET_INITIAL_LOAD,
   ADD_MESSAGE,
@@ -39,11 +40,13 @@ const {
   SET_MESSAGE_ID,
   SET_MESSAGE_LOADING,
   SET_STREAMED_MESSAGE,
+  SET_IS_ERROR,
+  REMOVE_MESSAGE,
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
+  const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
-  const [visitorId, setVisitorId] = useState<string | null>(null);
 
   const initialState: State = {
     isInitialLoad: true,
@@ -52,21 +55,14 @@ export const useAssistantLogic = (threadId: string) => {
     isLimitLock: false,
     messageLoadingText: '',
     isMessageError: false,
+    isError: false,
     streamedMessage: null,
     messages: [],
   };
 
-  const userVisitorId = user?.publicMetadata.visitorId as string;
+  const userVisitorId = user?.id;
 
-  useEffect(() => {
-    if (isLoaded && !isSignedIn && !visitorId) {
-      loadFingerprint().then((id) => {
-        setVisitorId(id);
-      });
-    }
-  }, [isLoaded, isSignedIn, visitorId]);
-
-  const id = userVisitorId || visitorId;
+  const id = user?.id;
 
   const { isLoading } = useApi(() => {
     if (id) {
@@ -77,9 +73,8 @@ export const useAssistantLogic = (threadId: string) => {
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
-  const { push } = useRouter();
-  const locale = useLocale();
   const t = useTranslations('Index');
+  const tChainErrors = useTranslations('chain-errors');
   const { dispatch: threadsDispatch } = useThreadsContext();
 
   const [
@@ -90,11 +85,13 @@ export const useAssistantLogic = (threadId: string) => {
       messageLoadingText,
       streamedMessage,
       messages,
+      isError,
     },
     dispatch,
   ] = useReducer(reducer, initialState);
 
-  const isGlobalLoading = isMessageLoading || isLoading;
+  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
+  const promptFormRef = useRef<PromptFormRef>(null);
 
   function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -116,7 +113,9 @@ export const useAssistantLogic = (threadId: string) => {
         return {
           ...state,
           streamedMessage: {
-            content: (state.streamedMessage?.content || '') + action.payload,
+            content:
+              (state.streamedMessage?.content || '') + action.payload.content,
+            runId: action.payload.run_id,
             created_at:
               state.streamedMessage?.created_at || new Date().toISOString(),
           },
@@ -128,6 +127,15 @@ export const useAssistantLogic = (threadId: string) => {
           ...state,
           messages: [...state.messages, action.payload],
         };
+      case SET_IS_ERROR:
+        return { ...state, isError: action.payload };
+      case REMOVE_MESSAGE:
+        return {
+          ...state,
+          messages: state.messages.filter(
+            (message) => message.public_id !== action.payload
+          ),
+        };
       default:
         return state;
     }
@@ -136,7 +144,12 @@ export const useAssistantLogic = (threadId: string) => {
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  const fetchData = async (id: string) => {
+  const fetchData = async (id: string | undefined) => {
+    if (!id) {
+      startTransition(() => router.push('/sign-in'));
+      return;
+    }
+
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
     try {
       const response = await fetchMessagesFromApi(threadId, id);
@@ -151,12 +164,12 @@ export const useAssistantLogic = (threadId: string) => {
 
   useEffect(() => {
     if (isLoaded) {
-      const id = userVisitorId || visitorId;
+      const id = userVisitorId;
       if (id) {
         fetchData(id);
       }
     }
-  }, [isLoaded, userVisitorId, visitorId]);
+  }, [isLoaded, userVisitorId]);
 
   useEffect(() => {
     const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
@@ -168,15 +181,18 @@ export const useAssistantLogic = (threadId: string) => {
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
-      const id = userVisitorId || visitorId;
+      const id = userVisitorId;
       if (id) {
         loadVisitorMessages(id);
       }
     }
-  }, [messages, userVisitorId, visitorId]);
+  }, [messages, userVisitorId]);
 
   const loadVisitorMessages = async (id: string) => {
     try {
+      if (isSignedIn) {
+        return;
+      }
       const { data } = await checkVisitorVisits(id);
       if (data.messages >= dailyMessageLimit) {
         dispatch({ type: SET_LIMIT_LOCK, payload: true });
@@ -198,12 +214,13 @@ export const useAssistantLogic = (threadId: string) => {
       const eventMessage = JSON.parse(event.data);
       if (eventMessage.type === 'delta') {
         const textChunk = eventMessage.payload.content;
+        const runId = eventMessage.payload.runId;
         accumulatingMessage += textChunk;
         dispatch({ type: SET_MESSAGE_LOADING, payload: false });
 
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
-          payload: textChunk,
+          payload: { content: textChunk, run_id: runId },
         });
 
         scrollToBottom();
@@ -216,6 +233,7 @@ export const useAssistantLogic = (threadId: string) => {
               role: eventMessage.payload.role,
               content: accumulatingMessage,
               created_at: eventMessage.payload.created_at,
+              run_id: eventMessage.payload.runId,
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
@@ -225,10 +243,34 @@ export const useAssistantLogic = (threadId: string) => {
       }
     });
 
-    eventSource.addEventListener('error', (error) => {
-      logger.error('Stream error: %o', error);
-      logger.error('EventSource State: %d', eventSource.readyState);
+    eventSource.addEventListener('error', async (event: ErrorEvent) => {
       eventSource.close();
+
+      const errorMessage = getErrorMessage(event, tChainErrors);
+      const lastUserMessage = messages.findLast(
+        (message) => message.role === Role.USER
+      );
+
+      if (lastUserMessage) {
+        try {
+          //Move to backend after refactoring message handling
+          await deleteUserMessage(userMessageId);
+          dispatch({
+            type: REMOVE_MESSAGE,
+            payload: lastUserMessage.public_id,
+          });
+        } catch (error) {
+          logger.error('Error removing message: %o', error);
+        }
+      }
+
+      //Update user prompt input with last message data
+      dispatch({ type: SET_IS_ERROR, payload: true });
+
+      promptFormRef.current?.reset(lastUserMessage?.content || '');
+      errorToast({ message: errorMessage });
+
+      logger.error('Stream error:', errorMessage);
     });
 
     return eventSource;
@@ -242,13 +284,14 @@ export const useAssistantLogic = (threadId: string) => {
     }
   }, [userMessageId]);
 
-  const handleCloseThread: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.preventDefault();
-    localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-    push(`/${locale}`);
-  };
-
   const onSubmit = async (data: CreateMessageDto) => {
+    // TODO: Temporary restriction - only authenticated users can send messages
+    // Future implementation should include guest user support or a clear user journey for non-authenticated users
+    if (!userVisitorId) {
+      startTransition(() => router.push('/sign-in'));
+      return;
+    }
+
     scrollToBottom();
     const userMessage = {
       public_id: `user-${Date.now()}`,
@@ -257,6 +300,7 @@ export const useAssistantLogic = (threadId: string) => {
       created_at: new Date(),
     };
     dispatch({ type: ADD_MESSAGE, payload: userMessage });
+    dispatch({ type: SET_IS_ERROR, payload: false });
     dispatch({
       type: SET_MESSAGE_LOADING,
       payload: true,
@@ -266,19 +310,19 @@ export const useAssistantLogic = (threadId: string) => {
       payload: t('status-thinking'),
     });
 
-    const id = userVisitorId || visitorId || (await loadFingerprint());
-    const messageResponse = await sendMessage(threadId, data, id);
-    const response = await getUserMessages(id);
-    const threads = response.threads;
-
-    threadsDispatch({
-      type: 'USER_THREADS',
-      payload: threads || [],
-    });
-
     try {
+      const messageResponse = await sendMessage(threadId, data, userVisitorId);
+      const response = await getUserMessages(userVisitorId);
+      const threads = response.threads;
+      const newThread = {
+        public_id: threads![0].public_id,
+        messages: [userMessage],
+        created_at: new Date(),
+      };
+
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        errorToast({ message: 'Error occured while sending message' });
         return;
       }
 
@@ -295,12 +339,17 @@ export const useAssistantLogic = (threadId: string) => {
           payload: t('status-asking-ai'),
         });
       }
+      threadsDispatch({
+        type: 'ADD_THREAD',
+        payload: newThread,
+      });
     } catch (error) {
       if (
         error instanceof AxiosError &&
         error.status === StatusCodes.BAD_REQUEST
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        errorToast({ message: 'Error occured while sending message' });
       }
       logger.error('Error submitting message: %o', error);
     }
@@ -321,9 +370,10 @@ export const useAssistantLogic = (threadId: string) => {
     isLimitLock,
     isSignedIn,
     messages,
-    handleCloseThread,
     isLocked,
     dispatch,
     onSubmit,
+    isError,
+    promptFormRef,
   };
 };

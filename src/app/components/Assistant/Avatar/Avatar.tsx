@@ -1,8 +1,9 @@
 'use client';
 
-import { Button } from '@salesyy/common-ui';
 import axios from 'axios';
-import { logger } from '../../../lib/utils/logger';
+
+import { logger } from '@/app/lib/utils/logger';
+import { Button } from '@salesyy/common-ui';
 
 export const Avatar = () => {
   const handleClick = async () => {

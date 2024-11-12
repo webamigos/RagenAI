@@ -16,4 +16,8 @@ export * from './Card';
 export * from './Divider';
 export * from './Dropdown';
 export * from './Dialog';
+export * from './FileUploader';
+export * from './Table';
 export * from './Tooltip';
+export * from './Tabs';
+export * from './WysywigEditor';

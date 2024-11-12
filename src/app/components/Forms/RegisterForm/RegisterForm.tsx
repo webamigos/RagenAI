@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { Button, Input, Card } from '@salesyy/common-ui';
+import { Button, Input, Card, Link, Text } from '@salesyy/common-ui';
+import { Logo } from '../../Logo';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
@@ -20,7 +20,7 @@ export const RegisterForm = () => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
 
   const { isLoaded, signUp } = useSignUp();
-  const t = useTranslations('Sign-up');
+  const t = useTranslations('sign-up');
   const { push } = useRouter();
 
   const {
@@ -58,10 +58,15 @@ export const RegisterForm = () => {
   };
 
   return (
-    <Card>
+    <Card className="w-screen">
+      <Logo />
       <div className="flex flex-col mb-4 text-center">
-        <p className="font-bold text-lg	">{t('create-account')}</p>
-        <p className="font-light text-xs text-gray-500">{t('to-continue')}</p>
+        <Text fontSize="md" fontWeight="medium">
+          {t('create-account')}
+        </Text>
+        <Text fontSize="xs" fontWeight="light" color="gray-400">
+          {t('to-continue')}
+        </Text>
       </div>
       <SocialAuthOptions isSignUp={true} />
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -69,7 +74,7 @@ export const RegisterForm = () => {
           type="email"
           id="email"
           {...register('email')}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-3 py-2 border"
           label="Email"
           error={errors.email}
           errorMessage={errors.email?.message}
@@ -79,24 +84,26 @@ export const RegisterForm = () => {
           type="password"
           id="password"
           {...register('password')}
-          className="w-full py-2 border rounded"
+          className="w-full py-2 border"
           error={errors.email}
           errorMessage={errors.password?.message}
         />
         <Button
-          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600 flex justify-center items-center"
+          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           disabled={isSubmitting}
           isLoading={isSubmitting}
           label={t('sign-up')}
           type="submit"
         />
         <ClerkErrorsInterface apiErrors={apiErrors} />
-        <p className="text-start">
-          {t('Already-have-an-account')}{' '}
-          <Link href="/sign-in" className="text-blue-500 hover:underline">
+        <div className="flex items-baseline">
+          <Text className="text-start mr-2">
+            {t('Already-have-an-account')}{' '}
+          </Text>
+          <Link underline href="/sign-in">
             {t('sign-in')}
           </Link>
-        </p>
+        </div>
       </form>
     </Card>
   );

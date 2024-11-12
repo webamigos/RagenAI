@@ -13,13 +13,14 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "typeRoots": ["./contracts", "./node_modules/@types"],
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      // for backward compatibility
+      // for backward compatibility,
       "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
       "@salesyy/common-ui": ["./src/libs/common-ui"],
       "@salesyy/prisma-client": ["./src/libs/db"],
@@ -32,7 +33,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx"
+    ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
+    "src/app/api/upload/[...upload]/route.tsx",
+    "src/app/api/settings/api-key/route.ts",
+    "storybook/main.js"
   ],
   "exclude": ["node_modules"]
 }

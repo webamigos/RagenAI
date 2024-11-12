@@ -3,56 +3,142 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_DIRECT_URL")
 }
 
 model User {
-  id    String @id @default(uuid())
   email String
+  id    String @id @default(uuid())
+}
+
+model Settings {
+  key   String @id
+  value String
+}
+
+model Message {
+  public_id         String   @unique @default(uuid())
+  openai_message_id String
+  openai_created_at Int
+  created_at        DateTime @default(now()) @db.Timestamptz
+  content           String
+  role              Role     @default(USER)
+  thread_id         String?
+  visitor_id        String?
+  id                String   @id @default(uuid())
+  rate              Int?     @db.SmallInt
+  run_id            String?
+  thread            Thread?  @relation(fields: [thread_id], references: [id])
+}
+
+model FlaggedMessage {
+  public_id  String   @unique @default(uuid())
+  created_at DateTime @default(now()) @db.Timestamptz
+  content    String
+  role       Role     @default(USER)
+  id         String   @id @default(uuid())
+}
+
+model Thread {
+  public_id        String    @unique @default(uuid())
+  openai_thread_id String
+  created_at       DateTime  @default(now()) @db.Timestamptz
+  id               String    @id @default(uuid())
+  visitor_id       String?
+  messages         Message[]
+}
+
+model VisitorMessages {
+  visitor_id String
+  message_id String
+  created_at DateTime @default(now()) @db.Timestamptz
+  id         String   @id @default(uuid())
+}
+
+// Files uploaded by user
+model UserFile {
+  id              String    @id
+  organization_id String
+  file_name       String
+  file_size       Int
+  created_at      DateTime? @default(now()) @db.Timestamptz
+  updated_at      DateTime? @db.Timestamptz
+  metadata        Json?
+
+  @@unique([id, organization_id])
+  @@index([organization_id])
+}
+
+// Documents from CMS
+model UserDocument {
+  id              BigInt    @id @default(autoincrement())
+  public_id       String    @default(cuid())
+  organization_id String
+  title           String
+  content         String
+  created_at      DateTime? @default(now()) @db.Timestamptz
+  updated_at      DateTime? @db.Timestamptz
+}
+
+// Organizations, Projects and ApiKeys ids will be used in Redis for store:
+// org:2143, org:2143:proj:6543, org:2143:proj:6543:key:9843 or key:9843, key:9843:usage
+// keys, stats and other informations. Other tables rather doesn't need this kind of ids
+// id - internal id, will be used in internal systems and for redis
+// public_id - id which will be used in routing in the app
+// provider_id - organization id from provider (e.g. Clerk organization id)
+// NOTE: Prisma nukes custom sequences:
+// - https://github.com/prisma/prisma/issues/24677
+// - https://github.com/prisma/prisma/issues/25060
+model Organization {
+  // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id          Int       @id @default(autoincrement())
+  public_id   String    @unique @default(cuid())
+  provider_id String    @unique
+  created_at  DateTime  @default(now()) @db.Timestamptz
+  updated_at  DateTime  @updatedAt @db.Timestamptz
+  project     Project[]
+  ApiKey      ApiKey[]
+
+  @@index([public_id])
+  @@index([provider_id])
+}
+
+model Project {
+  // id              Int           @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id              Int           @id @default(autoincrement())
+  public_id       String        @unique @default(cuid())
+  title           String
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  created_at      DateTime      @default(now()) @db.Timestamptz
+  updated_at      DateTime      @updatedAt @db.Timestamptz
+  organization_id Int?
+  api_key         ApiKey[]
+
+  @@index([public_id])
+}
+
+model ApiKey {
+  // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
+  id              Int           @id @default(autoincrement())
+  name            String
+  public_id       String        @unique @default(cuid())
+  masked_value    String
+  last_used_at    DateTime? @db.Timestamptz
+  created_at      DateTime      @default(now()) @db.Timestamptz
+  created_by      String?
+  updated_at      DateTime      @updatedAt @db.Timestamptz
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  organization_id Int?
+  project         Project?      @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  project_id      Int?
+
+  @@index([public_id])
+  @@index([organization_id])
 }
 
 enum Role {
   USER
   ASSISTANT
 }
-
-model Message {
-  id                String   @id @default(uuid())
-  public_id         String   @unique @default(uuid())
-  openai_message_id String
-  openai_created_at Int
-  created_at        DateTime @default(now())
-  content           String
-  role              Role     @default(USER)
-  thread            Thread?  @relation(fields: [thread_id], references: [id])
-  thread_id         String?
-  visitor_id        String?
-}
-
-model FlaggedMessage {
-  id         String   @id @default(uuid())
-  public_id  String   @unique @default(uuid())
-  created_at DateTime @default(now())
-  content    String
-  role       Role     @default(USER)
-}
-
-model Thread {
-  id               String    @id @default(uuid())
-  public_id        String    @unique @default(uuid())
-  openai_thread_id String
-  visitor_id       String?
-  created_at       DateTime  @default(now())
-  messages         Message[]
-}
-
-model VisitorMessages {
-  id         String   @id @default(uuid())
-  visitor_id String
-  message_id String
-  created_at DateTime @default(now())
-}
-
-// per message moderation_passed Boolean @default(false)

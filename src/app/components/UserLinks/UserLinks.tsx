@@ -1,10 +1,12 @@
+import { useTranslations } from 'next-intl';
 import {
   SignedIn,
   SignInButton,
   SignOutButton,
   SignedOut,
 } from '@clerk/nextjs';
-import { useTranslations } from 'next-intl';
+import { LogoutIcon } from '@salesyy/common-ui/icons';
+import { Text } from '@salesyy/common-ui/Text';
 
 export const UserLinks = () => {
   const t = useTranslations();
@@ -14,15 +16,19 @@ export const UserLinks = () => {
       <SignedIn>
         <div>
           <SignOutButton>
-            <span className="text-sm dark:text-slate-200 text-slate-900 cursor-pointer">
-              {t('common.sign-out')}
-            </span>
+            <Text>
+              <span className="flex font-sans text-sm font-semibold text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white   cursor-pointer">
+                <LogoutIcon className="-ml-2 mr-2" />
+                {t('common.sign-out')}
+              </span>
+            </Text>
           </SignOutButton>
         </div>
       </SignedIn>
       <SignedOut>
         <SignInButton mode="redirect">
-          <span className="text-sm dark:text-slate-200 text-slate-900 cursor-pointer">
+          <span className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
+            <LogoutIcon className="mr-4" />
             {t('common.sign-in')}
           </span>
         </SignInButton>

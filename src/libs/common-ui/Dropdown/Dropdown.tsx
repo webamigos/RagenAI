@@ -12,10 +12,18 @@ export function Dropdown(props: Headless.MenuProps) {
 }
 
 export function DropdownButton<T extends React.ElementType = typeof Button>({
-  as = Button,
+  label,
+  children,
   ...props
-}: { className?: string } & Omit<Headless.MenuButtonProps<T>, 'className'>) {
-  return <Headless.MenuButton as={as} {...props} />;
+}: { className?: string; label?: string } & Omit<
+  Headless.MenuButtonProps<T>,
+  'className'
+>) {
+  return (
+    <Headless.MenuButton aria-label={label || 'Dropdown menu'} {...props}>
+      {children}
+    </Headless.MenuButton>
+  );
 }
 
 export function DropdownMenu({
@@ -34,14 +42,13 @@ export function DropdownMenu({
         '[--anchor-gap:theme(spacing.2)] [--anchor-padding:theme(spacing.1)] data-[anchor~=start]:[--anchor-offset:-6px] data-[anchor~=end]:[--anchor-offset:6px] sm:data-[anchor~=start]:[--anchor-offset:-4px] sm:data-[anchor~=end]:[--anchor-offset:4px]',
         // Base styles
         'isolate w-max rounded-xl p-1',
-        // Invisible border that is only visible in `forced-colors` mode for accessibility purposes
-        'outline outline-1 outline-transparent focus:outline-none',
+        // Removed the outline-related classes
         // Handle scrolling when menu won't fit in viewport
         'overflow-y-auto',
         // Popover background
-        'bg-white/75 backdrop-blur-xl dark:bg-zinc-800/75',
+        'bg-white/75 backdrop-blur-xl dark:bg-accent-dark-500',
         // Shadows
-        'shadow-lg ring-1 ring-zinc-950/10 dark:ring-inset dark:ring-white/10',
+        'shadow-2xl dark:ring-inset dark:ring-white/10',
         // Define grid at the menu level if subgrid is supported
         'supports-[grid-template-columns:subgrid]:grid supports-[grid-template-columns:subgrid]:grid-cols-[auto_1fr_1.5rem_0.5rem_auto]',
         // Transitions
@@ -61,11 +68,11 @@ export function DropdownItem({
   let classes = clsx(
     className,
     // Base styles
-    'group cursor-default rounded-lg px-3.5 py-2.5 focus:outline-none sm:px-3 sm:py-1.5',
+    'group rounded-lg px-3.5 py-2.5 focus:outline-none sm:px-3 sm:py-1.5',
     // Text styles
     'text-left text-base/6 text-zinc-950 sm:text-sm/6 dark:text-white forced-colors:text-[CanvasText]',
     // Focus
-    'data-[focus]:bg-blue-500 data-[focus]:text-white',
+    // 'data-[focus]:bg-blue-500 data-[focus]:text-white',
     // Disabled state
     'data-[disabled]:opacity-50',
     // Forced colors mode
@@ -76,7 +83,9 @@ export function DropdownItem({
     '[&>[data-slot=icon]]:col-start-1 [&>[data-slot=icon]]:row-start-1 [&>[data-slot=icon]]:-ml-0.5 [&>[data-slot=icon]]:mr-2.5 [&>[data-slot=icon]]:size-5 sm:[&>[data-slot=icon]]:mr-2 [&>[data-slot=icon]]:sm:size-4',
     '[&>[data-slot=icon]]:text-zinc-500 [&>[data-slot=icon]]:data-[focus]:text-white [&>[data-slot=icon]]:dark:text-zinc-400 [&>[data-slot=icon]]:data-[focus]:dark:text-white',
     // Avatar
-    '[&>[data-slot=avatar]]:-ml-1 [&>[data-slot=avatar]]:mr-2.5 [&>[data-slot=avatar]]:size-6 sm:[&>[data-slot=avatar]]:mr-2 sm:[&>[data-slot=avatar]]:size-5'
+    '[&>[data-slot=avatar]]:-ml-1 [&>[data-slot=avatar]]:mr-2.5 [&>[data-slot=avatar]]:size-6 sm:[&>[data-slot=avatar]]:mr-2 sm:[&>[data-slot=avatar]]:size-5',
+    // Cursor pointer by default
+    'cursor-pointer'
   );
 
   return (

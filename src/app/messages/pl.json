@@ -12,25 +12,28 @@
     "or": "lub",
     "to-still-use": "aby korzystać dalej"
   },
-  "Sign-up": {
-    "create-account": "Utwórz konto",
+  "sign-up": {
+    "create-account": "Załóż konto",
     "to-continue": "aby kontynuować w SalesYY Assistant",
     "sign-up": "Zarejestruj się",
     "password": "Hasło",
     "Already-have-an-account": "Masz już konto?",
     "sign-in": "Zaloguj się",
-    "Verification-code": "Kod weryfikacyjny",
+    "verification-code": "Kod weryfikacyjny",
     "confirm": "Potwierdź kod",
-    "or": "lub"
+    "or": "lub",
+    "verification-code-hint": "Na Twój adres e-mail został wysłany kod weryfikacyjny. Wprowadź go w pole poniżej."
   },
-  "Sign-in": {
+  "sign-in": {
     "sign-in": "Zaloguj się",
-    "Sign-up": "Zarejestruj się",
+    "sign-up": "Zarejestruj się",
     "Password": "Hasło",
     "to-continue": "aby przejść do SalesYY Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
-    "Forgot-password": "Zapomniałeś hasła?"
+    "Forgot-password": "Zapomniałeś hasła?",
+    "invalid-email": "Nieprawidłowy adres email",
+    "invalid-password": "Hasło musi mieć co najmniej 8 znaków"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -40,18 +43,65 @@
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
     "Reset-password": "Zresetuj hasło"
   },
+  "admin-panel-page": {
+    "add-files": "Dodaj pliki",
+    "create-file": "Stwórz dokument",
+    "uploaded-list": "Lista dokumentów"
+  },
   "common": {
     "sign-in": "Zaloguj",
-    "sign-out": "Wyloguj"
+    "sign-out": "Wyloguj",
+    "loading": "Chileczkę..."
   },
   "Metadata": {
-    "index": "Asystent SalesYY"
+    "index": {
+      "title": "Czat z Asystentem | SalesYY"
+    },
+    "sign-in": {
+      "title": "Zaloguj się | SalesYY"
+    },
+    "sign-up": {
+      "title": "Zarejestruj się | SalesYY"
+    },
+    "enter-code": {
+      "title": "Zweryfikuj swoje konto | SalesYY"
+    },
+    "forgot-password": {
+      "title": "Zapomniałeś hasła | SalesYY"
+    },
+    "reset-password": {
+      "title": "Zresetuj hasło | SalesYY"
+    },
+    "guest-threads": {
+      "title": "Czat z Asystentem | SalesYY"
+    },
+    "manage-knowledge": {
+      "title": "Zarządzaj wiedzą | SalesYY"
+    },
+    "my-profile": {
+      "title": "Mój profil | SalesYY"
+    },
+    "my-profile:security": {
+      "title": "Bezpieczeństwo profilu | SalesYY"
+    },
+    "create-organization": {
+      "title": "Utwórz organizację | SalesYY"
+    },
+    "organization-profile": {
+      "title": "Zarządzaj organizacją | SalesYY"
+    },
+    "organization-profile:organization-members": {
+      "title": "Zarządzaj członkami | SalesYY"
+    },
+    "prompt-management": {
+      "title": "Zarządzanie asystentem | SalesYY"
+    }
   },
   "chat": {
     "USER": "Ty",
     "ASSISTANT": "Asystent",
     "loading": "Chwileczkę...",
-    "chat-history": "Historia konwersacji",
+    "create-new-thread": "Załóż nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni"
@@ -65,12 +115,24 @@
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
     "contact-with-us": "Skontaktuj się z nami"
   },
-  "toast": {
-    "copied": "skopiowano"
+  "success-toast": {
+    "copied": "Skopiowano!",
+    "deleted": "Usunięto!",
+    "saved": "Zapisano!",
+    "model-updated-successfully": "Model zaktualizowany pomyślnie"
   },
-  "dialog": {
+  "error-toast": {
+    "no-user-id": "Brak id użytkownika",
+    "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
+    "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+    "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
+    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+  },
+  "my-profile-dialog": {
     "admin-dashboard": "Admin panel",
     "my-profile": "Mój profil",
+    "home-page": "Strona główna",
+    "admin-panel": "Admin",
     "change-password": "Zmień hasło",
     "close": "zamknij"
   },
@@ -80,5 +142,113 @@
     "current-password": "Aktualne hasło",
     "new-password": "Nowe hasło",
     "confirm-password": "Potwierdź hasło"
+  },
+  "rate-answer": {
+    "thank-you": "Twoja ocena została zapisana. Dziękujemy za feedback",
+    "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później"
+  },
+  "admin-panel": {
+    "no-files": "Nie wybrano żadnych plików do wysłania",
+    "success": "Wszystkie pliki zostały pomyślnie przetworzone",
+    "error": "Wystąpił błąd",
+    "sending-files-error": "Wystąpił błąd podczas wysyłania plików",
+    "sending": "Wysyłanie",
+    "send": "Wyślij",
+    "Add-files": "Dodaj pliki",
+    "drag-n-drop": "Przeciągnij i upuść pliki tutaj",
+    "or": "lub",
+    "choose-files": "Wybierz pliki",
+    "supported-formats": "Obsługiwany format"
+  },
+  "create-document": {
+    "title": "Stwórz dokument",
+    "input-label": "Tytuł",
+    "input-placeholder": "Wpisz tytuł dokumentu",
+    "editor-label": "Treść",
+    "content": "Treść",
+    "edit": "Edytuj",
+    "preview": "Podgląd",
+    "title-error": "Tytuł jest wymagany",
+    "content-error": "Treść jest wymagana",
+    "created-successful": "Stworzono dokument",
+    "send-error": "Błąd podczas tworzenia dokumentu"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Bezpieczeństwo",
+    "create-organization": "Stwórz organizację",
+    "manage-organization": "Zarządzaj organizacją",
+    "manage-members": "Zarządzaj użytkownikami",
+    "manage-knowledge": "Zarządzaj wiedzą",
+    "organization-list": "Lista organizacji",
+    "assistant-management": "Zarządzanie asystentem",
+    "api-keys": "Klucze API"
+  },
+  "files-table": {
+    "delete": "Usuń",
+    "file-name": "Nazwa pliku",
+    "file-size": "Rozmiar pliku",
+    "created": "Utworzono",
+    "updated": "Zaktualizowano",
+    "preview": "Podgląd"
+  },
+  "set-openai-api-key": {
+    "set-env": "Ustaw zmienne środowiskowe",
+    "save": "Zapisz",
+    "edit": "Edytuj",
+    "no-api-key-warning": "Brak klucza API uniemożliwi korzystanie z asystenta",
+    "save-successfully": "Klucz API przypisano do Twojego konta!",
+    "failed-to-fetch": "Błąd podczas pobierania kluacza API"
+  },
+  "set-temperature": {
+    "set-temperature": "Poziom kreatywności odpowiedzi"
+  },
+  "document-preview": {
+    "document-not-found": "Nie znaleziono dokumentu",
+    "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
+    "save": "Zapisz",
+    "edit-successfully": "Dokument został zedytowany"
+  },
+  "max-documents-to-retreive": {
+    "input-label": "Maks. liczba fragmentów wyszukiwania"
+  },
+  "model-select": {
+    "select-model": "Model językowy"
+  },
+  "editable-prompt": {
+    "title": "Instrukcje personalizacji asystenta",
+    "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
+    "update": "Zaktualizuj"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",
+    "form_password_invalid": "Hasło jest nieprawidłowe.",
+    "form_identifier_not_found": "Nie znaleziono konta z tym adresem e-mail.",
+    "form_code_incorrect": "Nieprawidłowy kod",
+    "form_password_incorrect": "Nieprawidłowe hasło.",
+    "form_password_pwned": "Twoje hasło zostało upublicznione. Dla bezpieczństwa konta, użyj innego hasła."
+  },
+  "api-keys": {
+    "title": "Klucze API",
+    "title-create": "Stwórz nowy klucz",
+    "create-key": "Nowy klucz",
+    "name": "Nazwa",
+    "secret-key": "Klucz",
+    "created": "Data stworzenia",
+    "created-by": "Stworzony przez",
+    "create": "Stwórz",
+    "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "dialog": {
+      "remove-key": {
+        "title": "Usuń klucz API",
+        "description": "Ta operacja jest nieodwracalna. Czy na pewno usunąć ten klucz?"
+      }
+    }
+  },
+  "chain-errors": {
+    "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
+    "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
+    "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
+    "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego"
   }
 }

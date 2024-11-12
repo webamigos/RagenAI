@@ -1,10 +1,25 @@
-name: Assistant
+name: Ragen App
 
 env:
-  SENTRY_AUTH_TOKEN: ${{ vars.SENTRY_AUTH_TOKEN }}
+  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+  NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: 'dummy'
+  DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  SUPABASE_PROJECT_ID: ${{secrets.SUPABASE_PROJECT_ID }}
+  CLERK_SECRET_KEY: 'dummy'
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'dummy'
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/dummy'
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/dummy'
+  LANGCHAIN_API_KEY: 'dummy'
+  LANGCHAIN_ENDPOINT: 'http://example.com'
+  LANGCHAIN_PROJECT: 'ci'
+  REDIS_URL: 'http://example.com'
+  SECRET_KEY: 'dummy'
+  TARGET_ENV: 'ci'
 
 on:
   push:
@@ -17,7 +32,7 @@ on:
       - main
 
 jobs:
-  build-lint-test:
+  lint-test-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -44,8 +59,8 @@ jobs:
       - name: Lint app
         run: npm run lint
 
-      - name: Build Next.js app
-        run: npm run build
-
       - name: Run tests
         run: npm run test
+
+      - name: Build Next.js app
+        run: npm run build

@@ -12,25 +12,28 @@
     "or": "or",
     "to-still-use": "to continue using the service"
   },
-  "Sign-up": {
+  "sign-up": {
     "create-account": "Create your account",
     "to-continue": "to continue to SalesYY Assistant",
     "sign-up": "Sign up",
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
     "sign-in": "Sign in",
-    "Verification-code": "Verification code",
+    "verification-code": "Verification code",
     "confirm": "Confirm code",
-    "or": "or"
+    "or": "or",
+    "verification-code-hint": "A verification code has been sent to your email address. Please enter it in the field below."
   },
-  "Sign-in": {
+  "sign-in": {
     "sign-in": "Sign in",
-    "Sign-up": "Sign up",
+    "sign-up": "Sign up",
     "Password": "Password",
     "to-continue": "to continue to SalesYY Assistant",
     "Dont-have-an-account": "Dont have an account?",
     "or": "or",
-    "Forgot-password": "Forgot your password?"
+    "Forgot-password": "Forgot your password?",
+    "invalid-email": "Email is invalid",
+    "invalid-password": "Password should have at least 8 characters"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
@@ -38,23 +41,70 @@
     "Send-reset-code": "Send password reset code",
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
-    "Reset-password": "Zresetuj hasło"
+    "Reset-password": "Reset password"
+  },
+  "admin-panel-page": {
+    "add-files": "Add files",
+    "create-file": "Create Document",
+    "uploaded-list": "List of Documents"
   },
   "common": {
     "sign-in": "Sign in",
-    "sign-out": "Sign out"
+    "sign-out": "Sign out",
+    "loading": "Loading..."
   },
   "Metadata": {
-    "index": "SalesYY Assistant"
+    "index": {
+      "title": "Chat with Assistant | SalesYY"
+    },
+    "sign-in": {
+      "title": "Sign In | SalesYY"
+    },
+    "sign-up": {
+      "title": "Sign Up | SalesYY"
+    },
+    "enter-code": {
+      "title": "Verify Your Account | SalesYY"
+    },
+    "forgot-password": {
+      "title": "Forgot Password | SalesYY"
+    },
+    "reset-password": {
+      "title": "Reset Password | SalesYY"
+    },
+    "guest-threads": {
+      "title": "Chat with Assistant | SalesYY"
+    },
+    "manage-knowledge": {
+      "title": "Manage Knowledge | SalesYY"
+    },
+    "my-profile": {
+      "title": "My Profile | SalesYY"
+    },
+    "my-profile:security": {
+      "title": "Profile Security | SalesYY"
+    },
+    "create-organization": {
+      "title": "Create Organization | SalesYY"
+    },
+    "organization-profile": {
+      "title": "Manage Organization | SalesYY"
+    },
+    "organization-profile:organization-members": {
+      "title": "Manage Members | SalesYY"
+    },
+    "prompt-management": {
+      "title": "Assistant Management | SalesYY"
+    }
   },
   "chat": {
     "USER": "You",
     "ASSISTANT": "Assistant",
     "loading": "Loading...",
-    "chat-history": "Conversation history",
-    "today": "today",
-    "yesterday": "yesterday",
-    "older": "older"
+    "create-new-thread": "Create a new thread",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "older": "Older"
   },
   "form": {
     "enter-your-question": "Enter your question",
@@ -65,12 +115,24 @@
     "provide-at-least-10-characters": "Provide at least 10 characters",
     "contact-with-us": "Contact with us"
   },
-  "toast": {
-    "copied": "copied"
+  "success-toast": {
+    "copied": "Copied",
+    "deleted": "Deleted",
+    "saved": "Saved",
+    "model-updated-successfully": "Model updated successfully"
   },
-  "dialog": {
+  "error-toast": {
+    "no-user-id": "user id missing",
+    "error-during-deleting-file": "Error deleting document",
+    "failed-to-update-temperature": "Failed to update temperature:",
+    "failed-to-fetch-settings": "Failed to fetch settings:",
+    "failed-to-update-max-documents": "Failed to update max document to retreive:"
+  },
+  "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
     "my-profile": "My profile",
+    "home-page": "Home page",
+    "admin-panel": "Admin",
     "change-password": "Change password",
     "close": "close"
   },
@@ -80,5 +142,113 @@
     "current-password": "Current password",
     "new-password": "New password",
     "confirm-password": "Confirm password"
+  },
+  "rate-answer": {
+    "thank-you": "Your rating has been saved. Thank you for your feedback",
+    "try-again": "Feedback could not be submitted. Please try again later"
+  },
+  "admin-panel": {
+    "no-files": "No files have been selected for upload",
+    "success": "All files were successfully processed",
+    "error": "An error occurred",
+    "sending-files-error": "An error occurred while sending files",
+    "sending": "Sending",
+    "send": "Send",
+    "Add-files": "Add files",
+    "drag-n-drop": "Drag and drop files here",
+    "or": "or",
+    "choose-files": "Choose files",
+    "supported-formats": "Supports"
+  },
+  "create-document": {
+    "title": "Create document",
+    "input-label": "Title",
+    "input-placeholder": "Enter document title",
+    "editor-label": "Content",
+    "content": "Content",
+    "edit": "Edit",
+    "preview": "Preview",
+    "title-error": "Title is required",
+    "content-error": "Content is required",
+    "created-successful": "Document created",
+    "send-error": "Error creating document"
+  },
+  "sidebar": {
+    "profile": "Profile",
+    "security": "Security",
+    "create-organization": "Create organization",
+    "manage-organization": "Manage organization",
+    "manage-members": "Manage members",
+    "manage-knowledge": "Manage knowledge",
+    "organization-list": "Organization list",
+    "assistant-management": "Assistant management",
+    "api-keys": "API Keys"
+  },
+  "files-table": {
+    "delete": "Delete",
+    "file-name": "File Name",
+    "file-size": "File Size",
+    "created": "Created",
+    "updated": "Updated",
+    "preview": "Preview"
+  },
+  "set-openai-api-key": {
+    "set-env": "Set Environment Variables",
+    "save": "Save",
+    "edit": "Edit",
+    "no-api-key-warning": "The lack of an API key will prevent you from using the assistant",
+    "save-successfully": "API Key saved successfully",
+    "failed-to-fetch": "Failed to fetch API Key"
+  },
+  "set-temperature": {
+    "set-temperature": "Set temperature"
+  },
+  "document-preview": {
+    "document-not-found": "Document not found",
+    "fetching-error": "An error occurred while downloading the document",
+    "save": "Save",
+    "edit-successfully": "The document has been edited"
+  },
+  "max-documents-to-retreive": {
+    "input-label": "Max fragments retrieved in search"
+  },
+  "model-select": {
+    "select-model": "Language model"
+  },
+  "editable-prompt": {
+    "title": "Assistant personalization instructions",
+    "label": "Set the assistant's response style or tone. Example: \"Respond professionally and concisely.\"",
+    "update": "Update"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "An account with this email already exists.",
+    "form_password_invalid": "Password is invalid.",
+    "form_identifier_not_found": "No account found with this email.",
+    "form_code_incorrect": "Incorrect code.",
+    "form_password_incorrect": "Incorrect password.",
+    "form_password_pwned": "Password has been found in an online data breach. For account safety, please use a different password."
+  },
+  "api-keys": {
+    "title": "API Keys",
+    "title-create": "Create API Key",
+    "create-key": "Create Key",
+    "name": "Name",
+    "secret-key": "Secret Key",
+    "created": "Created",
+    "created-by": "Created By",
+    "create": "Create",
+    "name-is-to-short": "Name is to short - use at least 3 characters",
+    "dialog": {
+      "remove-key": {
+        "title": "Remove API key",
+        "description": "This operation cannot be inverted. Are you sure to remove this API key?"
+      }
+    }
+  },
+  "chain-errors": {
+    "moderation-error": "The content was flagged as inappropriate by our moderation system and cannot be processed",
+    "api-key-error": "The API key configuration is missing - please check your settings",
+    "unknown-error": "An unexpected error occurred while processing your request - please try again",
+    "llm-api-error": "The language model API request failed"
   }
 }

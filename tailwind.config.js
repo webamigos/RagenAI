@@ -1,19 +1,45 @@
-const { join } = require('path');
-
 const defaultTheme = require('tailwindcss/defaultTheme');
 const TailwindAnimate = require('tailwindcss-animate');
+const TailwindTypography = require('@tailwindcss/typography');
 
 module.exports = {
-  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  content: [
+    './src/**/*.{js,jsx,ts,tsx,mdx}',
+    './.storybook/**/*.{js,jsx,ts,tsx,mdx}',
+  ],
   darkMode: ['class'],
   theme: {
     extend: {
+      width: {
+        88: '22rem',
+      },
+      maxWidth: {
+        '10/12': '83.3333%',
+      },
+      spacing: {
+        92: '23rem',
+      },
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: ['Poppins', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         'salesyy-red': '#CB1D3D',
         'salesyy-blue': '#252D53',
+        'primary-light': '#e2e8f3',
+        'primary-dark': '#06141B',
+        'secondary-dark': '#11212D',
+        'accent-dark': {
+          300: '#2b3740',
+          500: '#253745',
+          700: '#20303c',
+        },
+        'accent-dark-lightness': '#4A5C6A',
+        'primary-blue': {
+          400: '#6eacf0',
+          500: '#589de8',
+        },
+        'primary-gray-200': '#F7F7F7',
+        'success-green': '#5ae078',
 
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -70,5 +96,5 @@ module.exports = {
       },
     },
   },
-  plugins: [TailwindAnimate],
+  plugins: [TailwindAnimate, TailwindTypography],
 };

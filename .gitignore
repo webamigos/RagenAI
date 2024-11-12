@@ -45,3 +45,7 @@ next-env.d.ts
 /playwright/.cache/
 /ctrf
 /dist
+node_modules/
+
+# Docker
+/volumes

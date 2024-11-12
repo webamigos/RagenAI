@@ -1,11 +1,31 @@
 {
   "cSpell.words": [
     "Buildable",
+    "clsx",
+    "codegen",
+    "commitlint",
+    "ctrf",
+    "Dont",
+    "fingerprintjs",
+    "headlessui",
     "hejho",
+    "heroicons",
     "HEYGEN",
+    "hookform",
+    "hset",
     "langchain",
+    "langsmith",
     "nextjs",
     "openai",
-    "salesyy"
+    "pino",
+    "salesyy",
+    "smartrag",
+    "supabase",
+    "tailwindcss",
+    "tepmerature",
+    "toastify",
+    "trpc",
+    "upstash",
+    "webamigos"
   ]
 }

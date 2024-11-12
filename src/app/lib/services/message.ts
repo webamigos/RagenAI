@@ -15,6 +15,7 @@ export type DbMessageDto = {
   created_at: Message['openai_created_at'];
   content: Message['content'];
   role: Message['role'];
+  run_id?: Message['run_id'];
 };
 
 const openai = new OpenAI();
@@ -24,11 +25,13 @@ export const createMessageInDB = async ({
   message,
   role,
   visitorId,
+  runId,
 }: {
   thread: Thread;
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
+  runId?: string;
 }) => {
   return await db.message.create({
     data: {
@@ -38,6 +41,7 @@ export const createMessageInDB = async ({
       content: message.content,
       role,
       visitor_id: visitorId,
+      run_id: runId,
     },
   });
 };
@@ -61,6 +65,8 @@ export const fetchMessagesFromDb = async (
       created_at: true,
       content: true,
       role: true,
+      run_id: true,
+      rate: true,
     },
     orderBy: [
       {
@@ -121,5 +127,22 @@ export const getMessageById = async (publicMessageId: string) => {
     where: {
       public_id: publicMessageId,
     },
+  });
+};
+
+export const saveRateInDB = async (messagePublicId: string, rate: number) => {
+  return await db.message.update({
+    where: {
+      public_id: messagePublicId,
+    },
+    data: {
+      rate,
+    },
+  });
+};
+
+export const deleteMessageByPublicId = (publicId: string) => {
+  return db.message.delete({
+    where: { public_id: publicId },
   });
 };

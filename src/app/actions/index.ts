@@ -3,6 +3,7 @@
 import { StatusCodes } from 'http-status-codes';
 import { clerkClient } from '@clerk/nextjs/server';
 
+import { submitFeedbackDirectly } from '../lib/services/feedback';
 import { logger } from '../lib/utils/logger';
 import {
   ThreadHistoryResponse,
@@ -12,8 +13,17 @@ import {
 } from '../contracts/Message';
 import { sendForModeration } from '../lib/services/moderation';
 import { findOrCreateOpenAIThread } from '../lib/services/thread';
-import { createAndStoreOpenAIThreadMessage } from '../lib/services/message';
+import {
+  createAndStoreOpenAIThreadMessage,
+  deleteMessageByPublicId,
+} from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
+import {
+  deleteDocumentFromUserFile,
+  deleteDocumentFromUserDocument,
+  fetchUserDocumentsDetails,
+} from '../lib/services/document';
+import { deleteDocument } from '../api/upload/services/TableService';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -83,24 +93,70 @@ export const getUserMessages = async (
   try {
     const userThreads = await getUserThreads(visitorId, skip, take);
 
-    return { threads: userThreads, status: StatusCodes.CREATED };
+    return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
+    const errorMessage =
+      err instanceof Error ? err.message : 'An error occurred';
+    return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
+  }
+};
+
+//get user documents
+export const getUserDocuments = async (orgId: string) => {
+  try {
+    const documentDetails = await fetchUserDocumentsDetails(orgId);
+    return { documentDetails };
+  } catch (error) {
     return {
-      error: 'Fetching threads failed',
+      error: 'Fetching documents details failed',
       status: StatusCodes.BAD_REQUEST,
     };
   }
 };
 
-//save data to clerk user profile
-export const saveUserIdToClerk = async (
-  clerkUserId: string,
-  visitorId: string
+//remove user document
+export const deleteDocumentAction = async (
+  organizationId: string,
+  documentId: string
 ) => {
   try {
-    await clerkClient.users.updateUser(clerkUserId, {
+    //  removal document from `UserFile`
+    const { count } = await deleteDocumentFromUserFile(
+      organizationId,
+      documentId
+    );
+    // removal from `UserDocument`
+    await deleteDocumentFromUserDocument(organizationId, documentId);
+    // removal vector's
+    await deleteDocument(documentId);
+
+    if (count === 0) {
+      return {
+        error:
+          'Document not found or user does not have permission to delete it',
+        status: StatusCodes.NOT_FOUND,
+      };
+    }
+
+    return {
+      message: 'Document deleted successfully',
+      status: StatusCodes.OK,
+    };
+  } catch (error) {
+    logger.error('Error deleting document:', error);
+
+    return {
+      error: 'Failed to delete document',
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+    };
+  }
+};
+
+//save data to clerk user profile
+export const saveUserIdToClerk = async (clerkUserId: string) => {
+  try {
+    await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
-        visitorId,
         userRole: 'USER',
       },
     });
@@ -109,3 +165,27 @@ export const saveUserIdToClerk = async (
     return { success: false };
   }
 };
+
+//send answer rate to assistant
+export const rateMessage = async (
+  messageId: string,
+  feedback: 'up' | 'down',
+  runId: string
+) => {
+  try {
+    await submitFeedbackDirectly(messageId, feedback, runId);
+    return { success: true };
+  } catch (error) {
+    return { success: error };
+  }
+};
+
+export async function deleteUserMessage(messagePublicId: string) {
+  try {
+    await deleteMessageByPublicId(messagePublicId);
+    return { success: true };
+  } catch (error) {
+    logger.error('Error deleting user message: %o', error);
+    return { success: false };
+  }
+}
