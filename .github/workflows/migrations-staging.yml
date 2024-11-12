@@ -1,4 +1,4 @@
-name: Migrations on staging
+name: Run migrations for Staging
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -6,17 +6,18 @@ env:
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
   SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
 on:
   push:
-    paths:
-      # Only run this workflow when migrations are updated
-      - prisma/migrations/**
-      - supabase/migrations/**
+    # paths: # commented temporary for test
+    #   # Only run this workflow when migrations are updated
+    #   - prisma/migrations/**
+    #   - supabase/migrations/**
     branches: [dev]
 
 jobs:
-  deploy:
+  deploy-on-staging:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

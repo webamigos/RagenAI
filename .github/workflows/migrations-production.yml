@@ -1,4 +1,4 @@
-name: Migrations on production
+name: Run migrations for Production
 
 env:
   DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
@@ -6,17 +6,18 @@ env:
   SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
   SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
+  SUPABASE_ACCESS_TOKEN: ${{ secrets.PROD_SUPABASE_ACCESS_TOKEN }}
 
 on:
   push:
-    paths:
-      # Only run this workflow when migrations are updated
-      - prisma/migrations/**
-      - supabase/migrations/**
+    # paths:
+    #   # Only run this workflow when migrations are updated
+    #   - prisma/migrations/**
+    #   - supabase/migrations/**
     branches: [main]
 
 jobs:
-  deploy:
+  deploy-on-production:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

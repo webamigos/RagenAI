@@ -1,4 +1,4 @@
-name: Ragen App
+name: Lint Test Build
 
 env:
   SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
