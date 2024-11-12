@@ -1,4 +1,4 @@
-name: Migrations on production
+name: Run migrations for Production
 
 env:
   DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
