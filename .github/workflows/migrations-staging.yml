@@ -1,4 +1,4 @@
-name: Migrations on staging
+name: Run migrations for Staging
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -10,10 +10,10 @@ env:
 
 on:
   push:
-    # paths: # commented temporary for test
-    #   # Only run this workflow when migrations are updated
-    #   - prisma/migrations/**
-    #   - supabase/migrations/**
+    paths:
+      # Only run this workflow when migrations are updated
+      - prisma/migrations/**
+      - supabase/migrations/**
     branches: [dev]
 
 jobs:
