@@ -153,12 +153,18 @@ export const deleteDocumentAction = async (
 };
 
 //save data to clerk user profile
-export const saveUserIdToClerk = async (clerkUserId: string) => {
+export const saveUserMetadata = async (
+  clerkUserId: string,
+  onboardingComplete?: boolean
+) => {
   try {
+    const user = await clerkClient().users.getUser(clerkUserId);
+    const currentMetadata = user.publicMetadata || {};
+
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
-        userRole: 'USER',
-        onboardingComplete: false,
+        ...currentMetadata,
+        onboardingComplete: onboardingComplete,
       },
     });
     return { success: true };

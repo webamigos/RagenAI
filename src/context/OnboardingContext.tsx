@@ -11,7 +11,7 @@ import Joyride, {
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
-
+import { saveUserMetadata } from '@/app/actions';
 export interface JoyrideStep extends Step {
   target: string;
   route?: string;
@@ -22,7 +22,6 @@ interface JoyrideContextProps {
   addSteps: (newSteps: JoyrideStep[]) => void;
   runJoyride: () => void;
   stopJoyride: () => void;
-  onboardingComplete: boolean;
   showOnboarding?: boolean;
 }
 
@@ -60,10 +59,16 @@ export const JoyrideProvider = ({
     setStepIndex(0);
   };
 
-  const handleJoyrideCallback = (data: CallBackProps) => {
+  const handleJoyrideCallback = async (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
+    if (!user) {
+      return;
+    }
+
     if (action === ACTIONS.CLOSE || status === STATUS.SKIPPED) {
+      await saveUserMetadata(user.id, true);
+      await user?.reload();
       stopJoyride();
       return;
     }
@@ -87,6 +92,8 @@ export const JoyrideProvider = ({
         setStepIndex(nextIndex);
       }
     } else if (status === STATUS.FINISHED) {
+      await saveUserMetadata(user.id, true);
+      await user?.reload();
       stopJoyride();
     }
   };
@@ -98,7 +105,6 @@ export const JoyrideProvider = ({
         addSteps,
         runJoyride,
         stopJoyride,
-        onboardingComplete,
         showOnboarding,
       }}
     >
