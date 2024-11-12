@@ -1,4 +1,4 @@
-name: Migrations on staging
+name: Run migrations for Staging
 
 env:
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
