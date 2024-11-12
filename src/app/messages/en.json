@@ -250,5 +250,22 @@
     "api-key-error": "The API key configuration is missing - please check your settings",
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
     "llm-api-error": "The language model API request failed"
+  },
+  "joyride": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Wstecz",
+    "finish": "Finish"
+  },
+  "onboarding": {
+    "first-step": "Let's go through a quick guide to help you get started quickly. It will help you discover the key features that will help you use our app. Let's get started!",
+    "second-step": "The first of the key functionalities. To gain access to the assistant and allow other users to use the documents, you must belong to an 'organization'.",
+    "third-step": "Once you get to the form, you see three fields in front of you, the only required one being the name of the organization.",
+    "fourth-step": "Once the conditions have been met, there is nothing left to do but confirm the establishment of the organization.",
+    "fifth-step": "After creating an organization, you will see additional tabs. Let's move on to managing the assistant.",
+    "sixth-step": "In this window you will see many possibilities to personalize your assistant. For now, let's focus on the only field that you need to fill in to use the assistant, which is 'OpenAI API Key'.",
+    "seventh-step": "The last, but not least important step is to provide knowledge to your assistant. We can do this in one of two ways.",
+    "eighth-step": "The first option for delivering knowledge is to upload ready-made files. However, they must be in markdown or epub format.",
+    "ninth-step": "If you do not have files in the previously mentioned formats. We provide an editor in which you can create a document adapted to the needs of the assistant or paste the content of a previously prepared document."
   }
 }

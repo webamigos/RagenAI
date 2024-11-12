@@ -250,5 +250,22 @@
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
     "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego"
+  },
+  "joyride": {
+    "skip": "Pomiń",
+    "back": "Wstecz",
+    "next": "Następna",
+    "finish": "Zakończ"
+  },
+  "onboarding": {
+    "first-step": "Przejdźmy przez szybki przewodnik, który pomoże Ci sprawnie rozpocząć pracę. Dzięki niemu odkryjesz kluczowe funkcje, które umożliwią korzystanie z naszej aplikacji. Zaczynamy!",
+    "second-step": "Pierwsza z kluczowych funkcjonalności. Aby uzyskać dostęp do asystenta oraz umożliwić innym użytkownikom korzystanie z dokumentów musisz należeć do 'organizacji'.",
+    "third-step": "Po przejściu do formularza widzisz przed sobą trzy pola, z czego tylko wymaganym jest nazwa organizacji.",
+    "fourth-step": "Po spełnieniu warunków, nie pozostaje nic innego jak potwierdzić założenie organizacji.",
+    "fifth-step": "Po założeniu organizacji zobaczysz dodatkowe zakładki. Przejdźmy do zarządzania asystentem.",
+    "sixth-step": "W tym oknie zobaczysz wiele możliwości personalizacji swojego asytenta. Na ten moment skupmy się tylko na jedynym polu, które musisz uzupełnić, żeby korzystać z asystenta, czyli 'OpenAI API Key'.",
+    "seventh-step": "Ostatnim, nie mniej ważnym krokiem jest dostarczenie wiedzy swojemu asystentowi. Możemy to zrobić na jeden z dwóch sposobów.",
+    "eighth-step": "Pierwszą możliwością dostarczenia wiedzy jest wgranie gotowych plików. Muszą być one jednak w formacie markdown lub epub.",
+    "ninth-step": "Jeżeli nie posiadasz jednak plików we wspomnianych wcześniej formatach. Udostępniamy edytor w którym możesz stworzyć dokument dostosowany do potrzeb asystenta lub przekleić treść przygotowanego wcześniej dokumentu."
   }
 }

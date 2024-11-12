@@ -101,11 +101,13 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
           icon: SettingsIcon,
           label: t('assistant-management'),
           path: '/my-profile/prompt-management',
+          className: 'assistant-management',
         },
         {
           icon: OpenBookIcon,
           label: t('manage-knowledge'),
           path: '/manage-knowledge',
+          className: 'manage-knowledge',
         }
       );
     }

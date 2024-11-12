@@ -1,31 +1,58 @@
 import { useEffect } from 'react';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
+import { useTranslations } from 'next-intl';
 
 import { JoyrideStep } from '@/context/OnboardingContext';
 
 export const OnboardingSteps = () => {
   const { addSteps } = useOnboardingContext();
+  const t = useTranslations('onboarding');
 
   const steps: JoyrideStep[] = [
     {
       target: '.start-button',
-      content: 'To jest pierwszy krok!',
+      content: t('first-step'),
       route: '/',
     },
     {
       target: '.create-organization-tab',
-      content: 'To jest drugi krok!',
+      content: t('second-step'),
       route: '/my-profile',
     },
     {
-      target: '.create-organization-button',
-      content: 'To jest drugi krok!',
+      target: '.organization-name',
+      content: t('third-step'),
       route: '/my-profile/create-organization',
     },
     {
-      target: '.setApiKeyInput',
-      content: 'To jest drugi krok!',
+      target: '.create-organization-button',
+      content: t('fourth-step'),
+      route: '/my-profile/create-organization',
+    },
+    {
+      target: '.assistant-management',
+      content: t('fifth-step'),
       route: '/my-profile/prompt-management',
+    },
+    {
+      target: '.setApiKeyInput',
+      content: t('sixth-step'),
+      route: '/my-profile/prompt-management',
+    },
+    {
+      target: '.manage-knowledge',
+      content: t('seventh-step'),
+      route: '/manage-knowledge',
+    },
+    {
+      target: '.add-file',
+      content: t('eighth-step'),
+      route: '/manage-knowledge',
+    },
+    {
+      target: '.crete-document',
+      content: t('ninth-step'),
+      route: '/manage-knowledge',
     },
   ];
 

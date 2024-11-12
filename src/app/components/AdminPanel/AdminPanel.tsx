@@ -23,10 +23,10 @@ export const AdminPanel = () => {
     <div className="h-full flex-1 flex flex-col gap-4">
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
         <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
-          <Tab key="add-files">
+          <Tab key="add-files" className="add-file">
             {t('add-files')} <CloudArrowUp className="ml-3 md:none" />
           </Tab>
-          <Tab key="create-file">
+          <Tab key="create-file" className="crete-document">
             {t('create-file')} <PencilSquareIcon className="ml-3" />
           </Tab>
           <Tab key="uploaded-list">

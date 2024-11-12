@@ -12,6 +12,8 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
+import { useTranslations } from 'next-intl';
+
 export interface JoyrideStep extends Step {
   target: string;
   route?: string;
@@ -40,6 +42,7 @@ export const JoyrideProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { user, isSignedIn } = useUser();
+  const t = useTranslations('joyride');
 
   const onboardingComplete = user?.publicMetadata.onboardingComplete as boolean;
   const userBelongsToOrganization =
@@ -125,12 +128,45 @@ export const JoyrideProvider = ({
         disableCloseOnEsc
         callback={handleJoyrideCallback}
         locale={{
-          skip: 'Skip',
-          last: 'Finish',
+          skip: t('skip'),
+          next: t('next'),
+          last: t('finish'),
+          back: t('back'),
         }}
         styles={{
           options: {
             zIndex: 1000,
+            primaryColor: '#4A90E2',
+            textColor: '#333',
+            backgroundColor: '#fff',
+          },
+          tooltipContainer: {
+            borderRadius: '20px',
+          },
+          tooltip: {
+            borderRadius: '20px',
+          },
+          tooltipTitle: {
+            fontSize: '18px',
+            fontWeight: 'bold',
+            color: '#333',
+          },
+          tooltipContent: {
+            fontSize: '16px',
+            color: '#555',
+          },
+          buttonClose: {
+            display: 'none',
+          },
+          buttonNext: {
+            backgroundColor: '#4A90E2',
+            color: '#fff',
+            borderRadius: '4px',
+            padding: '8px 16px',
+          },
+          buttonSkip: {
+            color: '#4A90E2',
+            fontSize: '14px',
           },
         }}
       />
