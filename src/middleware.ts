@@ -7,7 +7,6 @@ import {
 import { NextRequest, NextResponse } from 'next/server';
 
 import { locales, defaultLocale } from './app/config';
-const isOnboardingRoute = createRouteMatcher(['/onboarding']);
 
 const intlMiddleware = createMiddleware({
   locales,
@@ -44,15 +43,6 @@ export const config = {
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
     const url = request.nextUrl.pathname;
-
-    // if (auth().userId && isOnboardingRoute(request)) {
-    //   return NextResponse.next();
-    // }
-
-    // if (auth().userId && !auth().sessionClaims?.metadata?.onboardingComplete) {
-    //   const onboardingUrl = new URL(`/pl/onboarding`, request.url);
-    //   return NextResponse.redirect(onboardingUrl);
-    // }
 
     if (request.nextUrl.pathname.startsWith('/api')) {
       return NextResponse.next();

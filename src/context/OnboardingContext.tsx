@@ -23,6 +23,7 @@ interface JoyrideContextProps {
   runJoyride: () => void;
   stopJoyride: () => void;
   onboardingComplete: boolean;
+  showOnboarding?: boolean;
 }
 
 export const JoyrideContext = createContext<JoyrideContextProps | undefined>(
@@ -39,9 +40,14 @@ export const JoyrideProvider = ({
   const [stepIndex, setStepIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
 
   const onboardingComplete = user?.publicMetadata.onboardingComplete as boolean;
+  const userBelongsToOrganization =
+    user?.organizationMemberships[0]?.id !== undefined;
+  const showOnboarding =
+    !userBelongsToOrganization && !onboardingComplete && isSignedIn;
+
   const addSteps = (newSteps: JoyrideStep[]) => setSteps(newSteps);
 
   const runJoyride = () => {
@@ -87,7 +93,14 @@ export const JoyrideProvider = ({
 
   return (
     <JoyrideContext.Provider
-      value={{ steps, addSteps, runJoyride, stopJoyride, onboardingComplete }}
+      value={{
+        steps,
+        addSteps,
+        runJoyride,
+        stopJoyride,
+        onboardingComplete,
+        showOnboarding,
+      }}
     >
       {children}
       {isLoading && (

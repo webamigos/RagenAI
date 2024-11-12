@@ -14,17 +14,19 @@ export const Start = () => {
 
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
-  const { runJoyride, onboardingComplete } = useOnboardingContext();
+  const { runJoyride, showOnboarding } = useOnboardingContext();
 
   useEffect(() => {
-    !onboardingComplete && runJoyride();
-  }, []);
+    showOnboarding && runJoyride();
+  }, [showOnboarding]);
 
   return (
     <div className="container mx-auto h-full">
       <div className="flex flex-col h-full items-center justify-center">
         <OnboardingSteps />
-        {!isPending && onboardingComplete ? (
+        {!isPending && showOnboarding ? (
+          <span className="start-button" />
+        ) : (
           <Button
             label={t('start-new-thread')}
             className="px-8 py-4 sm:mb-12 mb-8 bg-primary-blue-400 hover:bg-primary-blue-500 disabled:bg-primary-blue-500 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300 font-sans tracking-wide rounded-3xl"
@@ -38,8 +40,6 @@ export const Start = () => {
               />
             }
           />
-        ) : (
-          <span className="start-button" />
         )}
         {isLimitLock && !isSignedIn && (
           <Alert title={t('limit-reached')} type="info" />
