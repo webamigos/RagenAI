@@ -9,6 +9,7 @@ import { Divider } from '@salesyy/common-ui/Divider';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 
 import { logger } from '@/app/lib/utils/logger';
+import { saveUserMetadata } from '@/app/actions';
 
 type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
 
@@ -54,11 +55,17 @@ export const SocialAuthOptions = memo(
 
         try {
           if (isSignUp) {
-            signUp?.authenticateWithRedirect({
+            await signUp?.authenticateWithRedirect({
               strategy,
               redirectUrl: '/sso-callback',
               redirectUrlComplete: '/',
             });
+            const user = await signUp?.id;
+            if (!user) {
+              return;
+            }
+
+            await saveUserMetadata(user, false);
           } else {
             signIn?.authenticateWithRedirect({
               strategy,

@@ -35,18 +35,6 @@ const nextConfig = {
     ],
   },
 
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/:locale/sso-callback',
-          destination: '/api/auth/callback',
-          has: [{ type: 'query', key: 'code' }],
-        },
-      ],
-    };
-  },
-
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
