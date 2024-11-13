@@ -258,14 +258,14 @@
     "finish": "Finish"
   },
   "onboarding": {
-    "first-step": "Let's go through a quick guide to help you get started quickly. It will help you discover the key features that will help you use our app. Let's get started!",
-    "second-step": "The first of the key functionalities. To gain access to the assistant and allow other users to use the documents, you must belong to an 'organization'.",
-    "third-step": "Once you get to the form, you see three fields in front of you, the only required one being the name of the organization.",
-    "fourth-step": "Once the conditions have been met, there is nothing left to do but confirm the establishment of the organization.",
-    "fifth-step": "After creating an organization, you will see additional tabs. Let's move on to managing the assistant.",
-    "sixth-step": "In this window you will see many possibilities to personalize your assistant. For now, let's focus on the only field that you need to fill in to use the assistant, which is 'OpenAI API Key'.",
-    "seventh-step": "The last, but not least important step is to provide knowledge to your assistant. We can do this in one of two ways.",
-    "eighth-step": "The first option for delivering knowledge is to upload ready-made files. However, they must be in markdown or epub format.",
-    "ninth-step": "If you do not have files in the previously mentioned formats. We provide an editor in which you can create a document adapted to the needs of the assistant or paste the content of a previously prepared document."
+    "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",
+    "second-step": "To use the assistant and allow others access to documents, you must belong to an 'organization'. This is the first important step.",
+    "third-step": "In the organization registration form, you’ll find three fields, with only the organization name being required.",
+    "fourth-step": "Once the form is completed, you can confirm the organization setup to proceed.",
+    "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let’s go to the assistant management section.",
+    "sixth-step": "In this section, you have the option to customize your assistant to suit your needs. For now, fill in only the 'OpenAI API Key' field to activate the assistant.",
+    "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
+    "eighth-step": "The first option is to upload ready-made files in markdown or epub format.",
+    "ninth-step": "If you don't have documents in these formats, use the editor to create a document for the assistant or paste pre-prepared content."
   }
 }

@@ -258,14 +258,14 @@
     "finish": "Zakończ"
   },
   "onboarding": {
-    "first-step": "Przejdźmy przez szybki przewodnik, który pomoże Ci sprawnie rozpocząć pracę. Dzięki niemu odkryjesz kluczowe funkcje, które umożliwią korzystanie z naszej aplikacji. Zaczynamy!",
-    "second-step": "Pierwsza z kluczowych funkcjonalności. Aby uzyskać dostęp do asystenta oraz umożliwić innym użytkownikom korzystanie z dokumentów musisz należeć do 'organizacji'.",
-    "third-step": "Po przejściu do formularza widzisz przed sobą trzy pola, z czego tylko wymaganym jest nazwa organizacji.",
-    "fourth-step": "Po spełnieniu warunków, nie pozostaje nic innego jak potwierdzić założenie organizacji.",
-    "fifth-step": "Po założeniu organizacji zobaczysz dodatkowe zakładki. Przejdźmy do zarządzania asystentem.",
-    "sixth-step": "W tym oknie zobaczysz wiele możliwości personalizacji swojego asytenta. Na ten moment skupmy się tylko na jedynym polu, które musisz uzupełnić, żeby korzystać z asystenta, czyli 'OpenAI API Key'.",
-    "seventh-step": "Ostatnim, nie mniej ważnym krokiem jest dostarczenie wiedzy swojemu asystentowi. Możemy to zrobić na jeden z dwóch sposobów.",
-    "eighth-step": "Pierwszą możliwością dostarczenia wiedzy jest wgranie gotowych plików. Muszą być one jednak w formacie markdown lub epub.",
-    "ninth-step": "Jeżeli nie posiadasz jednak plików we wspomnianych wcześniej formatach. Udostępniamy edytor w którym możesz stworzyć dokument dostosowany do potrzeb asystenta lub przekleić treść przygotowanego wcześniej dokumentu."
+    "first-step": "Rozpocznijmy szybki przewodnik, który pomoże Ci efektywnie korzystać z naszej aplikacji. Dzięki niemu poznasz kluczowe funkcje ułatwiające pracę. Zaczynamy!",
+    "second-step": "Aby korzystać z asystenta i umożliwić innym dostęp do dokumentów, musisz należeć do 'organizacji'. To pierwszy ważny krok.",
+    "third-step": "W formularzu rejestracji organizacji znajdziesz trzy pola, z których tylko nazwa organizacji jest wymagana.",
+    "fourth-step": "Po wypełnieniu formularza możesz potwierdzić założenie organizacji, aby przejść dalej.",
+    "fifth-step": "Po założeniu organizacji zobaczysz nowe zakładki w aplikacji. Przejdźmy teraz do sekcji zarządzania asystentem.",
+    "sixth-step": "W tej sekcji masz możliwość dostosowania asystenta do swoich potrzeb. Na razie uzupełnij tylko pole 'OpenAI API Key', aby aktywować asystenta.",
+    "seventh-step": "Ostatni, ale kluczowy krok to dostarczenie wiedzy asystentowi. Masz na to dwa sposoby.",
+    "eighth-step": "Pierwszy sposób to wgranie gotowych plików w formatach markdown lub epub.",
+    "ninth-step": "Jeśli nie masz dokumentów w tych formatach, skorzystaj z edytora, aby stworzyć dokument na potrzeby asystenta lub wkleić przygotowaną treść."
   }
 }
