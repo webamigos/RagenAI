@@ -59,19 +59,6 @@ const nextConfig = {
     }
     return config;
   },
-  async generateStaticParams() {
-    return [];
-  },
-
-  async redirects() {
-    return [
-      {
-        source: '/:locale/sso-callback',
-        destination: '/sso-callback',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 export default !isProduction
