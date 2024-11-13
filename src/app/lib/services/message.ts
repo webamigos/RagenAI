@@ -9,7 +9,6 @@ import { parseThreadMessage } from './utils';
 import { MessageDto } from '../../contracts/Message';
 import { createVisitorEntry } from './visitor';
 import { logger } from '../utils/logger';
-import { Sentry } from 'pino-sentry';
 import { setSentryContext, setSentryServiceTag } from './sentry';
 
 export type DbMessageDto = {
@@ -59,8 +58,7 @@ export const createMessageInDB = async ({
       },
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to create message in DB:', error);
+    logger.error({ err: error }, 'Failed to create message in DB');
     throw error;
   }
 };
@@ -103,8 +101,7 @@ export const fetchMessagesFromDb = async (
       ],
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to fetch messages from DB:', error);
+    logger.error({ err: error }, 'Failed to fetch messages from DB');
     throw error;
   }
 };
@@ -150,8 +147,8 @@ export const createAndStoreOpenAIThreadMessage = async ({
     if (visitorId) {
       try {
         createVisitorEntry(dbMessage, visitorId);
-      } catch {
-        logger.error('Cannot create visitor entry');
+      } catch (error) {
+        logger.error({ err: error }, 'Cannot create visitor entry');
       }
     }
 
@@ -162,8 +159,10 @@ export const createAndStoreOpenAIThreadMessage = async ({
       content: dbMessage.content,
     };
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to create and store OpenAI thread message:', error);
+    logger.error(
+      { err: error },
+      'Failed to create and store OpenAI thread message'
+    );
     throw error;
   }
 };
@@ -191,8 +190,7 @@ export const saveRateInDB = async (messagePublicId: string, rate: number) => {
       },
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to save rate in DB:', error);
+    logger.error({ err: error }, 'Failed to save rate in DB');
     throw error;
   }
 };
@@ -207,8 +205,7 @@ export const deleteMessageByPublicId = (publicId: string) => {
       where: { public_id: publicId },
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to delete message by public ID:', error);
+    logger.error({ err: error }, 'Failed to delete message by public ID');
     throw error;
   }
 };

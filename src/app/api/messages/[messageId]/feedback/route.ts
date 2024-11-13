@@ -7,7 +7,6 @@ import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
 
 type Params = {
   params: { messageId: string };
@@ -48,8 +47,7 @@ export const POST = async (request: Request, { params }: Params) => {
 
     return NextResponse.json({ message: 'Feedback submitted' });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Error submitting feedback:', error);
+    logger.error({ err: error }, 'Error submitting feedback');
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: StatusCodes.INTERNAL_SERVER_ERROR }

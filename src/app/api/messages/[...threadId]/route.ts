@@ -9,7 +9,7 @@ import {
   setSentryServiceTag,
   setSentryUserId,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
+import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +45,7 @@ export const POST = async (request: Request) => {
       );
     }
   } catch (e) {
-    Sentry.captureException(e);
+    logger.error({ err: e }, 'Error sending message');
   }
 };
 
@@ -61,7 +61,7 @@ export const GET = async (_request: Request, { params }: Params) => {
     const messages = await fetchMessagesFromDb(threadPublicId, visitorId);
     return NextResponse.json(messages);
   } catch (e) {
-    Sentry.captureException(e);
+    logger.error({ err: e }, 'Failed fetching messages');
     return NextResponse.json(
       { error: 'Failed fetching messages' },
       { status: StatusCodes.BAD_REQUEST }

@@ -5,7 +5,6 @@ import db from '@salesyy/prisma-client';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
-import { Sentry } from 'pino-sentry';
 import { logger } from '../utils/logger';
 
 const serviceName = 'thread';
@@ -53,8 +52,7 @@ export const findOrCreateOpenAIThread = async (
 
     return { thread, threadEntity };
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error(`Failed to fetch thread ${threadPublicId}:`, error);
+    logger.error({ err: error }, `Failed to fetch thread ${threadPublicId}`);
     // TODO: implement
     throw new Error(`Cannot fetch thread ${threadPublicId}`);
   }
@@ -72,8 +70,7 @@ export const createNewOpenAIThread = async () => {
       public_id: threadEntity.public_id,
     };
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to create new Open AI thread:', error);
+    logger.error({ err: error }, 'Failed to create new Open AI thread');
     throw error;
   }
 };
@@ -97,8 +94,7 @@ export const getThreadMessages = async (publicThreadId: string) => {
       },
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error(`Failed to fetch thread ${publicThreadId}:`, error);
+    logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
     throw error;
   }
 };
@@ -120,8 +116,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
       },
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error(`Failed to fetch thread ${publicThreadId}:`, error);
+    logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
     throw error;
   }
 };

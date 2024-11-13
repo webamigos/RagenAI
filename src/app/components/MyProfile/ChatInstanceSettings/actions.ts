@@ -20,7 +20,6 @@ import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
 
 const serviceName = 'ChatInstanceSettings';
 
@@ -75,8 +74,7 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
       data: { apiKey, temperature, model, prompt, maxDocumentsToRetrieve },
     };
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Failed to fetch settings:', error);
+    logger.error({ err: error }, 'Failed to fetch settings');
     return { success: false, message: 'Failed to fetch settings' };
   }
 };
@@ -130,8 +128,7 @@ export const saveSetting = async (
         return { success: false, message: 'Unknown setting type' };
     }
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error(`Failed to save ${type}:`, error);
+    logger.error({ err: error }, `Failed to save ${type}`);
     return { success: false, message: `Failed to save ${type}` };
   }
 };

@@ -16,7 +16,6 @@ import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
 import { logger } from '@/app/lib/utils/logger';
 
 const serviceName = 'initializeBasicRag';
@@ -85,8 +84,7 @@ export const initializeRagChain = ({
       vectorStore,
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Error initializing basic RAG chain: %o', error);
+    logger.error({ err: error }, 'Error initializing basic RAG chain');
     throw error;
   }
 };
@@ -110,8 +108,7 @@ const createVectorStore = (
       filter: metadataFilter,
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Error creating vector store: %o', error);
+    logger.error({ err: error }, 'Error creating vector store');
     throw error;
   }
 };

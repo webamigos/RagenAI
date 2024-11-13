@@ -1,7 +1,6 @@
 import Redis from 'ioredis';
 import { logger } from '../utils/logger';
 import { setSentryContext, setSentryServiceTag } from './sentry';
-import { Sentry } from 'pino-sentry';
 
 class RedisService {
   private static instance: RedisService;
@@ -30,8 +29,7 @@ class RedisService {
       const result = await this.client.hget(key, field);
       return result;
     } catch (error) {
-      Sentry.captureException(error);
-      logger.error(`Redis error (hget): ${error}`);
+      logger.error({ err: error }, 'Error retrieving data from Redis');
       throw new Error('Failed to retrieve data from Redis');
     }
   }
@@ -43,8 +41,7 @@ class RedisService {
       });
       return await this.client.hgetall(key);
     } catch (error) {
-      Sentry.captureException(error);
-      logger.error('Redis error (hgetall) %o', error);
+      logger.error({ err: error }, 'Error retrieving data from Redis');
       throw new Error('Failed to retrieve data from Redis');
     }
   }
@@ -65,8 +62,7 @@ class RedisService {
         return { success: true, status: `${hash} updated successfully` };
       }
     } catch (error) {
-      Sentry.captureException(error);
-      logger.error(`Redis error (hset): ${error}`);
+      logger.error({ err: error }, 'Error saving data to Redis');
       return { success: false, status: 'Failed to save data to Redis' };
     }
   }

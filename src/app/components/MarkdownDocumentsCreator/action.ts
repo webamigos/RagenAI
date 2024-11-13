@@ -15,7 +15,7 @@ import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
+import { logger } from '@/app/lib/utils/logger';
 
 const serviceName = 'MarkdownDocumentsCreator';
 
@@ -52,7 +52,7 @@ export async function saveMarkdownWithMeta(
       },
     };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Failed to create document');
     return { success: false, message: 'Failed to create document:', error };
   }
 }
@@ -89,7 +89,7 @@ export async function fetchDocumentByOrganization(
       documents: response,
     };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Failed to fetch documents');
     return {
       success: false,
       message: 'Failed to fetch documents',
@@ -140,7 +140,7 @@ export const updateDocument = async ({
       message: 'Document updated successfully',
     };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Failed to update document');
     return {
       success: false,
       message: 'Failed to update document',

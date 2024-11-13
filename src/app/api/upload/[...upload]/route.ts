@@ -12,7 +12,6 @@ import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -94,8 +93,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           content,
         });
       } catch (error) {
-        Sentry.captureException(error);
-        logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
+        logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
           { message: `Błąd podczas przetwarzania pliku ${file.name}` },
           { status: 500 }
@@ -109,8 +107,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       files: processedFiles,
     });
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Błąd podczas przetwarzania plików:', error);
+    logger.error({ err: error }, 'Error processing files');
     return NextResponse.json(
       {
         message:

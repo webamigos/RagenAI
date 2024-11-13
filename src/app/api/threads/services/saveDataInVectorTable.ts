@@ -20,7 +20,7 @@ import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
+import { logger } from '@/app/lib/utils/logger';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -47,7 +47,7 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
       filePath,
     };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Error saving binary to temp file');
     if (error) {
       return {
         success: false,
@@ -92,7 +92,7 @@ export const convertAndStoreDocument = async (
           const load = new EPubLoader(filePath);
           rawDocs = await load.load();
         } catch (error) {
-          Sentry.captureException(error);
+          logger.error({ err: error }, 'Error loading EPub file');
           return {
             success: false,
             message: `File is not accessible at: ${filePath}`,
@@ -176,7 +176,7 @@ export const convertAndStoreDocument = async (
       message: 'Document processed and stored successfully!',
     };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Error processing document');
     return {
       success: false,
       message: `Error processing document: ${error}`,

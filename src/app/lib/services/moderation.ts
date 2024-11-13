@@ -1,8 +1,5 @@
-import db from '@salesyy/prisma-client';
-
-import { openAIInstance } from './config';
 import { setSentryServiceTag } from './sentry';
-import { Sentry } from 'pino-sentry';
+import { logger } from '../utils/logger';
 
 const serviceName = 'moderation';
 
@@ -79,7 +76,7 @@ export const sendForModeration = async (
 
     // return { isFlagged };
   } catch (_error) {
-    Sentry.captureException(_error);
+    logger.error({ err: _error }, 'Fail to check moderation');
     // console.log()
     // console.error('Moderation error: ', _error);
     throw new Error('Fail to check moderation');

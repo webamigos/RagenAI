@@ -30,7 +30,6 @@ import {
   setSentryContext,
 } from '../lib/services/sentry';
 import { setSentryServiceTag } from '../lib/services/sentry';
-import { Sentry } from 'pino-sentry';
 
 const serviceName = 'actions';
 
@@ -91,8 +90,7 @@ export const sendMessage = async (
 
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
-    Sentry.captureException(e);
-    logger.error('processing error: %o', e);
+    logger.error({ err: e }, 'processing error');
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,
@@ -114,7 +112,7 @@ export const getUserMessages = async (
 
     return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
-    Sentry.captureException(err);
+    logger.error({ err }, 'Error getting user threads');
     const errorMessage =
       err instanceof Error ? err.message : 'An error occurred';
     return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
@@ -170,9 +168,7 @@ export const deleteDocumentAction = async (
       status: StatusCodes.OK,
     };
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Error deleting document:', error);
-
+    logger.error({ err: error }, 'Error deleting document');
     return {
       error: 'Failed to delete document',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -192,7 +188,7 @@ export const saveUserIdToClerk = async (clerkUserId: string) => {
     });
     return { success: true };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Error saving user id to clerk');
     return { success: false };
   }
 };
@@ -213,7 +209,7 @@ export const rateMessage = async (
     await submitFeedbackDirectly(messageId, feedback, runId);
     return { success: true };
   } catch (error) {
-    Sentry.captureException(error);
+    logger.error({ err: error }, 'Error sending answer rate');
     return { success: false };
   }
 };
@@ -227,8 +223,7 @@ export async function deleteUserMessage(messagePublicId: string) {
     await deleteMessageByPublicId(messagePublicId);
     return { success: true };
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Error deleting user message: %o', error);
+    logger.error({ err: error }, 'Error deleting user message');
     return { success: false };
   }
 }

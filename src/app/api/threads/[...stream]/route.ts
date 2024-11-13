@@ -26,7 +26,6 @@ import {
   setSentryContext,
 } from '@/app/lib/services/sentry';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
-import { Sentry } from 'pino-sentry';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
