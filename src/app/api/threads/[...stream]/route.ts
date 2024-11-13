@@ -53,10 +53,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     setSentryClerkOrganizationTag(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
-    setSentryContext('EXTRA_DATA', {
-      publicThreadId,
-      publicMessageId,
-    });
+
     const encoder = new TextEncoder();
     return new Response(
       new ReadableStream({
@@ -100,6 +97,12 @@ export async function GET(request: NextRequest, { params }: Params) {
                 version: 'v2',
               }
             );
+
+            setSentryContext('EXTRA_DATA', {
+              userQuestion: threadMessage.content,
+              publicThreadId,
+              publicMessageId,
+            });
 
             let fullMessage = '';
             let chainRunIds = [];
@@ -159,9 +162,8 @@ export async function GET(request: NextRequest, { params }: Params) {
               }
             }
           } catch (error) {
-            Sentry.captureException(error);
-            logger.error('Error processing SSE: %o', error);
             const exceptionFilter = new SseExceptionFilter();
+            logger.error({ err: error }, 'Testing -> Error processing SSE');
             exceptionFilter.handleError(error, controller);
           }
         },
@@ -176,8 +178,10 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     );
   } catch (error) {
-    Sentry.captureException(error);
-    logger.error('Unexpected error in GET handler: %o', error);
+    logger.error(
+      { err: error },
+      'Unexpected error in thread streamGET handler'
+    );
     return new Response('Internal Server Error', { status: 500 });
   }
 }

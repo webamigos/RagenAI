@@ -11,6 +11,8 @@ export const SentryContext = {
   CLERK: 'Clerk',
   THREAD_ID: 'ThreadId',
   EXTRA_DATA: 'ExtraData',
+  CHAIN_DATA: 'ChainData',
+  CHAIN_SSE_ERROR: 'ChainSseError',
 };
 
 type SentryContextKey = keyof typeof SentryContext;

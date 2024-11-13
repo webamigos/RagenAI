@@ -45,7 +45,7 @@ export const initializeRagChain = ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    setSentryContext('EXTRA_DATA', {
+    setSentryContext('CHAIN_DATA', {
       answerModel,
       answerTemperature,
       answerInstructions,

@@ -35,7 +35,7 @@ export class SseExceptionFilter {
       originalErrorMessage: chainError.originalErrorMessage,
     };
 
-    setSentryContext('EXTRA_DATA', {
+    setSentryContext('CHAIN_SSE_ERROR', {
       errorMessage,
     });
     controller.enqueue(
