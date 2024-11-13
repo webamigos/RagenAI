@@ -20,6 +20,7 @@ const publicRoutes = [
   '/:locale/sign-in',
   '/:locale/sign-up',
   '/:locale/guest-threads/:threadId',
+  '/:locale/sso-callback',
 ];
 
 const isProtectedRoute = createRouteMatcher([
@@ -38,6 +39,7 @@ export const config = {
     '/api/settings/prompt',
     '/api/upload/(.*)',
     '/:locale/admin/manage-knowledge',
+    '/:locale/sso-callback',
   ],
 };
 
@@ -47,6 +49,10 @@ export default clerkMiddleware(
     const localePrefixRegex = /^\/(pl|en)/;
 
     if (url.startsWith('/api')) {
+      return NextResponse.next();
+    }
+
+    if (url.includes('/:locale/sso-callback')) {
       return NextResponse.next();
     }
 

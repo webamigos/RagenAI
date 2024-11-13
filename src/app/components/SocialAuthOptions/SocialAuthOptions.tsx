@@ -49,7 +49,7 @@ export const SocialAuthOptions = memo(
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
-      startTransition(() => {
+      startTransition(async () => {
         if ((!isSignUp && !signInLoaded) || (isSignUp && !signUpLoaded)) return;
 
         try {
