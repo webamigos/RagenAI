@@ -162,7 +162,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             }
           } catch (error) {
             const exceptionFilter = new SseExceptionFilter();
-            logger.error({ err: error }, 'Testing -> Error processing SSE');
+            logger.error({ err: error }, 'Error processing SSE');
             exceptionFilter.handleError(error, controller);
           }
         },
