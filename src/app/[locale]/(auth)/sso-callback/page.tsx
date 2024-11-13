@@ -7,6 +7,8 @@ import { saveUserMetadata } from '@/app/actions';
 
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 
+export const dynamic = 'force-dynamic';
+
 export default function SSOCallback() {
   const { userId, isLoaded } = useAuth();
   const router = useRouter();
