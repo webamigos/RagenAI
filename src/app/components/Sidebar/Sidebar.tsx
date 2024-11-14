@@ -36,6 +36,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     userThreads,
     activeThread,
     handleThread,
+    showOnboarding,
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
@@ -50,7 +51,11 @@ export const Sidebar = ({ children, membership }: Props) => {
       sidebar={
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
-          <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
+          <SidebarItem
+            disabled={showOnboarding}
+            onClick={handleThread}
+            className="flex mx-2 mb-3"
+          >
             <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
             <Text
               className="-ml-1 mt-1 dark:text-gray-100"

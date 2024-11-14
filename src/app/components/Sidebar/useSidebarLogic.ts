@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
+import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 
 export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
@@ -20,6 +21,7 @@ export const useSidebarLogic = () => {
   const isThreadsLoaded = state.userThreads.length > 0;
   const { handleNewThread } = useNewThread();
   const { handleCloseThread } = useCloseThread();
+  const { showOnboarding } = useOnboardingContext();
 
   const handleThread = () => {
     handleNewThread();
@@ -54,6 +56,7 @@ export const useSidebarLogic = () => {
     userThreads,
     activeThread,
     handleThread,
+    showOnboarding,
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,

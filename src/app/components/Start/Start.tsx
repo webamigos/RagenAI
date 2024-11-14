@@ -31,7 +31,7 @@ export const Start = () => {
             className="px-8 py-4 sm:mb-12 mb-8 bg-primary-blue-400 hover:bg-primary-blue-500 disabled:bg-primary-blue-500 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300 font-sans tracking-wide rounded-3xl"
             onClick={handleNewThread}
             isLoading={isLoading}
-            disabled={isLoading || isLimitLock}
+            disabled={isLoading || isLimitLock || showOnboarding}
             iconRight={
               <RocketLaunchIcon
                 className="h-5 w-5 flex-none text-white cursor-pointer"
