@@ -8,14 +8,19 @@ export const OnboardingSteps = () => {
   const { addSteps } = useOnboardingContext();
   const t = useTranslations('onboarding');
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+
   const steps: JoyrideStep[] = [
     {
       target: '.start-button',
       content: t('first-step'),
       route: '/',
+      disableBeacon: true,
     },
     {
-      target: '.create-organization-tab',
+      target: isMobile
+        ? '.create-organization-tab-mobile'
+        : '.create-organization-tab',
       content: t('second-step'),
       route: '/my-profile',
     },
@@ -30,7 +35,9 @@ export const OnboardingSteps = () => {
       route: '/my-profile/create-organization',
     },
     {
-      target: '.assistant-management',
+      target: isMobile
+        ? '.assistant-management-mobile'
+        : '.assistant-management',
       content: t('fifth-step'),
       route: '/my-profile/prompt-management',
     },
@@ -40,7 +47,7 @@ export const OnboardingSteps = () => {
       route: '/my-profile/prompt-management',
     },
     {
-      target: '.manage-knowledge',
+      target: isMobile ? '.manage-knowledge-mobile' : '.manage-knowledge',
       content: t('seventh-step'),
       route: '/manage-knowledge',
     },

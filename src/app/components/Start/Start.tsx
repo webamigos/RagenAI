@@ -7,7 +7,6 @@ import { Alert, Button } from '@salesyy/common-ui';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 import { OnboardingSteps } from './OnboardingSteps';
-import { useEffect } from 'react';
 
 export const Start = () => {
   const { isSignedIn } = useUser();
@@ -16,16 +15,16 @@ export const Start = () => {
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
 
-  useEffect(() => {
-    showOnboarding && runJoyride();
-  }, [showOnboarding]);
-
   return (
     <div className="container mx-auto h-full">
       <div className="flex flex-col h-full items-center justify-center">
         <OnboardingSteps />
         {!isPending && showOnboarding ? (
-          <span className="start-button" />
+          <Button
+            label={t('start-tour')}
+            onClick={runJoyride}
+            className="start-button px-8 py-4 sm:mb-12 mb-8 bg-primary-blue-400 hover:bg-primary-blue-500 disabled:bg-primary-blue-500 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300 font-sans tracking-wide rounded-3xl"
+          />
         ) : (
           <Button
             label={t('start-new-thread')}

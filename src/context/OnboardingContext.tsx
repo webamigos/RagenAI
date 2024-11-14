@@ -13,13 +13,14 @@ import { useUser } from '@clerk/nextjs';
 import { SpinnerSVG } from '@salesyy/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { useTranslations } from 'next-intl';
-
+import { useSidebar } from '@/app/hooks/useSidebar';
 export interface JoyrideStep extends Step {
   target: string;
   route?: string;
 }
 
 interface JoyrideContextProps {
+  run: boolean;
   steps: JoyrideStep[];
   addSteps: (newSteps: JoyrideStep[]) => void;
   runJoyride: () => void;
@@ -43,6 +44,7 @@ export const JoyrideProvider = ({
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const t = useTranslations('joyride');
+  const { openSidebar, closeSidebar } = useSidebar();
 
   const onboardingComplete = user?.publicMetadata.onboardingComplete as boolean;
   const userBelongsToOrganization =
@@ -65,15 +67,26 @@ export const JoyrideProvider = ({
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     if (action === ACTIONS.CLOSE || status === STATUS.SKIPPED) {
       await saveUserMetadata(user.id, true);
-      await user?.reload();
+      await user.reload();
       stopJoyride();
       return;
+    }
+
+    if (type === EVENTS.STEP_AFTER) {
+      if (index === 0) openSidebar(); // Moving to step 1
+      else if (index === 1) closeSidebar(); // Moving to step 2
+      else if (index === 3) openSidebar(); // Moving to step 4
+      else if (index === 4) closeSidebar(); // Moving to step 5
+      else if (index === 5) openSidebar(); // Moving to step 6
+      else if (index === 6) closeSidebar(); // Moving to step 7
+    }
+    if (action === ACTIONS.PREV && type === EVENTS.STEP_AFTER) {
+      if (index === 2) openSidebar(); // Moving back to step 1
+      else if (index === 7) openSidebar(); // Moving back to step 6
     }
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.ERROR) {
@@ -82,21 +95,37 @@ export const JoyrideProvider = ({
 
       if (nextStep && nextStep.route) {
         setIsLoading(true);
+
         router.push(nextStep.route);
+
+        let attempts = 0;
         const interval = setInterval(() => {
           const targetExists = document.querySelector(nextStep.target);
+          attempts += 1;
+
           if (targetExists) {
-            setStepIndex(nextIndex);
+            const bounding = targetExists.getBoundingClientRect();
+            const isVisible =
+              bounding.top >= 0 && bounding.bottom <= window.innerHeight;
+
+            if (isVisible) {
+              setStepIndex(nextIndex);
+              setIsLoading(false);
+              clearInterval(interval);
+            }
+          }
+
+          if (attempts >= 10) {
             setIsLoading(false);
             clearInterval(interval);
           }
-        }, 100);
+        }, 500);
       } else {
         setStepIndex(nextIndex);
       }
     } else if (status === STATUS.FINISHED) {
       await saveUserMetadata(user.id, true);
-      await user?.reload();
+      await user.reload();
       stopJoyride();
     }
   };
@@ -104,6 +133,7 @@ export const JoyrideProvider = ({
   return (
     <JoyrideContext.Provider
       value={{
+        run,
         steps,
         addSteps,
         runJoyride,
@@ -126,6 +156,7 @@ export const JoyrideProvider = ({
         showSkipButton
         disableOverlayClose
         disableCloseOnEsc
+        disableScrolling
         callback={handleJoyrideCallback}
         locale={{
           skip: t('skip'),

@@ -10,6 +10,7 @@ import { plPL } from '../messages/pl-PL-clerk';
 import { locales, timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
+import { SidebarProvider } from '@/context/SidebarContext';
 const JoyrideProvider = dynamic(
   () =>
     import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
@@ -42,7 +43,9 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
           <body className={`${inter.className} h-full`}>
             <ThreadsContextProvider>
               <Providers>
-                <JoyrideProvider>{children}</JoyrideProvider>
+                <SidebarProvider>
+                  <JoyrideProvider>{children}</JoyrideProvider>
+                </SidebarProvider>
               </Providers>
             </ThreadsContextProvider>
           </body>

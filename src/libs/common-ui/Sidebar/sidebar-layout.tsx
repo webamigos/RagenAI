@@ -50,7 +50,6 @@ function CloseMenuIcon() {
 
 function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
   const { isSidebarOpen, closeSidebar } = useSidebar();
-
   return (
     <Headless.Dialog
       open={isSidebarOpen}
@@ -71,6 +70,9 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
               <CloseMenuIcon />
             </Headless.CloseButton>
           </div>
+          <span className="absolute w-92 h-5 top-[16.7rem] create-organization-tab-mobile" />
+          <span className="absolute w-92 h-5 top-[19.3rem] assistant-management-mobile" />
+          <span className="absolute w-92 h-5 top-[21.8rem] manage-knowledge-mobile" />
           {children}
         </div>
       </Headless.DialogPanel>

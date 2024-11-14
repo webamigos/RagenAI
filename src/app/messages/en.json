@@ -10,7 +10,8 @@
     "register": "Sign Up",
     "log-in": "log in",
     "or": "or",
-    "to-still-use": "to continue using the service"
+    "to-still-use": "to continue using the service",
+    "start-tour": "Start tour"
   },
   "sign-up": {
     "create-account": "Create your account",
