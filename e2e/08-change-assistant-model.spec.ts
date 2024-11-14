@@ -19,7 +19,7 @@ test('change-assistant-model', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   await page.goto('http://localhost:3000/en/my-profile/prompt-management');
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(3000);
 
   const isVisible = await page
     .getByText('Set Environment VariablesOpenAI API')

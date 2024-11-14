@@ -28,6 +28,6 @@ test('change-assistant-temperature', async ({ page }) => {
 
   await page.locator('#temperature').fill('0.3');
   await page.goto('http://localhost:3000/en/my-profile/prompt-management');
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(2000);
   await expect(page.getByText('Set temperature0.3')).toBeVisible();
 });
