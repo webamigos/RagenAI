@@ -35,12 +35,12 @@ export const LanguageSwitcher = ({ className }: Props) => {
 
   return (
     <div className="flex">
-      <div
+      <button
         onClick={handleClick}
         className={classMerge('cursor-pointer opacity-85 px-2', className)}
       >
         <span className={`fi fi-${flag} mx-auto`} />
-      </div>
+      </button>
     </div>
   );
 };

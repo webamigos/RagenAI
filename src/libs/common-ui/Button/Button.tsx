@@ -35,10 +35,11 @@ const ButtonComponent = forwardRef(
     ref: ForwardedRef<HTMLButtonElement>
   ) => {
     const baseClasses =
-      'cursor-pointer rounded-full px-4 py-2 text-md font-semibold text-white shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-transform duration-200';
+      'font-sans cursor-pointer rounded-full px-4 py-2 text-md font-semibold text-white shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-transform duration-200';
     const errorClasses =
       'mt-2 p-2 bg-red-500 text-white hover:bg-red-600 shadow-lg rounded-lg';
-    const normalClasses = 'bg-primary-blue-400 hover:bg-primary-blue-500';
+    const normalClasses =
+      'bg-blue-500 hover:bg-blue-600 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300';
     const disabledClasses =
       'cursor-not-allowed bg-gray-400 hover:bg-gray-400 text-gray-300 shadow-lg';
 

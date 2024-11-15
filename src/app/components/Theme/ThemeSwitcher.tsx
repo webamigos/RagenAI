@@ -42,8 +42,8 @@ export const ThemeSwitcher = ({ className }: Props) => {
     );
 
   return (
-    <div className={classMerge('w-[40px] flex justify-center', className)}>
+    <button className={classMerge('w-[40px] flex justify-center', className)}>
       {icon}
-    </div>
+    </button>
   );
 };
