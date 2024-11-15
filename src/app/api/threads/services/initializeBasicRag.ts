@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
@@ -21,20 +22,15 @@ import { logger } from '@/app/lib/utils/logger';
 const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
-  orgId: string;
   settings: OrganizationSettings;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
 const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
-export const initializeRagChain = ({
-  orgId,
-  settings,
-}: InitializeRagChainParams) => {
+export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
   try {
     setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
 
     const {
       apiKey,
@@ -66,7 +62,6 @@ export const initializeRagChain = ({
     });
 
     const vectorStore = createVectorStore(
-      orgId,
       supabaseVectorStoreClient,
       embeddingModel
     );
@@ -90,14 +85,22 @@ export const initializeRagChain = ({
 };
 
 const createVectorStore = (
-  orgId: string,
   client: SupabaseClient,
   embeddingModel: Embeddings
 ): SupabaseVectorStore => {
   try {
+    const { orgId } = auth();
+    if (!orgId) {
+      throw new Error('Organization ID is required, could not get from clerk');
+    }
+
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
 
+    // SECURITY CRITICAL: This organization_id filter is the primary security boundary
+    // that prevents unauthorized access to documents across different organizations.
+    // Removing or modifying this filter could lead to data leakage between organizations
+    // and allow unauthorized access to sensitive documentation.
     const metadataFilter: VectorStoreMetadataFilter = {
       organization_id: orgId.toLowerCase(),
     };
