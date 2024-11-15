@@ -270,7 +270,7 @@ export const useAssistantLogic = (threadId: string) => {
       promptFormRef.current?.reset(lastUserMessage?.content || '');
       errorToast({ message: errorMessage });
 
-      logger.error('Stream error:', errorMessage);
+      logger.error('Stream error: %o', errorMessage);
     });
 
     return eventSource;
