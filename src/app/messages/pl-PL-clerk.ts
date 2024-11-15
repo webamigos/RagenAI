@@ -688,7 +688,7 @@ export const plPL: LocalizationResource = {
       title: 'Dodaj połączone konto',
     },
     deletePage: {
-      actionDescription: 'Wpisz "Delete account" poniżej aby kontynuować.',
+      actionDescription: 'Wpisz "Usuń konto" poniżej aby kontynuować.',
       confirm: 'Usuń konto',
       messageLine1: 'Czy na pewno chcesz usunąć to konto?',
       messageLine2: 'To działanie jest nieodwracalne.',
