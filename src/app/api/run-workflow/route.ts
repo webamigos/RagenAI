@@ -8,6 +8,7 @@ import {
   TASK_QUEUE_NAME,
 } from '@/temporal/src/shared';
 import { logger } from '@/app/lib/utils/logger';
+import { nanoid } from 'nanoid';
 
 /**
  *
@@ -15,8 +16,8 @@ import { logger } from '@/app/lib/utils/logger';
  * @returns
  */
 export const GET = async (request: NextRequest) => {
-  const workflowId = 'doc-654321';
-  const itemId = '654321';
+  const workflowId = `doc-${nanoid()}`;
+  const itemId = `654321`; // TODO: in real implementation replace with real id
 
   const client = getTemporalClient();
 

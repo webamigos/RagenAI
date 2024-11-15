@@ -35,6 +35,7 @@ async function run() {
       ...workflowOption(),
       activities,
       taskQueue: TASK_QUEUE_NAME,
+      maxConcurrentActivityTaskExecutions: 50,
     });
     await worker.run();
   } finally {

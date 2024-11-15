@@ -6,8 +6,8 @@
     "node": "20.x"
   },
   "scripts": {
-    "dev": "npm-run-all -l build:temporal --parallel dev:temporal dev:next start:worker",
-    "dev:next": "next dev",
+    "dev:all": "npm-run-all -l build:temporal --parallel dev:temporal dev start:worker",
+    "dev": "next dev",
     "dev:temporal": "tsc --build --watch ./src/temporal/tsconfig.json",
     "build": "npm-run-all -l --parallel build:next build:temporal",
     "build:next": "next build",

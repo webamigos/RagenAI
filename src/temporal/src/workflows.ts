@@ -16,6 +16,10 @@ const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
     startToCloseTimeout: '5s',
   });
 
+/** TODO: In future, we probably will need to configure retry:
+define custom policy for nonRetryableErrorTypes if there is
+no way that failed activity will ever succeed (for example,
+queried not existing open-ai model). */
 const { estimateAge } = wf.proxyActivities<typeof activities>({
   startToCloseTimeout: '5 seconds',
 });
