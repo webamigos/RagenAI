@@ -266,7 +266,7 @@
     "fifth-step": "Po założeniu organizacji zobaczysz nowe zakładki w aplikacji. Przejdźmy teraz do sekcji zarządzania asystentem.",
     "sixth-step": "W tej sekcji masz możliwość dostosowania asystenta do swoich potrzeb. Na razie uzupełnij tylko pole 'OpenAI API Key', aby aktywować asystenta.",
     "seventh-step": "Ostatni, ale kluczowy krok to dostarczenie wiedzy asystentowi. Masz na to dwa sposoby.",
-    "eighth-step": "Pierwszy sposób to wgranie gotowych plików w formatach markdown lub epub.",
-    "ninth-step": "Jeśli nie masz dokumentów w tych formatach, skorzystaj z edytora, aby stworzyć dokument na potrzeby asystenta lub wkleić przygotowaną treść."
+    "eighth-step": "Jeśli nie masz dokumentów formacie epub lub markdown, skorzystaj z edytora, aby stworzyć dokument dostosowany do asystenta lub wklej przygotowaną treść.",
+    "ninth-step": "Jeżeli posiadasz pliki w wymienionych wcześniej formatach możesz je po prostu wgrać ze swojego urządzenia."
   }
 }

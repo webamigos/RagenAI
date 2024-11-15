@@ -52,13 +52,13 @@ export const OnboardingSteps = () => {
       route: '/manage-knowledge',
     },
     {
-      target: '.add-file',
-      content: t('eighth-step'),
+      target: '.crete-document',
+      content: t('ninth-step'),
       route: '/manage-knowledge',
     },
     {
-      target: '.crete-document',
-      content: t('ninth-step'),
+      target: '.add-file',
+      content: t('eighth-step'),
       route: '/manage-knowledge',
     },
   ];

@@ -266,7 +266,7 @@
     "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let’s go to the assistant management section.",
     "sixth-step": "In this section, you have the option to customize your assistant to suit your needs. For now, fill in only the 'OpenAI API Key' field to activate the assistant.",
     "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
-    "eighth-step": "The first option is to upload ready-made files in markdown or epub format.",
-    "ninth-step": "If you don't have documents in these formats, use the editor to create a document for the assistant or paste pre-prepared content."
+    "eighth-step": "If you do not have epub or markdown documents, use the editor to create a document adapted to the assistant or paste prepared content.",
+    "ninth-step": "If you have files in the previously mentioned formats, you can simply upload them from your device."
   }
 }

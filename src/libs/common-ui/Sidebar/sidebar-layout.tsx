@@ -50,6 +50,13 @@ function CloseMenuIcon() {
 
 function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
   const { isSidebarOpen, closeSidebar } = useSidebar();
+
+  const tabClasses = [
+    'absolute w-92 h-5 create-organization-tab-mobile top-[16.7rem]',
+    'absolute w-92 h-5 assistant-management-mobile top-[19.3rem]',
+    'absolute w-92 h-5 manage-knowledge-mobile top-[21.8rem]',
+  ];
+
   return (
     <Headless.Dialog
       open={isSidebarOpen}
@@ -58,7 +65,7 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
     >
       <Headless.DialogBackdrop
         transition
-        className="fixed inset-0  bg-black/30 transition data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
+        className="fixed inset-0 bg-black/30 transition data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
       />
       <Headless.DialogPanel
         transition
@@ -70,9 +77,9 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
               <CloseMenuIcon />
             </Headless.CloseButton>
           </div>
-          <span className="absolute w-92 h-5 top-[16.7rem] create-organization-tab-mobile" />
-          <span className="absolute w-92 h-5 top-[19.3rem] assistant-management-mobile" />
-          <span className="absolute w-92 h-5 top-[21.8rem] manage-knowledge-mobile" />
+          {tabClasses.map((tabClass, index) => (
+            <div key={index} className={tabClass} />
+          ))}
           {children}
         </div>
       </Headless.DialogPanel>
