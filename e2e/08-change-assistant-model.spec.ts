@@ -18,7 +18,7 @@ test('change-assistant-model', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForTimeout(2000);
 
-  await page.goto('http://localhost:3000/en/my-profile/prompt-management');
+  await page.goto('/en/my-profile/prompt-management');
   await page.waitForTimeout(3000);
 
   const isVisible = await page
