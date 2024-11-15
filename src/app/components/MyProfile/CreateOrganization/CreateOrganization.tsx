@@ -17,9 +17,11 @@ export const CreateOrganizationComponent = () => {
           colorText: resolvedTheme === 'dark' ? '#e5e7eb' : '',
         },
         elements: {
+          formFieldLabelRow: 'organization-name',
           cardBox: 'h-1/2 w-full shadow-none border-none',
           rootBox: 'w-full',
           footer: 'hidden',
+          formButtonPrimary: 'create-organization-button',
         },
       }}
     />

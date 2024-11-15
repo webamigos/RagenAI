@@ -131,19 +131,28 @@ type SidebarItemProps = {
   className?: string;
   hasIcon?: boolean;
   children: React.ReactNode;
+  disabled?: boolean;
 } & (
   | Omit<Headless.ButtonProps, 'as' | 'className'>
   | Omit<ComponentPropsWithoutRef<typeof Link>, 'type' | 'className'>
 );
 
 export const SidebarItem = forwardRef(function SidebarItem(
-  { current, className, children, hasIcon = false, ...props }: SidebarItemProps,
+  {
+    current,
+    className,
+    children,
+    hasIcon = false,
+    disabled = false,
+    ...props
+  }: SidebarItemProps,
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
 ) {
-  let classes = clsx(
+  const classes = clsx(
     'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm',
     'hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500',
     current && 'bg-zinc-950/5 text-blue-500',
+    disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
     'group',
     className
   );
@@ -158,7 +167,12 @@ export const SidebarItem = forwardRef(function SidebarItem(
       )}
       {'href' in props ? (
         <Headless.CloseButton as="div" ref={ref}>
-          <Link className={classes} {...props} data-current={current}>
+          <Link
+            className={classes}
+            {...props}
+            data-current={current}
+            aria-disabled={disabled}
+          >
             {children}
             <AnimatedArrow />
           </Link>
@@ -169,6 +183,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
           className={clsx('cursor-pointer text-gray-400', classes)}
           data-current={current}
           ref={ref}
+          disabled={disabled}
         >
           {children}
           {hasIcon && <AnimatedArrow />}

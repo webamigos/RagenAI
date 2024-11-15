@@ -2,14 +2,22 @@ import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server'
 import { ClerkProvider } from '@clerk/nextjs';
 import { enUS } from '@clerk/localizations';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
+import dynamic from 'next/dynamic';
 
 import { Providers } from '../components/Providers';
 import { ThreadsContextProvider } from '../../context/ThreadsContext';
 import { plPL } from '../messages/pl-PL-clerk';
 import { locales, timezone } from '../config';
 import './global.css';
-
 import { Inter } from 'next/font/google';
+import { SidebarProvider } from '@/context/SidebarContext';
+const JoyrideProvider = dynamic(
+  () =>
+    import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
+  {
+    ssr: false,
+  }
+);
 
 type Props = {
   children: React.ReactNode;
@@ -34,7 +42,11 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
         <html lang={locale} className="h-full" suppressHydrationWarning>
           <body className={`${inter.className} h-full`}>
             <ThreadsContextProvider>
-              <Providers>{children}</Providers>
+              <Providers>
+                <SidebarProvider>
+                  <JoyrideProvider>{children}</JoyrideProvider>
+                </SidebarProvider>
+              </Providers>
             </ThreadsContextProvider>
           </body>
         </html>
