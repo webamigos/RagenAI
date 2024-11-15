@@ -23,24 +23,24 @@ export const AdminPanel = () => {
     <div className="h-full flex-1 flex flex-col gap-4">
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
         <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
-          <Tab key="add-files">
-            {t('add-files')} <CloudArrowUp className="ml-3 md:none" />
-          </Tab>
-          <Tab key="create-file">
+          <Tab key="create-file" className="crete-document">
             {t('create-file')} <PencilSquareIcon className="ml-3" />
+          </Tab>
+          <Tab key="add-files" className="add-file">
+            {t('add-files')} <CloudArrowUp className="ml-3 md:none" />
           </Tab>
           <Tab key="uploaded-list">
             {t('uploaded-list')} <BulletListIcon className="ml-3" />
           </Tab>
         </TabList>
         {activeTab === 0 && (
-          <TabPanel key="upload-knowledge">
-            <UploadKnowledge />
+          <TabPanel key="document-creator">
+            <DocumentCreator />
           </TabPanel>
         )}
         {activeTab === 1 && (
-          <TabPanel key="document-creator">
-            <DocumentCreator />
+          <TabPanel key="upload-knowledge">
+            <UploadKnowledge />
           </TabPanel>
         )}
         {activeTab === 2 && (
