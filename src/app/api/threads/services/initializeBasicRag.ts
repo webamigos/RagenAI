@@ -11,6 +11,14 @@ import {
   createModerationInstance,
   createEmbeddingsInstance,
 } from '../../../lib/services/llm';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryContext,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+import { logger } from '@/app/lib/utils/logger';
+
+const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   orgId: string;
@@ -24,46 +32,61 @@ export const initializeRagChain = ({
   orgId,
   settings,
 }: InitializeRagChainParams) => {
-  const {
-    apiKey,
-    model: answerModel,
-    temperature: answerTemperature,
-    prompt: answerInstructions,
-    maxDocumentsToRetrieve,
-  } = settings;
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(orgId);
 
-  const embeddingModel = createEmbeddingsInstance({ apiKey });
-  const contentModerator = createModerationInstance({ apiKey });
-
-  const questionRephraser = createChatCompletionInstance({
-    apiKey,
-    model: DEFAULT_REPHRASE_MODEL,
-    temperature: DEFAULT_REPHRASE_TEMPERATURE,
-  });
-  const answerGenerator = createChatCompletionInstance({
-    apiKey,
-    model: answerModel,
-    temperature: answerTemperature,
-  });
-
-  const vectorStore = createVectorStore(
-    orgId,
-    supabaseVectorStoreClient,
-    embeddingModel
-  );
-
-  return basicRagChain({
-    models: {
-      contentModerator,
-      questionRephraser,
-      answerGenerator,
-    },
-    config: {
+    const {
+      apiKey,
+      model: answerModel,
+      temperature: answerTemperature,
+      prompt: answerInstructions,
       maxDocumentsToRetrieve,
+    } = settings;
+
+    setSentryContext('CHAIN_DATA', {
+      answerModel,
+      answerTemperature,
       answerInstructions,
-    },
-    vectorStore,
-  });
+      maxDocumentsToRetrieve,
+    });
+
+    const embeddingModel = createEmbeddingsInstance({ apiKey });
+    const contentModerator = createModerationInstance({ apiKey });
+
+    const questionRephraser = createChatCompletionInstance({
+      apiKey,
+      model: DEFAULT_REPHRASE_MODEL,
+      temperature: DEFAULT_REPHRASE_TEMPERATURE,
+    });
+    const answerGenerator = createChatCompletionInstance({
+      apiKey,
+      model: answerModel,
+      temperature: answerTemperature,
+    });
+
+    const vectorStore = createVectorStore(
+      orgId,
+      supabaseVectorStoreClient,
+      embeddingModel
+    );
+
+    return basicRagChain({
+      models: {
+        contentModerator,
+        questionRephraser,
+        answerGenerator,
+      },
+      config: {
+        maxDocumentsToRetrieve,
+        answerInstructions,
+      },
+      vectorStore,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error initializing basic RAG chain');
+    throw error;
+  }
 };
 
 const createVectorStore = (
@@ -71,13 +94,21 @@ const createVectorStore = (
   client: SupabaseClient,
   embeddingModel: Embeddings
 ): SupabaseVectorStore => {
-  const metadataFilter: VectorStoreMetadataFilter = {
-    organization_id: orgId.toLowerCase(),
-  };
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(orgId);
 
-  return new SupabaseVectorStore(embeddingModel, {
-    client,
-    queryName: DOCUMENT_SEARCH_QUERY_NAME,
-    filter: metadataFilter,
-  });
+    const metadataFilter: VectorStoreMetadataFilter = {
+      organization_id: orgId.toLowerCase(),
+    };
+
+    return new SupabaseVectorStore(embeddingModel, {
+      client,
+      queryName: DOCUMENT_SEARCH_QUERY_NAME,
+      filter: metadataFilter,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating vector store');
+    throw error;
+  }
 };
