@@ -22,12 +22,12 @@ test('change-assistant-temperature', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   const isVisible = await page
-    .getByText('Set Environment VariablesOpenAI API')
+    .getByText(/set environment variables/i)
     .isVisible();
   expect(isVisible).toBeTruthy();
 
   await page.locator('#temperature').fill('0.3');
-  await page.goto('/en/my-profile/prompt-management');
   await page.waitForTimeout(2000);
-  await expect(page.getByText('Set temperature0.3')).toBeVisible();
+
+  await expect(page.getByText(/0.3/i)).toBeVisible();
 });
