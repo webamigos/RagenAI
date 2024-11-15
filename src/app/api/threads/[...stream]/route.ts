@@ -21,6 +21,11 @@ import { initializeRagChain } from '../services/initializeBasicRag';
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryContext,
+} from '@/app/lib/services/sentry';
+import { setSentryServiceTag } from '@/app/lib/services/sentry';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,11 +45,14 @@ let runId: string;
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { orgId } = getAuth(request);
+    setSentryServiceTag('threads');
     if (!orgId) {
       throw new Error('Unauthorized');
     }
+    setSentryClerkOrganizationTag(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
+
     const encoder = new TextEncoder();
     return new Response(
       new ReadableStream({
@@ -88,6 +96,12 @@ export async function GET(request: NextRequest, { params }: Params) {
                 version: 'v2',
               }
             );
+
+            setSentryContext('EXTRA_DATA', {
+              userQuestion: threadMessage.content,
+              publicThreadId,
+              publicMessageId,
+            });
 
             let fullMessage = '';
             let chainRunIds = [];
@@ -147,8 +161,8 @@ export async function GET(request: NextRequest, { params }: Params) {
               }
             }
           } catch (error) {
-            logger.error('Error processing SSE: %o', error);
             const exceptionFilter = new SseExceptionFilter();
+            logger.error({ err: error }, 'Error processing SSE');
             exceptionFilter.handleError(error, controller);
           }
         },
@@ -163,7 +177,10 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     );
   } catch (error) {
-    logger.error('Unexpected error in GET handler: %o', error);
+    logger.error(
+      { err: error },
+      'Unexpected error in thread streamGET handler'
+    );
     return new Response('Internal Server Error', { status: 500 });
   }
 }

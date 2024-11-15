@@ -16,7 +16,6 @@ const serviceName = 'apiKeysList';
 
 export const fetchApiKeys = async () => {
   const { orgId, userId, sessionId } = auth();
-
   if (!orgId) {
     return {
       success: false,

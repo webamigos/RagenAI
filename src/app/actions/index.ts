@@ -24,6 +24,14 @@ import {
   fetchUserDocumentsDetails,
 } from '../lib/services/document';
 import { deleteDocument } from '../api/upload/services/TableService';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryClerkUserTag,
+  setSentryContext,
+} from '../lib/services/sentry';
+import { setSentryServiceTag } from '../lib/services/sentry';
+
+const serviceName = 'actions';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -62,6 +70,11 @@ export const sendMessage = async (
 
   // get or create thread
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      threadPublicId,
+      visitorId,
+    });
     const { thread, threadEntity } = await findOrCreateOpenAIThread(
       threadPublicId,
       visitorId
@@ -77,7 +90,7 @@ export const sendMessage = async (
 
     return { message: messageResponse, status: StatusCodes.CREATED };
   } catch (e) {
-    logger.error('processing error: %o', e);
+    logger.error({ err: e }, 'processing error');
     return {
       error: 'Problem during processing',
       status: StatusCodes.BAD_REQUEST,
@@ -91,10 +104,15 @@ export const getUserMessages = async (
   take?: number
 ): Promise<ResponseHistory> => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      visitorId,
+    });
     const userThreads = await getUserThreads(visitorId, skip, take);
 
     return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
+    logger.error({ err }, 'Error getting user threads');
     const errorMessage =
       err instanceof Error ? err.message : 'An error occurred';
     return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
@@ -104,6 +122,8 @@ export const getUserMessages = async (
 //get user documents
 export const getUserDocuments = async (orgId: string) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(orgId);
     const documentDetails = await fetchUserDocumentsDetails(orgId);
     return { documentDetails };
   } catch (error) {
@@ -120,6 +140,11 @@ export const deleteDocumentAction = async (
   documentId: string
 ) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(organizationId);
+    setSentryContext('EXTRA_DATA', {
+      documentId,
+    });
     //  removal document from `UserFile`
     const { count } = await deleteDocumentFromUserFile(
       organizationId,
@@ -143,8 +168,7 @@ export const deleteDocumentAction = async (
       status: StatusCodes.OK,
     };
   } catch (error) {
-    logger.error('Error deleting document:', error);
-
+    logger.error({ err: error }, 'Error deleting document');
     return {
       error: 'Failed to delete document',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -161,6 +185,8 @@ export const saveUserMetadata = async (
     const user = await clerkClient().users.getUser(clerkUserId);
     const currentMetadata = user.publicMetadata || {};
 
+    setSentryServiceTag(serviceName);
+    setSentryClerkUserTag(clerkUserId);
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
         ...currentMetadata,
@@ -169,6 +195,7 @@ export const saveUserMetadata = async (
     });
     return { success: true };
   } catch (error) {
+    logger.error({ err: error }, 'Error saving user id to clerk');
     return { success: false };
   }
 };
@@ -180,19 +207,30 @@ export const rateMessage = async (
   runId: string
 ) => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      messageId,
+      feedback,
+      runId,
+    });
     await submitFeedbackDirectly(messageId, feedback, runId);
     return { success: true };
   } catch (error) {
-    return { success: error };
+    logger.error({ err: error }, 'Error sending answer rate');
+    return { success: false };
   }
 };
 
 export async function deleteUserMessage(messagePublicId: string) {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      messagePublicId,
+    });
     await deleteMessageByPublicId(messagePublicId);
     return { success: true };
   } catch (error) {
-    logger.error('Error deleting user message: %o', error);
+    logger.error({ err: error }, 'Error deleting user message');
     return { success: false };
   }
 }
