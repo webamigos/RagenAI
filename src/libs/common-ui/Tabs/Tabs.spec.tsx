@@ -1,10 +1,11 @@
+import { vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import { Tabs, TabList, Tab, TabPanel } from './Tabs';
 
 describe('Tabs Component', () => {
   const renderTabs = () => {
-    const setActiveTab = jest.fn();
+    const setActiveTab = vi.fn();
     const activeTab = 0;
     render(
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>

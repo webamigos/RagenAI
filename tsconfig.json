@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["jest", "@testing-library/jest-dom"],
+    "types": ["node", "jest"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -12,7 +12,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "typeRoots": ["./contracts", "./node_modules/@types"],
     "plugins": [
@@ -25,7 +25,6 @@
       "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
       "@salesyy/common-ui": ["./src/libs/common-ui"],
       "@salesyy/prisma-client": ["./src/libs/db"],
-
       "@/*": ["./src/*"]
     }
   },

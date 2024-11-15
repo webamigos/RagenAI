@@ -16,7 +16,8 @@ if (!validateEnvsResult.success) {
 
 const withNextIntl = createNextIntlPlugin();
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
+const isStagingTargetEnv = process.env.TARGET_ENV === 'staging';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -61,7 +62,7 @@ const nextConfig = {
   },
 };
 
-export default !isProduction
+export default !(isProductionTargetEnv || isStagingTargetEnv)
   ? withNextIntl(nextConfig)
   : withSentryConfig(withNextIntl(nextConfig), {
       // For all available options, see:
