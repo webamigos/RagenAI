@@ -93,6 +93,12 @@ docker compose up
 
 to launch local dev server.
 
+You alo need to run worker:
+
+```bash
+npm run start:worker
+```
+
 ### Debugging using VSCode
 
 You can use VSCode extension: https://www.youtube.com/watch?v=3IjQde9HMNY
