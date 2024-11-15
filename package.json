@@ -16,7 +16,7 @@
     "start:worker": "node ./src/temporal/lib/worker",
     "lint": "next lint",
     "serve": "npx http-server --port 5433 out",
-    "test": "jest",
+    "test": "jest --config ./jest.config.ts",
     "test:temporal": "jest --config ./src/temporal/jest.config.ts --runTestsByPath ./src/temporal/src/**",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
