@@ -68,7 +68,6 @@ export async function GET(request: NextRequest, { params }: Params) {
             }
 
             const { chain, finalAnswerRunName } = await initializeRagChain({
-              orgId,
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
             });
 
