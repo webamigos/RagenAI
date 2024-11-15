@@ -18,7 +18,7 @@ test('change-assistant-temperature', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForTimeout(2000);
 
-  await page.goto('http://localhost:3000/en/my-profile/prompt-management');
+  await page.goto('/en/my-profile/prompt-management');
   await page.waitForTimeout(2000);
 
   const isVisible = await page
@@ -27,7 +27,7 @@ test('change-assistant-temperature', async ({ page }) => {
   expect(isVisible).toBeTruthy();
 
   await page.locator('#temperature').fill('0.3');
-  await page.goto('http://localhost:3000/en/my-profile/prompt-management');
+  await page.goto('/en/my-profile/prompt-management');
   await page.waitForTimeout(2000);
   await expect(page.getByText('Set temperature0.3')).toBeVisible();
 });
