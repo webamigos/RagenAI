@@ -2,16 +2,10 @@ import { useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { format, subDays } from 'date-fns';
 
-import {
-  SidebarSection,
-  SidebarLabel,
-  SpinnerSVG,
-  Text,
-} from '@salesyy/common-ui';
+import { SidebarSection, SidebarLabel, SpinnerSVG } from '@salesyy/common-ui';
 import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
 import { useThreadsContext } from '../../../hooks/useThreadsContext';
-import { ClockIcon } from '@heroicons/react/24/outline';
 
 type Props = {
   hasMore: boolean;

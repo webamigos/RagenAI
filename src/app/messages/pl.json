@@ -171,7 +171,8 @@
     "title-error": "Tytuł jest wymagany",
     "content-error": "Treść jest wymagana",
     "created-successful": "Stworzono dokument",
-    "send-error": "Błąd podczas tworzenia dokumentu"
+    "send-error": "Błąd podczas tworzenia dokumentu",
+    "send": "Wyślij"
   },
   "sidebar": {
     "profile": "Profil",

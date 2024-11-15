@@ -5,7 +5,7 @@ import {
   type ForwardedRef,
 } from 'react';
 import { classMerge } from '../utils/cn';
-import { SpinnerSVG, ArrowRightCircleIcon, ArrowPath } from '../icons';
+import { SpinnerSVG, ArrowPath, ClourArrowIcon } from '../icons';
 
 type Props = Readonly<{
   label?: string;
@@ -27,6 +27,7 @@ const ButtonComponent = forwardRef(
       className,
       isLoading = false,
       isError = false,
+      isSubmit = false,
       disabled,
       children,
       ...rest
@@ -34,11 +35,12 @@ const ButtonComponent = forwardRef(
     ref: ForwardedRef<HTMLButtonElement>
   ) => {
     const baseClasses =
-      'cursor-pointer rounded-2xl px-3.5 py-2.5 text-md font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600';
-    const errorClasses = 'mt-2 p-2 bg-green-300 text-white hover:bg-green-400';
-    const normalClasses = 'bg-blue-500 hover:bg-blue-600';
+      'cursor-pointer rounded-full px-4 py-3 text-md font-semibold text-white shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-transform duration-200';
+    const errorClasses =
+      'mt-2 p-2 bg-red-500 text-white hover:bg-red-600 shadow-lg rounded-lg';
+    const normalClasses = 'bg-primary-blue-400 hover:bg-primary-blue-500';
     const disabledClasses =
-      'cursor-not-allowed bg-gray-400 hover:bg-gray-400 text-gray-300';
+      'cursor-not-allowed bg-gray-400 hover:bg-gray-400 text-gray-300 shadow-lg';
 
     return (
       <button
@@ -53,12 +55,12 @@ const ButtonComponent = forwardRef(
         )}
       >
         <span className="flex items-center">
-          {iconLeft && !isLoading && <span className="pr-2">{iconLeft}</span>}
           {label && <span>{label}</span>}
           {children}
           {iconRight && !isLoading && <span className="pl-2">{iconRight}</span>}
           {isLoading && <SpinnerSVG size="sm" className="ml-3 text-white" />}
           {isError && <ArrowPath />}
+          {isSubmit && <ClourArrowIcon className="ml-2" />}
         </span>
       </button>
     );
