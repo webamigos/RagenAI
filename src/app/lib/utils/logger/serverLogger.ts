@@ -14,6 +14,7 @@ if ((isProductionTargetEnv || isStagingTargetEnv) && process.env.SENTRY_DSN) {
   const sentryStream = createWriteStream({
     dsn: process.env.SENTRY_DSN,
     level: 'info',
+    stackAttributeKey: 'err.stack',
     environment: process.env.TARGET_ENV
       ? process.env.TARGET_ENV
       : process.env.NODE_ENV,

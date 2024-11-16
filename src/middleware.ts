@@ -20,6 +20,7 @@ const publicRoutes = [
   '/:locale/sign-in',
   '/:locale/sign-up',
   '/:locale/guest-threads/:threadId',
+  '/:locale/sso-callback',
 ];
 
 const isProtectedRoute = createRouteMatcher([
@@ -37,18 +38,27 @@ export const config = {
     '/api/settings/model',
     '/api/settings/prompt',
     '/api/upload/(.*)',
+    '/:locale/admin/manage-knowledge',
+    '/:locale/sso-callback',
   ],
 };
 
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
     const url = request.nextUrl.pathname;
+    const localePrefixRegex = /^\/(pl|en)/;
 
-    if (request.nextUrl.pathname.startsWith('/api')) {
+    if (url.startsWith('/api')) {
       return NextResponse.next();
     }
 
-    if (url.includes('pl/admin') || url.includes(`en/admin`)) {
+    if (url.includes('/:locale/sso-callback')) {
+      return NextResponse.next();
+    }
+
+    const isAdminRoute = localePrefixRegex.test(url) && url.includes('/admin');
+
+    if (isAdminRoute) {
       const session = auth();
 
       if (!session.userId) {
@@ -65,6 +75,12 @@ export default clerkMiddleware(
       const admin = orgMemberships.data.some(
         (membership) => membership.role === 'org:admin'
       );
+
+      const onboardingComplete = user.publicMetadata.onboardingComplete;
+
+      if (!admin && url.includes('manage-knowledge') && !onboardingComplete) {
+        return NextResponse.next();
+      }
 
       if (!admin) {
         return NextResponse.redirect(new URL('/403', request.url));

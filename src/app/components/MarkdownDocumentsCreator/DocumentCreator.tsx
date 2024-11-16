@@ -99,7 +99,7 @@ export const DocumentCreator = () => {
         errorToast({ message: response.message });
       }
     } catch (error) {
-      logger.error('Error creating document', error);
+      logger.error('Error creating document: %o', error);
       errorToast({ message: t('send-error') });
     }
   };

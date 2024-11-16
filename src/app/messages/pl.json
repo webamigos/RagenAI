@@ -10,7 +10,8 @@
     "register": "Zarejestruj się",
     "log-in": "zaloguj",
     "or": "lub",
-    "to-still-use": "aby korzystać dalej"
+    "to-still-use": "aby korzystać dalej",
+    "start-tour": " Rozpocznij samouczek"
   },
   "sign-up": {
     "create-account": "Załóż konto",
@@ -250,5 +251,22 @@
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
     "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego"
+  },
+  "joyride": {
+    "skip": "Pomiń",
+    "back": "Wstecz",
+    "next": "Następna",
+    "finish": "Zakończ"
+  },
+  "onboarding": {
+    "first-step": "Rozpocznijmy szybki przewodnik, który pomoże Ci efektywnie korzystać z naszej aplikacji. Dzięki niemu poznasz kluczowe funkcje ułatwiające pracę. Zaczynamy!",
+    "second-step": "Aby korzystać z asystenta i umożliwić innym dostęp do dokumentów, musisz należeć do 'organizacji'. To pierwszy ważny krok.",
+    "third-step": "W formularzu rejestracji organizacji znajdziesz trzy pola, z których tylko nazwa organizacji jest wymagana.",
+    "fourth-step": "Po wypełnieniu formularza możesz potwierdzić założenie organizacji, aby przejść dalej.",
+    "fifth-step": "Po założeniu organizacji zobaczysz nowe zakładki w aplikacji. Przejdźmy teraz do sekcji zarządzania asystentem.",
+    "sixth-step": "W tej sekcji masz możliwość dostosowania asystenta do swoich potrzeb. Na razie uzupełnij tylko pole 'OpenAI API Key', aby aktywować asystenta.",
+    "seventh-step": "Ostatni, ale kluczowy krok to dostarczenie wiedzy asystentowi. Masz na to dwa sposoby.",
+    "eighth-step": "Jeśli nie masz dokumentów formacie epub lub markdown, skorzystaj z edytora, aby stworzyć dokument dostosowany do asystenta lub wklej przygotowaną treść.",
+    "ninth-step": "Jeżeli posiadasz pliki w wymienionych wcześniej formatach możesz je po prostu wgrać ze swojego urządzenia."
   }
 }

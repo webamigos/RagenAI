@@ -4,6 +4,10 @@ import { Thread } from '@prisma/client';
 import db from '@salesyy/prisma-client';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
+import { setSentryContext, setSentryServiceTag } from './sentry';
+import { logger } from '../utils/logger';
+
+const serviceName = 'thread';
 
 const openai = new OpenAI();
 
@@ -15,6 +19,13 @@ export const findOrCreateOpenAIThread = async (
   let threadEntity: Thread;
 
   try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      threadPublicId,
+    });
+    setSentryContext('EXTRA_DATA', {
+      visitorId,
+    });
     threadEntity = await db.thread.findUniqueOrThrow({
       where: { public_id: threadPublicId },
     });
@@ -40,47 +51,72 @@ export const findOrCreateOpenAIThread = async (
     }
 
     return { thread, threadEntity };
-  } catch {
+  } catch (error) {
+    logger.error({ err: error }, `Failed to fetch thread ${threadPublicId}`);
     // TODO: implement
     throw new Error(`Cannot fetch thread ${threadPublicId}`);
   }
 };
 
 export const createNewOpenAIThread = async () => {
-  // TODO: move creation of Open AI thread to first message
-  const thread = await openai.beta.threads.create();
-  const threadEntity = await db.thread.create({
-    data: { openai_thread_id: thread.id },
-  });
-  return {
-    public_id: threadEntity.public_id,
-  };
+  try {
+    setSentryServiceTag(serviceName);
+    // TODO: move creation of Open AI thread to first message
+    const thread = await openai.beta.threads.create();
+    const threadEntity = await db.thread.create({
+      data: { openai_thread_id: thread.id },
+    });
+    return {
+      public_id: threadEntity.public_id,
+    };
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to create new Open AI thread');
+    throw error;
+  }
 };
 
 export const getThreadMessages = async (publicThreadId: string) => {
-  return await db.thread.findUnique({
-    where: {
-      public_id: publicThreadId,
-    },
-    select: {
-      messages: {
-        orderBy: {
-          created_at: 'asc',
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      publicThreadId,
+    });
+    return await db.thread.findUnique({
+      where: {
+        public_id: publicThreadId,
+      },
+      select: {
+        messages: {
+          orderBy: {
+            created_at: 'asc',
+          },
         },
       },
-    },
-  });
+    });
+  } catch (error) {
+    logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
+    throw error;
+  }
 };
 
 export const getThreadDetails = async (publicThreadId: string) => {
-  return await db.thread.findUniqueOrThrow({
-    where: { public_id: publicThreadId },
-    select: {
-      id: true,
-      public_id: true,
-      openai_thread_id: true,
-      created_at: true,
-      visitor_id: true,
-    },
-  });
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      publicThreadId,
+    });
+    return await db.thread.findUniqueOrThrow({
+      where: { public_id: publicThreadId },
+      select: {
+        id: true,
+        public_id: true,
+        openai_thread_id: true,
+        created_at: true,
+        visitor_id: true,
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
+    throw error;
+  }
 };

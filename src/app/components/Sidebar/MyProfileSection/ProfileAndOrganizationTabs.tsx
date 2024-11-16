@@ -1,3 +1,4 @@
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
@@ -16,10 +17,17 @@ import {
 } from '@salesyy/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
-import { useEffect, useMemo } from 'react';
+import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 
 type Props = {
   membership?: OrganizationRoles;
+};
+
+type TabItem = {
+  icon: () => JSX.Element;
+  label: string;
+  path: string;
+  className?: string;
 };
 
 export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
@@ -27,18 +35,20 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   const router = useRouter();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();
+  const { showOnboarding } = useOnboardingContext();
 
   useSyncActiveOrganization({ membership });
 
-  const organizationTabsForNoRole = [
+  const organizationTabsForNoRole: TabItem[] = [
     {
       icon: Briefcase,
       label: t('create-organization'),
       path: '/my-profile/create-organization',
+      className: 'create-organization-tab',
     },
   ];
 
-  const organizationTabsForAdminAndOwner = [
+  const organizationTabsForAdminAndOwner: TabItem[] = [
     {
       icon: Briefcase,
       label: t('manage-organization'),
@@ -59,15 +69,9 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
     },
-    // TODO: enable when ready
-    // {
-    //   icon: KeyIcon,
-    //   label: t('api-keys'),
-    //   path: '/my-profile/api-keys',
-    // },
   ];
 
-  const organizationTabsForMember = [
+  const organizationTabsForMember: TabItem[] = [
     {
       icon: Briefcase,
       label: t('organization-list'),
@@ -77,6 +81,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: Briefcase,
       label: t('create-organization'),
       path: '/my-profile/create-organization',
+      className: 'create-organization-tab',
     },
   ];
 
@@ -89,10 +94,28 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       return organizationTabsForMember;
     }
 
-    return organizationTabsForNoRole;
+    const tabsForNoRole = [...organizationTabsForNoRole];
+    if (showOnboarding) {
+      tabsForNoRole.push(
+        {
+          icon: SettingsIcon,
+          label: t('assistant-management'),
+          path: '/my-profile/prompt-management',
+          className: 'assistant-management',
+        },
+        {
+          icon: OpenBookIcon,
+          label: t('manage-knowledge'),
+          path: '/manage-knowledge',
+          className: 'manage-knowledge',
+        }
+      );
+    }
+
+    return tabsForNoRole;
   };
 
-  const tabs = useMemo(() => {
+  const tabs: TabItem[] = useMemo(() => {
     const organizationTabs = getOrganizationTabs();
 
     return [
@@ -119,11 +142,12 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
 
   return (
     <div>
-      {tabs.map(({ icon: Icon, label, path }) => (
+      {tabs.map(({ icon: Icon, label, path, className }) => (
         <SidebarItem
           hasIcon={true}
           key={path}
           onClick={() => handleTabClick(path)}
+          className={className}
         >
           <Icon />
           {label}
