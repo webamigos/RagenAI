@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
-import { saveUserIdToClerk } from '@/app/actions';
+import { saveUserMetadata } from '@/app/actions';
 import { Button, Card, Text } from '@salesyy/common-ui';
 import { Input } from '@salesyy/common-ui';
 
@@ -43,7 +43,7 @@ export const EnterCodeForm = () => {
       });
 
       if (completeSignUp.status === 'complete') {
-        const { success } = await saveUserIdToClerk(
+        const { success } = await saveUserMetadata(
           completeSignUp.createdUserId as string
         );
 

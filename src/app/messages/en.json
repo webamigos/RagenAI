@@ -10,7 +10,8 @@
     "register": "Sign Up",
     "log-in": "log in",
     "or": "or",
-    "to-still-use": "to continue using the service"
+    "to-still-use": "to continue using the service",
+    "start-tour": "Start tour"
   },
   "sign-up": {
     "create-account": "Create your account",
@@ -251,5 +252,22 @@
     "api-key-error": "The API key configuration is missing - please check your settings",
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
     "llm-api-error": "The language model API request failed"
+  },
+  "joyride": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Wstecz",
+    "finish": "Finish"
+  },
+  "onboarding": {
+    "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",
+    "second-step": "To use the assistant and allow others access to documents, you must belong to an 'organization'. This is the first important step.",
+    "third-step": "In the organization registration form, you’ll find three fields, with only the organization name being required.",
+    "fourth-step": "Once the form is completed, you can confirm the organization setup to proceed.",
+    "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let’s go to the assistant management section.",
+    "sixth-step": "In this section, you have the option to customize your assistant to suit your needs. For now, fill in only the 'OpenAI API Key' field to activate the assistant.",
+    "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
+    "eighth-step": "If you do not have epub or markdown documents, use the editor to create a document adapted to the assistant or paste prepared content.",
+    "ninth-step": "If you have files in the previously mentioned formats, you can simply upload them from your device."
   }
 }
