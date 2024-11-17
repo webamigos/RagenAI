@@ -16,9 +16,11 @@ import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
+import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
+
 type Props = {
   children: React.ReactNode;
   membership?: OrganizationRoles;
@@ -36,7 +38,6 @@ export const Sidebar = ({ children, membership }: Props) => {
     userThreads,
     activeThread,
     handleThread,
-    showOnboarding,
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
@@ -82,30 +83,19 @@ export const Sidebar = ({ children, membership }: Props) => {
                   />
                 )
               ) : (
-                <UserThreadsHistory
-                  error={error}
-                  hasMore={hasMore}
-                  isLoading={isLoading}
-                  isSignedIn={isSignedIn}
-                  userThreads={userThreads}
-                  activeThread={activeThread}
-                  isThreadsLoaded={isThreadsLoaded}
-                  handleThreadClick={handleThreadClick}
-                />
-              )
-            ) : (
-              <ProfileAndOrganizationTabs membership={membership} />
-            )}
-          </SidebarBody>
-          <Footer
-            userAvatar={userAvatar}
-            isSignedIn={isSignedIn}
-            userEmail={userEmail}
-          />
-        </div>
-      }
-    >
-      {children}
-    </SidebarLayout>
+                <ProfileAndOrganizationTabs membership={membership} />
+              )}
+            </SidebarBody>
+            <Footer
+              userAvatar={userAvatar}
+              isSignedIn={isSignedIn}
+              userEmail={userEmail}
+            />
+          </div>
+        }
+      >
+        {children}
+      </SidebarLayout>
+    </SidebarProvider>
   );
 };
