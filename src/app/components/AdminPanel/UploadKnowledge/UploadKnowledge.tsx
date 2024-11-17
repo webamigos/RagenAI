@@ -2,14 +2,9 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@clerk/nextjs';
 
-import {
-  Card,
-  FileUploader,
-  ArrowRightCircleIcon,
-  classMerge,
-} from '@salesyy/common-ui';
+import { Card, FileUploader, Button } from '@salesyy/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
@@ -24,7 +19,6 @@ export const UploadKnowledge = () => {
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('admin-panel');
   const { organization } = useOrganization();
-  const { user } = useUser();
 
   if (!organization) {
     return;
@@ -72,8 +66,6 @@ export const UploadKnowledge = () => {
     }
   };
 
-  const disabledClasses = 'cursor-not-allowed text-gray-300';
-
   return (
     <Card className="p-6" size="full" title={t('Add-files')}>
       <FileUploader onFilesAdded={handleFilesAdded} disabled={uploading} />
@@ -84,18 +76,13 @@ export const UploadKnowledge = () => {
           uploading={uploading}
         />
       )}
-      <button
-        className={classMerge(
-          'mt-2 rounded-full cursor-pointer',
-          uploading || files.length < 1 ? disabledClasses : ''
-        )}
-        onClick={handleSend}
+      <Button
         disabled={uploading || files.length < 1}
-      >
-        <ArrowRightCircleIcon
-          className={`-ml-1 fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1`}
-        />
-      </button>
+        className="mt-5"
+        isSubmit
+        onClick={handleSend}
+        label={t('send')}
+      />
     </Card>
   );
 };

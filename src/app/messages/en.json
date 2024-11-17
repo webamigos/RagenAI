@@ -172,7 +172,8 @@
     "title-error": "Title is required",
     "content-error": "Content is required",
     "created-successful": "Document created",
-    "send-error": "Error creating document"
+    "send-error": "Error creating document",
+    "send": "Send"
   },
   "sidebar": {
     "profile": "Profile",

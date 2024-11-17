@@ -12,18 +12,17 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 import {
   Card,
-  ArrowRightCircleIcon,
   Input,
   Tabs,
   TabList,
   Tab,
   TabPanel,
   WysiwygEditor,
+  Button,
 } from '@salesyy/common-ui';
 import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
-import { saveMarkdownWithMeta } from './action';
 import { logger } from '@/app/lib/utils/logger';
 
 const schema = z.object({
@@ -40,6 +39,7 @@ export type DocumentSchema = z.infer<typeof schema>;
 
 export const DocumentCreator = () => {
   const [activeTab, setActiveTab] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const t = useTranslations('create-document');
   const { successToast, errorToast } = statusToast();
@@ -70,6 +70,8 @@ export const DocumentCreator = () => {
 
   const onSubmit = async (data: DocumentSchema) => {
     if (!organization) return;
+    setIsLoading(true);
+
     try {
       const organizationId = organization.id.toLowerCase();
       const markdownContent = turndownService.turndown(editorContent);
@@ -101,6 +103,8 @@ export const DocumentCreator = () => {
     } catch (error) {
       logger.error('Error creating document: %o', error);
       errorToast({ message: t('send-error') });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -144,9 +148,9 @@ export const DocumentCreator = () => {
             </div>
           </TabPanel>
         </Tabs>
-        <button type="submit" className="rounded-full cursor-pointer">
-          <ArrowRightCircleIcon className="ml-3 fill-accent-dark-400 hover:fill-gray-100 dark:hover:fill-accent-dark-300 stroke-1" />
-        </button>
+        <div>
+          <Button label={t('send')} isSubmit isLoading={isLoading} />
+        </div>
       </form>
     </Card>
   );
