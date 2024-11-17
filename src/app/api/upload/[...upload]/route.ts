@@ -12,6 +12,7 @@ import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
+import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -55,12 +56,16 @@ export async function POST(request: NextRequest, { params }: Params) {
 
       try {
         const uniqueFileId = uuidv4();
-        const { message, success } = await convertAndStoreDocument(
-          content,
-          file.name,
-          organizationId,
-          uniqueFileId
+        const defaultProjectId = await fetchOrganizationDefaultProjectId(
+          organizationId
         );
+        const { message, success } = await convertAndStoreDocument({
+          fileContent: content,
+          fileName: file.name,
+          organizationId,
+          fileId: uniqueFileId,
+          projectId: defaultProjectId,
+        });
 
         await createDocumentDetailsInDB(
           file.name,
@@ -80,8 +85,8 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         if (!success) {
           logger.error(
-            `Błąd podczas przetwarzania pliku ${file.name}:%o`,
-            message
+            { err: message },
+            `Błąd podczas przetwarzania pliku ${file.name}`
           );
           return NextResponse.json({ message }, { status: 500 });
         }
