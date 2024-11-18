@@ -1,12 +1,14 @@
 'use client';
 
 import React, { createContext, useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@clerk/nextjs';
+
 import { fetchSettings } from '../app/components/MyProfile/ChatInstanceSettings/actions';
 
 export type SettingsContextType = {
   hasApiKey: boolean;
   BelongsToOrganization: boolean;
+  hasKnowledge: boolean;
   refreshSettings: () => Promise<void>;
 };
 
@@ -22,7 +24,11 @@ export const SettingsProvider = ({
   const [hasApiKey, setHasApiKey] = useState(false);
 
   const { user } = useUser();
+  const { organization } = useOrganization();
   const BelongsToOrganization = user?.organizationMemberships.length! > 0;
+
+  const organizationPublicMetadata = organization?.publicMetadata;
+  const hasKnowledge = organizationPublicMetadata?.hasKnowledge as boolean;
 
   const refreshSettings = async () => {
     const response = await fetchSettings();
@@ -37,7 +43,12 @@ export const SettingsProvider = ({
 
   return (
     <SettingsContext.Provider
-      value={{ hasApiKey, BelongsToOrganization, refreshSettings }}
+      value={{
+        hasApiKey,
+        BelongsToOrganization,
+        hasKnowledge,
+        refreshSettings,
+      }}
     >
       {children}
     </SettingsContext.Provider>

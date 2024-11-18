@@ -17,9 +17,10 @@ export const Start = () => {
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
-  const { hasApiKey } = useSettings();
+  const { hasApiKey, BelongsToOrganization, hasKnowledge } = useSettings();
 
-  const shouldShowValidationBoard = !showOnboarding && !hasApiKey;
+  const shouldShowValidationBoard =
+    !showOnboarding && (!hasApiKey || !hasKnowledge || !BelongsToOrganization);
 
   return (
     <div className="container mx-auto h-full">

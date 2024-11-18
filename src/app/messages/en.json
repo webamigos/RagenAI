@@ -275,6 +275,8 @@
     "organization-setup": "Organization is set up",
     "no-organization": "Organization is missing",
     "api-key-configured": "API Key is configured",
-    "no-api-key": "API Key is missing"
+    "no-api-key": "API Key is missing",
+    "no-knowledge": "No knowledge",
+    "knowledge-uploaded": "The files have been uploaded"
   }
 }

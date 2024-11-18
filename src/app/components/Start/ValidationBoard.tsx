@@ -4,7 +4,7 @@ import { Card, Text, SidebarItem, CheckIcon, Link } from '@salesyy/common-ui';
 import { useSettings } from '@/app/hooks/useSettings';
 
 export const ValidationBoard = () => {
-  const { hasApiKey, BelongsToOrganization } = useSettings();
+  const { hasApiKey, BelongsToOrganization, hasKnowledge } = useSettings();
   const t = useTranslations('setup-board');
 
   return (
@@ -36,12 +36,16 @@ export const ValidationBoard = () => {
           </Text>
         </SidebarItem>
       </Link>
-      <SidebarItem disabled={!hasApiKey}>
-        <CheckIcon className={hasApiKey ? 'text-green-600' : 'text-gray-400'} />
-        <Text>
-          {hasApiKey ? 'API Key is configured' : 'API Key is missing'}
-        </Text>
-      </SidebarItem>
+      <Link href={!hasApiKey ? '' : '/manage-knowledge'}>
+        <SidebarItem disabled={!hasApiKey}>
+          <CheckIcon
+            className={hasKnowledge ? 'text-green-600' : 'text-gray-400'}
+          />
+          <Text>
+            {hasKnowledge ? t('knowledge-uploaded') : t('no-knowledge')}
+          </Text>
+        </SidebarItem>
+      </Link>
     </Card>
   );
 };

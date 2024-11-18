@@ -275,6 +275,8 @@
     "organization-setup": "Organizacja skonfigurowana",
     "no-organization": "Brak organizacji",
     "api-key-configured": "Podano klucz API",
-    "no-api-key": "Brak klucza API"
+    "no-api-key": "Brak klucza API",
+    "no-knowledge": "Brak wiedzy",
+    "knowledge-uploaded": "Pliki zostały przesłane"
   }
 }
