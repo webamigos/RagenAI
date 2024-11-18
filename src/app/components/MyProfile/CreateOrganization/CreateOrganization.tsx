@@ -1,7 +1,6 @@
 'use client';
 import { dark, experimental__simple } from '@clerk/themes';
 import { useTheme } from 'next-themes';
-
 import { CreateOrganization } from '@clerk/nextjs';
 
 export const CreateOrganizationComponent = () => {

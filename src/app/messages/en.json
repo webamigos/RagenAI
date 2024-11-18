@@ -269,5 +269,12 @@
     "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
     "eighth-step": "If you do not have epub or markdown documents, use the editor to create a document adapted to the assistant or paste prepared content.",
     "ninth-step": "If you have files in the previously mentioned formats, you can simply upload them from your device."
+  },
+  "setup-board": {
+    "title": "Set-up checklist",
+    "organization-setup": "Organization is set up",
+    "no-organization": "Organization is missing",
+    "api-key-configured": "API Key is configured",
+    "no-api-key": "API Key is missing"
   }
 }

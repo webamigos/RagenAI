@@ -1,25 +1,33 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@clerk/nextjs';
 import { Alert, Button } from '@salesyy/common-ui';
+import { useTranslations } from 'next-intl';
+
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
+import { useSettings } from '@/app/hooks/useSettings';
+
 import { OnboardingSteps } from './OnboardingSteps';
+import { ValidationBoard } from './ValidationBoard';
 
 export const Start = () => {
   const { isSignedIn } = useUser();
-
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
+  const { hasApiKey } = useSettings();
+
+  const shouldShowValidationBoard = !showOnboarding && !hasApiKey;
 
   return (
     <div className="container mx-auto h-full">
       <div className="flex flex-col h-full items-center justify-center">
         <OnboardingSteps />
-        {!isPending && showOnboarding ? (
+        {shouldShowValidationBoard ? (
+          <ValidationBoard />
+        ) : !isPending && showOnboarding ? (
           <Button
             label={t('start-tour')}
             onClick={runJoyride}
