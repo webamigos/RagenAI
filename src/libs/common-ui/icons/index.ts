@@ -38,3 +38,4 @@ export { ArrowIcon } from './ArrowIcon';
 export { XCircle } from './XCircle';
 export { InformationCircle } from './InformationCircle';
 export { KeyIcon } from './KeyIcon';
+export { ClourArrowIcon } from './CloudArrowIcon';

@@ -8,6 +8,11 @@ import {
   createDocumentDetailsInDB,
   createMarkdownDocument,
 } from '../../../lib/services/document';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -20,9 +25,11 @@ export async function POST(request: NextRequest, { params }: Params) {
   const uploaderId = params.upload[0];
 
   try {
+    setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = formData.get('organizationId') as string;
+    setSentryClerkOrganizationTag(organizationId);
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -49,12 +56,16 @@ export async function POST(request: NextRequest, { params }: Params) {
 
       try {
         const uniqueFileId = uuidv4();
-        const { message, success } = await convertAndStoreDocument(
-          content,
-          file.name,
-          organizationId,
-          uniqueFileId
+        const defaultProjectId = await fetchOrganizationDefaultProjectId(
+          organizationId
         );
+        const { message, success } = await convertAndStoreDocument({
+          fileContent: content,
+          fileName: file.name,
+          organizationId,
+          fileId: uniqueFileId,
+          projectId: defaultProjectId,
+        });
 
         await createDocumentDetailsInDB(
           file.name,
@@ -74,8 +85,8 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         if (!success) {
           logger.error(
-            `Błąd podczas przetwarzania pliku ${file.name}:%o`,
-            message
+            { err: message },
+            `Błąd podczas przetwarzania pliku ${file.name}`
           );
           return NextResponse.json({ message }, { status: 500 });
         }
@@ -87,7 +98,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           content,
         });
       } catch (error) {
-        logger.error(`Błąd podczas przetwarzania pliku ${file.name}:`, error);
+        logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
           { message: `Błąd podczas przetwarzania pliku ${file.name}` },
           { status: 500 }
@@ -101,7 +112,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       files: processedFiles,
     });
   } catch (error) {
-    logger.error('Błąd podczas przetwarzania plików:', error);
+    logger.error({ err: error }, 'Error processing files');
     return NextResponse.json(
       {
         message:

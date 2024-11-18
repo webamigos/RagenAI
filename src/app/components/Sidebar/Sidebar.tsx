@@ -68,9 +68,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                 error ? (
                   <div className="flex flex-col items-center text-start">
                     <Text color="red-500">{error}</Text>
-                    <Button isError={isError} onClick={refetchThreads}>
-                      <ArrowPath />
-                    </Button>
+                    <Button isError={isError} onClick={refetchThreads} />
                   </div>
                 ) : (
                   <UserThreadsHistory

@@ -1,6 +1,7 @@
-import db from '@salesyy/prisma-client';
+import { setSentryServiceTag } from './sentry';
+import { logger } from '../utils/logger';
 
-import { openAIInstance } from './config';
+const serviceName = 'moderation';
 
 type OpenAIModerationResponse = {
   id: string;
@@ -47,6 +48,7 @@ export const sendForModeration = async (
   input: string
 ): Promise<ModerationResponse> => {
   try {
+    setSentryServiceTag(serviceName);
     // TODO: uncomment
     return { isFlagged: false };
 
@@ -74,6 +76,7 @@ export const sendForModeration = async (
 
     // return { isFlagged };
   } catch (_error) {
+    logger.error({ err: _error }, 'Fail to check moderation');
     // console.log()
     // console.error('Moderation error: ', _error);
     throw new Error('Fail to check moderation');

@@ -15,6 +15,13 @@ import {
 } from '@/app/lib/services/settings';
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
+import {
+  setSentryClerkContext,
+  setSentryContext,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+
+const serviceName = 'ChatInstanceSettings';
 
 type SaveSettingsActionResponse = { success: boolean; message: string };
 
@@ -39,7 +46,7 @@ const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
 ////
 
 export const fetchSettings = async (): Promise<ActionResponse> => {
-  const { orgId } = auth();
+  const { orgId, userId, sessionId } = auth();
 
   if (!orgId) {
     return {
@@ -47,6 +54,9 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
       message: 'Unauthorized',
     };
   }
+
+  setSentryServiceTag(serviceName);
+  setSentryClerkContext({ orgId, userId, sessionId });
 
   try {
     const apiKey = await getOpenaiAPIKey(orgId);
@@ -64,7 +74,7 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
       data: { apiKey, temperature, model, prompt, maxDocumentsToRetrieve },
     };
   } catch (error) {
-    logger.error('Failed to fetch settings:', error);
+    logger.error({ err: error }, 'Failed to fetch settings');
     return { success: false, message: 'Failed to fetch settings' };
   }
 };
@@ -73,11 +83,15 @@ export const saveSetting = async (
   type: SettingsType,
   value: string | number
 ): Promise<SaveSettingsActionResponse> => {
-  const { orgId } = auth();
+  const { orgId, userId, sessionId } = auth();
 
   if (!orgId) {
     return { success: false, message: 'Unauthorized' };
   }
+
+  setSentryServiceTag(serviceName);
+  setSentryClerkContext({ orgId, userId, sessionId });
+  setSentryContext('EXTRA_DATA', { type });
 
   try {
     switch (type) {
@@ -114,7 +128,7 @@ export const saveSetting = async (
         return { success: false, message: 'Unknown setting type' };
     }
   } catch (error) {
-    logger.error(`Failed to save ${type}:`, error);
+    logger.error({ err: error }, `Failed to save ${type}`);
     return { success: false, message: `Failed to save ${type}` };
   }
 };

@@ -96,7 +96,7 @@ export const EditablePrompt = () => {
         <Button
           type="submit"
           label={`${t('update')}`}
-          className="px-4 py-2 bg-primary-blue-500 dark:bg-accent-dark-500 text-white hover:bg-blue-600 dark:hover:bg-accent-dark-700"
+          className="px-4 py-2 bg-primary-blue-400 dark:bg-accent-dark-500 text-white hover:bg-primary-blue-500 dark:hover:bg-accent-dark-700"
         />
       </form>
     </Card>

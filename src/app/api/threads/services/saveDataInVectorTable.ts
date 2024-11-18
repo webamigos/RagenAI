@@ -15,6 +15,14 @@ import {
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
 import { getOpenaiAPIKey } from '@/app/lib/services/settings';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryContext,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+import { logger } from '@/app/lib/utils/logger';
+
+const serviceName = 'saveDataInVectorTable';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -22,11 +30,31 @@ type ConvertAndStoreResult = {
   error?: Error;
 };
 
+type ConvertAndStoreDocumentParams = {
+  fileContent: string | Buffer;
+  fileName: string;
+  organizationId: string;
+  fileId: string;
+  projectId: number | null;
+};
+
+const CHUNK_SETTINGS = {
+  markdown: {
+    chunkSize: 800,
+    chunkOverlap: 200,
+  },
+  epub: {
+    chunkSize: 1500,
+    chunkOverlap: 250,
+  },
+} as const;
+
 const saveBinaryToTempFile = async (content: string | Buffer) => {
   const projectDir = process.cwd();
   const filePath = path.join(projectDir, `temp-${Date.now()}.epub`);
 
   try {
+    setSentryServiceTag(serviceName);
     const data = content instanceof Buffer ? new Uint8Array(content) : content;
     await fs.promises.writeFile(filePath, data);
     await fs.promises
@@ -38,6 +66,7 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
       filePath,
     };
   } catch (error) {
+    logger.error({ err: error }, 'Error saving binary to temp file');
     if (error) {
       return {
         success: false,
@@ -48,13 +77,21 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
   }
 };
 
-export const convertAndStoreDocument = async (
-  fileContent: string | Buffer,
-  fileName: string,
-  organizationId: string,
-  fileId: string
-): Promise<ConvertAndStoreResult> => {
+export const convertAndStoreDocument = async ({
+  fileContent,
+  fileName,
+  organizationId,
+  fileId,
+  projectId,
+}: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(organizationId);
+    setSentryContext('EXTRA_DATA', {
+      fileName,
+      fileId,
+    });
+
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }
@@ -75,6 +112,7 @@ export const convertAndStoreDocument = async (
           const load = new EPubLoader(filePath);
           rawDocs = await load.load();
         } catch (error) {
+          logger.error({ err: error }, 'Error loading EPub file');
           return {
             success: false,
             message: `File is not accessible at: ${filePath}`,
@@ -101,14 +139,14 @@ export const convertAndStoreDocument = async (
       }
     }
     const textSplitterEPub = new RecursiveCharacterTextSplitter({
-      chunkSize: 1500,
-      chunkOverlap: 250,
+      chunkSize: CHUNK_SETTINGS.epub.chunkSize,
+      chunkOverlap: CHUNK_SETTINGS.epub.chunkOverlap,
       keepSeparator: true,
     });
 
     const textSplitter = new MarkdownTextSplitter({
-      chunkSize: 800,
-      chunkOverlap: 200,
+      chunkSize: CHUNK_SETTINGS.markdown.chunkSize,
+      chunkOverlap: CHUNK_SETTINGS.markdown.chunkOverlap,
       keepSeparator: true,
     });
 
@@ -120,6 +158,13 @@ export const convertAndStoreDocument = async (
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
 
+        const fileExtension =
+          path.extname(fileName).toLowerCase()?.slice(1) || '';
+        const isMarkdown = fileExtension === 'md';
+        const chunkSettings = isMarkdown
+          ? CHUNK_SETTINGS.markdown
+          : CHUNK_SETTINGS.epub;
+
         const metadata: VectorStoreDocumentMetadata = {
           file_name: fileName,
           page_number: index + 1,
@@ -127,6 +172,16 @@ export const convertAndStoreDocument = async (
           id: index,
           organization_id: organizationId.toLowerCase(),
           file_id: fileId,
+          project_id: projectId,
+          source_type: fileExtension,
+          chunk_size: chunkSettings.chunkSize,
+          chunk_overlap: chunkSettings.chunkOverlap,
+          total_chunks: docs.length,
+          word_count: text.split(/\s+/).length,
+          previous_chunk_id: index > 0 ? index - 1 : -1,
+          next_chunk_id: index < docs.length - 1 ? index + 1 : -1,
+          status: 'active',
+          embedding_model: embeddingModel.modelName,
         };
 
         const [embedding] = await embeddingModel.embedDocuments([text]);
@@ -158,6 +213,7 @@ export const convertAndStoreDocument = async (
       message: 'Document processed and stored successfully!',
     };
   } catch (error) {
+    logger.error({ err: error }, 'Error processing document');
     return {
       success: false,
       message: `Error processing document: ${error}`,
