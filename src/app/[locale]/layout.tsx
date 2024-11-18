@@ -12,6 +12,7 @@ import { locales, timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
+import { SettingsProvider } from '@/context/AssistantSettingsContext';
 const JoyrideProvider = dynamic(
   () =>
     import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
@@ -46,7 +47,9 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
             <ThreadsContextProvider>
               <Providers>
                 <SidebarProvider>
-                  <JoyrideProvider>{children}</JoyrideProvider>
+                  <SettingsProvider>
+                    <JoyrideProvider>{children}</JoyrideProvider>
+                  </SettingsProvider>
                 </SidebarProvider>
               </Providers>
             </ThreadsContextProvider>
