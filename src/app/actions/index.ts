@@ -200,6 +200,18 @@ export const saveUserMetadata = async (
   }
 };
 
+// save data to clerk organization profile
+export const SaveOrganizationPublicMetadata = async (
+  organizationId: string,
+  hasKnowledge: boolean
+) => {
+  clerkClient().organizations.updateOrganizationMetadata(organizationId, {
+    publicMetadata: {
+      hasKnowledge,
+    },
+  });
+};
+
 //send answer rate to assistant
 export const rateMessage = async (
   messageId: string,
