@@ -79,7 +79,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           await createMarkdownDocument({
             public_id: uniqueFileId,
             title: file.name,
-            organization_id: organizationId.toLowerCase(),
+            organization_id: organizationId,
             content: content as string,
           });
         }
