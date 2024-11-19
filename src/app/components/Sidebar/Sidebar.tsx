@@ -41,11 +41,10 @@ export const Sidebar = ({ children, membership }: Props) => {
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
-    getSidebarThreadsError,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
-  const t = useTranslations('sidebar');
+  const t = useTranslations('chat');
 
   return (
     <SidebarProvider>
@@ -68,7 +67,7 @@ export const Sidebar = ({ children, membership }: Props) => {
               {pathname === `/${locale}` || pathname.includes('threads') ? (
                 error ? (
                   <div className="flex flex-col items-center text-start">
-                    <Text color="red-500">{getSidebarThreadsError(error)}</Text>
+                    <Text color="red-500">{error}</Text>
                     <Button isError={isError} onClick={refetchThreads} />
                   </div>
                 ) : (

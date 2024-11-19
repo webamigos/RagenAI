@@ -13,14 +13,9 @@ import { useUser } from '@clerk/nextjs';
 import type { ThreadHistoryResponse } from '../app/contracts/Message';
 import { getUserMessages } from '../app/actions';
 
-type ErrorState = {
-  status: number | null;
-  message: string | null;
-};
-
 type State = {
   userThreads: ThreadHistoryResponse[];
-  error: ErrorState | null;
+  error: string | null;
   isLoading: boolean;
   skip: number;
   hasMore: boolean;
@@ -29,7 +24,7 @@ type State = {
 type Action =
   | { type: 'LOADING' }
   | { type: 'USER_THREADS'; payload: ThreadHistoryResponse[] }
-  | { type: 'ERROR'; payload: ErrorState }
+  | { type: 'ERROR'; payload: string }
   | { type: 'ADD_THREADS'; payload: ThreadHistoryResponse[] }
   | { type: 'ADD_THREAD'; payload: ThreadHistoryResponse }
   | { type: 'SET_HAS_MORE'; payload: boolean }
@@ -139,22 +134,10 @@ export const ThreadsContextProvider = ({
           dispatch({ type: 'SET_HAS_MORE', payload: false });
         }
       } else {
-        dispatch({
-          type: 'ERROR',
-          payload: {
-            status,
-            message: error || 'Unknown error',
-          },
-        });
+        dispatch({ type: 'ERROR', payload: error || 'Unknown error' });
       }
     } catch (err) {
-      dispatch({
-        type: 'ERROR',
-        payload: {
-          status: 500,
-          message: err?.toString() || 'Unknown error',
-        },
-      });
+      dispatch({ type: 'ERROR', payload: err?.toString() || 'Unknown error' });
     }
   }, [state.isLoading, state.hasMore, visitorId]);
 
