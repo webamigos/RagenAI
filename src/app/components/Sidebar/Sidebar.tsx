@@ -5,7 +5,6 @@ import {
   SidebarLayout,
   Navbar,
   Text,
-  ArrowPath,
   Button,
   SidebarItem,
 } from '@salesyy/common-ui';
@@ -16,7 +15,6 @@ import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
-import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
@@ -41,10 +39,11 @@ export const Sidebar = ({ children, membership }: Props) => {
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
+    getSidebarThreadsError,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
-  const t = useTranslations('chat');
+  const t = useTranslations('sidebar');
 
   return (
     <SidebarLayout
@@ -66,7 +65,7 @@ export const Sidebar = ({ children, membership }: Props) => {
             {pathname === `/${locale}` || pathname.includes('threads') ? (
               error ? (
                 <div className="flex flex-col items-center text-start">
-                  <Text color="red-500">{error}</Text>
+                  <Text color="red-500">{getSidebarThreadsError(error)}</Text>
                   <Button isError={isError} onClick={refetchThreads} />
                 </div>
               ) : (
