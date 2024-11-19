@@ -37,7 +37,7 @@ export const ValidationBoard = () => {
         </SidebarItem>
       </Link>
       <Link href={!hasApiKey ? '' : '/manage-knowledge'}>
-        <SidebarItem disabled={!hasApiKey}>
+        <SidebarItem hasIcon disabled={!hasApiKey}>
           <CheckIcon
             className={hasKnowledge ? 'text-green-600' : 'text-gray-400'}
           />

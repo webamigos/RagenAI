@@ -33,7 +33,8 @@ export const SettingsProvider = ({
   const refreshSettings = async () => {
     const response = await fetchSettings();
     if (response.success) {
-      setHasApiKey(!!response.data.apiKey);
+      const newApiKeyState = !!response.data.apiKey;
+      setHasApiKey(newApiKeyState);
     }
   };
 
