@@ -12,13 +12,18 @@ import { locales, timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
-const JoyrideProvider = dynamic(
+
+const JoyrideProvider = dynamic<JoyrideProviderProps>(
   () =>
     import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
   {
     ssr: false,
   }
 );
+
+type JoyrideProviderProps = {
+  children: React.ReactNode;
+};
 
 type Props = {
   children: React.ReactNode;
