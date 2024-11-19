@@ -184,7 +184,20 @@
     "manage-knowledge": "Zarządzaj wiedzą",
     "organization-list": "Lista organizacji",
     "assistant-management": "Zarządzanie asystentem",
-    "api-keys": "Klucze API"
+    "api-keys": "Klucze API",
+    "create-new-thread": "Załóż nowy wątek",
+    "threads-categories": {
+      "today": "Dzisiaj",
+      "yesterday": "Wczoraj",
+      "older": "Starsze niż 2 dni"
+    },
+    "errors": {
+      "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
+      "database-connection": "Nie można połączyć się z bazą danych. Spróbuj ponownie później.",
+      "fetch-failed": "Nie udało się pobrać danych. Sprawdź swoje połączenie internetowe i spróbuj ponownie.",
+      "missing-permissions": "Brak wymaganych uprawnień do wykonania tej operacji.",
+      "unknown": "Nieznany błąd. Skontaktuj się z administratorem."
+    }
   },
   "files-table": {
     "delete": "Usuń",
