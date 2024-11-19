@@ -1,17 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { useLocale, useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
-
-type SidebarThreadsFetchError = {
-  status: number | null;
-  message: string | null;
-};
 
 export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
@@ -27,7 +22,6 @@ export const useSidebarLogic = () => {
   const { handleNewThread } = useNewThread();
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
-  const t = useTranslations('sidebar');
 
   const handleThread = () => {
     handleNewThread();
@@ -38,24 +32,6 @@ export const useSidebarLogic = () => {
     router.push(`/threads/${threadId}`);
     setActiveThread(threadId);
   };
-
-  function getSidebarThreadsError(error: SidebarThreadsFetchError): string {
-    switch (error.status) {
-      case 400:
-        if (error.message?.includes('prisma')) {
-          return t('errors.database-connection');
-        }
-        return t('errors.general');
-      case 401:
-        return t('errors.missing-permissions');
-      case 404:
-        return t('errors.fetch-failed');
-      case 500:
-        return t('errors.unknown');
-      default:
-        return t('errors.unknown');
-    }
-  }
 
   useEffect(() => {
     const parts = pathname.split('/');
@@ -84,6 +60,5 @@ export const useSidebarLogic = () => {
     refetchThreads,
     isThreadsLoaded,
     handleThreadClick,
-    getSidebarThreadsError,
   };
 };
