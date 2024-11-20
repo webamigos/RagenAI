@@ -240,10 +240,19 @@
     "created-by": "Stworzony przez",
     "create": "Stwórz",
     "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "copy": "Kopiuj",
+    "done": "Gotowe",
     "dialog": {
+      "cancel": "Anuluj",
+      "confirm": "Potwierdź",
       "remove-key": {
         "title": "Usuń klucz API",
         "description": "Ta operacja jest nieodwracalna. Czy na pewno usunąć ten klucz?"
+      },
+      "api-key-generated": {
+        "copied": "Skopiowano klucz API!",
+        "title": "Zapisz swój klucz API",
+        "description": "Zapisz ten klucz w bezpiecznym miejscu. Ze względów bezpieczeństwa nie będziesz mógł go ponownie wyświetlić. Jeśli zgubisz ten klucz, będziesz musiał wygenerować nowy."
       }
     }
   },
