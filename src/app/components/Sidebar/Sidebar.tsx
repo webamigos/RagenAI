@@ -3,9 +3,7 @@
 import {
   SidebarBody,
   SidebarLayout,
-  Navbar,
   Text,
-  ArrowPath,
   Button,
   SidebarItem,
 } from '@salesyy/common-ui';
@@ -16,10 +14,10 @@ import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
 import { Footer } from './Footer';
-import { SidebarProvider } from '@/context/SidebarContext';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { DesktopNavbar } from './DesktopNavbar';
 
 type Props = {
   children: React.ReactNode;
@@ -48,7 +46,7 @@ export const Sidebar = ({ children, membership }: Props) => {
 
   return (
     <SidebarLayout
-      navbar={<Navbar />}
+      navbar={<DesktopNavbar userEmail={userEmail} userAvatar={userAvatar} />}
       sidebar={
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
@@ -85,11 +83,7 @@ export const Sidebar = ({ children, membership }: Props) => {
               <ProfileAndOrganizationTabs membership={membership} />
             )}
           </SidebarBody>
-          <Footer
-            userAvatar={userAvatar}
-            isSignedIn={isSignedIn}
-            userEmail={userEmail}
-          />
+          <Footer />
         </div>
       }
     >

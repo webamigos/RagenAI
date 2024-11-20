@@ -28,17 +28,25 @@ export const ThemeSwitcher = ({ className }: Props) => {
 
   const icon =
     resolvedTheme === 'light' ? (
-      <MoonIcon
-        className="h-5 w-5 flex-none cursor-pointer"
-        aria-hidden="true"
+      <button
         onClick={() => handleClick('dark')}
-      />
+        className="rounded-full border p-2.5 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
+      >
+        <MoonIcon
+          className="h-5 w-5 flex-none cursor-pointer"
+          aria-hidden="true"
+        />
+      </button>
     ) : (
-      <SunIcon
-        className="h-5 w-5 flex-none text-gray-400 cursor-pointer"
-        aria-hidden="true"
+      <button
         onClick={() => handleClick('light')}
-      />
+        className="rounded-full border p-2.5 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
+      >
+        <SunIcon
+          className="h-5 w-5 flex-none text-gray-400 cursor-pointer"
+          aria-hidden="true"
+        />
+      </button>
     );
 
   return (

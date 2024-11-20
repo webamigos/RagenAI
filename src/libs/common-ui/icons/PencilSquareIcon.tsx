@@ -13,7 +13,7 @@ export const PencilSquareIcon = ({
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={classMerge(className, 'w-4 h-5')}
+      className={classMerge('w-4 h-5', className)}
       {...rest}
     >
       <path
