@@ -36,7 +36,7 @@ export const ApiKeyModal = ({ isOpen, apiKey, onClose }: Props) => {
       <DialogTitle>{t('dialog.api-key-generated.title')}</DialogTitle>
       <DialogBody>
         <div className="space-y-4 w-full">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-200">
             {t('dialog.api-key-generated.description')}
           </p>
           <div className="flex items-end gap-2">
@@ -54,7 +54,7 @@ export const ApiKeyModal = ({ isOpen, apiKey, onClose }: Props) => {
       <DialogActions>
         <button
           onClick={onClose}
-          className="bg-transparent text-primary-blue-500 shadow-none border-primary-blue-500 pr-2"
+          className="bg-transparent text-primary shadow-none pr-2"
         >
           {t('done')}
         </button>
