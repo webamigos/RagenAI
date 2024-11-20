@@ -33,3 +33,20 @@
   margin-left: 16px;
   list-style-type: decimal;
 }
+
+/* CODE WRAPPER/ */
+pre.hljs {
+  background-color: #282c34;
+  color: #abb2bf;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+code.hljs {
+  font-family: 'Fira Code', monospace;
+}
+/* CODE WRAPPER/ */
