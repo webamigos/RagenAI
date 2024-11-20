@@ -146,7 +146,7 @@ export const Input = forwardRef(
         </div>
         {error && !isLoading && (
           <Text
-            className="mt-2 text-sm text-red-600 dark:text-red-500"
+            className="text-sm text-red-600 dark:text-red-500"
             id="input-error"
           >
             {t(errorMessage ? errorMessage : error.message)}
@@ -154,7 +154,7 @@ export const Input = forwardRef(
         )}
         {hint && !isLoading && (
           <Text
-            className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+            className="text-sm text-gray-500 dark:text-gray-400"
             id="input-description"
           >
             {hint}

@@ -116,7 +116,7 @@ export const SetApiKeys = () => {
         {!isEditable ? (
           <button
             type="button"
-            className="ml-2 -mb-1"
+            className={`ml-2 ${errors.apiKey ? 'mb-4' : '-mb-1'}`}
             onClick={() => setIsEditable(true)}
             aria-label="Edit API Key"
           >
@@ -128,7 +128,7 @@ export const SetApiKeys = () => {
           <button
             type="button"
             onClick={() => handleSubmit(onSubmit)()}
-            className="ml-2 -mb-1"
+            className={`ml-2 ${errors.apiKey ? 'mb-4' : '-mb-1'}`}
           >
             <Tooltip id="save api key" content={t('save')}>
               <OpenLockIcon />
@@ -136,11 +136,15 @@ export const SetApiKeys = () => {
           </button>
         )}
         {isWarning && (
-          <span>
+          <button>
             <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
-              <WarningIcon className="-mb-1.5 ml-2 text-yellow-600 cursor-pointer" />
+              <WarningIcon
+                className={`ml-2 ${
+                  errors.apiKey ? 'mb-4' : '-mb-1'
+                } text-yellow-600`}
+              />
             </Tooltip>
-          </span>
+          </button>
         )}
       </div>
     </form>
