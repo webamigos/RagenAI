@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
+import db from '@salesyy/prisma-client';
 
 import { logger } from '../../../lib/utils/logger';
 import {
@@ -38,27 +39,25 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
-    const processedFiles = [];
+    const processedFiles: any = [];
 
-    for (const file of files) {
-      if (!file.size) {
-        return NextResponse.json(
-          { message: `Plik ${file.name} jest pusty` },
-          { status: 400 }
-        );
-      }
+    await db.$transaction(async (tx) => {
+      for (const file of files) {
+        if (!file.size) {
+          throw new Error(`Plik ${file.name} jest pusty`);
+        }
 
-      let content;
-      const arrayBuffer = await file.arrayBuffer();
-      content = file.name.endsWith('.epub')
-        ? Buffer.from(arrayBuffer)
-        : await file.text();
+        let content;
+        const arrayBuffer = await file.arrayBuffer();
+        content = file.name.endsWith('.epub')
+          ? Buffer.from(arrayBuffer)
+          : await file.text();
 
-      try {
         const uniqueFileId = uuidv4();
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
           organizationId
         );
+
         const { message, success } = await convertAndStoreDocument({
           fileContent: content,
           fileName: file.name,
@@ -66,6 +65,16 @@ export async function POST(request: NextRequest, { params }: Params) {
           fileId: uniqueFileId,
           projectId: defaultProjectId,
         });
+
+        if (!success) {
+          logger.error(
+            { err: message },
+            `Błąd podczas przetwarzania pliku ${file.name}`
+          );
+          throw new Error(
+            `Błąd podczas przetwarzania pliku ${file.name}: ${message}`
+          );
+        }
 
         await createDocumentDetailsInDB(
           file.name,
@@ -83,28 +92,14 @@ export async function POST(request: NextRequest, { params }: Params) {
           });
         }
 
-        if (!success) {
-          logger.error(
-            { err: message },
-            `Błąd podczas przetwarzania pliku ${file.name}`
-          );
-          return NextResponse.json({ message }, { status: 500 });
-        }
-
         processedFiles.push({
           fileName: file.name,
           fileSize: file.size,
           uniqueFileId,
           content,
         });
-      } catch (error) {
-        logger.error({ err: error }, `Error processing file ${file.name}`);
-        return NextResponse.json(
-          { message: `Błąd podczas przetwarzania pliku ${file.name}` },
-          { status: 500 }
-        );
       }
-    }
+    });
 
     return NextResponse.json({
       message: 'Pliki zostały przetworzone',
