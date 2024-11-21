@@ -56,8 +56,6 @@ const nextConfig = {
         ...config.resolve.alias,
         'msw/browser': false,
       };
-
-      config.ignoreWarnings = [{ module: /opentelemetry/ }];
     }
     return config;
   },
