@@ -27,7 +27,7 @@ export const AskQuestion = ({
     <Textarea
       value={value}
       onSend={onSend}
-      containerClassName="w-9/12 mt-3 md:w-10/12"
+      containerClassName="w-full mt-3"
       className="h-10 mb-4 mt-6 lg:mt-0 lg:-mb-0.5"
       errorMessage={t('provide-at-least-10-characters')}
       error={error}
