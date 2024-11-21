@@ -84,7 +84,7 @@ export const ChatOutput = ({
           </div>
         )}
 
-        {!isLoading && (
+        {isLoading && (
           <div className="absolute bottom-[84px] left-18 flex items-center justify-center pointer-events-none">
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
