@@ -1,10 +1,22 @@
 'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { dark, experimental__simple } from '@clerk/themes';
 import { useTheme } from 'next-themes';
 import { CreateOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@clerk/nextjs';
 
 export const CreateOrganizationComponent = () => {
   const { resolvedTheme } = useTheme();
+  const { organization } = useOrganization();
+  const { push } = useRouter();
+
+  useEffect(() => {
+    if (organization) {
+      push('/');
+    }
+  }, [organization]);
 
   return (
     <CreateOrganization
