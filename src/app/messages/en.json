@@ -184,20 +184,7 @@
     "manage-knowledge": "Manage knowledge",
     "organization-list": "Organization list",
     "assistant-management": "Assistant management",
-    "api-keys": "API Keys",
-    "create-new-thread": "Create a new thread",
-    "threads-categories": {
-      "today": "Today",
-      "yesterday": "Yesterday",
-      "older": "Older"
-    },
-    "errors": {
-      "general": "An unexpected error occurred. Please try again later.",
-      "database-connection": "Unable to connect to the database. Please try again later.",
-      "fetch-failed": "Failed to fetch data. Check your internet connection and try again.",
-      "missing-permissions": "You do not have the required permissions to perform this action.",
-      "unknown": "An unknown error occurred. Please contact support."
-    }
+    "api-keys": "API Keys"
   },
   "files-table": {
     "delete": "Delete",
