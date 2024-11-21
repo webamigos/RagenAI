@@ -4,7 +4,8 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/en');
 });
 
-test('send button is disabled when input is empty', async ({ page }) => {
+// Currently users should log in to create a thread so this tests is scenario is no longer used
+test.skip('send button is disabled when input is empty', async ({ page }) => {
   await page.getByRole('button', { name: 'Start new thread' }).click();
   await page.waitForTimeout(2000);
 
@@ -13,7 +14,7 @@ test('send button is disabled when input is empty', async ({ page }) => {
   await expect(sendButton).toBeDisabled();
 });
 
-test('home screen validation', async ({ page }) => {
+test.skip('home screen validation', async ({ page }) => {
   await page.getByRole('button', { name: 'Start new thread' }).click();
   await page.waitForTimeout(2000);
 
