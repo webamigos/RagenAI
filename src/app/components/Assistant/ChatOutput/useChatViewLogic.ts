@@ -1,5 +1,5 @@
 import { useUser } from '@clerk/nextjs';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
@@ -17,22 +17,24 @@ export const useChatViewLogic = (
   const userAvatar = user?.imageUrl;
   const t = useTranslations('chat');
 
-  const md = new MarkdownIt({
-    highlight: (code, lang) => {
-      let highlightedCode;
+  const md = useMemo(() => {
+    return new MarkdownIt({
+      highlight: (code, lang) => {
+        let highlightedCode;
 
-      if (lang && hljs.getLanguage(lang)) {
-        highlightedCode = hljs.highlight(code, { language: lang }).value;
-      } else {
-        highlightedCode = hljs.highlightAuto(code).value;
-      }
-      return `
-      <div class="code-wrapper">
-        <pre class="hljs"><code>${highlightedCode}</code></pre>
-      </div>
-    `;
-    },
-  });
+        if (lang && hljs.getLanguage(lang)) {
+          highlightedCode = hljs.highlight(code, { language: lang }).value;
+        } else {
+          highlightedCode = hljs.highlightAuto(code).value;
+        }
+        return `
+        <div class="code-wrapper">
+          <pre class="hljs"><code>${highlightedCode}</code></pre>
+        </div>
+      `;
+      },
+    });
+  }, []);
 
   useEffect(() => {
     if (streamedMessage) {
@@ -41,7 +43,7 @@ export const useChatViewLogic = (
       setRenderedStreamedMessage(rendered);
       setStreamedMessageRunId(runId);
     }
-  }, [streamedMessage]);
+  }, [streamedMessage, md]);
 
   return {
     t,
