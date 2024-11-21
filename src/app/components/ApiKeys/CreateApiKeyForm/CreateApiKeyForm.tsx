@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type SubmitHandler, useForm } from 'react-hook-form';
@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { validationSchema, type ApiKeyDto } from './types';
 import { createApiKey } from './actions';
+import { ApiKeyModal } from './ApiKeyModal';
 
 export const CreateApiKeyForm = () => {
   const [isPending, startTransition] = useTransition();
@@ -23,16 +24,23 @@ export const CreateApiKeyForm = () => {
   } = useForm<ApiKeyDto>({
     resolver: zodResolver(validationSchema(t)),
   });
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreateKey: SubmitHandler<ApiKeyDto> = async (data) => {
     const result = await createApiKey(data);
     if (result.success) {
-      // TODO: display key from backend in dialog
-      startTransition(() => router.push('/my-profile/api-keys'));
-      toast.success('Key was created');
+      setApiKey(result.payload.key);
+      setIsModalOpen(true);
     } else {
       toast.error(result.message);
     }
+  };
+
+  const handleModalClose = () => {
+    setApiKey(null);
+    setIsModalOpen(false);
+    startTransition(() => router.push('/my-profile/api-keys'));
   };
 
   return (
@@ -53,6 +61,11 @@ export const CreateApiKeyForm = () => {
           </div>
         </form>
       </div>
+      <ApiKeyModal
+        isOpen={isModalOpen}
+        apiKey={apiKey || ''}
+        onClose={handleModalClose}
+      />
     </div>
   );
 };

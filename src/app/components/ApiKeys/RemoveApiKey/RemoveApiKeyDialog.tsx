@@ -26,7 +26,7 @@ export const RemoveApiKeyDialog = ({
   onConfirm,
   isPending = false,
 }: Props) => {
-  const t = useTranslations('api-keys');
+  const t = useTranslations('api-keys.dialog');
 
   return (
     <Dialog onClose={onClose} size="sm" open={isOpen}>
@@ -35,8 +35,12 @@ export const RemoveApiKeyDialog = ({
         <DialogDescription>{t('remove-key.description')}</DialogDescription>
       </DialogBody>
       <DialogActions>
-        <Button label="Cancel" onClick={onCancel} />
-        <Button label="Confirm" onClick={onConfirm} isLoading={isPending} />
+        <Button label={t('cancel')} onClick={onCancel} />
+        <Button
+          label={t('confirm')}
+          onClick={onConfirm}
+          isLoading={isPending}
+        />
       </DialogActions>
     </Dialog>
   );
