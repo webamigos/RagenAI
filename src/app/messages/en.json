@@ -253,10 +253,19 @@
     "created-by": "Created By",
     "create": "Create",
     "name-is-to-short": "Name is to short - use at least 3 characters",
+    "copy": "Copy",
+    "done": "Done",
     "dialog": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
       "remove-key": {
         "title": "Remove API key",
         "description": "This operation cannot be inverted. Are you sure to remove this API key?"
+      },
+      "api-key-generated": {
+        "copied": "API Key copied!",
+        "title": "Save your API key",
+        "description": "Please save this secret key somewhere safe and accessible. For security reasons, you won't be able to view it again. If you lose this secret key, you'll need to generate a new one."
       }
     }
   },
