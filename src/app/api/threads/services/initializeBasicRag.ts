@@ -4,7 +4,6 @@ import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
 import { OrganizationSettings } from '@/app/lib/types/settings';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
-import { coderChain } from '@/libs/chains/coder/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import { Embeddings } from '@langchain/core/embeddings';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -67,7 +66,7 @@ export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
       embeddingModel
     );
 
-    return coderChain({
+    return basicRagChain({
       models: {
         contentModerator,
         questionRephraser,
