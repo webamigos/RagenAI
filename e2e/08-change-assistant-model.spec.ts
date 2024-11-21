@@ -12,7 +12,6 @@ test('change-assistant-model', async ({ page }) => {
   const testEmail = process.env.TESTS_CLERK_USER_EMAIL!;
   const testPassword = process.env.TESTS_CLERK_USER_PASSWORD!;
 
-  await page.locator('#email').click();
   await page.locator('#email').fill(testEmail);
   await page.locator('#password').fill(testPassword);
   await page.getByRole('button', { name: 'Sign in' }).click();
