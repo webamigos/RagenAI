@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/nextjs';
 
 const TARGET_ENV = process.env.TARGET_ENV;
-const isProductionTarget = 'production';
-const isStagingTarget = 'staging';
+const isProductionTarget = TARGET_ENV === 'production';
+const isStagingTarget = TARGET_ENV === 'staging';
 
 export async function register() {
   if (!(isProductionTarget || isStagingTarget)) {
