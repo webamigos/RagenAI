@@ -12,7 +12,6 @@ test('change-assistant-temperature', async ({ page }) => {
   const testEmail = process.env.TESTS_CLERK_USER_EMAIL!;
   const testPassword = process.env.TESTS_CLERK_USER_PASSWORD!;
 
-  await page.locator('#email').click();
   await page.locator('#email').fill(testEmail);
   await page.locator('#password').fill(testPassword);
   await page.getByRole('button', { name: 'Sign in' }).click();
@@ -27,7 +26,7 @@ test('change-assistant-temperature', async ({ page }) => {
   expect(isVisible).toBeTruthy();
 
   await page.locator('#temperature').fill('0.3');
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(1000);
 
-  await expect(page.getByText(/0.3/i)).toBeVisible();
+  await expect(page.getByText('0.3')).toBeVisible();
 });

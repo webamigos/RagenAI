@@ -5,6 +5,7 @@ env:
   NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: 'dummy'
+  API_BASE_URL: ${{ secrets.API_BASE_URL }}
   DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

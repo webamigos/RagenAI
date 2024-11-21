@@ -8,6 +8,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   DATABASE_DIRECT_URL: z.string().url(),
 
+  // API
+  API_BASE_URL: z.string().url(),
+
   // Supabase for Vector store
   SUPABASE_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string(),

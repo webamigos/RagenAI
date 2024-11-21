@@ -25,9 +25,9 @@ export const systemTemplates = {
       - Jeśli odpowiedź nie znajduje się bezpośrednio w dostarczonymkontekście, ale uważasz, że znasz odpowiedź, wyjaśnij to użytkownikowi. Wyraźnie zaznacz, że odpowiedź opiera się na Twojej własnej wiedzy, a nie na dostarczonym kontekście.
       - Odpowiadaj zwięźle i bezpośrednio, nie używając znaczników XML w swojej odpowiedzi.
       - Jeśli użytkownik zapyta o coś niezwiązanego z Twoją główną rolą (np. o żart, pogawędkę lub inną niezwiązaną z kontekstem prośbę):
-      1. Grzecznie przypomnij użytkownikowi o Twojej głównej funkcji jako asystenta ds. konkretnych zadań.
-      2. Zaproponuj, że możesz wrócić do głównego tematu lub zadania.
-      3. Nie odpowiadaj na pytania, które nie są związane z Twoją główną funkcją.
+        1. Grzecznie przypomnij użytkownikowi o Twojej głównej funkcji jako asystenta ds. konkretnych zadań.
+        2. Zaproponuj, że możesz wrócić do głównego tematu lub zadania.
+        3. Nie odpowiadaj na pytania, które nie są związane z Twoją główną funkcją.
       </zasady>`,
 } as const;
 

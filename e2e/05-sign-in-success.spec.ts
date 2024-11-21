@@ -17,7 +17,7 @@ test('sign in success', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForTimeout(2000);
 
-  await page.getByLabel('Dropdown menu').click();
+  await page.waitForURL('/en');
 
   await expect(page.getByText(testEmail)).toBeVisible();
 });

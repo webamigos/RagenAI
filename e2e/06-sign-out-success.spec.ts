@@ -17,9 +17,12 @@ test('sign out success', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.waitForTimeout(2000);
 
+  await page.waitForURL('/en');
+
   await page.getByLabel('Dropdown menu').click();
   await page.getByRole('menuitem', { name: 'Sign out' }).click();
-  await page.waitForURL('**/');
+
+  await page.waitForTimeout(2000);
 
   await expect(page.getByText(/start new thread/i)).toBeVisible();
 });
