@@ -12,13 +12,19 @@ import { locales, timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
-const JoyrideProvider = dynamic(
+import { SettingsProvider } from '@/context/AssistantSettingsContext';
+
+const JoyrideProvider = dynamic<JoyrideProviderProps>(
   () =>
     import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
   {
     ssr: false,
   }
 );
+
+type JoyrideProviderProps = {
+  children: React.ReactNode;
+};
 
 type Props = {
   children: React.ReactNode;
@@ -46,7 +52,9 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
             <ThreadsContextProvider>
               <Providers>
                 <SidebarProvider>
-                  <JoyrideProvider>{children}</JoyrideProvider>
+                  <SettingsProvider>
+                    <JoyrideProvider>{children}</JoyrideProvider>
+                  </SettingsProvider>
                 </SidebarProvider>
               </Providers>
             </ThreadsContextProvider>

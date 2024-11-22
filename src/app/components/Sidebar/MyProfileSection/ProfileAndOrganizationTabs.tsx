@@ -24,7 +24,7 @@ type Props = {
 };
 
 type TabItem = {
-  icon: () => JSX.Element;
+  icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
   label: string;
   path: string;
   className?: string;

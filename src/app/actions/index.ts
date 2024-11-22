@@ -22,6 +22,7 @@ import {
   deleteDocumentFromUserFile,
   deleteDocumentFromUserDocument,
   fetchUserDocumentsDetails,
+  getOrganizationDocumentsCount,
 } from '../lib/services/document';
 import { deleteDocument } from '../api/upload/services/TableService';
 import {
@@ -145,14 +146,17 @@ export const deleteDocumentAction = async (
     setSentryContext('EXTRA_DATA', {
       documentId,
     });
-    //  removal document from `UserFile`
+
+    //  Removal document from `UserFile`
     const { count } = await deleteDocumentFromUserFile(
       organizationId,
       documentId
     );
-    // removal from `UserDocument`
+
+    // Removal from `UserDocument`
     await deleteDocumentFromUserDocument(organizationId, documentId);
-    // removal vector's
+
+    // Removal vectors
     await deleteDocument(documentId);
 
     if (count === 0) {
@@ -161,6 +165,14 @@ export const deleteDocumentAction = async (
           'Document not found or user does not have permission to delete it',
         status: StatusCodes.NOT_FOUND,
       };
+    }
+
+    // Check document count in organization
+    const documentCount = await getOrganizationDocumentsCount(organizationId);
+
+    // If no documents left, update public metadata
+    if (documentCount === 0) {
+      await SaveOrganizationPublicMetadata(organizationId, false);
     }
 
     return {
@@ -198,6 +210,21 @@ export const saveUserMetadata = async (
     logger.error({ err: error }, 'Error saving user id to clerk');
     return { success: false };
   }
+};
+
+// save data to clerk organization profile
+export const SaveOrganizationPublicMetadata = async (
+  organizationId: string,
+  hasKnowledge: boolean
+) => {
+  setSentryServiceTag(serviceName);
+  setSentryClerkUserTag(organizationId);
+
+  clerkClient().organizations.updateOrganizationMetadata(organizationId, {
+    publicMetadata: {
+      hasKnowledge,
+    },
+  });
 };
 
 //send answer rate to assistant
