@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 test('sign in success', async ({ page }) => {
   await login(page);
 
-  const testEmail = process.env.TESTS_CLERK_USER_EMAIL!;
+  const testEmail = process.env.TESTS_CLERK_USER_EMAIL!?.split('@')[0];
 
-  await expect(page.getByText(testEmail)).toBeVisible();
+  await expect(page.getByRole('main').getByText(testEmail)).toBeVisible();
 });

@@ -12,12 +12,20 @@ test.beforeEach(async ({ page }) => {
 test('change-assistant-temperature', async ({ page }) => {
   await login(page);
 
+  await page.locator('.flex > div > .bg-white > button:nth-child(4)').click();
+
+  await page.waitForTimeout(2000);
+
+  // FIXME:
+  // await page.getByRole('button', { name: /assistant management/i }).click();
+  // await page.waitForTimeout(2000);
+
   await page.goto('/en/my-profile/prompt-management');
   await page.waitForTimeout(2000);
 
-  await page.getByRole('main').getByRole('button').nth(1).click();
+  await page.locator('form').getByRole('button').nth(1).click();
   await page.getByLabel(/openai api key/i).fill(nanoid());
-  await page.getByRole('main').getByRole('button').nth(1).click();
+  await page.locator('form').getByRole('button').nth(1).click();
 
   await page.waitForTimeout(2000);
   await expect(page.getByText(/api key saved successfully/i)).toBeVisible();
