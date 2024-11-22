@@ -158,3 +158,14 @@ export const saveEditedDocumentContent = async ({
     },
   });
 };
+
+export const getOrganizationDocumentsCount = async (
+  organizationId: string
+): Promise<number> => {
+  const count = await db.userFile.count({
+    where: {
+      organization_id: organizationId,
+    },
+  });
+  return count;
+};

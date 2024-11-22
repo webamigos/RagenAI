@@ -158,8 +158,7 @@ export const convertAndStoreDocument = async ({
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
 
-        const fileExtension =
-          path.extname(fileName).toLowerCase()?.slice(1) || '';
+        const fileExtension = path.extname(fileName)?.slice(1) || '';
         const isMarkdown = fileExtension === 'md';
         const chunkSettings = isMarkdown
           ? CHUNK_SETTINGS.markdown
@@ -170,7 +169,7 @@ export const convertAndStoreDocument = async ({
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
           id: index,
-          organization_id: organizationId.toLowerCase(),
+          organization_id: organizationId,
           file_id: fileId,
           project_id: projectId,
           source_type: fileExtension,

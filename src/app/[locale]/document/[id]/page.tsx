@@ -70,7 +70,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
   const { errorToast, successToast } = statusToast();
-  const orgId = organization?.id.toLowerCase();
+  const orgId = organization?.id;
 
   useEffect(() => {
     if (id && orgId) {
