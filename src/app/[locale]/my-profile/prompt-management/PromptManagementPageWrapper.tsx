@@ -16,7 +16,7 @@ export default function PromptManagementPage() {
   const { hasApiKey } = useSettings();
 
   return (
-    <div key={hasApiKey.toString()} className="container flex flex-col">
+    <div className="container flex flex-col">
       {hasApiKey ? (
         <>
           <Suspense fallback={<Fallback />}>
