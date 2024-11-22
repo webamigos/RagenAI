@@ -4,12 +4,12 @@ import { Card, Text, SidebarItem, CheckIcon, Link } from '@salesyy/common-ui';
 import { useSettings } from '@/app/hooks/useSettings';
 
 export const ValidationBoard = () => {
-  const { hasApiKey, BelongsToOrganization, hasKnowledge } = useSettings();
+  const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
   const t = useTranslations('setup-board');
 
   return (
     <Card title={t('title')}>
-      {BelongsToOrganization ? (
+      {belongsToOrganization ? (
         <SidebarItem>
           <CheckIcon className="text-green-600" />
           <Text className="mr-auto">{t('organization-setup')}</Text>
@@ -22,7 +22,7 @@ export const ValidationBoard = () => {
           </SidebarItem>
         </Link>
       )}
-      {BelongsToOrganization && !hasApiKey ? (
+      {belongsToOrganization && !hasApiKey ? (
         <Link href="/my-profile/prompt-management">
           <SidebarItem hasIcon={!hasApiKey}>
             <CheckIcon
@@ -34,7 +34,7 @@ export const ValidationBoard = () => {
           </SidebarItem>
         </Link>
       ) : (
-        <SidebarItem disabled={!BelongsToOrganization}>
+        <SidebarItem disabled={!belongsToOrganization}>
           <CheckIcon
             className={hasApiKey ? 'text-green-600' : 'text-gray-400'}
           />

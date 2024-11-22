@@ -36,8 +36,7 @@
     ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
     "src/app/api/upload/[...upload]/route.tsx",
     "src/app/api/settings/api-key/route.ts",
-    "storybook/main.js",
-    "src/app/[locale]/my-profile/prompt-management/PromptManagementPageWrapper.tsxs"
+    "storybook/main.js"
   ],
   "exclude": ["node_modules"]
 }

@@ -7,7 +7,7 @@ import { fetchSettings } from '../app/components/MyProfile/ChatInstanceSettings/
 
 export type SettingsContextType = {
   hasApiKey: boolean;
-  BelongsToOrganization: boolean;
+  belongsToOrganization: boolean;
   hasKnowledge: boolean;
   refreshSettings: () => Promise<void>;
 };
@@ -25,7 +25,7 @@ export const SettingsProvider = ({
 
   const { user } = useUser();
   const { organization } = useOrganization();
-  const BelongsToOrganization = user?.organizationMemberships.length! > 0;
+  const belongsToOrganization = user?.organizationMemberships.length! > 0;
 
   const organizationPublicMetadata = organization?.publicMetadata;
   const hasKnowledge = organizationPublicMetadata?.hasKnowledge as boolean;
@@ -46,7 +46,7 @@ export const SettingsProvider = ({
     <SettingsContext.Provider
       value={{
         hasApiKey,
-        BelongsToOrganization,
+        belongsToOrganization,
         hasKnowledge,
         refreshSettings,
       }}

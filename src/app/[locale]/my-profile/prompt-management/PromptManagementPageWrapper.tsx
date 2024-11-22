@@ -17,27 +17,21 @@ export default function PromptManagementPage() {
 
   return (
     <div className="container flex flex-col">
-      {hasApiKey ? (
-        <>
-          <Suspense fallback={<Fallback />}>
+      <Suspense fallback={<Fallback />}>
+        {hasApiKey ? (
+          <>
             <SetApiKeyWrapper />
-          </Suspense>
-          <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
-            <Suspense fallback={<Fallback />}>
+            <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
               <ChatModelSelect />
               <SetChatTemperature />
               <SetMaxDocumentsToRetrieve />
-            </Suspense>
-          </div>
-          <Suspense fallback={<Fallback />}>
+            </div>
             <EditablePrompt />
-          </Suspense>
-        </>
-      ) : (
-        <Suspense fallback={<Fallback />}>
+          </>
+        ) : (
           <SetApiKeyWrapper />
-        </Suspense>
-      )}
+        )}
+      </Suspense>
     </div>
   );
 }
