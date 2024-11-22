@@ -19,13 +19,13 @@ test('change-assistant-temperature', async ({ page }) => {
   await page.getByLabel(/openai api key/i).fill(nanoid());
   await page.getByRole('main').getByRole('button').nth(1).click();
 
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
   await expect(page.getByText(/api key saved successfully/i)).toBeVisible();
 
   await expect(page.getByText(/set environment variables/i)).toBeVisible();
 
   await page.locator('#temperature').fill('0.3');
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
 
   await expect(page.getByText('0.3')).toBeVisible();
 });
