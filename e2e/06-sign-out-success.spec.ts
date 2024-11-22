@@ -11,8 +11,7 @@ test.beforeEach(async ({ page }) => {
 test('sign out success', async ({ page }) => {
   await login(page);
 
-  await page.getByLabel('Dropdown menu').click();
-  await page.getByRole('menuitem', { name: 'Sign out' }).click();
+  await page.getByRole('button', { name: 'Sign out' }).click();
 
   await page.waitForTimeout(2000);
 

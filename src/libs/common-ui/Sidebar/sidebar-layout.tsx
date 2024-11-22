@@ -52,9 +52,9 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
   const { isSidebarOpen, closeSidebar } = useSidebar();
 
   const tabClasses = [
-    'absolute w-92 h-5 create-organization-tab-mobile top-[16.7rem]',
-    'absolute w-92 h-5 assistant-management-mobile top-[19.3rem]',
-    'absolute w-92 h-5 manage-knowledge-mobile top-[21.8rem]',
+    'absolute w-92 h-5 create-organization-tab-mobile top-[15.5rem]',
+    'absolute w-92 h-5 assistant-management-mobile top-[18rem]',
+    'absolute w-92 h-5 manage-knowledge-mobile top-[20.5rem]',
   ];
 
   return (
@@ -92,7 +92,7 @@ export function SidebarLayout({
   sidebar,
   children,
 }: React.PropsWithChildren<{
-  navbar: React.ReactNode;
+  navbar?: React.ReactNode;
   sidebar: React.ReactNode;
 }>) {
   const { openSidebar } = useSidebar();
@@ -102,6 +102,12 @@ export function SidebarLayout({
   const isMyProfile =
     pathname.startsWith(`/${locale}/my-profile`) ||
     pathname.startsWith(`/${locale}/admin`);
+
+  const baseMainStyles =
+    'flex flex-1 flex-col bg-primary-light dark:bg-primary-dark overflow-y-auto';
+  const baseNavbarWrapperStyles = 'flex justify-end hidden lg:flex';
+  const baseContentWrapperStyles =
+    'flex flex-1 h-full lg:rounded-lg lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
 
   return (
     <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-primary-dark dark:bg-primary-dark">
@@ -120,7 +126,7 @@ export function SidebarLayout({
           onClick={openSidebar}
           aria-label="Open navigation"
         >
-          <div className="absolute -top-6 py-3 px-6 rounded-2xl bg-primary-blue-400 dark:bg-secondary-dark z-50 ">
+          <div className="absolute -top-12 py-3 px-6 rounded-2xl bg-primary-blue-400 dark:bg-secondary-dark z-50">
             <OpenMenuIcon className="mt-4 text-white" />
           </div>
         </NavbarItem>
@@ -128,19 +134,34 @@ export function SidebarLayout({
       </header>
 
       {/* content */}
-      {isMyProfile ? (
-        <main className="flex flex-1 flex-col pb-6 px-2.5 lg:ml-[22rem] lg:pt-2 bg-primary-light dark:bg-primary-dark overflow-y-auto">
-          <div className="flex flex-1 h-full items-start sm:px-0 pt-5 lg:rounded-lg lg:bg-primary-light lg:py-3.5 lg:shadow-sm lg:ring-zinc-950/5 dark:lg:bg-primary-dark dark:lg:ring-white/10">
-            <div className="w-full lg:ml-5 pb-5 mx-auto">{children}</div>
+      <main
+        className={`${baseMainStyles} ${
+          isMyProfile
+            ? 'pb-6 px-2.5 lg:ml-[22rem] lg:pt-2'
+            : 'relative justify-center pb-2 lg:ml-96 lg:pt-2 overflow-auto'
+        }`}
+      >
+        <div
+          className={`${baseNavbarWrapperStyles} ${
+            isMyProfile ? 'mr-0.5' : 'mr-3'
+          }`}
+        >
+          {navbar}
+        </div>
+        <div
+          className={`${baseContentWrapperStyles} ${
+            isMyProfile
+              ? 'items-start sm:px-0 pt-5 lg:shadow-sm'
+              : 'justify-end'
+          }`}
+        >
+          <div
+            className={`w-full mx-auto ${isMyProfile ? 'lg:ml-5 pb-5' : ''}`}
+          >
+            {children}
           </div>
-        </main>
-      ) : (
-        <main className="relative flex justify-center flex-1 flex-col pb-2 lg:ml-96 lg:pt-2 bg-primary-light overflow-auto dark:bg-primary-dark">
-          <div className="flex flex-1 h-full lg:rounded-lg lg:bg-primary-light lg:dark:bg-primary-dark lg:py-3.5 justify-end lg:ring-zinc-950/5 dark:lg:ring-white/10">
-            <div className="w-full mx-auto">{children}</div>
-          </div>
-        </main>
-      )}
+        </div>
+      </main>
     </div>
   );
 }
