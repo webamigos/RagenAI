@@ -184,7 +184,20 @@
     "manage-knowledge": "Zarządzaj wiedzą",
     "organization-list": "Lista organizacji",
     "assistant-management": "Zarządzanie asystentem",
-    "api-keys": "Klucze API"
+    "api-keys": "Klucze API",
+    "create-new-thread": "Załóż nowy wątek",
+    "threads-categories": {
+      "today": "Dzisiaj",
+      "yesterday": "Wczoraj",
+      "older": "Starsze niż 2 dni"
+    },
+    "errors": {
+      "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
+      "database-connection": "Nie można połączyć się z bazą danych. Spróbuj ponownie później.",
+      "fetch-failed": "Nie udało się pobrać danych. Sprawdź swoje połączenie internetowe i spróbuj ponownie.",
+      "missing-permissions": "Brak wymaganych uprawnień do wykonania tej operacji.",
+      "unknown": "Nieznany błąd. Skontaktuj się z administratorem."
+    }
   },
   "files-table": {
     "delete": "Usuń",
@@ -240,10 +253,19 @@
     "created-by": "Stworzony przez",
     "create": "Stwórz",
     "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "copy": "Kopiuj",
+    "done": "Gotowe",
     "dialog": {
+      "cancel": "Anuluj",
+      "confirm": "Potwierdź",
       "remove-key": {
         "title": "Usuń klucz API",
         "description": "Ta operacja jest nieodwracalna. Czy na pewno usunąć ten klucz?"
+      },
+      "api-key-generated": {
+        "copied": "Skopiowano klucz API!",
+        "title": "Zapisz swój klucz API",
+        "description": "Zapisz ten klucz w bezpiecznym miejscu. Ze względów bezpieczeństwa nie będziesz mógł go ponownie wyświetlić. Jeśli zgubisz ten klucz, będziesz musiał wygenerować nowy."
       }
     }
   },
@@ -269,5 +291,14 @@
     "seventh-step": "Ostatni, ale kluczowy krok to dostarczenie wiedzy asystentowi. Masz na to dwa sposoby.",
     "eighth-step": "Jeśli nie masz dokumentów formacie epub lub markdown, skorzystaj z edytora, aby stworzyć dokument dostosowany do asystenta lub wklej przygotowaną treść.",
     "ninth-step": "Jeżeli posiadasz pliki w wymienionych wcześniej formatach możesz je po prostu wgrać ze swojego urządzenia."
+  },
+  "setup-board": {
+    "title": "Lista kontrolna",
+    "organization-setup": "Organizacja skonfigurowana",
+    "no-organization": "Brak organizacji",
+    "api-key-configured": "Podano klucz API",
+    "no-api-key": "Brak klucza API",
+    "no-knowledge": "Brak wiedzy",
+    "knowledge-uploaded": "Pliki zostały przesłane"
   }
 }

@@ -184,7 +184,20 @@
     "manage-knowledge": "Manage knowledge",
     "organization-list": "Organization list",
     "assistant-management": "Assistant management",
-    "api-keys": "API Keys"
+    "api-keys": "API Keys",
+    "create-new-thread": "Create a new thread",
+    "threads-categories": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "older": "Older"
+    },
+    "errors": {
+      "general": "An unexpected error occurred. Please try again later.",
+      "database-connection": "Unable to connect to the database. Please try again later.",
+      "fetch-failed": "Failed to fetch data. Check your internet connection and try again.",
+      "missing-permissions": "You do not have the required permissions to perform this action.",
+      "unknown": "An unknown error occurred. Please contact support."
+    }
   },
   "files-table": {
     "delete": "Delete",
@@ -240,10 +253,19 @@
     "created-by": "Created By",
     "create": "Create",
     "name-is-to-short": "Name is to short - use at least 3 characters",
+    "copy": "Copy",
+    "done": "Done",
     "dialog": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
       "remove-key": {
         "title": "Remove API key",
         "description": "This operation cannot be inverted. Are you sure to remove this API key?"
+      },
+      "api-key-generated": {
+        "copied": "API Key copied!",
+        "title": "Save your API key",
+        "description": "Please save this secret key somewhere safe and accessible. For security reasons, you won't be able to view it again. If you lose this secret key, you'll need to generate a new one."
       }
     }
   },
@@ -269,5 +291,14 @@
     "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
     "eighth-step": "If you do not have epub or markdown documents, use the editor to create a document adapted to the assistant or paste prepared content.",
     "ninth-step": "If you have files in the previously mentioned formats, you can simply upload them from your device."
+  },
+  "setup-board": {
+    "title": "Set-up checklist",
+    "organization-setup": "Organization is set up",
+    "no-organization": "Organization is missing",
+    "api-key-configured": "API Key is configured",
+    "no-api-key": "API Key is missing",
+    "no-knowledge": "No knowledge",
+    "knowledge-uploaded": "The files have been uploaded"
   }
 }

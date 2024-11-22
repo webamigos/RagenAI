@@ -73,7 +73,7 @@ export const DocumentCreator = () => {
     setIsLoading(true);
 
     try {
-      const organizationId = organization.id.toLowerCase();
+      const organizationId = organization.id;
       const markdownContent = turndownService.turndown(editorContent);
 
       const formData = new FormData();

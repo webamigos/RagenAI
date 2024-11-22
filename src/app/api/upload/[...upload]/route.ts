@@ -13,6 +13,7 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
+import { SaveOrganizationPublicMetadata } from '@/app/actions';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           await createMarkdownDocument({
             public_id: uniqueFileId,
             title: file.name,
-            organization_id: organizationId.toLowerCase(),
+            organization_id: organizationId,
             content: content as string,
           });
         }
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
     }
-
+    SaveOrganizationPublicMetadata(uploaderId, true);
     return NextResponse.json({
       message: 'Pliki zostały przetworzone',
       status: 200,

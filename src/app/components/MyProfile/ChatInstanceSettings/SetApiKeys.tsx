@@ -17,7 +17,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';
-
+import { useSettings } from '@/app/hooks/useSettings';
 const apiKeySchema = z.object({
   apiKey: z.string().min(10, 'API key must be at least 10 characters long'),
 });
@@ -32,7 +32,7 @@ export const SetApiKeys = () => {
 
   const t = useTranslations('set-openai-api-key');
   const { successToast, errorToast } = statusToast();
-
+  const { refreshSettings } = useSettings();
   const {
     register,
     handleSubmit,
@@ -85,6 +85,7 @@ export const SetApiKeys = () => {
         initialApiKeyRef.current = data.apiKey;
         setIsEditable(false);
         setIsWarning(false);
+        await refreshSettings();
       } else {
         throw new Error('Failed to save API key');
       }
@@ -116,7 +117,7 @@ export const SetApiKeys = () => {
         {!isEditable ? (
           <button
             type="button"
-            className="ml-2 -mb-1"
+            className={`ml-2 ${errors.apiKey ? 'mb-4' : '-mb-1'}`}
             onClick={() => setIsEditable(true)}
             aria-label="Edit API Key"
           >
@@ -128,7 +129,7 @@ export const SetApiKeys = () => {
           <button
             type="button"
             onClick={() => handleSubmit(onSubmit)()}
-            className="ml-2 -mb-1"
+            className={`ml-2 ${errors.apiKey ? 'mb-4' : '-mb-1'}`}
           >
             <Tooltip id="save api key" content={t('save')}>
               <OpenLockIcon />
@@ -136,11 +137,15 @@ export const SetApiKeys = () => {
           </button>
         )}
         {isWarning && (
-          <span>
+          <button>
             <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
-              <WarningIcon className="-mb-1.5 ml-2 text-yellow-600 cursor-pointer" />
+              <WarningIcon
+                className={`ml-2 ${
+                  errors.apiKey ? 'mb-4' : '-mb-1'
+                } text-yellow-600`}
+              />
             </Tooltip>
-          </span>
+          </button>
         )}
       </div>
     </form>

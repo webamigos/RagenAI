@@ -7,6 +7,7 @@ env:
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  API_BASE_URL: ${{ secrets.API_BASE_URL }}
   DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -65,9 +66,10 @@ jobs:
       - name: Prisma Generate Types
         run: npx prisma generate
 
-      - name: Prisma Migrate Deploy
-        run: npx prisma migrate deploy
-
+      # moved to deployment staging, production
+      # TODO: restore db for tests?
+      # - name: Prisma Migrate Deploy
+      #   run: npx prisma migrate deploy
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'

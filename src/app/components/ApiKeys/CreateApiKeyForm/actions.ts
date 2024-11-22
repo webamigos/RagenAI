@@ -2,6 +2,7 @@
 
 import * as Sentry from '@sentry/nextjs';
 import { auth, currentUser } from '@clerk/nextjs/server';
+import { revalidatePath } from 'next/cache';
 
 import db from '@salesyy/prisma-client';
 
@@ -59,25 +60,52 @@ export const createApiKey = async (
       organization.id
     );
 
-    // TODO: make call to backend API for a api key
-    const backendApiKey = 'sk-12345689'; // TODO: change after call to backend API
-
     const user = await currentUser();
 
     const keyRecord = await db.apiKey.create({
       data: {
         name: data.name,
-        masked_value: 'sk_sdr*******nhg', // TODO: change after backend API call
+        masked_value: 'pending_*********',
         // created_by: user?.fullName || 'Org Person', // TODO: change?
         project_id: defaultProject.id,
         organization_id: organization.id,
       },
     });
+    const apiBaseUrl = process.env.API_BASE_URL;
+    if (!apiBaseUrl) {
+      throw new Error('API_BASE_URL is not set');
+    }
+
+    const response = await fetch(`${apiBaseUrl}/v1/auth/generate-api-key`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        orgId: organization.id,
+        projectId: defaultProject.id,
+        keyId: keyRecord.id,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate API key');
+    }
+
+    const { apiKey } = await response.json();
+    const maskedKey = maskApiKey(apiKey);
+
+    await db.apiKey.update({
+      where: { id: keyRecord.id },
+      data: { masked_value: maskedKey },
+    });
+
+    revalidatePath('/my-profile/api-keys');
 
     return {
       success: true,
       payload: {
-        key: backendApiKey,
+        key: apiKey,
       },
     };
   } catch (error) {
@@ -102,3 +130,13 @@ export const createApiKey = async (
 };
 
 createApiKey.displayName = 'createApiKey';
+
+const maskApiKey = (apiKey: string): string => {
+  if (typeof apiKey !== 'string' || apiKey.length < 10) {
+    throw new Error('Invalid API key format');
+  }
+
+  const prefix = apiKey.slice(0, 5);
+  const suffix = apiKey.slice(-3);
+  return `${prefix}${'*'.repeat(6)}${suffix}`;
+};

@@ -24,7 +24,7 @@ export const UploadKnowledge = () => {
     return;
   }
 
-  const orgId = organization.id.toLowerCase();
+  const orgId = organization.id;
 
   const handleFilesAdded = (newFiles: File[]) =>
     setFiles((prevFiles) => [...prevFiles, ...newFiles]);
