@@ -17,7 +17,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';
-
+import { useSettings } from '@/app/hooks/useSettings';
 const apiKeySchema = z.object({
   apiKey: z.string().min(10, 'API key must be at least 10 characters long'),
 });
@@ -32,7 +32,7 @@ export const SetApiKeys = () => {
 
   const t = useTranslations('set-openai-api-key');
   const { successToast, errorToast } = statusToast();
-
+  const { refreshSettings } = useSettings();
   const {
     register,
     handleSubmit,
@@ -85,6 +85,7 @@ export const SetApiKeys = () => {
         initialApiKeyRef.current = data.apiKey;
         setIsEditable(false);
         setIsWarning(false);
+        await refreshSettings();
       } else {
         throw new Error('Failed to save API key');
       }

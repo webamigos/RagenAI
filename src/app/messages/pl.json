@@ -291,5 +291,14 @@
     "seventh-step": "Ostatni, ale kluczowy krok to dostarczenie wiedzy asystentowi. Masz na to dwa sposoby.",
     "eighth-step": "Jeśli nie masz dokumentów formacie epub lub markdown, skorzystaj z edytora, aby stworzyć dokument dostosowany do asystenta lub wklej przygotowaną treść.",
     "ninth-step": "Jeżeli posiadasz pliki w wymienionych wcześniej formatach możesz je po prostu wgrać ze swojego urządzenia."
+  },
+  "setup-board": {
+    "title": "Lista kontrolna",
+    "organization-setup": "Organizacja skonfigurowana",
+    "no-organization": "Brak organizacji",
+    "api-key-configured": "Podano klucz API",
+    "no-api-key": "Brak klucza API",
+    "no-knowledge": "Brak wiedzy",
+    "knowledge-uploaded": "Pliki zostały przesłane"
   }
 }

@@ -61,7 +61,7 @@ export const DocumentsContext = createContext<DocumentsContextType | undefined>(
 
 export const DocumentsProvider = ({ children }: Props) => {
   const { organization } = useOrganization();
-  const orgId = organization?.id.toLowerCase();
+  const orgId = organization?.id;
 
   const [state, dispatch] = useReducer(documentsReducer, initialState);
 

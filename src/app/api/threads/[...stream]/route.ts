@@ -83,7 +83,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             const threadEntity = await getThreadDetails(publicThreadId);
 
             const conv_history = threadMessages?.messages
-              .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
+              .map((msg) => `${msg.role}: ${msg.content}`)
               .join('\n');
 
             const eventStream = chain.streamEvents(
