@@ -18,7 +18,6 @@ test('change-assistant-temperature', async ({ page }) => {
 
   // FIXME:
   // await page.getByRole('button', { name: /assistant management/i }).click();
-  // await page.waitForTimeout(2000);
 
   await page.goto('/en/my-profile/prompt-management');
   await page.waitForTimeout(2000);
