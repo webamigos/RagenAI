@@ -4,8 +4,8 @@ import type { ErrorEvent } from './types';
 export function getErrorMessage(
   event: ErrorEvent,
   t: (key: string, values?: Record<string, any>) => string
-): string {
-  const defaultErrorMessage = t('unknown-error');
+): string | null {
+  const defaultErrorMessage = null;
 
   if (!event.data) {
     return defaultErrorMessage;
