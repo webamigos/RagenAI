@@ -39,8 +39,10 @@ export const SettingsProvider = ({
   };
 
   useEffect(() => {
-    refreshSettings();
-  }, []);
+    if (user?.id && organization?.id) {
+      refreshSettings();
+    }
+  }, [user?.id, organization?.id]);
 
   return (
     <SettingsContext.Provider
