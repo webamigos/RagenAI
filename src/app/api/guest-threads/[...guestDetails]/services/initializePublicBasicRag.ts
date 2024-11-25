@@ -103,7 +103,7 @@ const createVectorStore = (
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.
     const metadataFilter: VectorStoreMetadataFilter = {
-      organization_id: organizationId.toLowerCase(),
+      organization_id: organizationId,
     };
 
     return new SupabaseVectorStore(embeddingModel, {
