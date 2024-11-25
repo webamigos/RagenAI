@@ -7,21 +7,29 @@ import { useState } from 'react';
 import { Button } from '@salesyy/common-ui/Button';
 import { Input } from '@salesyy/common-ui/Input';
 import { toast } from 'react-toastify';
+import { type Organization } from '@prisma/client';
 
-export const GenerateAccessKey = () => {
+type Props = {
+  organizationRecord: Organization;
+};
+
+export const GenerateAccessKey = ({ organizationRecord }: Props) => {
   const { organization } = useOrganization();
   const [key, setKey] = useState('');
   const [decodedKey, setDecodedKey] = useState('');
   const [userKey, setUserKey] = useState('');
 
-  const organizationId = organization?.id;
+  const organizationClerkId = organization?.id;
+  // FIXME: to use only public organization id
+  const organizationPublicId = organizationRecord.public_id;
 
-  if (!organizationId) {
+  if (!organizationClerkId) {
     return null;
   }
 
   const handleGenerateKey = async () => {
-    const key = await generateKey(organizationId);
+    // const key = await generateKey(organizationPublicId);
+    const key = await generateKey(organizationClerkId);
     setKey(key);
   };
 
@@ -44,7 +52,10 @@ export const GenerateAccessKey = () => {
           Generowanie klucza dostępu do organizacji
         </h1>
         <div className="text-sm text-gray-500">
-          ID organizacji: {organizationId}
+          ID organizacji: {organizationClerkId}
+        </div>
+        <div className="text-sm text-gray-500">
+          Public ID: {organizationPublicId}
         </div>
       </div>
 

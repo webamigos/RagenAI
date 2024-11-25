@@ -17,6 +17,7 @@ function getEncryptionKey(): Buffer {
 }
 
 export const generateKey = async (organizationId: string) => {
+  // console.log({ organizationId });
   try {
     logger.info('Generating encrypted key for organization');
 

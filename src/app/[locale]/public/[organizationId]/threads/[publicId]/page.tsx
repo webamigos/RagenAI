@@ -13,7 +13,7 @@ type Props = {
 
 export async function generateMetadata({ params: { locale } }: Props) {
   return {
-    title: '😶‍🌫️ Wątek publicznego chatbota',
+    title: 'Wątek publicznego chatbota',
   };
 }
 
@@ -29,9 +29,9 @@ export default function ThreadPage({
 
   return (
     <div>
-      <div className="text-center text-sm text-gray-500">
+      {/* <div className="text-center text-sm text-gray-500">
         Your organization access token is: {organizationId}
-      </div>
+      </div> */}
       <PublicAssistant
         threadId={threadPublicId}
         organizationId={organizationId}
