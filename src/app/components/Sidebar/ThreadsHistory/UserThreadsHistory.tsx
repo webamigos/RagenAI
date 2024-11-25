@@ -15,7 +15,6 @@ type Props = {
   activeThread: string;
   userThreads: ThreadHistoryResponse[];
   isThreadsLoaded: boolean;
-  handleThreadClick: (threadId: string) => void;
 };
 
 export const UserThreadsHistory = ({
@@ -26,7 +25,6 @@ export const UserThreadsHistory = ({
   userThreads,
   activeThread,
   isThreadsLoaded,
-  handleThreadClick,
 }: Props) => {
   const t = useTranslations('chat');
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -101,7 +99,6 @@ export const UserThreadsHistory = ({
         className="flex flex-col justify-end mt-1"
         activeThread={activeThread}
         threadCategories={threadCategories}
-        handleThreadClick={handleThreadClick}
         lastThreadElementRef={lastThreadElementRef}
       />
 
