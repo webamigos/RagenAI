@@ -216,7 +216,6 @@ export const useAssistantLogic = (threadId: string) => {
         const textChunk = eventMessage.payload.content;
         const runId = eventMessage.payload.runId;
         accumulatingMessage += textChunk;
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
 
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
@@ -237,6 +236,7 @@ export const useAssistantLogic = (threadId: string) => {
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         }
 
         accumulatingMessage = '';
@@ -245,9 +245,8 @@ export const useAssistantLogic = (threadId: string) => {
 
     eventSource.addEventListener('error', async (event: ErrorEvent) => {
       eventSource.close();
-
       const errorMessage = getErrorMessage(event, tChainErrors);
-      const shouldIgnoreError = !errorMessage && !isMessageLoading;
+      const shouldIgnoreError = !errorMessage && !streamedMessage;
       if (shouldIgnoreError) {
         return;
       }
