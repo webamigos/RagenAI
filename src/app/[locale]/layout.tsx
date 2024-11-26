@@ -13,6 +13,7 @@ import './global.css';
 import { Prompt } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
+import { isProductionTargetEnv } from '@/libs/utils/env';
 
 const JoyrideProvider = dynamic<JoyrideProviderProps>(
   () =>
@@ -50,7 +51,7 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
     <NextIntlClientProvider timeZone={timezone} messages={messages}>
       <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
         <html lang={locale} className="h-full" suppressHydrationWarning>
-          <GoogleTagManager gtmId="GTM-MPJ4T77X" />
+          {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
           <body className={`${promptFont.className} h-full`}>
             <ThreadsContextProvider>
               <Providers>
