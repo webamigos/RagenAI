@@ -25,15 +25,12 @@ if ((isProductionTargetEnv || isStagingTargetEnv) && process.env.SENTRY_DSN) {
   });
 }
 
-if (!isProductionTargetEnv) {
-  // Dynamically import pino-pretty only on the server
-  const pretty = require('pino-pretty');
-  streams.push({
-    stream: pretty({
-      colorize: true,
-    }),
-  });
-}
+const pretty = require('pino-pretty');
+streams.push({
+  stream: pretty({
+    colorize: true,
+  }),
+});
 
 const logger = pino(
   {
