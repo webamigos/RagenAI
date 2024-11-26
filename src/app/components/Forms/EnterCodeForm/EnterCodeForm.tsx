@@ -10,8 +10,8 @@ import { useRouter } from 'next/navigation';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { saveUserMetadata } from '@/app/actions';
-import { Button, Card, Text } from '@salesyy/common-ui';
-import { Input } from '@salesyy/common-ui';
+import { Button, Card, Text } from '@ragenai/common-ui';
+import { Input } from '@ragenai/common-ui';
 
 import { type VerificationFormData, verificationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';

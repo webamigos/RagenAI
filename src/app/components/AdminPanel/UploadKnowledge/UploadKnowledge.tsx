@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 
-import { Card, FileUploader, Button } from '@salesyy/common-ui';
+import { Card, FileUploader, Button } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';

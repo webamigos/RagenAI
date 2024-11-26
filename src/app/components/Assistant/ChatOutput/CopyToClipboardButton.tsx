@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 
-import { Clipboard, ClipboardChecked } from '@salesyy/common-ui/icons';
+import { Clipboard, ClipboardChecked } from '@ragenai/common-ui/icons';
 import { MessageDto } from '@/app/contracts/Message';
 import { useTranslations } from 'next-intl';
 

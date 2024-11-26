@@ -3,7 +3,7 @@
 import OpenAI from 'openai';
 import { Thread, Message, Role } from '@prisma/client';
 
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 import { parseThreadMessage } from './utils';
 import { MessageDto } from '../../contracts/Message';

@@ -9,7 +9,7 @@ import {
   Text,
   Tooltip,
   InformationCircle,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 
 interface FileUploaderProps extends ComponentPropsWithRef<'div'> {
   onFilesAdded: (files: File[]) => void;

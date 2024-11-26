@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import type React from 'react';
 import { createContext, lazy, useContext, useState } from 'react';
 const Link = lazy(() =>
-  import('@salesyy/common-ui').then((module) => ({
+  import('@ragenai/common-ui').then((module) => ({
     default: module.Link,
   }))
 );

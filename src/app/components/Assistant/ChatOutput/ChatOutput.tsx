@@ -1,4 +1,4 @@
-import { SpinnerSVG, Text } from '@salesyy/common-ui';
+import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { useChatViewLogic } from './useChatViewLogic';

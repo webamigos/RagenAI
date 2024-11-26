@@ -14,7 +14,7 @@ import {
   SettingsIcon,
   SidebarItem,
   KeyIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';

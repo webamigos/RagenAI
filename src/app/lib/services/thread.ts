@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 import { Thread } from '@prisma/client';
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';

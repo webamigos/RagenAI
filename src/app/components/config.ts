@@ -1,4 +1,4 @@
-export const LOCAL_STORAGE_THREAD_KEY = 'salesyy_thread_id';
+export const LOCAL_STORAGE_THREAD_KEY = 'ragenai_thread_id';
 export const availableModels = [
   { value: 'gpt-4', label: 'GPT-4' },
   { value: 'gpt-4o', label: 'GPT-4o' },

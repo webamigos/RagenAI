@@ -1,4 +1,4 @@
-import { Text } from '@salesyy/common-ui/Text';
+import { Text } from '@ragenai/common-ui/Text';
 
 import { FileItem } from './FileItem';
 

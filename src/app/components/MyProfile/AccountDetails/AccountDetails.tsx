@@ -4,7 +4,7 @@ import { dark, experimental__simple } from '@clerk/themes';
 import { UserProfile } from '@clerk/nextjs';
 import { useTheme } from 'next-themes';
 
-import { Card } from '@salesyy/common-ui/Card';
+import { Card } from '@ragenai/common-ui/Card';
 
 export const AccountDetails = () => {
   const { resolvedTheme } = useTheme();

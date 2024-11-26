@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 
-import { Button } from '@salesyy/common-ui';
+import { Button } from '@ragenai/common-ui';
 import { useNewThread } from '../hooks/useNewThread';
 
 export const PublicStart = ({ organizationId }: { organizationId: string }) => {
