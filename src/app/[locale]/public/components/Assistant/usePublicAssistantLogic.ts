@@ -4,8 +4,6 @@ import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 
-import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
-
 import { sendMessage, deleteUserMessage } from '@/app/actions';
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import {
@@ -177,7 +175,6 @@ export const usePublicAssistantLogic = (
         const textChunk = eventMessage.payload.content;
         const runId = eventMessage.payload.runId;
         accumulatingMessage += textChunk;
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
 
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
@@ -198,6 +195,7 @@ export const usePublicAssistantLogic = (
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         }
 
         accumulatingMessage = '';
@@ -208,7 +206,7 @@ export const usePublicAssistantLogic = (
       eventSource.close();
 
       const errorMessage = getErrorMessage(event, tChainErrors);
-      const shouldIgnoreError = !errorMessage && !state.isMessageLoading;
+      const shouldIgnoreError = !errorMessage && !state.streamedMessage;
       if (shouldIgnoreError) {
         return;
       }
