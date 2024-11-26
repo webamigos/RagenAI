@@ -1,4 +1,4 @@
-import { SidebarHeader } from '@salesyy/common-ui';
+import { SidebarHeader } from '@ragenai/common-ui';
 
 import { Logo } from '../Logo';
 

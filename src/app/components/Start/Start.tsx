@@ -2,7 +2,7 @@
 
 import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@clerk/nextjs';
-import { Alert, Button } from '@salesyy/common-ui';
+import { Alert, Button } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 
 import { useNewThread } from '@/app/hooks/useNewThread';

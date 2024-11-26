@@ -1,7 +1,7 @@
 import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { LikeIcon, DislikeIcon } from '@salesyy/common-ui/icons';
+import { LikeIcon, DislikeIcon } from '@ragenai/common-ui/icons';
 import { rateMessage } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 

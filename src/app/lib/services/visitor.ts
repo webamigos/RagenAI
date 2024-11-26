@@ -1,7 +1,7 @@
 import { Message } from '@prisma/client';
 import { startOfDay, setHours } from 'date-fns';
 
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 const today = new Date();
 const midnightToday = setHours(startOfDay(today), 0);

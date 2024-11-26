@@ -17,7 +17,7 @@ import {
   TableRow,
   Tooltip,
   TrashIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 
 import { RemoveApiKeyDialog } from './RemoveApiKey/RemoveApiKeyDialog';
 import { removeApiKey } from './RemoveApiKey/actions';

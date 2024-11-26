@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react';
 
-import { SidebarLabel, SidebarItem, classMerge } from '@salesyy/common-ui';
+import { SidebarLabel, SidebarItem, classMerge } from '@ragenai/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 

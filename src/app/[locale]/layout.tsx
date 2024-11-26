@@ -10,7 +10,7 @@ import { ThreadsContextProvider } from '../../context/ThreadsContext';
 import { plPL } from '../messages/pl-PL-clerk';
 import { locales, timezone } from '../config';
 import './global.css';
-import { Inter } from 'next/font/google';
+import { Prompt } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 
@@ -33,7 +33,10 @@ type Props = {
   };
 };
 
-const inter = Inter({ subsets: ['latin'] });
+const promptFont = Prompt({
+  subsets: ['latin'],
+  weight: ['200', '300', '400', '500', '600', '700', '800'],
+});
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -48,7 +51,7 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
       <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
         <html lang={locale} className="h-full" suppressHydrationWarning>
           <GoogleTagManager gtmId="GTM-MPJ4T77X" />
-          <body className={`${inter.className} h-full`}>
+          <body className={`${promptFont.className} h-full`}>
             <ThreadsContextProvider>
               <Providers>
                 <SidebarProvider>

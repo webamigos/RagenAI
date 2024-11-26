@@ -64,10 +64,10 @@ export const Input = forwardRef(
     useEffect(() => {
       const loadIcons = async () => {
         const { OpenEyeIcon } = await import(
-          '@salesyy/common-ui/icons/OpenEyeIcon'
+          '@ragenai/common-ui/icons/OpenEyeIcon'
         ).then((module) => ({ OpenEyeIcon: module.OpenEyeIcon }));
         const { EyeOffIcon } = await import(
-          '@salesyy/common-ui/icons/EyeOffIcon'
+          '@ragenai/common-ui/icons/EyeOffIcon'
         ).then((module) => ({ EyeOffIcon: module.EyeOffIcon }));
         setOpenEyeIcon(() => OpenEyeIcon);
         setEyeOffIcon(() => EyeOffIcon);

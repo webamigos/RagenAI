@@ -10,7 +10,7 @@ import Joyride, {
 } from 'react-joyride';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
-import { SpinnerSVG } from '@salesyy/common-ui/icons';
+import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { useTranslations } from 'next-intl';
 import { useSidebar } from '@/app/hooks/useSidebar';

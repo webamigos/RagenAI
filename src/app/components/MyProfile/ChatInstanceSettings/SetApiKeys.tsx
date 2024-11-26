@@ -12,7 +12,7 @@ import {
   OpenLockIcon,
   WarningIcon,
   Tooltip,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';

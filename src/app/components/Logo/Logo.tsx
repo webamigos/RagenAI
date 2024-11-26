@@ -13,13 +13,13 @@ export const Logo = () => {
   const locale = useLocale();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
-  const [logoSrc, setLogoSrc] = useState('/assets/salesyy-logo-on-dark-bg.png');
+  const [logoSrc, setLogoSrc] = useState('/assets/ragen-logo-on-light-bg.svg');
 
   useEffect(() => {
     if (theme === 'dark' || resolvedTheme === 'dark') {
-      setLogoSrc('/assets/salesyy-white-logo-white-on-dark-bg.png');
+      setLogoSrc('/assets/ragen-logo-on-dark-bg.svg');
     } else {
-      setLogoSrc('/assets/salesyy-logo-on-dark-bg.png');
+      setLogoSrc('/assets/ragen-logo-on-light-bg.svg');
     }
   }, [theme, resolvedTheme]);
 
@@ -30,9 +30,9 @@ export const Logo = () => {
   const isClickableLogo = pathname !== `/${locale}`;
 
   return (
-    <div className="flex lg:flex-1">
-      <div className="-m-1.5 p-1.5 pl-0" onDoubleClick={handleResetVisits}>
-        <span className="sr-only">SalesYY</span>
+    <div className="flex">
+      <div className="pb-4 pl-0" onDoubleClick={handleResetVisits}>
+        <span className="sr-only">Ragen AI</span>
         <Image
           width={120}
           height={80}

@@ -1,4 +1,4 @@
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 import { ApiKey, type Organization, type Project } from '@prisma/client';
 

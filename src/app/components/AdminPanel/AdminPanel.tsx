@@ -12,7 +12,7 @@ import {
   CloudArrowUp,
   BulletListIcon,
   PencilSquareIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 
 export const AdminPanel = () => {

@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
-import { Input, Button } from '@salesyy/common-ui';
+import { Input, Button } from '@ragenai/common-ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { validationSchema, type ApiKeyDto } from './types';

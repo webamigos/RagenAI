@@ -4,7 +4,7 @@ import * as Sentry from '@sentry/nextjs';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 import { ApiKeyDto } from './types';
 import {

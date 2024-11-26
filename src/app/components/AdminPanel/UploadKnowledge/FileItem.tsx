@@ -1,4 +1,4 @@
-import { XMarkIcon, SpinnerSVG } from '@salesyy/common-ui/icons';
+import { XMarkIcon, SpinnerSVG } from '@ragenai/common-ui/icons';
 
 type Props = {
   file: File;
