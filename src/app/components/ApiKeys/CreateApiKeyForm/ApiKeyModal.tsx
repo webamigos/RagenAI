@@ -11,8 +11,8 @@ import {
   DialogBody,
   DialogTitle,
   Input,
-} from '@salesyy/common-ui';
-import { Clipboard, ClipboardChecked } from '@salesyy/common-ui/icons';
+} from '@ragenai/common-ui';
+import { Clipboard, ClipboardChecked } from '@ragenai/common-ui/icons';
 
 type Props = {
   isOpen: boolean;

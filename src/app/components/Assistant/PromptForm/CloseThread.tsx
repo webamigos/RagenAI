@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 
-import { XMarkIcon } from '@salesyy/common-ui/icons';
-import { Button } from '@salesyy/common-ui/Button';
+import { XMarkIcon } from '@ragenai/common-ui/icons';
+import { Button } from '@ragenai/common-ui/Button';
 
 type Props = {
   handleCloseThread: (redirect: boolean) => void;

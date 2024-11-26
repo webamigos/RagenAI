@@ -7,7 +7,7 @@ import {
   Text,
   PencilSquareIcon,
   HomeIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
 
@@ -17,7 +17,7 @@ type Props = {
 };
 
 export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
-  const t = useTranslations('');
+  const t = useTranslations('Index');
   const pathname = usePathname();
 
   const isMyProfile = pathname.includes('/my-profile');
@@ -31,7 +31,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
             fontSize="sm"
             className="text-primary-blue-500 dark:text-gray-500"
           >
-            {t('Welcome')}
+            {t('welcome')}
           </Text>
           <Text fontSize="sm">{userEmail?.split('@')[0] || 'User'}</Text>
         </div>

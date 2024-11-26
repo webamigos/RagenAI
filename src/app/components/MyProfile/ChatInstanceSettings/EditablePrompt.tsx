@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 
-import { Button, Card, Textarea } from '@salesyy/common-ui';
+import { Button, Card, Textarea } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';

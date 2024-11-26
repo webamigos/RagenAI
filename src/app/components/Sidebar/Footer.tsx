@@ -1,4 +1,4 @@
-import * as Libs from '@salesyy/common-ui';
+import * as Libs from '@ragenai/common-ui';
 
 import { UserLinks } from '../UserLinks';
 

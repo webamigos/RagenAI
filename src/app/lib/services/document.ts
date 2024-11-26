@@ -1,4 +1,4 @@
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 export const createDocumentDetailsInDB = async (
   file_name: string,

@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { startTransition, useState } from 'react';
 
 import { ClerkErrorsInterface } from '../../ClerkErrorsInterface';
-import { Button, Input, Card, Text } from '@salesyy/common-ui';
+import { Button, Input, Card, Text } from '@ragenai/common-ui';
 
 import { type ClerkAPIError } from '@clerk/types';
 import { type ForgotPasswordData, ForgotPasswordSchema } from './schema';

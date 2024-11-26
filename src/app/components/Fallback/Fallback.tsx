@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { Text } from '@salesyy/common-ui';
+import { Text } from '@ragenai/common-ui';
 
 type Props = {
   label?: string;

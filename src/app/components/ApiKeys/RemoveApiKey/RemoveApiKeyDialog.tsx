@@ -7,7 +7,7 @@ import {
   DialogBody,
   DialogDescription,
   DialogTitle,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 
 type Props = {

@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { format, subDays } from 'date-fns';
 
-import { SidebarSection, SidebarLabel, SpinnerSVG } from '@salesyy/common-ui';
+import { SidebarSection, SidebarLabel, SpinnerSVG } from '@ragenai/common-ui';
 import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
 import { useThreadsContext } from '../../../hooks/useThreadsContext';
