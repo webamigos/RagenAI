@@ -5,7 +5,7 @@ import {
   SidebarLayout,
   Text,
   Button,
-  SidebarItem,
+  SpinnerSVG,
 } from '@salesyy/common-ui';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -37,8 +37,8 @@ export const Sidebar = ({ children, membership }: Props) => {
     activeThread,
     handleThread,
     refetchThreads,
+    isThreadLoading,
     isThreadsLoaded,
-    handleThreadClick,
     getSidebarThreadsError,
   } = useSidebarLogic();
   const pathname = usePathname();
@@ -51,16 +51,28 @@ export const Sidebar = ({ children, membership }: Props) => {
       sidebar={
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
-          <SidebarItem onClick={handleThread} className="flex mx-2 mb-3">
-            <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
-            <Text
-              className="-ml-1 mt-1 dark:text-gray-100"
-              color="gray-700"
-              fontWeight="normal"
+          <div className="flex">
+            <Button
+              isLink
+              onClick={handleThread}
+              className="relative ml-4 mb-5 w-10/12"
             >
-              {t('create-new-thread')}
-            </Text>
-          </SidebarItem>
+              <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
+              <Text
+                className="ml-1 mt-1 dark:text-gray-100"
+                color="gray-700"
+                fontWeight="normal"
+              >
+                {t('create-new-thread')}
+              </Text>
+              {isThreadLoading && (
+                <SpinnerSVG
+                  size="sm"
+                  className="absolute right-24 bottom-2.5"
+                />
+              )}
+            </Button>
+          </div>
           <SidebarBody className="-mt-3.5">
             {pathname === `/${locale}` || pathname.includes('threads') ? (
               error ? (
@@ -77,7 +89,6 @@ export const Sidebar = ({ children, membership }: Props) => {
                   userThreads={userThreads}
                   activeThread={activeThread}
                   isThreadsLoaded={isThreadsLoaded}
-                  handleThreadClick={handleThreadClick}
                 />
               )
             ) : (

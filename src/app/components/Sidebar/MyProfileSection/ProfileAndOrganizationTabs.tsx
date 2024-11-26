@@ -129,11 +129,6 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     ];
   }, [t, orgRole]);
 
-  const handleTabClick = (path: string) => {
-    router.push(path);
-    closeSidebar();
-  };
-
   useEffect(() => {
     tabs.forEach((tab) => {
       router.prefetch(tab.path);
@@ -146,7 +141,8 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
         <SidebarItem
           hasIcon={true}
           key={path}
-          onClick={() => handleTabClick(path)}
+          href={path}
+          onClick={() => closeSidebar()}
           className={className}
         >
           <Icon />

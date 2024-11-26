@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 test('change-assistant-temperature', async ({ page }) => {
   await login(page);
 
-  await page.locator('.flex > div > .bg-white > button:nth-child(4)').click();
+  await page.locator('.flex > div > .bg-white > a:nth-child(4)').click();
 
   await page.waitForTimeout(2000);
 
