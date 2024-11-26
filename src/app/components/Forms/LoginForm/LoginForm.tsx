@@ -60,7 +60,9 @@ export const LoginForm = () => {
 
   return (
     <Card className="w-screen">
-      <Logo />
+      <div className="w-full flex justify-center mb-2">
+        <Logo />
+      </div>
       <div className="flex flex-col mb-4 text-center">
         <Text fontSize="md" fontWeight="medium">
           {t('sign-in')}

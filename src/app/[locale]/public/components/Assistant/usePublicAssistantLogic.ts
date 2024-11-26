@@ -120,7 +120,7 @@ export const usePublicAssistantLogic = (
           messages: [...state.messages, action.payload],
         };
       case SET_IS_ERROR:
-        return { ...state, isError: action.payload };
+        return { ...state, isError: action.payload, isMessageLoading: false };
       case REMOVE_MESSAGE:
         return {
           ...state,
@@ -208,6 +208,11 @@ export const usePublicAssistantLogic = (
       eventSource.close();
 
       const errorMessage = getErrorMessage(event, tChainErrors);
+      const shouldIgnoreError = !errorMessage && !state.isMessageLoading;
+      if (shouldIgnoreError) {
+        return;
+      }
+
       const lastUserMessage = state.messages.findLast(
         (message) => message.role === Role.USER
       );
@@ -229,7 +234,7 @@ export const usePublicAssistantLogic = (
       dispatch({ type: SET_IS_ERROR, payload: true });
 
       promptFormRef.current?.reset(lastUserMessage?.content || '');
-      errorToast({ message: errorMessage });
+      errorToast({ message: errorMessage || tChainErrors('unknown-error') });
 
       logger.error('Stream error: %o', errorMessage);
     });

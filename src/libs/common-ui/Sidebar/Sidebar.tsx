@@ -1,11 +1,9 @@
-/* eslint-disable prefer-const */
 'use client';
 
 import { type ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import { LayoutGroup, motion } from 'framer-motion';
-import * as Headless from '@headlessui/react';
-import clsx from 'clsx';
 
+import { classMerge } from '../utils/cn';
 import { AnimatedArrow } from '../icons';
 import { Link } from '../Link';
 
@@ -16,7 +14,7 @@ export function Sidebar({
   return (
     <nav
       {...props}
-      className={clsx(className, 'flex h-full min-h-0 flex-col')}
+      className={classMerge('flex h-full min-h-0 flex-col', className)}
     />
   );
 }
@@ -28,9 +26,9 @@ export function SidebarHeader({
   return (
     <div
       {...props}
-      className={clsx(
-        className,
-        'flex flex-col w-full border-zinc-950/5 px-4 pt-4 pb-2 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+      className={classMerge(
+        'flex flex-col w-full border-zinc-950/5 px-4 pt-4 pb-2 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5',
+        className
       )}
     />
   );
@@ -43,9 +41,9 @@ export function SidebarBody({
   return (
     <div
       {...props}
-      className={clsx(
-        className,
-        'flex flex-1 flex-col overflow-y-auto px-4 [&>[data-slot=section]+[data-slot=section]]:mt-8'
+      className={classMerge(
+        'flex flex-1 flex-col overflow-y-auto px-4 [&>[data-slot=section]+[data-slot=section]]:mt-8',
+        className
       )}
     />
   );
@@ -58,9 +56,9 @@ export function SidebarFooter({
   return (
     <div
       {...props}
-      className={clsx(
-        className,
-        'flex flex-col border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+      className={classMerge(
+        'flex flex-col border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5',
+        className
       )}
     />
   );
@@ -77,7 +75,7 @@ export function SidebarSection({
       <div
         {...props}
         data-slot="section"
-        className={clsx(className, 'flex flex-col gap-0.5')}
+        className={classMerge('flex flex-col gap-0.5', className)}
       />
     </LayoutGroup>
   );
@@ -90,9 +88,9 @@ export function SidebarDivider({
   return (
     <hr
       {...props}
-      className={clsx(
-        className,
-        'my-4 border-t border-zinc-950/5 lg:-mx-4 dark:border-white/5'
+      className={classMerge(
+        'my-4 border-t border-zinc-950/5 lg:-mx-4 dark:border-white/5',
+        className
       )}
     />
   );
@@ -106,7 +104,7 @@ export function SidebarSpacer({
     <div
       aria-hidden="true"
       {...props}
-      className={clsx(className, 'mt-8 flex-1')}
+      className={classMerge('mt-8 flex-1', className)}
     />
   );
 }
@@ -118,80 +116,70 @@ export function SidebarHeading({
   return (
     <h3
       {...props}
-      className={clsx(
-        className,
-        'mb-1 px-2 text-xs/6 font-medium text-zinc-500 dark:text-zinc-400'
+      className={classMerge(
+        'mb-1 px-2 text-xs/6 font-medium text-zinc-500 dark:text-zinc-400',
+        className
       )}
     />
   );
 }
 
-type SidebarItemProps = {
+type SidebarItemProps = ComponentPropsWithoutRef<'a'> & {
   current?: boolean;
   className?: string;
   hasIcon?: boolean;
-  children: React.ReactNode;
   disabled?: boolean;
-} & (
-  | Omit<Headless.ButtonProps, 'as' | 'className'>
-  | Omit<ComponentPropsWithoutRef<typeof Link>, 'type' | 'className'>
-);
+  href?: string;
+};
 
-export const SidebarItem = forwardRef(function SidebarItem(
-  {
-    current,
-    className,
-    children,
-    hasIcon = false,
-    disabled = false,
-    ...props
-  }: SidebarItemProps,
-  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
-) {
-  const classes = clsx(
-    'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm',
-    'hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500',
-    current && 'bg-zinc-950/5 text-blue-500',
-    disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
-    'group',
-    className
-  );
+export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
+  function SidebarItem(
+    {
+      current,
+      className,
+      children,
+      hasIcon = false,
+      disabled = false,
+      href,
+      ...props
+    },
+    ref
+  ) {
+    if (!href) {
+      return null;
+    }
 
-  return (
-    <span className={clsx(className, 'relative')}>
-      {current && (
-        <motion.span
-          layoutId="current-indicator"
-          className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400 dark:bg-white"
-        />
-      )}
-      {'href' in props ? (
-        <Headless.CloseButton as="div" ref={ref}>
-          <Link
-            className={classes}
-            {...props}
-            data-current={current}
-            aria-disabled={disabled}
-          >
-            {children}
-            <AnimatedArrow />
-          </Link>
-        </Headless.CloseButton>
-      ) : (
-        <Headless.Button
-          {...props}
-          className={clsx('cursor-pointer text-gray-400', classes)}
-          data-current={current}
+    const classes = classMerge(
+      'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm',
+      'hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500',
+      current && 'bg-zinc-950/5 text-blue-500',
+      disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
+      'group',
+      className
+    );
+
+    return (
+      <span className={classMerge('relative', className)}>
+        {current && (
+          <motion.span
+            layoutId="current-indicator"
+            className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400 dark:bg-white"
+          />
+        )}
+        <Link
           ref={ref}
-          disabled={disabled}
+          className={classes}
+          aria-disabled={disabled}
+          href={href}
+          {...props}
         >
           {children}
           {hasIcon && <AnimatedArrow />}
-        </Headless.Button>
-      )}
-    </span>
-  );
-});
+        </Link>
+      </span>
+    );
+  }
+);
 
 SidebarItem.displayName = 'SidebarItem';
 
@@ -199,7 +187,9 @@ export const SidebarLabel = ({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'span'>) => {
-  return <span {...props} className={clsx('font-sans truncate', className)} />;
+  return (
+    <span {...props} className={classMerge('font-sans truncate', className)} />
+  );
 };
 
 SidebarLabel.displayName = 'SidebarLabel';
