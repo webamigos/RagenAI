@@ -70,7 +70,7 @@ export default !isProduction
       // https://github.com/getsentry/sentry-webpack-plugin#options
 
       org: 'web-amigos',
-      project: 'smartrag-app',
+      project: 'ragen-app',
 
       // Only print logs for uploading source maps in CI
       silent: !process.env.CI,
