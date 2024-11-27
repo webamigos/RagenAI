@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 
-import { classMerge } from '@salesyy/common-ui';
+import { classMerge } from '@ragenai/common-ui';
 
 import 'flag-icons/css/flag-icons.min.css';
 
