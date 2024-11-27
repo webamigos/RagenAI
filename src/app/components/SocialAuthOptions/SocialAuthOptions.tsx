@@ -1,17 +1,17 @@
 'use client';
 
 import Image from 'next/image';
-import { memo, useTransition } from 'react';
+import { memo, useState } from 'react';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
-import { Divider } from '@salesyy/common-ui/Divider';
-import { SpinnerSVG } from '@salesyy/common-ui/icons';
+import { Divider } from '@ragenai/common-ui/Divider';
+import { SpinnerSVG } from '@ragenai/common-ui/icons';
 
 import { logger } from '@/app/lib/utils/logger';
 import { saveUserMetadata } from '@/app/actions';
 
-type SupportedOAuthStrategy = 'oauth_google' | 'oauth_facebook' | 'oauth_apple';
+type SupportedOAuthStrategy = 'oauth_google' | 'oauth_github';
 
 const SocialButton = ({
   onClick,
@@ -30,7 +30,7 @@ const SocialButton = ({
     disabled={isLoading}
   >
     {isLoading ? (
-      <SpinnerSVG />
+      <SpinnerSVG size="sm" />
     ) : (
       <Image src={imageUrl} alt={altText} width={15} height={15} />
     )}
@@ -45,41 +45,48 @@ export const SocialAuthOptions = memo(
   ({ isSignUp }: SocialAuthOptionsProps) => {
     const { signUp, isLoaded: signUpLoaded } = useSignUp();
     const { signIn, isLoaded: signInLoaded } = useSignIn();
-    const [isPending, startTransition] = useTransition();
+    const [loadingState, setLoadingState] = useState<
+      Record<SupportedOAuthStrategy, boolean>
+    >({
+      oauth_google: false,
+      oauth_github: false,
+    });
 
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
-      startTransition(async () => {
+      if (loadingState[strategy]) return;
+
+      setLoadingState((prev) => ({ ...prev, [strategy]: true }));
+
+      try {
         if ((!isSignUp && !signInLoaded) || (isSignUp && !signUpLoaded)) return;
 
-        try {
-          if (isSignUp) {
-            await signUp?.authenticateWithRedirect({
-              strategy,
-              redirectUrl: '/sso-callback',
-              redirectUrlComplete: '/',
-            });
-            const user = await signUp?.id;
-            if (!user) {
-              return;
-            }
-
+        if (isSignUp) {
+          await signUp?.authenticateWithRedirect({
+            strategy,
+            redirectUrl: '/sso-callback',
+            redirectUrlComplete: '/',
+          });
+          const user = await signUp?.id;
+          if (user) {
             await saveUserMetadata(user, false);
-          } else {
-            signIn?.authenticateWithRedirect({
-              strategy,
-              redirectUrl: '/sso-callback',
-              redirectUrlComplete: '/',
-            });
           }
-        } catch (error) {
-          logger.error(
-            `Error during ${isSignUp ? 'sign-up' : 'sign-in'} with ${strategy}`,
-            error
-          );
+        } else {
+          await signIn?.authenticateWithRedirect({
+            strategy,
+            redirectUrl: '/sso-callback',
+            redirectUrlComplete: '/',
+          });
         }
-      });
+      } catch (error) {
+        logger.error(
+          `Error during ${isSignUp ? 'sign-up' : 'sign-in'} with ${strategy}`,
+          error
+        );
+      } finally {
+        setLoadingState((prev) => ({ ...prev, [strategy]: false }));
+      }
     };
 
     const socialPlatforms = {
@@ -87,13 +94,9 @@ export const SocialAuthOptions = memo(
         imageUrl: 'https://img.clerk.com/static/google.svg',
         altText: 'Google logo',
       },
-      oauth_facebook: {
-        imageUrl: 'https://img.clerk.com/static/facebook.svg',
-        altText: 'Facebook logo',
-      },
-      oauth_apple: {
-        imageUrl: 'https://img.clerk.com/static/apple.svg',
-        altText: 'Apple logo',
+      oauth_github: {
+        imageUrl: 'https://img.clerk.com/static/github.svg',
+        altText: 'Github logo',
       },
     };
 
@@ -107,7 +110,7 @@ export const SocialAuthOptions = memo(
                 onClick={() => handleOAuth(strategy as SupportedOAuthStrategy)}
                 imageUrl={imageUrl}
                 altText={altText}
-                isLoading={isPending}
+                isLoading={loadingState[strategy as SupportedOAuthStrategy]}
               />
             )
           )}

@@ -14,7 +14,7 @@ import {
   SettingsIcon,
   SidebarItem,
   KeyIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
@@ -129,11 +129,6 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     ];
   }, [t, orgRole]);
 
-  const handleTabClick = (path: string) => {
-    router.push(path);
-    closeSidebar();
-  };
-
   useEffect(() => {
     tabs.forEach((tab) => {
       router.prefetch(tab.path);
@@ -146,7 +141,8 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
         <SidebarItem
           hasIcon={true}
           key={path}
-          onClick={() => handleTabClick(path)}
+          href={path}
+          onClick={() => closeSidebar()}
           className={className}
         >
           <Icon />

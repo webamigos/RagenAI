@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react';
 
-import { SidebarLabel, SidebarItem, classMerge } from '@salesyy/common-ui';
+import { SidebarLabel, SidebarItem, classMerge } from '@ragenai/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
@@ -14,7 +14,6 @@ type Category = {
 type Props = {
   activeThread: string;
   threadCategories: Category[];
-  handleThreadClick: (threadId: string) => void;
   lastThreadElementRef: React.MutableRefObject<HTMLDivElement | null>;
 };
 
@@ -23,7 +22,6 @@ export const ThreadsSection = ({
   activeThread,
   threadCategories,
   lastThreadElementRef,
-  handleThreadClick,
 }: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
 
@@ -56,10 +54,7 @@ export const ThreadsSection = ({
                   >
                     <SidebarItem
                       hasIcon={true}
-                      onClick={() => {
-                        handleThreadClick(thread.public_id);
-                        closeSidebar();
-                      }}
+                      href={`/threads/${thread.public_id}`}
                       current={isActive}
                       className={classMerge(
                         'font-normal text-gray-700',
@@ -67,6 +62,7 @@ export const ThreadsSection = ({
                           ? 'text-primary-blue-400 dark:text-gray-100'
                           : 'hover:bg-gray-100'
                       )}
+                      onClick={() => closeSidebar()}
                     >
                       {contentPreview}
                     </SidebarItem>

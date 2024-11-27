@@ -1,0 +1,48 @@
+'use client';
+
+import { ChatOutput } from '@/app/components/Assistant/ChatOutput';
+
+import { usePublicAssistantLogic } from './usePublicAssistantLogic';
+import { PromptForm } from '@/app/components/Assistant/PromptForm';
+
+type Props = {
+  threadId: string;
+  organizationId: string;
+};
+
+export const PublicAssistant = ({ threadId, organizationId }: Props) => {
+  const {
+    messageLoadingText,
+    messagesEndDivRef,
+    isGlobalLoading,
+    streamedMessage,
+    messages,
+    onSubmit,
+    isLocked,
+    promptFormRef,
+  } = usePublicAssistantLogic(threadId, organizationId);
+
+  return (
+    <div className="h-full flex flex-col font-sans">
+      <div className="flex-grow overflow-y-auto">
+        <ChatOutput
+          messages={messages}
+          isLoading={isGlobalLoading}
+          loadingMessage={messageLoadingText}
+          streamedMessage={streamedMessage}
+        />
+        <div ref={messagesEndDivRef} />
+      </div>
+      <div className="flex-shrink-0 w-full">
+        {!isLocked() && threadId && (
+          <PromptForm
+            ref={promptFormRef}
+            isUserLogged={false}
+            isLoading={isGlobalLoading}
+            onSubmit={onSubmit}
+          />
+        )}
+      </div>
+    </div>
+  );
+};

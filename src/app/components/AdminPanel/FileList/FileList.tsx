@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { SpinnerSVG } from '@salesyy/common-ui/icons';
+import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { UserDocumentsTable } from './UserDocumentsTable';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';

@@ -22,9 +22,10 @@
     ],
     "paths": {
       // for backward compatibility,
-      "@salesyy/common-ui/*": ["./src/libs/common-ui/*"],
-      "@salesyy/common-ui": ["./src/libs/common-ui"],
-      "@salesyy/prisma-client": ["./src/libs/db"],
+      "@ragenai/common-ui/*": ["./src/libs/common-ui/*"],
+      "@ragenai/common-ui": ["./src/libs/common-ui"],
+      "@ragenai/prisma-client": ["./src/libs/db"],
+
       "@/*": ["./src/*"]
     }
   },

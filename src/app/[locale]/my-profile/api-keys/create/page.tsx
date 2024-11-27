@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
-import { Card } from '@salesyy/common-ui/Card';
+import { Card } from '@ragenai/common-ui/Card';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer/ApiKeysSynchronizer';

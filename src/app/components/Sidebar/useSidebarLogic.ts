@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -17,14 +17,13 @@ export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
   const { state, refetchThreads } = useThreadsContext();
   const { userThreads, error, isLoading, hasMore } = state;
-  const router = useRouter();
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
   const isThreadsLoaded = state.userThreads.length > 0;
-  const { handleNewThread } = useNewThread();
+  const { handleNewThread, isLoading: isThreadLoading } = useNewThread();
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
@@ -32,11 +31,6 @@ export const useSidebarLogic = () => {
   const handleThread = () => {
     handleNewThread();
     handleCloseThread(false);
-  };
-
-  const handleThreadClick = (threadId: string) => {
-    router.push(`/threads/${threadId}`);
-    setActiveThread(threadId);
   };
 
   function getSidebarThreadsError(error: SidebarThreadsFetchError): string {
@@ -82,8 +76,8 @@ export const useSidebarLogic = () => {
     handleThread,
     showOnboarding,
     refetchThreads,
+    isThreadLoading,
     isThreadsLoaded,
-    handleThreadClick,
     getSidebarThreadsError,
   };
 };

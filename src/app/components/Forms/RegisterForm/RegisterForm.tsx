@@ -9,7 +9,7 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { Button, Input, Card, Link, Text } from '@salesyy/common-ui';
+import { Button, Input, Card, Link, Text } from '@ragenai/common-ui';
 import { Logo } from '../../Logo';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
@@ -59,7 +59,9 @@ export const RegisterForm = () => {
 
   return (
     <Card className="w-screen">
-      <Logo />
+      <div className="w-full flex justify-center items-center mb-2">
+        <Logo />
+      </div>
       <div className="flex flex-col mb-4 text-center">
         <Text fontSize="md" fontWeight="medium">
           {t('create-account')}

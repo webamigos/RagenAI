@@ -1,0 +1,118 @@
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
+import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
+import { OrganizationSettings } from '@/app/lib/types/settings';
+import { basicRagChain } from '@/libs/chains/basic-rag/chain';
+import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
+import { Embeddings } from '@langchain/core/embeddings';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+import {
+  setSentryClerkOrganizationTag,
+  setSentryContext,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
+import { logger } from '@/app/lib/utils/logger';
+import {
+  createChatCompletionInstance,
+  createEmbeddingsInstance,
+  createModerationInstance,
+} from '@/app/lib/services/llm';
+
+const serviceName = 'initializeBasicRag';
+
+type InitializePublicRagChainParams = {
+  settings: OrganizationSettings;
+  organizationId: string;
+};
+
+const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
+const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
+
+export const initializePublicRagChain = ({
+  settings,
+  organizationId,
+}: InitializePublicRagChainParams) => {
+  try {
+    setSentryServiceTag(serviceName);
+
+    const {
+      apiKey,
+      model: answerModel,
+      temperature: answerTemperature,
+      prompt: answerInstructions,
+      maxDocumentsToRetrieve,
+    } = settings;
+
+    setSentryContext('CHAIN_DATA', {
+      answerModel,
+      answerTemperature,
+      answerInstructions,
+      maxDocumentsToRetrieve,
+    });
+
+    const embeddingModel = createEmbeddingsInstance({ apiKey });
+    const contentModerator = createModerationInstance({ apiKey });
+
+    const questionRephraser = createChatCompletionInstance({
+      apiKey,
+      model: DEFAULT_REPHRASE_MODEL,
+      temperature: DEFAULT_REPHRASE_TEMPERATURE,
+    });
+    const answerGenerator = createChatCompletionInstance({
+      apiKey,
+      model: answerModel,
+      temperature: answerTemperature,
+    });
+
+    const vectorStore = createVectorStore(
+      supabaseVectorStoreClient,
+      embeddingModel,
+      organizationId
+    );
+
+    return basicRagChain({
+      models: {
+        contentModerator,
+        questionRephraser,
+        answerGenerator,
+      },
+      config: {
+        maxDocumentsToRetrieve,
+        answerInstructions,
+      },
+      vectorStore,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error initializing basic RAG chain');
+    throw error;
+  }
+};
+
+const createVectorStore = (
+  client: SupabaseClient,
+  embeddingModel: Embeddings,
+  organizationId: string
+): SupabaseVectorStore => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(organizationId);
+
+    // SECURITY CRITICAL: This organization_id filter is the primary security boundary
+    // that prevents unauthorized access to documents across different organizations.
+    // Removing or modifying this filter could lead to data leakage between organizations
+    // and allow unauthorized access to sensitive documentation.
+    const metadataFilter: VectorStoreMetadataFilter = {
+      organization_id: organizationId,
+    };
+
+    return new SupabaseVectorStore(embeddingModel, {
+      client,
+      queryName: DOCUMENT_SEARCH_QUERY_NAME,
+      filter: metadataFilter,
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating vector store');
+    throw error;
+  }
+};

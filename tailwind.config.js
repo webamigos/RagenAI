@@ -23,8 +23,8 @@ module.exports = {
         sans: ['Poppins', ...defaultTheme.fontFamily.sans],
       },
       colors: {
-        'salesyy-red': '#CB1D3D',
-        'salesyy-blue': '#252D53',
+        'ragen-red': '#CB1D3D',
+        'ragen-blue': '#252D53',
         'primary-light': '#e2e8f3',
         'primary-dark': '#06141B',
         'secondary-dark': '#11212D',

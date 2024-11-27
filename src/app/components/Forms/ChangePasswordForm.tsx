@@ -9,7 +9,7 @@ import { useUser } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
 import { ClerkErrorsInterface } from '../ClerkErrorsInterface';
-import { Input, Button, Card } from '@salesyy/common-ui';
+import { Input, Button, Card } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 const schema = z
   .object({

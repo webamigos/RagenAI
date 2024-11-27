@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 
-import { Card } from '@salesyy/common-ui/Card';
+import { Card } from '@ragenai/common-ui/Card';
 import { SetApiKeys } from './SetApiKeys';
 
 export const SetApiKeyWrapper = () => {

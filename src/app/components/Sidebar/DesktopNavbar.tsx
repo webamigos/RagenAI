@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import {
   SettingsIcon,
@@ -7,7 +7,7 @@ import {
   Text,
   PencilSquareIcon,
   HomeIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
 
@@ -17,8 +17,7 @@ type Props = {
 };
 
 export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
-  const t = useTranslations('');
-  const { push } = useRouter();
+  const t = useTranslations('Index');
   const pathname = usePathname();
 
   const isMyProfile = pathname.includes('/my-profile');
@@ -32,15 +31,15 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
             fontSize="sm"
             className="text-primary-blue-500 dark:text-gray-500"
           >
-            {t('Welcome')}
+            {t('welcome')}
           </Text>
           <Text fontSize="sm">{userEmail?.split('@')[0] || 'User'}</Text>
         </div>
         <button className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 sm:hidden">
           <PencilSquareIcon className="w-6 h-6" />
         </button>
-        <button
-          onClick={() => push(isMyProfile ? '/' : '/my-profile')}
+        <a
+          href={isMyProfile ? '/' : '/my-profile'}
           className="rounded-full border p-1.5 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
         >
           {isMyProfile ? (
@@ -48,7 +47,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
           ) : (
             <SettingsIcon className="h-6 w-6 m-0.5 dark:text-gray-400" />
           )}
-        </button>
+        </a>
         <ThemeSwitcher />
         <LanguageSwitcher />
       </div>

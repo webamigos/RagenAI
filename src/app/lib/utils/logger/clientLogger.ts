@@ -1,4 +1,8 @@
-import { isDevelopment, isProduction } from '@/libs/utils/env';
+import {
+  isProductionTargetEnv,
+  isStagingTargetEnv,
+  isLocalTargetEnv,
+} from '@/libs/utils/env';
 import * as Sentry from '@sentry/browser';
 import { AppLogger } from './interface';
 
@@ -13,13 +17,13 @@ type LogLevel = 'info' | 'error' | 'warn' | 'debug';
 class ClientLogger implements AppLogger {
   private log(level: LogLevel, message: string | object, ...args: any[]) {
     // Development logging to console
-    if (isDevelopment) {
+    if (isLocalTargetEnv) {
       // eslint-disable-next-line no-console
       console[level](message, ...args);
     }
 
-    // Production logging to Sentry
-    if (isProduction) {
+    // Production or staging logging to Sentry
+    if (isProductionTargetEnv || isStagingTargetEnv) {
       if (level === 'error') {
         Sentry.captureException(args[0] || message);
       } else {

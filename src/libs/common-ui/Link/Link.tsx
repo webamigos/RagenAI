@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentProps } from 'react';
 import { default as NextLink } from 'next/link';
-import { classMerge } from '@salesyy/common-ui';
+import { classMerge } from '@ragenai/common-ui';
 
 type Props = Readonly<{
   href: string;
@@ -22,7 +22,7 @@ export const Link = forwardRef<HTMLAnchorElement, Props>(
           className={classMerge(
             'text-sm font-semibold text-blue-500',
             variant === 'button'
-              ? 'rounded-md bg-salesyy-blue px-3.5 py-2.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              ? 'rounded-md bg-ragen-blue px-3.5 py-2.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               : '',
             variant === 'arrow' ? 'leading-6' : '',
             underline ? 'hover:underline' : '',

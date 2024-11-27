@@ -1,4 +1,4 @@
-import * as Libs from '@salesyy/common-ui';
+import * as Libs from '@ragenai/common-ui';
 
 import { UserLinks } from '../UserLinks';
 
@@ -7,11 +7,11 @@ export const Footer = () => {
     <Libs.SidebarFooter>
       <Libs.SidebarSection>
         <div className="flex justify-between items-center">
-          <Libs.SidebarItem>
+          <Libs.Button isLink>
             <Libs.SidebarLabel>
               <UserLinks />
             </Libs.SidebarLabel>
-          </Libs.SidebarItem>
+          </Libs.Button>
         </div>
       </Libs.SidebarSection>
     </Libs.SidebarFooter>

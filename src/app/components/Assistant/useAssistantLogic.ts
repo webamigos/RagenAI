@@ -128,7 +128,7 @@ export const useAssistantLogic = (threadId: string) => {
           messages: [...state.messages, action.payload],
         };
       case SET_IS_ERROR:
-        return { ...state, isError: action.payload };
+        return { ...state, isError: action.payload, isMessageLoading: false };
       case REMOVE_MESSAGE:
         return {
           ...state,
@@ -216,7 +216,6 @@ export const useAssistantLogic = (threadId: string) => {
         const textChunk = eventMessage.payload.content;
         const runId = eventMessage.payload.runId;
         accumulatingMessage += textChunk;
-        dispatch({ type: SET_MESSAGE_LOADING, payload: false });
 
         dispatch({
           type: APPEND_TO_STREAMED_MESSAGE,
@@ -237,6 +236,7 @@ export const useAssistantLogic = (threadId: string) => {
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
         }
 
         accumulatingMessage = '';
@@ -245,8 +245,12 @@ export const useAssistantLogic = (threadId: string) => {
 
     eventSource.addEventListener('error', async (event: ErrorEvent) => {
       eventSource.close();
-
       const errorMessage = getErrorMessage(event, tChainErrors);
+      const shouldIgnoreError = !errorMessage && !streamedMessage;
+      if (shouldIgnoreError) {
+        return;
+      }
+
       const lastUserMessage = messages.findLast(
         (message) => message.role === Role.USER
       );
@@ -268,7 +272,7 @@ export const useAssistantLogic = (threadId: string) => {
       dispatch({ type: SET_IS_ERROR, payload: true });
 
       promptFormRef.current?.reset(lastUserMessage?.content || '');
-      errorToast({ message: errorMessage });
+      errorToast({ message: errorMessage || tChainErrors('unknown-error') });
 
       logger.error('Stream error: %o', errorMessage);
     });

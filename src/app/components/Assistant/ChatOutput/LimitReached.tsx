@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
-import { Alert } from '@salesyy/common-ui';
+import { Alert } from '@ragenai/common-ui';
 
 export const LimitReached = () => {
   const t = useTranslations('Index');

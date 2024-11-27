@@ -16,7 +16,7 @@ import {
   Text,
   Input,
   Button,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import {
   fetchDocumentByOrganization,
   updateDocument,

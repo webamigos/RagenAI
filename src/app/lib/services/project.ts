@@ -1,4 +1,4 @@
-import db from '@salesyy/prisma-client';
+import db from '@ragenai/prisma-client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
