@@ -11,13 +11,15 @@ import { useSettings } from '@/app/hooks/useSettings';
 
 import { OnboardingSteps } from './OnboardingSteps';
 import { ValidationBoard } from './ValidationBoard';
+import { useEffect } from 'react';
 
 export const Start = () => {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded: isUserDataLoaded } = useUser();
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
-  const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
+  const { hasApiKey, belongsToOrganization, hasKnowledge, refreshSettings } =
+    useSettings();
 
   const shouldShowValidationBoard =
     isSignedIn &&
@@ -25,36 +27,40 @@ export const Start = () => {
     (!hasApiKey || !hasKnowledge || !belongsToOrganization);
 
   return (
-    <div className="container mx-auto h-full">
-      <div className="flex flex-col h-full items-center justify-center">
-        <OnboardingSteps />
-        {shouldShowValidationBoard ? (
-          <ValidationBoard />
-        ) : !isPending && showOnboarding ? (
-          <Button
-            label={t('start-tour')}
-            onClick={runJoyride}
-            className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
-          />
-        ) : (
-          <Button
-            label={t('start-new-thread')}
-            className="px-5 py-3 sm:mb-12 mb-8"
-            onClick={handleNewThread}
-            isLoading={isLoading}
-            disabled={isLoading || isLimitLock || showOnboarding}
-            iconRight={
-              <RocketLaunchIcon
-                className="h-5 w-5 flex-none text-white cursor-pointer"
-                aria-hidden="true"
+    <>
+      {isUserDataLoaded && (
+        <div className="container mx-auto h-full">
+          <div className="flex flex-col h-full items-center justify-center">
+            <OnboardingSteps />
+            {shouldShowValidationBoard ? (
+              <ValidationBoard />
+            ) : !isPending && showOnboarding ? (
+              <Button
+                label={t('start-tour')}
+                onClick={runJoyride}
+                className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
               />
-            }
-          />
-        )}
-        {isLimitLock && !isSignedIn && (
-          <Alert title={t('limit-reached')} type="info" />
-        )}
-      </div>
-    </div>
+            ) : (
+              <Button
+                label={t('start-new-thread')}
+                className="px-5 py-3 sm:mb-12 mb-8"
+                onClick={handleNewThread}
+                isLoading={isLoading}
+                disabled={isLoading || isLimitLock || showOnboarding}
+                iconRight={
+                  <RocketLaunchIcon
+                    className="h-5 w-5 flex-none text-white cursor-pointer"
+                    aria-hidden="true"
+                  />
+                }
+              />
+            )}
+            {isLimitLock && !isSignedIn && (
+              <Alert title={t('limit-reached')} type="info" />
+            )}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

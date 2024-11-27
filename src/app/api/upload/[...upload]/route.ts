@@ -106,7 +106,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
     }
-    SaveOrganizationPublicMetadata(uploaderId, true);
+    await SaveOrganizationPublicMetadata(uploaderId, true);
     return NextResponse.json({
       message: 'Pliki zostały przetworzone',
       status: 200,

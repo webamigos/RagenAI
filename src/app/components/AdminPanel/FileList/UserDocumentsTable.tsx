@@ -8,6 +8,7 @@ import * as CommonUi from '@ragenai/common-ui';
 import { deleteDocumentAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
+import { useSettings } from '@/app/hooks/useSettings';
 
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { type UserFileType } from '@/app/contracts/Documents';
@@ -34,6 +35,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const locale = useLocale();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
+  const { refreshSettings } = useSettings();
 
   const { created_at: formattedCreatedAt, updated_at: formattedUpdatedAt } =
     useMemo(
@@ -51,6 +53,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       const { status } = await deleteDocumentAction(organization_id, id);
       if (status === 200) {
         onRemoveDocument(id);
+        refreshSettings();
         successToast({ message: `${tSuccess('deleted')} ${file_name}` });
       }
     } catch {

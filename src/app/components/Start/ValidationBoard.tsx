@@ -1,25 +1,23 @@
 import { useTranslations } from 'next-intl';
 
-import {
-  Card,
-  Text,
-  SidebarItem,
-  CheckIcon,
-  Link,
-  Button,
-} from '@ragenai/common-ui';
+import { Card, Text, SidebarItem, CheckIcon, Button } from '@ragenai/common-ui';
 import { useSettings } from '@/app/hooks/useSettings';
 
 export const ValidationBoard = () => {
   const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
   const t = useTranslations('setup-board');
 
+  const getTextClassName = (condition: boolean) =>
+    condition ? 'line-through text-gray-500' : '';
+
   return (
     <Card title={t('title')}>
       {belongsToOrganization ? (
         <Button className="w-full" isLink>
           <CheckIcon className="text-green-600" />
-          <Text className="ml-3">{t('organization-setup')}</Text>
+          <Text className={`ml-3 ${getTextClassName(belongsToOrganization)}`}>
+            {t('organization-setup')}
+          </Text>
         </Button>
       ) : (
         <SidebarItem href="/my-profile/create-organization" hasIcon>
@@ -32,7 +30,7 @@ export const ValidationBoard = () => {
           <CheckIcon
             className={hasApiKey ? 'text-green-600' : 'text-gray-400'}
           />
-          <Text className="mr-auto">
+          <Text className={`mr-auto ${getTextClassName(hasApiKey)}`}>
             {hasApiKey ? t('api-key-configured') : t('no-api-key')}
           </Text>
         </SidebarItem>
@@ -41,7 +39,9 @@ export const ValidationBoard = () => {
           <CheckIcon
             className={hasApiKey ? 'text-green-600' : 'text-gray-400'}
           />
-          <Text className="ml-3">{t('no-api-key')}</Text>
+          <Text className={`ml-3 ${getTextClassName(hasApiKey)}`}>
+            {t('no-api-key')}
+          </Text>
         </Button>
       )}
       {hasApiKey && !hasKnowledge ? (
@@ -49,16 +49,18 @@ export const ValidationBoard = () => {
           <CheckIcon
             className={hasKnowledge ? 'text-green-600' : 'text-gray-400'}
           />
-          <Text className="mr-auto">
+          <Text className={`mr-auto ${getTextClassName(hasKnowledge)}`}>
             {hasKnowledge ? t('knowledge-uploaded') : t('no-knowledge')}
           </Text>
         </SidebarItem>
       ) : (
-        <Button className="w-full" disabled>
+        <Button className="w-full" isLink disabled>
           <CheckIcon
             className={hasKnowledge ? 'text-green-600' : 'text-gray-400'}
           />
-          <Text className="ml-3">{t('no-knowledge')}</Text>
+          <Text className={`ml-3 ${getTextClassName(hasKnowledge)}`}>
+            {t('no-knowledge')}
+          </Text>
         </Button>
       )}
     </Card>

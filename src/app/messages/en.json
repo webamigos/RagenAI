@@ -295,11 +295,11 @@
   },
   "setup-board": {
     "title": "Set-up checklist",
-    "organization-setup": "Organization is set up",
-    "no-organization": "Organization is missing",
-    "api-key-configured": "API Key is configured",
-    "no-api-key": "API Key is missing",
-    "no-knowledge": "No knowledge",
-    "knowledge-uploaded": "The files have been uploaded"
+    "organization-setup": "Organization configured",
+    "no-organization": "Configure organization",
+    "api-key-configured": "API key configured",
+    "no-api-key": "Set API key",
+    "no-knowledge": "Upload knowledge",
+    "knowledge-uploaded": "Files have been uploaded"
   }
 }

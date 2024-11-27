@@ -101,11 +101,13 @@ export const SetApiKeys = () => {
   ) : (
     <form
       onSubmit={handleSubmit(onSubmit)}
+      autoComplete="new-password"
       className="flex items-center space-x-4"
     >
       <div className="relative w-3/4 flex items-end">
         <Input
           label="OpenAI API Key"
+          autoComplete="new-password"
           type="password"
           error={errors.apiKey}
           errorMessage={errors.apiKey?.message}

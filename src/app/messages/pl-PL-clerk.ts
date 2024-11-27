@@ -14,61 +14,62 @@ import type { LocalizationResource } from '@clerk/types';
 
 export const plPL: LocalizationResource = {
   locale: 'pl-PL',
-  __experimental_userVerification: {
-    alternativeMethods: {
-      actionLink: undefined,
-      actionText: undefined,
-      blockButton__backupCode: undefined,
-      blockButton__emailCode: undefined,
-      blockButton__password: undefined,
-      blockButton__phoneCode: undefined,
-      blockButton__totp: undefined,
-      getHelp: {
-        blockButton__emailSupport: undefined,
-        content: undefined,
-        title: undefined,
-      },
-      subtitle: undefined,
-      title: undefined,
-    },
-    backupCodeMfa: {
-      subtitle: undefined,
-      title: undefined,
-    },
-    emailCode: {
-      formTitle: undefined,
-      resendButton: undefined,
-      subtitle: undefined,
-      title: undefined,
-    },
-    noAvailableMethods: {
-      message: undefined,
-      subtitle: undefined,
-      title: undefined,
-    },
-    password: {
-      actionLink: undefined,
-      subtitle: undefined,
-      title: undefined,
-    },
-    phoneCode: {
-      formTitle: undefined,
-      resendButton: undefined,
-      subtitle: undefined,
-      title: undefined,
-    },
-    phoneCodeMfa: {
-      formTitle: undefined,
-      resendButton: undefined,
-      subtitle: undefined,
-      title: undefined,
-    },
-    totpMfa: {
-      formTitle: undefined,
-      subtitle: undefined,
-      title: undefined,
-    },
-  },
+  // FIXME: currently alternative methods exist in reverification and signIn
+  // __experimental_userVerification: {
+  //   alternativeMethods: {
+  //     actionLink: undefined,
+  //     actionText: undefined,
+  //     blockButton__backupCode: undefined,
+  //     blockButton__emailCode: undefined,
+  //     blockButton__password: undefined,
+  //     blockButton__phoneCode: undefined,
+  //     blockButton__totp: undefined,
+  //     getHelp: {
+  //       blockButton__emailSupport: undefined,
+  //       content: undefined,
+  //       title: undefined,
+  //     },
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   backupCodeMfa: {
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   emailCode: {
+  //     formTitle: undefined,
+  //     resendButton: undefined,
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   noAvailableMethods: {
+  //     message: undefined,
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   password: {
+  //     actionLink: undefined,
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   phoneCode: {
+  //     formTitle: undefined,
+  //     resendButton: undefined,
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   phoneCodeMfa: {
+  //     formTitle: undefined,
+  //     resendButton: undefined,
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  //   totpMfa: {
+  //     formTitle: undefined,
+  //     subtitle: undefined,
+  //     title: undefined,
+  //   },
+  // },
   backButton: 'Powrót',
   badge__default: 'Domyślny',
   badge__otherImpersonatorDevice: 'Inne urządzenie osobiste',

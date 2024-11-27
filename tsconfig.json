@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["node", "jest"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -38,5 +39,5 @@
     "src/app/api/settings/api-key/route.ts",
     "storybook/main.js"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/temporal"]
 }
