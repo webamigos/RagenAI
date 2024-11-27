@@ -7,7 +7,7 @@ import {
   Text,
   PencilSquareIcon,
   HomeIcon,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
 

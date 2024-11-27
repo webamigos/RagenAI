@@ -5,8 +5,8 @@ import { memo, useState } from 'react';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
-import { Divider } from '@salesyy/common-ui/Divider';
-import { SpinnerSVG } from '@salesyy/common-ui/icons';
+import { Divider } from '@ragenai/common-ui/Divider';
+import { SpinnerSVG } from '@ragenai/common-ui/icons';
 
 import { logger } from '@/app/lib/utils/logger';
 import { saveUserMetadata } from '@/app/actions';

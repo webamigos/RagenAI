@@ -4,7 +4,7 @@ import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 
-import * as CommonUi from '@salesyy/common-ui';
+import * as CommonUi from '@ragenai/common-ui';
 import { deleteDocumentAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';

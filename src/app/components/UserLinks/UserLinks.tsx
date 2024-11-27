@@ -5,8 +5,8 @@ import {
   SignOutButton,
   SignedOut,
 } from '@clerk/nextjs';
-import { LogoutIcon } from '@salesyy/common-ui/icons';
-import { Text } from '@salesyy/common-ui/Text';
+import { LogoutIcon } from '@ragenai/common-ui/icons';
+import { Text } from '@ragenai/common-ui/Text';
 
 export const UserLinks = () => {
   const t = useTranslations();

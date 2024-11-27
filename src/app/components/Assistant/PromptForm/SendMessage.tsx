@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
-import { Button } from '@salesyy/common-ui';
+import { Button } from '@ragenai/common-ui';
 
 type Props = {
   disabled: boolean;

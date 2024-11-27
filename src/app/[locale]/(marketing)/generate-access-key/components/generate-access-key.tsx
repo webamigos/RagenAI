@@ -4,8 +4,8 @@ import { useOrganization } from '@clerk/nextjs';
 import { decodeKey, generateKey } from '../actions/generate-key';
 
 import { useState } from 'react';
-import { Button } from '@salesyy/common-ui/Button';
-import { Input } from '@salesyy/common-ui/Input';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import { toast } from 'react-toastify';
 import { type Organization } from '@prisma/client';
 

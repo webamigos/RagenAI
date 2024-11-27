@@ -19,7 +19,7 @@ import {
   TabPanel,
   WysiwygEditor,
   Button,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();

@@ -3,7 +3,7 @@
 import { useTheme } from 'next-themes';
 import { dark, experimental__simple } from '@clerk/themes';
 import { OrganizationProfile } from '@clerk/nextjs';
-import { Card } from '@salesyy/common-ui/Card';
+import { Card } from '@ragenai/common-ui/Card';
 
 export const ManageOrganization = () => {
   const { resolvedTheme } = useTheme();

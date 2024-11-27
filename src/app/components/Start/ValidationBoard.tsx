@@ -7,7 +7,7 @@ import {
   CheckIcon,
   Link,
   Button,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { useSettings } from '@/app/hooks/useSettings';
 
 export const ValidationBoard = () => {

@@ -16,7 +16,7 @@
   },
   "sign-up": {
     "create-account": "Create your account",
-    "to-continue": "to continue to SalesYY Assistant",
+    "to-continue": "to continue to Ragen Assistant",
     "sign-up": "Sign up",
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
@@ -30,7 +30,7 @@
     "sign-in": "Sign in",
     "sign-up": "Sign up",
     "Password": "Password",
-    "to-continue": "to continue to SalesYY Assistant",
+    "to-continue": "to continue to Ragen Assistant",
     "Dont-have-an-account": "Dont have an account?",
     "or": "or",
     "Forgot-password": "Forgot your password?",
@@ -57,46 +57,46 @@
   },
   "Metadata": {
     "index": {
-      "title": "Chat with Assistant | SalesYY"
+      "title": "Chat with Assistant | Ragen AI"
     },
     "sign-in": {
-      "title": "Sign In | SalesYY"
+      "title": "Sign In | Ragen AI"
     },
     "sign-up": {
-      "title": "Sign Up | SalesYY"
+      "title": "Sign Up | Ragen AI"
     },
     "enter-code": {
-      "title": "Verify Your Account | SalesYY"
+      "title": "Verify Your Account | Ragen AI"
     },
     "forgot-password": {
-      "title": "Forgot Password | SalesYY"
+      "title": "Forgot Password | Ragen AI"
     },
     "reset-password": {
-      "title": "Reset Password | SalesYY"
+      "title": "Reset Password | Ragen AI"
     },
     "guest-threads": {
-      "title": "Chat with Assistant | SalesYY"
+      "title": "Chat with Assistant | Ragen AI"
     },
     "manage-knowledge": {
-      "title": "Manage Knowledge | SalesYY"
+      "title": "Manage Knowledge | Ragen AI"
     },
     "my-profile": {
-      "title": "My Profile | SalesYY"
+      "title": "My Profile | Ragen AI"
     },
     "my-profile:security": {
-      "title": "Profile Security | SalesYY"
+      "title": "Profile Security | Ragen AI"
     },
     "create-organization": {
-      "title": "Create Organization | SalesYY"
+      "title": "Create Organization | Ragen AI"
     },
     "organization-profile": {
-      "title": "Manage Organization | SalesYY"
+      "title": "Manage Organization | Ragen AI"
     },
     "organization-profile:organization-members": {
-      "title": "Manage Members | SalesYY"
+      "title": "Manage Members | Ragen AI"
     },
     "prompt-management": {
-      "title": "Assistant Management | SalesYY"
+      "title": "Assistant Management | Ragen AI"
     }
   },
   "chat": {

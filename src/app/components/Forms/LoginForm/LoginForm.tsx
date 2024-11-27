@@ -10,7 +10,7 @@ import { useState } from 'react';
 
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { Button, Card, Input, Link, Text } from '@salesyy/common-ui';
+import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
 import { Logo } from '../../Logo';
 
 import { type LoginFormData, loginSchema } from './schema';
@@ -60,7 +60,7 @@ export const LoginForm = () => {
 
   return (
     <Card className="w-screen">
-      <div className="w-full flex justify-center mb-2">
+      <div className="w-full flex justify-center items-center mb-2">
         <Logo />
       </div>
       <div className="flex flex-col mb-4 text-center">

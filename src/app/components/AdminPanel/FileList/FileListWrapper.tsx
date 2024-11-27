@@ -1,7 +1,7 @@
 'use client';
 
 import { FileList } from './FileList';
-import { Card } from '@salesyy/common-ui/Card';
+import { Card } from '@ragenai/common-ui/Card';
 
 export const FileListWrapper = () => {
   return (

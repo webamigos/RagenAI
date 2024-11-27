@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 import { logger } from '@/app/lib/utils/logger';
-import { Button } from '@salesyy/common-ui';
+import { Button } from '@ragenai/common-ui';
 
 export const Avatar = () => {
   const handleClick = async () => {

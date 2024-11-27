@@ -1,0 +1,22 @@
+/// <reference types="vitest" />
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import tsconfigPaths from 'vitest-tsconfig-paths';
+
+export default defineConfig({
+  plugins: [react(), tsconfigPaths()],
+
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./vitest-setup.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
+      'src/**/*.spec.ts',
+      'src/**/*.spec.tsx',
+    ],
+    exclude: ['src/temporal/**'],
+    clearMocks: true,
+  },
+});

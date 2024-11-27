@@ -6,7 +6,7 @@ import {
   Text,
   Button,
   SpinnerSVG,
-} from '@salesyy/common-ui';
+} from '@ragenai/common-ui';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 

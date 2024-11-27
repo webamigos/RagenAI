@@ -1,6 +1,6 @@
 {
   "Index": {
-    "title": "Asystent SalesYY",
+    "title": "Asystent Ragen",
     "welcome": "Welcome",
     "start-new-thread": "Rozpocznij nowy wątek",
     "status-thinking": "Myślę...",
@@ -16,7 +16,7 @@
   },
   "sign-up": {
     "create-account": "Załóż konto",
-    "to-continue": "aby kontynuować w SalesYY Assistant",
+    "to-continue": "aby kontynuować w Ragen Assistant",
     "sign-up": "Zarejestruj się",
     "password": "Hasło",
     "Already-have-an-account": "Masz już konto?",
@@ -30,7 +30,7 @@
     "sign-in": "Zaloguj się",
     "sign-up": "Zarejestruj się",
     "Password": "Hasło",
-    "to-continue": "aby przejść do SalesYY Assistant",
+    "to-continue": "aby przejść do Ragen Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
     "Forgot-password": "Zapomniałeś hasła?",
@@ -57,46 +57,46 @@
   },
   "Metadata": {
     "index": {
-      "title": "Czat z Asystentem | SalesYY"
+      "title": "Czat z Asystentem | Ragen AI"
     },
     "sign-in": {
-      "title": "Zaloguj się | SalesYY"
+      "title": "Zaloguj się | Ragen AI"
     },
     "sign-up": {
-      "title": "Zarejestruj się | SalesYY"
+      "title": "Zarejestruj się | Ragen AI"
     },
     "enter-code": {
-      "title": "Zweryfikuj swoje konto | SalesYY"
+      "title": "Zweryfikuj swoje konto | Ragen AI"
     },
     "forgot-password": {
-      "title": "Zapomniałeś hasła | SalesYY"
+      "title": "Zapomniałeś hasła | Ragen AI"
     },
     "reset-password": {
-      "title": "Zresetuj hasło | SalesYY"
+      "title": "Zresetuj hasło | Ragen AI"
     },
     "guest-threads": {
-      "title": "Czat z Asystentem | SalesYY"
+      "title": "Czat z Asystentem | Ragen AI"
     },
     "manage-knowledge": {
-      "title": "Zarządzaj wiedzą | SalesYY"
+      "title": "Zarządzaj wiedzą | Ragen AI"
     },
     "my-profile": {
-      "title": "Mój profil | SalesYY"
+      "title": "Mój profil | Ragen AI"
     },
     "my-profile:security": {
-      "title": "Bezpieczeństwo profilu | SalesYY"
+      "title": "Bezpieczeństwo profilu | Ragen AI"
     },
     "create-organization": {
-      "title": "Utwórz organizację | SalesYY"
+      "title": "Utwórz organizację | Ragen AI"
     },
     "organization-profile": {
-      "title": "Zarządzaj organizacją | SalesYY"
+      "title": "Zarządzaj organizacją | Ragen AI"
     },
     "organization-profile:organization-members": {
-      "title": "Zarządzaj członkami | SalesYY"
+      "title": "Zarządzaj członkami | Ragen AI"
     },
     "prompt-management": {
-      "title": "Zarządzanie asystentem | SalesYY"
+      "title": "Zarządzanie asystentem | Ragen AI"
     }
   },
   "chat": {
