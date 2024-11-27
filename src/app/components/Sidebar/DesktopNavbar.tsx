@@ -27,7 +27,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
     <>
       {userEmail && (
         <div className="lg:fixed flex justify-end content-center font-sans z-50">
-          <div className="bg-white dark:bg-secondary-dark flex items-center mt-4 lg:mt-2 gap-4 bg-white dark:bg-secondary-dark rounded-3xl shadow-md p-1 group">
+          <div className="bg-white dark:bg-secondary-dark flex items-center mt-4 lg:mt-2 gap-4 rounded-3xl shadow-md p-1">
             <LanguageSwitcher className="ml-1" />
             <ThemeSwitcher />
             <a
@@ -43,21 +43,23 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
             <button className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 sm:hidden">
               <PencilSquareIcon className="w-6 h-6" />
             </button>
-            <div className="flex flex-col items-start hidden sm:flex max-w-0 overflow-hidden group-hover:max-w-[150px] group-hover:animate-slide-in transition-all duration-500">
-              <Text
-                fontSize="sm"
-                className="text-primary-blue-500 dark:text-gray-500 whitespace-nowrap"
-              >
-                {t('welcome')}
-              </Text>
-              <Text fontSize="sm" className="mr-2 whitespace-nowrap">
-                {userEmail?.split('@')[0] || 'User'}
-              </Text>
+            <div className="relative flex items-center group">
+              <div className="flex flex-col items-start max-w-0 overflow-hidden group-hover:max-w-[150px] transition-[max-width] duration-500 ease-in-out">
+                <Text
+                  fontSize="sm"
+                  className="text-primary-blue-500 dark:text-gray-500 whitespace-nowrap"
+                >
+                  {t('welcome')}
+                </Text>
+                <Text fontSize="sm" className="mr-2 whitespace-nowrap">
+                  {userEmail?.split('@')[0] || 'User'}
+                </Text>
+              </div>
+              <Avatar
+                className="w-10 h-10 mr-1 cursor-pointer group-hover:opacity-100"
+                src={userAvatar}
+              />
             </div>
-            <Avatar
-              className="w-10 h-10 -ml-4 mr-1 sm:flex hidden"
-              src={userAvatar}
-            />
           </div>
         </div>
       )}
