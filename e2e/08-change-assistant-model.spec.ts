@@ -11,8 +11,9 @@ test.beforeEach(async ({ page }) => {
 test('change-assistant-model', async ({ page }) => {
   await login(page);
 
+  // TODO: make full navigation -> settings -> assistant management
   await page.goto('/en/my-profile/prompt-management');
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(2000);
 
   const isVisible = await page
     .getByText(/set environment variables/i)

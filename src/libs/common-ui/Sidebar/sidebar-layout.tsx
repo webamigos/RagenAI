@@ -151,7 +151,7 @@ export function SidebarLayout({
         <div
           className={`${baseContentWrapperStyles} ${
             isMyProfile
-              ? 'items-start sm:px-0 pt-5 lg:shadow-sm'
+              ? 'items-start sm:px-0 pt-5 lg:shadow-sm mt-12'
               : 'justify-end'
           }`}
         >

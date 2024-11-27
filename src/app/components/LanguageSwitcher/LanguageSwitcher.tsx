@@ -4,6 +4,8 @@ import { useTransition } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 
+import { classMerge } from '@ragenai/common-ui';
+
 import 'flag-icons/css/flag-icons.min.css';
 
 type Props = {
@@ -33,12 +35,12 @@ export const LanguageSwitcher = ({ className }: Props) => {
   };
 
   return (
-    <div className="flex">
+    <div className={classMerge('flex', className)}>
       <button
         onClick={handleClick}
-        className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 opacity-85"
+        className="rounded-full border p-2 opacity-80 hover:bg-gray-100 hover:opacity-100 dark:border-accent-dark-700 dark:hover:bg-accent-dark-700"
       >
-        <span className={`fi fi-${flag} mx-auto`} />
+        <span className={`fi fi-${flag} m-0.5`} />
       </button>
     </div>
   );
