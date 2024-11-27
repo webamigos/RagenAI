@@ -20,7 +20,8 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
   const t = useTranslations('Index');
   const pathname = usePathname();
 
-  const isMyProfile = pathname.includes('/my-profile');
+  const isMyProfile =
+    pathname.includes('/my-profile') || pathname.includes('/manage-knowledge');
 
   return (
     <>
