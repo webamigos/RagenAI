@@ -15,6 +15,7 @@ import { Text } from '../Text';
 import { useTranslations } from 'next-intl';
 
 type Props = {
+  autocomplete?: string;
   label?: string;
   hint?: string;
   error?: FieldError;
@@ -47,6 +48,7 @@ export const Input = forwardRef(
       isLoading = false,
       skeletonHeight = 'h-5',
       skeletonWidth = 'w-50',
+      autocomplete,
       ...rest
     }: Props,
     ref: Ref<HTMLInputElement>
@@ -118,6 +120,7 @@ export const Input = forwardRef(
                 type={inputType}
                 min={min}
                 max={max}
+                autoComplete={autocomplete}
                 step={step}
                 className={classMerge(
                   'block w-full dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
