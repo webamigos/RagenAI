@@ -10,6 +10,7 @@ import {
 } from '@ragenai/common-ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
+import Link from 'next/link';
 
 type Props = {
   userAvatar?: string;
@@ -30,16 +31,20 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
           <div className="bg-white dark:bg-secondary-dark flex items-center mt-4 lg:mt-2 gap-4 rounded-3xl shadow-md p-1">
             <LanguageSwitcher className="ml-1" />
             <ThemeSwitcher />
-            <a
+            <Link
               href={isMyProfile ? '/' : '/my-profile'}
               className="rounded-full border p-1.5 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
+              data-testid="home-or-settings-button"
             >
               {isMyProfile ? (
-                <HomeIcon className="h-6 w-6 m-0.5" />
+                <HomeIcon data-testid="home-icon" className="h-6 w-6 m-0.5" />
               ) : (
-                <SettingsIcon className="h-6 w-6 m-0.5 dark:text-gray-400" />
+                <SettingsIcon
+                  data-testid="settings-icon"
+                  className="h-6 w-6 m-0.5 dark:text-gray-400"
+                />
               )}
-            </a>
+            </Link>
             <button className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 sm:hidden">
               <PencilSquareIcon className="w-6 h-6" />
             </button>

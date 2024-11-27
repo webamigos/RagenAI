@@ -2,7 +2,7 @@ import { ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
 
-export const SettingsIcon = ({ className }: ComponentProps<'svg'>) => {
+export const SettingsIcon = ({ className, ...rest }: ComponentProps<'svg'>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -11,6 +11,7 @@ export const SettingsIcon = ({ className }: ComponentProps<'svg'>) => {
       strokeWidth="1.5"
       stroke="currentColor"
       className={classMerge('h-5 w-5', className)}
+      {...rest}
     >
       <path
         strokeLinecap="round"
