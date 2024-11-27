@@ -296,10 +296,10 @@
   "setup-board": {
     "title": "Lista kontrolna",
     "organization-setup": "Organizacja skonfigurowana",
-    "no-organization": "Brak organizacji",
-    "api-key-configured": "Podano klucz API",
-    "no-api-key": "Brak klucza API",
-    "no-knowledge": "Brak wiedzy",
+    "no-organization": "Skonfiguruj organizację",
+    "api-key-configured": "klucz API skonfigurowany",
+    "no-api-key": "Ustaw klucz API",
+    "no-knowledge": "Wgraj wiedzę",
     "knowledge-uploaded": "Pliki zostały przesłane"
   }
 }

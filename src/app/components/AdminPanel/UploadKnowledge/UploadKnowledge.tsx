@@ -8,6 +8,7 @@ import { Card, FileUploader, Button } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
+import { useSettings } from '@/app/hooks/useSettings';
 
 import { UploadList } from './UploadList';
 
@@ -19,6 +20,7 @@ export const UploadKnowledge = () => {
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('admin-panel');
   const { organization } = useOrganization();
+  const { refreshSettings } = useSettings();
 
   if (!organization) {
     return;
@@ -56,6 +58,7 @@ export const UploadKnowledge = () => {
         successToast({ message: t('success') });
         setFiles([]);
         refreshDocuments();
+        refreshSettings();
       } else {
         errorToast({ message: `${t('error')}: ${response.message}` });
       }
