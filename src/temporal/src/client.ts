@@ -1,25 +1,28 @@
-import dotenvFlow from 'dotenv-flow';
-import * as path from 'path';
+import fs from 'fs-extra';
 
 import { Client, Connection } from '@temporalio/client';
+import {
+  certificatePath,
+  TEMPORAL_NAMESPACE,
+  TEMPORAL_SERVER_ADDRESS,
+} from './consts';
 
-dotenvFlow.config({
-  path: path.resolve(__dirname, '../../..'),
-});
-
-const createClient = (): Client => {
-  const TEMPORAL_SERVER_ADDRESS =
-    process.env.TEMPORAL_SERVER_ADDRESS || 'localhost:7233';
+const createClient = async (): Promise<Client> => {
+  const cert = await fs.readFile(`${certificatePath}.pem`);
+  const key = await fs.readFile(`${certificatePath}.key`);
 
   const connection = Connection.lazy({
     address: TEMPORAL_SERVER_ADDRESS,
-    // In production, pass options to configure TLS and other settings.
+    tls: {
+      clientCertPair: {
+        crt: cert,
+        key,
+      },
+    },
   });
-  return new Client({ connection });
+  return new Client({ connection, namespace: TEMPORAL_NAMESPACE });
 };
 
-const client: Client = createClient();
-
-export const getTemporalClient = (): Client => {
-  return client;
+export const getTemporalClient = async (): Promise<Client> => {
+  return await createClient();
 };

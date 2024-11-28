@@ -1,38 +1,32 @@
-import dotenvFlow from 'dotenv-flow';
-import * as path from 'path';
 import { NativeConnection, Worker } from '@temporalio/worker';
+import fs from 'fs-extra';
 
 import * as activities from './activities';
 import { TASK_QUEUE_NAME } from './shared';
-
-dotenvFlow.config({
-  path: path.resolve(__dirname, '../../..'),
-});
-
-const workflowOption = () =>
-  process.env.NODE_ENV === 'production'
-    ? {
-        workflowBundle: {
-          codePath: require.resolve('../lib/workflow-bundle.js'),
-        },
-      }
-    : { workflowsPath: require.resolve('./workflows') };
-
-run().catch((err) => console.error(err));
+import {
+  certificatePath,
+  TEMPORAL_NAMESPACE,
+  TEMPORAL_SERVER_ADDRESS,
+} from './consts';
 
 async function run() {
-  const TEMPORAL_SERVER_ADDRESS =
-    process.env.TEMPORAL_SERVER_ADDRESS || 'localhost:7233';
+  const cert = await fs.readFile(`${certificatePath}.pem`);
+  const key = await fs.readFile(`${certificatePath}.key`);
 
   const connection = await NativeConnection.connect({
     address: TEMPORAL_SERVER_ADDRESS,
-    // In production, pass options to configure TLS and other settings.
+    tls: {
+      clientCertPair: {
+        crt: cert,
+        key,
+      },
+    },
   });
   try {
     const worker = await Worker.create({
       connection,
-      // workflowsPath: require.resolve('./workflows'),
-      ...workflowOption(),
+      namespace: TEMPORAL_NAMESPACE,
+      workflowsPath: require.resolve('./workflows'),
       activities,
       taskQueue: TASK_QUEUE_NAME,
       maxConcurrentActivityTaskExecutions: 50,
@@ -42,3 +36,5 @@ async function run() {
     connection.close();
   }
 }
+
+run().catch((err) => console.error(err));
