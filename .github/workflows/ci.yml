@@ -23,6 +23,8 @@ env:
   TARGET_ENV: 'ci'
   TEMPORAL_SERVER_ADDRESS: 'http://example.com'
   TEMPORAL_NAMESPACE: 'ci'
+  TEMPORAL_CERT: 'dummy'
+  TEMPORAL_KEY: 'dummy'
 
 on:
   push:
