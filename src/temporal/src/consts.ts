@@ -6,11 +6,6 @@ dotenvFlow.config({
 });
 
 export const targetEnv = process.env.TARGET_ENV!;
-export const certificatePath = path.resolve(
-  process.cwd(),
-  'src/temporal/certs',
-  targetEnv
-);
 
 export const TEMPORAL_NAMESPACE = process.env.TEMPORAL_NAMESPACE || 'local';
 export const TEMPORAL_SERVER_ADDRESS =

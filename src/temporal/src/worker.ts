@@ -1,24 +1,23 @@
 import { NativeConnection, Worker } from '@temporalio/worker';
-import fs from 'fs-extra';
 
 import * as activities from './activities';
 import { TASK_QUEUE_NAME } from './shared';
-import {
-  certificatePath,
-  TEMPORAL_NAMESPACE,
-  TEMPORAL_SERVER_ADDRESS,
-} from './consts';
+import { TEMPORAL_NAMESPACE, TEMPORAL_SERVER_ADDRESS } from './consts';
 
 async function run() {
-  const cert = await fs.readFile(`${certificatePath}.pem`);
-  const key = await fs.readFile(`${certificatePath}.key`);
+  const cert = process.env.TEMPORAL_CERT; // pem
+  const key = process.env.TEMPORAL_KEY; // key
+
+  if (!cert || !key) {
+    throw new Error('Missing required Temporal certificates');
+  }
 
   const connection = await NativeConnection.connect({
     address: TEMPORAL_SERVER_ADDRESS,
     tls: {
       clientCertPair: {
-        crt: cert,
-        key,
+        crt: Buffer.from(cert, 'base64'),
+        key: Buffer.from(key, 'base64'),
       },
     },
   });
