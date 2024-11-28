@@ -6,7 +6,7 @@ import {
   ACTIVITY_CANCEL_EMBEDDING_COMMAND,
   ACTIVITY_EMBEDDING_STATE_QUERY,
   TASK_QUEUE_NAME,
-} from '@/temporal/src/shared';
+} from '../../../temporal/src/shared';
 import { logger } from '@/app/lib/utils/logger';
 import { nanoid } from 'nanoid';
 
