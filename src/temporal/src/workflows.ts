@@ -37,9 +37,9 @@ export const embeddingStateQuery = wf.defineQuery<EmbeddingState>(
   ACTIVITY_EMBEDDING_STATE_QUERY
 );
 
-export const EmbeddingWorkflow = async ({
+export async function EmbeddingWorkflow({
   documentId,
-}: StartEmbeddingProcessInput) => {
+}: StartEmbeddingProcessInput) {
   let embeddingState: EmbeddingState = 'EMBEDDING_PENDING';
 
   // handler when state has changed to EMBEDDING_CANCELED
@@ -60,7 +60,7 @@ export const EmbeddingWorkflow = async ({
     embeddingState = 'EMBEDDING_DONE';
     return await onEmbeddingProcessCompleted({ documentId });
   }
-};
+}
 
 export async function estimateAgeWorkflow(name: string): Promise<string> {
   const age = await estimateAge(name);
