@@ -68,20 +68,21 @@ export async function POST(request: NextRequest, { params }: Params) {
           projectId: defaultProjectId,
         });
 
-        await createDocumentDetailsInDB(
-          file.name,
-          file.size,
-          uploaderId,
-          uniqueFileId
-        );
-
-        if (file.name.endsWith('.md')) {
-          await createMarkdownDocument({
-            public_id: uniqueFileId,
-            title: file.name,
-            organization_id: organizationId,
-            content: content as string,
-          });
+        if (success) {
+          await createDocumentDetailsInDB(
+            file.name,
+            file.size,
+            uploaderId,
+            uniqueFileId
+          );
+          if (file.name.endsWith('.md')) {
+            await createMarkdownDocument({
+              public_id: uniqueFileId,
+              title: file.name,
+              organization_id: organizationId,
+              content: content as string,
+            });
+          }
         }
 
         if (!success) {
