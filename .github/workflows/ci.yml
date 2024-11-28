@@ -21,6 +21,8 @@ env:
   REDIS_URL: 'http://example.com'
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'ci'
+  TEMPORAL_SERVER_ADDRESS: 'http://example.com'
+  TEMPORAL_NAMESPACE: 'ci'
 
 on:
   push:
