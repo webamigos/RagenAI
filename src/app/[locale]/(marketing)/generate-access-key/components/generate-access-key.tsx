@@ -44,9 +44,10 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
 
   const embedScript = `<script src='${
     window.location.origin
-  }/api/embed/${key}?title=${encodeURIComponent(
-    chatbotTitle
-  )}&message=${encodeURIComponent(chatbotName)}'/>`;
+  }/api/embed/${key}?${new URLSearchParams({
+    title: chatbotTitle,
+    message: chatbotName,
+  }).toString()}'/>`;
   const publicUrl = `${window.location.origin}/pl/public/${key}`;
 
   return (
@@ -71,14 +72,14 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
           <div>
             <h2 className="text-lg font-bold">Konfiguracja chatbota</h2>
             <Input
-              value={chatbotName}
-              onChange={(e) => setChatbotName(e.target.value)}
+              value={chatbotTitle}
+              onChange={(e) => setChatbotTitle(e.target.value)}
               placeholder="Tytuł okna czatbota"
               className="max-w-md h-10"
             />
             <Input
-              value={chatbotTitle}
-              onChange={(e) => setChatbotTitle(e.target.value)}
+              value={chatbotName}
+              onChange={(e) => setChatbotName(e.target.value)}
               placeholder="Podtytuł okna czatbota"
               className="max-w-md h-10"
             />
