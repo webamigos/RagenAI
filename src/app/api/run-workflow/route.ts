@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getTemporalClient } from '../../../temporal/src/client';
-import { EmbeddingWorkflow } from '../../../temporal/src/workflows';
+import { embeddingWorkflow } from '../../../temporal/src/workflows';
 import {
   ACTIVITY_CANCEL_EMBEDDING_COMMAND,
   ACTIVITY_EMBEDDING_STATE_QUERY,
@@ -23,7 +23,7 @@ export const GET = async (request: NextRequest) => {
     const client = await getTemporalClient();
 
     // Workflow Execution Request
-    const handle = await client.workflow.start(EmbeddingWorkflow, {
+    const handle = await client.workflow.start(embeddingWorkflow, {
       taskQueue: TASK_QUEUE_NAME,
       workflowId: workflowId,
       args: [{ documentId: itemId }], // this will be passed as an argument to cancelEmbeddingProcess and cancelEmbeddingProcess

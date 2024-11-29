@@ -37,7 +37,7 @@ export const embeddingStateQuery = wf.defineQuery<EmbeddingState>(
   ACTIVITY_EMBEDDING_STATE_QUERY
 );
 
-export async function EmbeddingWorkflow({
+export async function embeddingWorkflow({
   documentId,
 }: StartEmbeddingProcessInput) {
   let embeddingState: EmbeddingState = 'EMBEDDING_PENDING';

@@ -3,7 +3,7 @@ import * as path from 'path';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { WorkflowCoverage } from '@temporalio/nyc-test-coverage';
 import { Worker, Runtime, DefaultLogger, LogEntry } from '@temporalio/worker';
-import { EmbeddingWorkflow, estimateAgeWorkflow } from './workflows';
+import { embeddingWorkflow, estimateAgeWorkflow } from './workflows';
 
 import { estimateAge } from './activities';
 import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from './shared';
@@ -32,7 +32,7 @@ afterAll(() => {
   workflowCoverage.mergeIntoGlobalCoverage();
 });
 
-describe('EmbeddingWorkflow', () => {
+describe('embeddingWorkflow', () => {
   // it('runs EmbeddingWorkflow with activity call', async () => {
   //   const { client, nativeConnection } = testEnv;
   //   const worker = await Worker.create({
@@ -43,7 +43,7 @@ describe('EmbeddingWorkflow', () => {
   //   });
 
   //   const result = await worker.runUntil(async () => {
-  //     const handle = await client.workflow.start(EmbeddingWorkflow, {
+  //     const handle = await client.workflow.start(embeddingWorkflow, {
   //       args: [{ documentId: '4567' }],
   //       workflowId: 'test',
   //       taskQueue: 'test',

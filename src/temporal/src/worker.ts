@@ -30,19 +30,22 @@ async function run() {
       },
     },
   });
-  try {
-    const worker = await Worker.create({
-      connection,
-      namespace: TEMPORAL_NAMESPACE,
-      ...workflowOption(),
-      activities,
-      taskQueue: TASK_QUEUE_NAME,
-      maxConcurrentActivityTaskExecutions: 50,
-    });
-    await worker.run();
-  } finally {
-    connection.close();
-  }
+
+  const worker = await Worker.create({
+    connection,
+    namespace: TEMPORAL_NAMESPACE,
+    // ...workflowOption(),
+    workflowsPath: require.resolve('./workflows'),
+    activities,
+    taskQueue: TASK_QUEUE_NAME,
+    maxConcurrentActivityTaskExecutions: 50,
+  });
+
+  await worker.run();
+  await connection.close();
 }
 
-run().catch((err) => console.error(err));
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
