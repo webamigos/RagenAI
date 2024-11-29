@@ -34,8 +34,8 @@ async function run() {
   const worker = await Worker.create({
     connection,
     namespace: TEMPORAL_NAMESPACE,
-    ...workflowOption(),
-    // workflowsPath: require.resolve('./workflows'),
+    // ...workflowOption(),
+    workflowsPath: require.resolve('./workflows'),
     activities,
     taskQueue: TASK_QUEUE_NAME,
     maxConcurrentActivityTaskExecutions: 50,

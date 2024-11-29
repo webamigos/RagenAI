@@ -7,6 +7,7 @@ import { Worker, Runtime, DefaultLogger, LogEntry } from '@temporalio/worker';
 
 import { estimateAge } from './activities';
 import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from './shared';
+import { estimateAgeWorkflow } from './workflows';
 
 let testEnv: TestWorkflowEnvironment;
 
@@ -68,8 +69,8 @@ describe('embeddingWorkflow', () => {
     );
 
     await worker.runUntil(async () => {
-      const result = await client.workflow.execute(estimateAge, {
-        args: ['Stefan'],
+      const result = await client.workflow.execute(estimateAgeWorkflow, {
+        args: [{ name: 'Stefan' }],
         workflowId: 'testId',
         taskQueue: 'test',
       });

@@ -15,7 +15,7 @@
     "build:temporal-workflow-bundle": "ts-node ./src/temporal/src/scripts/build-workflow-bundle.ts",
     "start": "next start",
     "start:temporal-worker": "ts-node ./src/temporal/src/worker",
-    "start:temporal-worker:dev": "nodemon --watch \"src/temporal/src/**\" --ext \"ts\" --signal SIGTERM --exec \"ts-node ./src/temporal/src/worker\"",
+    "dev:temporal-worker": "nodemon --watch \"src/temporal/src/**\" --ext \"ts\" --signal SIGTERM --exec \"ts-node ./src/temporal/src/worker\"",
     "lint": "next lint",
     "serve": "npx http-server --port 5433 out",
     "test": "vitest",

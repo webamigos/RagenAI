@@ -84,7 +84,7 @@ There is a new temporal directory and a couple of scripts
 
 There is an example repo https://github.com/temporalio/docker-compose from which we can use docker compose files.
 
-You can run
+You can run (or use Temporal Cloud configuration)
 
 ```bash
 cd temporal-server
@@ -96,7 +96,7 @@ to launch local dev server.
 You alo need to run worker:
 
 ```bash
-npm run start:worker
+npm run dev:temporal-worker
 ```
 
 ### Debugging using VSCode
