@@ -187,6 +187,7 @@
     "assistant-management": "Zarządzanie asystentem",
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
+    "search-threads": "Przeszukaj wątki",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",

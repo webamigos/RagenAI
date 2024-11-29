@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 import {
   SettingsIcon,
@@ -8,10 +9,10 @@ import {
   PencilSquareIcon,
   HomeIcon,
 } from '@ragenai/common-ui';
+import { useNewThread } from '@/app/hooks/useNewThread';
+
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
-import Link from 'next/link';
-
 type Props = {
   userAvatar?: string;
   userEmail?: string;
@@ -20,7 +21,7 @@ type Props = {
 export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
   const t = useTranslations('Index');
   const pathname = usePathname();
-
+  const { handleNewThread } = useNewThread();
   const isMyProfile =
     pathname.includes('/my-profile') || pathname.includes('/manage-knowledge');
 
@@ -45,7 +46,10 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
                 />
               )}
             </Link>
-            <button className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 sm:hidden">
+            <button
+              onClick={handleNewThread}
+              className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 sm:hidden"
+            >
               <PencilSquareIcon className="w-6 h-6" />
             </button>
             <div className="relative flex items-center group">
@@ -61,7 +65,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
                 </Text>
               </div>
               <Avatar
-                className="w-10 h-10 mr-1 cursor-pointer group-hover:opacity-100"
+                className="w-10 h-10 mr-1 hidden sm:flex cursor-pointer group-hover:opacity-100"
                 src={userAvatar}
               />
             </div>

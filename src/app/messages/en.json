@@ -187,6 +187,7 @@
     "assistant-management": "Assistant management",
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
+    "search-threads": "Search threads",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",

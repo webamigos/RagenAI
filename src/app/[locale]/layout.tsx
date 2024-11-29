@@ -1,4 +1,4 @@
-import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { ClerkProvider } from '@clerk/nextjs';
 import { enUS } from '@clerk/localizations';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
@@ -14,6 +14,7 @@ import { Prompt } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { isProductionTargetEnv } from '@/libs/utils/env';
+import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 
 const JoyrideProvider = dynamic<JoyrideProviderProps>(
   () =>
@@ -54,13 +55,15 @@ export default function LocaleLayout({ children, params: { locale } }: Props) {
           {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
           <body className={`${promptFont.className} h-full`}>
             <ThreadsContextProvider>
-              <Providers>
-                <SidebarProvider>
-                  <SettingsProvider>
-                    <JoyrideProvider>{children}</JoyrideProvider>
-                  </SettingsProvider>
-                </SidebarProvider>
-              </Providers>
+              <SearchThreadsProvider>
+                <Providers>
+                  <SidebarProvider>
+                    <SettingsProvider>
+                      <JoyrideProvider>{children}</JoyrideProvider>
+                    </SettingsProvider>
+                  </SidebarProvider>
+                </Providers>
+              </SearchThreadsProvider>
             </ThreadsContextProvider>
           </body>
         </html>

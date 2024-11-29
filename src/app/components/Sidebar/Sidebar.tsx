@@ -6,6 +6,7 @@ import {
   Text,
   Button,
   SpinnerSVG,
+  SearchIcon,
 } from '@ragenai/common-ui';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -13,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
+import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { Footer } from './Footer';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
@@ -44,6 +46,7 @@ export const Sidebar = ({ children, membership }: Props) => {
   const pathname = usePathname();
   const isError = error ? true : false;
   const t = useTranslations('sidebar');
+  const { openSearch } = useSearchThreads();
 
   return (
     <SidebarLayout
@@ -51,11 +54,11 @@ export const Sidebar = ({ children, membership }: Props) => {
       sidebar={
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
-          <div className="flex">
+          <div className="flex flex-col mb-5">
             <Button
               isLink
               onClick={handleThread}
-              className="relative ml-4 mb-5 w-10/12"
+              className="relative ml-4 w-10/12"
             >
               <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
               <Text
@@ -71,6 +74,14 @@ export const Sidebar = ({ children, membership }: Props) => {
                   className="absolute right-24 bottom-2.5"
                 />
               )}
+            </Button>
+            <Button
+              onClick={openSearch}
+              className="relative ml-4 w-10/12"
+              isLink
+            >
+              <SearchIcon className="w-6 h-6 dark:text-gray-200" />
+              <Text className="ml-1">{t('search-threads')}</Text>
             </Button>
           </div>
           <SidebarBody className="-mt-3.5">
