@@ -8,7 +8,7 @@ export default function PublicLayout({ children }: Props) {
   return (
     <div className="h-full">
       <Toast />
-      <main>{children}</main>
+      {children}
     </div>
   );
 }
