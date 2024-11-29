@@ -62,7 +62,11 @@ export async function EmbeddingWorkflow({
   }
 }
 
-export async function estimateAgeWorkflow(name: string): Promise<string> {
-  const age = await estimateAge(name);
+export async function estimateAgeWorkflow({
+  name,
+}: {
+  name: string;
+}): Promise<string> {
+  const age = await estimateAge();
   return `${name} has an estimated age of ${age}`;
 }
