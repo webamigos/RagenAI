@@ -16,8 +16,8 @@ export const createEmbedScript = (
   
   // Construct query parameters
   const queryParams = new URLSearchParams({
-    title: '${title}',
-    message: '${message}',
+    title: "${title}",
+    message: "${message}",
   }).toString();
 
   const iframe = document.createElement('iframe');
