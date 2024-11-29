@@ -27,10 +27,10 @@
     "verification-code-hint": "A verification code has been sent to your email address. Please enter it in the field below.",
     "resend-code": "Send new verification code",
     "email_code": {
-      "minLength": "Kod weryfikacyjny musi składać się z co najmniej {length} znaków",
+      "minLength": "Verification code must contain at least {length} characters",
       "code-expired": "This verification has expired. You must create a new one.",
       "resend-not-available": "Resending the code is not possible. Please try the registration process again.",
-      "verification-code-sent": "A verification code has been sent to the email address provided!",
+      "verification-code-sent": "Verification code has been sent to the email address provided",
       "resend-failed": "Error sending code"
     }
   },

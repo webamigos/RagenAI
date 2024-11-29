@@ -30,7 +30,7 @@
       "minLength": "Kod weryfikacyjny musi składać się z co najmniej {length} znaków",
       "code-expired": "This verification has expired. You must create a new one.",
       "resend-not-available": "Ponowne wysłanie kodu niemożliwe. Proszę przejdź ponownie proces rejestracji",
-      "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email!",
+      "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
     }
   },
