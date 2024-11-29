@@ -20,7 +20,7 @@ export const GET = async (request: NextRequest) => {
   const itemId = `654321`; // TODO: in real implementation replace with real id
 
   try {
-    const client = getTemporalClient();
+    const client = await getTemporalClient();
 
     // Workflow Execution Request
     const handle = await client.workflow.start(EmbeddingWorkflow, {

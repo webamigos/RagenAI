@@ -35,6 +35,12 @@ const envSchema = z.object({
 
   // Target env
   TARGET_ENV: z.enum(TARGET_ENV),
+
+  // Temporal
+  TEMPORAL_SERVER_ADDRESS: z.string(),
+  TEMPORAL_NAMESPACE: z.string(),
+  TEMPORAL_CERT: z.string(),
+  TEMPORAL_KEY: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);
