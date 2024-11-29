@@ -1,10 +1,8 @@
-import {
-  getTranslations,
-  unstable_setRequestLocale as setRequestLocale,
-} from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { EnterCodeForm } from '@/app/components/Forms/EnterCodeForm';
 import { PropsWihLocale } from '@/app/lib/types/types';
+import { Toast } from '@/app/components/Toast';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
@@ -16,5 +14,10 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 
 export default function EnterCodePage({ params: { locale } }: PropsWihLocale) {
   setRequestLocale(locale);
-  return <EnterCodeForm />;
+  return (
+    <>
+      <Toast />
+      <EnterCodeForm />
+    </>
+  );
 }
