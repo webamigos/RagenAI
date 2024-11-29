@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getTemporalClient } from '../../../temporal/src/client';
-import { embeddingWorkflow } from '../../../temporal/src/workflows';
+// import { embeddingWorkflow } from '../../../temporal/src/workflows';
 import {
   ACTIVITY_CANCEL_EMBEDDING_COMMAND,
   ACTIVITY_EMBEDDING_STATE_QUERY,
