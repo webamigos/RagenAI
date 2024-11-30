@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-import { getTemporalClient } from '../../../../temporal/src/client';
-import { estimateAgeWorkflow } from '../../../../temporal/src/workflows';
-import { TASK_QUEUE_NAME } from '../../../../temporal/src/shared';
-import { logger } from '@/app/lib/utils/logger';
 import { nanoid } from 'nanoid';
+
+import { getTemporalClient } from '@/temporal/src/client';
+import { TASK_QUEUE_NAME } from '@/temporal/src/shared';
+
+// DO NOT import workflows in Next.js app!
+// import { EmbeddingWorkflow } from '@/temporal/src/workflows';
+
+import { logger } from '@/app/lib/utils/logger';
 
 /**
  *
@@ -12,35 +15,42 @@ import { nanoid } from 'nanoid';
  * @returns
  */
 export const GET = async (request: NextRequest) => {
-  const workflowId = `doc-${nanoid()}`;
+  const personWorkflowId = `person-${nanoid()}`;
+  const documentWorkflowId = `doc-${nanoid()}`;
   const itemId = `654321`; // TODO: in real implementation replace with real id
 
   try {
-    const client = await getTemporalClient();
+    const client = getTemporalClient();
 
-    // Workflow Execution Request
-    const handle = await client.workflow.start(estimateAgeWorkflow, {
+    // ⚠️ Workflow Start
+    // ❌ WRONG: it's possible to pass workflow as a function, it will work on dev but not on prod!!!
+    // because there are completely different artifacts from next.js and temporal - it's really hard to match tem (if possible)
+    // moreover if we wat to use temporal worker from another services like Nest API, then we definitely should use string names of workflow
+    // TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
+    // ✅ OK: string name for the workflow
+    const personHandle = await client.workflow.start('estimateAgeWorkflow', {
       taskQueue: TASK_QUEUE_NAME,
-      workflowId: workflowId,
-      args: [{ name: 'Jannusz' }], // this will be passed as an argument to cancelEmbeddingProcess and cancelEmbeddingProcess
+      workflowId: personWorkflowId,
+      args: [{ name: 'Janina' }],
     });
 
-    logger.info('handle: %j', handle, 2);
+    logger.info('handle: %j', personHandle, 2);
 
-    // for fetching workflow from another part of the app(s)
-    // const workflow = await getTemporalClient().workflow.getHandle(transactionId);
+    // const documentHandle = await client.workflow.start(EmbeddingWorkflow, {
+    const documentHandle = await client.workflow.start('EmbeddingWorkflow', {
+      taskQueue: TASK_QUEUE_NAME,
+      workflowId: documentWorkflowId,
+      args: [{ documentId: itemId }],
+    });
 
-    // logger.info('handle: %j', await handle.result(), 2);
+    logger.info('handle: %j', documentHandle, 2);
 
-    // let embeddingState = await handle.query(ACTIVITY_EMBEDDING_STATE_QUERY);
-    // logger.info('embeddingState before cancel signal: %o', { embeddingState });
-
-    // await handle.signal(ACTIVITY_CANCEL_EMBEDDING_COMMAND);
-
-    // embeddingState = await handle.query(ACTIVITY_EMBEDDING_STATE_QUERY);
-    // logger.info('embeddingState after cancel signal: %o', { embeddingState });
-
-    return NextResponse.json({ workflowId });
+    return NextResponse.json({
+      personWorkflowId,
+      personWorkflowResultUrl: `http://localhost:3000/api/run-workflow/people/${personWorkflowId}`,
+      documentWorkflowId,
+      documentWorkflowResultUrl: `http://localhost:3000/api/run-workflow/documents/${documentWorkflowId}`,
+    });
   } catch (error) {
     logger.error({ err: error }, 'Fail to start Workflow');
     return NextResponse.json({ status: 'oh no' });

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import { getTemporalClient } from '../../../../../temporal/src/client';
+import { getTemporalClient } from '@/temporal/src/client';
 
 type Params = {
   params: { workflowId: string };

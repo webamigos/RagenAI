@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "dev:all": "npm-run-all -l build:temporal --parallel dev:temporal dev:next start:worker",
+    "dev:all": "npm-run-all -l build:temporal --parallel dev:temporal dev start:worker",
     "dev:temporal": "tsc --build --watch ./temporal/tsconfig.json",
     "build": "next build",
     "build:temporal": "tsc --build ./temporal/tsconfig.json",

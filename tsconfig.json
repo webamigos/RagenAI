@@ -26,7 +26,8 @@
       "@ragenai/common-ui": ["./src/libs/common-ui"],
       "@ragenai/prisma-client": ["./src/libs/db"],
 
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/temporal/*": ["./temporal/*"]
     }
   },
   "include": [

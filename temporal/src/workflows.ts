@@ -37,30 +37,30 @@ export const embeddingStateQuery = wf.defineQuery<EmbeddingState>(
   ACTIVITY_EMBEDDING_STATE_QUERY
 );
 
-// export async function EmbeddingWorkflow({
-//   documentId,
-// }: StartEmbeddingProcessInput) {
-//   let embeddingState: EmbeddingState = 'EMBEDDING_PENDING';
+export async function EmbeddingWorkflow({
+  documentId,
+}: StartEmbeddingProcessInput) {
+  let embeddingState: EmbeddingState = 'EMBEDDING_PENDING';
 
-//   // handler when state has changed to EMBEDDING_CANCELED
-//   wf.setHandler(
-//     cancelEmbeddingSignal,
-//     () => void (embeddingState = 'EMBEDDING_CANCELED')
-//   );
+  // handler when state has changed to EMBEDDING_CANCELED
+  wf.setHandler(
+    cancelEmbeddingSignal,
+    () => void (embeddingState = 'EMBEDDING_CANCELED')
+  );
 
-//   // handler for checking embedding state
-//   wf.setHandler(embeddingStateQuery, () => embeddingState);
+  // handler for checking embedding state
+  wf.setHandler(embeddingStateQuery, () => embeddingState);
 
-//   // check if embedding process is canceled or after 5 seconds
-//   // TODO: change timeout, currently we need to test if this flow works with temporal
-//   if (await wf.condition(() => embeddingState === 'EMBEDDING_CANCELED', '5s')) {
-//     return await cancelEmbeddingProcess({ documentId });
-//   } else {
-//     // if embedding is done, call onEmbeddingProcessCompleted function
-//     embeddingState = 'EMBEDDING_DONE';
-//     return await onEmbeddingProcessCompleted({ documentId });
-//   }
-// }
+  // check if embedding process is canceled or after 5 seconds
+  // TODO: change timeout, currently we need to test if this flow works with temporal
+  if (await wf.condition(() => embeddingState === 'EMBEDDING_CANCELED', '5s')) {
+    return await cancelEmbeddingProcess({ documentId });
+  } else {
+    // if embedding is done, call onEmbeddingProcessCompleted function
+    embeddingState = 'EMBEDDING_DONE';
+    return await onEmbeddingProcessCompleted({ documentId });
+  }
+}
 
 export async function estimateAgeWorkflow({
   name,
