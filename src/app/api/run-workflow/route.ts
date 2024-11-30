@@ -9,6 +9,8 @@ import { TASK_QUEUE_NAME } from '@/temporal/src/shared';
 
 import { logger } from '@/app/lib/utils/logger';
 
+export const dynamic = 'force-dynamic';
+
 /**
  *
  * @param request It's temporary for discussion purposes
@@ -47,9 +49,9 @@ export const GET = async (request: NextRequest) => {
 
     return NextResponse.json({
       personWorkflowId,
-      personWorkflowResultUrl: `http://localhost:3000/api/run-workflow/people/${personWorkflowId}`,
+      personWorkflowResultUrl: `./api/run-workflow/people/${personWorkflowId}`,
       documentWorkflowId,
-      documentWorkflowResultUrl: `http://localhost:3000/api/run-workflow/documents/${documentWorkflowId}`,
+      documentWorkflowResultUrl: `./api/run-workflow/documents/${documentWorkflowId}`,
     });
   } catch (error) {
     logger.error({ err: error }, 'Fail to start Workflow');

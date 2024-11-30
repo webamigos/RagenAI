@@ -6,6 +6,8 @@ type Params = {
   params: { workflowId: string };
 };
 
+export const dynamic = 'force-dynamic';
+
 export const GET = async (_request: Request, { params }: Params) => {
   const workflowId = params.workflowId;
 
