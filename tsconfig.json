@@ -27,7 +27,7 @@
       "@ragenai/prisma-client": ["./src/libs/db"],
 
       "@/*": ["./src/*"],
-      "@/temporal/*": ["./temporal/*"]
+      "@/temporal/*": ["./temporal/src/*"]
     }
   },
   "include": [

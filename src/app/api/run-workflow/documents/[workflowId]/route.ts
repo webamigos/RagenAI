@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 
-import { getTemporalClient } from '@/temporal/src/client';
+import { getTemporalClient } from '@/temporal/client';
 import {
   ACTIVITY_CANCEL_EMBEDDING_COMMAND,
   ACTIVITY_EMBEDDING_STATE_QUERY,
-} from '@/temporal/src/shared';
+} from '@/temporal/shared';
 import { logger } from '@/app/lib/utils/logger';
 
 type Params = {
