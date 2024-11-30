@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
-  "version": "4.4.2",
+  "version": "4.2.2",
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,

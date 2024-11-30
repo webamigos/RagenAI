@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getTemporalClient } from '@/temporal/src/client';
-import { estimateAgeWorkflow } from '@/temporal/src/workflows';
-import { TASK_QUEUE_NAME } from '@/temporal/src/shared';
+import { getTemporalClient } from '../../../../temporal/src/client';
+import { estimateAgeWorkflow } from '../../../../temporal/src/workflows';
+import { TASK_QUEUE_NAME } from '../../../../temporal/src/shared';
 import { logger } from '@/app/lib/utils/logger';
 import { nanoid } from 'nanoid';
 
@@ -40,7 +40,7 @@ export const GET = async (request: NextRequest) => {
     // embeddingState = await handle.query(ACTIVITY_EMBEDDING_STATE_QUERY);
     // logger.info('embeddingState after cancel signal: %o', { embeddingState });
 
-    return NextResponse.json({ status: 'started', workflowId });
+    return NextResponse.json({ workflowId });
   } catch (error) {
     logger.error({ err: error }, 'Fail to start Workflow');
     return NextResponse.json({ status: 'oh no' });
