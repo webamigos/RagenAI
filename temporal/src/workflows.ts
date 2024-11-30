@@ -67,5 +67,5 @@ export async function estimateAgeWorkflow({
 }: {
   name: string;
 }): Promise<string> {
-  return await generateRandomAge(name);
+  return await generateRandomAge({ name });
 }

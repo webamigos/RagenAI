@@ -25,7 +25,11 @@ function randomNumber(min: number, max: number) {
 }
 
 // temporary for check test settings
-export const generateRandomAge = async (name: string): Promise<string> => {
+export const generateRandomAge = async ({
+  name,
+}: {
+  name: string;
+}): Promise<string> => {
   const context = activity.Context.current();
   const randomAge = Math.round(randomNumber(24, 67));
   context.log.info('Calling estimateAgeActivity, random age is set to: ', {
