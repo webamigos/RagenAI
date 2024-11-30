@@ -8,7 +8,7 @@ import { TASK_QUEUE_NAME } from '@/temporal/shared';
 // import { EmbeddingWorkflow } from '@/temporal/src/workflows';
 
 import { logger } from '@/app/lib/utils/logger';
-import { estimateAgeWorkflow } from '@/temporal/workflows';
+import { newEstimateAgeWorkflow } from '@/temporal/workflows';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,13 +31,13 @@ export const GET = async (request: NextRequest) => {
     // moreover if we wat to use temporal worker from another services like Nest API, then we definitely should use string names of workflow
     // TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
     // ✅ OK: string name for the workflow
-    const personHandle = await client.workflow.start('estimateAgeWorkflow', {
+    const personHandle = await client.workflow.start('newEstimateAgeWorkflow', {
       taskQueue: TASK_QUEUE_NAME,
       workflowId: personWorkflowId,
-      args: [{ name: 'Janina3' }],
+      args: [{ name: 'Janina4' }],
     });
 
-    logger.info('handle: %j', personHandle, 2);
+    logger.info('personHandle: %j', personHandle, 2);
 
     // const documentHandle = await client.workflow.start(EmbeddingWorkflow, {
     const documentHandle = await client.workflow.start('EmbeddingWorkflow', {
@@ -46,7 +46,7 @@ export const GET = async (request: NextRequest) => {
       args: [{ documentId: itemId }],
     });
 
-    logger.info('handle: %j', documentHandle, 2);
+    logger.info('documentHandle: %j', documentHandle, 2);
 
     return NextResponse.json({
       personWorkflowId,

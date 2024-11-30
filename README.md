@@ -92,6 +92,10 @@ import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 const personHandle = await client.workflow.start(estimateAgeWorkflow, {
 ```
 
+⚠️ Moreover after changing activity name Temporal cloud still uses activity old name (estimateAge) but not each time 🤦
+
+Temporal solution for Temporal is to create new workflow name.
+
 ### How to test
 
 You can launch the application and open route: `/api/run-workflow`.

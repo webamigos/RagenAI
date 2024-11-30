@@ -62,7 +62,11 @@ export async function EmbeddingWorkflow({
   }
 }
 
-export async function estimateAgeWorkflow({
+// Changed name because of Temporal bug? 🧐
+// after changing activity name Temporal cloud still uses old name (estimateAge)
+// but not each time 🤦
+// temporal solution for temporal is to create new workflow name
+export async function newEstimateAgeWorkflow({
   name,
 }: {
   name: string;

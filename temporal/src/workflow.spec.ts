@@ -7,7 +7,7 @@ import { Worker, Runtime, DefaultLogger, LogEntry } from '@temporalio/worker';
 
 import { generateRandomAge } from './activities';
 import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from './shared';
-import { estimateAgeWorkflow } from './workflows';
+import { newEstimateAgeWorkflow } from './workflows';
 
 let testEnv: TestWorkflowEnvironment;
 
