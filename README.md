@@ -66,11 +66,9 @@ try {
 
 ### Important notes for launching workflows:
 
-It's possible to pass workflow as a function, it will work on dev but not on prod!!!
+It's possible to pass workflow as a function, it will work on dev but not on **prod**!!! because there are completely different artifacts from next.js and temporal - it's really hard to match them (if even possible).
 
-because there are completely different artifacts from next.js and temporal - it's really hard to match tem (if possible).
-
-Moreover if we wat to use temporal worker from another services like Nest API, then we definitely should use string names of workflow.
+Moreover if we want to use temporal worker from another services like Nest API, then we definitely should use string names of workflows.
 
 TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
 
