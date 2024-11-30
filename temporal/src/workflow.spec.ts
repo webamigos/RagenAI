@@ -69,7 +69,7 @@ describe('embeddingWorkflow', () => {
     );
 
     await worker.runUntil(async () => {
-      const result = await client.workflow.execute(estimateAgeWorkflow, {
+      const result = await client.workflow.execute('estimateAgeWorkflow', {
         args: [{ name: 'Stefan' }],
         workflowId: 'testId',
         taskQueue: 'test',

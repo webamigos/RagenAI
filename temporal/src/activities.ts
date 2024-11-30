@@ -32,7 +32,7 @@ export const generateRandomAge = async ({
 }): Promise<string> => {
   const context = activity.Context.current();
   const randomAge = Math.round(randomNumber(24, 67));
-  context.log.info('Calling estimateAgeActivity, random age is set to: ', {
+  context.log.info('Calling generateRandomAge, random age is set to: ', {
     randomAge,
   });
   return `${name} has an estimated age of ${randomAge}`;
