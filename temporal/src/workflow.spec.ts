@@ -5,7 +5,7 @@ import { WorkflowCoverage } from '@temporalio/nyc-test-coverage';
 import { Worker, Runtime, DefaultLogger, LogEntry } from '@temporalio/worker';
 // import { embeddingWorkflow, estimateAgeWorkflow } from './workflows';
 
-import { estimateAge } from './activities';
+import { generateRandomAge } from './activities';
 import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from './shared';
 import { estimateAgeWorkflow } from './workflows';
 
@@ -63,7 +63,7 @@ describe('embeddingWorkflow', () => {
         taskQueue: 'test',
         workflowsPath: path.resolve(__dirname, './workflows.js'),
         activities: {
-          estimateAge: async () => 50,
+          generateRandomAge: async () => 'Tester is 23 years old',
         },
       })
     );

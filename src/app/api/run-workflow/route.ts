@@ -33,7 +33,7 @@ export const GET = async (request: NextRequest) => {
     const personHandle = await client.workflow.start('estimateAgeWorkflow', {
       taskQueue: TASK_QUEUE_NAME,
       workflowId: personWorkflowId,
-      args: [{ name: 'Janina' }],
+      args: [{ name: 'Janina2' }],
     });
 
     logger.info('handle: %j', personHandle, 2);
@@ -49,9 +49,9 @@ export const GET = async (request: NextRequest) => {
 
     return NextResponse.json({
       personWorkflowId,
-      personWorkflowResultUrl: `./api/run-workflow/people/${personWorkflowId}`,
+      personWorkflowResultUrl: `${request.nextUrl}/people/${personWorkflowId}`,
       documentWorkflowId,
-      documentWorkflowResultUrl: `./api/run-workflow/documents/${documentWorkflowId}`,
+      documentWorkflowResultUrl: `${request.nextUrl}/documents/${documentWorkflowId}`,
     });
   } catch (error) {
     logger.error({ err: error }, 'Fail to start Workflow');

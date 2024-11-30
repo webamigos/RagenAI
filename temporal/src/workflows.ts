@@ -20,7 +20,7 @@ const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
 define custom policy for nonRetryableErrorTypes if there is
 no way that failed activity will ever succeed (for example,
 queried not existing open-ai model). */
-const { estimateAge } = wf.proxyActivities<typeof activities>({
+const { generateRandomAge } = wf.proxyActivities<typeof activities>({
   startToCloseTimeout: '5 seconds',
 });
 
@@ -67,6 +67,5 @@ export async function estimateAgeWorkflow({
 }: {
   name: string;
 }): Promise<string> {
-  const age = await estimateAge();
-  return `${name} has an estimated age of ${age}`;
+  return await generateRandomAge(name);
 }

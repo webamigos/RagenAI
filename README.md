@@ -94,7 +94,13 @@ const personHandle = await client.workflow.start(estimateAgeWorkflow, {
 
 ### How to test
 
-You can launch the application and open route: `/api/run-workflow`
+You can launch the application and open route: `/api/run-workflow`.
+
+Keep in mind that Next.js in version 13 and 14 tries cache everything what can and if you want to bet results using route handlers remember to set force dynamic:
+
+```ts
+export const dynamic = 'force-dynamic';
+```
 
 ### Running locally
 
