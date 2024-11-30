@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
-  "version": "5.4.3",
+  "version": "5.3.3",
   "compilerOptions": {
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
