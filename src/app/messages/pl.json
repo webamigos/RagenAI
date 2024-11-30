@@ -310,5 +310,10 @@
     "no-api-key": "Ustaw klucz API",
     "no-knowledge": "Wgraj wiedzę",
     "knowledge-uploaded": "Pliki zostały przesłane"
+  },
+  "page404": {
+    "page-not-found": "Nie znaleziono strony",
+    "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",
+    "go-back-home": "Powrót do strony głównej"
   }
 }

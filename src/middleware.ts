@@ -25,24 +25,24 @@ const isProtectedRoute = createRouteMatcher([
   '/admin',
 ]);
 
-export const config = {
-  matcher: ['/', '/(pl|en)/:path*'],
-};
-
 // export const config = {
-//   matcher: [
-//     '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
-//     '/api/threads/(.*)',
-//     '/api/settings/',
-//     '/api/settings/api-key',
-//     '/api/settings/temperature',
-//     '/api/settings/model',
-//     '/api/settings/prompt',
-//     '/api/upload/(.*)',
-//     '/:locale/admin/manage-knowledge',
-//     '/:locale/sso-callback',
-//   ],
+//   matcher: ['/', '/(pl|en)/:path*'],
 // };
+
+export const config = {
+  matcher: [
+    '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
+    '/api/threads/(.*)',
+    '/api/settings/',
+    '/api/settings/api-key',
+    '/api/settings/temperature',
+    '/api/settings/model',
+    '/api/settings/prompt',
+    '/api/upload/(.*)',
+    '/:locale/admin/manage-knowledge',
+    '/:locale/sso-callback',
+  ],
+};
 
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
