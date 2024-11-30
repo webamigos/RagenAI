@@ -8,6 +8,7 @@ import { TASK_QUEUE_NAME } from '@/temporal/src/shared';
 // import { EmbeddingWorkflow } from '@/temporal/src/workflows';
 
 import { logger } from '@/app/lib/utils/logger';
+import { estimateAgeWorkflow } from '@/temporal/lib/workflows';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,7 @@ export const GET = async (request: NextRequest) => {
     const personHandle = await client.workflow.start('estimateAgeWorkflow', {
       taskQueue: TASK_QUEUE_NAME,
       workflowId: personWorkflowId,
-      args: [{ name: 'Janina2' }],
+      args: [{ name: 'Janina3' }],
     });
 
     logger.info('handle: %j', personHandle, 2);
