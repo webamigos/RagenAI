@@ -6,12 +6,9 @@ import {
 } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { locales, defaultLocale } from './app/config';
+import { routing } from './i18n/routing';
 
-const intlMiddleware = createMiddleware({
-  locales,
-  defaultLocale,
-});
+const handleI18nRouting = createMiddleware(routing);
 
 const publicRoutes = [
   '/',
@@ -29,19 +26,23 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export const config = {
-  matcher: [
-    '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
-    '/api/threads/(.*)',
-    '/api/settings/',
-    '/api/settings/api-key',
-    '/api/settings/temperature',
-    '/api/settings/model',
-    '/api/settings/prompt',
-    '/api/upload/(.*)',
-    '/:locale/admin/manage-knowledge',
-    '/:locale/sso-callback',
-  ],
+  matcher: ['/', '/(pl|en)/:path*'],
 };
+
+// export const config = {
+//   matcher: [
+//     '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
+//     '/api/threads/(.*)',
+//     '/api/settings/',
+//     '/api/settings/api-key',
+//     '/api/settings/temperature',
+//     '/api/settings/model',
+//     '/api/settings/prompt',
+//     '/api/upload/(.*)',
+//     '/:locale/admin/manage-knowledge',
+//     '/:locale/sso-callback',
+//   ],
+// };
 
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
@@ -101,7 +102,7 @@ export default clerkMiddleware(
       }
     }
 
-    return intlMiddleware(request);
+    return handleI18nRouting(request);
   },
   { debug: false }
 );

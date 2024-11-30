@@ -1,4 +1,4 @@
-import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { PublicAssistant } from '../../../components/Assistant/Assistant';

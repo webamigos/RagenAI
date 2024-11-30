@@ -2,8 +2,8 @@
 
 import { useTransition } from 'react';
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
 
+import { usePathname, useRouter } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui';
 
 import 'flag-icons/css/flag-icons.min.css';

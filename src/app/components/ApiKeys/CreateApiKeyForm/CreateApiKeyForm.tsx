@@ -1,11 +1,11 @@
 'use client';
 
 import { useTransition, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
+import { useRouter } from '@/i18n/routing';
 import { Input, Button } from '@ragenai/common-ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 

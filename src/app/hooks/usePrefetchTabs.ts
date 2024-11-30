@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+
+import { useRouter } from '@/i18n/routing';
 
 type TabItem = {
   path: string;
