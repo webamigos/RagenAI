@@ -24,15 +24,27 @@ export const syncOrganizationAndProject = async () => {
     };
   }
 
+  let success = false;
+
   try {
     setSentryServiceTag(serviceName);
     setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
-    await fetchOrganizationByProviderId(orgId);
+    // if does not exist then an error is thrown and cached line below
+    const organization = await fetchOrganizationByProviderId(orgId);
+    if (organization.public_id) {
+      success = true;
+    }
   } catch (error) {
     Sentry.captureException(error);
 
     // organization doesn't exists - create one using transaction
-    await createOrganizationWithDefaultProject(orgId);
+    const { publicId } = await createOrganizationWithDefaultProject(orgId);
+
+    if (publicId) {
+      success = true;
+    }
   }
+
+  return { success };
 };

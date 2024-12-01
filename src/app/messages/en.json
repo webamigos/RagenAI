@@ -310,5 +310,9 @@
     "no-api-key": "Set API key",
     "no-knowledge": "Upload knowledge",
     "knowledge-uploaded": "Files have been uploaded"
+  },
+  "create-organization": {
+    "success": "Organization has been created",
+    "sync-error": "An error occurred during sync"
   }
 }

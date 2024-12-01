@@ -310,5 +310,9 @@
     "no-api-key": "Ustaw klucz API",
     "no-knowledge": "Wgraj wiedzę",
     "knowledge-uploaded": "Pliki zostały przesłane"
+  },
+  "create-organization": {
+    "success": "Organizacja została stworzona",
+    "sync-error": "Wystąpił błąd w trakcie synchronizacji"
   }
 }
