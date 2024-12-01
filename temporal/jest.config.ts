@@ -5,7 +5,7 @@ const config: Config = {
   testEnvironment: 'node',
   modulePathIgnorePatterns: ['lib', 'mocha'],
   clearMocks: true,
-  collectCoverage: true,
+  collectCoverage: false,
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/lib/'],
   coverageProvider: 'babel',
