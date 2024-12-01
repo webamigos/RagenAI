@@ -145,6 +145,7 @@ enum Role {
 }
 
 enum Subscription {
+  TRIAL
   FREE
   BASIC
   TEAM
