@@ -20,6 +20,7 @@
     "serve": "npx http-server --port 5433 out",
     "test": "vitest",
     "test:temporal": "jest --config ./temporal/jest.config.ts --runTestsByPath ./temporal/src/**",
+    "test:temporal:watch": "jest --config ./temporal/jest.config.ts --watch --runTestsByPath ./temporal/src/**",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:codegen": "npx playwright codegen",

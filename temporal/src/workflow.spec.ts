@@ -4,6 +4,7 @@ import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { WorkflowCoverage } from '@temporalio/nyc-test-coverage';
 import { Worker, Runtime, DefaultLogger, LogEntry } from '@temporalio/worker';
 // import { embeddingWorkflow, estimateAgeWorkflow } from './workflows';
+import { nanoid } from 'nanoid';
 
 import { generateRandomAge } from './activities';
 import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from './shared';
@@ -22,14 +23,11 @@ beforeAll(async () => {
     ),
   });
 
-  testEnv = await TestWorkflowEnvironment.createLocal();
+  testEnv = await TestWorkflowEnvironment.createTimeSkipping();
 });
 
 afterAll(async () => {
   await testEnv?.teardown();
-});
-
-afterAll(() => {
   workflowCoverage.mergeIntoGlobalCoverage();
 });
 
@@ -55,26 +53,26 @@ describe('embeddingWorkflow', () => {
   //   expect(result).toBe(`canceled embedding for document #4321`);
   // });
 
-  it.skip('runs estimateAgeWorkflow with activity call', async () => {
-    const { client, nativeConnection } = testEnv;
-    const worker = await Worker.create(
-      workflowCoverage.augmentWorkerOptions({
-        connection: nativeConnection,
+  it('runs estimateAgeWorkflow with activity call', async () => {
+    const name = 'Stefan';
+    const age = 43;
+
+    const worker = await Worker.create({
+      connection: testEnv.nativeConnection,
+      taskQueue: 'test',
+      workflowsPath: require.resolve('./workflows'),
+      activities: {
+        generateRandomAge: async () => `${name} has an estimated age of ${age}`,
+      },
+    });
+
+    const result = await worker.runUntil(
+      testEnv.client.workflow.execute(newEstimateAgeWorkflow, {
+        args: [{ name }],
+        workflowId: `person-${nanoid()}`,
         taskQueue: 'test',
-        workflowsPath: path.resolve(__dirname, './workflows.js'),
-        activities: {
-          generateRandomAge: async () => 'Tester is 23 years old',
-        },
       })
     );
-
-    await worker.runUntil(async () => {
-      const result = await client.workflow.execute('estimateAgeWorkflow', {
-        args: [{ name: 'Stefan' }],
-        workflowId: 'testId',
-        taskQueue: 'test',
-      });
-      expect(result).toEqual('Stefan has an estimated age of 50');
-    });
+    expect(result).toEqual('Stefan has an estimated age of 43');
   });
 });
