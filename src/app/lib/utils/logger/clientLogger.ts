@@ -9,6 +9,7 @@ import { AppLogger } from './interface';
 // Initialize Sentry for browser
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  integrations: [Sentry.rewriteFramesIntegration()],
   tracesSampleRate: 1.0,
 });
 
