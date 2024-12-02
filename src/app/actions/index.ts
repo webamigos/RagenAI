@@ -261,3 +261,25 @@ export async function deleteUserMessage(messagePublicId: string) {
     return { success: false };
   }
 }
+
+//search
+export async function searchUserThreads(
+  visitorId: string,
+  query?: string,
+  skip = 0,
+  take = 5
+) {
+  return await getUserThreads(visitorId, skip, take, query);
+}
+
+//autocomplete suggestions
+export async function fetchThreadSuggestions(visitorId: string, query: string) {
+  if (!query.trim()) return [];
+
+  const threads = await getUserThreads(visitorId, 0, 5, query);
+
+  return threads.map((thread) => ({
+    id: thread.public_id,
+    title: thread.messages[0]?.content.slice(0, 50) || 'No title',
+  }));
+}
