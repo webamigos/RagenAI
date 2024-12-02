@@ -50,11 +50,22 @@ export const clearVisitorMessages = async () => {
 export const getUserThreads = async (
   visitorId: string,
   skip?: number,
-  take?: number
+  take?: number,
+  query?: string
 ) => {
   return await db.thread.findMany({
     where: {
       visitor_id: visitorId,
+      messages: query
+        ? {
+            some: {
+              content: {
+                contains: query,
+                mode: 'insensitive',
+              },
+            },
+          }
+        : undefined,
     },
     orderBy: {
       created_at: 'desc',

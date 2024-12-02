@@ -12,23 +12,23 @@ import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 
 import { OnboardingSteps } from './OnboardingSteps';
 import { ValidationBoard } from './ValidationBoard';
-import { SearchThreads } from '../SearchThreads';
+import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscapeAndOutsideClick';
 
 export const Start = () => {
-  const { isSignedIn, isLoaded: isUserDataLoaded } = useUser();
+  const { isSignedIn, isLoaded: isUserDataLoaded, user } = useUser();
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
   const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
   const { isSearchOpen, closeSearch } = useSearchThreads();
+  const { modalRef } = useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 
   const shouldShowValidationBoard =
     isSignedIn &&
     !showOnboarding &&
     (!hasApiKey || !hasKnowledge || !belongsToOrganization);
-  const { modalRef } = useModalWithEscapeAndOutsideClick<HTMLDivElement>();
-
+  const userId = user?.id;
   return (
     <>
       {isSearchOpen && (
@@ -36,7 +36,7 @@ export const Start = () => {
           className="fixed inset-0 flex items-center justify-center z-50"
           onClick={closeSearch}
         >
-          <SearchThreads ref={modalRef} />
+          <SearchThreads visitorId={userId!} ref={modalRef} />
         </div>
       )}
 

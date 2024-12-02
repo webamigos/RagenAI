@@ -201,6 +201,13 @@
       "unknown": "An unknown error occurred. Please contact support."
     }
   },
+  "search-threads": {
+    "error-sugestions": "Error fetching suggestions",
+    "error-threads": "Error fetching threads",
+    "threads-not-found": "Thread not found",
+    "no-results": "No results",
+    "placeholder": "Search in threads..."
+  },
   "files-table": {
     "delete": "Delete",
     "file-name": "File Name",

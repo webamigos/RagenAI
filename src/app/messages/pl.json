@@ -201,6 +201,13 @@
       "unknown": "Nieznany błąd. Skontaktuj się z administratorem."
     }
   },
+  "search-threads": {
+    "error-sugestions": "Błąd poczas pobierania sugestii",
+    "error-threads": "Błąd podczas pobierania wątków",
+    "threads-not-found": "Wątek nieodpowada",
+    "no-results": "Brak wyników",
+    "placeholder": "Wyszukaj w wątkach..."
+  },
   "files-table": {
     "delete": "Usuń",
     "file-name": "Nazwa pliku",
