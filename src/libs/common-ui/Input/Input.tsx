@@ -149,7 +149,7 @@ export const Input = forwardRef(
         </div>
         {error && !isLoading && (
           <Text
-            className="text-sm text-red-600 dark:text-red-500"
+            className="mt-4 text-sm text-red-600 dark:text-red-500"
             id="input-error"
           >
             {t(errorMessage ? errorMessage : error.message)}

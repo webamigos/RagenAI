@@ -24,7 +24,15 @@
     "verification-code": "Kod weryfikacyjny",
     "confirm": "Potwierdź kod",
     "or": "lub",
-    "verification-code-hint": "Na Twój adres e-mail został wysłany kod weryfikacyjny. Wprowadź go w pole poniżej."
+    "verification-code-hint": "Na Twój adres e-mail został wysłany kod weryfikacyjny. Wprowadź go w pole poniżej.",
+    "resend-code": "Wyślij nowy kod weryfikacyjny",
+    "email_code": {
+      "minLength": "Kod weryfikacyjny musi składać się z co najmniej {length} znaków",
+      "code-expired": "This verification has expired. You must create a new one.",
+      "resend-not-available": "Ponowne wysłanie kodu niemożliwe. Proszę przejdź ponownie proces rejestracji",
+      "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
+      "resend-failed": "Błąd podczas wysyłaniu kodu"
+    }
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -250,7 +258,8 @@
     "form_identifier_not_found": "Nie znaleziono konta z tym adresem e-mail.",
     "form_code_incorrect": "Nieprawidłowy kod",
     "form_password_incorrect": "Nieprawidłowe hasło.",
-    "form_password_pwned": "Twoje hasło zostało upublicznione. Dla bezpieczństwa konta, użyj innego hasła."
+    "form_password_pwned": "Twoje hasło zostało upublicznione. Dla bezpieczństwa konta, użyj innego hasła.",
+    "verification_expired": "Twój kod weryfikacyjny wygasł. Proszę wygeneruj nowy."
   },
   "api-keys": {
     "title": "Klucze API",

@@ -24,7 +24,15 @@
     "verification-code": "Verification code",
     "confirm": "Confirm code",
     "or": "or",
-    "verification-code-hint": "A verification code has been sent to your email address. Please enter it in the field below."
+    "verification-code-hint": "A verification code has been sent to your email address. Please enter it in the field below.",
+    "resend-code": "Send new verification code",
+    "email_code": {
+      "minLength": "Verification code must contain at least {length} characters",
+      "code-expired": "This verification has expired. You must create a new one.",
+      "resend-not-available": "Resending the code is not possible. Please try the registration process again.",
+      "verification-code-sent": "Verification code has been sent to the email address provided",
+      "resend-failed": "Error sending code"
+    }
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -250,7 +258,8 @@
     "form_identifier_not_found": "No account found with this email.",
     "form_code_incorrect": "Incorrect code.",
     "form_password_incorrect": "Incorrect password.",
-    "form_password_pwned": "Password has been found in an online data breach. For account safety, please use a different password."
+    "form_password_pwned": "Password has been found in an online data breach. For account safety, please use a different password.",
+    "verification_expired": "This verification has expired. You must create a new one."
   },
   "api-keys": {
     "title": "API Keys",
