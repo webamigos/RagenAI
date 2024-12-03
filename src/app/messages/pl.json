@@ -231,7 +231,10 @@
     "document-not-found": "Nie znaleziono dokumentu",
     "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
     "save": "Zapisz",
-    "edit-successfully": "Dokument został zedytowany"
+    "cancel": "Anuluj",
+    "edit-successfully": "Dokument został zedytowany",
+    "content-empty": "Treść dokumentu nie może być pusta",
+    "title-empty": "Tytuł nie może być pusty"
   },
   "max-documents-to-retreive": {
     "input-label": "Maks. liczba fragmentów wyszukiwania"

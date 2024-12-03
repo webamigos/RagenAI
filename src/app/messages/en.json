@@ -231,7 +231,10 @@
     "document-not-found": "Document not found",
     "fetching-error": "An error occurred while downloading the document",
     "save": "Save",
-    "edit-successfully": "The document has been edited"
+    "cancel": "Cancel",
+    "edit-successfully": "The document has been edited",
+    "content-empty": "Document content cannot be empty",
+    "title-empty": "Title cannot be empty"
   },
   "max-documents-to-retreive": {
     "input-label": "Max fragments retrieved in search"
