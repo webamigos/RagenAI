@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-import { AdminPanel } from '@/app/components/AdminPanel';
+import { redirect } from 'next/navigation';
+
 import { PropsWihLocale } from '@/app/lib/types/types';
 
 export const dynamic = 'force-dynamic';
@@ -13,5 +14,5 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 }
 
 export default function AdminPage() {
-  return <AdminPanel />;
+  redirect('/manage-knowledge/create-document');
 }

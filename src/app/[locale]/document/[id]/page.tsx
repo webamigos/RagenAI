@@ -16,11 +16,12 @@ import {
   Text,
   Input,
   Button,
+  CloudArrowUp,
 } from '@ragenai/common-ui';
 import {
   fetchDocumentByOrganization,
   updateDocument,
-} from '@/app/components/MarkdownDocumentsCreator/action';
+} from '@/app/components/ManageKnowledge/MarkdownDocumentsCreator/action';
 import { deleteDocumentAction } from '@/app/actions';
 import { uploadFiles } from '@/app/lib/services/api';
 import {
@@ -36,6 +37,7 @@ import {
   SET_DOCUMENT_TITLE,
   EDIT_TITLE_MODE,
 } from './documentReducer';
+import { ArrowLeftIcon } from '@heroicons/react/20/solid';
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -202,7 +204,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col items-center flex-1 overflow-auto px-4">
+    <div className="h-full flex flex-col overflow-auto px-4">
       {isEditingTitle ? (
         <div className="w-full">
           <Input
@@ -236,14 +238,15 @@ export default function DocumentPage({ params }: DocumentPageProps) {
               onChange={(content) =>
                 dispatch({ type: SET_EDITABLE_CONTENT, payload: content })
               }
-              className="flex-1"
+              className="flex-1 prose prose-lg dark:prose-invert"
             />
           </div>
-          <div className="mt-2">
+          <div className="mt-4">
             <Button
               onClick={handleSave}
               disabled={isSaving}
               isLoading={isSaving}
+              iconRight={<CloudArrowUp />}
               className={`bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center ${
                 isSaving ? 'opacity-50 cursor-not-allowed' : ''
               }`}
