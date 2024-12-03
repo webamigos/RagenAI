@@ -37,7 +37,7 @@ import {
   SET_DOCUMENT_TITLE,
   EDIT_TITLE_MODE,
 } from './documentReducer';
-import { ArrowLeftIcon } from '@heroicons/react/20/solid';
+import { ArrowLeftCircleIcon } from '@heroicons/react/24/outline';
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -223,12 +223,15 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           />
         </div>
       ) : (
-        <Text
-          className="mb-4 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
-          onClick={handleTitleDoubleClick}
-        >
-          {documentTitle}
-        </Text>
+        <div className="flex">
+          <ArrowLeftCircleIcon className="h-6 w-6 mt-3 mr-4 cursor-pointer" />
+          <Text
+            className="mb-4 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+            onClick={handleTitleDoubleClick}
+          >
+            {documentTitle}
+          </Text>
+        </div>
       )}
       {isEditing ? (
         <div className="flex flex-col w-full flex-1">
@@ -257,7 +260,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         </div>
       ) : (
         <div
-          className="flex-1 prose justify-center prose-lg dark:prose-invert"
+          className="flex-1 full-width-prose prose justify-center prose-lg dark:prose-invert"
           onDoubleClick={handleDoubleClick}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
