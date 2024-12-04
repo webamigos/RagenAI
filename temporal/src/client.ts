@@ -1,7 +1,7 @@
 import { Client, Connection } from '@temporalio/client';
 import { TEMPORAL_NAMESPACE, TEMPORAL_SERVER_ADDRESS } from './consts';
 
-const createClient = async (): Promise<Client> => {
+const createClient = (): Client => {
   const cert = process.env.TEMPORAL_CERT; // pem
   const key = process.env.TEMPORAL_KEY; // key
 
@@ -21,6 +21,6 @@ const createClient = async (): Promise<Client> => {
   return new Client({ connection, namespace: TEMPORAL_NAMESPACE });
 };
 
-export const getTemporalClient = async (): Promise<Client> => {
-  return await createClient();
+export const getTemporalClient = (): Client => {
+  return createClient();
 };
