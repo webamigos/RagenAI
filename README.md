@@ -118,7 +118,7 @@ TEMPORAL_KEY=
 And run one of commands:
 
 * All in one: `npm run dev:all`
-* Run separately: `npm run dev`, `npm run start:worker`
+* Run separately: `npm run dev`, `npm run dev:start:worker`
 
 ### [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
 
@@ -148,7 +148,7 @@ to launch local dev server.
 You alo need to run worker:
 
 ```bash
-npm run start:worker
+npm run dev:start:worker
 ```
 
 ### Debugging using VSCode

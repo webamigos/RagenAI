@@ -6,9 +6,9 @@ import { Worker, Runtime, DefaultLogger, LogEntry } from '@temporalio/worker';
 // import { embeddingWorkflow, estimateAgeWorkflow } from './workflows';
 import { nanoid } from 'nanoid';
 
-import { generateRandomAge } from './activities';
-import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from './shared';
-import { newEstimateAgeWorkflow } from './workflows';
+import { generateRandomAge } from '../activities';
+import { ACTIVITY_CANCEL_EMBEDDING_COMMAND } from '../shared';
+import { newEstimateAgeWorkflow } from '../workflows';
 
 let testEnv: TestWorkflowEnvironment;
 
@@ -60,7 +60,7 @@ describe('embeddingWorkflow', () => {
     const worker = await Worker.create({
       connection: testEnv.nativeConnection,
       taskQueue: 'test',
-      workflowsPath: require.resolve('./workflows'),
+      workflowsPath: require.resolve('../workflows'),
       activities: {
         generateRandomAge: async () => `${name} has an estimated age of ${age}`,
       },

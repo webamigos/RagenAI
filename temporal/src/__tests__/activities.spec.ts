@@ -1,5 +1,6 @@
 import { MockActivityEnvironment } from '@temporalio/testing';
-import * as activities from './activities';
+
+import * as activities from '../activities';
 
 describe('check all activities', () => {
   it('onEmbeddingProcessCompleted activity call', async () => {
