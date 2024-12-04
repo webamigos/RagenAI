@@ -23,14 +23,12 @@ export const LanguageSwitcher = ({ className }: Props) => {
     pl: { flag: 'pl', label: 'Polski' },
   };
 
-  const otherLocale = locale === 'pl' ? 'en' : 'pl';
-  const { flag } = languages[otherLocale];
+  const newLocale = locale === 'pl' ? 'en' : 'pl';
+  const { flag } = languages[newLocale];
 
   const handleClick = () => {
     startTransition(() => {
-      const newPath = pathname.split('/');
-      newPath[1] = otherLocale;
-      router.push(newPath.join('/'));
+      router.push({ pathname }, { locale: newLocale });
     });
   };
 
