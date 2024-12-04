@@ -1,12 +1,12 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
+  "version": "4.2.2",
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "rootDir": "./src",
-    "outDir": "./lib",
-    "esModuleInterop": true
+    "outDir": "./lib"
   },
   "include": ["src/**/*.ts"]
 }
