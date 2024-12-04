@@ -16,7 +16,7 @@ export default defineConfig({
       'src/**/*.spec.ts',
       'src/**/*.spec.tsx',
     ],
-    exclude: ['src/temporal/**'],
+    exclude: ['temporal/**'],
     clearMocks: true,
   },
 });

@@ -30,7 +30,7 @@ We can use it for:
 * End free trial after 14 days
 * Exchange events between backend events (separate project/repo)
 
-In the App, we can use Signals and Queries from workflows. Signals and Queries need to be defined in `src/temporal/src/workflows.ts`
+In the App, we can use Signals and Queries from workflows. Signals and Queries need to be defined in `temporal/src/workflows.ts`
 
 ```ts
 // signal - run action
@@ -64,9 +64,61 @@ try {
 }
 ```
 
+### Important notes for launching workflows:
+
+It's possible to pass workflow as a function, it will work on dev but not on **prod**!!! because there are completely different artifacts from next.js and temporal - it's really hard to match them (if even possible).
+
+Moreover if we want to use temporal worker from another services like Nest API, then we definitely should use string names of workflows.
+
+TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
+
+✅ OK: string name for the workflow
+
+```ts
+const personHandle = await client.workflow.start('estimateAgeWorkflow', {
+  taskQueue: TASK_QUEUE_NAME,
+  workflowId: personWorkflowId,
+  args: [{ name: 'Janina' }],
+});
+```
+
+❌ WRONG
+
+```ts
+import { estimateAgeWorkflow } from '@/temporal/src/workflows';
+
+const personHandle = await client.workflow.start(estimateAgeWorkflow, {
+```
+
+⚠️ Moreover after changing activity name Temporal cloud still uses activity old name (estimateAge) but not each time 🤦
+
+Temporal solution for Temporal is to create new workflow name.
+
 ### How to test
 
-You can launch the application and open route: `/api/run-workflow`
+You can launch the application and open route: `/api/run-workflow`.
+
+Keep in mind that Next.js in version 13 and 14 tries cache everything what can and if you want to bet results using route handlers remember to set force dynamic:
+
+```ts
+export const dynamic = 'force-dynamic';
+```
+
+### Running locally
+
+Local development is setup to use with Temporal Cloud. You need to provide env vars:
+
+```
+TEMPORAL_SERVER_ADDRESS=
+TEMPORAL_NAMESPACE=
+TEMPORAL_CERT=
+TEMPORAL_KEY=
+```
+
+And run one of commands:
+
+* All in one: `npm run dev:all`
+* Run separately: `npm run dev`, `npm run dev:start:worker`
 
 ### [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
 
@@ -84,7 +136,7 @@ There is a new temporal directory and a couple of scripts
 
 There is an example repo https://github.com/temporalio/docker-compose from which we can use docker compose files.
 
-You can run
+You can run (or use Temporal Cloud configuration)
 
 ```bash
 cd temporal-server
@@ -96,7 +148,7 @@ to launch local dev server.
 You alo need to run worker:
 
 ```bash
-npm run start:worker
+npm run dev:start:worker
 ```
 
 ### Debugging using VSCode
