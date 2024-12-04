@@ -81,6 +81,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
       content: '',
     },
   });
+  const watchedContent = watch('content');
 
   const {
     register: registerTitle,
@@ -94,54 +95,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     },
   });
 
-  useEffect(() => {
-    if (id && orgId) {
-      const loadDocument = async () => {
-        dispatch({ type: 'SET_IS_LOADING', payload: true });
-
-        try {
-          const content = await fetchDocumentByOrganization(orgId, id);
-          if (content.success) {
-            const documentText = content.documents
-              .map((doc) => doc.content)
-              .join('\n');
-            const title = content.documents
-              .map((document) => document.title)
-              .join('\n');
-
-            dispatch({ type: 'SET_DOCUMENT_CONTENT', payload: documentText });
-            dispatch({ type: 'SET_DOCUMENT_TITLE', payload: title });
-
-            reset({
-              content: mdParser.render(documentText || ''),
-            });
-
-            resetTitle({
-              title: title,
-            });
-
-            if (isEditMode) {
-              dispatch({ type: 'SET_IS_EDITING', payload: true });
-            }
-          } else {
-            errorToast({ message: `${content.message}: ${content.error}` });
-          }
-        } catch (error) {
-          errorToast({ message: t('fetching-error') });
-        } finally {
-          dispatch({ type: 'SET_IS_LOADING', payload: false });
-        }
-      };
-
-      loadDocument();
-    }
-  }, [id, orgId, isEditMode]);
-
   const handleDoubleClick = () => {
     dispatch({ type: 'SET_IS_EDITING', payload: true });
     reset({
       content: mdParser.render(documentContent || ''),
     });
+    push(`/document/${id}?edit=true`);
   };
 
   const handleTitleDoubleClick = () => {
@@ -150,7 +109,6 @@ export default function DocumentPage({ params }: DocumentPageProps) {
       title: documentTitle,
     });
   };
-  const watchedContent = watch('content');
 
   const onSubmit = async (data: { content: string }) => {
     if (!orgId) return;
@@ -206,6 +164,58 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     dispatch({ type: 'SET_IS_SAVING', payload: false });
   };
 
+  const handleEditLeave = () => {
+    dispatch({ type: 'SET_IS_EDITING', payload: false });
+    reset({
+      content: mdParser.render(documentContent || ''),
+    });
+    const currentPath = window.location.pathname;
+    push(currentPath);
+  };
+
+  useEffect(() => {
+    if (id && orgId) {
+      const loadDocument = async () => {
+        dispatch({ type: 'SET_IS_LOADING', payload: true });
+
+        try {
+          const content = await fetchDocumentByOrganization(orgId, id);
+          if (content.success) {
+            const documentText = content.documents
+              .map((doc) => doc.content)
+              .join('\n');
+            const title = content.documents
+              .map((document) => document.title)
+              .join('\n');
+
+            dispatch({ type: 'SET_DOCUMENT_CONTENT', payload: documentText });
+            dispatch({ type: 'SET_DOCUMENT_TITLE', payload: title });
+
+            reset({
+              content: mdParser.render(documentText || ''),
+            });
+
+            resetTitle({
+              title: title,
+            });
+
+            if (isEditMode) {
+              dispatch({ type: 'SET_IS_EDITING', payload: true });
+            }
+          } else {
+            errorToast({ message: `${content.message}: ${content.error}` });
+          }
+        } catch (error) {
+          errorToast({ message: t('fetching-error') });
+        } finally {
+          dispatch({ type: 'SET_IS_LOADING', payload: false });
+        }
+      };
+
+      loadDocument();
+    }
+  }, [id, orgId, isEditMode]);
+
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center align-middle">
@@ -243,13 +253,15 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           )}
         </form>
       ) : (
-        <div className="flex w-full -ml-5">
-          <div className="w-1/4">
-            <ArrowLeftCircleIcon
-              onClick={() => push('/manage-knowledge/documents-list')}
-              className="h-6 w-6 mt-3 cursor-pointer"
-            />
-          </div>
+        <div className={`w-full flex -ml-5`}>
+          {!isEditMode && (
+            <div className="w-1/4">
+              <ArrowLeftCircleIcon
+                onClick={() => push('/manage-knowledge/documents-list')}
+                className="h-8 w-8 mt-3 cursor-pointer"
+              />
+            </div>
+          )}
           <Text
             className="mb-4 -ml-1 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
             onClick={handleTitleDoubleClick}
@@ -288,21 +300,16 @@ export default function DocumentPage({ params }: DocumentPageProps) {
               }
               isLoading={isSaving}
               iconRight={<CloudArrowUp />}
-              className={`bg-blue-500 text-white mr-2 py-2 px-4 w-full md:w-auto self-center`}
+              className={`mr-2 w-full md:w-auto self-center`}
             >
               {t('save')}
             </Button>
             <Button
               type="button"
-              onClick={() => {
-                dispatch({ type: 'SET_IS_EDITING', payload: false });
-                reset({
-                  content: mdParser.render(documentContent || ''),
-                });
-              }}
+              onClick={handleEditLeave}
               disabled={isSaving}
               iconRight={<XMarkIcon />}
-              className={`bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center
+              className={`w-full md:w-auto self-center
                 }`}
             >
               {t('cancel')}
