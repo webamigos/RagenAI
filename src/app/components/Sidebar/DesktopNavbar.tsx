@@ -11,6 +11,7 @@ import {
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
 import Link from 'next/link';
+import { UserButtonClerk } from './UserButton';
 
 type Props = {
   userAvatar?: string;
@@ -48,23 +49,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
             <button className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700 sm:hidden">
               <PencilSquareIcon className="w-6 h-6" />
             </button>
-            <div className="relative flex items-center group">
-              <div className="flex flex-col items-start max-w-0 overflow-hidden group-hover:max-w-[150px] transition-[max-width] duration-500 ease-in-out">
-                <Text
-                  fontSize="sm"
-                  className="text-primary-blue-500 dark:text-gray-500 whitespace-nowrap"
-                >
-                  {t('welcome')}
-                </Text>
-                <Text fontSize="sm" className="mr-2 whitespace-nowrap">
-                  {userEmail?.split('@')[0] || 'User'}
-                </Text>
-              </div>
-              <Avatar
-                className="w-10 h-10 mr-1 cursor-pointer group-hover:opacity-100"
-                src={userAvatar}
-              />
-            </div>
+            <UserButtonClerk />
           </div>
         </div>
       )}
