@@ -6,8 +6,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
+import { useRouter } from '@/i18n/routing';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { saveUserMetadata } from '@/app/actions';
 import { Button, Card, Text, Link } from '@ragenai/common-ui';

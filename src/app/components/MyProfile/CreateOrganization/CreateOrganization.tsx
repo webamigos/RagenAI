@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { dark, experimental__simple } from '@clerk/themes';
 import { useTheme } from 'next-themes';
 import { CreateOrganization } from '@clerk/nextjs';
 import { useOrganization } from '@clerk/nextjs';
+
+import { useRouter } from '@/i18n/routing';
 
 export const CreateOrganizationComponent = () => {
   const { resolvedTheme } = useTheme();

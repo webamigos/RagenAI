@@ -4,8 +4,8 @@ import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 
+import { useRouter } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
 import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
