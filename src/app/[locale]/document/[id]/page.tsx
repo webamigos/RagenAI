@@ -263,7 +263,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             </div>
           )}
           <Text
-            className="mb-4 -ml-1 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+            className="mb-4 ml-1 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
             onClick={handleTitleDoubleClick}
           >
             {documentTitle}
