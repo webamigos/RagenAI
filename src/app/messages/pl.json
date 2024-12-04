@@ -88,6 +88,15 @@
     "manage-knowledge": {
       "title": "Zarządzaj wiedzą | Ragen AI"
     },
+    "manage-knowledge:create-document": {
+      "title": "Stwórz dokument | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Wgraj dokument | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Lista dokumentów | Ragen AI"
+    },
     "my-profile": {
       "title": "Mój profil | Ragen AI"
     },

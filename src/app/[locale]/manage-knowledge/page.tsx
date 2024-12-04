@@ -9,7 +9,7 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
-    title: t('manage-knowledge.title'),
+    title: t('manage-knowledge:create-document.title'),
   };
 }
 
