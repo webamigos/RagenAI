@@ -82,7 +82,8 @@ export const UploadKnowledge = () => {
       <Button
         disabled={uploading || files.length < 1}
         className="mt-5"
-        isSubmit
+        isLoading={uploading}
+        isSubmit={!uploading}
         onClick={handleSend}
         label={t('send')}
       />

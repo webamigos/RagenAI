@@ -27,7 +27,12 @@ function documentsReducer(state: State, action: Action): State {
     case 'LOAD_START':
       return { ...state, isLoading: true, isError: false };
     case 'LOAD_SUCCESS':
-      return { ...state, isLoading: false, documents: action.payload };
+      return {
+        ...state,
+        isLoading: false,
+        isError: false,
+        documents: action.payload,
+      };
     case 'LOAD_ERROR':
       return { ...state, isLoading: false, isError: true };
     case 'ADD_DOCUMENT':
