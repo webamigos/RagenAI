@@ -1,5 +1,7 @@
 'use client';
 
+import { ReactNode } from 'react';
+
 import { DocumentsProvider } from '@/context/DocumentsContext';
 import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
@@ -7,6 +9,10 @@ import { Toast } from '../../components/Toast';
 import CreateDocumentPage from './create-document/page';
 import UploadedListPage from './documents-list/page';
 import AddFilesPage from './upload-files/page';
+
+type Props = {
+  children: ReactNode;
+};
 
 export default function AdminLayout({ children }: Props) {
   return (
@@ -17,6 +23,4 @@ export default function AdminLayout({ children }: Props) {
       </DocumentsProvider>
     </div>
   );
-};
-
-export default ManageKnowledgeLayout;
+}
