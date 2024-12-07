@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
 import { Card } from '@ragenai/common-ui/Card';

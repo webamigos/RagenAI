@@ -20,7 +20,7 @@ const { onEmbeddingProcessCompleted, cancelEmbeddingProcess } =
 define custom policy for nonRetryableErrorTypes if there is
 no way that failed activity will ever succeed (for example,
 queried not existing open-ai model). */
-const { estimateAge } = wf.proxyActivities<typeof activities>({
+const { generateRandomAge } = wf.proxyActivities<typeof activities>({
   startToCloseTimeout: '5 seconds',
 });
 
@@ -37,9 +37,9 @@ export const embeddingStateQuery = wf.defineQuery<EmbeddingState>(
   ACTIVITY_EMBEDDING_STATE_QUERY
 );
 
-export const EmbeddingWorkflow = async ({
+export async function EmbeddingWorkflow({
   documentId,
-}: StartEmbeddingProcessInput) => {
+}: StartEmbeddingProcessInput) {
   let embeddingState: EmbeddingState = 'EMBEDDING_PENDING';
 
   // handler when state has changed to EMBEDDING_CANCELED
@@ -60,9 +60,17 @@ export const EmbeddingWorkflow = async ({
     embeddingState = 'EMBEDDING_DONE';
     return await onEmbeddingProcessCompleted({ documentId });
   }
-};
+}
 
-export async function estimateAgeWorkflow(name: string): Promise<string> {
-  const age = await estimateAge(name);
-  return `${name} has an estimated age of ${age}`;
+// Changed name because of Temporal bug? 🧐
+// after changing activity name Temporal cloud still uses old name (estimateAge)
+// but not each time 🤦
+// temporal solution for temporal is to create new workflow name
+export async function newEstimateAgeWorkflow({
+  name,
+}: {
+  name: string;
+}): Promise<string> {
+  const result = await generateRandomAge({ name });
+  return result;
 }

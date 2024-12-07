@@ -64,8 +64,11 @@ jobs:
       - name: Lint app
         run: npm run lint
 
-      - name: Run tests
+      - name: Run app tests
         run: npm run test
+
+      - name: Run workflows tests
+        run: npm run test:temporal
 
       - name: Build Next.js app
         run: npm run build

@@ -1,12 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import { ApiKey } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
+import { useRouter } from '@/i18n/routing';
 
 import {
   Table,
@@ -21,6 +20,7 @@ import {
 
 import { RemoveApiKeyDialog } from './RemoveApiKey/RemoveApiKeyDialog';
 import { removeApiKey } from './RemoveApiKey/actions';
+import { Link } from '@/i18n/routing';
 
 type Props = {
   data: ApiKey[];

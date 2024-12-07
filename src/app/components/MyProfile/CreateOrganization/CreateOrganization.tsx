@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { dark, experimental__simple } from '@clerk/themes';
 import { useTheme } from 'next-themes';
 import { CreateOrganization } from '@clerk/nextjs';
@@ -10,6 +9,8 @@ import { useTranslations } from 'next-intl';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import { syncOrganizationAndProject } from './actions';
+
+import { useRouter } from '@/i18n/routing';
 
 export const CreateOrganizationComponent = () => {
   const { errorToast, successToast } = statusToast();

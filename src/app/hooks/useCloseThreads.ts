@@ -1,5 +1,6 @@
-import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
+
+import { useRouter } from '@/i18n/routing';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 

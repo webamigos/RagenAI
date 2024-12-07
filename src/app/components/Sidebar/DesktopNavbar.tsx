@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
-import { usePathname } from 'next/navigation';
 
+import { usePathname } from '@/i18n/routing';
 import {
   SettingsIcon,
   Avatar,
@@ -10,7 +10,7 @@ import {
 } from '@ragenai/common-ui';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../Theme';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 type Props = {
   userAvatar?: string;

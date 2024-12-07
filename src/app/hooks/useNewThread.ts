@@ -1,6 +1,7 @@
-import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useTransition, useReducer } from 'react';
 import { useUser } from '@clerk/nextjs';
+
+import { usePathname, useRouter } from '@/i18n/routing';
 import {
   checkVisitorVisits,
   createThread,

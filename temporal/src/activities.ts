@@ -20,10 +20,20 @@ export const cancelEmbeddingProcess = async ({
   return `canceled embedding for document #${documentId}`;
 };
 
+function randomNumber(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
+
 // temporary for check test settings
-export const estimateAge = async (name: string) => {
-  if (name === 'Stefan') {
-    return 50;
-  }
-  return NaN;
+export const generateRandomAge = async ({
+  name,
+}: {
+  name: string;
+}): Promise<string> => {
+  const context = activity.Context.current();
+  const randomAge = Math.round(randomNumber(24, 67));
+  context.log.info('Calling generateRandomAge, random age is set to: ', {
+    randomAge,
+  });
+  return `${name} has an estimated age of ${randomAge}`;
 };

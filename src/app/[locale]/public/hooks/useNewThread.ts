@@ -1,6 +1,6 @@
-import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useReducer, useTransition } from 'react';
 
+import { usePathname, useRouter } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { createThreadForGuest } from '@/app/lib/services/api';
