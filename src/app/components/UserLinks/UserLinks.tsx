@@ -5,7 +5,7 @@ import {
   SignOutButton,
   SignedOut,
 } from '@clerk/nextjs';
-import { LogoutIcon } from '@ragenai/common-ui/icons';
+import { LogoutIcon, UserCircleIcon } from '@ragenai/common-ui/icons';
 import { Text } from '@ragenai/common-ui/Text';
 
 export const UserLinks = () => {
@@ -28,7 +28,7 @@ export const UserLinks = () => {
       <SignedOut>
         <SignInButton mode="redirect">
           <span className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
-            <LogoutIcon className="mr-4" />
+            <UserCircleIcon className="mr-4" />
             {t('common.sign-in')}
           </span>
         </SignInButton>

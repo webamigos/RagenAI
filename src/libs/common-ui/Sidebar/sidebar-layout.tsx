@@ -2,9 +2,9 @@
 
 import React, { ComponentProps } from 'react';
 import * as Headless from '@headlessui/react';
-import { usePathname } from 'next/navigation';
 import { useLocale } from 'next-intl';
 
+import { usePathname } from '@/i18n/routing';
 import { useSidebar } from '@/app/hooks/useSidebar';
 
 import { classMerge } from '../utils/cn';

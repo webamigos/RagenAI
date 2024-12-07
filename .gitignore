@@ -49,3 +49,6 @@ node_modules/
 
 # Docker
 /volumes
+
+# Temporal
+temporal/clover

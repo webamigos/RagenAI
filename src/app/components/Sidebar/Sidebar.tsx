@@ -7,9 +7,9 @@ import {
   Button,
   SpinnerSVG,
 } from '@ragenai/common-ui';
-import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
