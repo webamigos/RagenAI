@@ -53,11 +53,11 @@ const ManageKnowledgeLayout = () => {
       messages={messages}
       locale={locale}
     >
-      <div className="h-screen flex flex-col">
+      <div className="h-screen">
         <Toast />
         <DocumentsProvider>
           <Sidebar>
-            <div className="h-full flex-1 flex flex-col gap-4">
+            <div className="mt-4">
               <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
                 <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
                   {tabs.map((tab) => (
