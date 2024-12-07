@@ -1,25 +1,25 @@
 'use client';
 
-import { ReactNode } from 'react';
-
 import { DocumentsProvider } from '@/context/DocumentsContext';
 import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
+import TabsWrapper from './TabsWrapper';
 
-import CreateDocumentPage from './create-document/page';
-import UploadedListPage from './documents-list/page';
-import AddFilesPage from './upload-files/page';
-
-type Props = {
-  children: ReactNode;
-};
-
-export default function AdminLayout({ children }: Props) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="h-screen flex flex-col">
       <Toast />
       <DocumentsProvider>
-        <Sidebar>{children}</Sidebar>
+        <Sidebar>
+          <div className="flex -mt-9 flex-col w-full h-full">
+            <TabsWrapper />
+            <div className="flex-grow">{children}</div>
+          </div>
+        </Sidebar>
       </DocumentsProvider>
     </div>
   );

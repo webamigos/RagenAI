@@ -193,6 +193,11 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "manage-knowledge": {
+    "create-document": "Utwórz dokument",
+    "documents-list": "Lista dokumentów",
+    "upload-files": "Dodaj pliki"
+  },
   "sidebar": {
     "profile": "Profil",
     "security": "Bezpieczeństwo",

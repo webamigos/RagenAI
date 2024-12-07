@@ -193,6 +193,11 @@
     "send-error": "Error creating document",
     "send": "Send"
   },
+  "manage-knowledge": {
+    "create-document": "Create document",
+    "documents-list": "Documents list",
+    "upload-files": "Upload files"
+  },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",
