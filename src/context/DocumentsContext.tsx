@@ -85,8 +85,6 @@ export const DocumentsProvider = ({ children }: Props) => {
   useEffect(() => {
     if (orgId) {
       refreshDocuments();
-    } else {
-      dispatch({ type: 'LOAD_ERROR' });
     }
   }, [orgId]);
 
