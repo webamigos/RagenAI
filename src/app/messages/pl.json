@@ -311,6 +311,10 @@
     "no-knowledge": "Wgraj wiedzę",
     "knowledge-uploaded": "Pliki zostały przesłane"
   },
+  "create-organization": {
+    "success": "Organizacja została stworzona",
+    "sync-error": "Wystąpił błąd w trakcie synchronizacji"
+  },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",

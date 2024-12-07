@@ -1,12 +1,9 @@
-import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
 import { Card } from '@ragenai/common-ui/Card';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
-import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer/ApiKeysSynchronizer';
-import { Fallback } from '@/app/components/Fallback';
 import { CreateApiKeyForm } from '@/app/components/ApiKeys/CreateApiKeyForm/CreateApiKeyForm';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
@@ -25,11 +22,7 @@ export default async function CreateApiKeyPage({
 
   return (
     <Card title={t('title-create')} size="full" className="mb-5">
-      <Suspense fallback={<Fallback />}>
-        <ApiKeysSynchronizer>
-          <CreateApiKeyForm />
-        </ApiKeysSynchronizer>
-      </Suspense>
+      <CreateApiKeyForm />
     </Card>
   );
 }
