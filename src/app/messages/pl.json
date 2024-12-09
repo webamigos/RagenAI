@@ -54,9 +54,11 @@
     "Reset-password": "Zresetuj hasło"
   },
   "admin-panel-page": {
+    "selected-files": "Wybrane pliki",
     "add-files": "Dodaj pliki",
     "create-file": "Stwórz dokument",
-    "uploaded-list": "Lista dokumentów"
+    "uploaded-list": "Lista dokumentów",
+    "fetching-error": "Błąd podczas pobierania dokumentów"
   },
   "common": {
     "sign-in": "Zaloguj",
@@ -209,6 +211,7 @@
     }
   },
   "files-table": {
+    "title": "Lista plików",
     "delete": "Usuń",
     "file-name": "Nazwa pliku",
     "file-size": "Rozmiar pliku",
@@ -280,6 +283,7 @@
     }
   },
   "chain-errors": {
+    "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
     "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
@@ -319,5 +323,11 @@
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",
     "go-back-home": "Powrót do strony głównej"
+  },
+  "upload-route": {
+    "empty-file": "Plik {fileName} jest pusty",
+    "no-files": "Brak plików do przetworzenia",
+    "upload-success": "Pliki zostały przetworzone",
+    "file-processing-error": "Błąd podczas przetwarzania pliku {fileName}"
   }
 }

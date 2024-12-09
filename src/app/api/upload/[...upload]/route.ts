@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-
 import { logger } from '../../../lib/utils/logger';
 import {
   createDocumentDetailsInDB,
@@ -23,7 +23,11 @@ type Params = {
 };
 
 export async function POST(request: NextRequest, { params }: Params) {
+  const locale = request.headers.get('accept-language')?.split(',')[0] || 'en';
+  setRequestLocale(locale);
+
   const uploaderId = params.upload[0];
+  const t = await getTranslations('upload-route');
 
   try {
     setSentryServiceTag('upload');
@@ -33,10 +37,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     setSentryClerkOrganizationTag(organizationId);
 
     if (!files || files.length === 0) {
-      return NextResponse.json(
-        { message: 'Brak plików do przetworzenia' },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: t('no-files') }, { status: 400 });
     }
 
     const processedFiles = [];
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     for (const file of files) {
       if (!file.size) {
         return NextResponse.json(
-          { message: `Plik ${file.name} jest pusty` },
+          { message: t('empty-file', { fileName: file.name }) },
           { status: 400 }
         );
       }
@@ -102,14 +103,14 @@ export async function POST(request: NextRequest, { params }: Params) {
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
-          { message: `Błąd podczas przetwarzania pliku ${file.name}` },
+          { message: t('file-processing-error', { fileName: file.name }) },
           { status: 500 }
         );
       }
     }
     await SaveOrganizationPublicMetadata(uploaderId, true);
     return NextResponse.json({
-      message: 'Pliki zostały przetworzone',
+      message: t('upload-success'),
       status: 200,
       files: processedFiles,
     });
