@@ -5,34 +5,33 @@ import {
   SignOutButton,
   SignedOut,
 } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
+
 import { LogoutIcon, UserCircleIcon } from '@ragenai/common-ui/icons';
-import { Text } from '@ragenai/common-ui/Text';
 
 export const UserLinks = () => {
+  const { isSignedIn } = useUser();
   const t = useTranslations();
 
   return (
-    <div className="ml-2">
-      <SignedIn>
+    <div>
+      {isSignedIn ? (
         <div>
           <SignOutButton>
-            <Text>
-              <span className="flex font-sans text-sm font-semibold text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white   cursor-pointer">
-                <LogoutIcon className="-ml-2 mr-2" />
-                {t('common.sign-out')}
-              </span>
-            </Text>
+            <button className="flex font-sans text-sm font-semibold text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white cursor-pointer">
+              <LogoutIcon className="mr-3" />
+              {t('common.sign-out')}
+            </button>
           </SignOutButton>
         </div>
-      </SignedIn>
-      <SignedOut>
+      ) : (
         <SignInButton mode="redirect">
-          <span className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
-            <UserCircleIcon className="mr-4" />
+          <button className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
+            <UserCircleIcon className="mr-3" />
             {t('common.sign-in')}
-          </span>
+          </button>
         </SignInButton>
-      </SignedOut>
+      )}
     </div>
   );
 };
