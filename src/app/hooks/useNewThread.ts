@@ -9,7 +9,6 @@ import {
 } from '../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
-import { useLocale } from 'next-intl';
 import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
 
@@ -55,7 +54,6 @@ export const useNewThread = () => {
   const { isSignedIn, user } = useUser();
   const { push } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
 
@@ -96,7 +94,7 @@ export const useNewThread = () => {
         }
 
         if (localStorageThreadId && !pathname.includes('/threads')) {
-          push(`/${locale}/threads/${localStorageThreadId}`);
+          push(`/threads/${localStorageThreadId}`);
         }
       } catch (err) {
         dispatch({
@@ -134,8 +132,8 @@ export const useNewThread = () => {
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
         user
-          ? setTransition(() => push(`/${locale}/threads/${threadId}`))
-          : setTransition(() => push(`/${locale}/guest-threads/${threadId}`));
+          ? setTransition(() => push(`/threads/${threadId}`))
+          : setTransition(() => push(`/guest-threads/${threadId}`));
 
         dispatch({ type: 'SET_IS_LOADING', payload: false });
       }
