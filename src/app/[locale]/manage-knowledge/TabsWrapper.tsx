@@ -7,8 +7,8 @@ import { Tabs, Tab, TabList } from '@ragenai/common-ui/Tabs';
 
 const tabRoutes = [
   { label: 'create-document', path: '/manage-knowledge/create-document' },
-  { label: 'documents-list', path: '/manage-knowledge/documents-list' },
   { label: 'upload-files', path: '/manage-knowledge/upload-files' },
+  { label: 'documents-list', path: '/manage-knowledge/documents-list' },
 ];
 
 export default function TabsWrapper() {
@@ -16,11 +16,14 @@ export default function TabsWrapper() {
   const pathname = usePathname();
   const t = useTranslations('manage-knowledge');
 
-  const prefetchTab = (key: string) => {
-    router.prefetch(`/manage-knowledge/${key}`);
+  const prefetchTab = (path: string) => {
+    router.prefetch(path);
   };
 
-  const activeTab = tabRoutes.findIndex((tab) => pathname.startsWith(tab.path));
+  const pathWithoutLocale = pathname.split('/').slice(2).join('/');
+  const activeTab = tabRoutes.findIndex((tab) =>
+    `/${pathWithoutLocale}`.startsWith(tab.path)
+  );
 
   return (
     <Tabs
