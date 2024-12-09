@@ -5,7 +5,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('sign in validation', async ({ page }) => {
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await page.getByTestId('sign-in-button').click();
 
   await page.waitForURL('**/sign-in');
 

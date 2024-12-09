@@ -25,11 +25,11 @@ export const UserLinks = () => {
           </SignOutButton>
         </div>
       ) : (
-        <SignInButton mode="redirect">
-          <button className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
-            <UserCircleIcon className="mr-3" />
+        <SignInButton mode="redirect" aria-label="Open sign in">
+          <span className="flex text-sm dark:text-slate-200 text-slate-900 dark:hover:text-white cursor-pointer">
+            <UserCircleIcon className="mr-4" />
             {t('common.sign-in')}
-          </button>
+          </span>
         </SignInButton>
       )}
     </div>
