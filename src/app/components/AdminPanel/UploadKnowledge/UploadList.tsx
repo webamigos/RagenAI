@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 import { Text } from '@ragenai/common-ui/Text';
 
 import { FileItem } from './FileItem';
@@ -13,10 +15,12 @@ export const UploadList = ({
   onRemoveFile,
   uploading,
 }: FileListProps) => {
+  const t = useTranslations('admin-panel-page');
+
   return (
     <div className="mt-4">
       <Text fontSize="lg" fontWeight="medium">
-        Wybrane pliki:
+        {t('selected-files')}:
       </Text>
       <ul>
         {files.map((file, index) => (
