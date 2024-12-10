@@ -75,7 +75,7 @@ export async function POST(request: NextRequest, { params }: Params) {
             uploaderId,
             uniqueFileId
           );
-          if (file.name.endsWith('.md')) {
+          if (file.name.endsWith('.md') || file.name.endsWith('.srt')) {
             await createMarkdownDocument({
               public_id: uniqueFileId,
               title: file.name,

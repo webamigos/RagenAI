@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react';
 import { ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
 
 import * as CommonUi from '@ragenai/common-ui';
 import { deleteDocumentAction } from '@/app/actions';
@@ -32,7 +31,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     document;
 
   const { successToast, errorToast } = statusToast();
-  const locale = useLocale();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const { refreshSettings } = useSettings();
@@ -86,14 +84,14 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
           >
             <CommonUi.Link
               className="text-black dark:text-white"
-              href={`/${locale}/document/${id}?edit=true`}
+              href={`/document/${id}?edit=true`}
             >
               <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
             </CommonUi.Link>
 
             <CommonUi.Link
               className="text-black dark:text-white"
-              href={`/${locale}/document/${id}`}
+              href={`/document/${id}`}
             >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
             </CommonUi.Link>
