@@ -1,14 +1,15 @@
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { ChatOpenAI } from '@langchain/openai';
+
+import { createChatCompletionInstance } from '@/app/lib/services/llm';
 
 export async function parseSrtToSegmentsUsingLLM(
   fileContent: string,
   minWords: number,
   maxWords: number
 ): Promise<string[]> {
-  const chat = new ChatOpenAI({
+  const chat = createChatCompletionInstance({
+    model: 'gpt-4o-mini',
     temperature: 0,
-    modelName: 'gpt-4o-mini',
   });
 
   const systemMessage = new SystemMessage(
