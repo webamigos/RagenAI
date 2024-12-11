@@ -47,10 +47,6 @@ const CHUNK_SETTINGS = {
     chunkSize: 1500,
     chunkOverlap: 250,
   },
-  srt: {
-    chunkSize: 1000,
-    chunkOverlap: 200,
-  },
 } as const;
 
 const saveBinaryToTempFile = async (content: string | Buffer) => {
@@ -131,25 +127,6 @@ export const convertAndStoreDocument = async ({
           message: `Failed to save temporary file: ${message}`,
         };
       }
-    } else if (fileName.endsWith('.srt')) {
-      const fileContentIsString = typeof fileContent === 'string';
-      if (!fileContentIsString) {
-        return {
-          success: false,
-          message: 'Invalid SRT file format.',
-        };
-      }
-
-      // Usuń znaczniki czasowe i numery napisów
-      const cleanedContent = fileContent
-        .replace(
-          /^\d+\n\d{2}:\d{2}:\d{2},\d{3} --> \d{2}:\d{2}:\d{2},\d{3}\n/gm,
-          ''
-        )
-        .replace(/\n\n+/g, '\n')
-        .trim();
-
-      rawDocs = [new Document({ pageContent: cleanedContent })];
     } else {
       const fileContentIsString = typeof fileContent === 'string';
       if (fileContentIsString) {
@@ -173,16 +150,8 @@ export const convertAndStoreDocument = async ({
       keepSeparator: true,
     });
 
-    const textSplitterSRT = new RecursiveCharacterTextSplitter({
-      chunkSize: CHUNK_SETTINGS.srt.chunkSize,
-      chunkOverlap: CHUNK_SETTINGS.srt.chunkOverlap,
-      keepSeparator: true,
-    });
-
     const docs = fileName.endsWith('.md')
       ? await textSplitter.splitDocuments(rawDocs)
-      : fileName.endsWith('.srt')
-      ? await textSplitterSRT.splitDocuments(rawDocs)
       : await textSplitterEPub.splitDocuments(rawDocs);
 
     const updatedDocs = await Promise.all(
@@ -193,8 +162,6 @@ export const convertAndStoreDocument = async ({
         const isMarkdown = fileExtension === 'md';
         const chunkSettings = isMarkdown
           ? CHUNK_SETTINGS.markdown
-          : fileExtension === 'srt'
-          ? CHUNK_SETTINGS.srt
           : CHUNK_SETTINGS.epub;
 
         const metadata: VectorStoreDocumentMetadata = {

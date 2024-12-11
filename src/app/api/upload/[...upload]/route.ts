@@ -14,6 +14,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { SaveOrganizationPublicMetadata } from '@/app/actions';
+import { parseSrtToSegmentsUsingLLM } from '../services/TableService';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -50,10 +51,15 @@ export async function POST(request: NextRequest, { params }: Params) {
       }
 
       let content;
-      const arrayBuffer = await file.arrayBuffer();
-      content = file.name.endsWith('.epub')
-        ? Buffer.from(arrayBuffer)
-        : await file.text();
+      if (file.name.endsWith('.srt')) {
+        const fileText = await file.text();
+        content = await parseSrtToSegmentsUsingLLM(fileText, 200, 300);
+        content = content.join('\n\n');
+      } else if (file.name.endsWith('.epub')) {
+        content = Buffer.from(await file.arrayBuffer());
+      } else {
+        content = await file.text();
+      }
 
       try {
         const uniqueFileId = uuidv4();
