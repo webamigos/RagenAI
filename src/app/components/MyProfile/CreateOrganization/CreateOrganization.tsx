@@ -13,29 +13,29 @@ import { syncOrganizationAndProject } from './actions';
 import { useRouter } from '@/i18n/routing';
 
 export const CreateOrganizationComponent = () => {
-  const { errorToast, successToast } = statusToast();
+  // const { errorToast, successToast } = statusToast();
   const { resolvedTheme } = useTheme();
-  const { organization } = useOrganization();
-  const { push } = useRouter();
+  // const { organization } = useOrganization();
+  // const { push } = useRouter();
   const t = useTranslations('create-organization');
 
-  useEffect(() => {
-    const sync = async () => {
-      if (organization) {
-        successToast({ message: t('success') });
-        const { success } = await syncOrganizationAndProject();
-        if (success) {
-          push('/my-profile/organization-profile');
-        } else {
-          // TODO: there was a problem with organization synchronization
-          // in the future we can send this action to temporal to make sure create record
-          errorToast({ message: t('sync-error') });
-          push('/my-profile/organization-profile');
-        }
-      }
-    };
-    sync();
-  }, [organization]);
+  // useEffect(() => {
+  //   const sync = async () => {
+  //     if (organization) {
+  //       successToast({ message: t('success') });
+  //       const { success } = await syncOrganizationAndProject();
+  //       if (success) {
+  //         push('/my-profile/organization-profile');
+  //       } else {
+  //         // TODO: there was a problem with organization synchronization
+  //         // in the future we can send this action to temporal to make sure create record
+  //         errorToast({ message: t('sync-error') });
+  //         push('/my-profile/organization-profile');
+  //       }
+  //     }
+  //   };
+  //   sync();
+  // }, [organization]);
 
   return (
     <CreateOrganization

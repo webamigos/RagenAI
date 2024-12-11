@@ -207,7 +207,7 @@ export const saveUserMetadata = async (
     });
     return { success: true };
   } catch (error) {
-    logger.error({ err: error }, 'Error saving user id to clerk');
+    // logger.error({ err: error }, 'Error saving user id to clerk');
     return { success: false };
   }
 };
