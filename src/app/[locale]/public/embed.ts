@@ -36,6 +36,8 @@ export const createEmbedScript = (
   iframe.setAttribute('scrolling', 'no');
   iframe.style.backgroundColor = 'transparent';
   iframe.style.opacity = '0';
+  iframe.style.boxShadow = 'var(--widget-shadow)';
+  iframe.style.border = 'var(--widget-border)';
   
   iframe.src = 'http://localhost:3000/en/public/${organizationId}/widget' + 
     (queryParams ? '?' + queryParams : '');
@@ -67,6 +69,21 @@ export const createEmbedScript = (
   
   document.body.appendChild(iframe);
   console.info('Iframe appended to body');
+
+  // Add this CSS variable definition before the iframe creation
+  const colorSchemeStyles = \`
+    :root {
+      --widget-border: 1px solid rgba(0,0,0,0.1);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --widget-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      }
+    }
+  \`;
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = colorSchemeStyles;
+  document.head.appendChild(styleSheet);
 })();
 `;
 };

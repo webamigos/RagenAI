@@ -47,7 +47,7 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
   }/api/embed/${key}?${new URLSearchParams({
     title: chatbotTitle,
     message: chatbotName,
-  }).toString()}'/>`;
+  }).toString()}'></script>`;
   const publicUrl = `${window.location.origin}/pl/public/${key}`;
 
   return (
