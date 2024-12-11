@@ -14,8 +14,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { SaveOrganizationPublicMetadata } from '@/app/actions';
-import { parseSrtToSegmentsUsingLLM } from '../services/TableService';
-
+import { parseSrtToSegmentsUsingLLM } from '../../threads/services/parseSrtWithLLM';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
