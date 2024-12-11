@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 
+import { usePathname } from '@/i18n/routing';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';

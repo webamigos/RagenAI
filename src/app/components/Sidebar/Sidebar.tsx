@@ -7,9 +7,9 @@ import {
   Button,
   SpinnerSVG,
 } from '@ragenai/common-ui';
-import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
@@ -74,7 +74,7 @@ export const Sidebar = ({ children, membership }: Props) => {
             </Button>
           </div>
           <SidebarBody className="-mt-3.5">
-            {pathname === `/${locale}` || pathname.includes('threads') ? (
+            {pathname === `/` || pathname.includes('threads') ? (
               error ? (
                 <div className="flex flex-col items-center text-start">
                   <Text color="red-500">{getSidebarThreadsError(error)}</Text>

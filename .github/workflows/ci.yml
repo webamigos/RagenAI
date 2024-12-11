@@ -21,6 +21,10 @@ env:
   REDIS_URL: 'http://example.com'
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'ci'
+  TEMPORAL_SERVER_ADDRESS: 'http://example.com'
+  TEMPORAL_NAMESPACE: 'ci'
+  TEMPORAL_CERT: 'dummy'
+  TEMPORAL_KEY: 'dummy'
 
 on:
   push:
@@ -60,8 +64,11 @@ jobs:
       - name: Lint app
         run: npm run lint
 
-      - name: Run tests
+      - name: Run app tests
         run: npm run test
+
+      - name: Run workflows tests
+        run: npm run test:temporal
 
       - name: Build Next.js app
         run: npm run build

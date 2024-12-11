@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSyncActiveOrganization } from '@/app/hooks/useSyncActiveOrganization';
+import { usePrefetchTabs } from '@/app/hooks/usePrefetchTabs';
 import {
   SheffieldCheck,
   UserCircleIcon,
@@ -13,7 +13,6 @@ import {
   OpenBookIcon,
   SettingsIcon,
   SidebarItem,
-  KeyIcon,
 } from '@ragenai/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
@@ -24,15 +23,14 @@ type Props = {
 };
 
 type TabItem = {
-  icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
   label: string;
-  path: string;
+  path: `/${string}`;
   className?: string;
 };
 
 export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   const { closeSidebar } = useSidebar();
-  const router = useRouter();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();
   const { showOnboarding } = useOnboardingContext();
@@ -76,12 +74,6 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: Briefcase,
       label: t('organization-list'),
       path: '/my-profile/organization-profile/',
-    },
-    {
-      icon: Briefcase,
-      label: t('create-organization'),
-      path: '/my-profile/create-organization',
-      className: 'create-organization-tab',
     },
   ];
 
@@ -129,11 +121,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     ];
   }, [t, orgRole]);
 
-  useEffect(() => {
-    tabs.forEach((tab) => {
-      router.prefetch(tab.path);
-    });
-  }, [tabs, router]);
+  usePrefetchTabs(tabs);
 
   return (
     <div>

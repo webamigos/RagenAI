@@ -3,11 +3,11 @@
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth, useSignIn } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
+import { useRouter } from '@/i18n/routing';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { Card, Input, Button } from '@ragenai/common-ui';
 
