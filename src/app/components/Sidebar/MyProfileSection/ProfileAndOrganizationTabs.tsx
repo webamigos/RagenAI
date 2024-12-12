@@ -130,7 +130,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
           hasIcon={true}
           key={path}
           href={path}
-          onClick={() => closeSidebar()}
+          onClick={closeSidebar}
           className={className}
         >
           <Icon />

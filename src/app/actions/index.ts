@@ -262,19 +262,14 @@ export async function deleteUserMessage(messagePublicId: string) {
   }
 }
 
-//search
-export async function searchUserThreads(
-  visitorId: string,
-  query?: string,
-  skip = 0,
-  take = 5
-) {
-  return await getUserThreads(visitorId, skip, take, query);
-}
-
 //autocomplete suggestions
-export async function fetchThreadSuggestions(visitorId: string, query: string) {
-  if (!query.trim()) return [];
+export async function fetchThreadSuggestions(
+  visitorId: string,
+  query: string
+): Promise<{ id: string; title: string }[]> {
+  if (!visitorId || !query.trim() || query.trim().length < 3) {
+    return [];
+  }
 
   const threads = await getUserThreads(visitorId, 0, 5, query);
 

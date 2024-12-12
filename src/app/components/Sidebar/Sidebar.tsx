@@ -14,7 +14,6 @@ import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
-import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { Footer } from './Footer';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
@@ -37,6 +36,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     isSignedIn,
     userThreads,
     activeThread,
+    handleSearch,
     handleThread,
     refetchThreads,
     isThreadLoading,
@@ -46,7 +46,6 @@ export const Sidebar = ({ children, membership }: Props) => {
   const pathname = usePathname();
   const isError = error ? true : false;
   const t = useTranslations('sidebar');
-  const { openSearch } = useSearchThreads();
 
   return (
     <SidebarLayout
@@ -75,14 +74,16 @@ export const Sidebar = ({ children, membership }: Props) => {
                 />
               )}
             </Button>
-            <Button
-              onClick={openSearch}
-              className="relative ml-4 w-10/12"
-              isLink
-            >
-              <SearchIcon className="w-6 h-6 dark:text-gray-200" />
-              <Text className="ml-1">{t('search-threads')}</Text>
-            </Button>
+            {isSignedIn && !pathname.includes('/my-profile') && (
+              <Button
+                onClick={handleSearch}
+                className="relative ml-4 w-10/12"
+                isLink
+              >
+                <SearchIcon className="w-6 h-6 dark:text-gray-200" />
+                <Text className="ml-1">{t('search-threads')}</Text>
+              </Button>
+            )}
           </div>
           <SidebarBody className="-mt-3.5">
             {pathname === `/` || pathname.includes('threads') ? (
