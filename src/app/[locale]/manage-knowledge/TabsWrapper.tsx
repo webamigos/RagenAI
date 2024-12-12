@@ -27,7 +27,7 @@ export default function TabsWrapper() {
 
   return (
     <Tabs
-      className="w-full"
+      className="w-full mb-2"
       activeTab={activeTab}
       setActiveTab={(index) => router.push(tabRoutes[index].path)}
     >
