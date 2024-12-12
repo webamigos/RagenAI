@@ -1,7 +1,4 @@
-import {
-  getTranslations,
-  unstable_setRequestLocale as setRequestLocale,
-} from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 import { notFound } from 'next/navigation';
 

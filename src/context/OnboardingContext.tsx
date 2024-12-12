@@ -8,12 +8,13 @@ import Joyride, {
   Step,
   CallBackProps,
 } from 'react-joyride';
-import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { useTranslations } from 'next-intl';
 import { useSidebar } from '@/app/hooks/useSidebar';
+import { useRouter } from '@/i18n/routing';
+
 export interface JoyrideStep extends Step {
   target: string;
   route?: string;

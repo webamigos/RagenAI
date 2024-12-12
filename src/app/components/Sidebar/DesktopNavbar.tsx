@@ -1,7 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
+import { usePathname } from '@/i18n/routing';
 import {
   SettingsIcon,
   Avatar,

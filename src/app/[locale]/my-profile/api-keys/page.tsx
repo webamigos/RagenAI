@@ -1,11 +1,10 @@
 import { Suspense } from 'react';
-import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 
 import { Card } from '@ragenai/common-ui/Card';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
-import { ApiKeysSynchronizer } from '@/app/components/ApiKeys/ApiKeysSynchronizer/ApiKeysSynchronizer';
 import { Fallback } from '@/app/components/Fallback';
 import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
 import { ApiKeysList } from '@/app/components/ApiKeys/ApiKeysList';
@@ -32,9 +31,7 @@ export default async function ApiKeysPage({
   return (
     <Card title={t('title')} size="full" className="mb-5">
       <Suspense fallback={<Fallback />}>
-        <ApiKeysSynchronizer>
-          {result.payload && <ApiKeysList data={result.payload} />}
-        </ApiKeysSynchronizer>
+        {result.payload && <ApiKeysList data={result.payload} />}
       </Suspense>
     </Card>
   );

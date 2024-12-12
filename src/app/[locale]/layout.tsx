@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { ClerkProvider } from '@clerk/nextjs';
 import { enUS } from '@clerk/localizations';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
@@ -8,13 +8,15 @@ import { GoogleTagManager } from '@next/third-parties/google';
 import { Providers } from '../components/Providers';
 import { ThreadsContextProvider } from '../../context/ThreadsContext';
 import { plPL } from '../messages/pl-PL-clerk';
-import { locales, timezone } from '../config';
+import { timezone } from '../config';
 import './global.css';
 import { Prompt } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
+import { routing } from '@/i18n/routing';
+import { notFound } from 'next/navigation';
 
 const JoyrideProvider = dynamic<JoyrideProviderProps>(
   () =>
@@ -41,12 +43,20 @@ const promptFont = Prompt({
 });
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return routing.locales.map((locale) => ({ locale }));
 }
 
-export default function LocaleLayout({ children, params: { locale } }: Props) {
+export default async function LocaleLayout({
+  children,
+  params: { locale },
+}: Props) {
+  // Ensure that the incoming `locale` is valid
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
   setRequestLocale(locale);
-  const messages = useMessages();
+  const messages = await getMessages();
 
   return (
     <NextIntlClientProvider timeZone={timezone} messages={messages}>
