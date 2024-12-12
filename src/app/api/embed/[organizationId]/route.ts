@@ -59,7 +59,7 @@ export async function GET(
       headers: {
         'Content-Type': 'text/javascript',
         'Cache-Control': 'no-cache',
-        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Origin': origin || '*',
       },
     });
   } catch (error) {
