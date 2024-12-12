@@ -232,44 +232,49 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col items-center flex-1 overflow-auto px-4">
-      {isEditingTitle ? (
-        <form onSubmit={handleSubmitTitle(onTitleSubmit)} className="w-full">
-          <Input
-            type="text"
-            {...registerTitle('title')}
-            onBlur={handleSubmitTitle(onTitleSubmit)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                handleSubmitTitle(onTitleSubmit)();
-              }
-            }}
-            className="w-full mb-4 p-2 text-2xl font-bold"
-            autoFocus
-          />
-          {errorsTitle.title && (
-            <span className="text-red-500">{errorsTitle.title.message}</span>
-          )}
-        </form>
-      ) : (
-        <div className={`w-full flex -ml-5`}>
+    <>
+      <div className="fixed top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light">
+        <div className="flex items-center">
           {!isEditMode && (
-            <div className="w-1/4">
-              <ArrowLeftCircleIcon
-                onClick={() => push('/manage-knowledge/documents-list')}
-                className="h-8 w-8 mt-3 cursor-pointer"
-              />
-            </div>
+            <ArrowLeftCircleIcon
+              onClick={() => push('/manage-knowledge/documents-list')}
+              className="h-8 w-8 cursor-pointer mr-2"
+            />
           )}
-          <Text
-            className="mb-4 ml-1 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
-            onClick={handleTitleDoubleClick}
-          >
-            {documentTitle}
-          </Text>
+          {isEditingTitle ? (
+            <form
+              className="flex mb-4 flex-1 justify-center align-middle items-center"
+              onSubmit={handleSubmitTitle(onTitleSubmit)}
+            >
+              <Input
+                type="text"
+                {...registerTitle('title')}
+                onBlur={handleSubmitTitle(onTitleSubmit)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSubmitTitle(onTitleSubmit)();
+                  }
+                }}
+                autoFocus
+                className="py-1 max-w-96 min-w-24	 text-xl font-bold bg-transparent outline-none"
+              />
+              {errorsTitle.title && (
+                <span className="text-red-500">
+                  {errorsTitle.title.message}
+                </span>
+              )}
+            </form>
+          ) : (
+            <Text
+              className="truncate text-xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+              onClick={handleTitleDoubleClick}
+            >
+              {documentTitle}
+            </Text>
+          )}
         </div>
-      )}
+      </div>
       {isEditing ? (
         <form
           onSubmit={handleSubmit(onSubmit)}
@@ -318,7 +323,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         </form>
       ) : (
         <div
-          className="flex-1 prose justify-center prose-lg dark:prose-invert"
+          className="flex-1 ml-12 prose prose-lg dark:prose-invert"
           onDoubleClick={handleDoubleClick}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -326,6 +331,6 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           </ReactMarkdown>
         </div>
       )}
-    </div>
+    </>
   );
 }
