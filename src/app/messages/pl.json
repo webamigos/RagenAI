@@ -323,11 +323,5 @@
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",
     "go-back-home": "Powrót do strony głównej"
-  },
-  "upload-route": {
-    "empty-file": "Plik {fileName} jest pusty",
-    "no-files": "Brak plików do przetworzenia",
-    "upload-success": "Pliki zostały przetworzone",
-    "file-processing-error": "Błąd podczas przetwarzania pliku {fileName}"
   }
 }
