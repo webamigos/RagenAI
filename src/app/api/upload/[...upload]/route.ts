@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-
 import { logger } from '../../../lib/utils/logger';
 import {
   createDocumentDetailsInDB,
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     if (!files || files.length === 0) {
       return NextResponse.json(
-        { message: 'Brak plików do przetworzenia' },
+        { message: 'No file to process' },
         { status: 400 }
       );
     }
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     for (const file of files) {
       if (!file.size) {
         return NextResponse.json(
-          { message: `Plik ${file.name} jest pusty` },
+          { message: `The file ${file.name} is empty)` },
           { status: 400 }
         );
       }
@@ -107,14 +106,14 @@ export async function POST(request: NextRequest, { params }: Params) {
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
-          { message: `Błąd podczas przetwarzania pliku ${file.name}` },
+          { message: `Error while processing the file ${file.name})` },
           { status: 500 }
         );
       }
     }
     await SaveOrganizationPublicMetadata(uploaderId, true);
     return NextResponse.json({
-      message: 'Pliki zostały przetworzone',
+      message: 'All files are successfully proceed',
       status: 200,
       files: processedFiles,
     });

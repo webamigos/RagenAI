@@ -326,7 +326,7 @@ export const useAssistantLogic = (threadId: string) => {
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
+        errorToast({ message: 'sending-error' });
         return;
       }
 
@@ -353,7 +353,7 @@ export const useAssistantLogic = (threadId: string) => {
         error.status === StatusCodes.BAD_REQUEST
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
+        errorToast({ message: 'sending-error' });
       }
       logger.error('Error submitting message: %o', error);
     }
