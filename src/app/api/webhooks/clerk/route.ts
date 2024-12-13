@@ -10,8 +10,8 @@ const serviceName = 'clerkWebhook';
 
 export async function POST(req: Request) {
   setSentryServiceTag(serviceName);
-  const SIGNING_SECRET = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
 
+  const SIGNING_SECRET = process.env.CLERK_WEBHOOK_SIGNING_SECRET;
   if (!SIGNING_SECRET) {
     throw new Error(
       'Error: Please add CLERK_WEBHOOK_SIGNING_SECRET from Clerk Dashboard to .env or .env.local'
@@ -57,38 +57,30 @@ export async function POST(req: Request) {
   try {
     const { id } = evt.data;
     const eventType = evt.type;
-    logger.info(
-      `Received webhook with ID ${id} and event type of ${eventType}`
-    );
-    logger.info(body, 'Webhook payload:', body);
+    logger.info(`Received webhook with ID ${id} and type ${eventType}`);
 
     switch (evt.type) {
       case 'user.created':
         const firstName = evt.data.first_name || 'User';
         const organizationName = `${firstName}'s Organization`;
-
-        const clerkOrg = await clerkClient.organizations.createOrganization({
+        const userId = evt.data.id;
+        const { id } = await clerkClient.organizations.createOrganization({
           name: organizationName,
-          createdBy: evt.data.id,
+          createdBy: userId,
         });
 
-        logger.info(
-          {
-            userId: evt.data.id,
-            organizationId: clerkOrg.id,
-          },
-          'User and organization created'
-        );
-
+        logger.info(`For user: ${userId}, created organization with id: ${id}`);
         break;
       case 'organization.created':
-        await createOrganizationWithDefaultProject(evt.data.id);
-
+        const orgId = evt.data.id;
+        const org = await createOrganizationWithDefaultProject(orgId);
+        logger.info(
+          `Organization ${orgId} created and configured with public id: ${org.publicId}`
+        );
         break;
 
       default:
-        logger.info({ eventType }, 'Unhandled event type');
-      // return new Response('Unhandled event type', { status: 400 });
+        logger.info({ eventType }, 'Unhandled event type, skipping...');
     }
   } catch (err) {
     logger.error({ err }, 'Error: Could not handle webhook:');
