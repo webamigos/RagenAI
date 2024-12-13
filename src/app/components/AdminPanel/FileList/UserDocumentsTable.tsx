@@ -86,14 +86,14 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
           >
             <CommonUi.Link
               className="text-black dark:text-white"
-              href={`/${locale}/document/${id}?edit=true`}
+              href={`/document/${id}?edit=true`}
             >
               <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
             </CommonUi.Link>
 
             <CommonUi.Link
               className="text-black dark:text-white"
-              href={`/${locale}/document/${id}`}
+              href={`/document/${id}`}
             >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
             </CommonUi.Link>

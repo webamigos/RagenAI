@@ -61,14 +61,12 @@ export const getUserThreads = async (
   return await db.thread.findMany({
     where: {
       visitor_id: visitorId,
-      ...(query && {
-        created_at: {
-          gte: thirtyDaysAgo,
-        },
-      }),
       messages: query
         ? {
             some: {
+              created_at: {
+                gte: thirtyDaysAgo,
+              },
               content: {
                 contains: query,
                 mode: 'insensitive',

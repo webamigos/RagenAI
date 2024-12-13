@@ -54,9 +54,7 @@ export const useNewThread = ({
       );
 
       if (localStorageThreadId && !pathname.includes('/threads')) {
-        push(
-          `/${locale}/public/${organizationId}/threads/${localStorageThreadId}`
-        );
+        push(`/public/${organizationId}/threads/${localStorageThreadId}`);
       }
 
       // Clear thread data when not in a thread
@@ -78,7 +76,7 @@ export const useNewThread = ({
 
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
       setTransition(() =>
-        push(`/${locale}/public/${organizationId}/threads/${threadId}`)
+        push(`/public/${organizationId}/threads/${threadId}`)
       );
     } catch (err) {
       const errorMessage = 'Failed to create new thread.';

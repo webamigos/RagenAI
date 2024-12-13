@@ -1,5 +1,4 @@
 import React, { useReducer } from 'react';
-import { useLocale } from 'next-intl';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
 
@@ -20,7 +19,6 @@ export const SearchThreads = React.forwardRef<
   const { query, results, suggestions, isLoading, hasSearched } = state;
 
   const { errorToast } = statusToast();
-  const locale = useLocale();
   const t = useTranslations('search-threads');
 
   const debouncedFetchSuggestions = useDebouncedCallback(
@@ -110,7 +108,7 @@ export const SearchThreads = React.forwardRef<
             <SidebarItem
               key={suggestion.id}
               hasIcon
-              href={`/${locale}/threads/${suggestion.id}`}
+              href={`/threads/${suggestion.id}`}
               onClick={() => handleSuggestionClick(suggestion.id)}
             >
               {suggestion.title}
