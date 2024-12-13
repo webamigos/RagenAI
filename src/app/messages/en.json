@@ -54,9 +54,11 @@
     "Reset-password": "Reset password"
   },
   "admin-panel-page": {
+    "selected-files": "Selected files",
     "add-files": "Add files",
     "create-file": "Create Document",
-    "uploaded-list": "List of Documents"
+    "uploaded-list": "List of Documents",
+    "fetching-error": "Error while fetching documents"
   },
   "common": {
     "sign-in": "Sign in",
@@ -209,6 +211,7 @@
     }
   },
   "files-table": {
+    "title": "File list",
     "delete": "Delete",
     "file-name": "File Name",
     "file-size": "File Size",
@@ -280,6 +283,7 @@
     }
   },
   "chain-errors": {
+    "sending-error": "Error occured while sending message",
     "moderation-error": "The content was flagged as inappropriate by our moderation system and cannot be processed",
     "api-key-error": "The API key configuration is missing - please check your settings",
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
