@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { classMerge } from '../utils/cn';
 type TabListProps = {
-  children: ReactNode[];
+  children: ReactNode[] | ReactNode;
   activeTab: number;
   setActiveTab: (index: number) => void;
 };
@@ -29,9 +29,11 @@ const Tabs = ({
   activeTab,
   setActiveTab,
 }: TabListProps & ComponentProps<'div'>) => {
+  const childArray = React.Children.toArray(children);
+
   return (
     <div className={classMerge('w-full', className)}>
-      {children.map((child, index) =>
+      {childArray.map((child, index) =>
         React.isValidElement(child) && child.type === TabList
           ? React.cloneElement(child as ReactElement<TabListProps>, {
               key: `tablist-${index}`,
@@ -41,7 +43,7 @@ const Tabs = ({
           : null
       )}
       <AnimatePresence mode="wait">
-        {children.map((child, index) =>
+        {childArray.map((child, index) =>
           React.isValidElement(child) &&
           child.type === TabPanel &&
           index - 1 === activeTab
@@ -60,21 +62,27 @@ const TabList = ({
   children,
   activeTab,
   setActiveTab,
-}: TabListProps & ComponentProps<'div'>) => (
-  <div className={classMerge('flex ml-[18px]', className)}>
-    {children.map((child, index) =>
-      React.isValidElement(child)
-        ? React.cloneElement(child as ReactElement<TabPropsInterface>, {
-            key: `tab-${index}`,
-            isActive: index === activeTab,
-            onClick: () => {
-              setActiveTab(index);
-            },
-          })
-        : null
-    )}
-  </div>
-);
+}: TabListProps & ComponentProps<'div'>) => {
+  if (!children) return null;
+
+  const childArray = React.Children.toArray(children);
+
+  return (
+    <div className={classMerge('flex ml-[18px]', className)}>
+      {childArray.map((child, index) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child as ReactElement<TabPropsInterface>, {
+              key: `tab-${index}`,
+              isActive: index === activeTab,
+              onClick: () => {
+                setActiveTab(index);
+              },
+            })
+          : null
+      )}
+    </div>
+  );
+};
 
 const Tab = ({
   className,
@@ -86,12 +94,12 @@ const Tab = ({
   <button
     type="button"
     className={classMerge(
-  'flex px-4 py-2 text-sm font-medium transition',
-  isActive
-    ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-primary-blue-500 dark:text-gray-200'
-    : 'text-gray-600',
-  className
-)}
+      'flex px-4 py-2 text-sm font-medium transition',
+      isActive
+        ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-primary-blue-500 dark:text-gray-200'
+        : 'text-gray-600',
+      className
+    )}
     onClick={onClick}
     {...props}
   >

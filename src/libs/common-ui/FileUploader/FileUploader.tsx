@@ -50,6 +50,8 @@ export const FileUploader = ({
       isMarkdownOrEpubFile
     );
     onFilesAdded(selectedFiles);
+
+    event.target.value = '';
   };
 
   const handleClick = () => {
