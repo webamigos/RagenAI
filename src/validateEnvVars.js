@@ -12,7 +12,7 @@ const envSchema = z.object({
   API_BASE_URL: z.string().url(),
 
   // Supabase for Vector store
-  SUPABASE_URL: z.string().url(),
+  SUPABASE_API_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string(),
   SUPABASE_PROJECT_ID: z.string(), // needed for vector store migrations migrations
 

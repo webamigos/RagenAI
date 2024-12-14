@@ -28,7 +28,7 @@ export const Logo = () => {
     await clearVisitorMessagesStats();
     setTransition(() => refresh());
   };
-  const isClickableLogo = pathname !== `/${locale}`;
+  const isClickableLogo = pathname !== `/`;
 
   return (
     <div className="flex">
