@@ -2,7 +2,6 @@
 
 import React, { ComponentProps } from 'react';
 import * as Headless from '@headlessui/react';
-import { useLocale } from 'next-intl';
 
 import { usePathname } from '@/i18n/routing';
 import { useSidebar } from '@/app/hooks/useSidebar';
@@ -97,11 +96,9 @@ export function SidebarLayout({
 }>) {
   const { openSidebar } = useSidebar();
   const pathname = usePathname();
-  const locale = useLocale();
 
   const isMyProfile =
-    pathname.startsWith(`/${locale}/my-profile`) ||
-    pathname.startsWith(`/${locale}/admin`);
+    pathname.startsWith(`/my-profile`) || pathname.startsWith(`/admin`);
 
   const baseMainStyles =
     'flex flex-1 flex-col bg-primary-light dark:bg-primary-dark overflow-y-auto';
@@ -156,7 +153,9 @@ export function SidebarLayout({
           }`}
         >
           <div
-            className={`w-full mx-auto ${isMyProfile ? 'lg:ml-5 pb-5' : ''}`}
+            className={`w-full mx-auto pt-[4.5rem] mr-3 ${
+              isMyProfile ? 'lg:ml-5 pb-5' : ''
+            }`}
           >
             {children}
           </div>

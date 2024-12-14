@@ -54,9 +54,11 @@
     "Reset-password": "Zresetuj hasło"
   },
   "admin-panel-page": {
+    "selected-files": "Wybrane pliki",
     "add-files": "Dodaj pliki",
     "create-file": "Stwórz dokument",
-    "uploaded-list": "Lista dokumentów"
+    "uploaded-list": "Lista dokumentów",
+    "fetching-error": "Błąd podczas pobierania dokumentów"
   },
   "common": {
     "sign-in": "Zaloguj",
@@ -87,6 +89,15 @@
     },
     "manage-knowledge": {
       "title": "Zarządzaj wiedzą | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Stwórz dokument | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Wgraj dokument | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Lista dokumentów | Ragen AI"
     },
     "my-profile": {
       "title": "Mój profil | Ragen AI"
@@ -184,6 +195,11 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "manage-knowledge": {
+    "create-document": "Utwórz dokument",
+    "documents-list": "Lista dokumentów",
+    "upload-files": "Dodaj pliki"
+  },
   "sidebar": {
     "profile": "Profil",
     "security": "Bezpieczeństwo",
@@ -195,6 +211,7 @@
     "assistant-management": "Zarządzanie asystentem",
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
+    "search-threads": "Przeszukaj wątki",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
@@ -208,7 +225,15 @@
       "unknown": "Nieznany błąd. Skontaktuj się z administratorem."
     }
   },
+  "search-threads": {
+    "error-sugestions": "Błąd poczas pobierania sugestii",
+    "error-threads": "Błąd podczas pobierania wątków",
+    "threads-not-found": "Wątek nieodpowada",
+    "no-results": "Brak wyników",
+    "placeholder": "Wyszukaj w wątkach..."
+  },
   "files-table": {
+    "title": "Lista plików",
     "delete": "Usuń",
     "file-name": "Nazwa pliku",
     "file-size": "Rozmiar pliku",
@@ -231,7 +256,10 @@
     "document-not-found": "Nie znaleziono dokumentu",
     "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
     "save": "Zapisz",
-    "edit-successfully": "Dokument został zedytowany"
+    "cancel": "Anuluj",
+    "edit-successfully": "Dokument został zedytowany",
+    "content-empty": "Treść dokumentu nie może być pusta",
+    "title-empty": "Tytuł nie może być pusty"
   },
   "max-documents-to-retreive": {
     "input-label": "Maks. liczba fragmentów wyszukiwania"
@@ -280,6 +308,7 @@
     }
   },
   "chain-errors": {
+    "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
     "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",

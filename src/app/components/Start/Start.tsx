@@ -8,26 +8,38 @@ import { useTranslations } from 'next-intl';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 import { useSettings } from '@/app/hooks/useSettings';
+import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 
 import { OnboardingSteps } from './OnboardingSteps';
 import { ValidationBoard } from './ValidationBoard';
-import { useEffect } from 'react';
+import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
+import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscapeAndOutsideClick';
 
 export const Start = () => {
-  const { isSignedIn, isLoaded: isUserDataLoaded } = useUser();
+  const { isSignedIn, isLoaded: isUserDataLoaded, user } = useUser();
   const t = useTranslations('Index');
   const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
-  const { hasApiKey, belongsToOrganization, hasKnowledge, refreshSettings } =
-    useSettings();
+  const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
+  const { isSearchOpen, closeSearch } = useSearchThreads();
+  const { modalRef } = useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 
   const shouldShowValidationBoard =
     isSignedIn &&
     !showOnboarding &&
     (!hasApiKey || !hasKnowledge || !belongsToOrganization);
-
+  const userId = user?.id;
   return (
     <>
+      {isSearchOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          onClick={closeSearch}
+        >
+          <SearchThreads visitorId={userId!} ref={modalRef} />
+        </div>
+      )}
+
       {isUserDataLoaded && (
         <div className="container mx-auto h-full">
           <div className="flex flex-col h-full items-center justify-center">

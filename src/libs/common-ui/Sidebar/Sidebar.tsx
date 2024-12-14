@@ -138,6 +138,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
       current,
       className,
       children,
+      onClick,
       hasIcon = false,
       disabled = false,
       href,
@@ -159,7 +160,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
     );
 
     return (
-      <span className={classMerge('relative', className)}>
+      <span onClick={onClick} className={classMerge('relative', className)}>
         {current && (
           <motion.span
             layoutId="current-indicator"
