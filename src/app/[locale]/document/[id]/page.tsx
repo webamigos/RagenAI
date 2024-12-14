@@ -1,13 +1,16 @@
 'use client';
 
 import React, { useEffect, useReducer } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useOrganization } from '@clerk/nextjs';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
-import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import {
@@ -16,26 +19,17 @@ import {
   Text,
   Input,
   Button,
+  CloudArrowUp,
+  XMarkIcon,
 } from '@ragenai/common-ui';
 import {
   fetchDocumentByOrganization,
   updateDocument,
-} from '@/app/components/MarkdownDocumentsCreator/action';
+} from '@/app/components/ManageKnowledge/MarkdownDocumentsCreator/action';
 import { deleteDocumentAction } from '@/app/actions';
 import { uploadFiles } from '@/app/lib/services/api';
-import {
-  reducer,
-  initialState,
-  State,
-  Action,
-  SET_DOCUMENT,
-  SET_LOADING,
-  SET_EDITING,
-  SET_SAVING,
-  SET_EDITABLE_CONTENT,
-  SET_DOCUMENT_TITLE,
-  EDIT_TITLE_MODE,
-} from './documentReducer';
+import { ArrowLeftCircleIcon } from '@heroicons/react/24/outline';
+import { initialState, reducer } from './documentReducer';
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -48,87 +42,80 @@ type DocumentPageProps = {
 };
 
 export default function DocumentPage({ params }: DocumentPageProps) {
-  const [state, dispatch] = useReducer(reducer, initialState) as [
-    State,
-    React.Dispatch<Action>
-  ];
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const {
     documentContent,
     documentTitle,
-    isLoading,
     isEditing,
-    editableContent,
     isEditingTitle,
-    editableTitle,
+    isLoading,
     isSaving,
   } = state;
-
   const { id } = params;
   const { organization } = useOrganization();
+  const { push } = useRouter();
   const t = useTranslations('document-preview');
   const searchParams = useSearchParams();
   const isEditMode = searchParams.get('edit') === 'true';
   const { errorToast, successToast } = statusToast();
   const orgId = organization?.id;
 
-  useEffect(() => {
-    if (id && orgId) {
-      const loadDocument = async () => {
-        dispatch({ type: SET_LOADING, payload: true });
+  const documentSchema = z.object({
+    content: z.string().min(1, { message: t('content-empty') }),
+  });
 
-        try {
-          const content = await fetchDocumentByOrganization(orgId, id);
-          if (content.success) {
-            const documentText = content.documents
-              .map((doc) => doc.content)
-              .join('\n');
-            const documentTitle = content.documents
-              .map((document) => document.title)
-              .join('\n');
+  const titleSchema = z.object({
+    title: z.string().min(1, { message: t('title-empty') }),
+  });
 
-            dispatch({
-              type: SET_DOCUMENT,
-              payload: { content: documentText, title: documentTitle },
-            });
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(documentSchema),
+    defaultValues: {
+      content: '',
+    },
+  });
+  const watchedContent = watch('content');
 
-            if (isEditMode) {
-              dispatch({ type: SET_EDITING, payload: true });
-              const htmlContent = mdParser.render(documentText || '');
-              dispatch({ type: SET_EDITABLE_CONTENT, payload: htmlContent });
-            }
-          } else {
-            errorToast({ message: `${content.message}: ${content.error}` });
-          }
-        } catch (error) {
-          errorToast({ message: t('fetching-error') });
-        } finally {
-          dispatch({ type: SET_LOADING, payload: false });
-        }
-      };
-
-      loadDocument();
-    }
-  }, [id, orgId, isEditMode]);
+  const {
+    register: registerTitle,
+    handleSubmit: handleSubmitTitle,
+    reset: resetTitle,
+    formState: { errors: errorsTitle },
+  } = useForm({
+    resolver: zodResolver(titleSchema),
+    defaultValues: {
+      title: '',
+    },
+  });
 
   const handleDoubleClick = () => {
-    dispatch({ type: SET_EDITING, payload: true });
-    const htmlContent = mdParser.render(documentContent || '');
-    dispatch({ type: SET_EDITABLE_CONTENT, payload: htmlContent });
+    dispatch({ type: 'SET_IS_EDITING', payload: true });
+    reset({
+      content: mdParser.render(documentContent || ''),
+    });
+    push(`/document/${id}?edit=true`);
   };
 
   const handleTitleDoubleClick = () => {
-    dispatch({
-      type: EDIT_TITLE_MODE,
-      payload: { isEditing: true, title: documentTitle },
+    dispatch({ type: 'SET_IS_EDITING_TITLE', payload: true });
+    resetTitle({
+      title: documentTitle,
     });
   };
 
-  const handleSave = async () => {
-    if (!orgId || !editableContent || !documentTitle) return;
-    dispatch({ type: SET_SAVING, payload: true });
+  const onSubmit = async (data: { content: string }) => {
+    if (!orgId) return;
+    dispatch({ type: 'SET_IS_SAVING', payload: true });
 
-    const markdownContent = turndownService.turndown(editableContent);
+    const markdownContent = turndownService.turndown(data.content);
+
     const response = await updateDocument({
       orgId,
       documentId: id,
@@ -149,42 +136,85 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     await uploadFiles(orgId, formData);
 
     if (response.success) {
-      dispatch({
-        type: SET_DOCUMENT,
-        payload: { content: markdownContent, title: documentTitle },
-      });
+      dispatch({ type: 'SET_DOCUMENT_CONTENT', payload: markdownContent });
       successToast({ message: t('edit-successfully') });
     } else {
       errorToast({ message: response.message });
     }
-    dispatch({ type: SET_EDITING, payload: false });
-    dispatch({ type: SET_SAVING, payload: false });
+    dispatch({ type: 'SET_IS_EDITING', payload: false });
+    dispatch({ type: 'SET_IS_SAVING', payload: false });
   };
 
-  const handleEditTitle = async () => {
-    if (!orgId || editableTitle === null) return;
+  const onTitleSubmit = async (data: { title: string }) => {
+    if (!orgId) return;
+    dispatch({ type: 'SET_IS_SAVING', payload: true });
+
     const response = await updateDocument({
       orgId,
       documentId: id,
-      title: editableTitle,
+      title: data.title,
     });
 
     if (response.success) {
-      dispatch({ type: SET_DOCUMENT_TITLE, payload: editableTitle });
+      dispatch({ type: 'SET_DOCUMENT_TITLE', payload: data.title });
     } else {
       errorToast({ message: response.message });
     }
-    dispatch({
-      type: EDIT_TITLE_MODE,
-      payload: { isEditing: false, title: null },
-    });
+    dispatch({ type: 'SET_IS_EDITING_TITLE', payload: false });
+    dispatch({ type: 'SET_IS_SAVING', payload: false });
   };
 
-  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleEditTitle();
-    }
+  const handleEditLeave = () => {
+    dispatch({ type: 'SET_IS_EDITING', payload: false });
+    reset({
+      content: mdParser.render(documentContent || ''),
+    });
+    const currentPath = window.location.pathname;
+    push(currentPath);
   };
+
+  useEffect(() => {
+    if (id && orgId) {
+      const loadDocument = async () => {
+        dispatch({ type: 'SET_IS_LOADING', payload: true });
+
+        try {
+          const content = await fetchDocumentByOrganization(orgId, id);
+          if (content.success) {
+            const documentText = content.documents
+              .map((doc) => doc.content)
+              .join('\n');
+            const title = content.documents
+              .map((document) => document.title)
+              .join('\n');
+
+            dispatch({ type: 'SET_DOCUMENT_CONTENT', payload: documentText });
+            dispatch({ type: 'SET_DOCUMENT_TITLE', payload: title });
+
+            reset({
+              content: mdParser.render(documentText || ''),
+            });
+
+            resetTitle({
+              title: title,
+            });
+
+            if (isEditMode) {
+              dispatch({ type: 'SET_IS_EDITING', payload: true });
+            }
+          } else {
+            errorToast({ message: `${content.message}: ${content.error}` });
+          }
+        } catch (error) {
+          errorToast({ message: t('fetching-error') });
+        } finally {
+          dispatch({ type: 'SET_IS_LOADING', payload: false });
+        }
+      };
+
+      loadDocument();
+    }
+  }, [id, orgId, isEditMode]);
 
   if (isLoading) {
     return (
@@ -202,59 +232,98 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   }
 
   return (
-    <div className="h-full flex flex-col items-center flex-1 overflow-auto px-4">
-      {isEditingTitle ? (
-        <div className="w-full">
-          <Input
-            type="text"
-            value={editableTitle || ''}
-            onChange={(e) =>
-              dispatch({
-                type: EDIT_TITLE_MODE,
-                payload: { isEditing: true, title: e.target.value },
-              })
-            }
-            onBlur={handleEditTitle}
-            onKeyDown={handleTitleKeyDown}
-            className="w-full mb-4 p-2 text-2xl font-bold"
-            autoFocus
-          />
-        </div>
-      ) : (
-        <Text
-          className="mb-4 text-2xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
-          onClick={handleTitleDoubleClick}
-        >
-          {documentTitle}
-        </Text>
-      )}
-      {isEditing ? (
-        <div className="flex flex-col w-full flex-1">
-          <div className="flex-1 overflow-auto">
-            <WysiwygEditor
-              value={editableContent || ''}
-              onChange={(content) =>
-                dispatch({ type: SET_EDITABLE_CONTENT, payload: content })
-              }
-              className="flex-1"
+    <>
+      <div className="fixed top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
+        <div className="flex items-center">
+          {!isEditMode && (
+            <ArrowLeftCircleIcon
+              onClick={() => push('/manage-knowledge/documents-list')}
+              className="h-8 w-8 cursor-pointer mr-2"
             />
+          )}
+          {isEditingTitle ? (
+            <form
+              className="flex mb-4 flex-1 justify-center align-middle items-center"
+              onSubmit={handleSubmitTitle(onTitleSubmit)}
+            >
+              <Input
+                type="text"
+                {...registerTitle('title')}
+                onBlur={handleSubmitTitle(onTitleSubmit)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSubmitTitle(onTitleSubmit)();
+                  }
+                }}
+                autoFocus
+                className="py-1 max-w-96 min-w-24	 text-xl font-bold bg-transparent outline-none"
+              />
+              {errorsTitle.title && (
+                <span className="text-red-500">
+                  {errorsTitle.title.message}
+                </span>
+              )}
+            </form>
+          ) : (
+            <Text
+              className="truncate text-xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+              onClick={handleTitleDoubleClick}
+            >
+              {documentTitle}
+            </Text>
+          )}
+        </div>
+      </div>
+      {isEditing ? (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col w-full flex-1"
+        >
+          <div className="flex-1 overflow-auto">
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <WysiwygEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  className="flex-1 prose prose-lg dark:prose-invert"
+                />
+              )}
+            />
+            {errors.content && (
+              <span className="text-red-500">{errors.content.message}</span>
+            )}
           </div>
-          <div className="mt-2">
+          <div className="mt-4">
             <Button
-              onClick={handleSave}
-              disabled={isSaving}
+              type="submit"
+              disabled={
+                isSaving ||
+                turndownService.turndown(watchedContent) === documentContent
+              }
               isLoading={isSaving}
-              className={`bg-blue-500 text-white py-2 px-4 w-full md:w-auto self-center ${
-                isSaving ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              iconRight={<CloudArrowUp />}
+              className={`mr-2 w-full md:w-auto self-center`}
             >
               {t('save')}
             </Button>
+            <Button
+              type="button"
+              onClick={handleEditLeave}
+              disabled={isSaving}
+              iconRight={<XMarkIcon />}
+              className={`w-full md:w-auto self-center
+                }`}
+            >
+              {t('cancel')}
+            </Button>
           </div>
-        </div>
+        </form>
       ) : (
         <div
-          className="flex-1 prose justify-center prose-lg dark:prose-invert"
+          className="flex-1 ml-12 prose prose-lg dark:prose-invert"
           onDoubleClick={handleDoubleClick}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -262,6 +331,6 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           </ReactMarkdown>
         </div>
       )}
-    </div>
+    </>
   );
 }

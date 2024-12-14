@@ -109,7 +109,7 @@ export const DocumentCreator = () => {
   };
 
   return (
-    <Card title={t('title')} size="full" className="h-full flex flex-col">
+    <Card title={t('title')} size="full" className="flex flex-col">
       <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
         <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
           <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
@@ -135,7 +135,7 @@ export const DocumentCreator = () => {
                 value={editorContent || ''}
                 error={touchedFields.content ? errors.content : undefined}
                 errorMessage={errors.content?.message}
-                className="flex-1 max-h-[20.5rem]"
+                className="flex-1 max-h-[20.5rem] overflow-auto"
               />
             </div>
           </TabPanel>
@@ -148,7 +148,7 @@ export const DocumentCreator = () => {
             </div>
           </TabPanel>
         </Tabs>
-        <div>
+        <div className="mt-auto">
           <Button label={t('send')} isSubmit isLoading={isLoading} />
         </div>
       </form>

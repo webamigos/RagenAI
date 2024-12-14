@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
-import { ComponentProps } from 'react';
+import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 import * as CommonUi from '@ragenai/common-ui';
 import { deleteDocumentAction } from '@/app/actions';
@@ -12,6 +11,7 @@ import { useSettings } from '@/app/hooks/useSettings';
 
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { type UserFileType } from '@/app/contracts/Documents';
+import { Link } from '@/i18n/routing';
 
 type Props = {
   documents: UserFileType[];
@@ -36,6 +36,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const { refreshSettings } = useSettings();
+  const router = useRouter();
 
   const { created_at: formattedCreatedAt, updated_at: formattedUpdatedAt } =
     useMemo(
@@ -46,6 +47,10 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     () => truncateFileName(file_name, 20),
     [file_name]
   );
+
+  const handlePrefetch = (path: string) => {
+    router.prefetch(path);
+  };
 
   const handleDelete = async () => {
     setIsLoading(true);
@@ -84,20 +89,24 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
                 : 'opacity-0 -translate-x-4'
             }`}
           >
-            <CommonUi.Link
+            <Link
               className="text-black dark:text-white"
               href={`/document/${id}?edit=true`}
+              onMouseEnter={() =>
+                handlePrefetch(`/${locale}/document/${id}?edit=true`)
+              }
             >
               <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
-            </CommonUi.Link>
+            </Link>
 
-            <CommonUi.Link
+            <Link
               className="text-black dark:text-white"
               href={`/document/${id}`}
+              onMouseEnter={() => handlePrefetch(`/${locale}/document/${id}`)}
             >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
-            </CommonUi.Link>
-            <div onClick={handleDelete} className="mt-0.5cursor-pointer">
+            </Link>
+            <div onClick={handleDelete} className="mt-0.5 cursor-pointer">
               {isLoading ? (
                 <CommonUi.SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
               ) : (
@@ -119,6 +128,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     </CommonUi.TableRow>
   );
 };
+
 export const UserDocumentsTable = ({
   documents,
   onRemoveDocument,
