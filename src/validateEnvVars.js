@@ -12,12 +12,13 @@ const envSchema = z.object({
   API_BASE_URL: z.string().url(),
 
   // Supabase for Vector store
-  SUPABASE_URL: z.string().url(),
+  SUPABASE_API_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string(),
   SUPABASE_PROJECT_ID: z.string(), // needed for vector store migrations migrations
 
   // Clerk
   CLERK_SECRET_KEY: z.string(),
+  CLERK_WEBHOOK_SIGNING_SECRET: z.string(),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string(),
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string(),

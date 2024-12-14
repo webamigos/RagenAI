@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
 import { useTransition, useEffect, useState } from 'react';
+
+import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
 
 export const Logo = () => {
@@ -27,7 +28,7 @@ export const Logo = () => {
     await clearVisitorMessagesStats();
     setTransition(() => refresh());
   };
-  const isClickableLogo = pathname !== `/${locale}`;
+  const isClickableLogo = pathname !== `/`;
 
   return (
     <div className="flex">

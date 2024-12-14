@@ -138,6 +138,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
       current,
       className,
       children,
+      onClick,
       hasIcon = false,
       disabled = false,
       href,
@@ -150,7 +151,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
     }
 
     const classes = classMerge(
-      'flex w-full items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm',
+      'flex w-full items-center gap-3 mb-0.5 px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm rounded-lg',
       'hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500',
       current && 'bg-zinc-950/5 text-blue-500',
       disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
@@ -159,7 +160,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
     );
 
     return (
-      <span className={classMerge('relative', className)}>
+      <span onClick={onClick} className={classMerge('relative', className)}>
         {current && (
           <motion.span
             layoutId="current-indicator"

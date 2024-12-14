@@ -1,4 +1,4 @@
-import { unstable_setRequestLocale as setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { PublicAssistant } from '../../../components/Assistant/Assistant';
@@ -28,14 +28,9 @@ export default function ThreadPage({
   setRequestLocale(locale);
 
   return (
-    <div>
-      {/* <div className="text-center text-sm text-gray-500">
-        Your organization access token is: {organizationId}
-      </div> */}
-      <PublicAssistant
-        threadId={threadPublicId}
-        organizationId={organizationId}
-      />
-    </div>
+    <PublicAssistant
+      threadId={threadPublicId}
+      organizationId={organizationId}
+    />
   );
 }

@@ -207,7 +207,6 @@ export const saveUserMetadata = async (
     });
     return { success: true };
   } catch (error) {
-    logger.error({ err: error }, 'Error saving user id to clerk');
     return { success: false };
   }
 };
@@ -260,4 +259,21 @@ export async function deleteUserMessage(messagePublicId: string) {
     logger.error({ err: error }, 'Error deleting user message');
     return { success: false };
   }
+}
+
+//autocomplete suggestions
+export async function fetchThreadSuggestions(
+  visitorId: string,
+  query: string
+): Promise<{ id: string; title: string }[]> {
+  if (!visitorId || !query.trim() || query.trim().length < 3) {
+    return [];
+  }
+
+  const threads = await getUserThreads(visitorId, 0, 5, query);
+
+  return threads.map((thread) => ({
+    id: thread.public_id,
+    title: thread.messages[0]?.content.slice(0, 50) || 'No title',
+  }));
 }

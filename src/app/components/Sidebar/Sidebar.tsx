@@ -6,10 +6,11 @@ import {
   Text,
   Button,
   SpinnerSVG,
+  SearchIcon,
 } from '@ragenai/common-ui';
-import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 
+import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
@@ -35,6 +36,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     isSignedIn,
     userThreads,
     activeThread,
+    handleSearch,
     handleThread,
     refetchThreads,
     isThreadLoading,
@@ -51,11 +53,11 @@ export const Sidebar = ({ children, membership }: Props) => {
       sidebar={
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
-          <div className="flex">
+          <div className="flex flex-col mb-5">
             <Button
               isLink
               onClick={handleThread}
-              className="relative ml-4 mb-5 w-10/12"
+              className="relative ml-4 w-10/12"
             >
               <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
               <Text
@@ -72,9 +74,19 @@ export const Sidebar = ({ children, membership }: Props) => {
                 />
               )}
             </Button>
+            {isSignedIn && !pathname.includes('/my-profile') && (
+              <Button
+                onClick={handleSearch}
+                className="relative ml-4 w-10/12"
+                isLink
+              >
+                <SearchIcon className="w-6 h-6 dark:text-gray-200" />
+                <Text className="ml-1">{t('search-threads')}</Text>
+              </Button>
+            )}
           </div>
           <SidebarBody className="-mt-3.5">
-            {pathname === `/${locale}` || pathname.includes('threads') ? (
+            {pathname === `/` || pathname.includes('threads') ? (
               error ? (
                 <div className="flex flex-col items-center text-start">
                   <Text color="red-500">{getSidebarThreadsError(error)}</Text>

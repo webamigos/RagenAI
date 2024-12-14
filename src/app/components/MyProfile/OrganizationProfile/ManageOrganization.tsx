@@ -12,6 +12,7 @@ export const ManageOrganization = () => {
     <Card className="w-full p-0" size="full">
       <div className="w-full overflow-x-auto">
         <OrganizationProfile
+          afterLeaveOrganizationUrl="/my-profile"
           appearance={{
             baseTheme: resolvedTheme === 'dark' ? dark : experimental__simple,
             variables: {

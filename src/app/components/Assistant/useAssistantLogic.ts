@@ -4,13 +4,14 @@ import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 
+import { useRouter } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
 import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
+import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import {
   checkVisitorVisits,
   fetchMessagesFromApi,
@@ -47,6 +48,7 @@ const {
 export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
+  const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
 
   const initialState: State = {
     isInitialLoad: true,
@@ -326,7 +328,7 @@ export const useAssistantLogic = (threadId: string) => {
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
+        errorToast({ message: 'sending-error' });
         return;
       }
 
@@ -353,7 +355,7 @@ export const useAssistantLogic = (threadId: string) => {
         error.status === StatusCodes.BAD_REQUEST
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
+        errorToast({ message: 'sending-error' });
       }
       logger.error('Error submitting message: %o', error);
     }
@@ -370,10 +372,14 @@ export const useAssistantLogic = (threadId: string) => {
     isMessageLoading,
     isGlobalLoading,
     streamedMessage,
+    userVisitorId,
     userMessageId,
+    isSearchOpen,
+    closeSearch,
     isLimitLock,
     isSignedIn,
     messages,
+    modalRef,
     isLocked,
     dispatch,
     onSubmit,

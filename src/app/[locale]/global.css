@@ -10,6 +10,11 @@
   scrollbar-color: #7f7f7f45 transparent;
 }
 
+.prose {
+  line-height: 1.5rem;
+  font-size: 0.75rem;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

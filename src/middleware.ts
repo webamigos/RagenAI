@@ -6,12 +6,9 @@ import {
 } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { locales, defaultLocale } from './app/config';
+import { routing } from './i18n/routing';
 
-const intlMiddleware = createMiddleware({
-  locales,
-  defaultLocale,
-});
+const handleI18nRouting = createMiddleware(routing);
 
 const publicRoutes = [
   '/',
@@ -27,6 +24,10 @@ const isProtectedRoute = createRouteMatcher([
   '/:locale/threads/:threadId',
   '/admin',
 ]);
+
+// export const config = {
+//   matcher: ['/', '/(pl|en)/:path*'],
+// };
 
 export const config = {
   matcher: [
@@ -101,7 +102,7 @@ export default clerkMiddleware(
       }
     }
 
-    return intlMiddleware(request);
+    return handleI18nRouting(request);
   },
   { debug: false }
 );

@@ -1,32 +1,26 @@
 'use client';
 
-import { NextIntlClientProvider, useMessages, useLocale } from 'next-intl';
-
 import { DocumentsProvider } from '@/context/DocumentsContext';
 import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
-import { timezone } from '@/app/config';
+import TabsWrapper from './TabsWrapper';
 
-type Props = Readonly<{
+export default function AdminLayout({
+  children,
+}: {
   children: React.ReactNode;
-}>;
-
-export default function AdminLayout({ children }: Props) {
-  const messages = useMessages();
-  const locale = useLocale();
-
+}) {
   return (
-    <NextIntlClientProvider
-      timeZone={timezone}
-      messages={messages}
-      locale={locale}
-    >
-      <div className="h-screen flex flex-col">
-        <Toast />
-        <DocumentsProvider>
-          <Sidebar>{children}</Sidebar>
-        </DocumentsProvider>
-      </div>
-    </NextIntlClientProvider>
+    <div className="h-screen flex flex-col">
+      <Toast />
+      <DocumentsProvider>
+        <Sidebar>
+          <div className="flex -mt-9 flex-col w-full h-full">
+            <TabsWrapper />
+            <div className="flex-grow">{children}</div>
+          </div>
+        </Sidebar>
+      </DocumentsProvider>
+    </div>
   );
 }

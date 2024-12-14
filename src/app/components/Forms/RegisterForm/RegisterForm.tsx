@@ -4,9 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
+import { useRouter } from '@/i18n/routing';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { Button, Input, Card, Link, Text } from '@ragenai/common-ui';

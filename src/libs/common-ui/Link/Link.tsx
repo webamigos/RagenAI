@@ -1,5 +1,5 @@
 import { forwardRef, type ComponentProps } from 'react';
-import { default as NextLink } from 'next/link';
+import { Link as I18nLink } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui';
 
 type Props = Readonly<{
@@ -16,7 +16,7 @@ export const Link = forwardRef<HTMLAnchorElement, Props>(
     ref
   ) => {
     return (
-      <NextLink href={href} passHref legacyBehavior>
+      <I18nLink href={href} passHref legacyBehavior>
         <a
           ref={ref}
           className={classMerge(
@@ -36,7 +36,7 @@ export const Link = forwardRef<HTMLAnchorElement, Props>(
             </>
           )}
         </a>
-      </NextLink>
+      </I18nLink>
     );
   }
 );

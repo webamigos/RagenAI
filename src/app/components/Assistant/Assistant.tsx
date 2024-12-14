@@ -4,6 +4,7 @@ import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
+import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 
 type Props = {
   threadId: string;
@@ -15,36 +16,51 @@ export const Assistant = ({ threadId }: Props) => {
     messagesEndDivRef,
     isGlobalLoading,
     streamedMessage,
+    userVisitorId,
+    isSearchOpen,
     isLimitLock,
+    closeSearch,
     isSignedIn,
     messages,
+    modalRef,
     onSubmit,
     isLocked,
     promptFormRef,
   } = useAssistantLogic(threadId);
 
   return (
-    <div className="h-full flex flex-col font-sans">
-      <div className="flex-grow overflow-y-auto">
-        <ChatOutput
-          messages={messages}
-          isLoading={isGlobalLoading}
-          loadingMessage={messageLoadingText}
-          streamedMessage={streamedMessage}
-        />
-        <div ref={messagesEndDivRef} />
-      </div>
-      <div className="flex-shrink-0 w-full">
-        {isLimitLock && !isSignedIn && <LimitReached />}
-        {!isLocked() && threadId && (
-          <PromptForm
-            ref={promptFormRef}
-            isUserLogged={!!isSignedIn}
+    <>
+      {isSearchOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          onClick={closeSearch}
+        >
+          <SearchThreads visitorId={userVisitorId!} ref={modalRef} />
+        </div>
+      )}
+
+      <div className="h-full flex flex-col font-sans">
+        <div className="flex-grow overflow-y-auto">
+          <ChatOutput
+            messages={messages}
             isLoading={isGlobalLoading}
-            onSubmit={onSubmit}
+            loadingMessage={messageLoadingText}
+            streamedMessage={streamedMessage}
           />
-        )}
+          <div ref={messagesEndDivRef} />
+        </div>
+        <div className="flex-shrink-0 w-full">
+          {isLimitLock && !isSignedIn && <LimitReached />}
+          {!isLocked() && threadId && (
+            <PromptForm
+              ref={promptFormRef}
+              isUserLogged={!!isSignedIn}
+              isLoading={isGlobalLoading}
+              onSubmit={onSubmit}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
