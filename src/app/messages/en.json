@@ -211,6 +211,7 @@
     "assistant-management": "Assistant management",
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
+    "search-threads": "Search threads",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -223,6 +224,13 @@
       "missing-permissions": "You do not have the required permissions to perform this action.",
       "unknown": "An unknown error occurred. Please contact support."
     }
+  },
+  "search-threads": {
+    "error-sugestions": "Error fetching suggestions",
+    "error-threads": "Error fetching threads",
+    "threads-not-found": "Thread not found",
+    "no-results": "No results",
+    "placeholder": "Search in threads..."
   },
   "files-table": {
     "title": "File list",

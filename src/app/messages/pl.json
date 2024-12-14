@@ -211,6 +211,7 @@
     "assistant-management": "Zarządzanie asystentem",
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
+    "search-threads": "Przeszukaj wątki",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
@@ -223,6 +224,13 @@
       "missing-permissions": "Brak wymaganych uprawnień do wykonania tej operacji.",
       "unknown": "Nieznany błąd. Skontaktuj się z administratorem."
     }
+  },
+  "search-threads": {
+    "error-sugestions": "Błąd poczas pobierania sugestii",
+    "error-threads": "Błąd podczas pobierania wątków",
+    "threads-not-found": "Wątek nieodpowada",
+    "no-results": "Brak wyników",
+    "placeholder": "Wyszukaj w wątkach..."
   },
   "files-table": {
     "title": "Lista plików",
