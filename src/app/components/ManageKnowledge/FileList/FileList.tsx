@@ -1,4 +1,6 @@
 import { memo } from 'react';
+import { useTranslations } from 'next-intl';
+
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { UserDocumentsTable } from './UserDocumentsTable';
@@ -9,13 +11,14 @@ export const FileList = memo(() => {
   const { documents, isLoading, isError, addDocument, removeDocument } =
     useUserDocumentsContext();
   const { errorToast } = statusToast();
+  const t = useTranslations('admin-panel-page');
 
   if (isLoading) {
     return <SpinnerSVG size="sm" />;
   }
 
   if (isError) {
-    errorToast({ message: 'Błąd podczas pobierania dokumentów' });
+    errorToast({ message: t('fetching-error') });
   }
 
   return (

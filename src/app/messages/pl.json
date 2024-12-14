@@ -54,9 +54,11 @@
     "Reset-password": "Zresetuj hasło"
   },
   "admin-panel-page": {
+    "selected-files": "Wybrane pliki",
     "add-files": "Dodaj pliki",
     "create-file": "Stwórz dokument",
-    "uploaded-list": "Lista dokumentów"
+    "uploaded-list": "Lista dokumentów",
+    "fetching-error": "Błąd podczas pobierania dokumentów"
   },
   "common": {
     "sign-in": "Zaloguj",
@@ -223,6 +225,7 @@
     }
   },
   "files-table": {
+    "title": "Lista plików",
     "delete": "Usuń",
     "file-name": "Nazwa pliku",
     "file-size": "Rozmiar pliku",
@@ -297,6 +300,7 @@
     }
   },
   "chain-errors": {
+    "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
     "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
