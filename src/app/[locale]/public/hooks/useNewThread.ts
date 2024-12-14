@@ -42,7 +42,6 @@ export const useNewThread = ({
 
   const { push } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
 
@@ -64,7 +63,7 @@ export const useNewThread = ({
     } catch (err) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to manage thread data.' });
     }
-  }, [pathname, organizationId, locale, push]);
+  }, [pathname, organizationId, push]);
 
   const handleNewThread = async () => {
     try {

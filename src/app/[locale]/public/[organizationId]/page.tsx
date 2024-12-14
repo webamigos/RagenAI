@@ -7,6 +7,9 @@ type Props = {
     locale: string;
     organizationId: string;
   };
+  searchParams: {
+    widgetMode?: boolean;
+  };
 };
 
 export async function generateMetadata({
@@ -17,15 +20,18 @@ export async function generateMetadata({
   };
 }
 
-export default function Index({ params: { locale, organizationId } }: Props) {
+export default function Index({
+  params: { locale, organizationId },
+  searchParams,
+}: Props) {
   setRequestLocale(locale);
   return (
     <div>
-      {/* <div className="text-center text-sm text-gray-500">
-        Your organization access token is: {organizationId}
-      </div> */}
       <div className="container mx-auto h-full mt-4">
-        <PublicStart organizationId={organizationId} />
+        <PublicStart
+          organizationId={organizationId}
+          widgetMode={searchParams.widgetMode}
+        />
       </div>
     </div>
   );
