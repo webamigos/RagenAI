@@ -11,6 +11,7 @@ import { useSettings } from '@/app/hooks/useSettings';
 
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { type UserFileType } from '@/app/contracts/Documents';
+import { Link } from '@/i18n/routing';
 
 type Props = {
   documents: UserFileType[];
@@ -88,23 +89,23 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
                 : 'opacity-0 -translate-x-4'
             }`}
           >
-            <CommonUi.Link
+            <Link
               className="text-black dark:text-white"
-              href={`/${locale}/document/${id}?edit=true`}
+              href={`/document/${id}?edit=true`}
               onMouseEnter={() =>
                 handlePrefetch(`/${locale}/document/${id}?edit=true`)
               }
             >
               <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
-            </CommonUi.Link>
+            </Link>
 
-            <CommonUi.Link
+            <Link
               className="text-black dark:text-white"
-              href={`/${locale}/document/${id}`}
+              href={`/document/${id}`}
               onMouseEnter={() => handlePrefetch(`/${locale}/document/${id}`)}
             >
               <CommonUi.OpenEyeIcon className="cursor-pointer" />
-            </CommonUi.Link>
+            </Link>
             <div onClick={handleDelete} className="mt-0.5 cursor-pointer">
               {isLoading ? (
                 <CommonUi.SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
