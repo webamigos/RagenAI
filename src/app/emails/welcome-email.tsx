@@ -36,62 +36,48 @@ export const WelcomeEmail = ({ name }: Props) => (
             alt="Ragen AI"
           />
           <Hr style={hr} />
-          <Text style={paragraph}>Hey{name ? ` ${name}` : ''}!</Text>
+          <Text style={paragraph}>Cześć{name ? ` ${name}` : ''}!</Text>
+          <Text style={paragraph}>Dziękujemy za rejestrację w Ragen AI :)</Text>
           <Text style={paragraph}>
-            Thanks for submitting your account information. You&apos;re now
-            ready to make live transactions with Stripe!
+            Pracujemy nad tym projektem, aby pomóc programistom i programistkom
+            szybciej tworzyć aplikacje z wykorzystujące modele AI.
           </Text>
           <Text style={paragraph}>
-            You can view your payments and a variety of other information about
-            your account right from your dashboard.
+            W najbliższym czasie będziemy rozwijać nasze rozwiązanie, więc warto
+            dodać ten adres e-mail do kontaktów - nie ominą Cię wtedy informacje
+            o nowych funkcjonalnościach.
           </Text>
+          <Text style={paragraphStrong}>
+            Zanim w pełni zaczniesz wykorzystywać Ragen musisz wykonać dwa
+            kroki:
+          </Text>
+          <Text style={paragraph}>
+            1) Wygeneruj{' '}
+            <Link style={anchor} href="https://platform.openai.com/api-keys">
+              klucz API w OpenAI
+            </Link>
+            . Jest potrzebny do przeprocesowania Twoich dokumentów oraz
+            wyszukiwania w nich powiązanych informacji. Następnie wprowadź klucz
+            w{' '}
+            <Link
+              style={anchor}
+              href={`${getBaseUrl()}/pl/my-profile/prompt-management`}
+            >
+              ustawieniach organizacji
+            </Link>{' '}
+            (kliknij w kłódkę po prawej stronie).
+          </Text>
+          <Text style={paragraph}>2) Zacznij dodawać swoje dokumenty :)</Text>
+          <Text style={paragraph}> To wszystko - efektywnej pracy!</Text>
           <Button style={button} href={getBaseUrl()}>
-            View your Ragen Dashboard
+            Przejdź do panelu Ragen
           </Button>
           <Hr style={hr} />
           <Text style={paragraph}>
-            If you haven&apos;t finished your integration, you might find our{' '}
-            <Link style={anchor} href="https://stripe.com/docs">
-              docs
-            </Link>{' '}
-            handy.
+            Jeśli masz jakieś pytania, prośby lub pomysły związane z działaniem
+            aplikacji, to śmiało odpisz na tego maila.
           </Text>
-          <Text style={paragraph}>
-            Once you&apos;re ready to start accepting payments, you&apos;ll just
-            need to use your live{' '}
-            <Link
-              style={anchor}
-              href="https://dashboard.stripe.com/login?redirect=%2Fapikeys"
-            >
-              API keys
-            </Link>{' '}
-            instead of your test API keys. Your account can simultaneously be
-            used for both test and live requests, so you can continue testing
-            while accepting live payments. Check out our{' '}
-            <Link style={anchor} href="https://stripe.com/docs/dashboard">
-              tutorial about account basics
-            </Link>
-            .
-          </Text>
-          <Text style={paragraph}>
-            Finally, we&apos;ve put together a{' '}
-            <Link
-              style={anchor}
-              href="https://stripe.com/docs/checklist/website"
-            >
-              quick checklist
-            </Link>{' '}
-            to ensure your website conforms to card network standards.
-          </Text>
-          <Text style={paragraph}>
-            We&apos;ll be here to help you with any step along the way. You can
-            find answers to most questions and get in touch with us on our{' '}
-            <Link style={anchor} href="https://support.stripe.com/">
-              support site
-            </Link>
-            .
-          </Text>
-          <Text style={paragraph}>— The Ragen team</Text>
+          <Text style={paragraph}>— Zespół Ragen AI</Text>
           <Hr style={hr} />
           <Text style={footer}>Ragen by Web Amigos</Text>
         </Section>
@@ -128,6 +114,11 @@ const paragraph = {
   fontSize: '16px',
   lineHeight: '24px',
   textAlign: 'left' as const,
+};
+
+const paragraphStrong = {
+  ...paragraph,
+  fontWeight: 'bold',
 };
 
 const anchor = {
