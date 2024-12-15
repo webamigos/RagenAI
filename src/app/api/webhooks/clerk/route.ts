@@ -91,7 +91,7 @@ export async function POST(req: Request) {
         });
 
         // send welcome e-mail
-        await sendWelcomeEmail(userFirstName);
+        await sendWelcomeEmail({ name: userFirstName });
 
         logger.info(`For user: ${userId}, created organization with id: ${id}`);
         break;
