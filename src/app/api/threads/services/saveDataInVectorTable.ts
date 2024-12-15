@@ -22,7 +22,6 @@ import {
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
-import type { Document } from '@langchain/core/documents';
 
 const serviceName = 'saveDataInVectorTable';
 
