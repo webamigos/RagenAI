@@ -12,7 +12,7 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
-import { SaveOrganizationPublicMetadata } from '@/app/actions';
+import { saveOrganizationPublicMetadata } from '@/app/actions';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
     }
-    await SaveOrganizationPublicMetadata(uploaderId, true);
+    await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
     return NextResponse.json({
       message: 'All files are successfully proceed',
       status: 200,
