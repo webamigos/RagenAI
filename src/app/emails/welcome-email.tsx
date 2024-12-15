@@ -53,14 +53,17 @@ export const WelcomeEmail = ({ name }: Props) => (
           </Text>
           <Text style={paragraph}>
             1) Wygeneruj{' '}
-            <Link style={anchor} href="https://platform.openai.com/api-keys">
+            <Link
+              style={anchorStrong}
+              href="https://platform.openai.com/api-keys"
+            >
               klucz API w OpenAI
             </Link>
             . Jest potrzebny do przeprocesowania Twoich dokumentów oraz
             wyszukiwania w nich powiązanych informacji. Następnie wprowadź klucz
             w{' '}
             <Link
-              style={anchor}
+              style={anchorStrong}
               href={`${getBaseUrl()}/pl/my-profile/prompt-management`}
             >
               ustawieniach organizacji
@@ -86,6 +89,7 @@ export const WelcomeEmail = ({ name }: Props) => (
   </Html>
 );
 
+// TODO: hypothetically this ugly styles can be replaced to Tailwind classes - to check
 const main = {
   backgroundColor: '#f6f9fc',
   fontFamily:
@@ -123,6 +127,11 @@ const paragraphStrong = {
 
 const anchor = {
   color: '#4f46e5',
+};
+
+const anchorStrong = {
+  ...anchor,
+  fontWeight: 'bold',
 };
 
 const button = {
