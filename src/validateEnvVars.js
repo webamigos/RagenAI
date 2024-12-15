@@ -44,7 +44,7 @@ const envSchema = z.object({
   TEMPORAL_KEY: z.string(),
 
   // Qdrant
-  QDRANT_URL: z.string(),
+  QDRANT_URL: z.string().url(),
   QDRANT_DEFAULT_COLLECTION: z.string(),
 });
 

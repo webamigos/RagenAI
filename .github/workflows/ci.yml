@@ -26,6 +26,8 @@ env:
   TEMPORAL_NAMESPACE: 'ci'
   TEMPORAL_CERT: 'dummy'
   TEMPORAL_KEY: 'dummy'
+  QDRANT_URL: 'http://example.com'
+  QDRANT_DEFAULT_COLLECTION: 'dummy'
 
 on:
   push:
