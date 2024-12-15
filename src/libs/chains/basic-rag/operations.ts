@@ -91,8 +91,16 @@ export const retrieveRelevantDocuments = (
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
+  // TODO: pass organization_id as filter:
+  // TODO: what about public access?
+  // const { orgId } = auth();
+  // const filter = {
+  //   must: [{ key: "metadata.organization_id", match: { value: orgId } }],
+  // };
+
   return RunnableSequence.from([
     (input) => input.standalone_question,
+    // vectorStore.asRetriever({ k: maxDocuments, filter }),
     vectorStore.asRetriever({ k: maxDocuments }),
     combineDocuments,
   ]).withConfig({

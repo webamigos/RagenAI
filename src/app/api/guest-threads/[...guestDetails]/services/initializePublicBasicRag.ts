@@ -1,4 +1,6 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { QdrantVectorStore } from '@langchain/qdrant';
+
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
 import { OrganizationSettings } from '@/app/lib/types/settings';
@@ -29,7 +31,7 @@ type InitializePublicRagChainParams = {
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
 const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
-export const initializePublicRagChain = ({
+export const initializePublicRagChain = async ({
   settings,
   organizationId,
 }: InitializePublicRagChainParams) => {
@@ -65,10 +67,19 @@ export const initializePublicRagChain = ({
       temperature: answerTemperature,
     });
 
-    const vectorStore = createVectorStore(
-      supabaseVectorStoreClient,
+    // Supabase
+    // const vectorStore = createVectorStore(
+    //   supabaseVectorStoreClient,
+    //   embeddingModel,
+    //   organizationId
+    // );
+
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(
       embeddingModel,
-      organizationId
+      {
+        url: process.env.QDRANT_URL,
+        collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+      }
     );
 
     return basicRagChain({

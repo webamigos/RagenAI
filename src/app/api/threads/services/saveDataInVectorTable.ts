@@ -21,6 +21,8 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
+import { QdrantVectorStore } from '@langchain/qdrant';
+import type { Document } from '@langchain/core/documents';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -183,29 +185,38 @@ export const convertAndStoreDocument = async ({
           embedding_model: embeddingModel.modelName,
         };
 
-        const [embedding] = await embeddingModel.embedDocuments([text]);
+        // const [embedding] = await embeddingModel.embedDocuments([text]);
 
         return {
           pageContent: text,
           metadata,
-          embedding,
+          // embedding,
         };
       })
     );
 
-    const vectorStore = new SupabaseVectorStore(embeddingModel, {
-      client: supabaseVectorStoreClient,
-      tableName: VECTOR_STORE_TABLE_NAME,
-      queryName: DOCUMENT_SEARCH_QUERY_NAME,
-    });
-
-    await vectorStore.addVectors(
-      updatedDocs.map((doc) => doc.embedding),
-      updatedDocs.map((doc) => ({
-        pageContent: doc.pageContent,
-        metadata: doc.metadata,
-      }))
+    // const vectorStore = new SupabaseVectorStore(embeddingModel, {
+    //   client: supabaseVectorStoreClient,
+    //   tableName: VECTOR_STORE_TABLE_NAME,
+    //   queryName: DOCUMENT_SEARCH_QUERY_NAME,
+    // });
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(
+      embeddingModel,
+      {
+        url: process.env.QDRANT_URL,
+        collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+      }
     );
+
+    // await vectorStore.addVectors(
+    //   updatedDocs.map((doc) => doc.embedding),
+    //   updatedDocs.map((doc) => ({
+    //     pageContent: doc.pageContent,
+    //     metadata: doc.metadata,
+    //   }))
+    // );
+
+    await vectorStore.addDocuments(updatedDocs);
 
     return {
       success: true,

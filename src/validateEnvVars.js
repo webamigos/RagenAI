@@ -42,6 +42,10 @@ const envSchema = z.object({
   TEMPORAL_NAMESPACE: z.string(),
   TEMPORAL_CERT: z.string(),
   TEMPORAL_KEY: z.string(),
+
+  // Qdrant
+  QDRANT_URL: z.string(),
+  QDRANT_DEFAULT_COLLECTION: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

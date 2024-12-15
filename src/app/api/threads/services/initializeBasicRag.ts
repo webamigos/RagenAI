@@ -18,6 +18,7 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
+import { QdrantVectorStore } from '@langchain/qdrant';
 
 const serviceName = 'initializeBasicRag';
 
@@ -28,7 +29,9 @@ type InitializeRagChainParams = {
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
 const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
-export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
+export const initializeRagChain = async ({
+  settings,
+}: InitializeRagChainParams) => {
   try {
     setSentryServiceTag(serviceName);
 
@@ -61,9 +64,17 @@ export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
       temperature: answerTemperature,
     });
 
-    const vectorStore = createVectorStore(
-      supabaseVectorStoreClient,
-      embeddingModel
+    // const vectorStore = createVectorStore(
+    //   supabaseVectorStoreClient,
+    //   embeddingModel
+    // );
+
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(
+      embeddingModel,
+      {
+        url: process.env.QDRANT_URL,
+        collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+      }
     );
 
     return basicRagChain({
@@ -84,6 +95,7 @@ export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
   }
 };
 
+// TODO: refactor to use with qdrant or switch depending on organization settings?
 const createVectorStore = (
   client: SupabaseClient,
   embeddingModel: Embeddings
