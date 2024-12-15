@@ -12,7 +12,7 @@ import {
   Text,
 } from '@react-email/components';
 
-import { baseUrl } from './utils/base-url';
+import { getBaseUrl } from './utils/base-url';
 // below is a link to staging assets bucket on Supabase. I didn't used production because not sure
 // if exposing Supabase project id is secure
 
@@ -45,7 +45,7 @@ export const WelcomeEmail = ({ name }: Props) => (
             You can view your payments and a variety of other information about
             your account right from your dashboard.
           </Text>
-          <Button style={button} href="https://app.ragen.ai">
+          <Button style={button} href={getBaseUrl()}>
             View your Ragen Dashboard
           </Button>
           <Hr style={hr} />
