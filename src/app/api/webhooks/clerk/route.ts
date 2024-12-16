@@ -149,6 +149,10 @@ export async function POST(req: Request) {
           await saveOrganizationInitialMetadata(clerkOrgId, {
             publicMetadata: {
               hasKnowledge: false,
+            },
+            privateMetadata: {
+              ragen_org_id: ragenOrg.id,
+              vector_store: 'supabase',
               subscription: {
                 plan: {
                   name: subscription.plan.name,
@@ -159,10 +163,6 @@ export async function POST(req: Request) {
                 current_period_end: subscription.current_period_end,
                 trial_end: subscription.trial_end,
               },
-            },
-            privateMetadata: {
-              ragen_org_id: ragenOrg.id,
-              vector_store: 'supabase',
             },
           });
           logger.info(

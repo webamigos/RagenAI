@@ -5,10 +5,6 @@ export type OrganizationVectorStore = 'qdrant' | 'supabase';
 export type ClerkOrganizationPrivateMetadata = {
   ragen_org_id: Organization['id'];
   vector_store: OrganizationVectorStore;
-};
-
-export type ClerkOrganizationPublicMetadata = {
-  hasKnowledge: boolean;
   subscription?: {
     plan: {
       name: string;
@@ -19,6 +15,10 @@ export type ClerkOrganizationPublicMetadata = {
     current_period_end: Date;
     trial_end: Date | null;
   };
+};
+
+export type ClerkOrganizationPublicMetadata = {
+  hasKnowledge: boolean;
 };
 
 export type ClerkOrganizationMetadata = {
