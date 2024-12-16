@@ -2,7 +2,7 @@ import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
-import { Resend } from 'resend';
+import { type CreateContactOptions, Resend } from 'resend';
 
 import { logger } from '@/app/lib/utils/logger';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
@@ -90,16 +90,21 @@ export async function POST(req: Request) {
             createdBy: userId,
           });
 
+          // send welcome e-mail
+          await sendWelcomeEmail({ to: userEmail, name: userFirstName });
+
           // create new contact in base
-          await resend.contacts.create({
+          // TODO: debug because looks like not working
+          let resendContactDetails: CreateContactOptions = {
             email: userEmail,
-            firstName: userFirstName,
             unsubscribed: false,
             audienceId: RESEND_DEFAULT_AUDIENCE_ID,
-          });
+          };
+          if (userFirstName) {
+            resendContactDetails.firstName = userFirstName;
+          }
 
-          // send welcome e-mail
-          await sendWelcomeEmail({ name: userFirstName });
+          await resend.contacts.create(resendContactDetails);
 
           logger.info(
             `For user: ${userId}, created organization with id: ${id}`
