@@ -5,8 +5,49 @@ import { logger } from '@/app/lib/utils/logger';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { clerkClient } from '@clerk/nextjs/server';
+import db from '@ragenai/prisma-client';
 
 const serviceName = 'clerkWebhook';
+
+const trialDays = 14;
+
+async function createTrialSubscription(providerId: string) {
+  const trialPlan = await db.plan.findFirst({
+    where: {
+      name: 'Trial',
+      type: 'INTERNAL',
+      status: 'ACTIVE',
+    },
+  });
+
+  if (!trialPlan) {
+    throw new Error('Trial plan not found');
+  }
+
+  const now = new Date();
+  const trialEnd = new Date(now.setDate(now.getDate() + trialDays));
+
+  const organization = await db.organization.findFirst({
+    where: {
+      provider_id: providerId,
+    },
+  });
+
+  if (!organization) {
+    throw new Error('Organization not found');
+  }
+
+  return db.subscription.create({
+    data: {
+      organization_id: organization.id,
+      plan_id: trialPlan.id,
+      status: 'ACTIVE',
+      current_period_start: new Date(),
+      current_period_end: trialEnd,
+      trial_end: trialEnd,
+    },
+  });
+}
 
 export async function POST(req: Request) {
   setSentryServiceTag(serviceName);
@@ -77,6 +118,16 @@ export async function POST(req: Request) {
         logger.info(
           `Organization ${orgId} created and configured with public id: ${org.publicId}`
         );
+
+        try {
+          await createTrialSubscription(orgId);
+          logger.info(
+            `Created trial subscription for organization ${org.publicId}`
+          );
+        } catch (error) {
+          logger.error({ error }, 'Failed to create trial subscription');
+        }
+
         break;
 
       default:
