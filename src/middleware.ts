@@ -77,6 +77,7 @@ export default clerkMiddleware(
         (membership) => membership.role === 'org:admin'
       );
 
+      // TODO: should it be user metadata or organization metadata?
       const onboardingComplete = user.publicMetadata.onboardingComplete;
 
       if (!admin && url.includes('manage-knowledge') && !onboardingComplete) {

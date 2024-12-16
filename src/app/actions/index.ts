@@ -31,6 +31,11 @@ import {
   setSentryContext,
 } from '../lib/services/sentry';
 import { setSentryServiceTag } from '../lib/services/sentry';
+import {
+  ClerkOrganizationMetadata,
+  ClerkOrganizationPrivateMetadata,
+  ClerkOrganizationPublicMetadata,
+} from '../lib/types/organizations';
 
 const serviceName = 'actions';
 
@@ -172,7 +177,9 @@ export const deleteDocumentAction = async (
 
     // If no documents left, update public metadata
     if (documentCount === 0) {
-      await SaveOrganizationPublicMetadata(organizationId, false);
+      await saveOrganizationPublicMetadata(organizationId, {
+        hasKnowledge: false,
+      });
     }
 
     return {
@@ -212,18 +219,49 @@ export const saveUserMetadata = async (
 };
 
 // save data to clerk organization profile
-export const SaveOrganizationPublicMetadata = async (
+// TODO: should it be public?
+export const saveOrganizationPublicMetadata = async (
   organizationId: string,
-  hasKnowledge: boolean
+  { hasKnowledge }: ClerkOrganizationPublicMetadata
 ) => {
-  setSentryServiceTag(serviceName);
+  setSentryServiceTag('saveOrganizationPublicMetadata');
   setSentryClerkUserTag(organizationId);
 
-  clerkClient().organizations.updateOrganizationMetadata(organizationId, {
-    publicMetadata: {
-      hasKnowledge,
-    },
-  });
+  try {
+    await clerkClient().organizations.updateOrganizationMetadata(
+      organizationId,
+      {
+        publicMetadata: {
+          hasKnowledge,
+        },
+      }
+    );
+  } catch (error) {
+    logger.error(
+      { error },
+      `Error: cannot update public metadata for organization ${organizationId}:`
+    );
+  }
+};
+
+export const saveOrganizationInitialMetadata = async (
+  organizationId: string,
+  { publicMetadata, privateMetadata }: ClerkOrganizationMetadata
+) => {
+  setSentryServiceTag('saveOrganizationInitialMetadata');
+  setSentryClerkUserTag(organizationId);
+
+  try {
+    await clerkClient.organizations.updateOrganizationMetadata(organizationId, {
+      publicMetadata,
+      privateMetadata,
+    });
+  } catch (error) {
+    logger.error(
+      { error },
+      `Error: cannot update private metadata for organization ${organizationId}:`
+    );
+  }
 };
 
 //send answer rate to assistant

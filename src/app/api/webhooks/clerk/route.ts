@@ -3,9 +3,13 @@ import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { logger } from '@/app/lib/utils/logger';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
 import { clerkClient } from '@clerk/nextjs/server';
 import db from '@ragenai/prisma-client';
+import { saveOrganizationInitialMetadata } from '@/app/actions';
 
 const serviceName = 'clerkWebhook';
 
@@ -105,27 +109,57 @@ export async function POST(req: Request) {
         const firstName = evt.data.first_name || 'User';
         const organizationName = `${firstName}'s Organization`;
         const userId = evt.data.id;
-        const { id } = await clerkClient.organizations.createOrganization({
-          name: organizationName,
-          createdBy: userId,
-        });
 
-        logger.info(`For user: ${userId}, created organization with id: ${id}`);
-        break;
-      case 'organization.created':
-        const orgId = evt.data.id;
-        const org = await createOrganizationWithDefaultProject(orgId);
-        logger.info(
-          `Organization ${orgId} created and configured with public id: ${org.publicId}`
-        );
+        setSentryServiceTag('webhook:user.created');
 
         try {
-          await createTrialSubscription(orgId);
+          const { id } = await clerkClient.organizations.createOrganization({
+            name: organizationName,
+            createdBy: userId,
+          });
+
           logger.info(
-            `Created trial subscription for organization ${org.publicId}`
+            `For user: ${userId}, created organization with id: ${id}`
           );
         } catch (error) {
-          logger.error({ error }, 'Failed to create trial subscription');
+          logger.error(
+            { error },
+            `Error: cannot create organization for user ${userId}:`
+          );
+        }
+
+        break;
+
+      case 'organization.created':
+        const clerkOrgId = evt.data.id;
+
+        setSentryServiceTag('webhook:organization.created');
+        setSentryClerkOrganizationTag(clerkOrgId);
+
+        try {
+          const ragenOrg = await createOrganizationWithDefaultProject(
+            clerkOrgId
+          );
+
+          await createTrialSubscription(clerkOrgId);
+
+          await saveOrganizationInitialMetadata(clerkOrgId, {
+            publicMetadata: {
+              hasKnowledge: false,
+            },
+            privateMetadata: {
+              ragen_org_id: ragenOrg.id,
+              vector_store: 'supabase',
+            },
+          });
+          logger.info(
+            `Organization ${clerkOrgId} created and configured with id: ${ragenOrg.id} and public id: ${ragenOrg.publicId}`
+          );
+        } catch (error) {
+          logger.error(
+            { error },
+            `Error: cannot sync organization with app ${clerkOrgId}:`
+          );
         }
 
         break;
