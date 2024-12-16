@@ -51,6 +51,8 @@ export const FileUploader = ({
       isSupportedFile
     );
     onFilesAdded(selectedFiles);
+
+    event.target.value = '';
   };
 
   const handleClick = () => {

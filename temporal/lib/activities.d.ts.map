@@ -1,1 +1,0 @@
-{"version":3,"file":"activities.d.ts","sourceRoot":"","sources":["../src/activities.ts"],"names":[],"mappings":"AACA,OAAO,EACL,KAAK,2BAA2B,EAChC,KAAK,gCAAgC,EACtC,MAAM,UAAU,CAAC;AAElB,eAAO,MAAM,2BAA2B,oBAErC,gCAAgC,KAAG,QAAQ,MAAM,CAInD,CAAC;AAEF,eAAO,MAAM,sBAAsB,oBAEhC,2BAA2B,KAAG,QAAQ,MAAM,CAI9C,CAAC;AAOF,eAAO,MAAM,iBAAiB;UAGtB,MAAM;MACV,QAAQ,MAAM,CAOjB,CAAC"}

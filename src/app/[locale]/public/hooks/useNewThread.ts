@@ -42,7 +42,6 @@ export const useNewThread = ({
 
   const { push } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
 
@@ -54,9 +53,7 @@ export const useNewThread = ({
       );
 
       if (localStorageThreadId && !pathname.includes('/threads')) {
-        push(
-          `/${locale}/public/${organizationId}/threads/${localStorageThreadId}`
-        );
+        push(`/public/${organizationId}/threads/${localStorageThreadId}`);
       }
 
       // Clear thread data when not in a thread
@@ -66,7 +63,7 @@ export const useNewThread = ({
     } catch (err) {
       dispatch({ type: 'SET_ERROR', payload: 'Failed to manage thread data.' });
     }
-  }, [pathname, organizationId, locale, push]);
+  }, [pathname, organizationId, push]);
 
   const handleNewThread = async () => {
     try {
@@ -78,7 +75,7 @@ export const useNewThread = ({
 
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
       setTransition(() =>
-        push(`/${locale}/public/${organizationId}/threads/${threadId}`)
+        push(`/public/${organizationId}/threads/${threadId}`)
       );
     } catch (err) {
       const errorMessage = 'Failed to create new thread.';

@@ -7,6 +7,8 @@ import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
+import { useSidebar } from '@/app/hooks/useSidebar';
+import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 
 type SidebarThreadsFetchError = {
   status: number | null;
@@ -27,10 +29,18 @@ export const useSidebarLogic = () => {
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
+  const { closeSidebar } = useSidebar();
+  const { openSearch } = useSearchThreads();
 
   const handleThread = () => {
     handleNewThread();
     handleCloseThread(false);
+    closeSidebar();
+  };
+
+  const handleSearch = () => {
+    openSearch();
+    closeSidebar();
   };
 
   function getSidebarThreadsError(error: SidebarThreadsFetchError): string {
@@ -73,6 +83,7 @@ export const useSidebarLogic = () => {
     isSignedIn,
     userThreads,
     activeThread,
+    handleSearch,
     handleThread,
     showOnboarding,
     refetchThreads,

@@ -3,17 +3,23 @@
 import { DocumentsProvider } from '@/context/DocumentsContext';
 import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
+import TabsWrapper from './TabsWrapper';
 
-type Props = Readonly<{
+export default function AdminLayout({
+  children,
+}: {
   children: React.ReactNode;
-}>;
-
-export default function AdminLayout({ children }: Props) {
+}) {
   return (
     <div className="h-screen flex flex-col">
       <Toast />
       <DocumentsProvider>
-        <Sidebar>{children}</Sidebar>
+        <Sidebar>
+          <div className="flex -mt-9 flex-col w-full h-full">
+            <TabsWrapper />
+            <div className="flex-grow">{children}</div>
+          </div>
+        </Sidebar>
       </DocumentsProvider>
     </div>
   );

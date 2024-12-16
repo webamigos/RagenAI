@@ -90,6 +90,15 @@
     "manage-knowledge": {
       "title": "Manage Knowledge | Ragen AI"
     },
+    "manage-knowledge:create-document": {
+      "title": "Create document | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Upload document | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Documents list | Ragen AI"
+    },
     "my-profile": {
       "title": "My Profile | Ragen AI"
     },
@@ -186,6 +195,11 @@
     "send-error": "Error creating document",
     "send": "Send"
   },
+  "manage-knowledge": {
+    "create-document": "Create document",
+    "documents-list": "Documents list",
+    "upload-files": "Upload files"
+  },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",
@@ -197,6 +211,7 @@
     "assistant-management": "Assistant management",
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
+    "search-threads": "Search threads",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -209,6 +224,13 @@
       "missing-permissions": "You do not have the required permissions to perform this action.",
       "unknown": "An unknown error occurred. Please contact support."
     }
+  },
+  "search-threads": {
+    "error-sugestions": "Error fetching suggestions",
+    "error-threads": "Error fetching threads",
+    "threads-not-found": "Thread not found",
+    "no-results": "No results",
+    "placeholder": "Search in threads..."
   },
   "files-table": {
     "title": "File list",
@@ -234,7 +256,10 @@
     "document-not-found": "Document not found",
     "fetching-error": "An error occurred while downloading the document",
     "save": "Save",
-    "edit-successfully": "The document has been edited"
+    "cancel": "Cancel",
+    "edit-successfully": "The document has been edited",
+    "content-empty": "Document content cannot be empty",
+    "title-empty": "Title cannot be empty"
   },
   "max-documents-to-retreive": {
     "input-label": "Max fragments retrieved in search"

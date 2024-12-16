@@ -14,6 +14,7 @@ import { Prompt } from 'next/font/google';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { isProductionTargetEnv } from '@/libs/utils/env';
+import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 
@@ -64,13 +65,15 @@ export default async function LocaleLayout({
           {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
           <body className={`${promptFont.className} h-full`}>
             <ThreadsContextProvider>
-              <Providers>
-                <SidebarProvider>
-                  <SettingsProvider>
-                    <JoyrideProvider>{children}</JoyrideProvider>
-                  </SettingsProvider>
-                </SidebarProvider>
-              </Providers>
+              <SearchThreadsProvider>
+                <Providers>
+                  <SidebarProvider>
+                    <SettingsProvider>
+                      <JoyrideProvider>{children}</JoyrideProvider>
+                    </SettingsProvider>
+                  </SidebarProvider>
+                </Providers>
+              </SearchThreadsProvider>
             </ThreadsContextProvider>
           </body>
         </html>

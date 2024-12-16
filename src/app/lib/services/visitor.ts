@@ -50,11 +50,30 @@ export const clearVisitorMessages = async () => {
 export const getUserThreads = async (
   visitorId: string,
   skip?: number,
-  take?: number
+  take?: number,
+  query?: string
 ) => {
+  //Remove the restriction to the last 30 days in the future if it is no longer required.
+  //the constraint is only supported when query is defined
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
   return await db.thread.findMany({
     where: {
       visitor_id: visitorId,
+      messages: query
+        ? {
+            some: {
+              created_at: {
+                gte: thirtyDaysAgo,
+              },
+              content: {
+                contains: query,
+                mode: 'insensitive',
+              },
+            },
+          }
+        : undefined,
     },
     orderBy: {
       created_at: 'desc',
