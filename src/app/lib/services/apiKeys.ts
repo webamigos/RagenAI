@@ -44,6 +44,7 @@ export const createOrganizationWithDefaultProject = async (
   });
 
   return {
+    id: organization.id,
     publicId: organization.public_id,
   };
 };
