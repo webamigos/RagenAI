@@ -153,8 +153,8 @@ export function SidebarLayout({
           }`}
         >
           <div
-            className={`w-full mx-auto pt-[4.5rem] mr-3 ${
-              isMyProfile ? 'lg:ml-5 pb-5' : ''
+            className={`w-full mx-auto mr-1 ${
+              isMyProfile ? 'lg:ml-5 pb-5 mt-[10px]' : ''
             }`}
           >
             {children}
