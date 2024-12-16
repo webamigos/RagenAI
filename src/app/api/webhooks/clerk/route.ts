@@ -8,53 +8,14 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { clerkClient } from '@clerk/nextjs/server';
-import db from '@ragenai/prisma-client';
 import { saveOrganizationInitialMetadata } from '@/app/actions';
+import {
+  activateFreePlan,
+  createTrialSubscription,
+  getOrganizationSubscription,
+} from '@/app/lib/services/plan';
 
 const serviceName = 'clerkWebhook';
-
-const trialDays = 14;
-
-async function createTrialSubscription(providerId: string) {
-  const trialPlan = await db.plan.findFirst({
-    where: {
-      name: 'Trial',
-      type: 'INTERNAL',
-      status: 'ACTIVE',
-    },
-  });
-
-  if (!trialPlan) {
-    throw new Error('Trial plan not found');
-  }
-
-  const now = new Date();
-  const trialEnd = new Date(now.setDate(now.getDate() + trialDays));
-
-  const organization = await db.organization.findFirst({
-    where: {
-      provider_id: providerId,
-    },
-  });
-
-  if (!organization) {
-    throw new Error('Organization not found');
-  }
-
-  return db.subscription.create({
-    data: {
-      organization_id: organization.id,
-      plan_id: trialPlan.id,
-      status: 'ACTIVE',
-      current_period_start: new Date(),
-      current_period_end: trialEnd,
-      trial_end: trialEnd,
-    },
-    include: {
-      plan: true,
-    },
-  });
-}
 
 export async function POST(req: Request) {
   setSentryServiceTag(serviceName);
@@ -177,6 +138,56 @@ export async function POST(req: Request) {
 
         break;
 
+      case 'session.created':
+        const lastOrganizationId = evt.data?.last_active_organization_id;
+        if (!lastOrganizationId) {
+          logger.info('No last organization id found, skipping...');
+          break;
+        }
+
+        setSentryServiceTag('webhook:session.created');
+        try {
+          const organization = await getOrganizationSubscription(
+            lastOrganizationId
+          );
+
+          if (organization?.subscription?.plan.name === 'Trial') {
+            const isExpired =
+              organization?.subscription?.current_period_end &&
+              organization?.subscription?.current_period_end < new Date();
+            if (isExpired) {
+              logger.info(
+                `Organization ${organization.provider_id} has trial plan and is expired, activating...`
+              );
+              const freePlan = await activateFreePlan(organization.provider_id);
+
+              // Update Clerk organization metadata with new subscription info
+              await clerkClient.organizations.updateOrganization(
+                lastOrganizationId,
+                {
+                  privateMetadata: {
+                    subscription: {
+                      plan: {
+                        name: freePlan.plan.name,
+                        type: freePlan.plan.type,
+                      },
+                      status: freePlan.status,
+                      current_period_start: freePlan.current_period_start,
+                      current_period_end: freePlan.current_period_end,
+                      trial_end: null,
+                    },
+                  },
+                }
+              );
+            }
+          }
+        } catch (error) {
+          logger.error(
+            { error },
+            `Error: cannot get organization with id ${lastOrganizationId}`
+          );
+        }
+        break;
       default:
         logger.info({ eventType }, 'Unhandled event type, skipping...');
     }
