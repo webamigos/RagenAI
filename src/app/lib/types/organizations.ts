@@ -9,6 +9,16 @@ export type ClerkOrganizationPrivateMetadata = {
 
 export type ClerkOrganizationPublicMetadata = {
   hasKnowledge: boolean;
+  subscription?: {
+    plan: {
+      name: string;
+      type: string;
+    };
+    status: string;
+    current_period_start: Date;
+    current_period_end: Date;
+    trial_end: Date | null;
+  };
 };
 
 export type ClerkOrganizationMetadata = {

@@ -50,6 +50,9 @@ async function createTrialSubscription(providerId: string) {
       current_period_end: trialEnd,
       trial_end: trialEnd,
     },
+    include: {
+      plan: true,
+    },
   });
 }
 
@@ -141,11 +144,21 @@ export async function POST(req: Request) {
             clerkOrgId
           );
 
-          await createTrialSubscription(clerkOrgId);
+          const subscription = await createTrialSubscription(clerkOrgId);
 
           await saveOrganizationInitialMetadata(clerkOrgId, {
             publicMetadata: {
               hasKnowledge: false,
+              subscription: {
+                plan: {
+                  name: subscription.plan.name,
+                  type: subscription.plan.type,
+                },
+                status: subscription.status,
+                current_period_start: subscription.current_period_start,
+                current_period_end: subscription.current_period_end,
+                trial_end: subscription.trial_end,
+              },
             },
             privateMetadata: {
               ragen_org_id: ragenOrg.id,
