@@ -266,6 +266,7 @@
     "created-by": "Created By",
     "create": "Create",
     "name-is-to-short": "Name is to short - use at least 3 characters",
+    "failed-to-load": "Failed to load keys",
     "copy": "Copy",
     "done": "Done",
     "dialog": {

@@ -266,6 +266,7 @@
     "created-by": "Stworzony przez",
     "create": "Stwórz",
     "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "failed-to-load": "Błąd podczas pobierania klucza api",
     "copy": "Kopiuj",
     "done": "Gotowe",
     "dialog": {

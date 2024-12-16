@@ -13,7 +13,8 @@ import {
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { SaveOrganizationPublicMetadata } from '@/app/actions';
-import { parseSrtToSegmentsUsingLLM } from '../../threads/services/parseSrtWithLLM';
+import { parseFile } from '../../../lib/services/fileParser';
+
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -41,32 +42,16 @@ export async function POST(request: NextRequest, { params }: Params) {
     const processedFiles = [];
 
     for (const file of files) {
-      if (!file.size) {
-        return NextResponse.json(
-          { message: `The file ${file.name} is empty)` },
-          { status: 400 }
-        );
-      }
-
-      let content;
-      if (file.name.endsWith('.srt')) {
-        const fileText = await file.text();
-        content = await parseSrtToSegmentsUsingLLM(fileText, 200, 300);
-        content = content.join('\n\n');
-      } else if (file.name.endsWith('.epub')) {
-        content = Buffer.from(await file.arrayBuffer());
-      } else {
-        content = await file.text();
-      }
-
       try {
+        const parsedFile = await parseFile(file, organizationId);
+
         const uniqueFileId = uuidv4();
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
           organizationId
         );
         const { message, success } = await convertAndStoreDocument({
-          fileContent: content,
-          fileName: file.name,
+          fileContent: parsedFile.content,
+          fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
           projectId: defaultProjectId,
@@ -74,17 +59,18 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         if (success) {
           await createDocumentDetailsInDB(
-            file.name,
+            parsedFile.fileName,
             file.size,
             uploaderId,
             uniqueFileId
           );
-          if (file.name.endsWith('.md') || file.name.endsWith('.srt')) {
+
+          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
             await createMarkdownDocument({
               public_id: uniqueFileId,
-              title: file.name,
+              title: parsedFile.fileName,
               organization_id: organizationId,
-              content: content as string,
+              content: parsedFile.content as string,
             });
           }
         }
@@ -98,10 +84,10 @@ export async function POST(request: NextRequest, { params }: Params) {
         }
 
         processedFiles.push({
-          fileName: file.name,
+          fileName: parsedFile.fileName,
           fileSize: file.size,
           uniqueFileId,
-          content,
+          content: parsedFile.content,
         });
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
@@ -111,9 +97,10 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
     }
+
     await SaveOrganizationPublicMetadata(uploaderId, true);
     return NextResponse.json({
-      message: 'All files are successfully proceed',
+      message: 'All files are successfully processed',
       status: 200,
       files: processedFiles,
     });
