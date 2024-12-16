@@ -33,7 +33,8 @@
     "prepare": "husky",
     "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.js",
     "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js",
-    "postvectorstore:migrate": "npm run vectorstore:generate:database-types"
+    "postvectorstore:migrate": "npm run vectorstore:generate:database-types",
+    "db:seed": "ts-node prisma/seed.ts"
   },
   "private": true,
   "devDependencies": {
