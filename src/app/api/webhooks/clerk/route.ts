@@ -10,7 +10,10 @@ import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { sendWelcomeEmail } from '@/app/emails/services/mailer';
+import {
+  addEmailToAudience,
+  sendWelcomeEmail,
+} from '@/app/emails/services/mailer';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
@@ -94,17 +97,14 @@ export async function POST(req: Request) {
           await sendWelcomeEmail({ to: userEmail, name: userFirstName });
 
           // create new contact in base
-          // TODO: debug because looks like not working
           let resendContactDetails: CreateContactOptions = {
             email: userEmail,
+            firstName: userFirstName,
             unsubscribed: false,
             audienceId: RESEND_DEFAULT_AUDIENCE_ID,
           };
-          if (userFirstName) {
-            resendContactDetails.firstName = userFirstName;
-          }
 
-          await resend.contacts.create(resendContactDetails);
+          await addEmailToAudience(resendContactDetails);
 
           logger.info(
             `For user: ${userId}, created organization with id: ${id}`

@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import { CreateContactOptions, Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -23,4 +23,10 @@ export const sendWelcomeEmail = async ({
     subject: 'Witaj w Ragen!',
     react: WelcomeEmail({ name }),
   });
+};
+
+export const addEmailToAudience = async (
+  resendContactDetails: CreateContactOptions
+) => {
+  return await resend.contacts.create(resendContactDetails);
 };
