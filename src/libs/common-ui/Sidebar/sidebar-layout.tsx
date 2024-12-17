@@ -123,9 +123,7 @@ export function SidebarLayout({
           onClick={openSidebar}
           aria-label="Open navigation"
         >
-          <div className="absolute -top-12 py-3 px-6 rounded-2xl bg-primary-blue-400 dark:bg-secondary-dark z-50">
-            <OpenMenuIcon className="mt-4 text-white" />
-          </div>
+          <OpenMenuIcon className="mt-4 text-secondary-dark dark:text-white" />
         </NavbarItem>
         <div className="min-w-0 flex-1">{navbar}</div>
       </header>
