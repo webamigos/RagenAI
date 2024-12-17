@@ -1,16 +1,26 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
+import { type CreateContactOptions, Resend } from 'resend';
+
 import { logger } from '@/app/lib/utils/logger';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
 import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { clerkClient } from '@clerk/nextjs/server';
+import {
+  addEmailToAudience,
+  sendWelcomeEmail,
+} from '@/app/emails/services/mailer';
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY!;
+const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
 import { saveOrganizationInitialMetadata } from '@/app/actions';
 
 const serviceName = 'clerkWebhook';
+const resend = new Resend(RESEND_API_KEY);
 
 export async function POST(req: Request) {
   setSentryServiceTag(serviceName);
@@ -65,7 +75,13 @@ export async function POST(req: Request) {
 
     switch (evt.type) {
       case 'user.created':
-        const firstName = evt.data.first_name || 'User';
+        let userFirstName: string | undefined;
+        if (typeof evt.data.first_name === 'string') {
+          userFirstName = evt.data.first_name;
+        }
+        const userEmail: string = evt.data.email_addresses[0].email_address;
+
+        const firstName = userFirstName || 'User';
         const organizationName = `${firstName}'s Organization`;
         const userId = evt.data.id;
 
@@ -76,6 +92,19 @@ export async function POST(req: Request) {
             name: organizationName,
             createdBy: userId,
           });
+
+          // send welcome e-mail
+          await sendWelcomeEmail({ to: userEmail, name: userFirstName });
+
+          // create new contact in base
+          let resendContactDetails: CreateContactOptions = {
+            email: userEmail,
+            firstName: userFirstName,
+            unsubscribed: false,
+            audienceId: RESEND_DEFAULT_AUDIENCE_ID,
+          };
+
+          await addEmailToAudience(resendContactDetails);
 
           logger.info(
             `For user: ${userId}, created organization with id: ${id}`
