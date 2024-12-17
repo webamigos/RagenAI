@@ -241,6 +241,11 @@
     "updated": "Zaktualizowano",
     "preview": "Podgląd"
   },
+  "file-delete-modal": {
+    "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
+    "yes": "Tak",
+    "no": "Nie"
+  },
   "set-openai-api-key": {
     "set-env": "Ustaw zmienne środowiskowe",
     "save": "Zapisz",
