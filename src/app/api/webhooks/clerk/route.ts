@@ -2,7 +2,7 @@ import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
-import { type CreateContactOptions, Resend } from 'resend';
+import { type CreateContactOptions } from 'resend';
 
 import { logger } from '@/app/lib/utils/logger';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
@@ -19,8 +19,8 @@ const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
 import { saveOrganizationInitialMetadata } from '@/app/actions';
 import {
   activateFreePlan,
+  checkIfOrganizationPlanIsExpired,
   createTrialSubscription,
-  getOrganizationSubscription,
 } from '@/app/lib/services/plan';
 
 const serviceName = 'clerkWebhook';
@@ -118,7 +118,6 @@ export async function POST(req: Request) {
             `Error: cannot create organization for user ${userId}:`
           );
         }
-
         break;
 
       case 'organization.created':
@@ -153,38 +152,25 @@ export async function POST(req: Request) {
             `Error: cannot sync organization with app ${clerkOrgId}:`
           );
         }
-
         break;
 
       case 'session.created':
+        setSentryServiceTag('webhook:session.created');
+
         const lastOrganizationId = evt.data?.last_active_organization_id;
         if (!lastOrganizationId) {
           logger.info('No last organization id found, skipping...');
           break;
         }
 
-        setSentryServiceTag('webhook:session.created');
-        try {
-          const organization = await getOrganizationSubscription(
-            lastOrganizationId
+        const isExpired = await checkIfOrganizationPlanIsExpired(
+          lastOrganizationId
+        );
+        if (isExpired) {
+          logger.info(
+            `Organization ${lastOrganizationId} plan has expired, activating free plan...`
           );
-
-          if (organization?.subscription?.plan.name === 'Trial') {
-            const isExpired =
-              organization?.subscription?.current_period_end &&
-              organization?.subscription?.current_period_end < new Date();
-            if (isExpired) {
-              logger.info(
-                `Organization ${organization.provider_id} has trial plan and is expired, activating...`
-              );
-              await activateFreePlan(organization.provider_id);
-            }
-          }
-        } catch (error) {
-          logger.error(
-            { error },
-            `Error: cannot get organization with id ${lastOrganizationId}`
-          );
+          await activateFreePlan(lastOrganizationId);
         }
         break;
       default:

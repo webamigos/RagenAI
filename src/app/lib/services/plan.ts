@@ -1,15 +1,18 @@
+import { PlanStatus, SubscriptionStatus } from '@prisma/client';
+import { PlanType } from '@prisma/client';
 import db from '@ragenai/prisma-client';
 
 const TRIAL_DAYS = 14;
 const TRIAL_PLAN_NAME = 'Trial';
 const FREE_PLAN_NAME = 'Free';
+const FOREVER_DATE = new Date(new Date().setFullYear(2099, 11, 31));
 
 export async function createTrialSubscription(providerId: string) {
   const trialPlan = await db.plan.findFirst({
     where: {
       name: TRIAL_PLAN_NAME,
-      type: 'INTERNAL',
-      status: 'ACTIVE',
+      type: PlanType.INTERNAL,
+      status: PlanStatus.ACTIVE,
     },
   });
 
@@ -34,7 +37,7 @@ export async function createTrialSubscription(providerId: string) {
     data: {
       organization_id: organization.id,
       plan_id: trialPlan.id,
-      status: 'ACTIVE',
+      status: SubscriptionStatus.ACTIVE,
       current_period_start: new Date(),
       current_period_end: trialEnd,
       trial_end: trialEnd,
@@ -49,8 +52,8 @@ export async function activateFreePlan(providerId: string) {
   const freePlan = await db.plan.findFirst({
     where: {
       name: FREE_PLAN_NAME,
-      type: 'INTERNAL',
-      status: 'ACTIVE',
+      type: PlanType.INTERNAL,
+      status: PlanStatus.ACTIVE,
     },
   });
 
@@ -83,9 +86,9 @@ export async function activateFreePlan(providerId: string) {
       },
       data: {
         plan_id: freePlan.id,
-        status: 'ACTIVE',
+        status: SubscriptionStatus.ACTIVE,
         current_period_start: new Date(),
-        current_period_end: new Date(new Date().setFullYear(2099, 11, 31)),
+        current_period_end: FOREVER_DATE,
         trial_end: null,
       },
       include: {
@@ -99,7 +102,7 @@ export async function activateFreePlan(providerId: string) {
     data: {
       organization_id: organization.id,
       plan_id: freePlan.id,
-      status: 'ACTIVE',
+      status: SubscriptionStatus.ACTIVE,
       current_period_start: new Date(),
       current_period_end: new Date(new Date().setFullYear(2099, 11, 31)),
       trial_end: null,
@@ -110,25 +113,33 @@ export async function activateFreePlan(providerId: string) {
   });
 }
 
-export function getOrganizationSubscription(providerId: string) {
-  return db.organization.findFirst({
+export async function checkIfOrganizationPlanIsExpired(organizationId: string) {
+  const organization = await db.organization.findFirst({
     where: {
-      provider_id: providerId,
+      provider_id: organizationId,
     },
     select: {
       id: true,
       provider_id: true,
       subscription: {
         include: {
-          plan: {
-            select: {
-              name: true,
-              type: true,
-              status: true,
-            },
-          },
+          plan: true,
         },
       },
     },
   });
+
+  let isExpired = false;
+  const subscription = organization?.subscription;
+  if (!subscription) {
+    return isExpired;
+  }
+
+  if (subscription.plan.name === TRIAL_PLAN_NAME) {
+    isExpired =
+      subscription.current_period_end &&
+      subscription.current_period_end < new Date();
+  }
+
+  return isExpired;
 }
