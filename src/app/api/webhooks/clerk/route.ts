@@ -15,7 +15,6 @@ import {
   sendWelcomeEmail,
 } from '@/app/emails/services/mailer';
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
 import { saveOrganizationInitialMetadata } from '@/app/actions';
 import {
@@ -25,7 +24,6 @@ import {
 } from '@/app/lib/services/plan';
 
 const serviceName = 'clerkWebhook';
-const resend = new Resend(RESEND_API_KEY);
 
 export async function POST(req: Request) {
   setSentryServiceTag(serviceName);
@@ -134,8 +132,9 @@ export async function POST(req: Request) {
             clerkOrgId
           );
 
-          const subscription = await createTrialSubscription(clerkOrgId);
+          await createTrialSubscription(clerkOrgId);
 
+          //To do: store relevant subscription info to clerk organization metadata
           await saveOrganizationInitialMetadata(clerkOrgId, {
             publicMetadata: {
               hasKnowledge: false,
@@ -143,16 +142,6 @@ export async function POST(req: Request) {
             privateMetadata: {
               ragen_org_id: ragenOrg.id,
               vector_store: 'supabase',
-              subscription: {
-                plan: {
-                  name: subscription.plan.name,
-                  type: subscription.plan.type,
-                },
-                status: subscription.status,
-                current_period_start: subscription.current_period_start,
-                current_period_end: subscription.current_period_end,
-                trial_end: subscription.trial_end,
-              },
             },
           });
           logger.info(
@@ -188,26 +177,7 @@ export async function POST(req: Request) {
               logger.info(
                 `Organization ${organization.provider_id} has trial plan and is expired, activating...`
               );
-              const freePlan = await activateFreePlan(organization.provider_id);
-
-              // Update Clerk organization metadata with new subscription info
-              await clerkClient.organizations.updateOrganization(
-                lastOrganizationId,
-                {
-                  privateMetadata: {
-                    subscription: {
-                      plan: {
-                        name: freePlan.plan.name,
-                        type: freePlan.plan.type,
-                      },
-                      status: freePlan.status,
-                      current_period_start: freePlan.current_period_start,
-                      current_period_end: freePlan.current_period_end,
-                      trial_end: null,
-                    },
-                  },
-                }
-              );
+              await activateFreePlan(organization.provider_id);
             }
           }
         } catch (error) {
