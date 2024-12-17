@@ -22,6 +22,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -154,6 +155,8 @@ export const convertAndStoreDocument = async ({
     const docs = fileName.endsWith('.md')
       ? await textSplitter.splitDocuments(rawDocs)
       : await textSplitterEPub.splitDocuments(rawDocs);
+
+    const { orgId } = auth();
 
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {

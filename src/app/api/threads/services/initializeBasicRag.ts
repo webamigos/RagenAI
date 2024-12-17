@@ -64,7 +64,7 @@ export const initializeRagChain = async ({
       temperature: answerTemperature,
     });
 
-    // const vectorStore = createVectorStore(
+    // const vectorStore = createSupabaseVectorStore(
     //   supabaseVectorStoreClient,
     //   embeddingModel
     // );
@@ -95,8 +95,20 @@ export const initializeRagChain = async ({
   }
 };
 
+const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
+  const vectorStore = await QdrantVectorStore.fromExistingCollection(
+    embeddingModel,
+    {
+      url: process.env.QDRANT_URL,
+      collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+    }
+  );
+
+  return vectorStore;
+};
+
 // TODO: refactor to use with qdrant or switch depending on organization settings?
-const createVectorStore = (
+const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: Embeddings
 ): SupabaseVectorStore => {

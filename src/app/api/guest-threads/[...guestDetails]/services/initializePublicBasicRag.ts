@@ -68,7 +68,7 @@ export const initializePublicRagChain = async ({
     });
 
     // Supabase
-    // const vectorStore = createVectorStore(
+    // const vectorStore = createSupabaseVectorStore(
     //   supabaseVectorStoreClient,
     //   embeddingModel,
     //   organizationId
@@ -100,7 +100,19 @@ export const initializePublicRagChain = async ({
   }
 };
 
-const createVectorStore = (
+const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
+  const vectorStore = await QdrantVectorStore.fromExistingCollection(
+    embeddingModel,
+    {
+      url: process.env.QDRANT_URL,
+      collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+    }
+  );
+
+  return vectorStore;
+};
+
+const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: Embeddings,
   organizationId: string
