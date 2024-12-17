@@ -19,6 +19,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
+import { getOrganizationMetadata } from '@/app/actions';
 
 const serviceName = 'initializeBasicRag';
 
@@ -33,7 +34,12 @@ export const initializeRagChain = async ({
   settings,
 }: InitializeRagChainParams) => {
   try {
+    const { orgId } = auth();
     setSentryServiceTag(serviceName);
+
+    if (!orgId) {
+      throw new Error('Invalid organization');
+    }
 
     const {
       apiKey,
@@ -64,20 +70,19 @@ export const initializeRagChain = async ({
       temperature: answerTemperature,
     });
 
-    // const vectorStore = createSupabaseVectorStore(
-    //   supabaseVectorStoreClient,
-    //   embeddingModel
-    // );
+    const orgMetadata = await getOrganizationMetadata(orgId);
+    let vectorStore = undefined;
 
-    const vectorStore = await QdrantVectorStore.fromExistingCollection(
-      embeddingModel,
-      {
-        url: process.env.QDRANT_URL,
-        collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
-      }
-    );
+    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
+      vectorStore = await createQdrantVectorStore(embeddingModel);
+    } else {
+      vectorStore = createSupabaseVectorStore(
+        supabaseVectorStoreClient,
+        embeddingModel
+      );
+    }
 
-    return basicRagChain({
+    return await basicRagChain({
       models: {
         contentModerator,
         questionRephraser,

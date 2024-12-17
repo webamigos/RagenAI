@@ -20,6 +20,7 @@ import {
   createEmbeddingsInstance,
   createModerationInstance,
 } from '@/app/lib/services/llm';
+import { getOrganizationMetadata } from '@/app/actions';
 
 const serviceName = 'initializeBasicRag';
 
@@ -67,22 +68,20 @@ export const initializePublicRagChain = async ({
       temperature: answerTemperature,
     });
 
-    // Supabase
-    // const vectorStore = createSupabaseVectorStore(
-    //   supabaseVectorStoreClient,
-    //   embeddingModel,
-    //   organizationId
-    // );
+    const orgMetadata = await getOrganizationMetadata(organizationId);
+    let vectorStore = undefined;
 
-    const vectorStore = await QdrantVectorStore.fromExistingCollection(
-      embeddingModel,
-      {
-        url: process.env.QDRANT_URL,
-        collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
-      }
-    );
+    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
+      vectorStore = await createQdrantVectorStore(embeddingModel);
+    } else {
+      vectorStore = createSupabaseVectorStore(
+        supabaseVectorStoreClient,
+        embeddingModel,
+        organizationId
+      );
+    }
 
-    return basicRagChain({
+    return await basicRagChain({
       models: {
         contentModerator,
         questionRephraser,
