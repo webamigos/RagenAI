@@ -42,6 +42,10 @@ const envSchema = z.object({
   TEMPORAL_NAMESPACE: z.string(),
   TEMPORAL_CERT: z.string(),
   TEMPORAL_KEY: z.string(),
+
+  // Resend
+  RESEND_API_KEY: z.string(),
+  RESEND_DEFAULT_AUDIENCE_ID: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

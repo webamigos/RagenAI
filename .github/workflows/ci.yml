@@ -26,6 +26,8 @@ env:
   TEMPORAL_NAMESPACE: 'ci'
   TEMPORAL_CERT: 'dummy'
   TEMPORAL_KEY: 'dummy'
+  RESEND_API_KEY: 'dummy'
+  RESEND_DEFAULT_AUDIENCE_ID: 'dummy'
 
 on:
   push:
