@@ -28,6 +28,8 @@ env:
   TEMPORAL_KEY: 'dummy'
   QDRANT_URL: 'http://example.com'
   QDRANT_DEFAULT_COLLECTION: 'dummy'
+  RESEND_API_KEY: 'dummy'
+  RESEND_DEFAULT_AUDIENCE_ID: 'dummy'
 
 on:
   push:

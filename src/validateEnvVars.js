@@ -46,6 +46,10 @@ const envSchema = z.object({
   // Qdrant
   QDRANT_URL: z.string().url(),
   QDRANT_DEFAULT_COLLECTION: z.string(),
+
+  // Resend
+  RESEND_API_KEY: z.string(),
+  RESEND_DEFAULT_AUDIENCE_ID: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);
