@@ -37,7 +37,7 @@ export async function parseSrtToSegmentsUsingLLM(
 
     return segments;
   } catch (error) {
-    logger.error('Error while parsing SRT to segments using LLM:', error);
+    logger.error({ err: error }, 'Error while parsing SRT to segments');
     throw new Error('Failed to process the text. Please try again later.');
   }
 }
