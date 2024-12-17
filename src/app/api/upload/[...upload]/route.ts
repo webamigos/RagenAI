@@ -12,7 +12,7 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
-import { SaveOrganizationPublicMetadata } from '@/app/actions';
+import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { parseFile } from '../../../lib/services/fileParser';
 
 export const dynamic = 'force-dynamic';
