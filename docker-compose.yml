@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     image: postgres
-    container_name: smartrag-postgres
+    container_name: ragen-postgres
     restart: always
     ports:
       - 5432:5432
@@ -14,25 +14,18 @@ services:
       - ./volumes/postgres:/var/lib/postgresql/data
   redis:
     image: redis
-    container_name: smartrag-redis
+    container_name: ragen-redis
     ports:
       - 6379:6379
     restart: always
-  # rabbitmq:
-  #   image: rabbitmq:3-management-alpine
-  #   container_name: salesyy-rabbitmq
-  #   ports:
-  #     - 5672:5672
-  #     - 15672:15627
-  #   volumes:
-  #     - ./volumes/rabbit/data:/var/lib/rabbitmq
-  #     - ./volumes/rabbit/log:/var/log/rabbitmq
-  #   networks:
-  #     - rabbitmq_go_net
-# networks:
-#   rabbitmq_go_net:
-#     driver: bridge
-
+  qdrant:
+    image: qdrant/qdrant
+    container_name: ragen-qdrant
+    ports:
+      - 6333:6333
+    volumes:
+      - ./volumes/qdrant:/qdrant/storage
+    restart: always
 # mongodb:
 #   build:
 #     context: ./mongodb_replica

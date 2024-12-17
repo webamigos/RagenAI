@@ -27,7 +27,7 @@ import {
 } from '../utils/chain-utils';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { VectorStore } from '@langchain/core/vectorstores';
-import { auth } from '@clerk/nextjs/dist/types/server';
+import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 
 export const sanitizeAndValidateInput = () => {
