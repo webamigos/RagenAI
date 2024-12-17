@@ -10,7 +10,7 @@ export async function getSubscriptionData(): Promise<SubscriptionDetails | null>
   const { orgId } = auth();
 
   if (!orgId) {
-    throw new Error('Organization not found');
+    return null;
   }
 
   const organization = await db.organization.findFirst({
