@@ -40,8 +40,13 @@ export const DeleteFileModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-row flex-wrap">
-          <Text>{t('are-you-sure')}:</Text>{' '}
-          <Text fontWeight="medium">{fileName}?</Text>
+          <Text className="mr-0.5">{t('are-you-sure')}:</Text>{' '}
+          <Text
+            fontWeight="medium"
+            className="break-words break-all whitespace-normal max-w-full"
+          >
+            {fileName}?
+          </Text>
         </div>
         <div className="flex justify-center mt-4 gap-2">
           <Button
