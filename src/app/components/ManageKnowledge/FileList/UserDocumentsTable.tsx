@@ -1,6 +1,6 @@
 import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { useRouter } from 'next/navigation';
 
@@ -50,7 +50,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     document;
 
   const { successToast, errorToast } = statusToast();
-  const locale = useLocale();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const { refreshSettings } = useSettings();
@@ -120,9 +119,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
               <Link
                 className="text-black dark:text-white"
                 href={`/document/${id}?edit=true`}
-                onMouseEnter={() =>
-                  handlePrefetch(`/${locale}/document/${id}?edit=true`)
-                }
+                onMouseEnter={() => handlePrefetch(`/document/${id}?edit=true`)}
               >
                 <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
               </Link>
@@ -130,7 +127,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
               <Link
                 className="text-black dark:text-white"
                 href={`/document/${id}`}
-                onMouseEnter={() => handlePrefetch(`/${locale}/document/${id}`)}
+                onMouseEnter={() => handlePrefetch(`/document/${id}`)}
               >
                 <CommonUi.OpenEyeIcon className="cursor-pointer" />
               </Link>
