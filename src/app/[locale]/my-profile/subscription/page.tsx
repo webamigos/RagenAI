@@ -1,27 +1,23 @@
+import { Card } from '@ragenai/common-ui/Card';
 import { getSubscriptionData } from './actions';
-
 import { SubscriptionInfo } from './components/SubscribtionInfo';
+import { getTranslations } from 'next-intl/server';
 
 export default async function SubscriptionPage() {
   const subscription = await getSubscriptionData();
+  const t = await getTranslations('subscription');
 
   if (!subscription) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">Organization Subscription</h1>
-        <div className="bg-white shadow rounded-lg p-6">
-          <p>No subscription found</p>
-        </div>
-      </div>
+      <Card title={t('title')} size="full" className="mb-5">
+        <p className="mt-4">{t('no-subscription')}</p>
+      </Card>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Organization Subscription</h1>
-      <div className="bg-white shadow rounded-lg p-6">
-        <SubscriptionInfo subscription={subscription} />
-      </div>
-    </div>
+    <Card title={t('title')} size="full" className="mb-5">
+      <SubscriptionInfo subscription={subscription} />
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 import type { SubscriptionDetails } from '../types';
 import { SubscriptionStatus } from '@prisma/client';
 
@@ -16,17 +17,20 @@ export const SubscriptionInfo = ({
     canceled_at,
   },
 }: Props) => {
+  const t = useTranslations('subscription');
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-4">
       <div>
-        <h2 className="text-sm font-medium text-gray-500">Current Plan</h2>
+        <h2 className="text-sm font-medium text-gray-500">
+          {t('current-plan')}
+        </h2>
         <p className="mt-1 text-lg font-semibold">
           {plan.name} ({plan.type})
         </p>
       </div>
 
       <div>
-        <h2 className="text-sm font-medium text-gray-500">Status</h2>
+        <h2 className="text-sm font-medium text-gray-500">{t('status')}</h2>
         <p className="mt-1 text-lg font-semibold capitalize">
           <span
             className={`${
@@ -41,7 +45,9 @@ export const SubscriptionInfo = ({
       </div>
 
       <div>
-        <h2 className="text-sm font-medium text-gray-500">Period Start</h2>
+        <h2 className="text-sm font-medium text-gray-500">
+          {t('period-start')}
+        </h2>
         <p className="mt-1 text-lg font-semibold">
           {format(current_period_start, 'dd.MM.yyyy')}
         </p>
@@ -49,7 +55,9 @@ export const SubscriptionInfo = ({
 
       {canceled_at && (
         <div>
-          <h2 className="text-sm font-medium text-gray-500">Canceled On</h2>
+          <h2 className="text-sm font-medium text-gray-500">
+            {t('canceled-at')}
+          </h2>
           <p className="mt-1 text-lg font-semibold">
             {format(canceled_at, 'dd.MM.yyyy')}
           </p>
@@ -58,7 +66,9 @@ export const SubscriptionInfo = ({
 
       {trial_end && (
         <div>
-          <h2 className="text-sm font-medium text-gray-500">Trial Ends</h2>
+          <h2 className="text-sm font-medium text-gray-500">
+            {t('trial-ends')}
+          </h2>
           <p className="mt-1 text-lg font-semibold">
             {format(trial_end, 'dd.MM.yyyy')}
           </p>
@@ -68,7 +78,7 @@ export const SubscriptionInfo = ({
       {current_period_end && (
         <div>
           <h2 className="text-sm font-medium text-gray-500">
-            Current Period Ends
+            {t('current-period-ends')}
           </h2>
           <p className="mt-1 text-lg font-semibold">
             {format(current_period_end, 'dd.MM.yyyy')}

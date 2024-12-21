@@ -312,6 +312,16 @@
       }
     }
   },
+  "subscription": {
+    "title": "Subscription details",
+    "no-subscription": "No subscription found",
+    "current-plan": "Current plan",
+    "status": "Status",
+    "period-start": "Period start",
+    "canceled-at": "Canceled at",
+    "trial-ends": "Trial ends",
+    "current-period-ends": "Current period ends"
+  },
   "chain-errors": {
     "sending-error": "Error occured while sending message",
     "moderation-error": "The content was flagged as inappropriate by our moderation system and cannot be processed",
