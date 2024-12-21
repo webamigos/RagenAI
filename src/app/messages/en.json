@@ -116,6 +116,9 @@
     },
     "prompt-management": {
       "title": "Assistant Management | Ragen AI"
+    },
+    "plans": {
+      "title": "Pricing and subscription plans | Ragen AI"
     }
   },
   "chat": {
@@ -322,6 +325,9 @@
     "canceled-at": "Canceled at",
     "trial-ends": "Trial ends",
     "current-period-ends": "Current period ends"
+  },
+  "plans": {
+    "title": "List of available subscription plans"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",

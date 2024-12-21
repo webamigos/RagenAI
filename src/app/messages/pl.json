@@ -116,6 +116,9 @@
     },
     "prompt-management": {
       "title": "Zarządzanie asystentem | Ragen AI"
+    },
+    "plans": {
+      "title": "Cennik i plany subskrypcji | Ragen AI"
     }
   },
   "chat": {
@@ -322,6 +325,9 @@
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",
     "current-period-ends": "Data wygaśnięcia"
+  },
+  "plans": {
+    "title": "Lista dostępnych planów subskrypcji"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
