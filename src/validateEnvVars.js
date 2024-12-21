@@ -46,6 +46,11 @@ const envSchema = z.object({
   // Resend
   RESEND_API_KEY: z.string(),
   RESEND_DEFAULT_AUDIENCE_ID: z.string(),
+
+  // Stripe
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);
