@@ -313,6 +313,16 @@
       }
     }
   },
+  "subscription": {
+    "title": "Szczegóły subskrypcji",
+    "no-subscription": "Brak subskrypcji",
+    "current-plan": "Bieżący plan",
+    "status": "Status",
+    "period-start": "Data aktywacji",
+    "canceled-at": "Data anulowania",
+    "trial-ends": "Koniec okresu próbnego",
+    "current-period-ends": "Data wygaśnięcia"
+  },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
     "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
