@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import type { SubscriptionDetails } from '../types';
 import { SubscriptionStatus } from '@prisma/client';
 
@@ -42,7 +43,7 @@ export const SubscriptionInfo = ({
       <div>
         <h2 className="text-sm font-medium text-gray-500">Period Start</h2>
         <p className="mt-1 text-lg font-semibold">
-          {new Date(current_period_start).toLocaleDateString()}
+          {format(current_period_start, 'dd.MM.yyyy')}
         </p>
       </div>
 
@@ -50,7 +51,7 @@ export const SubscriptionInfo = ({
         <div>
           <h2 className="text-sm font-medium text-gray-500">Canceled On</h2>
           <p className="mt-1 text-lg font-semibold">
-            {new Date(canceled_at).toLocaleDateString()}
+            {format(canceled_at, 'dd.MM.yyyy')}
           </p>
         </div>
       )}
@@ -59,7 +60,7 @@ export const SubscriptionInfo = ({
         <div>
           <h2 className="text-sm font-medium text-gray-500">Trial Ends</h2>
           <p className="mt-1 text-lg font-semibold">
-            {new Date(trial_end).toLocaleDateString()}
+            {format(trial_end, 'dd.MM.yyyy')}
           </p>
         </div>
       )}
@@ -70,7 +71,7 @@ export const SubscriptionInfo = ({
             Current Period Ends
           </h2>
           <p className="mt-1 text-lg font-semibold">
-            {new Date(current_period_end).toLocaleDateString()}
+            {format(current_period_end, 'dd.MM.yyyy')}
           </p>
         </div>
       )}
