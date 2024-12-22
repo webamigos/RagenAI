@@ -324,7 +324,16 @@
     "period-start": "Period start",
     "canceled-at": "Canceled at",
     "trial-ends": "Trial ends",
-    "current-period-ends": "Current period ends"
+    "current-period-ends": "Current period ends",
+    "checkout": {
+      "title": "Thank you for your purchase! 🎉",
+      "description": "Your subscription has been successfully activated.",
+      "next-payment-date": "Next payment date",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Download Invoice",
+      "manage-subscription": "Manage Subscription"
+    }
   },
   "plans": {
     "title": "List of available subscription plans",

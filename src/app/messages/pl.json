@@ -324,7 +324,16 @@
     "period-start": "Data aktywacji",
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",
-    "current-period-ends": "Data wygaśnięcia"
+    "current-period-ends": "Data wygaśnięcia",
+    "checkout": {
+      "title": "Dziękujemy za zakup! 🎉",
+      "description": "Twoja subskrypcja została pomyślnie aktywowana.",
+      "next-payment-date": "Data kolejnej płatności",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Pobierz fakture",
+      "manage-subscription": "Zarządzaj subskrypcją"
+    }
   },
   "plans": {
     "title": "Lista dostępnych planów subskrypcji",
