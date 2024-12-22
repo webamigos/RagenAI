@@ -326,6 +326,11 @@
     "canceled-at": "Canceled at",
     "trial-ends": "Trial ends",
     "current-period-ends": "Current period ends",
+    "cancel-subscription": "Cancel subscription",
+    "cancel-subscription-success": "Subscription canceled",
+    "cancel-subscription-error": "Error canceling subscription",
+    "cancel-subscription-confirmation": "Your subscription has been cancelled, it will not be renewed",
+    "show-available-plans": "Show available plans",
     "checkout": {
       "title": "Thank you for your purchase! 🎉",
       "description": "Your subscription has been successfully activated.",

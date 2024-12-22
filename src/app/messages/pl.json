@@ -326,6 +326,11 @@
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",
     "current-period-ends": "Data wygaśnięcia",
+    "cancel-subscription": "Anuluj subskrypcję",
+    "cancel-subscription-success": "Subskrypcja anulowana",
+    "cancel-subscription-error": "Wystąpił błąd podczas anulowania subskrypcji",
+    "cancel-subscription-confirmation": "Twoja subskrypcja została anulowana, nie zostanie automatycznie odnowiona",
+    "show-available-plans": "Pokaż dostępne plany",
     "checkout": {
       "title": "Dziękujemy za zakup! 🎉",
       "description": "Twoja subskrypcja została pomyślnie aktywowana.",
