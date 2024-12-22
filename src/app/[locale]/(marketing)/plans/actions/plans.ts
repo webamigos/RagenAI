@@ -1,11 +1,10 @@
 'use server';
 
+import { Stripe } from 'stripe';
 import { PlanStatus, PlanType } from '@prisma/client';
 import prisma from '@ragenai/prisma-client';
 import { stripe } from '@/libs/payments/stripe';
-import Stripe from 'stripe';
-import { StripePlan } from '../types/plan';
-import { logger } from '@/app/lib/utils/logger';
+import { type StripePlan } from '../types/plan';
 
 export async function fetchAvailablePlans() {
   const plans = await prisma.plan.findMany({
@@ -25,8 +24,4 @@ export async function fetchAvailablePlans() {
   );
 
   return filteredStripePlans;
-}
-
-export async function handleSubscribe(planId: string) {
-  logger.info(`Plan ID: ${planId}`);
 }

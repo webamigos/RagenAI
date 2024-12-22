@@ -327,7 +327,9 @@
     "current-period-ends": "Current period ends"
   },
   "plans": {
-    "title": "List of available subscription plans"
+    "title": "List of available subscription plans",
+    "checkout-error": "Unable to start checkout process. Please try again later.",
+    "subscribe": "Subscribe"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",

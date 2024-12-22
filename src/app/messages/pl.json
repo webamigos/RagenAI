@@ -327,7 +327,9 @@
     "current-period-ends": "Data wygaśnięcia"
   },
   "plans": {
-    "title": "Lista dostępnych planów subskrypcji"
+    "title": "Lista dostępnych planów subskrypcji",
+    "checkout-error": "Nie udało się rozpocząć procesu płatności. Spróbuj ponownie później.",
+    "subscribe": "Subskrybuj"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
