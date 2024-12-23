@@ -13,7 +13,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
-import { parseFile } from '@/app/lib/services/fileParser';
+import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -49,6 +49,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     for (const file of files) {
       try {
         const parsedFile = await parseFile(file, organizationId);
+        const fileType = getFileType(parsedFile.fileName);
 
         const uniqueFileId = uuidv4();
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
@@ -67,7 +68,8 @@ export async function POST(request: NextRequest, { params }: Params) {
             parsedFile.fileName,
             file.size,
             organizationId,
-            uniqueFileId
+            uniqueFileId,
+            fileType
           );
 
           if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {

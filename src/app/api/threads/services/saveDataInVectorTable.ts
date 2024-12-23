@@ -167,24 +167,17 @@ export const convertAndStoreDocument = async ({
 
           const storeAsImage = fromPath(filePath, pdf2picOptions);
           const convertedPages = await storeAsImage.bulk(-1);
+          const pageDescriptions: string[] = [];
 
-          const pageDescriptions = await Promise.all(
-            convertedPages.map(async (page) => {
-              const imagePath = path.join(directory, `page.${page.page}.png`);
-              const description = await describeImageWithLLM(imagePath);
+          for (const page of convertedPages) {
+            const imagePath = path.join(directory, `page.${page.page}.png`);
+            const description = await describeImageWithLLM(imagePath);
+            pageDescriptions.push(description);
+          }
 
-              await createMarkdownDocument({
-                public_id: `${fileId}_page${page.page}`,
-                title: `${fileName} - Page ${page.page}`,
-                organization_id: organizationId,
-                content: description,
-              });
-
-              return description;
-            })
-          );
-
+          let finalDocument = '';
           pageDescriptions.forEach((description: string, index: number) => {
+            finalDocument += description + '\n';
             rawDocs.push(
               new Document({
                 pageContent: description,
@@ -192,7 +185,12 @@ export const convertAndStoreDocument = async ({
               })
             );
           });
-
+          createMarkdownDocument({
+            public_id: fileId,
+            title: fileName,
+            organization_id: organizationId,
+            content: finalDocument,
+          });
           await removeDirectory(directory);
           logger.info(
             `PDF converted to ${convertedPages.length} images and analyzed for file: ${fileName}`

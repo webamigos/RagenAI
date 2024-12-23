@@ -4,16 +4,20 @@ import {
   OpenAIEmbeddings,
 } from '@langchain/openai';
 import OpenAI from 'openai';
+
 import { OpenAIModerationChain } from 'langchain/chains';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
 import { readFile } from 'fs/promises';
 import { logger } from '@/app/lib/utils/logger';
 
-const openai = new OpenAI();
-
 const verbose = process.env.NODE_ENV === 'development';
 
-export const createChatCompletionInstance = (options: ChatOpenAIFields) => {
+const openai = new OpenAI();
+
+export const createChatCompletionInstance = (
+  options: ChatOpenAIFields,
+  streaming: boolean = true
+) => {
   if (!options.apiKey) {
     throw new Error('Cannot create chat instance, apiKey is required');
   }
@@ -21,7 +25,7 @@ export const createChatCompletionInstance = (options: ChatOpenAIFields) => {
   return new ChatOpenAI({
     ...options,
     verbose,
-    streaming: true,
+    streaming,
   });
 };
 
