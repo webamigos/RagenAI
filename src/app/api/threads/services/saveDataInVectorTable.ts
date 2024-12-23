@@ -136,8 +136,6 @@ export const convertAndStoreDocument = async ({
         };
       }
 
-      // **Integration with pdf2pic**
-      // Only run this if we're dealing with a PDF.
       if (fileExtension === 'pdf') {
         try {
           const directory = path.join(
@@ -160,7 +158,6 @@ export const convertAndStoreDocument = async ({
           const storeAsImage = fromPath(filePath, pdf2picOptions);
           const convertedPages = await storeAsImage.bulk(-1);
 
-          // Dodajemy analizę każdej strony przez LLM
           const pageDescriptions = await Promise.all(
             convertedPages.map(async (page) => {
               const imagePath = path.join(directory, `page.${page.page}.png`);
@@ -177,7 +174,6 @@ export const convertAndStoreDocument = async ({
             })
           );
 
-          // Dodajemy opisy stron do rawDocs
           pageDescriptions.forEach((description: string, index: number) => {
             rawDocs.push(
               new Document({
