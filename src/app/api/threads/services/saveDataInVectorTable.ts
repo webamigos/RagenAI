@@ -1,7 +1,8 @@
+import { fromPath } from 'pdf2pic';
 import * as fs from 'node:fs';
 import path from 'path';
-
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
+import { CSVLoader } from '@langchain/community/document_loaders/fs/csv';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
@@ -21,6 +22,9 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { describeImageWithLLM } from '@/app/lib/services/llm';
+import { createMarkdownDocument } from '@/app/lib/services/document';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -47,11 +51,22 @@ const CHUNK_SETTINGS = {
     chunkSize: 1500,
     chunkOverlap: 250,
   },
+  pdf: {
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  },
+  csv: {
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  },
 } as const;
 
-const saveBinaryToTempFile = async (content: string | Buffer) => {
+const saveBinaryToTempFile = async (
+  content: string | Buffer,
+  extension: string
+) => {
   const projectDir = process.cwd();
-  const filePath = path.join(projectDir, `temp-${Date.now()}.epub`);
+  const filePath = path.join(projectDir, `temp-${Date.now()}.${extension}`);
 
   try {
     setSentryServiceTag(serviceName);
@@ -103,33 +118,114 @@ export const convertAndStoreDocument = async ({
     }
 
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
+    const fileExtension = path.extname(fileName).slice(1).toLowerCase();
 
-    if (fileName.endsWith('.epub')) {
-      const { filePath, message } = await saveBinaryToTempFile(fileContent);
-      if (filePath) {
-        try {
-          await fs.promises.access(filePath, fs.constants.R_OK);
-          const load = new EPubLoader(filePath);
-          rawDocs = await load.load();
-        } catch (error) {
-          logger.error({ err: error }, 'Error loading EPub file');
-          return {
-            success: false,
-            message: `File is not accessible at: ${filePath}`,
-            error: error as Error,
-          };
-        } finally {
-          await fs.promises.unlink(filePath);
-        }
-      } else {
+    if (
+      fileExtension === 'pdf' ||
+      fileExtension === 'epub' ||
+      fileExtension === 'csv'
+    ) {
+      const { filePath, message, success } = await saveBinaryToTempFile(
+        fileContent,
+        fileExtension
+      );
+      if (!success || !filePath) {
         return {
           success: false,
           message: `Failed to save temporary file: ${message}`,
         };
       }
+
+      // **Integration with pdf2pic**
+      // Only run this if we're dealing with a PDF.
+      if (fileExtension === 'pdf') {
+        try {
+          const directory = path.join(
+            process.cwd(),
+            'public',
+            'pdf_images',
+            fileId
+          );
+          await fs.promises.mkdir(directory, { recursive: true });
+
+          const pdf2picOptions = {
+            density: 100,
+            saveFilename: 'page',
+            savePath: directory,
+            format: 'png',
+            width: 800,
+            height: 1200,
+          };
+
+          const storeAsImage = fromPath(filePath, pdf2picOptions);
+          const convertedPages = await storeAsImage.bulk(-1);
+
+          // Dodajemy analizę każdej strony przez LLM
+          const pageDescriptions = await Promise.all(
+            convertedPages.map(async (page) => {
+              const imagePath = path.join(directory, `page.${page.page}.png`);
+              const description = await describeImageWithLLM(imagePath);
+
+              await createMarkdownDocument({
+                public_id: `${fileId}_page${page.page}`,
+                title: `${fileName} - Page ${page.page}`,
+                organization_id: organizationId,
+                content: description,
+              });
+
+              return description;
+            })
+          );
+
+          // Dodajemy opisy stron do rawDocs
+          pageDescriptions.forEach((description: string, index: number) => {
+            rawDocs.push(
+              new Document({
+                pageContent: description,
+                metadata: { page: index + 1, type: 'image_description' },
+              })
+            );
+          });
+
+          logger.info(
+            `PDF converted to ${convertedPages.length} images and analyzed for file: ${fileName}`
+          );
+        } catch (error) {
+          logger.error(
+            { err: error },
+            'Error converting PDF to images or analyzing them'
+          );
+          return {
+            success: false,
+            message: `Error processing PDF images: ${error}`,
+          };
+        }
+      }
+
+      try {
+        await fs.promises.access(filePath, fs.constants.R_OK);
+        const loader =
+          fileExtension === 'pdf'
+            ? new PDFLoader(filePath)
+            : fileExtension === 'csv'
+            ? new CSVLoader(filePath)
+            : new EPubLoader(filePath);
+        rawDocs = await loader.load();
+      } catch (error) {
+        logger.error(
+          { err: error },
+          `Error loading ${fileExtension.toUpperCase()} file`
+        );
+        return {
+          success: false,
+          message: `File is not accessible at: ${filePath}`,
+          error: error as Error,
+        };
+      } finally {
+        await fs.promises.unlink(filePath);
+      }
     } else {
-      const fileContentIsString = typeof fileContent === 'string';
-      if (fileContentIsString) {
+      if (typeof fileContent === 'string') {
         rawDocs = [new Document({ pageContent: fileContent })];
       } else {
         return {
@@ -138,32 +234,29 @@ export const convertAndStoreDocument = async ({
         };
       }
     }
-    const textSplitterEPub = new RecursiveCharacterTextSplitter({
-      chunkSize: CHUNK_SETTINGS.epub.chunkSize,
-      chunkOverlap: CHUNK_SETTINGS.epub.chunkOverlap,
-      keepSeparator: true,
-    });
 
-    const textSplitter = new MarkdownTextSplitter({
-      chunkSize: CHUNK_SETTINGS.markdown.chunkSize,
-      chunkOverlap: CHUNK_SETTINGS.markdown.chunkOverlap,
-      keepSeparator: true,
-    });
+    const splitterSettings =
+      CHUNK_SETTINGS[fileExtension as keyof typeof CHUNK_SETTINGS] ||
+      CHUNK_SETTINGS.epub;
 
-    const docs = fileName.endsWith('.md')
-      ? await textSplitter.splitDocuments(rawDocs)
-      : await textSplitterEPub.splitDocuments(rawDocs);
+    const textSplitter =
+      fileExtension === 'md'
+        ? new MarkdownTextSplitter({
+            chunkSize: splitterSettings.chunkSize,
+            chunkOverlap: splitterSettings.chunkOverlap,
+            keepSeparator: true,
+          })
+        : new RecursiveCharacterTextSplitter({
+            chunkSize: splitterSettings.chunkSize,
+            chunkOverlap: splitterSettings.chunkOverlap,
+            keepSeparator: true,
+          });
+
+    const docs = await textSplitter.splitDocuments(rawDocs);
 
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
-
-        const fileExtension = path.extname(fileName)?.slice(1) || '';
-        const isMarkdown = fileExtension === 'md';
-        const chunkSettings = isMarkdown
-          ? CHUNK_SETTINGS.markdown
-          : CHUNK_SETTINGS.epub;
-
         const metadata: VectorStoreDocumentMetadata = {
           file_name: fileName,
           page_number: index + 1,
@@ -173,8 +266,8 @@ export const convertAndStoreDocument = async ({
           file_id: fileId,
           project_id: projectId,
           source_type: fileExtension,
-          chunk_size: chunkSettings.chunkSize,
-          chunk_overlap: chunkSettings.chunkOverlap,
+          chunk_size: splitterSettings.chunkSize,
+          chunk_overlap: splitterSettings.chunkOverlap,
           total_chunks: docs.length,
           word_count: text.split(/\s+/).length,
           previous_chunk_id: index > 0 ? index - 1 : -1,

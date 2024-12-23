@@ -31,6 +31,7 @@ export const FileUploader = ({
     file.type === 'application/epub+zip' ||
     file.name.endsWith('.md') ||
     file.name.endsWith('.epub') ||
+    file.name.endsWith('.pdf') ||
     file.name.endsWith('.srt');
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -95,7 +96,7 @@ export const FileUploader = ({
           ref={fileInputRef}
           className="hidden"
           type="file"
-          accept=".md,.epub,.srt"
+          accept=".md,.epub,.srt,.pdf"
           multiple
           onChange={handleFileSelect}
         />

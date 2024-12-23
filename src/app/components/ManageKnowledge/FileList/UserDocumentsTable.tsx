@@ -123,7 +123,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
               >
                 <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
               </Link>
-
               <Link
                 className="text-black dark:text-white"
                 href={`/document/${id}`}

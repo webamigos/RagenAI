@@ -2,18 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-import { logger } from '../../../lib/utils/logger';
+import { logger } from '@/app/lib/utils/logger';
 import {
   createDocumentDetailsInDB,
   createMarkdownDocument,
-} from '../../../lib/services/document';
+} from '@/app/lib/services/document';
 import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
-import { parseFile } from '../../../lib/services/fileParser';
+import { parseFile } from '@/app/lib/services/fileParser';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,14 +24,19 @@ type Params = {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const uploaderId = params.upload[0];
-
   try {
     setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = formData.get('organizationId') as string;
     setSentryClerkOrganizationTag(organizationId);
-
+    if (!uploaderId) {
+      logger.error('Uploader ID missing!');
+      return NextResponse.json(
+        { message: 'Uploader ID is missing!' },
+        { status: 400 }
+      );
+    }
     if (!files || files.length === 0) {
       return NextResponse.json(
         { message: 'No file to process' },
@@ -61,7 +66,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           await createDocumentDetailsInDB(
             parsedFile.fileName,
             file.size,
-            uploaderId,
+            organizationId,
             uniqueFileId
           );
 
@@ -92,7 +97,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
-          { message: `Error while processing the file ${file.name})` },
+          { message: `Error while processing the file ${file.name}` },
           { status: 500 }
         );
       }
