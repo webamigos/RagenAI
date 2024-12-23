@@ -1,5 +1,5 @@
 import type { Stripe } from 'stripe';
-import { stripe } from '@/libs/payments/stripe';
+import { retrieveCheckoutSessionDetails } from '@/app/lib/services/stripe';
 import { getInvoiceUrl } from '../actions';
 import { CheckoutSuccess } from '../../components/CheckoutSuccess';
 
@@ -12,10 +12,9 @@ export default async function ResultPage({
     return <></>;
   }
 
-  const checkoutSession: Stripe.Checkout.Session =
-    await stripe.checkout.sessions.retrieve(searchParams.session_id, {
-      expand: ['line_items', 'payment_intent', 'subscription'],
-    });
+  const checkoutSession = await retrieveCheckoutSessionDetails(
+    searchParams.session_id
+  );
 
   const subscription = checkoutSession.subscription as Stripe.Subscription;
   const lineItems = checkoutSession.line_items?.data[0];

@@ -3,7 +3,7 @@ import { PlanType } from '@prisma/client';
 import db from '@ragenai/prisma-client';
 import Stripe from 'stripe';
 import { logger } from '../utils/logger';
-import { stripe } from '@/libs/payments/stripe';
+import { cancelSubscription } from '@/app/lib/services/stripe';
 
 const TRIAL_DAYS = 14;
 const TRIAL_PLAN_NAME = 'Trial';
@@ -161,9 +161,7 @@ export async function createPaidSubscription(
       logger.info(
         `Canceling subscription: ${hasSubscription.stripe_subscription_id}`
       );
-      await stripe.subscriptions.cancel(
-        hasSubscription.stripe_subscription_id!
-      );
+      await cancelSubscription(hasSubscription.stripe_subscription_id!);
     } catch (error) {
       logger.error(`Error canceling subscription: ${error}`);
     }

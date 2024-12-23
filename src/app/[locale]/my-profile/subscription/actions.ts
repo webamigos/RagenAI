@@ -1,12 +1,10 @@
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
-
-import db from '@ragenai/prisma-client';
-
-import type { SubscriptionDetails } from './types';
-import { stripe } from '@/libs/payments/stripe';
 import Stripe from 'stripe';
+import { auth } from '@clerk/nextjs/server';
+import db from '@ragenai/prisma-client';
+import { cancelSubscriptionAtPeriodEnd } from '@/app/lib/services/stripe';
+import type { SubscriptionDetails } from './types';
 
 export async function getSubscriptionData(): Promise<SubscriptionDetails | null> {
   const { orgId } = auth();
@@ -33,14 +31,12 @@ export async function getSubscriptionData(): Promise<SubscriptionDetails | null>
 
 export async function cancelSubscription(
   subscriptionId: string | null
-): Promise<Stripe.Response<Stripe.Subscription> | null> {
+): Promise<Stripe.Subscription | null> {
   const { orgId } = auth();
 
   if (!orgId || !subscriptionId) {
     return null;
   }
 
-  return stripe.subscriptions.update(subscriptionId, {
-    cancel_at_period_end: true,
-  });
+  return cancelSubscriptionAtPeriodEnd(subscriptionId);
 }

@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Button } from '@ragenai/common-ui';
 import { createCheckoutSession } from '../actions/stripe';
 import { logger } from '@/app/lib/utils/logger';
-import { type StripePlan } from '../types/plan';
+import { StripePlan } from '@/app/lib/services/stripe';
 
 type Props = {
   plan: StripePlan;
