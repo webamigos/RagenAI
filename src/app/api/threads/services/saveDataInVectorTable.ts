@@ -61,6 +61,16 @@ const CHUNK_SETTINGS = {
   },
 } as const;
 
+const removeDirectory = async (directoryPath: string) => {
+  try {
+    await fs.promises.rm(directoryPath, { recursive: true, force: true });
+    logger.info(`Directory removed: ${directoryPath}`);
+  } catch (error) {
+    logger.error({ err: error }, `Error removing directory: ${directoryPath}`);
+    throw error;
+  }
+};
+
 const saveBinaryToTempFile = async (
   content: string | Buffer,
   extension: string
@@ -183,6 +193,7 @@ export const convertAndStoreDocument = async ({
             );
           });
 
+          await removeDirectory(directory);
           logger.info(
             `PDF converted to ${convertedPages.length} images and analyzed for file: ${fileName}`
           );
