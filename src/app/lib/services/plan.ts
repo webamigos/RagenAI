@@ -3,6 +3,7 @@ import { PlanType } from '@prisma/client';
 import db from '@ragenai/prisma-client';
 import Stripe from 'stripe';
 import { logger } from '../utils/logger';
+import { stripe } from '@/libs/payments/stripe';
 
 const TRIAL_DAYS = 14;
 const TRIAL_PLAN_NAME = 'Trial';
@@ -155,6 +156,19 @@ export async function createPaidSubscription(
   );
   const subscriptionData = await extractSubscriptionData(organizationId, data);
 
+  if (hasSubscription?.stripe_subscription_id) {
+    try {
+      logger.info(
+        `Canceling subscription: ${hasSubscription.stripe_subscription_id}`
+      );
+      await stripe.subscriptions.cancel(
+        hasSubscription.stripe_subscription_id!
+      );
+    } catch (error) {
+      logger.error(`Error canceling subscription: ${error}`);
+    }
+  }
+
   if (hasSubscription) {
     return db.subscription.update({
       where: {
@@ -244,6 +258,25 @@ export async function extractSubscriptionData(
     trial_end: trialEnd ? new Date(trialEnd * 1000) : null,
     status: status,
   };
+}
+
+export async function handleSubscriptionDelete(data: Stripe.Subscription) {
+  const subscriptionId = data.id;
+  const subscription = await db.subscription.findFirst({
+    where: {
+      stripe_subscription_id: subscriptionId,
+    },
+    include: {
+      organization: true,
+    },
+  });
+
+  if (!subscription) {
+    logger.info(`💰 Subscription not found: ${subscriptionId}`);
+    return;
+  }
+
+  await activateFreePlan(subscription.organization.provider_id);
 }
 
 async function checkIfOrganizationHasSubscription(

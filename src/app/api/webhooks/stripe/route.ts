@@ -1,12 +1,11 @@
 import type { Stripe } from 'stripe';
-
 import { NextResponse } from 'next/server';
 import { logger } from '@/app/lib/utils/logger';
-
 import { stripe } from '@/libs/payments/stripe';
 import {
   createPaidSubscription,
   updatePaidSubscription,
+  handleSubscriptionDelete,
 } from '@/app/lib/services/plan';
 
 export async function POST(req: Request) {
@@ -20,60 +19,30 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-    // On error, log and return the error message.
     if (err! instanceof Error) logger.error(err);
-    logger.error(`❌ Error message: ${errorMessage}`);
+    logger.error(`Error message: ${errorMessage}`);
     return NextResponse.json(
       { message: `Webhook Error: ${errorMessage}` },
       { status: 400 }
     );
   }
 
-  // Successfully constructed event.
-  //   logger.info(`✅ Success: ${event.id}`);
-  //   logger.warn(`Event type: ${event.type}`);
-
   const permittedEvents: string[] = [
     'checkout.session.completed',
-    'payment_intent.succeeded',
-    'payment_intent.payment_failed',
-    'customer.subscription.created',
     'customer.subscription.updated',
     'customer.subscription.deleted',
-    'charge.succeeded',
-    'charge.failed',
+    'invoice.upcoming',
   ];
 
   if (permittedEvents.includes(event.type)) {
     let data;
+    logger.info(`Started processing stripe event: ${event.type}`);
 
     try {
       switch (event.type) {
-        case 'customer.subscription.created':
-          data = event.data.object as Stripe.Subscription;
-          logger.info(`💰 Creating subscription: ${data.id}`);
-
-          const session = await stripe.checkout.sessions.list({
-            subscription: data.id,
-            limit: 1,
-          });
-
-          const organizationId = session.data[0].client_reference_id;
-
-          if (!organizationId) {
-            throw new Error('Organization not found');
-          }
-
-          await createPaidSubscription(data, organizationId);
-          break;
-        case 'customer.subscription.updated':
-          data = event.data.object as Stripe.Subscription;
-          logger.info(`💰 Updating subscription: ${data.id}`);
-          await updatePaidSubscription(data);
-          break;
         case 'checkout.session.completed':
           data = event.data.object as Stripe.Checkout.Session;
-          logger.info(`💰 CheckoutSession status: ${data.payment_status}`);
+          logger.info(`Checkout session completed: ${data.status}`);
           if (data.subscription && data.client_reference_id) {
             const subscription = await stripe.subscriptions.retrieve(
               data.subscription as string
@@ -84,19 +53,32 @@ export async function POST(req: Request) {
             );
           }
           break;
-        case 'payment_intent.payment_failed':
-          data = event.data.object as Stripe.PaymentIntent;
-          logger.error(
-            `❌ Payment failed: ${data.last_payment_error?.message}`
-          );
+
+        case 'customer.subscription.updated':
+          data = event.data.object as Stripe.Subscription;
+          logger.info(`Subscription updated: ${data.status}`);
+          await updatePaidSubscription(data);
           break;
-        case 'payment_intent.succeeded':
-          data = event.data.object as Stripe.PaymentIntent;
-          logger.info(`💰 PaymentIntent status: ${data.status}`);
+
+        case 'customer.subscription.deleted':
+          //This is triggered when customer subscription ends
+          //Todo:
+          // * inform user by e-mail
+          data = event.data.object as Stripe.Subscription;
+          await handleSubscriptionDelete(data);
+          break;
+
+        case 'invoice.upcoming':
+          //Sent a few days prior to the renewal of the subscription.
+          //Todo:
+          // * inform user by e-mail
           break;
         default:
-          logger.info(`Unhandled event: ${event.type}`);
-        //   throw new Error(`Unhandled event: ${event.type}`);
+          logger.warn(`Unhandled event: ${event.type}`);
+          return NextResponse.json(
+            { message: 'Unhandled event' },
+            { status: 200 }
+          );
       }
     } catch (error) {
       logger.error(error);
@@ -106,6 +88,6 @@ export async function POST(req: Request) {
       );
     }
   }
-  // Return a response to acknowledge receipt of the event.
+
   return NextResponse.json({ message: 'Received' }, { status: 200 });
 }
