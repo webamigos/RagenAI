@@ -193,7 +193,7 @@ export async function updatePaidSubscription(data: Stripe.Subscription) {
   });
 
   if (!subscription) {
-    logger.info(`💰 Subscription not found: ${subscriptionId}`);
+    logger.info(`Subscription not found: ${subscriptionId}`);
     return;
   }
 
@@ -270,7 +270,7 @@ export async function handleSubscriptionDelete(data: Stripe.Subscription) {
   });
 
   if (!subscription) {
-    logger.info(`💰 Subscription not found: ${subscriptionId}`);
+    logger.info(`Subscription not found: ${subscriptionId}`);
     return;
   }
 
