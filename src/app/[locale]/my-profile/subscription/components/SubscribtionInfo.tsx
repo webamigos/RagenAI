@@ -19,6 +19,7 @@ export const SubscriptionInfo = ({
   const t = useTranslations('subscription');
   const [subscription, setSubscription] = useState(initialSubscription);
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const {
     plan,
     status,
@@ -30,8 +31,8 @@ export const SubscriptionInfo = ({
   } = subscription;
 
   const handleCancelSubscription = async () => {
-    const response = await cancelSubscription(stripe_subscription_id);
     setIsLoading(true);
+    const response = await cancelSubscription(stripe_subscription_id);
     if (response) {
       const canceledAt = response.canceled_at;
       toast.success(t('cancel-subscription-success'));
@@ -48,6 +49,7 @@ export const SubscriptionInfo = ({
       toast.error(t('cancel-subscription-error'));
     }
     setIsLoading(false);
+    setShowConfirmation(false);
   };
 
   return (
@@ -115,15 +117,33 @@ export const SubscriptionInfo = ({
       )}
 
       <div className="flex gap-4 items-center">
-        {/* Todo: add confirmation modal */}
         {plan.type === PlanType.STRIPE && !canceled_at && (
-          <Button
-            className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
-            onClick={handleCancelSubscription}
-            isLoading={isLoading}
-          >
-            {t('cancel-subscription')}
-          </Button>
+          <>
+            {!showConfirmation ? (
+              <Button
+                className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                onClick={() => setShowConfirmation(true)}
+              >
+                {t('cancel-subscription')}
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                  onClick={handleCancelSubscription}
+                  isLoading={isLoading}
+                >
+                  {t('confirm-cancel')}
+                </Button>
+                <Button
+                  onClick={() => setShowConfirmation(false)}
+                  disabled={isLoading}
+                >
+                  {t('keep-subscription')}
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         {plan.type === PlanType.INTERNAL || canceled_at ? (

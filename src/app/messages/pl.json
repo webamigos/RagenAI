@@ -339,7 +339,9 @@
       "plan": "Plan",
       "download-invoice": "Pobierz fakture",
       "manage-subscription": "Zarządzaj subskrypcją"
-    }
+    },
+    "confirm-cancel": "Tak, anuluj subskrypcję",
+    "keep-subscription": "Nie, zachowaj subskrypcję"
   },
   "plans": {
     "title": "Lista dostępnych planów subskrypcji",

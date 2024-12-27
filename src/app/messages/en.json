@@ -339,7 +339,9 @@
       "plan": "Plan",
       "download-invoice": "Download Invoice",
       "manage-subscription": "Manage Subscription"
-    }
+    },
+    "confirm-cancel": "Yes, cancel subscription",
+    "keep-subscription": "No, keep subscription"
   },
   "plans": {
     "title": "List of available subscription plans",
