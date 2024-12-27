@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 import { Button } from '@ragenai/common-ui';
@@ -16,6 +16,30 @@ type Props = {
 export const Plan = ({ plan }: Props) => {
   const t = useTranslations('plans');
   const [isLoading, setIsLoading] = useState(false);
+  const locale = useLocale();
+
+  const currency = plan.currency;
+  const price = plan.unit_amount;
+  const recurringInterval = plan.recurring?.interval;
+
+  const formatPrice = (amount: number | null) => {
+    if (!amount) return '0';
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: currency,
+    }).format(amount / 100);
+  };
+
+  const getIntervalText = () => {
+    switch (recurringInterval) {
+      case 'month':
+        return t('per-month');
+      case 'year':
+        return t('per-year');
+      default:
+        return '';
+    }
+  };
 
   const onSubscribe = async () => {
     if (isLoading) {
@@ -44,22 +68,38 @@ export const Plan = ({ plan }: Props) => {
   };
 
   return (
-    <div key={plan.id}>
-      <h3 className="text-lg font-bold">{plan.product.name}</h3>
+    <div
+      key={plan.id}
+      className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6"
+    >
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center space-x-4">
+          <Image
+            src={plan.product.images[0]}
+            alt={plan.product.name}
+            className="h-16 w-16 rounded-md object-cover"
+            width={64}
+            height={64}
+          />
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              {plan.product.name}
+            </h3>
+            <p className="text-lg font-medium text-primary dark:text-primary-400">
+              {formatPrice(price)}{' '}
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {getIntervalText()}
+              </span>
+            </p>
+          </div>
+        </div>
 
-      <div className="flex flex-row gap-2 mt-1">
-        <Image
-          src={plan.product.images[0]}
-          alt={plan.product.name}
-          className="rounded-md"
-          width={100}
-          height={100}
-        />
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          {plan.product.description}
+        </div>
 
-        <div>
-          <p className="text-sm text-gray-500">{plan.product.description}</p>
-          <p className="text-sm text-gray-500">{plan.unit_amount}</p>
-          <Button onClick={onSubscribe} className="mt-2" isLoading={isLoading}>
+        <div className="flex justify-center sm:justify-start">
+          <Button onClick={onSubscribe} isLoading={isLoading}>
             {t('subscribe')}
           </Button>
         </div>

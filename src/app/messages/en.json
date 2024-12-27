@@ -344,7 +344,9 @@
   "plans": {
     "title": "List of available subscription plans",
     "checkout-error": "Unable to start checkout process. Please try again later.",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "per-month": "monthly",
+    "per-year": "yearly"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",

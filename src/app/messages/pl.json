@@ -344,7 +344,9 @@
   "plans": {
     "title": "Lista dostępnych planów subskrypcji",
     "checkout-error": "Nie udało się rozpocząć procesu płatności. Spróbuj ponownie później.",
-    "subscribe": "Subskrybuj"
+    "subscribe": "Subskrybuj",
+    "per-month": "miesięcznie",
+    "per-year": "rocznie"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
