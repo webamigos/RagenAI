@@ -7,13 +7,19 @@ import { PlanType, SubscriptionStatus } from '@prisma/client';
 import { Button, Link } from '@ragenai/common-ui';
 import { cancelSubscription } from '../actions';
 import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 type Props = {
   subscription: SubscriptionDetails;
 };
 
 export const SubscriptionInfo = ({
-  subscription: {
+  subscription: initialSubscription,
+}: Props) => {
+  const t = useTranslations('subscription');
+  const [subscription, setSubscription] = useState(initialSubscription);
+  const [isLoading, setIsLoading] = useState(false);
+  const {
     plan,
     status,
     trial_end,
@@ -21,17 +27,27 @@ export const SubscriptionInfo = ({
     current_period_start,
     canceled_at,
     stripe_subscription_id,
-  },
-}: Props) => {
-  const t = useTranslations('subscription');
+  } = subscription;
 
   const handleCancelSubscription = async () => {
     const response = await cancelSubscription(stripe_subscription_id);
+    setIsLoading(true);
     if (response) {
+      const canceledAt = response.canceled_at;
       toast.success(t('cancel-subscription-success'));
+      setSubscription((prev) => ({
+        ...prev,
+        canceled_at: canceledAt ? new Date(canceledAt * 1000) : new Date(),
+      }));
     } else {
+      setSubscription((prev) => ({
+        ...prev,
+        canceled_at: initialSubscription.canceled_at,
+        status: initialSubscription.status,
+      }));
       toast.error(t('cancel-subscription-error'));
     }
+    setIsLoading(false);
   };
 
   return (
@@ -104,6 +120,7 @@ export const SubscriptionInfo = ({
           <Button
             className="bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
             onClick={handleCancelSubscription}
+            isLoading={isLoading}
           >
             {t('cancel-subscription')}
           </Button>
