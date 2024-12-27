@@ -94,6 +94,7 @@ export const DocumentCreator = () => {
           organization_id: organizationId,
           file_name: document.fileName,
           file_size: document.fileSize,
+          file_type: 'markdown',
         });
         reset();
         successToast({ message: t('created-successful') });
