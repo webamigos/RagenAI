@@ -1,4 +1,3 @@
-import { fromPath } from 'pdf2pic';
 import * as fs from 'node:fs';
 import path from 'path';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
@@ -23,8 +22,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { describeImageWithLLM } from '@/app/lib/services/llm';
-import { createMarkdownDocument } from '@/app/lib/services/document';
+import { processPDFDocument } from '@/libs/chains/pdf-process-rag/chain';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -60,16 +58,6 @@ const CHUNK_SETTINGS = {
     chunkOverlap: 200,
   },
 } as const;
-
-const removeDirectory = async (directoryPath: string) => {
-  try {
-    await fs.promises.rm(directoryPath, { recursive: true, force: true });
-    logger.info(`Directory removed: ${directoryPath}`);
-  } catch (error) {
-    logger.error({ err: error }, `Error removing directory: ${directoryPath}`);
-    throw error;
-  }
-};
 
 const saveBinaryToTempFile = async (
   content: string | Buffer,
@@ -147,64 +135,22 @@ export const convertAndStoreDocument = async ({
       }
 
       if (fileExtension === 'pdf') {
-        try {
-          const directory = path.join(
-            process.cwd(),
-            'public',
-            'pdf_images',
-            fileId
-          );
-          await fs.promises.mkdir(directory, { recursive: true });
+        const {
+          rawDocs: pdfDocs,
+          success,
+          message,
+        } = await processPDFDocument(
+          filePath,
+          fileName,
+          fileId,
+          organizationId
+        );
 
-          const pdf2picOptions = {
-            density: 100,
-            saveFilename: 'page',
-            savePath: directory,
-            format: 'png',
-            width: 800,
-            height: 1200,
-          };
-
-          const storeAsImage = fromPath(filePath, pdf2picOptions);
-          const convertedPages = await storeAsImage.bulk(-1);
-          const pageDescriptions: string[] = [];
-
-          for (const page of convertedPages) {
-            const imagePath = path.join(directory, `page.${page.page}.png`);
-            const description = await describeImageWithLLM(imagePath);
-            pageDescriptions.push(description);
-          }
-
-          let finalDocument = '';
-          pageDescriptions.forEach((description: string, index: number) => {
-            finalDocument += description + '\n';
-            rawDocs.push(
-              new Document({
-                pageContent: description,
-                metadata: { page: index + 1, type: 'image_description' },
-              })
-            );
-          });
-          createMarkdownDocument({
-            public_id: fileId,
-            title: fileName,
-            organization_id: organizationId,
-            content: finalDocument,
-          });
-          await removeDirectory(directory);
-          logger.info(
-            `PDF converted to ${convertedPages.length} images and analyzed for file: ${fileName}`
-          );
-        } catch (error) {
-          logger.error(
-            { err: error },
-            'Error converting PDF to images or analyzing them'
-          );
-          return {
-            success: false,
-            message: `Error processing PDF images: ${error}`,
-          };
+        if (!success) {
+          return { success: false, message };
         }
+
+        rawDocs = pdfDocs;
       }
 
       try {
