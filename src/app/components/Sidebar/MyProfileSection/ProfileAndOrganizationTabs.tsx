@@ -70,7 +70,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     },
     {
       icon: CreditCardIcon,
-      label: t('subsciption-management'),
+      label: t('subscription-management'),
       path: '/my-profile/subscription',
     },
   ];
