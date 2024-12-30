@@ -11,9 +11,10 @@ import { StripePlan } from '@/app/lib/services/stripe';
 
 type Props = {
   plan: StripePlan;
+  displayOnly?: boolean;
 };
 
-export const Plan = ({ plan }: Props) => {
+export const Plan = ({ plan, displayOnly }: Props) => {
   const t = useTranslations('plans');
   const [isLoading, setIsLoading] = useState(false);
   const locale = useLocale();
@@ -99,7 +100,11 @@ export const Plan = ({ plan }: Props) => {
         </div>
 
         <div className="flex justify-center sm:justify-start">
-          <Button onClick={onSubscribe} isLoading={isLoading}>
+          <Button
+            disabled={displayOnly}
+            onClick={onSubscribe}
+            isLoading={isLoading}
+          >
             {t('subscribe')}
           </Button>
         </div>

@@ -8,6 +8,7 @@ import {
   setSentryClerkContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
+import { checkIfStripeSubscriptionIsActive } from './plans';
 
 export async function createCheckoutSession(priceId: string) {
   try {
@@ -25,6 +26,12 @@ export async function createCheckoutSession(priceId: string) {
     }
 
     setSentryClerkContext({ orgId, userId, sessionId });
+
+    const subscriptionIsActive = await checkIfStripeSubscriptionIsActive();
+
+    if (subscriptionIsActive) {
+      throw new Error('Cannot create checkout session, subscription is active');
+    }
 
     const user = await clerkClient.users.getUser(userId);
     const email = user.emailAddresses[0].emailAddress;

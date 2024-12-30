@@ -1,13 +1,18 @@
 'use client';
 
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import type { SubscriptionDetails } from '../types';
 import { PlanType, SubscriptionStatus } from '@prisma/client';
 import { Button, Link } from '@ragenai/common-ui';
-import { cancelSubscription } from '../actions';
+import {
+  cancelSubscription,
+  activateInternalFreePlan,
+  getSubscriptionData,
+} from '../actions';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Props = {
   subscription: SubscriptionDetails;
@@ -20,6 +25,10 @@ export const SubscriptionInfo = ({
   const [subscription, setSubscription] = useState(initialSubscription);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showActivateConfirmation, setShowActivateConfirmation] =
+    useState(false);
+  const router = useRouter();
+
   const {
     plan,
     status,
@@ -50,6 +59,24 @@ export const SubscriptionInfo = ({
     }
     setIsLoading(false);
     setShowConfirmation(false);
+    router.refresh();
+  };
+
+  const handleActivateFreePlan = async () => {
+    setIsLoading(true);
+    try {
+      await activateInternalFreePlan();
+      const updatedSubscription = await getSubscriptionData();
+      if (updatedSubscription) {
+        setSubscription(updatedSubscription);
+      }
+      toast.success(t('activate-free-plan-success'));
+    } catch (error) {
+      toast.error(t('activate-free-plan-error'));
+    }
+    setIsLoading(false);
+    setShowActivateConfirmation(false);
+    router.refresh();
   };
 
   return (
@@ -150,6 +177,30 @@ export const SubscriptionInfo = ({
           <Link href="/plans">{t('show-available-plans')}</Link>
         ) : null}
       </div>
+      {canceled_at && (
+        <>
+          {!showActivateConfirmation ? (
+            <Button
+              onClick={() => setShowActivateConfirmation(true)}
+              isLoading={isLoading}
+            >
+              {t('activate-free-plan')}
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button onClick={handleActivateFreePlan} isLoading={isLoading}>
+                {t('confirm-activate')}
+              </Button>
+              <Button
+                onClick={() => setShowActivateConfirmation(false)}
+                disabled={isLoading}
+              >
+                {t('cancel-activation')}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

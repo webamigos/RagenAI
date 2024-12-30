@@ -93,6 +93,7 @@ export async function activateFreePlan(providerId: string) {
         current_period_start: new Date(),
         current_period_end: FOREVER_DATE,
         trial_end: null,
+        canceled_at: null,
       },
       include: {
         plan: true,

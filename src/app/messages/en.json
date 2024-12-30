@@ -341,14 +341,22 @@
       "manage-subscription": "Manage Subscription"
     },
     "confirm-cancel": "Yes, cancel subscription",
-    "keep-subscription": "No, keep subscription"
+    "keep-subscription": "No, keep subscription",
+    "activate-free-plan": "Activate free plan",
+    "confirm-activate": "Cancel current subscription",
+    "cancel-activation": "Cancel",
+    "activate-free-plan-success": "Free plan activated",
+    "activate-free-plan-error": "An error occurred while activating the free plan"
   },
   "plans": {
     "title": "List of available subscription plans",
     "checkout-error": "Unable to start checkout process. Please try again later.",
     "subscribe": "Subscribe",
     "per-month": "monthly",
-    "per-year": "yearly"
+    "per-year": "yearly",
+    "already-active": "You already have an active subscription paid plan!",
+    "already-active-description": "To activate a new plan, please activate free plan or wait until your current plan expires.",
+    "view-subscription": "View your subscription"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",

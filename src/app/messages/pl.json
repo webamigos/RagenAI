@@ -341,14 +341,22 @@
       "manage-subscription": "Zarządzaj subskrypcją"
     },
     "confirm-cancel": "Tak, anuluj subskrypcję",
-    "keep-subscription": "Nie, zachowaj subskrypcję"
+    "keep-subscription": "Nie, zachowaj subskrypcję",
+    "activate-free-plan": "Aktywuj plan free",
+    "confirm-activate": "Zrezygnuj z bieżącej subskrypcji",
+    "cancel-activation": "Anuluj",
+    "activate-free-plan-success": "Plan free aktywowany",
+    "activate-free-plan-error": "Wystąpił błąd podczas aktywowania planu free"
   },
   "plans": {
     "title": "Lista dostępnych planów subskrypcji",
     "checkout-error": "Nie udało się rozpocząć procesu płatności. Spróbuj ponownie później.",
     "subscribe": "Subskrybuj",
     "per-month": "miesięcznie",
-    "per-year": "rocznie"
+    "per-year": "rocznie",
+    "already-active": "Masz już aktywny plan płatny!",
+    "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
+    "view-subscription": "Zarządzaj swoją subskrypcją"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
