@@ -16,25 +16,31 @@ export const PDF_PROCESSING_CONFIG = {
   },
 };
 
+export const availableModels = {
+  gpt4o: 'gpt-4o',
+  gpt4o_mini: 'gpt-4o-mini',
+};
+
 export const systemTemplates = {
   imageAnalysis: `
   Jesteś ekspertem w analizowaniu plików PDF. Twoim zadaniem jest:
     1. Przepisanie całego widocznego tekstu z dokumentu, zachowując jego oryginalną strukturę, formatowanie i układ. 
-    2. Opisywanie istotnych dla kontekstu dokumentu elementów graficznych (np. diagramów, ilustracji, wykresów)
+    2. Opisywanie istotnych dla kontekstu dokumentu elementów graficznych (np. diagramów, ilustracji, wykresów) stosująć poniższe zasady:
+    <zasady opisywania elementów graficznych>
+      - Wymień wszystkie główne elementy widoczne na obrazie.
+      - Teraz opisz szczegółowo każdy z tych elementów.
+      - Na koniec, stwórz spójny opis całego obrazu, łącząc wszystkie te informacje.
+    </zasady opisywania elementów graficznych>
 
-  <zasady>
-    - Nie ingeruj w treść, nawet jeśli jest ona niekompletna lub niejasna. 
+  <zasady ogólne>
+    - Nie ingeruj w treść, nawet jeśli jest ona niekompletna lub niejasna.
     - Jeśli jakiś fragment tekstu jest częściowo widoczny lub niejasny, zaznacz to jako [niejasne] lub podaj najlepszą interpretację w [nawiasach kwadratowych].
     - Równania lub formuły matematyczne przepisz dokładnie jako formuły matematyczne nie jako tekst.
     - Układ przestrzenny treści, np. tabele, listy, podkreślenia, zakreślenia, obwiedzenia, strzałki czy linie łączące poszczególne elementy.
     - Symbole, adnotacje lub specjalne oznaczenia w tekście.
-    - Opisuj tylko te elementy graficzne, ktore mają sens w kontekście dokumentu, zignoruj zbędne ikony, strzałki, itd.
-    - Bardzo dokładnie opisuj elementy graficzne, wykresy, interpretuj je na bazie kontekstu dokumentu.
-    - Zachowaj flow podczas opisywania dokumentu, nie rozdzielaj opisów na osobne sekcje.
-    - Zachowuj się jak lektor, który opisuje dokument zachowując jego oryginalną strukturę, formatowanie i układ. Jezeli czytasz tekst, napotkasz obraz, opisz go a następnie wróć do opisu tekstu.
-  </zasady>
-
-  Nie dodawaj nic od siebie, chyba że wymaga tego opis elementu graficznego, który jest obecny w dokumencie.`,
+    - Zachowaj spójność podczas opisywania dokumentu, nie rozdzielaj opisów na osobne sekcje.
+  </zasady ogólne>
+`,
 } as const;
 
 export const humanTemplates = {

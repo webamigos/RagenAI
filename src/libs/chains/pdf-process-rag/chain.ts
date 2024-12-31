@@ -8,6 +8,8 @@ import {
   removeDirectory,
 } from './operations';
 import { createChatCompletionInstance } from '@/app/lib/services/llm';
+import { availableModels } from './config';
+import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 
 export async function processPDFDocument(
   filePath: string,
@@ -15,14 +17,15 @@ export async function processPDFDocument(
   fileId: string,
   organizationId: string
 ): Promise<{ rawDocs: Document[]; success: boolean; message: string }> {
+  const apiKey = await getOpenaiAPIKey(organizationId);
+
   try {
-    const apiKey = process.env.OPENAI_API_KEY; // todo!!! use org id!
     if (!apiKey) {
       throw new Error('OpenAI API key is missing');
     }
     const chatInstance = createChatCompletionInstance({
       apiKey,
-      modelName: 'gpt-4o', // todo move to the config
+      modelName: availableModels.gpt4o,
       streaming: false,
     });
 
