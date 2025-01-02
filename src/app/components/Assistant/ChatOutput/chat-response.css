@@ -36,7 +36,7 @@
 
 /* CODE WRAPPER/ */
 pre.hljs {
-  background-color: #282c34;
+  background-color: #11212d;
   color: #abb2bf;
   padding: 1rem;
   border-radius: 8px;
@@ -82,3 +82,49 @@ code.hljs {
   background-color: #4a0000;
 }
 /* MATH FORMULAS */
+
+/* TABLES */
+.chat-response table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  background-color: #2b3740;
+  border: 1px solid #20303c;
+}
+
+.chat-response th,
+.chat-response td {
+  border: 1px solid #20303c;
+  padding: 8px;
+  text-align: left;
+  color: #ffffff;
+}
+
+.chat-response th {
+  background-color: #253745;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.chat-response tr:nth-child(even) {
+  background-color: #2b3740;
+}
+
+.chat-response tr:hover {
+  background-color: #20303c;
+  cursor: pointer;
+}
+
+.chat-response table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chat-response td:first-child {
+  border-left: none;
+}
+
+.chat-response td:last-child {
+  border-right: none;
+}
+/* TABLES */
