@@ -69,7 +69,7 @@ export const WysiwygEditor = ({
       )}
       <ReactQuill
         className={classMerge(
-          'custom-quill h-full w-full flex flex-col flex-1 full-width-prose',
+          'custom-quill h-full w-full flex flex-col flex-1 full-width-prose mt-16',
           className
         )}
         theme="snow"
