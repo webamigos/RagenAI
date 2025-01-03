@@ -150,7 +150,12 @@ export const DocumentCreator = () => {
           </TabPanel>
         </Tabs>
         <div className="mt-auto">
-          <Button label={t('send')} isSubmit isLoading={isLoading} />
+          <Button
+            className="w-full flex justify-center md:block md:w-auto"
+            label={t('send')}
+            isSubmit
+            isLoading={isLoading}
+          />
         </div>
       </form>
     </Card>
