@@ -219,7 +219,7 @@ export const convertAndStoreDocument = async ({
         {
           url: process.env.QDRANT_URL,
           apiKey: process.env.QDRANT_API_KEY, // staging and prod
-          collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+          collectionName: orgId,
         }
       );
 

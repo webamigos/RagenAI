@@ -46,7 +46,6 @@ const envSchema = z.object({
   // Qdrant
   QDRANT_URL: z.string().url(),
   // QDRANT_API_KEY: z.string(), // for staging and production
-  QDRANT_DEFAULT_COLLECTION: z.string(),
 
   // Resend
   RESEND_API_KEY: z.string(),

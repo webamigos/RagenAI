@@ -72,7 +72,10 @@ export const initializePublicRagChain = async ({
     let vectorStore = undefined;
 
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(embeddingModel);
+      vectorStore = await createQdrantVectorStore(
+        embeddingModel,
+        organizationId
+      );
     } else {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
@@ -99,13 +102,16 @@ export const initializePublicRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
+const createQdrantVectorStore = async (
+  embeddingModel: Embeddings,
+  organizationId: string
+) => {
   const vectorStore = await QdrantVectorStore.fromExistingCollection(
     embeddingModel,
     {
       url: process.env.QDRANT_URL,
       apiKey: process.env.QDRANT_API_KEY, // staging and prod
-      collectionName: process.env.QDRANT_DEFAULT_COLLECTION,
+      collectionName: organizationId,
     }
   );
 

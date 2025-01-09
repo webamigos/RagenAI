@@ -134,7 +134,7 @@ export async function POST(req: Request) {
             },
             privateMetadata: {
               ragen_org_id: ragenOrg.id,
-              vector_store: 'supabase',
+              vector_store: 'qdrant',
             },
           });
           logger.info(
