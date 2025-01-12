@@ -33,7 +33,6 @@ import {
 import { setSentryServiceTag } from '../lib/services/sentry';
 import {
   ClerkOrganizationMetadata,
-  ClerkOrganizationPrivateMetadata,
   ClerkOrganizationPublicMetadata,
 } from '../lib/types/organizations';
 
