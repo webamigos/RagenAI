@@ -25,9 +25,10 @@ export const PublicStart = ({
       checkExistingThread();
     }
   }, [widgetMode, checkExistingThread]);
+
   return (
-    <div className="container mx-auto h-full">
-      <div className="flex flex-col h-full items-center justify-center">
+    <div className="h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center">
         {!widgetMode && (
           <Button
             label={t('start-new-thread')}
