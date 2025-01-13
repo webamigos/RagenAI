@@ -24,12 +24,13 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
 
   return (
     <div className="h-full flex flex-col font-sans">
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto first:-mt-20">
         <ChatOutput
           messages={messages}
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
+          widgetMode={true}
         />
         <div ref={messagesEndDivRef} />
       </div>

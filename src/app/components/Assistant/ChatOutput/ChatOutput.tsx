@@ -13,6 +13,7 @@ import { RateAnswer } from './RateAnswer';
 type Props = {
   messages: MessageDto[];
   isLoading: boolean;
+  widgetMode?: boolean;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
 };
@@ -20,6 +21,7 @@ type Props = {
 export const ChatOutput = ({
   messages,
   isLoading,
+  widgetMode = false,
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
@@ -35,7 +37,7 @@ export const ChatOutput = ({
             className={`group max-w-10/12 mb-6 px-4 first:mt-20 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none ${
               message.role === 'USER'
                 ? 'text-right self-end border border-slate-100 dark:border-gray-800 bg-white dark:bg-secondary-dark'
-                : 'text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
+                : 'pt-4 text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
             }`}
           >
             {message.role === 'ASSISTANT' ? (
@@ -53,7 +55,7 @@ export const ChatOutput = ({
                   __html: md.render(message.content),
                 }}
               />
-              {message.role === 'ASSISTANT' && (
+              {message.role === 'ASSISTANT' && !widgetMode && (
                 <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <RateAnswer
                     initialRated={message.rate}
@@ -86,7 +88,7 @@ export const ChatOutput = ({
 
         {isLoading && (
           <div className="absolute bottom-[84px] left-18 flex items-center justify-center pointer-events-none">
-            <SpinnerSVG />
+            <SpinnerSVG size="sm" />
             <span className="ml-2">{loadingMessage}</span>
           </div>
         )}

@@ -15,17 +15,16 @@ export const PublicStart = ({
   widgetMode?: boolean;
 }) => {
   const t = useTranslations('Index');
-  const { handleNewThread, isLoading } = useNewThread({
+  const { handleNewThread, isLoading, checkExistingThread } = useNewThread({
     organizationId,
+    widgetMode,
   });
 
-  // Todo: This is a hack, please fix handling thread creation in widget mode
   useEffect(() => {
     if (widgetMode) {
-      handleNewThread();
+      checkExistingThread();
     }
-  }, [widgetMode]);
-
+  }, [widgetMode, checkExistingThread]);
   return (
     <div className="container mx-auto h-full">
       <div className="flex flex-col h-full items-center justify-center">
@@ -45,7 +44,11 @@ export const PublicStart = ({
           />
         )}
 
-        {widgetMode && isLoading && <p>Opening chat thread...</p>}
+        {widgetMode && isLoading && (
+          <p className="text-center text-gray-600 dark:text-gray-200">
+            Opening chat thread...
+          </p>
+        )}
       </div>
     </div>
   );

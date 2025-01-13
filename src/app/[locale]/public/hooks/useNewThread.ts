@@ -1,11 +1,12 @@
-import { useEffect, useReducer, useTransition } from 'react';
+'use client';
 
+import { useEffect, useReducer, useTransition, useCallback } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
+
 import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { createThreadForGuest } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
-import { useLocale } from 'next-intl';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -34,36 +35,46 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 
 export const useNewThread = ({
   organizationId,
+  widgetMode = false,
 }: {
   organizationId: string;
+  widgetMode?: boolean;
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [isPending, setTransition] = useTransition();
-
+  const [isPending, startTransition] = useTransition();
   const { push } = useRouter();
   const pathname = usePathname();
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
 
-  // Check for existing thread and redirect if found
+  const storage = widgetMode ? sessionStorage : localStorage;
+
   useEffect(() => {
+    if (!widgetMode && !pathname.includes('/threads')) {
+      storage.removeItem(LOCAL_STORAGE_THREAD_KEY);
+    }
+  }, [pathname, storage, widgetMode]);
+
+  const checkExistingThread = useCallback(async () => {
+    const existingThreadId = storage.getItem(LOCAL_STORAGE_THREAD_KEY);
     try {
-      const localStorageThreadId = localStorage.getItem(
-        LOCAL_STORAGE_THREAD_KEY
-      );
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
 
-      if (localStorageThreadId && !pathname.includes('/threads')) {
-        push(`/public/${organizationId}/threads/${localStorageThreadId}`);
-      }
-
-      // Clear thread data when not in a thread
-      if (!pathname.includes('/threads')) {
-        localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
+      if (existingThreadId) {
+        startTransition(() =>
+          push(`/public/${organizationId}/threads/${existingThreadId}`)
+        );
+      } else {
+        await handleNewThread();
       }
     } catch (err) {
-      dispatch({ type: 'SET_ERROR', payload: 'Failed to manage thread data.' });
+      const errorMessage = 'Failed to check existing thread.';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      errorToast({ message: errorMessage });
+    } finally {
+      dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  }, [pathname, organizationId, push]);
+  }, [organizationId, push, storage]);
 
   const handleNewThread = async () => {
     try {
@@ -73,8 +84,9 @@ export const useNewThread = ({
       const result = await createThreadForGuest();
       const threadId = result.data.public_id;
 
-      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-      setTransition(() =>
+      storage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+
+      startTransition(() =>
         push(`/public/${organizationId}/threads/${threadId}`)
       );
     } catch (err) {
@@ -88,6 +100,7 @@ export const useNewThread = ({
 
   return {
     handleNewThread,
+    checkExistingThread,
     isLoading: state.isLoading,
     isPending,
     error: state.error,
