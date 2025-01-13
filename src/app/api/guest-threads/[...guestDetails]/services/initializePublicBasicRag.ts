@@ -85,7 +85,12 @@ export const initializePublicRagChain = async ({
       );
     }
 
-    // TODO: throw error if not vector store
+    if (typeof vectorStore === 'undefined') {
+      logger.error('Error initializing basic RAG chain');
+      throw new Error(
+        'Cannot determine VectorStore - use one of Supabase or Qdrant'
+      );
+    }
 
     return await basicRagChain({
       models: {
