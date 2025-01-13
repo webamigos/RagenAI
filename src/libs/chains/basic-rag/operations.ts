@@ -83,7 +83,7 @@ export const rephraseQuestion = (
   });
 };
 
-export const retrieveRelevantDocuments = (
+export const retrieveRelevantDocuments = async (
   vectorStore: VectorStore,
   maxDocuments = 4
 ) => {
