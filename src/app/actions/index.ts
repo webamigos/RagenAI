@@ -263,6 +263,32 @@ export const saveOrganizationInitialMetadata = async (
   }
 };
 
+export const getOrganizationMetadata = async (
+  organizationId: string
+): Promise<ClerkOrganizationMetadata> => {
+  setSentryServiceTag('getOrganizationMetadata');
+  setSentryClerkUserTag(organizationId);
+
+  try {
+    const organization = await clerkClient.organizations.getOrganization({
+      organizationId,
+    });
+    return {
+      publicMetadata: organization.publicMetadata,
+      privateMetadata: organization.privateMetadata,
+    } as ClerkOrganizationMetadata;
+  } catch (error) {
+    logger.error(
+      { err: error },
+      `Error: cannot get private metadata for organization ${organizationId}:`
+    );
+    return {
+      publicMetadata: undefined,
+      privateMetadata: undefined,
+    };
+  }
+};
+
 //send answer rate to assistant
 export const rateMessage = async (
   messageId: string,
