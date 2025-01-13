@@ -279,8 +279,8 @@ export const getOrganizationMetadata = async (
     } as ClerkOrganizationMetadata;
   } catch (error) {
     logger.error(
-      { error },
-      `Error: cannot update private metadata for organization ${organizationId}:`
+      { err: error },
+      `Error: cannot get private metadata for organization ${organizationId}:`
     );
     return {
       publicMetadata: undefined,

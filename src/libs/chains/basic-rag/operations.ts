@@ -27,8 +27,6 @@ import {
 } from '../utils/chain-utils';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { VectorStore } from '@langchain/core/vectorstores';
-import { auth } from '@clerk/nextjs/server';
-import { getOrganizationMetadata } from '@/app/actions';
 
 export const sanitizeAndValidateInput = () => {
   return new RunnableLambda({
@@ -93,28 +91,9 @@ export const retrieveRelevantDocuments = async (
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
-  // TODO: pass organization_id as filter:
-  // TODO: what about public access?
-  const { orgId } = auth();
-
-  if (!orgId) {
-    throw new Error('Invalid organization');
-  }
-
-  const orgMetadata = await getOrganizationMetadata(orgId);
-  const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
-
-  let filter = undefined;
-
-  if (vectorStoreType === 'qdrant') {
-    filter = {
-      must: [{ key: 'metadata.organization_id', match: { value: orgId } }],
-    };
-  }
-
   return RunnableSequence.from([
     (input) => input.standalone_question,
-    vectorStore.asRetriever({ k: maxDocuments, filter }),
+    vectorStore.asRetriever({ k: maxDocuments }),
     combineDocuments,
   ]).withConfig({
     runName: 'Retrieve relevant documents',

@@ -74,7 +74,7 @@ export const initializeRagChain = async ({
     let vectorStore = undefined;
 
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(embeddingModel, orgId);
+      vectorStore = await createQdrantVectorStore(embeddingModel);
     } else {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
@@ -100,20 +100,27 @@ export const initializeRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (
-  embeddingModel: Embeddings,
-  organizationId: string
-) => {
-  const vectorStore = await QdrantVectorStore.fromExistingCollection(
-    embeddingModel,
-    {
-      url: process.env.QDRANT_URL,
-      apiKey: process.env.QDRANT_API_KEY, // staging and prod
-      collectionName: organizationId,
+const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
+  try {
+    const { orgId } = auth();
+    if (!orgId) {
+      throw new Error('Organization ID is required, could not get from clerk');
     }
-  );
 
-  return vectorStore;
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(
+      embeddingModel,
+      {
+        url: process.env.QDRANT_URL,
+        apiKey: process.env.QDRANT_API_KEY, // staging and prod
+        collectionName: orgId,
+      }
+    );
+
+    return vectorStore;
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating Qdrant vector store');
+    throw error;
+  }
 };
 
 // TODO: refactor to use with qdrant or switch depending on organization settings?
@@ -144,7 +151,7 @@ const createSupabaseVectorStore = (
       filter: metadataFilter,
     });
   } catch (error) {
-    logger.error({ err: error }, 'Error creating vector store');
+    logger.error({ err: error }, 'Error creating subabase vector store');
     throw error;
   }
 };

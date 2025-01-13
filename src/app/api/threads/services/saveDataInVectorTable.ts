@@ -24,7 +24,6 @@ import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
-import { P } from 'pino';
 
 const serviceName = 'saveDataInVectorTable';
 

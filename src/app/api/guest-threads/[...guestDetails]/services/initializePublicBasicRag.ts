@@ -8,6 +8,7 @@ import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import { Embeddings } from '@langchain/core/embeddings';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { VectorStore } from '@langchain/core/vectorstores';
 
 import {
   setSentryClerkOrganizationTag,
@@ -69,7 +70,7 @@ export const initializePublicRagChain = async ({
     });
 
     const orgMetadata = await getOrganizationMetadata(organizationId);
-    let vectorStore = undefined;
+    let vectorStore: VectorStore | undefined = undefined;
 
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
       vectorStore = await createQdrantVectorStore(
@@ -83,6 +84,8 @@ export const initializePublicRagChain = async ({
         organizationId
       );
     }
+
+    // TODO: throw error if not vector store
 
     return await basicRagChain({
       models: {
