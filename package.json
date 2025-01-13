@@ -34,7 +34,7 @@
     "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.js",
     "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js",
     "postvectorstore:migrate": "npm run vectorstore:generate:database-types",
-    "db:seed": "tsx --env-file=.env ./prisma/seed.ts"
+    "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts"
   },
   "private": true,
   "devDependencies": {

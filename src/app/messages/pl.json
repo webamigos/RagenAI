@@ -337,7 +337,7 @@
       "next-payment-date": "Data kolejnej płatności",
       "status": "Status",
       "plan": "Plan",
-      "download-invoice": "Pobierz fakture",
+      "download-invoice": "Pobierz fakturę",
       "manage-subscription": "Zarządzaj subskrypcją"
     },
     "confirm-cancel": "Tak, anuluj subskrypcję",
