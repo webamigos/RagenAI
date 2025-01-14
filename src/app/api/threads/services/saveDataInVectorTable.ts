@@ -21,6 +21,9 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
+import { QdrantVectorStore } from '@langchain/qdrant';
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { getOrganizationMetadata } from '@/app/actions';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -154,6 +157,15 @@ export const convertAndStoreDocument = async ({
       ? await textSplitter.splitDocuments(rawDocs)
       : await textSplitterEPub.splitDocuments(rawDocs);
 
+    const { orgId } = auth();
+
+    if (!orgId) {
+      throw new Error('Invalid organization!');
+    }
+
+    const orgMetadata = await getOrganizationMetadata(orgId);
+    const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
+
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
@@ -183,29 +195,49 @@ export const convertAndStoreDocument = async ({
           embedding_model: embeddingModel.modelName,
         };
 
-        const [embedding] = await embeddingModel.embedDocuments([text]);
-
-        return {
-          pageContent: text,
-          metadata,
-          embedding,
-        };
+        if (vectorStoreType === 'qdrant') {
+          return {
+            pageContent: text,
+            metadata,
+            embedding: [],
+          };
+        } else {
+          const [embedding] = await embeddingModel.embedDocuments([text]);
+          return {
+            pageContent: text,
+            metadata,
+            embedding,
+          };
+        }
       })
     );
 
-    const vectorStore = new SupabaseVectorStore(embeddingModel, {
-      client: supabaseVectorStoreClient,
-      tableName: VECTOR_STORE_TABLE_NAME,
-      queryName: DOCUMENT_SEARCH_QUERY_NAME,
-    });
+    if (vectorStoreType === 'qdrant') {
+      const vectorStore = await QdrantVectorStore.fromExistingCollection(
+        embeddingModel,
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY, // staging and prod
+          collectionName: orgId,
+        }
+      );
 
-    await vectorStore.addVectors(
-      updatedDocs.map((doc) => doc.embedding),
-      updatedDocs.map((doc) => ({
-        pageContent: doc.pageContent,
-        metadata: doc.metadata,
-      }))
-    );
+      await vectorStore.addDocuments(updatedDocs);
+    } else {
+      const vectorStore = new SupabaseVectorStore(embeddingModel, {
+        client: supabaseVectorStoreClient,
+        tableName: VECTOR_STORE_TABLE_NAME,
+        queryName: DOCUMENT_SEARCH_QUERY_NAME,
+      });
+
+      await vectorStore.addVectors(
+        updatedDocs.map((doc) => doc.embedding),
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        }))
+      );
+    }
 
     return {
       success: true,

@@ -43,6 +43,10 @@ const envSchema = z.object({
   TEMPORAL_CERT: z.string(),
   TEMPORAL_KEY: z.string(),
 
+  // Qdrant
+  QDRANT_URL: z.string().url(),
+  // QDRANT_API_KEY: z.string(), // for staging and production
+
   // Resend
   RESEND_API_KEY: z.string(),
   RESEND_DEFAULT_AUDIENCE_ID: z.string(),
