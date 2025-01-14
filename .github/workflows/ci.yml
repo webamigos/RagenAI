@@ -28,6 +28,9 @@ env:
   TEMPORAL_KEY: 'dummy'
   RESEND_API_KEY: 'dummy'
   RESEND_DEFAULT_AUDIENCE_ID: 'dummy'
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'dummy'
+  STRIPE_SECRET_KEY: 'dummy'
+  STRIPE_WEBHOOK_SECRET: 'dummy'
 
 on:
   push:
