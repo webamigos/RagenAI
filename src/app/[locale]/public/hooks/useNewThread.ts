@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useReducer, useTransition, useCallback } from 'react';
+import { useReducer, useTransition, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { createThreadForGuest } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
+import { logger } from '@/app/lib/utils/logger';
+import { useSessionStorage } from './useSessionStorage';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -47,34 +49,11 @@ export const useNewThread = ({
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
 
-  const storage = widgetMode ? sessionStorage : localStorage;
-
-  useEffect(() => {
-    if (!widgetMode && !pathname.includes('/threads')) {
-      storage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-    }
-  }, [pathname, storage, widgetMode]);
-
-  const checkExistingThread = useCallback(async () => {
-    const existingThreadId = storage.getItem(LOCAL_STORAGE_THREAD_KEY);
-    try {
-      dispatch({ type: 'SET_IS_LOADING', payload: true });
-
-      if (existingThreadId) {
-        startTransition(() =>
-          push(`/public/${organizationId}/threads/${existingThreadId}`)
-        );
-      } else {
-        await handleNewThread();
-      }
-    } catch (err) {
-      const errorMessage = 'Failed to check existing thread.';
-      dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      errorToast({ message: errorMessage });
-    } finally {
-      dispatch({ type: 'SET_IS_LOADING', payload: false });
-    }
-  }, [organizationId, push, storage]);
+  const {
+    storedValue: threadId,
+    setValue: setThreadId,
+    removeValue: removeThreadId,
+  } = useSessionStorage<string | null>(LOCAL_STORAGE_THREAD_KEY, null);
 
   const handleNewThread = async () => {
     try {
@@ -82,21 +61,54 @@ export const useNewThread = ({
       handleCloseThread(false);
 
       const result = await createThreadForGuest();
-      const threadId = result.data.public_id;
 
-      storage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+      if (!result?.data?.public_id) {
+        throw new Error('Invalid response from server - missing thread ID');
+      }
+
+      const newThreadId = result.data.public_id;
+      setThreadId(newThreadId);
 
       startTransition(() =>
-        push(`/public/${organizationId}/threads/${threadId}`)
+        push(`/public/${organizationId}/threads/${newThreadId}`)
       );
     } catch (err) {
-      const errorMessage = 'Failed to create new thread.';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to create new thread.';
+      dispatch({ type: 'SET_ERROR', payload: errorMessage });
+      errorToast({ message: errorMessage });
+      logger.error({ err }, 'Failed to create new thread');
+    } finally {
+      dispatch({ type: 'SET_IS_LOADING', payload: false });
+    }
+  };
+
+  const checkExistingThread = useCallback(async () => {
+    try {
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
+
+      if (threadId) {
+        startTransition(() =>
+          push(`/public/${organizationId}/threads/${threadId}`)
+        );
+        return;
+      }
+
+      await handleNewThread();
+    } catch (err) {
+      const errorMessage = 'Failed to check existing thread.';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       errorToast({ message: errorMessage });
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  };
+  }, [organizationId, threadId]);
+
+  useEffect(() => {
+    if (!widgetMode && !pathname.includes('/threads')) {
+      removeThreadId();
+    }
+  }, [pathname, widgetMode, removeThreadId]);
 
   return {
     handleNewThread,

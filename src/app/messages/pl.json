@@ -364,5 +364,8 @@
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",
     "go-back-home": "Powrót do strony głównej"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Otwieranie wątku..."
   }
 }
