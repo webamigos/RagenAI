@@ -360,6 +360,9 @@
     "success": "Organizacja została stworzona",
     "sync-error": "Wystąpił błąd w trakcie synchronizacji"
   },
+  "generateAccessKey": {
+    "title": "Generowanie klucza dostępu do organizacji"
+  },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",

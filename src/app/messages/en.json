@@ -360,6 +360,9 @@
     "success": "Organization has been created",
     "sync-error": "An error occurred during sync"
   },
+  "generateAccessKey": {
+    "title": "Generating an organization access key"
+  },
   "page404": {
     "page-not-found": "Page not found",
     "sorry-we-could-not-find": "Sorry, we couldn’t find the page you’re looking for.",
