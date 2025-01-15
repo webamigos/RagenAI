@@ -42,7 +42,7 @@ export const generateKey = async (organizationId: string) => {
     // Convert to URL-safe base64
     return combined.toString('base64url');
   } catch (error) {
-    logger.error('Error generating key:', error);
+    logger.error({ err: error }, 'Error generating key:');
     throw new Error('Failed to generate access key');
   }
 };
