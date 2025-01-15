@@ -30,10 +30,11 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
+          widgetMode={true}
         />
         <div ref={messagesEndDivRef} />
       </div>
-      <div className="flex-shrink-0 w-full">
+      <div className="flex-shrink-0 w-full mb-4">
         {!isLocked() && threadId && (
           <PromptForm
             ref={promptFormRef}
