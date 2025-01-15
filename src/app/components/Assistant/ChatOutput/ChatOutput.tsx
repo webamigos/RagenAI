@@ -38,7 +38,7 @@ export const ChatOutput = ({
               message.role === 'USER'
                 ? 'text-right self-end border border-slate-100 dark:border-gray-800 bg-white dark:bg-secondary-dark'
                 : 'pt-4 text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
-            } ${messageIndex === 0 && !widgetMode ? 'lg:first:mt-16' : ''}`}
+            } ${messageIndex === 0 && !widgetMode ? 'lg:first:mt-14' : ''}`}
           >
             {message.role === 'ASSISTANT' ? (
               <Text fontSize="sm" fontWeight="bold">
