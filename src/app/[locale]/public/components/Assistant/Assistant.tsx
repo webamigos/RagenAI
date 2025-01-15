@@ -24,7 +24,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
 
   return (
     <div className="h-full flex flex-col font-sans">
-      <div className="flex-grow overflow-y-auto first:-mt-20">
+      <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}
           isLoading={isGlobalLoading}

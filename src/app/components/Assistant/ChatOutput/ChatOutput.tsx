@@ -29,16 +29,16 @@ export const ChatOutput = ({
     useChatViewLogic(streamedMessage);
 
   return (
-    <div className="px-5 mt-5 mr-3 lg:px-22 lg:mt-0">
+    <div className="px-5 mt-5 mr-3 lg:px-22">
       <div className="flex flex-col">
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group max-w-10/12 mb-6 px-4 first:mt-20 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none ${
+            className={`group max-w-10/12 mb-6 px-4 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none ${
               message.role === 'USER'
                 ? 'text-right self-end border border-slate-100 dark:border-gray-800 bg-white dark:bg-secondary-dark'
                 : 'pt-4 text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
-            }`}
+            } ${messageIndex === 0 && !widgetMode ? 'lg:first:mt-16' : ''}`}
           >
             {message.role === 'ASSISTANT' ? (
               <Text fontSize="sm" fontWeight="bold">

@@ -52,7 +52,8 @@ export const ChatbotExpanded = ({
         />
       </div>
       <div
-        className={`h-6 flex items-center justify-center text-xs text-gray-500 border-t shrink-0 ${
+        onClick={() => window.open('https://ragen.ai', '_blank')}
+        className={`h-6 flex items-center justify-center text-xs text-gray-500 border-t shrink-0 cursor-pointer ${
           isMinimized ? 'hidden' : ''
         }`}
       >
