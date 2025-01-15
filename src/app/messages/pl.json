@@ -361,7 +361,9 @@
     "sync-error": "Wystąpił błąd w trakcie synchronizacji"
   },
   "generateAccessKey": {
-    "title": "Generowanie klucza dostępu do organizacji"
+    "title": "Generowanie klucza dostępu do organizacji",
+    "organization-id": "ID organizacji",
+    "public-id": "Public ID"
   },
   "page404": {
     "page-not-found": "Nie znaleziono strony",

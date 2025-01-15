@@ -361,7 +361,9 @@
     "sync-error": "An error occurred during sync"
   },
   "generateAccessKey": {
-    "title": "Generating an organization access key"
+    "title": "Generating an organization access key",
+    "organization-id": "Organization ID",
+    "public-id": "Public ID"
   },
   "page404": {
     "page-not-found": "Page not found",
