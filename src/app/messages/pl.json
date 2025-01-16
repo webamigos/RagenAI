@@ -239,7 +239,9 @@
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",
     "updated": "Zaktualizowano",
-    "preview": "Podgląd"
+    "preview": "Podgląd",
+    "no-files": "Brak plików",
+    "search-placeholder": "Wyszukaj plik"
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",

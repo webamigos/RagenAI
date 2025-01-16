@@ -29,6 +29,8 @@ type Props = {
   isLoading?: boolean;
   skeletonHeight?: string;
   skeletonWidth?: string;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
 } & ComponentPropsWithRef<'input'>;
 
 export const Input = forwardRef(
@@ -49,6 +51,8 @@ export const Input = forwardRef(
       skeletonHeight = 'h-5',
       skeletonWidth = 'w-50',
       autocomplete,
+      iconLeft,
+      iconRight,
       ...rest
     }: Props,
     ref: Ref<HTMLInputElement>
@@ -104,7 +108,8 @@ export const Input = forwardRef(
           </label>
         )}
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
-          <div className="relative">
+          <div className="relative flex items-center">
+            {iconLeft && <span className="absolute left-3">{iconLeft}</span>}
             {isLoading ? (
               <div
                 className={classMerge(
@@ -125,7 +130,7 @@ export const Input = forwardRef(
                 className={classMerge(
                   'block w-full dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
                   {
-                    'px-3  pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-2xl cursor-pointer':
+                    'pl-10 pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-2xl cursor-pointer':
                       type !== 'range',
                     'text-red-900 ring-red-300 placeholder:text-red-300 focus-visible:ring-red-500 focus-visible:ring-2':
                       error,
@@ -140,10 +145,15 @@ export const Input = forwardRef(
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-2 px-3 flex items-center dark:border-slate-600"
+                className="absolute inset-y-0 right-8 px-3 flex items-center dark:border-slate-600"
               >
                 {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
               </button>
+            )}
+            {iconRight && (
+              <span className="absolute right-3 flex items-center">
+                {iconRight}
+              </span>
             )}
           </div>
         </div>
