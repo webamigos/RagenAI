@@ -363,7 +363,18 @@
   "generateAccessKey": {
     "title": "Generowanie klucza dostępu do organizacji",
     "organization-id": "ID organizacji",
-    "public-id": "Public ID"
+    "public-id": "Public ID",
+    "decode-key": "Dekoduj klucz",
+    "decode-key-placeholder": "Wprowadź klucz dostępu",
+    "configure-public-access": "Skonfiguruj publiczny dostęp",
+    "chatbot-title": "Tytuł czatbota",
+    "chatbot-subtitle": "Podtytuł czatbota",
+    "generate-public-key": "Wygeneruj klucz",
+    "decode-key-error": "Nieprawidłowy klucz dostępu",
+    "your-access-key": "Twój klucz dostępu",
+    "access-key-warning": "Osoby z tym kluczem mają dostęp do wszystkich dokumentów w organizacji.",
+    "public-access-URL": "Publiczny URL dostępu",
+    "embed-code": "Kod do osadzenia"
   },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
