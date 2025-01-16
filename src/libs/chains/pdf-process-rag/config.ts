@@ -1,11 +1,8 @@
 export const CHAIN_FINAL_ANSWER_RUN_NAME = 'final_answer';
 
 export const PDF_IMAGE_CONFIG = {
-  density: 100,
+  scale: 3,
   saveFilename: 'page',
-  format: 'png',
-  width: 800,
-  height: 1200,
 };
 
 export const PDF_PROCESSING_CONFIG = {
