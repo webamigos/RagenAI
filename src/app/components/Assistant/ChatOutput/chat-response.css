@@ -83,51 +83,6 @@ code.hljs {
   background-color: #4a0000;
 }
 
-/* TABLES */
-:global(.dark) .chat-response table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 1rem 0;
-  background-color: #2b3740;
-  border: 1px solid #20303c;
-}
-
-:global(.dark) .chat-response th,
-:global(.dark) .chat-response td {
-  border: 1px solid #20303c;
-  padding: 8px;
-  text-align: left;
-  color: #ffffff;
-}
-
-:global(.dark) .chat-response th {
-  background-color: #253745;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-:global(.dark) .chat-response tr:nth-child(even) {
-  background-color: #2b3740;
-}
-
-:global(.dark) .chat-response tr:hover {
-  background-color: #20303c;
-  cursor: pointer;
-}
-
-:global(.dark) .chat-response table {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-:global(.dark) .chat-response td:first-child {
-  border-left: none;
-}
-
-:global(.dark) .chat-response td:last-child {
-  border-right: none;
-}
-
 /* LIGHT MODE TABLES */
 .chat-response table {
   border-collapse: collapse;
@@ -174,4 +129,48 @@ code.hljs {
 }
 /* LIGHT MODE TABLES */
 
-/* TABLES */
+/* DARK MODE TABLES */
+html.dark .chat-response table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  background-color: #2b3740;
+  border: 1px solid #20303c;
+}
+
+html.dark .chat-response th,
+html.dark .chat-response td {
+  border: 1px solid #20303c;
+  padding: 8px;
+  text-align: left;
+  color: #ffffff;
+}
+
+html.dark .chat-response th {
+  background-color: #253745;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+html.dark .chat-response tr:nth-child(even) {
+  background-color: #2b3740;
+}
+
+html.dark .chat-response tr:hover {
+  background-color: #20303c;
+  cursor: pointer;
+}
+
+.chat-response table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+html.dark .chat-response td:first-child {
+  border-left: none;
+}
+
+html.dark .chat-response td:last-child {
+  border-right: none;
+}
+/* DARK MODE TABLES */
