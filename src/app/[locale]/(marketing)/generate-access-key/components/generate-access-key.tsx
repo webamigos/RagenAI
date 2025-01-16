@@ -4,199 +4,130 @@ import { useState } from 'react';
 import { useOrganization } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
-import {
-  Button,
-  Input,
-  OpenEyeIcon,
-  EyeOffIcon,
-  Text,
-  Card,
-  StackIcon,
-} from '@ragenai/common-ui';
-import { statusToast } from '@/app/lib/utils/toast';
-import { decodeKey, generateKey } from '../actions/generate-key';
+import { Button, Input, Card } from '@ragenai/common-ui';
+import { generateKey } from '../actions/generate-key';
 
-import { type Organization } from '@prisma/client';
+import { Warning } from './warning';
 
 type Props = {
-  organizationRecord: Organization;
+  organizationRecord: { public_id: string };
 };
 
 export const GenerateAccessKey = ({ organizationRecord }: Props) => {
   const [key, setKey] = useState('');
-  const [decodedKey, setDecodedKey] = useState('');
-  const [userKey, setUserKey] = useState('');
   const [chatbotName, setChatbotName] = useState('');
   const [chatbotTitle, setChatbotTitle] = useState('');
-  const [isOrgIdVisible, setIsOrgIdVisible] = useState(false);
+  const [publicUrl, setPublicUrl] = useState('');
+  const [embedScript, setEmbedScript] = useState('');
 
-  const { errorToast } = statusToast();
   const { organization } = useOrganization();
   const t = useTranslations('generateAccessKey');
 
   const organizationClerkId = organization?.id;
-  const organizationPublicId = organizationRecord.public_id;
 
   if (!organizationClerkId) {
     return null;
   }
 
-  const handleGenerateEmbedId = async () => {
-    const key = await generateKey(organizationClerkId);
-    setKey(key);
-  };
-
-  const handleDecodeKey = async () => {
-    try {
-      const decodedKey = await decodeKey(userKey);
-      setDecodedKey(decodedKey);
-    } catch (error) {
-      errorToast({ message: t('decode-key-error') });
+  const handleGenerateKeyIfNeeded = async () => {
+    if (!key) {
+      const newKey = await generateKey(organizationClerkId);
+      setKey(newKey);
+      return newKey;
     }
+    return key;
   };
 
-  const toggleOrgIdVisibility = () => {
-    setIsOrgIdVisible((prev) => !prev);
+  const handleGeneratePublicUrl = async () => {
+    const currentKey = await handleGenerateKeyIfNeeded();
+    const publicUrl = `${window.location.origin}/pl/public/${currentKey}`;
+    setPublicUrl(publicUrl);
   };
 
-  const embedScript = `<script src='${
-    window.location.origin
-  }/api/embed/${key}?${new URLSearchParams({
-    title: chatbotTitle,
-    message: chatbotName,
-  }).toString()}'></script>`;
-  const publicUrl = `${window.location.origin}/pl/public/${key}`;
+  const handleGenerateEmbedCode = async () => {
+    const currentKey = await handleGenerateKeyIfNeeded();
+    const embedScript = `<script src='${
+      window.location.origin
+    }/api/embed/${currentKey}?${new URLSearchParams({
+      title: chatbotTitle,
+      message: chatbotName,
+    }).toString()}'></script>`;
+    setEmbedScript(embedScript);
+  };
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pl-3 md:pl-0">
+    <div className="flex flex-col md:flex-row gap-3 pl-3 md:pl-0">
+      <Card
+        size="full"
+        title={t('configure-chatbot')}
+        className="mt-5 lg:mt-[4.9rem] h-min order-1 md:order-none"
+      >
+        <Input
+          value={chatbotTitle}
+          label={t('chatbot-title')}
+          onChange={(e) => setChatbotTitle(e.target.value)}
+          placeholder="Chatbot"
+          className="w-full md:max-w-md h-10"
+        />
+        <Input
+          value={chatbotName}
+          label={t('chatbot-subtitle')}
+          onChange={(e) => setChatbotName(e.target.value)}
+          placeholder="Hello, how can I help you today?"
+          className="w-full md:max-w-md h-10 mb-4"
+        />
+        <Button
+          onClick={handleGenerateEmbedCode}
+          className="w-full md:w-auto flex justify-center mt-4"
+        >
+          {t('generate-embed-code')}
+        </Button>
+        {embedScript && (
+          <div className="space-y-4 mt-6 overflow-y-auto">
+            <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                {t('embed-code')}:
+                <code className="block mt-1 p-2  rounded font-mono text-sm overflow-x-auto whitespace-pre-wrap break-all">
+                  {embedScript}
+                </code>
+              </p>
+            </div>
+            <Warning warningText={'embed-code-warning'} />
+          </div>
+        )}
+      </Card>
       <Card
         size="full"
         title={t('configure-public-access')}
         className="mt-5 lg:mt-[4.9rem] h-min order-1 md:order-none"
       >
-        <div>
-          <Input
-            value={chatbotTitle}
-            onChange={(e) => setChatbotTitle(e.target.value)}
-            placeholder={t('chatbot-title')}
-            className="w-full md:max-w-md h-10"
-          />
-          <Input
-            value={chatbotName}
-            onChange={(e) => setChatbotName(e.target.value)}
-            placeholder={t('chatbot-subtitle')}
-            className="w-full md:max-w-md h-10 mb-4"
-          />
+        <div className="flex justify-center">
           <Button
-            onClick={handleGenerateEmbedId}
-            className="w-full md:w-auto flex justify-center"
+            onClick={handleGeneratePublicUrl}
+            className="w-full md:w-auto flex justify-center mt-4"
           >
             {t('generate-public-key')}
           </Button>
-
-          {key && (
-            <div className="space-y-4 mt-6 overflow-y-auto">
-              <div className="space-y-2 p-4 bg-gray-50 rounded-lg overflow-x-auto whitespace-pre-wrap break-all">
-                <p className="text-sm text-gray-600">
-                  {t('your-access-key')}:
-                  <span className="block mt-1 font-mono text-red-500">
-                    {key}
-                  </span>
-                </p>
-                <p className="text-sm text-orange-500">
-                  {t('access-key-warning')}
-                </p>
-              </div>
-              <div className="space-y-2 p-4 bg-gray-50 rounded-lg overflow-x-auto whitespace-pre-wrap break-all">
-                <p className="text-sm text-gray-600">
-                  {t('public-access-URL')}:
-                  <a
-                    href={publicUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block mt-1 font-mono text-blue-500 hover:underline"
-                  >
-                    {publicUrl}
-                  </a>
-                </p>
-              </div>
-
-              <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600">
-                  {t('embed-code')}:
-                  <code className="block mt-1 p-2 bg-gray-100 rounded font-mono text-sm overflow-x-auto whitespace-pre-wrap break-all">
-                    {embedScript}
-                  </code>
-                </p>
-              </div>
-            </div>
-          )}
         </div>
-      </Card>
-
-      <div className="w-full md:mt-5 lg:mt-0  order-2 md:order-none">
-        <Card title={t('title')} size="full" className="lg:mt-[4.9rem] mb-4">
-          <div className="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap break-all">
-            <div className="text-sm text-gray-500">
-              <Text className="mb-1" fontWeight="bold">
-                {t('organization-id')}
-              </Text>
-              <div className="grid grid-cols-[1fr_auto] gap-2 p-1 border rounded-lg items-center">
-                <Text className={`${isOrgIdVisible ? '' : 'blur-sm'}`}>
-                  {organizationClerkId}
-                </Text>
-                {isOrgIdVisible ? (
-                  <EyeOffIcon
-                    className="w-4 h-4 cursor-pointer"
-                    onClick={toggleOrgIdVisibility}
-                  />
-                ) : (
-                  <OpenEyeIcon
-                    className="w-4 h-4 cursor-pointer"
-                    onClick={toggleOrgIdVisibility}
-                  />
-                )}
-              </div>
-            </div>
-            <div className="text-sm text-gray-500">
-              <Text className="mb-1" fontWeight="bold">
-                {t('public-id')}
-              </Text>
-              <div className="p-1 border rounded-lg">
-                <Text>{organizationPublicId}</Text>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card size="full" title={t('decode-key')} className="mb-4">
-          <div className="space-y-2">
-            <Input
-              value={userKey}
-              onChange={(e) => setUserKey(e.target.value)}
-              placeholder={t('decode-key-placeholder')}
-              className="w-full md:max-w-md h-10 mb-4"
-            />
-            <Button
-              onClick={handleDecodeKey}
-              className="w-full md:w-auto flex justify-center"
-            >
-              {t('decode-key')}
-            </Button>
-          </div>
-
-          {decodedKey && (
-            <div className="p-4 bg-gray-50 rounded-lg">
+        {publicUrl && (
+          <div className="space-y-4 mt-6 overflow-y-auto">
+            <div className="space-y-2 p-4 bg-gray-50 rounded-lg overflow-x-auto whitespace-pre-wrap break-all">
               <p className="text-sm text-gray-600">
-                {t('decode-key')}:{' '}
-                <span className="font-mono text-lg text-red-500">
-                  {decodedKey}
-                </span>
+                {t('public-access-URL')}:
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block mt-1 font-mono text-blue-500 hover:underline"
+                >
+                  {publicUrl}
+                </a>
               </p>
             </div>
-          )}
-        </Card>
-      </div>
+            <Warning warningText={'public-access-warning'} />
+          </div>
+        )}
+      </Card>
     </div>
   );
 };

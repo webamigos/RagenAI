@@ -361,20 +361,16 @@
     "sync-error": "An error occurred during sync"
   },
   "generateAccessKey": {
-    "title": "Generating an Access Key for the Organization",
-    "organization-id": "Organization ID",
-    "public-id": "Public ID",
-    "decode-key": "Decode Key",
-    "decode-key-placeholder": "Enter the access key",
-    "configure-public-access": "Configure Public Access",
-    "chatbot-title": "Chatbot Title",
-    "chatbot-subtitle": "Chatbot Subtitle",
-    "generate-public-key": "Generate Key",
-    "decode-key-error": "Invalid access key",
-    "your-access-key": "Your Access Key",
-    "access-key-warning": "Anyone with this key has access to all documents in the organization.",
-    "public-access-URL": "Public Access URL",
-    "embed-code": "Embed Code"
+    "configure-public-access": "Configure public access",
+    "chatbot-title": "Chatbot title",
+    "chatbot-subtitle": "Chatbot subtitle",
+    "generate-public-key": "Generate public access",
+    "public-access-URL": "Public access URL",
+    "embed-code": "Embed code",
+    "configure-chatbot": "Configure chatbot",
+    "generate-embed-code": "Generate embed code",
+    "embed-code-warning": "The displayed code is visible only once! Remember to save it",
+    "public-access-warning": "This URL is visible only once! Remember to save it"
   },
   "page404": {
     "page-not-found": "Page not found",

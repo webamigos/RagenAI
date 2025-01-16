@@ -361,20 +361,16 @@
     "sync-error": "Wystąpił błąd w trakcie synchronizacji"
   },
   "generateAccessKey": {
-    "title": "Generowanie klucza dostępu do organizacji",
-    "organization-id": "ID organizacji",
-    "public-id": "Public ID",
-    "decode-key": "Dekoduj klucz",
-    "decode-key-placeholder": "Wprowadź klucz dostępu",
-    "configure-public-access": "Skonfiguruj publiczny dostęp",
+    "configure-public-access": "Skonfiguruj dostęp publiczny",
     "chatbot-title": "Tytuł czatbota",
     "chatbot-subtitle": "Podtytuł czatbota",
-    "generate-public-key": "Wygeneruj klucz",
-    "decode-key-error": "Nieprawidłowy klucz dostępu",
-    "your-access-key": "Twój klucz dostępu",
-    "access-key-warning": "Osoby z tym kluczem mają dostęp do wszystkich dokumentów w organizacji.",
+    "generate-public-key": "Wygeneruj dostęp publiczny",
     "public-access-URL": "Publiczny URL dostępu",
-    "embed-code": "Kod do osadzenia"
+    "embed-code": "Kod do osadzenia",
+    "configure-chatbot": "Skonfiguruj czatbota",
+    "generate-embed-code": "Wygeneruj kod do osadzenia",
+    "embed-code-warning": "Wyświetlony kod widzisz tylko raz! Pamiętaj o jego zapisaniu",
+    "public-access-warning": "Ten URL widzisz tylko raz! Pamiętaj o jego zapisaniu"
   },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
