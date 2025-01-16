@@ -74,6 +74,7 @@ code.hljs {
   border-radius: 4px;
 }
 
+/* MATH FORMULAS */
 :global(.dark) .katex {
   color: #e4e4e7;
 }
@@ -81,10 +82,9 @@ code.hljs {
 :global(.dark) .katex-error {
   background-color: #4a0000;
 }
-/* MATH FORMULAS */
 
 /* TABLES */
-.chat-response table {
+:global(.dark) .chat-response table {
   border-collapse: collapse;
   width: 100%;
   margin: 1rem 0;
@@ -92,26 +92,71 @@ code.hljs {
   border: 1px solid #20303c;
 }
 
-.chat-response th,
-.chat-response td {
+:global(.dark) .chat-response th,
+:global(.dark) .chat-response td {
   border: 1px solid #20303c;
   padding: 8px;
   text-align: left;
   color: #ffffff;
 }
 
-.chat-response th {
+:global(.dark) .chat-response th {
   background-color: #253745;
   font-weight: 600;
   color: #ffffff;
 }
 
-.chat-response tr:nth-child(even) {
+:global(.dark) .chat-response tr:nth-child(even) {
   background-color: #2b3740;
 }
 
-.chat-response tr:hover {
+:global(.dark) .chat-response tr:hover {
   background-color: #20303c;
+  cursor: pointer;
+}
+
+:global(.dark) .chat-response table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+:global(.dark) .chat-response td:first-child {
+  border-left: none;
+}
+
+:global(.dark) .chat-response td:last-child {
+  border-right: none;
+}
+
+/* LIGHT MODE TABLES */
+.chat-response table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.chat-response th,
+.chat-response td {
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+  text-align: left;
+  color: #374151;
+}
+
+.chat-response th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+}
+
+.chat-response tr:nth-child(even) {
+  background-color: #f3f4f6;
+}
+
+.chat-response tr:hover {
+  background-color: #e5e7eb;
   cursor: pointer;
 }
 
@@ -127,4 +172,6 @@ code.hljs {
 .chat-response td:last-child {
   border-right: none;
 }
+/* LIGHT MODE TABLES */
+
 /* TABLES */
