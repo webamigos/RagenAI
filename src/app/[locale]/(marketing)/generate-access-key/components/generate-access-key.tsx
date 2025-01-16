@@ -68,89 +68,29 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
   const publicUrl = `${window.location.origin}/pl/public/${key}`;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div className="w-full">
-        <Card
-          title={t('title')}
-          size="full"
-          className="mt-5 lg:mt-[4.9rem] mb-3"
-        >
-          <div className="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap break-all">
-            <div className="text-sm text-gray-500">
-              <Text className="mb-1" fontWeight="bold">
-                {t('organization-id')}
-              </Text>
-              <div className="grid grid-cols-[1fr_auto] gap-2 p-1 border rounded-lg items-center">
-                <Text className={`${isOrgIdVisible ? '' : 'blur-sm'}`}>
-                  {organizationClerkId}
-                </Text>
-                {isOrgIdVisible ? (
-                  <EyeOffIcon
-                    className="w-4 h-4"
-                    onClick={toggleOrgIdVisibility}
-                  />
-                ) : (
-                  <OpenEyeIcon
-                    className="w-4 h-4"
-                    onClick={toggleOrgIdVisibility}
-                  />
-                )}
-              </div>
-            </div>
-            <div className="text-sm text-gray-500">
-              <Text className="mb-1" fontWeight="bold">
-                {t('public-id')}
-              </Text>
-              <div className="p-1 border rounded-lg">
-                <Text>{organizationPublicId}</Text>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <Card size="full" title={t('decode-key')}>
-          <div className="space-y-2">
-            <Input
-              value={userKey}
-              onChange={(e) => setUserKey(e.target.value)}
-              placeholder={t('decode-key-placeholder')}
-              className="max-w-md h-10 mb-2"
-            />
-            <Button onClick={handleDecodeKey}>{t('decode-key')}</Button>
-          </div>
-
-          {decodedKey && (
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                {t('decode-key')}:{' '}
-                <span className="font-mono text-lg text-red-500">
-                  {decodedKey}
-                </span>
-              </p>
-            </div>
-          )}
-        </Card>
-      </div>
-
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pl-3 md:pl-0">
       <Card
         size="full"
         title={t('configure-public-access')}
-        className="mt-5 lg:mt-[4.9rem] h-min"
+        className="mt-5 lg:mt-[4.9rem] h-min order-1 md:order-none"
       >
         <div>
           <Input
             value={chatbotTitle}
             onChange={(e) => setChatbotTitle(e.target.value)}
             placeholder={t('chatbot-title')}
-            className="max-w-md h-10"
+            className="w-full md:max-w-md h-10"
           />
           <Input
             value={chatbotName}
             onChange={(e) => setChatbotName(e.target.value)}
             placeholder={t('chatbot-subtitle')}
-            className="max-w-md h-10 mb-4"
+            className="w-full md:max-w-md h-10 mb-4"
           />
-          <Button onClick={handleGenerateEmbedId}>
+          <Button
+            onClick={handleGenerateEmbedId}
+            className="w-full md:w-auto flex justify-center"
+          >
             {t('generate-public-key')}
           </Button>
 
@@ -193,6 +133,70 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
           )}
         </div>
       </Card>
+
+      <div className="w-full md:mt-5 lg:mt-0  order-2 md:order-none">
+        <Card title={t('title')} size="full" className="lg:mt-[4.9rem] mb-4">
+          <div className="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap break-all">
+            <div className="text-sm text-gray-500">
+              <Text className="mb-1" fontWeight="bold">
+                {t('organization-id')}
+              </Text>
+              <div className="grid grid-cols-[1fr_auto] gap-2 p-1 border rounded-lg items-center">
+                <Text className={`${isOrgIdVisible ? '' : 'blur-sm'}`}>
+                  {organizationClerkId}
+                </Text>
+                {isOrgIdVisible ? (
+                  <EyeOffIcon
+                    className="w-4 h-4 cursor-pointer"
+                    onClick={toggleOrgIdVisibility}
+                  />
+                ) : (
+                  <OpenEyeIcon
+                    className="w-4 h-4 cursor-pointer"
+                    onClick={toggleOrgIdVisibility}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="text-sm text-gray-500">
+              <Text className="mb-1" fontWeight="bold">
+                {t('public-id')}
+              </Text>
+              <div className="p-1 border rounded-lg">
+                <Text>{organizationPublicId}</Text>
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        <Card size="full" title={t('decode-key')} className="mb-4">
+          <div className="space-y-2">
+            <Input
+              value={userKey}
+              onChange={(e) => setUserKey(e.target.value)}
+              placeholder={t('decode-key-placeholder')}
+              className="w-full md:max-w-md h-10 mb-4"
+            />
+            <Button
+              onClick={handleDecodeKey}
+              className="w-full md:w-auto flex justify-center"
+            >
+              {t('decode-key')}
+            </Button>
+          </div>
+
+          {decodedKey && (
+            <div className="p-4 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                {t('decode-key')}:{' '}
+                <span className="font-mono text-lg text-red-500">
+                  {decodedKey}
+                </span>
+              </p>
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 };
