@@ -1,5 +1,6 @@
 import { RunnableSequence } from '@langchain/core/runnables';
-import { generateFinalAnswer } from './operations';
+import { generateFinalAnswer, sanitizeAndValidateInput } from './operations';
+import type { State } from '../types/agentic-rag';
 
 import type {
   BasicRagChainInput,
@@ -7,6 +8,8 @@ import type {
   BasicRagChainOutput,
 } from '../types/basic-rag';
 import { logger } from '@/app/lib/utils/logger';
+import { agenticRagFlow } from './agent-flow';
+import { StringOutputParser } from '@langchain/core/output_parsers';
 
 const CHAIN_FINAL_ANSWER_RUN_NAME = 'final_answer'; //TODO: export to common config
 
@@ -27,10 +30,12 @@ export const agenticRagChain = ({
   config,
 }: BasicRagChainParams): BasicRagChainOutput => {
   const chain = RunnableSequence.from<BasicRagChainInput, string>([
-    ({ question }) => {
-      return { question };
-    },
-    generateFinalAnswer(models.answerGenerator, CHAIN_FINAL_ANSWER_RUN_NAME),
+    sanitizeAndValidateInput,
+    (input: BasicRagChainInput) =>
+      agenticRagFlow(input, models.answerGenerator, vectorStore),
+    new StringOutputParser().withConfig({
+      runName: CHAIN_FINAL_ANSWER_RUN_NAME,
+    }),
   ]).withConfig({
     runName: 'Agentic RAG chain',
   });
