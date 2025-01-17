@@ -212,6 +212,7 @@
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
+    "generate-access-key": "Public access",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",

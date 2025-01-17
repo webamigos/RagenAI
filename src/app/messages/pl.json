@@ -212,6 +212,7 @@
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
     "search-threads": "Przeszukaj wątki",
+    "generate-access-key": "Dostęp publiczny",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
