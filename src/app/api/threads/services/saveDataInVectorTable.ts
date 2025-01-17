@@ -6,6 +6,7 @@ import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { fileTypeFromBuffer } from 'file-type';
 
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
@@ -111,79 +112,107 @@ export const convertAndStoreDocument = async ({
 
     let rawDocs: Document[] = [];
     const apiKey = await getOpenaiAPIKey(organizationId);
+
     if (!apiKey) {
       throw new Error('OpenAI API key is required.');
     }
 
-    const embeddingModel = await createEmbeddingsInstance({ apiKey });
-    const fileExtension = path.extname(fileName).slice(1).toLowerCase();
-
-    if (
-      fileExtension === 'pdf' ||
-      fileExtension === 'epub' ||
-      fileExtension === 'csv'
-    ) {
-      const { filePath, message, success } = await saveBinaryToTempFile(
-        fileContent,
-        fileExtension
-      );
-      if (!success || !filePath) {
-        return {
-          success: false,
-          message: `Failed to save temporary file: ${message}`,
-        };
-      }
-
-      if (fileExtension === 'pdf') {
-        const {
-          rawDocs: pdfDocs,
-          success,
-          message,
-        } = await processPDFDocument(
-          filePath,
-          fileName,
-          fileId,
-          organizationId
-        );
-
-        if (!success) {
-          return { success: false, message };
-        }
-
-        rawDocs = pdfDocs;
-      }
-
-      try {
-        await fs.promises.access(filePath, fs.constants.R_OK);
-        const loader =
-          fileExtension === 'pdf'
-            ? new PDFLoader(filePath)
-            : fileExtension === 'csv'
-            ? new CSVLoader(filePath)
-            : new EPubLoader(filePath);
-        rawDocs = await loader.load();
-      } catch (error) {
-        logger.error(
-          { err: error },
-          `Error loading ${fileExtension.toUpperCase()} file`
-        );
-        return {
-          success: false,
-          message: `File is not accessible at: ${filePath}`,
-          error: error as Error,
-        };
-      } finally {
-        await fs.promises.rm(filePath, { recursive: true, force: true });
-      }
+    let mimeType: string | undefined;
+    if (fileContent instanceof Buffer) {
+      const fileType = await fileTypeFromBuffer(new Uint8Array(fileContent));
+      mimeType = fileType?.mime;
+    } else if (typeof fileContent === 'string') {
+      mimeType = 'text/markdown';
     } else {
-      if (typeof fileContent === 'string') {
-        rawDocs = [new Document({ pageContent: fileContent })];
-      } else {
-        return {
-          success: false,
-          message: 'Invalid file type detected.',
-        };
+      return {
+        success: false,
+        message: 'Unsupported file content type.',
+      };
+    }
+
+    if (!mimeType) {
+      return {
+        success: false,
+        message: 'Could not detect MIME type of the file.',
+      };
+    }
+
+    logger.info({ mimeType }, 'Detected MIME type');
+
+    const supportedMimeTypes = {
+      'application/pdf': 'pdf',
+      'application/epub+zip': 'epub',
+      'text/csv': 'csv',
+      'text/markdown': 'md',
+    };
+
+    const embeddingModel = await createEmbeddingsInstance({ apiKey });
+    const fileExtension =
+      supportedMimeTypes[mimeType as keyof typeof supportedMimeTypes];
+    if (!fileExtension) {
+      return {
+        success: false,
+        message: `Unsupported file type: ${mimeType}`,
+      };
+    }
+
+    const { filePath, message, success } = await saveBinaryToTempFile(
+      fileContent,
+      fileExtension
+    );
+    if (!success || !filePath) {
+      return {
+        success: false,
+        message: `Failed to save temporary file: ${message}`,
+      };
+    }
+
+    if (fileExtension === 'pdf') {
+      const {
+        rawDocs: pdfDocs,
+        success,
+        message,
+      } = await processPDFDocument(filePath, fileName, fileId, organizationId);
+
+      if (!success) {
+        return { success: false, message };
       }
+
+      rawDocs = pdfDocs;
+    }
+
+    try {
+      await fs.promises.access(filePath, fs.constants.R_OK);
+      let loader;
+      switch (fileExtension) {
+        case 'pdf':
+          loader = new PDFLoader(filePath);
+          break;
+        case 'csv':
+          loader = new CSVLoader(filePath);
+          break;
+        case 'epub':
+          loader = new EPubLoader(filePath);
+          break;
+        default:
+          loader = undefined;
+      }
+
+      if (loader) {
+        rawDocs = await loader.load();
+      }
+    } catch (error) {
+      logger.error(
+        { err: error },
+        `Error loading ${fileExtension.toUpperCase()} file`
+      );
+      return {
+        success: false,
+        message: `File is not accessible at: ${filePath}`,
+        error: error as Error,
+      };
+    } finally {
+      await fs.promises.rm(filePath, { recursive: true, force: true });
     }
 
     const splitterSettings =

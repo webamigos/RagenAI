@@ -164,6 +164,7 @@
     "dotenv-flow": "^4.1.0",
     "epub": "^1.2.1",
     "epub2": "^3.0.2",
+    "file-type": "^20.0.0",
     "flag-icons": "^7.2.0",
     "framer-motion": "^11.2.6",
     "highlight.js": "^11.10.0",
