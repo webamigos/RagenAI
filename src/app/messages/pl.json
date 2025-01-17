@@ -116,6 +116,9 @@
     },
     "prompt-management": {
       "title": "Zarządzanie asystentem | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
     }
   },
   "chat": {
@@ -379,6 +382,7 @@
     "go-back-home": "Powrót do strony głównej"
   },
   "Chatbot": {
-    "opening-chat-thread": "Otwieranie wątku..."
+    "opening-chat-thread": "Otwieranie wątku...",
+    "start-new-thread": "Rozpocznij nowy wątek"
   }
 }

@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { GenerateAccessKey } from './components/generate-access-key';
 import { auth } from '@clerk/nextjs/server';
@@ -11,8 +11,9 @@ type Props = {
 };
 
 export async function generateMetadata({ params: { locale } }: Props) {
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
-    title: 'Generowanie klucza dostępu do organizacji',
+    title: t('generate-access-key.title'),
   };
 }
 
