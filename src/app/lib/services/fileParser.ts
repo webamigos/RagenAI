@@ -32,11 +32,6 @@ export async function parseFile(
     return { content: buffer, fileName: file.name, fileType };
   }
 
-  if (fileType === 'pdf') {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    return { content: buffer, fileName: file.name, fileType };
-  }
-
   if (fileType === 'text') {
     const content = await file.text();
     return { content, fileName: file.name, fileType };
@@ -48,7 +43,6 @@ export async function parseFile(
 function getFileType(fileName: string): string {
   if (fileName.endsWith('.srt')) return 'srt';
   if (fileName.endsWith('.epub')) return 'epub';
-  if (fileName.endsWith('.pdf')) return 'pdf';
   if (fileName.endsWith('.md') || fileName.endsWith('.txt')) return 'text';
   return 'unknown';
 }
