@@ -13,7 +13,7 @@ const UploadedListPage = () => {
   }, [t]);
 
   return (
-    <div className="h-screen-minus-10 flex-1 flex flex-col gap-4">
+    <div className="h-screen-minus-10 flex-1 flex flex-col pb-5 pl-4 gap-4 overflow-hidden">
       <FileListWrapper />
     </div>
   );
