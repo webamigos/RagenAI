@@ -173,7 +173,7 @@ export const convertAndStoreDocument = async ({
           error: error as Error,
         };
       } finally {
-        await fs.promises.unlink(filePath);
+        await fs.promises.rm(filePath, { recursive: true, force: true });
       }
     } else {
       if (typeof fileContent === 'string') {
