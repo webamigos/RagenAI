@@ -50,10 +50,6 @@ const envSchema = z.object({
   // Resend
   RESEND_API_KEY: z.string(),
   RESEND_DEFAULT_AUDIENCE_ID: z.string(),
-
-  // Unstructured
-  UNSTRUCTURED_API_KEY: z.string(),
-  UNSTRUCTURED_API_URL: z.string().url(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);
