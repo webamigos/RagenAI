@@ -182,6 +182,7 @@
     "next-themes": "^0.2.1",
     "npm": "^10.8.3",
     "openai": "^4.55.4",
+    "pdf-parse": "^1.1.1",
     "pino": "^9.3.2",
     "pino-pretty": "^11.2.2",
     "pino-sentry": "^0.15.0",

@@ -6,6 +6,7 @@ export type SupportedFileType =
   | 'csv'
   | 'markdown'
   | 'unknown'
+  | 'srt'
   | 'text';
 
 export const createDocumentDetailsInDB = async (
