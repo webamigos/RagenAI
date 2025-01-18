@@ -41,3 +41,5 @@ export { KeyIcon } from './KeyIcon';
 export { ClourArrowIcon } from './CloudArrowIcon';
 export { CheckIcon } from './CheckIcon';
 export { SearchIcon } from './SearchIcon';
+export { StackIcon } from './StackIcon';
+export { RSSIcon } from './RSSIcon';

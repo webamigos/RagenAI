@@ -116,6 +116,9 @@
     },
     "prompt-management": {
       "title": "Assistant Management | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generate Access Key | Ragen AI"
     }
   },
   "chat": {
@@ -212,6 +215,7 @@
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
+    "generate-access-key": "Public access",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -361,7 +365,16 @@
     "sync-error": "An error occurred during sync"
   },
   "generateAccessKey": {
-    "title": "Generating an organization access key"
+    "configure-public-access": "Configure public access",
+    "chatbot-title": "Chatbot title",
+    "chatbot-subtitle": "Chatbot subtitle",
+    "generate-public-key": "Generate public access",
+    "public-access-URL": "Public access URL",
+    "embed-code": "Embed code",
+    "configure-chatbot": "Configure chatbot",
+    "generate-embed-code": "Generate embed code",
+    "embed-code-warning": "The displayed code is visible only once! Remember to save it",
+    "public-access-warning": "This URL is visible only once! Remember to save it"
   },
   "page404": {
     "page-not-found": "Page not found",
@@ -369,6 +382,7 @@
     "go-back-home": "Go back to home"
   },
   "Chatbot": {
-    "opening-chat-thread": "Opening chat thread..."
+    "opening-chat-thread": "Opening chat thread...",
+    "start-new-thread": "Start new thread"
   }
 }

@@ -11,7 +11,7 @@ export const OpenEyeIcon = ({ onClick, className }: ComponentProps<'svg'>) => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={classMerge(className, 'h-5 w-5')}
+      className={classMerge('h-5 w-5 cursor-pointer', className)}
     >
       <path
         strokeLinecap="round"
