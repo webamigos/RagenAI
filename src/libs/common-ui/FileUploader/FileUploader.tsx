@@ -26,17 +26,19 @@ export const FileUploader = ({
   const t = useTranslations('admin-panel');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isMarkdownOrEpubFile = (file: File) =>
+  const isSupportedFile = (file: File) =>
     file.type === 'text/markdown' ||
     file.type === 'application/epub+zip' ||
     file.name.endsWith('.md') ||
-    file.name.endsWith('.epub');
+    file.name.endsWith('.epub') ||
+    file.name.endsWith('.pdf') ||
+    file.name.endsWith('.srt');
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     if (disabled) return;
     const droppedFiles = Array.from(event.dataTransfer.files).filter(
-      isMarkdownOrEpubFile
+      isSupportedFile
     );
     onFilesAdded(droppedFiles);
   };
@@ -47,7 +49,7 @@ export const FileUploader = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
     const selectedFiles = Array.from(event.target.files || []).filter(
-      isMarkdownOrEpubFile
+      isSupportedFile
     );
     onFilesAdded(selectedFiles);
 
@@ -94,7 +96,7 @@ export const FileUploader = ({
           ref={fileInputRef}
           className="hidden"
           type="file"
-          accept=".md,.epub"
+          accept=".md,.epub,.srt,.pdf"
           multiple
           onChange={handleFileSelect}
         />
@@ -102,7 +104,7 @@ export const FileUploader = ({
       <Text fontWeight="light" fontSize="sm" color="gray-500" className="-mt-4">
         <Tooltip
           id="supported formats"
-          content={`${t('supported-formats')}: .md, .epub`}
+          content={`${t('supported-formats')}: .md, .epub, .srt`}
         >
           <InformationCircle className="cursor-pointer" />
         </Tooltip>

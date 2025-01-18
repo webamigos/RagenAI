@@ -15,9 +15,9 @@ export default function AdminLayout({
       <Toast />
       <DocumentsProvider>
         <Sidebar>
-          <div className="flex -mt-9 flex-col w-full h-full">
+          <div className="w-full h-full flex flex-col mt-8">
             <TabsWrapper />
-            <div className="flex-grow">{children}</div>
+            <div className="flex-grow mr-2 ml-3 lg:ml-0">{children}</div>
           </div>
         </Sidebar>
       </DocumentsProvider>

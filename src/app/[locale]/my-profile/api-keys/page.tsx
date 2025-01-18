@@ -25,7 +25,7 @@ export default async function ApiKeysPage({
   const result = await fetchApiKeys();
 
   if (!result.success) {
-    return 'Failed to load keys';
+    return t('failed-to-load');
   }
 
   return (

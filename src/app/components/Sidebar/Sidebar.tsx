@@ -74,16 +74,19 @@ export const Sidebar = ({ children, membership }: Props) => {
                 />
               )}
             </Button>
-            {isSignedIn && !pathname.includes('/my-profile') && (
-              <Button
-                onClick={handleSearch}
-                className="relative ml-4 w-10/12"
-                isLink
-              >
-                <SearchIcon className="w-6 h-6 dark:text-gray-200" />
-                <Text className="ml-1">{t('search-threads')}</Text>
-              </Button>
-            )}
+            {isSignedIn &&
+              !pathname.includes('/my-profile') &&
+              !pathname.includes('/manage-knowledge') &&
+              !pathname.includes('generate-access-key') && (
+                <Button
+                  onClick={handleSearch}
+                  className="relative ml-4 w-10/12"
+                  isLink
+                >
+                  <SearchIcon className="w-6 h-6 dark:text-gray-200" />
+                  <Text className="ml-1">{t('search-threads')}</Text>
+                </Button>
+              )}
           </div>
           <SidebarBody className="-mt-3.5">
             {pathname === `/` || pathname.includes('threads') ? (

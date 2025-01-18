@@ -27,11 +27,11 @@ import type {
  * @param {BasicRagChainConfig} params.config - Configuration for the chain.
  * @returns {BasicRagChainOutput} An object containing the chain and the final answer run name. Final answer run name can be used to filter events while stream processing.
  */
-export const basicRagChain = ({
+export const basicRagChain = async ({
   vectorStore,
   models,
   config,
-}: BasicRagChainParams): BasicRagChainOutput => {
+}: BasicRagChainParams): Promise<BasicRagChainOutput> => {
   const chain = RunnableSequence.from<BasicRagChainInput, string>([
     sanitizeAndValidateInput,
 
@@ -42,7 +42,7 @@ export const basicRagChain = ({
     }),
 
     RunnablePassthrough.assign({
-      context: retrieveRelevantDocuments(
+      context: await retrieveRelevantDocuments(
         vectorStore,
         config?.maxDocumentsToRetrieve
       ),

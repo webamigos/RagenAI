@@ -1,0 +1,57 @@
+import { parseSrtToSegmentsUsingLLM } from '@/app/api/threads/services/parseSrtWithLLM';
+import OpenAI from 'openai';
+
+import { getFileType } from '../utils/getFileType';
+
+export type ParsedFile = {
+  content: string | Buffer;
+  fileName: string;
+  fileType: SupportedFileType;
+};
+const openai = new OpenAI();
+
+export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text';
+
+type FileParser = (
+  file: File,
+  organizationId?: string
+) => Promise<string | Buffer>;
+
+const fileParsers: Record<SupportedFileType, FileParser> = {
+  srt: async (file, organizationId) => {
+    if (!organizationId) {
+      throw new Error('Organization ID is required for .srt files');
+    }
+    const fileText = await file.text();
+    const segments = await parseSrtToSegmentsUsingLLM(
+      organizationId,
+      fileText,
+      200,
+      300
+    );
+    return segments.join('\n\n');
+  },
+  pdf: async (file) => Buffer.from(await file.arrayBuffer()),
+  epub: async (file) => Buffer.from(await file.arrayBuffer()),
+  text: async (file) => file.text(),
+};
+
+export async function parseFile(
+  file: File,
+  organizationId?: string
+): Promise<ParsedFile> {
+  if (file.size === 0) {
+    throw new Error(`The file ${file.name} is empty`);
+  }
+
+  const fileType = getFileType(file.name);
+
+  if (!fileParsers[fileType]) {
+    throw new Error(`Unsupported file type: ${file.name}`);
+  }
+
+  const content = await fileParsers[fileType](file, organizationId);
+  return { content, fileName: file.name, fileType };
+}
+
+export { getFileType };

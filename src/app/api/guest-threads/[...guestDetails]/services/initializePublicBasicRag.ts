@@ -1,4 +1,6 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { QdrantVectorStore } from '@langchain/qdrant';
+
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
 import { OrganizationSettings } from '@/app/lib/types/settings';
@@ -6,6 +8,7 @@ import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import { Embeddings } from '@langchain/core/embeddings';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { VectorStore } from '@langchain/core/vectorstores';
 
 import {
   setSentryClerkOrganizationTag,
@@ -18,6 +21,7 @@ import {
   createEmbeddingsInstance,
   createModerationInstance,
 } from '@/app/lib/services/llm';
+import { getOrganizationMetadata } from '@/app/actions';
 
 const serviceName = 'initializeBasicRag';
 
@@ -29,7 +33,7 @@ type InitializePublicRagChainParams = {
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
 const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
-export const initializePublicRagChain = ({
+export const initializePublicRagChain = async ({
   settings,
   organizationId,
 }: InitializePublicRagChainParams) => {
@@ -65,13 +69,30 @@ export const initializePublicRagChain = ({
       temperature: answerTemperature,
     });
 
-    const vectorStore = createVectorStore(
-      supabaseVectorStoreClient,
-      embeddingModel,
-      organizationId
-    );
+    const orgMetadata = await getOrganizationMetadata(organizationId);
+    let vectorStore: VectorStore | undefined = undefined;
 
-    return basicRagChain({
+    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
+      vectorStore = await createQdrantVectorStore(
+        embeddingModel,
+        organizationId
+      );
+    } else {
+      vectorStore = createSupabaseVectorStore(
+        supabaseVectorStoreClient,
+        embeddingModel,
+        organizationId
+      );
+    }
+
+    if (typeof vectorStore === 'undefined') {
+      logger.error('Error initializing basic RAG chain');
+      throw new Error(
+        'Cannot determine VectorStore - use one of Supabase or Qdrant'
+      );
+    }
+
+    return await basicRagChain({
       models: {
         contentModerator,
         questionRephraser,
@@ -89,7 +110,23 @@ export const initializePublicRagChain = ({
   }
 };
 
-const createVectorStore = (
+const createQdrantVectorStore = async (
+  embeddingModel: Embeddings,
+  organizationId: string
+) => {
+  const vectorStore = await QdrantVectorStore.fromExistingCollection(
+    embeddingModel,
+    {
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY, // staging and prod
+      collectionName: organizationId,
+    }
+  );
+
+  return vectorStore;
+};
+
+const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: Embeddings,
   organizationId: string

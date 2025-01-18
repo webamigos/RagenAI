@@ -63,6 +63,7 @@ model UserFile {
   organization_id String
   file_name       String
   file_size       Int
+  file_type       String   @default("unknown")
   created_at      DateTime? @default(now()) @db.Timestamptz
   updated_at      DateTime? @db.Timestamptz
   metadata        Json?
@@ -99,9 +100,8 @@ model Organization {
   created_at      DateTime      @default(now()) @db.Timestamptz
   updated_at      DateTime      @updatedAt @db.Timestamptz
   project         Project[]
-  subscription    Subscription? @relation(fields: [subscription_id], references: [id])
+  subscription    Subscription?
   ApiKey          ApiKey[]
-  subscription_id Int?
 
   @@index([public_id])
   @@index([provider_id])
@@ -109,12 +109,55 @@ model Organization {
 
 model Subscription {
   id                     Int                @id @default(autoincrement())
-  stripe_customer_id     String
-  stripe_subscription_id String
-  stripe_plan            String
-  subscription_plan      SubscriptionPlan   @default(FREE)
-  subscription_status    SubscriptionStatus @default(ACTIVE)
-  Organization           Organization[]
+  organization           Organization       @relation(fields: [organization_id], references: [id])
+  organization_id        Int                @unique
+  plan                   Plan               @relation(fields: [plan_id], references: [id])
+  plan_id               Int
+  stripe_customer_id     String?
+  stripe_subscription_id String?
+  status                SubscriptionStatus  @default(ACTIVE)
+  current_period_start   DateTime           @db.Timestamptz
+  current_period_end     DateTime           @db.Timestamptz
+  trial_end             DateTime?           @db.Timestamptz
+  canceled_at           DateTime?           @db.Timestamptz
+  created_at            DateTime            @default(now()) @db.Timestamptz
+  updated_at            DateTime            @updatedAt @db.Timestamptz
+  usage_periods         UsagePeriod[]
+
+  @@index([status])
+  @@index([current_period_end])
+}
+
+model Plan {
+  id                Int            @id @default(autoincrement())
+  name              String
+  type              PlanType       @default(INTERNAL)
+  stripe_price_id   String?        @unique
+  stripe_product_id String?        @unique
+  stripe_metadata   Json?
+  status            PlanStatus     @default(ACTIVE)
+  features          Json
+  limits            Json
+  last_synced_at    DateTime?      @db.Timestamptz
+  created_at        DateTime       @default(now()) @db.Timestamptz
+  updated_at        DateTime       @updatedAt @db.Timestamptz
+  subscriptions     Subscription[]
+
+  @@index([stripe_price_id])
+  @@index([status])
+}
+
+model UsagePeriod {
+  id              Int          @id @default(autoincrement())
+  subscription    Subscription @relation(fields: [subscription_id], references: [id])
+  subscription_id Int
+  start_date      DateTime     @db.Timestamptz
+  end_date        DateTime     @db.Timestamptz
+  metrics         Json
+  created_at      DateTime     @default(now()) @db.Timestamptz
+  updated_at      DateTime     @updatedAt @db.Timestamptz
+
+  @@index([subscription_id, end_date])
 }
 
 model Project {
@@ -166,4 +209,15 @@ enum SubscriptionStatus {
   ACTIVE
   CANCELLED
   SUSPENDED
+}
+
+enum PlanType {
+  INTERNAL
+  STRIPE
+}
+
+enum PlanStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
 }

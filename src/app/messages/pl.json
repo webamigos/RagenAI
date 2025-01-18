@@ -116,6 +116,9 @@
     },
     "prompt-management": {
       "title": "Zarządzanie asystentem | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
     }
   },
   "chat": {
@@ -212,6 +215,7 @@
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
     "search-threads": "Przeszukaj wątki",
+    "generate-access-key": "Dostęp publiczny",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
@@ -239,7 +243,9 @@
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",
     "updated": "Zaktualizowano",
-    "preview": "Podgląd"
+    "preview": "Podgląd",
+    "no-files": "Brak plików",
+    "search-placeholder": "Wyszukaj plik"
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
@@ -296,6 +302,7 @@
     "created-by": "Stworzony przez",
     "create": "Stwórz",
     "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
+    "failed-to-load": "Błąd podczas pobierania klucza api",
     "copy": "Kopiuj",
     "done": "Gotowe",
     "dialog": {
@@ -311,6 +318,16 @@
         "description": "Zapisz ten klucz w bezpiecznym miejscu. Ze względów bezpieczeństwa nie będziesz mógł go ponownie wyświetlić. Jeśli zgubisz ten klucz, będziesz musiał wygenerować nowy."
       }
     }
+  },
+  "subscription": {
+    "title": "Szczegóły subskrypcji",
+    "no-subscription": "Brak subskrypcji",
+    "current-plan": "Bieżący plan",
+    "status": "Status",
+    "period-start": "Data aktywacji",
+    "canceled-at": "Data anulowania",
+    "trial-ends": "Koniec okresu próbnego",
+    "current-period-ends": "Data wygaśnięcia"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
@@ -349,9 +366,25 @@
     "success": "Organizacja została stworzona",
     "sync-error": "Wystąpił błąd w trakcie synchronizacji"
   },
+  "generateAccessKey": {
+    "configure-public-access": "Skonfiguruj dostęp publiczny",
+    "chatbot-title": "Tytuł czatbota",
+    "chatbot-subtitle": "Podtytuł czatbota",
+    "generate-public-key": "Wygeneruj dostęp publiczny",
+    "public-access-URL": "Publiczny URL dostępu",
+    "embed-code": "Kod do osadzenia",
+    "configure-chatbot": "Skonfiguruj czatbota",
+    "generate-embed-code": "Wygeneruj kod do osadzenia",
+    "embed-code-warning": "Wyświetlony kod widzisz tylko raz! Pamiętaj o jego zapisaniu",
+    "public-access-warning": "Ten URL widzisz tylko raz! Pamiętaj o jego zapisaniu"
+  },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",
     "go-back-home": "Powrót do strony głównej"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Otwieranie wątku...",
+    "start-new-thread": "Rozpocznij nowy wątek"
   }
 }

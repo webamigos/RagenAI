@@ -4,6 +4,7 @@
 
 @import 'react-toastify/dist/ReactToastify.min.css';
 @import 'quill/dist/quill.snow.css';
+@import 'katex/dist/katex.min.css';
 
 * {
   scrollbar-width: thin;

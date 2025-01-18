@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
-import { logger } from '../../../lib/utils/logger';
+import { logger } from '@/app/lib/utils/logger';
 import {
   createDocumentDetailsInDB,
   createMarkdownDocument,
-} from '../../../lib/services/document';
+} from '@/app/lib/services/document';
 import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
+import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -23,14 +24,19 @@ type Params = {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const uploaderId = params.upload[0];
-
   try {
     setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = formData.get('organizationId') as string;
     setSentryClerkOrganizationTag(organizationId);
-
+    if (!uploaderId) {
+      logger.error('Uploader ID missing!');
+      return NextResponse.json(
+        { message: 'Uploader ID is missing!' },
+        { status: 400 }
+      );
+    }
     if (!files || files.length === 0) {
       return NextResponse.json(
         { message: 'No file to process' },
@@ -41,27 +47,17 @@ export async function POST(request: NextRequest, { params }: Params) {
     const processedFiles = [];
 
     for (const file of files) {
-      if (!file.size) {
-        return NextResponse.json(
-          { message: `The file ${file.name} is empty)` },
-          { status: 400 }
-        );
-      }
-
-      let content;
-      const arrayBuffer = await file.arrayBuffer();
-      content = file.name.endsWith('.epub')
-        ? Buffer.from(arrayBuffer)
-        : await file.text();
-
       try {
+        const parsedFile = await parseFile(file, organizationId);
+        const fileType = getFileType(parsedFile.fileName);
+
         const uniqueFileId = uuidv4();
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
           organizationId
         );
         const { message, success } = await convertAndStoreDocument({
-          fileContent: content,
-          fileName: file.name,
+          fileContent: parsedFile.content,
+          fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
           projectId: defaultProjectId,
@@ -69,17 +65,19 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         if (success) {
           await createDocumentDetailsInDB(
-            file.name,
+            parsedFile.fileName,
             file.size,
-            uploaderId,
-            uniqueFileId
+            organizationId,
+            uniqueFileId,
+            fileType
           );
-          if (file.name.endsWith('.md')) {
+
+          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
             await createMarkdownDocument({
               public_id: uniqueFileId,
-              title: file.name,
+              title: parsedFile.fileName,
               organization_id: organizationId,
-              content: content as string,
+              content: parsedFile.content as string,
             });
           }
         }
@@ -93,22 +91,22 @@ export async function POST(request: NextRequest, { params }: Params) {
         }
 
         processedFiles.push({
-          fileName: file.name,
+          fileName: parsedFile.fileName,
           fileSize: file.size,
           uniqueFileId,
-          content,
+          content: parsedFile.content,
         });
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
-          { message: `Error while processing the file ${file.name})` },
+          { message: `Error while processing the file ${file.name}` },
           { status: 500 }
         );
       }
     }
     await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
     return NextResponse.json({
-      message: 'All files are successfully proceed',
+      message: 'All files are successfully processed',
       status: 200,
       files: processedFiles,
     });

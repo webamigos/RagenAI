@@ -2,7 +2,7 @@ import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { clerkClient } from '@clerk/nextjs/server';
-import { type CreateContactOptions, Resend } from 'resend';
+import { type CreateContactOptions } from 'resend';
 
 import { logger } from '@/app/lib/utils/logger';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
@@ -15,12 +15,15 @@ import {
   sendWelcomeEmail,
 } from '@/app/emails/services/mailer';
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY!;
 const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
 import { saveOrganizationInitialMetadata } from '@/app/actions';
+import {
+  activateFreePlan,
+  checkIfOrganizationPlanIsExpired,
+  createTrialSubscription,
+} from '@/app/lib/services/plan';
 
 const serviceName = 'clerkWebhook';
-const resend = new Resend(RESEND_API_KEY);
 
 export async function POST(req: Request) {
   setSentryServiceTag(serviceName);
@@ -115,7 +118,6 @@ export async function POST(req: Request) {
             `Error: cannot create organization for user ${userId}:`
           );
         }
-
         break;
 
       case 'organization.created':
@@ -128,13 +130,17 @@ export async function POST(req: Request) {
           const ragenOrg = await createOrganizationWithDefaultProject(
             clerkOrgId
           );
+
+          await createTrialSubscription(clerkOrgId);
+
+          //To do: store relevant subscription info to clerk organization metadata
           await saveOrganizationInitialMetadata(clerkOrgId, {
             publicMetadata: {
               hasKnowledge: false,
             },
             privateMetadata: {
               ragen_org_id: ragenOrg.id,
-              vector_store: 'supabase',
+              vector_store: 'qdrant',
             },
           });
           logger.info(
@@ -146,9 +152,27 @@ export async function POST(req: Request) {
             `Error: cannot sync organization with app ${clerkOrgId}:`
           );
         }
-
         break;
 
+      case 'session.created':
+        setSentryServiceTag('webhook:session.created');
+
+        const lastOrganizationId = evt.data?.last_active_organization_id;
+        if (!lastOrganizationId) {
+          logger.info('No last organization id found, skipping...');
+          break;
+        }
+
+        const isExpired = await checkIfOrganizationPlanIsExpired(
+          lastOrganizationId
+        );
+        if (isExpired) {
+          logger.info(
+            `Organization ${lastOrganizationId} plan has expired, activating free plan...`
+          );
+          await activateFreePlan(lastOrganizationId);
+        }
+        break;
       default:
         logger.info({ eventType }, 'Unhandled event type, skipping...');
     }
