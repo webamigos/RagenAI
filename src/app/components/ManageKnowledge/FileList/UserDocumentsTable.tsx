@@ -173,7 +173,7 @@ export const UserDocumentsTable = ({
   }, [documents, searchValue]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(event.target.value);
+    setSearchValue(event.target.value.trim());
   };
 
   return (
