@@ -110,10 +110,11 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
             className="relative flex items-center space-x-2"
           >
             <div
-              className={`absolute -left-10 flex space-x-2 transition-all duration-300 ${showToolbar
+              className={`absolute -left-10 flex space-x-2 transition-all duration-300 ${
+                showToolbar
                   ? 'opacity-100 -translate-x-0'
                   : 'opacity-0 -translate-x-4'
-                }`}
+              }`}
             >
               <Link
                 className="text-black dark:text-white"
@@ -122,7 +123,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
               >
                 <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
               </Link>
-
               <Link
                 className="text-black dark:text-white"
                 href={`/document/${id}`}
@@ -142,16 +142,17 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
               </div>
             </div>
             <div
-              className={`transition-all duration-300 ${showToolbar
+              className={`transition-all duration-300 ${
+                showToolbar
                   ? 'opacity-0 translate-x-4'
                   : 'opacity-100 translate-x-0'
-                }`}
+              }`}
             >
               <CommonUi.ArrowIcon className="cursor-pointer" />
             </div>
-          </div >
-        </CommonUi.TableCell >
-      </CommonUi.TableRow >
+          </div>
+        </CommonUi.TableCell>
+      </CommonUi.TableRow>
     </>
   );
 };

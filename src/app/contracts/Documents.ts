@@ -8,4 +8,5 @@ export type UserFileType = {
   created_at?: UserFile['created_at'];
   updated_at?: UserFile['updated_at'];
   metadata?: UserFile['metadata'];
+  file_type: UserFile['file_type'];
 };

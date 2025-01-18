@@ -1,5 +1,5 @@
 .custom-quill .ql-toolbar {
-  @apply bg-primary-gray-200 dark:bg-gray-300 border border-gray-300 dark:border-gray-600 rounded-t-2xl;
+  @apply bg-primary-gray-200 dark:bg-gray-300 border border-gray-300 dark:border-gray-600 rounded-t-2xl z-50 md:z-0;
 }
 
 .custom-quill .ql-container {

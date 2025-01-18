@@ -8,7 +8,10 @@ import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderat
 
 const verbose = process.env.NODE_ENV === 'development';
 
-export const createChatCompletionInstance = (options: ChatOpenAIFields) => {
+export const createChatCompletionInstance = (
+  options: ChatOpenAIFields,
+  streaming: boolean = true
+) => {
   if (!options.apiKey) {
     throw new Error('Cannot create chat instance, apiKey is required');
   }
@@ -16,7 +19,7 @@ export const createChatCompletionInstance = (options: ChatOpenAIFields) => {
   return new ChatOpenAI({
     ...options,
     verbose,
-    streaming: true,
+    streaming,
   });
 };
 
