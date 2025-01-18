@@ -33,6 +33,7 @@ const nextConfig = {
       'pino-pretty',
       'pino-sentry',
       '@sentry/node',
+      '@hyzyla/pdfium',
     ],
   },
 
