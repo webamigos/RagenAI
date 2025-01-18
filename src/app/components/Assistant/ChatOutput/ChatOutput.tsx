@@ -18,6 +18,50 @@ type Props = {
   streamedMessage: StreamedMessageDto | null;
 };
 
+const MessageContent = ({
+  content,
+  role,
+  message,
+  streamedMessageRunId,
+}: {
+  content: string;
+  role: string;
+  message?: MessageDto;
+  streamedMessageRunId?: string;
+}) => {
+  const { md, t } = useChatViewLogic(null);
+  return (
+    <>
+      {role === 'ASSISTANT' && (
+        <Text fontSize="sm" fontWeight="bold">
+          {t(role)}
+        </Text>
+      )}
+      <div
+        className={`chat-response relative ${
+          role === 'USER' ? 'user-message' : 'assistant-message'
+        }`}
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: md.render(content),
+          }}
+        />
+        {role === 'ASSISTANT' && message && (
+          <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <RateAnswer
+              initialRated={message.rate}
+              publicId={message.public_id}
+              runId={streamedMessageRunId || message.run_id}
+            />
+            <CopyToClipboardButton message={message} />
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
 export const ChatOutput = ({
   messages,
   isLoading,
@@ -25,7 +69,7 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
 }: Props) => {
-  const { t, md, streamedMessageRunId, renderedStreamedMessage } =
+  const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
 
   return (
@@ -40,32 +84,12 @@ export const ChatOutput = ({
                 : 'pt-4 text-left self-start text-base shadow-none bg-primary-light dark:bg-primary-dark'
             } ${messageIndex === 0 && !widgetMode ? 'lg:first:mt-14' : ''}`}
           >
-            {message.role === 'ASSISTANT' ? (
-              <Text fontSize="sm" fontWeight="bold">
-                {t(message.role)}
-              </Text>
-            ) : null}
-            <div
-              className={`chat-response relative ${
-                message.role === 'USER' ? 'user-message' : 'assistant-message'
-              }`}
-            >
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: md.render(message.content),
-                }}
-              />
-              {message.role === 'ASSISTANT' && !widgetMode && (
-                <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <RateAnswer
-                    initialRated={message.rate}
-                    publicId={message.public_id}
-                    runId={streamedMessageRunId || message.run_id}
-                  />
-                  <CopyToClipboardButton message={message} />
-                </div>
-              )}
-            </div>
+            <MessageContent
+              content={message.content}
+              role={message.role}
+              message={message}
+              streamedMessageRunId={streamedMessageRunId}
+            />
           </div>
         ))}
 
@@ -87,8 +111,8 @@ export const ChatOutput = ({
         )}
 
         {isLoading && (
-          <div className="absolute bottom-[84px] left-18 flex items-center justify-center pointer-events-none">
-            <SpinnerSVG size="sm" />
+          <div className="absolute bottom-[84px] md:left-14 flex items-center justify-center pointer-events-none">
+            <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
           </div>
         )}

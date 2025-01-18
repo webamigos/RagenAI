@@ -17,7 +17,7 @@ export default function AdminLayout({
         <Sidebar>
           <div className="w-full h-full flex flex-col mt-8">
             <TabsWrapper />
-            <div className="flex-grow mr-2">{children}</div>
+            <div className="flex-grow mr-2 ml-3 lg:ml-0">{children}</div>
           </div>
         </Sidebar>
       </DocumentsProvider>
