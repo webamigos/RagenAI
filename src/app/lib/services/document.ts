@@ -1,6 +1,13 @@
 import db from '@ragenai/prisma-client';
 
-type SupportedFileType = 'text' | 'srt' | 'pdf' | 'md' | 'epub';
+export type SupportedFileType =
+  | 'pdf'
+  | 'epub'
+  | 'csv'
+  | 'markdown'
+  | 'unknown'
+  | 'srt'
+  | 'text';
 
 export const createDocumentDetailsInDB = async (
   file_name: string,
