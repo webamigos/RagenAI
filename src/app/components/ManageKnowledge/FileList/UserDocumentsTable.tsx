@@ -7,11 +7,12 @@ import { useRouter } from 'next/navigation';
 import * as CommonUi from '@ragenai/common-ui';
 import { deleteDocumentAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
+import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../lib/utils/truncateFileName';
 import { useSettings } from '@/app/hooks/useSettings';
 import { DeleteFileModal } from './DeleteFileModal';
+import { FileSearch } from './FileSearch';
 
-import { formatDates } from '@/app/lib/utils/formatDate';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type Props = {
@@ -162,28 +163,58 @@ export const UserDocumentsTable = ({
   onRemoveDocument,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
+  const [searchValue, setSearchValue] = useState('');
+
+  const filteredDocuments = useMemo(() => {
+    return documents.filter((doc) =>
+      doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [documents, searchValue]);
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(event.target.value.trim());
+  };
+
   return (
-    <CommonUi.Table className="overflow-x-auto">
-      <CommonUi.TableHead>
-        <CommonUi.TableRow className="text-base">
-          <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
-          <CommonUi.TableHeader>{t('file-size')}</CommonUi.TableHeader>
-          <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
-          <CommonUi.TableHeader>{t('updated')}</CommonUi.TableHeader>
-          <CommonUi.TableHeader>
-            <span className="sr-only">Actions</span>
-          </CommonUi.TableHeader>
-        </CommonUi.TableRow>
-      </CommonUi.TableHead>
-      <CommonUi.TableBody>
-        {documents.map((document) => (
-          <DocumentRow
-            key={document.id}
-            document={document}
-            onRemoveDocument={onRemoveDocument}
-          />
-        ))}
-      </CommonUi.TableBody>
-    </CommonUi.Table>
+    <div className="relative">
+      <FileSearch
+        className="absolute right-0 -top-14"
+        value={searchValue}
+        onChange={handleSearchChange}
+      />
+      <CommonUi.Table className="overflow-x-auto">
+        <CommonUi.TableHead>
+          <CommonUi.TableRow className="text-base">
+            <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
+            <CommonUi.TableHeader>{t('file-size')}</CommonUi.TableHeader>
+            <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
+            <CommonUi.TableHeader>{t('updated')}</CommonUi.TableHeader>
+            <CommonUi.TableHeader>
+              <span className="sr-only">Actions</span>
+            </CommonUi.TableHeader>
+          </CommonUi.TableRow>
+        </CommonUi.TableHead>
+        <CommonUi.TableBody>
+          {filteredDocuments.length > 0 ? (
+            filteredDocuments.map((document) => (
+              <DocumentRow
+                key={document.id}
+                document={document}
+                onRemoveDocument={onRemoveDocument}
+              />
+            ))
+          ) : (
+            <CommonUi.TableRow>
+              <CommonUi.TableCell
+                colSpan={5}
+                className="text-center text-sm text-gray-500"
+              >
+                {t('no-files')}
+              </CommonUi.TableCell>
+            </CommonUi.TableRow>
+          )}
+        </CommonUi.TableBody>
+      </CommonUi.Table>
+    </div>
   );
 };

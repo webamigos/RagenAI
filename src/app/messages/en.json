@@ -243,7 +243,9 @@
     "file-size": "File Size",
     "created": "Created",
     "updated": "Updated",
-    "preview": "Preview"
+    "preview": "Preview",
+    "no-files": "No files",
+    "search-placeholder": "Search in files..."
   },
   "file-delete-modal": {
     "are-you-sure": "Are you sure you want to delete",
