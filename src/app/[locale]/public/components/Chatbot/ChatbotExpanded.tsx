@@ -16,8 +16,8 @@ export const ChatbotExpanded = ({
   return (
     <div
       className={`w-[400px] ${
-        isMinimized ? 'h-[64px]' : 'h-[600px]'
-      } bg-background rounded-lg shadow-xl overflow-hidden flex flex-col transition-height duration-300`}
+        isMinimized ? 'min-h-[64px]' : 'max-h-[600px]'
+      } h-[600px] bg-background rounded-lg shadow-xl overflow-hidden flex flex-col transition-height duration-300`}
     >
       <div className="flex justify-between items-center p-4 border-b shrink-0">
         <div>
@@ -52,7 +52,8 @@ export const ChatbotExpanded = ({
         />
       </div>
       <div
-        className={`h-6 flex items-center justify-center text-xs text-gray-500 border-t shrink-0 ${
+        onClick={() => window.open('https://ragen.ai', '_blank')}
+        className={`h-6 flex items-center justify-center text-xs text-gray-500 border-t shrink-0 cursor-pointer ${
           isMinimized ? 'hidden' : ''
         }`}
       >
@@ -61,7 +62,6 @@ export const ChatbotExpanded = ({
     </div>
   );
 };
-
 const CloseIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
