@@ -1,13 +1,14 @@
 import * as fs from 'node:fs';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
+import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { fileTypeFromBuffer } from 'file-type';
-
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
@@ -23,7 +24,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { processPDFDocument } from '@/libs/chains/pdf-process-rag/chain';
@@ -68,7 +69,7 @@ const saveBinaryToTempFile = async (
   extension: string
 ) => {
   const projectDir = process.cwd();
-  const filePath = path.join(projectDir, `temp-${Date.now()}.${extension}`);
+  const filePath = path.join(projectDir, `temp-${uuidv4()}.${extension}`);
 
   try {
     setSentryServiceTag(serviceName);
@@ -84,13 +85,10 @@ const saveBinaryToTempFile = async (
     };
   } catch (error) {
     logger.error({ err: error }, 'Error saving binary to temp file');
-    if (error) {
-      return {
-        success: false,
-        message: `Failed to save file at ${filePath}: ${error}`,
-      };
-    }
-    throw error;
+    return {
+      success: false,
+      message: `Failed to save file at ${filePath}: ${error}`,
+    };
   }
 };
 
@@ -196,6 +194,9 @@ export const convertAndStoreDocument = async ({
           break;
         case 'epub':
           loader = new EPubLoader(filePath);
+          break;
+        case 'md':
+          loader = new TextLoader(filePath);
           break;
         default:
           loader = undefined;
