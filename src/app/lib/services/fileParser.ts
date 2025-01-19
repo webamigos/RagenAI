@@ -7,8 +7,8 @@ export type ParsedFile = {
   content: string | Buffer;
   fileName: string;
   fileType: SupportedFileType;
+  fileExtension: string;
 };
-const openai = new OpenAI();
 
 export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text';
 
@@ -51,7 +51,10 @@ export async function parseFile(
   }
 
   const content = await fileParsers[fileType](file, organizationId);
-  return { content, fileName: file.name, fileType };
+
+  const fileExtension = file.name.split('.').pop();
+
+  return { content, fileName: file.name, fileType, fileExtension };
 }
 
 export { getFileType };

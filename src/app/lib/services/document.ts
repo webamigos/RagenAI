@@ -16,7 +16,7 @@ export const createDocumentDetailsInDB = async (
   id: string,
   file_type: SupportedFileType
 ) => {
-  await db.userFile.create({
+  return await db.userFile.create({
     data: {
       id,
       organization_id,

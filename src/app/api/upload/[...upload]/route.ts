@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { S3 } from 'aws-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import { auth } from '@clerk/nextjs/server';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
@@ -16,6 +17,7 @@ import {
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
+import { supportedMimeTypes } from '@/app/config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,23 +26,29 @@ type Params = {
   params: { upload: string };
 };
 
-const s3 = new S3({
-  region: process.env.AWS_REGION,
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-});
-
+// function uses AWS SDK v3 and we can use parallelUploads and streaming in the future
 async function uploadToS3(fileName: string, fileContent: Buffer) {
   const { orgId } = auth();
   if (!orgId) {
     throw new Error('Invalid organization');
   }
-  const params: S3.PutObjectRequest = {
-    Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET!,
-    Key: `${orgId}/${fileName}`,
-    Body: fileContent,
-  };
-  return s3.upload(params).promise();
+
+  const parallelUploads3 = new Upload({
+    client: new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    }),
+    params: {
+      Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET,
+      Key: `${orgId}/${fileName}`,
+      Body: fileContent,
+    },
+  });
+
+  await parallelUploads3.done();
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
@@ -77,6 +85,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       try {
         const parsedFile = await parseFile(file, organizationId);
         const fileType = getFileType(parsedFile.fileName);
+        const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
@@ -91,18 +100,6 @@ export async function POST(request: NextRequest, { params }: Params) {
         });
 
         if (success) {
-          // upload file to S3 in the background
-          uploadToS3(parsedFile.fileName, parsedFile.content as Buffer)
-            .then(() => {
-              logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
-            })
-            .catch((error) => {
-              logger.error(
-                { err: error },
-                `Error uploading file to S3: ${parsedFile.fileName}`
-              );
-            });
-
           await createDocumentDetailsInDB(
             parsedFile.fileName,
             file.size,
@@ -119,6 +116,21 @@ export async function POST(request: NextRequest, { params }: Params) {
               content: parsedFile.content as string,
             });
           }
+
+          // upload file to S3 in the background
+          uploadToS3(
+            `${uniqueFileId}.${fileExtension}`,
+            parsedFile.content as Buffer
+          )
+            .then(() => {
+              logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
+            })
+            .catch((error) => {
+              logger.error(
+                { err: error },
+                `Error uploading file to S3: ${parsedFile.fileName}`
+              );
+            });
         }
 
         if (!success) {
