@@ -50,6 +50,12 @@ const envSchema = z.object({
   // Resend
   RESEND_API_KEY: z.string(),
   RESEND_DEFAULT_AUDIENCE_ID: z.string(),
+
+  // AWS
+  AWS_REGION: z.string(),
+  AWS_ACCESS_KEY_ID: z.string(),
+  AWS_SECRET_ACCESS_KEY: z.string(),
+  AWS_SECRET_DOCUMENTS_BUCKET: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

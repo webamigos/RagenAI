@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { S3 } from 'aws-sdk';
+import { auth } from '@clerk/nextjs/server';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
@@ -22,13 +24,38 @@ type Params = {
   params: { upload: string };
 };
 
+const s3 = new S3({
+  region: process.env.AWS_REGION,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
+async function uploadToS3(fileName: string, fileContent: Buffer) {
+  const { orgId } = auth();
+  if (!orgId) {
+    throw new Error('Invalid organization');
+  }
+  const params: S3.PutObjectRequest = {
+    Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET!,
+    Key: `${orgId}/${fileName}`,
+    Body: fileContent,
+  };
+  return s3.upload(params).promise();
+}
+
 export async function POST(request: NextRequest, { params }: Params) {
   const uploaderId = params.upload[0];
+
+  const { orgId } = auth();
+  if (!orgId) {
+    throw new Error('Invalid organization');
+  }
+
   try {
     setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
-    const organizationId = formData.get('organizationId') as string;
+    const organizationId = orgId;
     setSentryClerkOrganizationTag(organizationId);
     if (!uploaderId) {
       logger.error('Uploader ID missing!');
@@ -64,6 +91,18 @@ export async function POST(request: NextRequest, { params }: Params) {
         });
 
         if (success) {
+          // upload file to S3 in the background
+          uploadToS3(parsedFile.fileName, parsedFile.content as Buffer)
+            .then(() => {
+              logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
+            })
+            .catch((error) => {
+              logger.error(
+                { err: error },
+                `Error uploading file to S3: ${parsedFile.fileName}`
+              );
+            });
+
           await createDocumentDetailsInDB(
             parsedFile.fileName,
             file.size,

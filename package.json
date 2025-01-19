@@ -157,6 +157,7 @@
     "@upstash/redis": "^1.28.4",
     "@vercel/og": "^0.6.2",
     "ai": "^3.0.7",
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
     "crypto-js": "^4.2.0",
