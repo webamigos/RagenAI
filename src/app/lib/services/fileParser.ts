@@ -2,12 +2,13 @@ import { parseSrtToSegmentsUsingLLM } from '@/app/api/threads/services/parseSrtW
 import OpenAI from 'openai';
 
 import { getFileType } from '../utils/getFileType';
+import { getFileExtension } from '../utils/getFileExtension';
 
 export type ParsedFile = {
   content: string | Buffer;
   fileName: string;
   fileType: SupportedFileType;
-  fileExtension: string;
+  fileExtension?: string;
 };
 
 export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text';
@@ -52,7 +53,7 @@ export async function parseFile(
 
   const content = await fileParsers[fileType](file, organizationId);
 
-  const fileExtension = file.name.split('.').pop();
+  const fileExtension = getFileExtension(file.name);
 
   return { content, fileName: file.name, fileType, fileExtension };
 }
