@@ -43,3 +43,4 @@ export { CheckIcon } from './CheckIcon';
 export { SearchIcon } from './SearchIcon';
 export { StackIcon } from './StackIcon';
 export { RSSIcon } from './RSSIcon';
+export { SoundWave } from './SoundWave';
