@@ -11,6 +11,7 @@ type Props = {
     prompt: string;
   }>;
   onSend: () => void;
+  setPromptValue: (text: string) => void;
   value: string;
 };
 
@@ -18,6 +19,7 @@ export const AskQuestion = ({
   disabled,
   error,
   value,
+  setPromptValue,
   register,
   onSend,
 }: Props) => {
@@ -33,6 +35,7 @@ export const AskQuestion = ({
       error={error}
       disabled={disabled}
       {...register('prompt')}
+      setValue={setPromptValue}
       placeholder={t('enter-your-question')}
     />
   );

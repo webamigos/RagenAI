@@ -11,11 +11,14 @@ import {
 import {
   ArrowRightCircleIcon,
   ExclamationCircleIcon,
+  MicrophoneIcon,
+  StopIcon,
 } from '@heroicons/react/20/solid';
 import type { FieldError } from 'react-hook-form';
 
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
+import { useVoiceInput } from '../../../app/hooks/useAudioRecording';
 
 type Props = {
   label?: string;
@@ -25,6 +28,7 @@ type Props = {
   errorMessage?: string; // for translations
   maxHeight?: number;
   onSend?: () => void;
+  setValue?: (text: string) => void;
   value?: string;
 } & ComponentPropsWithRef<'textarea'>;
 
@@ -39,6 +43,7 @@ export const Textarea = forwardRef(
       containerClassName,
       maxHeight = 200,
       onSend,
+      setValue,
       value,
       ...rest
     }: Props,
@@ -46,6 +51,17 @@ export const Textarea = forwardRef(
   ) => {
     const id = useId();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    const {
+      startListening,
+      stopListening,
+      isRecording,
+      error: voiceError,
+    } = useVoiceInput({
+      onResult: (text) => {
+        if (setValue) setValue(text);
+      },
+    });
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
@@ -73,14 +89,45 @@ export const Textarea = forwardRef(
 
     const maxHeightClass = `max-h-[${maxHeight}px]`;
 
+    let icon = null;
+    let onClick = null;
+
+    if (isRecording) {
+      icon = (
+        <StopIcon
+          className="h-7 w-7 mb-1.5 text-red-500 hover:text-red-600 dark:text-red-400"
+          aria-hidden="true"
+        />
+      );
+      onClick = stopListening;
+    } else if (value?.trim()) {
+      icon = (
+        <ArrowRightCircleIcon
+          className="h-9 w-9 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
+          aria-hidden="true"
+        />
+      );
+      onClick = onSend;
+    } else {
+      icon = (
+        <MicrophoneIcon
+          className="h-7 w-7 mb-1.5 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
+          aria-hidden="true"
+        />
+      );
+      onClick = startListening;
+    }
+
     return (
       <div className={classMerge('relative', containerClassName)}>
-        <label
-          htmlFor={id}
-          className="block text-sm font-medium leading-6 dark:text-gray-300"
-        >
-          {label}
-        </label>
+        {label && (
+          <label
+            htmlFor={id}
+            className="block text-sm font-medium leading-6 dark:text-gray-300"
+          >
+            {label}
+          </label>
+        )}
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
           <div className="relative">
             <textarea
@@ -90,7 +137,9 @@ export const Textarea = forwardRef(
                 if (typeof ref === 'function') {
                   ref(el);
                 } else if (ref) {
-                  ref.current = el;
+                  (
+                    ref as React.MutableRefObject<HTMLTextAreaElement | null>
+                  ).current = el;
                 }
               }}
               rows={1}
@@ -102,49 +151,54 @@ export const Textarea = forwardRef(
                     error,
                   'shadow-sm': !error,
                 },
-                onSend ? 'pr-12' : '',
+                'pr-12',
                 className
               )}
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
               value={value}
-              placeholder="Your placeholder text here"
+              placeholder="Twoje pytanie..."
               {...rest}
             />
-            {onSend && (
-              <button
-                type="button"
-                onClick={onSend}
-                className="absolute bottom-1.5 right-3 flex items-center"
-                disabled={!value?.trim()}
-                data-testid="send-button"
-              >
-                <ArrowRightCircleIcon
-                  className={`h-9 w-9 ${
-                    value?.trim()
-                      ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
-                      : 'text-gray-400'
-                  }`}
-                  aria-hidden="true"
-                />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onClick as any}
+              className="absolute bottom-1.5 right-3 flex items-center"
+              disabled={
+                !isRecording &&
+                !value?.trim() &&
+                icon !== null &&
+                icon.type === ArrowRightCircleIcon
+              }
+            >
+              {icon}
+            </button>
           </div>
         </div>
+
         {error && (
-          <>
-            <Text
-              className="flex items-center mt-2 text-sm text-red-600"
-              id="email-error"
-            >
-              <ExclamationCircleIcon
-                className="h-4 w-4 mr-1 text-red-500"
-                aria-hidden="true"
-              />
-              {errorMessage ? errorMessage : error.message}
-            </Text>
-          </>
+          <Text
+            className="flex items-center mt-2 text-sm text-red-600"
+            id="email-error"
+          >
+            <ExclamationCircleIcon
+              className="h-4 w-4 mr-1 text-red-500"
+              aria-hidden="true"
+            />
+            {errorMessage ? errorMessage : error.message}
+          </Text>
         )}
+
+        {voiceError && (
+          <Text className="flex items-center mt-2 text-sm text-red-500">
+            <ExclamationCircleIcon
+              className="h-4 w-4 mr-1 text-red-500"
+              aria-hidden="true"
+            />
+            {voiceError}
+          </Text>
+        )}
+
         {hint && (
           <Text
             className="mt-2 text-sm text-gray-500 dark:text-gray-400"
@@ -158,4 +212,4 @@ export const Textarea = forwardRef(
   }
 );
 
-Textarea.displayName = 'textarea';
+Textarea.displayName = 'Textarea';

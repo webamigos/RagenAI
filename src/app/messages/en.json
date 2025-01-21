@@ -386,5 +386,10 @@
   "Chatbot": {
     "opening-chat-thread": "Opening chat thread...",
     "start-new-thread": "Start new thread"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Your browser does not support audio recording",
+    "recognition-error": "Recognition error, try again",
+    "recording-error": "Error during recording, try again"
   }
 }

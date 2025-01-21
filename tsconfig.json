@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "dom-speech-recognition"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
