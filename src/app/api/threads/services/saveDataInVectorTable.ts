@@ -287,40 +287,32 @@ export const convertAndStoreDocument = async ({
     );
 
     if (vectorStoreType === 'qdrant') {
-      try {
-        const vectorStore = await QdrantVectorStore.fromExistingCollection(
-          embeddingModel,
-          {
-            url: process.env.QDRANT_URL,
-            apiKey: process.env.QDRANT_API_KEY, // staging and prod
-            collectionName: orgId,
-          }
-        );
+      const vectorStore = await QdrantVectorStore.fromExistingCollection(
+        embeddingModel,
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY, // staging and prod
+          collectionName: orgId,
+        }
+      );
 
-        await vectorStore.addDocuments(updatedDocs);
-        logger.info('Added documents to Qdrant');
-      } catch (err) {
-        logger.error({ err }, 'Error during saving to Qdrant');
-      }
+      await vectorStore.addDocuments(updatedDocs);
+      logger.info('Added documents to Qdrant');
     } else {
-      try {
-        const vectorStore = new SupabaseVectorStore(embeddingModel, {
-          client: supabaseVectorStoreClient,
-          tableName: VECTOR_STORE_TABLE_NAME,
-          queryName: DOCUMENT_SEARCH_QUERY_NAME,
-        });
+      const vectorStore = new SupabaseVectorStore(embeddingModel, {
+        client: supabaseVectorStoreClient,
+        tableName: VECTOR_STORE_TABLE_NAME,
+        queryName: DOCUMENT_SEARCH_QUERY_NAME,
+      });
 
-        await vectorStore.addVectors(
-          updatedDocs.map((doc) => doc.embedding),
-          updatedDocs.map((doc) => ({
-            pageContent: doc.pageContent,
-            metadata: doc.metadata,
-          }))
-        );
-        logger.info('Added documents saving to Supabase Vector Store');
-      } catch (err) {
-        logger.error({ err }, 'Error during saving to Supabase Vector Store');
-      }
+      await vectorStore.addVectors(
+        updatedDocs.map((doc) => doc.embedding),
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        }))
+      );
+      logger.info('Added documents saving to Supabase Vector Store');
     }
 
     return {
