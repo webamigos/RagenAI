@@ -1,10 +1,11 @@
+import { getApiKeyFromPool } from '../services/apiKeys';
 import {
   OrganizationSettingsLimits,
   RawOrganizationSettings,
 } from '../types/settings';
 
 export const defaultOrganizationSettings: RawOrganizationSettings = {
-  apiKey: null,
+  apiKey: getApiKeyFromPool(),
   prompt: '',
   model: 'gpt-4o',
   temperature: 0.8,
