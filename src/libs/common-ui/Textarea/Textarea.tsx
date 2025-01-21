@@ -40,6 +40,7 @@ export const Textarea = forwardRef(
       error,
       errorMessage,
       className,
+      disabled,
       containerClassName,
       maxHeight = 200,
       onSend,
@@ -111,11 +112,16 @@ export const Textarea = forwardRef(
     } else {
       icon = (
         <MicrophoneIcon
-          className="h-7 w-7 mb-1.5 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
+          className={classMerge(
+            'h-7 w-7 mb-1.5',
+            disabled
+              ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+          )}
           aria-hidden="true"
         />
       );
-      onClick = startListening;
+      onClick = disabled ? undefined : startListening;
     }
 
     return (
