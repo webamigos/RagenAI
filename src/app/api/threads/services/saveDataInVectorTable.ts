@@ -297,7 +297,6 @@ export const convertAndStoreDocument = async ({
       );
 
       await vectorStore.addDocuments(updatedDocs);
-      logger.info('Added documents to Qdrant');
     } else {
       const vectorStore = new SupabaseVectorStore(embeddingModel, {
         client: supabaseVectorStoreClient,
@@ -312,7 +311,6 @@ export const convertAndStoreDocument = async ({
           metadata: doc.metadata,
         }))
       );
-      logger.info('Added documents saving to Supabase Vector Store');
     }
 
     return {
