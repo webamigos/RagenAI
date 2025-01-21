@@ -1,7 +1,6 @@
 import * as fs from 'node:fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { TextLoader } from 'langchain/document_loaders/fs/text';
@@ -27,7 +26,7 @@ import { QdrantVectorStore } from '@langchain/qdrant';
 import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { processPDFDocument } from '@/libs/chains/pdf-process-rag/chain';
+import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -168,26 +167,17 @@ export const convertAndStoreDocument = async ({
       };
     }
 
-    if (fileExtension === 'pdf') {
-      const {
-        rawDocs: pdfDocs,
-        success,
-        message,
-      } = await processPDFDocument(filePath, fileName, fileId, organizationId);
-
-      if (!success) {
-        return { success: false, message };
-      }
-
-      rawDocs = pdfDocs;
-    }
-
     try {
       await fs.promises.access(filePath, fs.constants.R_OK);
       let loader;
       switch (fileExtension) {
         case 'pdf':
-          loader = new PDFLoader(filePath);
+          loader = new PDFOCRDocumentLoader({
+            filePath,
+            fileName,
+            fileId,
+            organizationId,
+          });
           break;
         case 'csv':
           loader = new CSVLoader(filePath);
@@ -202,9 +192,13 @@ export const convertAndStoreDocument = async ({
           loader = undefined;
       }
 
-      if (loader) {
-        rawDocs = await loader.load();
+      if (!loader) {
+        throw new Error(
+          `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`
+        );
       }
+
+      rawDocs = await loader.load();
     } catch (error) {
       logger.error(
         { err: error },
@@ -216,7 +210,11 @@ export const convertAndStoreDocument = async ({
         error: error as Error,
       };
     } finally {
-      await fs.promises.rm(filePath, { recursive: true, force: true });
+      await fs.promises
+        .rm(filePath, { recursive: true, force: true })
+        .catch((error) => {
+          logger.error({ err: error }, `Error removing file: ${filePath}`);
+        });
     }
 
     const splitterSettings =
