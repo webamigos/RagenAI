@@ -1,10 +1,20 @@
 import db from '@ragenai/prisma-client';
 
+export type SupportedFileType =
+  | 'pdf'
+  | 'epub'
+  | 'csv'
+  | 'markdown'
+  | 'unknown'
+  | 'srt'
+  | 'text';
+
 export const createDocumentDetailsInDB = async (
   file_name: string,
   file_size: number,
   organization_id: string,
-  id: string
+  id: string,
+  file_type: SupportedFileType
 ) => {
   await db.userFile.create({
     data: {
@@ -12,6 +22,7 @@ export const createDocumentDetailsInDB = async (
       organization_id,
       file_name,
       file_size,
+      file_type,
     },
   });
 };
@@ -23,6 +34,7 @@ export const fetchUserDocumentsDetails = async (uploaderId: string) => {
       created_at: true,
       file_name: true,
       file_size: true,
+      file_type: true,
       updated_at: true,
       metadata: true,
       organization_id: true,

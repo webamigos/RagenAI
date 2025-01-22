@@ -119,6 +119,9 @@
     },
     "plans": {
       "title": "Pricing and subscription plans | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generate Access Key | Ragen AI"
     }
   },
   "chat": {
@@ -200,7 +203,7 @@
   },
   "manage-knowledge": {
     "create-document": "Create document",
-    "documents-list": "Documents list",
+    "documents-list": "List of documents",
     "upload-files": "Upload files"
   },
   "sidebar": {
@@ -216,6 +219,7 @@
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
+    "generate-access-key": "Public access",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -243,7 +247,9 @@
     "file-size": "File Size",
     "created": "Created",
     "updated": "Updated",
-    "preview": "Preview"
+    "preview": "Preview",
+    "no-files": "No files",
+    "search-placeholder": "Search in files..."
   },
   "file-delete-modal": {
     "are-you-sure": "Are you sure you want to delete",
@@ -395,9 +401,25 @@
     "success": "Organization has been created",
     "sync-error": "An error occurred during sync"
   },
+  "generateAccessKey": {
+    "configure-public-access": "Configure public access",
+    "chatbot-title": "Chatbot title",
+    "chatbot-subtitle": "Chatbot subtitle",
+    "generate-public-key": "Generate public access",
+    "public-access-URL": "Public access URL",
+    "embed-code": "Embed code",
+    "configure-chatbot": "Configure chatbot",
+    "generate-embed-code": "Generate embed code",
+    "embed-code-warning": "The displayed code is visible only once! Remember to save it",
+    "public-access-warning": "This URL is visible only once! Remember to save it"
+  },
   "page404": {
     "page-not-found": "Page not found",
     "sorry-we-could-not-find": "Sorry, we couldn’t find the page you’re looking for.",
     "go-back-home": "Go back to home"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Opening chat thread...",
+    "start-new-thread": "Start new thread"
   }
 }

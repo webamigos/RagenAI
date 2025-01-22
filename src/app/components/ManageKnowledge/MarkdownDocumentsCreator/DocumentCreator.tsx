@@ -94,6 +94,7 @@ export const DocumentCreator = () => {
           organization_id: organizationId,
           file_name: document.fileName,
           file_size: document.fileSize,
+          file_type: 'markdown',
         });
         reset();
         successToast({ message: t('created-successful') });
@@ -149,7 +150,12 @@ export const DocumentCreator = () => {
           </TabPanel>
         </Tabs>
         <div className="mt-auto">
-          <Button label={t('send')} isSubmit isLoading={isLoading} />
+          <Button
+            className="w-full flex justify-center md:block md:w-auto"
+            label={t('send')}
+            isSubmit
+            isLoading={isLoading}
+          />
         </div>
       </form>
     </Card>

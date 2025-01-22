@@ -14,6 +14,7 @@ import {
   SettingsIcon,
   SidebarItem,
   CreditCardIcon,
+  RSSIcon,
 } from '@ragenai/common-ui';
 
 import { OrganizationRoles } from '@/app/contracts/User';
@@ -72,6 +73,11 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: CreditCardIcon,
       label: t('subscription-management'),
       path: '/my-profile/subscription',
+    },
+    {
+      icon: RSSIcon,
+      label: t('generate-access-key'),
+      path: '/generate-access-key',
     },
   ];
 
