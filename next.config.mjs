@@ -34,6 +34,7 @@ const nextConfig = {
       'pino-sentry',
       '@sentry/node',
       '@hyzyla/pdfium',
+      '@aws-sdk',
     ],
   },
 

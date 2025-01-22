@@ -9,7 +9,7 @@ import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { QdrantClient } from '@qdrant/js-client-rest';
 
-export async function deleteDocument(file_id: string) {
+export async function deleteDocumentFromVectorStore(file_id: string) {
   try {
     setSentryServiceTag('deleteDocument');
     setSentryContext('EXTRA_DATA', {
@@ -32,7 +32,7 @@ export async function deleteDocument(file_id: string) {
 
       const collectionInfo = await qdrantClient.getCollection(orgId);
       if (!collectionInfo) {
-        throw new Error('Couldnt delete from Qdrant, collection not found');
+        throw new Error('Could not delete from Qdrant, collection not found');
       }
 
       await qdrantClient.delete(orgId, {
