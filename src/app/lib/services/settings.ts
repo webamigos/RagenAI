@@ -34,7 +34,7 @@ export async function saveOpenaiAPIKey(
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
   const encryptedApiKey = await redis.hget(`org:${orgId}`, 'openai');
   if (!encryptedApiKey) {
-    return null;
+    return defaultOrganizationSettings.apiKey;
   }
   return decryptApiKey(encryptedApiKey);
 }

@@ -2,7 +2,7 @@ import * as Libs from '@ragenai/common-ui';
 
 import { UserLinks } from '../UserLinks';
 
-export const Footer = () => {
+export const SidebarFooter = () => {
   return (
     <Libs.SidebarFooter>
       <Libs.SidebarSection>
