@@ -34,7 +34,7 @@
     "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.js",
     "vectorstore:migrate": "node scripts/vector-store/apply-migrations.js",
     "postvectorstore:migrate": "npm run vectorstore:generate:database-types",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts"
   },
   "private": true,
   "devDependencies": {
@@ -208,6 +208,7 @@
     "resend": "^4.0.1",
     "rxjs": "^7.8.0",
     "spawn-sync": "^2.0.0",
+    "stripe": "^17.5.0",
     "svix": "^1.43.0",
     "tailwindcss-animate": "^1.0.7",
     "tslib": "^2.3.0",
