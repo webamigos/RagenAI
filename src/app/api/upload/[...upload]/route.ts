@@ -14,6 +14,7 @@ import {
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
+import { usageTracker } from '@/app/lib/services/usage';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -96,6 +97,9 @@ export async function POST(request: NextRequest, { params }: Params) {
           uniqueFileId,
           content: parsedFile.content,
         });
+
+        usageTracker.trackUploadedFilesSize(file.size);
+        usageTracker.trackUploadedFilesCount(1);
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(

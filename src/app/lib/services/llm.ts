@@ -5,6 +5,7 @@ import {
 } from '@langchain/openai';
 import { OpenAIModerationChain } from 'langchain/chains';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
+import { usageTracker } from './usage';
 
 const verbose = process.env.NODE_ENV === 'development';
 
@@ -20,6 +21,13 @@ export const createChatCompletionInstance = (
     ...options,
     verbose,
     streaming,
+    callbacks: [
+      {
+        handleLLMEnd: (output) => {
+          usageTracker.trackChatCompletionTokens(output);
+        },
+      },
+    ],
   });
 };
 

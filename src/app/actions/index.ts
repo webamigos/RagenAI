@@ -35,6 +35,7 @@ import {
   ClerkOrganizationMetadata,
   ClerkOrganizationPublicMetadata,
 } from '../lib/types/organizations';
+import { usageTracker } from '../lib/services/usage';
 
 const serviceName = 'actions';
 
@@ -340,3 +341,7 @@ export async function fetchThreadSuggestions(
     title: thread.messages[0]?.content.slice(0, 50) || 'No title',
   }));
 }
+
+export const trackThreadCreated = async () => {
+  usageTracker.trackCreatedThreads(1);
+};
