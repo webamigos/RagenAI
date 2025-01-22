@@ -44,3 +44,4 @@ export { SearchIcon } from './SearchIcon';
 export { CreditCardIcon } from './CreditCardIcon';
 export { StackIcon } from './StackIcon';
 export { RSSIcon } from './RSSIcon';
+export { SoundWave } from './SoundWave';
