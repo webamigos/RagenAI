@@ -13,6 +13,7 @@ import { useSettings } from '@/app/hooks/useSettings';
 import { DeleteFileModal } from './DeleteFileModal';
 import { FileSearch } from './FileSearch';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
+import { Tooltip } from '@ragenai/common-ui';
 
 import { type UserFileType } from '@/app/contracts/Documents';
 
@@ -101,9 +102,11 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
         />
       )}
       <CommonUi.TableRow>
-        <CommonUi.TableCell title={file_name}>
-          <span className="w-6 h-6 inline-block -mb-2 mr-1">{fileIcon}</span>
-          {truncatedFileName}
+        <CommonUi.TableCell className="flex z-50">
+          <span className="w-6 h-6 -mb-2 mr-1">{fileIcon}</span>
+          <Tooltip place="top" content={file_name} id={file_name}>
+            <CommonUi.Text>{truncatedFileName}</CommonUi.Text>
+          </Tooltip>
         </CommonUi.TableCell>
         <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
         <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
