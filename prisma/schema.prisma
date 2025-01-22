@@ -213,9 +213,14 @@ enum SubscriptionPlan {
 }
 
 enum SubscriptionStatus {
+  TRIALING
   ACTIVE
-  CANCELLED
-  SUSPENDED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
 }
 
 enum PlanType {
