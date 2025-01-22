@@ -100,3 +100,9 @@ export const removeApiKeyFromDb = async (
     },
   });
 };
+
+// TODO: in the future we should implement fetching the API key from the pool, now we accept the risk of using the same key for all users
+export const getApiKeyFromPool = () => {
+  const apiKey = process.env.OPENAI_API_KEY!;
+  return apiKey;
+};

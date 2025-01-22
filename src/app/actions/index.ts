@@ -19,12 +19,10 @@ import {
 } from '../lib/services/message';
 import { getUserThreads } from '../lib/services/visitor';
 import {
-  deleteDocumentFromUserFile,
-  deleteDocumentFromUserDocument,
-  fetchUserDocumentsDetails,
-  getOrganizationDocumentsCount,
+  deleteDocumentFromDb,
+  getDocumentDetailsByPublicId,
 } from '../lib/services/document';
-import { deleteDocument } from '../api/upload/services/TableService';
+import { deleteDocumentFromVectorStore } from '../api/upload/services/TableService';
 import {
   setSentryClerkOrganizationTag,
   setSentryClerkUserTag,
@@ -35,6 +33,14 @@ import {
   ClerkOrganizationMetadata,
   ClerkOrganizationPublicMetadata,
 } from '../lib/types/organizations';
+import {
+  deleteFileFromDb,
+  fetchFileDetails,
+  getFileDetails,
+  getOrganizationFilesCount,
+} from '../lib/services/file';
+import { getFileExtension } from '../lib/utils/getFileExtension';
+import { deleteFromS3 } from '../lib/services/aws';
 
 const serviceName = 'actions';
 
@@ -129,7 +135,7 @@ export const getUserDocuments = async (orgId: string) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
-    const documentDetails = await fetchUserDocumentsDetails(orgId);
+    const documentDetails = await fetchFileDetails(orgId);
     return { documentDetails };
   } catch (error) {
     return {
@@ -152,16 +158,23 @@ export const deleteDocumentAction = async (
     });
 
     //  Removal document from `UserFile`
-    const { count } = await deleteDocumentFromUserFile(
-      organizationId,
-      documentId
-    );
+    // TODO: UserFile should be in relation to UserDocument
+    const fileRecord = await getFileDetails(documentId);
+    const { count } = await deleteFileFromDb(organizationId, documentId);
+
+    if (fileRecord) {
+      const documentS3Path = `${documentId}.${getFileExtension(
+        fileRecord.file_name
+      )}`;
+
+      await deleteFromS3(documentS3Path);
+    }
 
     // Removal from `UserDocument`
-    await deleteDocumentFromUserDocument(organizationId, documentId);
+    await deleteDocumentFromDb(organizationId, documentId);
 
     // Removal vectors
-    await deleteDocument(documentId);
+    await deleteDocumentFromVectorStore(documentId);
 
     if (count === 0) {
       return {
@@ -172,7 +185,7 @@ export const deleteDocumentAction = async (
     }
 
     // Check document count in organization
-    const documentCount = await getOrganizationDocumentsCount(organizationId);
+    const documentCount = await getOrganizationFilesCount(organizationId);
 
     // If no documents left, update public metadata
     if (documentCount === 0) {

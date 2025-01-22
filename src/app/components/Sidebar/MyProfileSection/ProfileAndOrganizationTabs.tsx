@@ -13,6 +13,7 @@ import {
   OpenBookIcon,
   SettingsIcon,
   SidebarItem,
+  CreditCardIcon,
   RSSIcon,
 } from '@ragenai/common-ui';
 
@@ -67,6 +68,11 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: SettingsIcon,
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
+    },
+    {
+      icon: CreditCardIcon,
+      label: t('subscription-management'),
+      path: '/my-profile/subscription',
     },
     {
       icon: RSSIcon,

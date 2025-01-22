@@ -3,7 +3,11 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useUser, useOrganization, useClerk } from '@clerk/nextjs';
 
-import { fetchSettings } from '../app/components/MyProfile/ChatInstanceSettings/actions';
+import {
+  checkIfApiKeyExists,
+  fetchSettings,
+} from '../app/components/MyProfile/ChatInstanceSettings/actions';
+import { logger } from '@/app/lib/utils/logger';
 
 export type SettingsContextType = {
   hasApiKey: boolean;
@@ -48,6 +52,37 @@ export const SettingsProvider = ({
       refreshSettings();
     }
   }, [user?.id, organization?.id]);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
+    const checkIfOrganizationHasApiKey = async () => {
+      //TODO: in future revalidate clerk session to use useOrganization hook, now we use a bad hack by getting index 0 from user.organizationMemberships
+      const userOrgId = user?.organizationMemberships[0]?.organization.id;
+      const settingsResponse = await checkIfApiKeyExists(userOrgId!);
+
+      if (settingsResponse.success) {
+        const apiKeyExists = settingsResponse.data.apiKeyExists;
+        if (apiKeyExists) {
+          setHasApiKey(apiKeyExists);
+          clearInterval(intervalId);
+        }
+      } else {
+        logger.error('Failed to fetch settings');
+      }
+    };
+
+    if (user && !organization) {
+      checkIfOrganizationHasApiKey();
+      intervalId = setInterval(checkIfOrganizationHasApiKey, 1000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [organization, user]);
 
   return (
     <SettingsContext.Provider
