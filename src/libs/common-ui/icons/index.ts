@@ -44,3 +44,8 @@ export { SearchIcon } from './SearchIcon';
 export { StackIcon } from './StackIcon';
 export { RSSIcon } from './RSSIcon';
 export { SoundWave } from './SoundWave';
+export { PdfIcon } from './PdfIcon';
+export { CsvIcon } from './CsvIcon';
+export { TxtIcon } from './TxtIcon';
+export { EpubIcon } from './EpubIcon';
+export { MarkdownIcon } from './MarkdownIcon';
