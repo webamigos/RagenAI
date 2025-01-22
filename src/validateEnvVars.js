@@ -53,6 +53,17 @@ const envSchema = z.object({
 
   // OpenAI
   OPENAI_API_KEY: z.string(),
+
+  // AWS
+  AWS_REGION: z.string(),
+  AWS_ACCESS_KEY_ID: z.string(),
+  AWS_SECRET_ACCESS_KEY: z.string(),
+  AWS_SECRET_DOCUMENTS_BUCKET: z.string(),
+
+  // Stripe
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

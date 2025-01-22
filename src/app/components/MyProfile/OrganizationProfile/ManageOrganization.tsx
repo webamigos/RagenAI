@@ -32,6 +32,7 @@ export const ManageOrganization = () => {
                 'flex w-full bg-white dark:bg-secondary-dark border-none',
               navbarMobileMenuRow: 'hidden',
               table: 'w-full !important!',
+              profileSection__organizationDanger: 'hidden',
             },
           }}
         />
