@@ -2,19 +2,20 @@
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useLocale } from 'next-intl';
 import { useTransition, useEffect, useState } from 'react';
 
 import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
+import { useCloseThread } from '@/app/hooks/useCloseThreads';
 
 export const Logo = () => {
-  const { refresh, push } = useRouter();
+  const { refresh } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
   const [logoSrc, setLogoSrc] = useState('/assets/ragen-logo-on-light-bg.svg');
+
+  const { handleCloseThread } = useCloseThread();
 
   useEffect(() => {
     if (theme === 'dark' || resolvedTheme === 'dark') {
@@ -38,7 +39,7 @@ export const Logo = () => {
           width={120}
           height={80}
           className={`h-8 w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`}
-          onClick={() => push('/')}
+          onClick={() => handleCloseThread(true)}
           src={logoSrc}
           alt="Logo"
         />

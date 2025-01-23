@@ -45,6 +45,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,
+    handleCloseThread,
     getSidebarThreadsError,
   } = useSidebarLogic();
   const pathname = usePathname();
@@ -81,7 +82,11 @@ export const Sidebar = ({ children, membership }: Props) => {
               </Button>
             ) : (
               <Link href={'/'}>
-                <Button isLink className="relative ml-4 w-10/12">
+                <Button
+                  isLink
+                  onClick={() => handleCloseThread(true)}
+                  className="relative ml-4 w-10/12"
+                >
                   <ArrowIcon className="w-5 h-5 dark:text-gray-200" />
                   <Text
                     color="gray-700"
