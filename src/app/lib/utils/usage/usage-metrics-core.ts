@@ -79,7 +79,6 @@ export class UsageMetricsCore {
     // End date is one month after start
     const endDate = addMonths(startDate, 1);
 
-    // Create new usage period
     return this.dbClient.usagePeriod.create({
       data: {
         subscription_id: subscriptionId,
@@ -144,7 +143,7 @@ export class UsageMetricsCore {
               )::numeric + ${value}
             )::text::jsonb
           )
-          WHERE id = ${currentPeriod.id}
+          WHERE id = ${currentPeriod?.id}
         `;
     });
   }

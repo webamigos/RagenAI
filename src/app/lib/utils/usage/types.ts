@@ -1,8 +1,6 @@
 import { UsageMetadata, BaseMessage } from '@langchain/core/messages';
 import { ChatGeneration } from '@langchain/core/outputs';
 
-//todo:   tokensEmbeddings?: number;
-//todo:   tokensModeration?: number;
 export type UsageMetrics = {
   chatCompletionInputTokens?: number;
   chatCompletionOutputTokens?: number;

@@ -97,9 +97,9 @@ export class UsageTracker {
       return {
         metrics: currentPeriod?.metrics as UsageMetrics,
         period: {
-          id: currentPeriod?.id,
-          start_date: currentPeriod?.start_date,
-          end_date: currentPeriod?.end_date,
+          id: currentPeriod.id,
+          start_date: currentPeriod.start_date,
+          end_date: currentPeriod.end_date,
         },
       };
     } catch (error) {
