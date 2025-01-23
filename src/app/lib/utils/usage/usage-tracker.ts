@@ -2,7 +2,7 @@ import { LLMResult } from '@langchain/core/outputs';
 import { logger } from '../logger';
 import { UsageMetricsCore } from './usage-metrics-core';
 import { Role, UsagePeriod } from '@prisma/client';
-import type { UsageMetrics } from './types';
+import type { ChatGenerationWithMetadata, UsageMetrics } from './types';
 
 export class UsageTracker {
   constructor(private readonly tracker: UsageMetricsCore) {}
@@ -16,13 +16,15 @@ export class UsageTracker {
     }
   }
 
-  trackChatCompletionTokens(llmResult: LLMResult) {
+  trackChatCompletionTokens(result: LLMResult) {
     this.safeTrack(async () => {
-      const generations = llmResult.generations[0][0] as any;
-      const message = generations.message;
-      const usageMetadata = message.usage_metadata;
+      const response = result.generations[0][0] as ChatGenerationWithMetadata;
+      const usageMetadata = response?.message?.usage_metadata;
+
       if (!usageMetadata) {
-        logger.warn('No usage metadata found');
+        logger.warn(
+          'No usage metadata found, cannot track chat completion tokens'
+        );
         return;
       }
 
@@ -80,9 +82,9 @@ export class UsageTracker {
       return {
         metrics: currentPeriod?.metrics as UsageMetrics,
         period: {
-          id: currentPeriod?.id || 0,
-          start_date: currentPeriod?.start_date || new Date(),
-          end_date: currentPeriod?.end_date || new Date(),
+          id: currentPeriod?.id,
+          start_date: currentPeriod?.start_date,
+          end_date: currentPeriod?.end_date,
         },
       };
     } catch (error) {

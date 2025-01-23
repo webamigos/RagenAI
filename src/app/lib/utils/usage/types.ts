@@ -1,3 +1,6 @@
+import { UsageMetadata, BaseMessage } from '@langchain/core/messages';
+import { ChatGeneration } from '@langchain/core/outputs';
+
 //todo:   tokensEmbeddings?: number;
 //todo:   tokensModeration?: number;
 export type UsageMetrics = {
@@ -12,3 +15,7 @@ export type UsageMetrics = {
   filesUploaded?: number;
   filesUploadedSize?: number;
 };
+
+export interface ChatGenerationWithMetadata extends ChatGeneration {
+  message: BaseMessage & { usage_metadata?: UsageMetadata };
+}
