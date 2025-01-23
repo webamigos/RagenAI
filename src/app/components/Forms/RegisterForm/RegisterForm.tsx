@@ -58,55 +58,33 @@ export const RegisterForm = () => {
   };
 
   return (
-    <Card className="w-screen">
-      <div className="w-full flex justify-center items-center mb-2">
-        <Logo className="h-16" />
-      </div>
-      <div className="flex flex-col mb-4 text-center">
-        <Text fontSize="md" fontWeight="medium">
-          {t('create-account')}
-        </Text>
-        <Text fontSize="xs" fontWeight="light" color="gray-400">
-          {t('to-continue')}
-        </Text>
-      </div>
-      <SocialAuthOptions isSignUp={true} />
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          type="email"
-          id="email"
-          {...register('email')}
-          className="w-full px-3 py-2 border"
-          label="Email"
-          error={errors.email}
-          errorMessage={errors.email?.message}
-        />
-        <Input
-          label={t('password')}
-          type="password"
-          id="password"
-          {...register('password')}
-          className="w-full py-2 border"
-          error={errors.email}
-          errorMessage={errors.password?.message}
-        />
-        <Button
-          className="w-full py-2 px-4 mt-10 mb-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
-          disabled={isSubmitting}
-          isLoading={isSubmitting}
-          label={t('sign-up')}
-          type="submit"
-        />
-        <ClerkErrorsInterface apiErrors={apiErrors} />
-        <div className="flex items-baseline">
-          <Text className="text-start mr-2">
-            {t('Already-have-an-account')}{' '}
-          </Text>
-          <Link underline href="/sign-in">
-            {t('sign-in')}
-          </Link>
-        </div>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        type="email"
+        id="email"
+        {...register('email')}
+        className="w-full px-3 py-2 border rounded-md"
+        label="Email"
+        error={errors.email}
+        errorMessage={errors.email?.message}
+      />
+      <Input
+        label={t('password')}
+        type="password"
+        id="password"
+        {...register('password')}
+        className="w-full py-2 border rounded-md"
+        error={errors.email}
+        errorMessage={errors.password?.message}
+      />
+      <Button
+        className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        disabled={isSubmitting}
+        isLoading={isSubmitting}
+        label={t('sign-up')}
+        type="submit"
+      />
+      <ClerkErrorsInterface apiErrors={apiErrors} />
+    </form>
   );
 };

@@ -28,7 +28,7 @@ const SocialButton = ({
 }) => (
   <button
     onClick={onClick}
-    className="w-full py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
+    className="w-full py-2 dark:bg-accent-dark-500 bg-white dark:text-gray-200 text-gray-700 dark:border-gray-700 border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
     disabled={isLoading}
   >
     {isLoading ? (
@@ -106,27 +106,36 @@ export const SocialAuthOptions = memo(
     };
 
     return (
-      <>
-        {/* <div className="w-full flex gap-x-2 mb-4"> */}
-        {Object.entries(socialPlatforms).map(
-          ([strategy, { imageUrl, altText, label }]) => (
-            <SocialButton
-              key={strategy}
-              onClick={() => handleOAuth(strategy as SupportedOAuthStrategy)}
-              imageUrl={imageUrl}
-              altText={altText}
-              label={label}
-              isLoading={loadingState[strategy as SupportedOAuthStrategy]}
-            />
-          )
-        )}
-        {/* </div> */}
-        {/* <div className="flex items-center mb-4">
-          <Divider soft />
-          <p className="font-light text-gray-500 mx-2">{t('or')}</p>
-          <Divider soft />
-        </div> */}
-      </>
+      <div className="mt-10">
+        <div className="relative">
+          <div
+            className="absolute inset-0 flex items-center"
+            aria-hidden="true"
+          >
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm/6 font-medium">
+            <span className="bg-[#E2E8F3] dark:bg-[#06141B] px-6 dark:text-white text-gray-900">
+              {t('or-continue-with')}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          {Object.entries(socialPlatforms).map(
+            ([strategy, { imageUrl, altText, label }]) => (
+              <SocialButton
+                key={strategy}
+                onClick={() => handleOAuth(strategy as SupportedOAuthStrategy)}
+                imageUrl={imageUrl}
+                altText={altText}
+                label={label}
+                isLoading={loadingState[strategy as SupportedOAuthStrategy]}
+              />
+            )
+          )}
+        </div>
+      </div>
     );
   }
 );

@@ -11,12 +11,17 @@ import { classMerge } from '@ragenai/common-ui/index';
 
 type Props = {
   className?: string;
+  disableLink?: boolean;
+  ignoreTheme?: boolean;
 };
 
-export const Logo = ({ className }: Props) => {
+export const Logo = ({
+  className,
+  disableLink = false,
+  ignoreTheme = false,
+}: Props) => {
   const { refresh, push } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
   const [logoSrc, setLogoSrc] = useState('/assets/ragen-logo-on-light-bg.svg');
@@ -46,7 +51,11 @@ export const Logo = ({ className }: Props) => {
             `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
             className
           )}
-          onClick={() => push('/')}
+          onClick={() => {
+            if (!disableLink) {
+              push('/');
+            }
+          }}
           src={logoSrc}
           alt="Logo"
         />

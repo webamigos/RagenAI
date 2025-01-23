@@ -32,7 +32,8 @@
       "resend-not-available": "Ponowne wysłanie kodu niemożliwe. Proszę przejdź ponownie proces rejestracji",
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
-    }
+    },
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "sign-in": {
     "sign-in": "Zaloguj się",

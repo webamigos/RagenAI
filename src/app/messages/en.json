@@ -32,7 +32,8 @@
       "resend-not-available": "Resending the code is not possible. Please try the registration process again.",
       "verification-code-sent": "Verification code has been sent to the email address provided",
       "resend-failed": "Error sending code"
-    }
+    },
+    "or-continue-with": "Or continue with"
   },
   "sign-in": {
     "sign-in": "Sign in",
