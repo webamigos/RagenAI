@@ -36,7 +36,7 @@ export const LanguageSwitcher = ({ className }: Props) => {
     <div className={classMerge('flex', className)}>
       <button
         onClick={handleClick}
-        className="rounded-full border p-2 opacity-80 hover:bg-gray-100 hover:opacity-100 dark:border-accent-dark-700 dark:hover:bg-accent-dark-700"
+        className="rounded-full border p-2 opacity-70 hover:bg-gray-100 hover:opacity-100 dark:border-accent-dark-700 dark:hover:bg-accent-dark-700"
       >
         <span className={`fi fi-${flag} m-0.5`} />
       </button>

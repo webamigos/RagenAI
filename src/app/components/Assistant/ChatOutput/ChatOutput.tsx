@@ -1,6 +1,9 @@
 import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
+import { RateAnswer } from './RateAnswer';
+import { convertTextToSpeech } from '../elevenLabsTTS';
+import { logger } from '@/app/lib/utils/logger';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
@@ -8,7 +11,7 @@ import type {
 } from '../../../contracts/Message';
 
 import './chat-response.css';
-import { RateAnswer } from './RateAnswer';
+import { ReadAnswer } from './ReadAnswer';
 
 type Props = {
   messages: MessageDto[];
@@ -30,6 +33,7 @@ const MessageContent = ({
   streamedMessageRunId?: string;
 }) => {
   const { md, t } = useChatViewLogic(null);
+
   return (
     <>
       {role === 'ASSISTANT' && (
@@ -55,6 +59,7 @@ const MessageContent = ({
               runId={streamedMessageRunId || message.run_id}
             />
             <CopyToClipboardButton message={message} />
+            <ReadAnswer content={content} />
           </div>
         )}
       </div>
