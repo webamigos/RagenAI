@@ -6,8 +6,21 @@ import {
 import { OpenAIModerationChain } from 'langchain/chains';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
 import { usageTracker } from './usage';
+import type { EmbeddingCreateParams } from 'openai/resources/embeddings';
 
 const verbose = process.env.NODE_ENV === 'development';
+
+//Based on LangChain implementation:
+//https://github.com/langchain-ai/langchainjs/blob/main/libs/langchain-openai/src/embeddings.ts
+class TrackedOpenAIEmbeddings extends OpenAIEmbeddings {
+  protected async embeddingWithRetry(request: EmbeddingCreateParams) {
+    const response = await super.embeddingWithRetry(request);
+    if (response.usage) {
+      usageTracker.trackEmbeddingsTokens(response.usage);
+    }
+    return response;
+  }
+}
 
 export const createChatCompletionInstance = (
   options: ChatOpenAIFields,
@@ -38,7 +51,10 @@ export const createModerationInstance = (
     throw new Error('Cannot create moderation instance, apiKey is required');
   }
 
-  return new OpenAIModerationChain({ ...options, verbose });
+  return new OpenAIModerationChain({
+    ...options,
+    verbose,
+  });
 };
 
 export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
@@ -46,7 +62,7 @@ export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
     throw new Error('Cannot create embeddings instance, apiKey is required');
   }
 
-  return new OpenAIEmbeddings({
+  return new TrackedOpenAIEmbeddings({
     apiKey,
     model: 'text-embedding-3-small',
   });

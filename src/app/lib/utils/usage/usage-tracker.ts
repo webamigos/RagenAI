@@ -3,6 +3,7 @@ import { logger } from '../logger';
 import { UsageMetricsCore } from './usage-metrics-core';
 import { Role, UsagePeriod } from '@prisma/client';
 import type { ChatGenerationWithMetadata, UsageMetrics } from './types';
+import { CreateEmbeddingResponse } from 'openai/resources/embeddings';
 
 export class UsageTracker {
   constructor(private readonly tracker: UsageMetricsCore) {}
@@ -33,6 +34,20 @@ export class UsageTracker {
       await this.tracker.track('chatCompletionInputTokens', input_tokens);
       await this.tracker.track('chatCompletionOutputTokens', output_tokens);
       await this.tracker.track('chatCompletionTotalTokens', total_tokens);
+    });
+  }
+
+  trackEmbeddingsTokens(usage: CreateEmbeddingResponse['usage']) {
+    this.safeTrack(async () => {
+      if (!usage) {
+        logger.warn('No usage metadata found, cannot track embeddings tokens');
+        return;
+      }
+
+      const { prompt_tokens, total_tokens } = usage;
+
+      await this.tracker.track('embeddingsPromptTokens', prompt_tokens);
+      await this.tracker.track('embeddingsTotalTokens', total_tokens);
     });
   }
 

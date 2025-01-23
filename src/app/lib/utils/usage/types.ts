@@ -14,6 +14,8 @@ export type UsageMetrics = {
   apiCalls?: number;
   filesUploaded?: number;
   filesUploadedSize?: number;
+  embeddingsPromptTokens?: number;
+  embeddingsTotalTokens?: number;
 };
 
 export interface ChatGenerationWithMetadata extends ChatGeneration {
