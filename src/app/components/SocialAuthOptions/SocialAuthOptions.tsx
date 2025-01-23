@@ -28,7 +28,7 @@ const SocialButton = ({
 }) => (
   <button
     onClick={onClick}
-    className="w-1/2 py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
+    className="w-full py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
     disabled={isLoading}
   >
     {isLoading ? (

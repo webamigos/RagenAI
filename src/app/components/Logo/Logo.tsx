@@ -8,7 +8,12 @@ import { useTransition, useEffect, useState } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
 
-export const Logo = () => {
+type Props = {
+  width?: number;
+  height?: number;
+};
+
+export const Logo = ({ width = 120, height = 80 }: Props) => {
   const { refresh, push } = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
@@ -35,8 +40,8 @@ export const Logo = () => {
       <div className="pb-4 pl-0" onDoubleClick={handleResetVisits}>
         <span className="sr-only">Ragen AI</span>
         <Image
-          width={120}
-          height={80}
+          width={width}
+          height={height}
           className={`h-8 w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`}
           onClick={() => push('/')}
           src={logoSrc}

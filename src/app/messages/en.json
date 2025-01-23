@@ -43,7 +43,11 @@
     "or": "or",
     "Forgot-password": "Forgot your password?",
     "invalid-email": "Email is invalid",
-    "invalid-password": "Password should have at least 8 characters"
+    "invalid-password": "Password should have at least 8 characters",
+    "sign-in-to-account": "Sign in to your account",
+    "not-a-member": "Not a member?",
+    "start-free-trial": "Start a 14 day free trial",
+    "or-continue-with": "Or continue with"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
