@@ -59,7 +59,7 @@ export const Sidebar = ({ children, membership }: Props) => {
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
           <div className="flex flex-col mb-5">
-            {pathname === '/' ? (
+            {pathname === '/' || pathname.includes('/threads') ? (
               <Button
                 isLink
                 onClick={handleThread}
