@@ -48,7 +48,7 @@ export const createMessageInDB = async ({
       runId,
     });
 
-    usageTracker.trackMessagesCount(role, 1);
+    usageTracker.incMessagesCount(role);
 
     return await db.message.create({
       data: {

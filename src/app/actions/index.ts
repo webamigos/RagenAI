@@ -356,5 +356,5 @@ export async function fetchThreadSuggestions(
 }
 
 export const trackThreadCreated = async () => {
-  usageTracker.trackCreatedThreads(1);
+  usageTracker.incThreadsCount();
 };

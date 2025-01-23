@@ -17,7 +17,7 @@ export class UsageTracker {
     }
   }
 
-  trackChatCompletionTokens(result: LLMResult) {
+  incChatCompletionTokens(result: LLMResult) {
     this.safeTrack(async () => {
       const response = result.generations[0][0] as ChatGenerationWithMetadata;
       const usageMetadata = response?.message?.usage_metadata;
@@ -37,7 +37,7 @@ export class UsageTracker {
     });
   }
 
-  trackEmbeddingsTokens(usage: CreateEmbeddingResponse['usage']) {
+  incEmbeddingsTokens(usage: CreateEmbeddingResponse['usage']) {
     this.safeTrack(async () => {
       if (!usage) {
         logger.warn('No usage metadata found, cannot track embeddings tokens');
@@ -51,7 +51,7 @@ export class UsageTracker {
     });
   }
 
-  trackMessagesCount(role: Role, count: number) {
+  incMessagesCount(role: Role, count: number = 1) {
     this.safeTrack(async () => {
       switch (role) {
         case Role.USER:
@@ -65,25 +65,25 @@ export class UsageTracker {
     });
   }
 
-  trackUploadedFilesSize(fileSize: number) {
+  incUploadedFilesSize(fileSize: number) {
     this.safeTrack(async () => {
       await this.tracker.track('filesUploadedSize', fileSize);
     });
   }
 
-  trackUploadedFilesCount(count: number) {
+  incUploadedFilesCount(count: number = 1) {
     this.safeTrack(async () => {
       await this.tracker.track('filesUploaded', count);
     });
   }
 
-  trackCreatedThreads(count: number) {
+  incThreadsCount(count: number = 1) {
     this.safeTrack(async () => {
       await this.tracker.track('createdThreads', count);
     });
   }
 
-  async getActiveMetrics(): Promise<{
+  async getCurrentPeriodMetrics(): Promise<{
     metrics: UsageMetrics;
     period: Pick<UsagePeriod, 'start_date' | 'end_date' | 'id'> | null;
   }> {

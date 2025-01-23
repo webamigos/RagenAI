@@ -16,7 +16,7 @@ class TrackedOpenAIEmbeddings extends OpenAIEmbeddings {
   protected async embeddingWithRetry(request: EmbeddingCreateParams) {
     const response = await super.embeddingWithRetry(request);
     if (response.usage) {
-      usageTracker.trackEmbeddingsTokens(response.usage);
+      usageTracker.incEmbeddingsTokens(response.usage);
     }
     return response;
   }
@@ -37,7 +37,7 @@ export const createChatCompletionInstance = (
     callbacks: [
       {
         handleLLMEnd: (output) => {
-          usageTracker.trackChatCompletionTokens(output);
+          usageTracker.incChatCompletionTokens(output);
         },
       },
     ],

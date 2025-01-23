@@ -121,8 +121,8 @@ export async function POST(request: NextRequest, { params }: Params) {
           content: parsedFile.content,
         });
 
-        usageTracker.trackUploadedFilesSize(file.size);
-        usageTracker.trackUploadedFilesCount(1);
+        usageTracker.incUploadedFilesSize(file.size);
+        usageTracker.incUploadedFilesCount();
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(
