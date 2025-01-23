@@ -18,11 +18,13 @@ const SocialButton = ({
   imageUrl,
   altText,
   isLoading,
+  label,
 }: {
   onClick: () => void;
   imageUrl: string;
   altText: string;
   isLoading: boolean;
+  label: string;
 }) => (
   <button
     onClick={onClick}
@@ -34,6 +36,7 @@ const SocialButton = ({
     ) : (
       <Image src={imageUrl} alt={altText} width={15} height={15} />
     )}
+    <span className="ml-2 text-sm/6 font-semibold">{label}</span>
   </button>
 );
 
@@ -93,33 +96,36 @@ export const SocialAuthOptions = memo(
       oauth_google: {
         imageUrl: 'https://img.clerk.com/static/google.svg',
         altText: 'Google logo',
+        label: 'Google',
       },
       oauth_github: {
         imageUrl: 'https://img.clerk.com/static/github.svg',
         altText: 'Github logo',
+        label: 'Github',
       },
     };
 
     return (
       <>
-        <div className="max-w-xs w-full flex gap-x-2 mb-4 ml-2">
-          {Object.entries(socialPlatforms).map(
-            ([strategy, { imageUrl, altText }]) => (
-              <SocialButton
-                key={strategy}
-                onClick={() => handleOAuth(strategy as SupportedOAuthStrategy)}
-                imageUrl={imageUrl}
-                altText={altText}
-                isLoading={loadingState[strategy as SupportedOAuthStrategy]}
-              />
-            )
-          )}
-        </div>
-        <div className="flex items-center mb-4">
+        {/* <div className="w-full flex gap-x-2 mb-4"> */}
+        {Object.entries(socialPlatforms).map(
+          ([strategy, { imageUrl, altText, label }]) => (
+            <SocialButton
+              key={strategy}
+              onClick={() => handleOAuth(strategy as SupportedOAuthStrategy)}
+              imageUrl={imageUrl}
+              altText={altText}
+              label={label}
+              isLoading={loadingState[strategy as SupportedOAuthStrategy]}
+            />
+          )
+        )}
+        {/* </div> */}
+        {/* <div className="flex items-center mb-4">
           <Divider soft />
           <p className="font-light text-gray-500 mx-2">{t('or')}</p>
           <Divider soft />
-        </div>
+        </div> */}
       </>
     );
   }

@@ -1,4 +1,5 @@
 import { LoginForm } from '@/app/components/Forms/LoginForm';
+import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { getTranslations } from 'next-intl/server';
 
@@ -166,7 +167,8 @@ export default function Example() {
                 </div>
 
                 <div className="mt-6 grid grid-cols-2 gap-4">
-                  <a
+                  <SocialAuthOptions isSignUp={false} />
+                  {/* <a
                     href="#"
                     className="flex w-full items-center justify-center gap-3 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 shadow-xs ring-gray-300 ring-inset hover:bg-gray-50 focus-visible:ring-transparent"
                   >
@@ -212,7 +214,7 @@ export default function Example() {
                       ></path>
                     </svg>
                     <span className="text-sm/6 font-semibold">GitHub</span>
-                  </a>
+                  </a> */}
                 </div>
               </div>
             </div>
