@@ -216,6 +216,7 @@
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
     "generate-access-key": "Public access",
+    "return-to-home": "Return to home screen",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",

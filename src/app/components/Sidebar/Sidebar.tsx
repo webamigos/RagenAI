@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import {
   SidebarBody,
   SidebarLayout,
@@ -7,6 +9,8 @@ import {
   Button,
   SpinnerSVG,
   SearchIcon,
+  ArrowPath,
+  ArrowIcon,
 } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 
@@ -54,26 +58,41 @@ export const Sidebar = ({ children, membership }: Props) => {
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
           <div className="flex flex-col mb-5">
-            <Button
-              isLink
-              onClick={handleThread}
-              className="relative ml-4 w-10/12"
-            >
-              <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
-              <Text
-                className="ml-1 mt-1 dark:text-gray-100"
-                color="gray-700"
-                fontWeight="normal"
+            {pathname === '/' ? (
+              <Button
+                isLink
+                onClick={handleThread}
+                className="relative ml-4 w-10/12"
               >
-                {t('create-new-thread')}
-              </Text>
-              {isThreadLoading && (
-                <SpinnerSVG
-                  size="sm"
-                  className="absolute right-24 bottom-2.5"
-                />
-              )}
-            </Button>
+                <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
+                <Text
+                  className="m-1 mt-1 dark:text-gray-100"
+                  color="gray-700"
+                  fontWeight="normal"
+                >
+                  {t('create-new-thread')}
+                </Text>
+                {isThreadLoading && (
+                  <SpinnerSVG
+                    size="sm"
+                    className="absolute right-24 bottom-2.5"
+                  />
+                )}
+              </Button>
+            ) : (
+              <Link href={'/'}>
+                <Button isLink className="relative ml-4 w-10/12">
+                  <ArrowIcon className="w-5 h-5 dark:text-gray-200" />
+                  <Text
+                    color="gray-700"
+                    fontWeight="medium"
+                    className="ml-3 dark:text-gray-100"
+                  >
+                    {t('return-to-home')}
+                  </Text>
+                </Button>
+              </Link>
+            )}
             {isSignedIn &&
               !pathname.includes('/my-profile') &&
               !pathname.includes('/manage-knowledge') &&
