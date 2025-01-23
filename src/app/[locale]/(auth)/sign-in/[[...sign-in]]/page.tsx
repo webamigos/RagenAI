@@ -48,7 +48,7 @@ export default function SignInPage() {
         </div>
         <div className="relative hidden w-0 flex-1 lg:block lg:justify-end">
           <Image
-            className="absolute inset-0 size-full object-cover h-full ml-8 dark:opacity-80 opacity-90"
+            className="absolute inset-0 size-full object-cover h-full ml-8  dark:opacity-10 opacity-20"
             src="/assets/robot-3.png"
             alt=""
             width={800}

@@ -13,12 +13,9 @@ test('sign out success', async ({ page }) => {
 
   await page.waitForTimeout(2000);
 
-  await page.locator('[id="headlessui-popover-button-\\:re\\:"]').click();
+  await page.locator('[id="headlessui-popover-button-\\:r17\\:"]').click();
 
-  await page
-    .locator('[id="headlessui-popover-panel-\\:rg\\:"]')
-    .getByText('Sign out')
-    .click();
+  await page.getByText('Sign out').click();
 
   await page.waitForTimeout(1000);
 

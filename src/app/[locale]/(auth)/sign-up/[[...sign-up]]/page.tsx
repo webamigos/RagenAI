@@ -21,7 +21,7 @@ export default function SignUpPage() {
   return (
     <>
       <div className="flex min-h-full flex-1">
-        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+        <div className="flex flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
               <Logo className="h-16" disableLink />
@@ -46,9 +46,9 @@ export default function SignUpPage() {
             </div>
           </div>
         </div>
-        <div className="relative hidden w-0 flex-1 lg:block">
+        <div className="relative hidden w-0 flex-1 lg:block lg:justify-end">
           <Image
-            className="absolute inset-0 size-full object-cover h-full ml-8 dark:opacity-80 opacity-90"
+            className="absolute inset-0 size-full object-cover h-full ml-8 dark:opacity-10 opacity-20"
             src="/assets/robot-4.png"
             alt=""
             width={800}
