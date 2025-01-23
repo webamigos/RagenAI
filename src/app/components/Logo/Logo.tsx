@@ -7,13 +7,13 @@ import { useTransition, useEffect, useState } from 'react';
 
 import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
+import { classMerge } from '@ragenai/common-ui/index';
 
 type Props = {
-  width?: number;
-  height?: number;
+  className?: string;
 };
 
-export const Logo = ({ width = 120, height = 80 }: Props) => {
+export const Logo = ({ className }: Props) => {
   const { refresh, push } = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
@@ -40,9 +40,12 @@ export const Logo = ({ width = 120, height = 80 }: Props) => {
       <div className="pb-4 pl-0" onDoubleClick={handleResetVisits}>
         <span className="sr-only">Ragen AI</span>
         <Image
-          width={width}
-          height={height}
-          className={`h-8 w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`}
+          width={120}
+          height={80}
+          className={classMerge(
+            `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
+            className
+          )}
           onClick={() => push('/')}
           src={logoSrc}
           alt="Logo"

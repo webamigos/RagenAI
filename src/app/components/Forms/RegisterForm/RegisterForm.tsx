@@ -60,7 +60,7 @@ export const RegisterForm = () => {
   return (
     <Card className="w-screen">
       <div className="w-full flex justify-center items-center mb-2">
-        <Logo />
+        <Logo className="h-16" />
       </div>
       <div className="flex flex-col mb-4 text-center">
         <Text fontSize="md" fontWeight="medium">

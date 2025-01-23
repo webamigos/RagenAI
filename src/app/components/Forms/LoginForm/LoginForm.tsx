@@ -9,9 +9,7 @@ import { useState } from 'react';
 
 import { useRouter } from '@/i18n/routing';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
-import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
-import { Logo } from '../../Logo';
 
 import { type LoginFormData, loginSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
@@ -59,58 +57,32 @@ export const LoginForm = () => {
   };
 
   return (
-    <Card className="w-screen">
-      <div className="w-full flex justify-center items-center mb-2">
-        <Logo />
-      </div>
-      <div className="flex flex-col mb-4 text-center">
-        <Text fontSize="md" fontWeight="medium">
-          {t('sign-in')}
-        </Text>
-        <Text color="gray-400" fontSize="xs" fontWeight="light">
-          {t('to-continue')}
-        </Text>
-      </div>
-      <SocialAuthOptions isSignUp={false} />
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          type="email"
-          id="email"
-          {...register('email')}
-          className="w-full px-3 py-2 border "
-          label="Email"
-          error={errors.email}
-          errorMessage={errors.email?.message}
-        />
-        <Input
-          type="password"
-          id="password"
-          {...register('password')}
-          className="w-full px-3 py-2 border"
-          label={t('Password')}
-          error={errors.password}
-          errorMessage={errors.password?.message}
-        />
-        <Link
-          href="/forgot-password"
-          className="text-end text-sm font-light hover:underline"
-        >
-          {t('Forgot-password')}
-        </Link>
-        <Button
-          className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
-          isLoading={isSubmitting}
-          label={t('sign-in')}
-          type="submit"
-        />
-        <ClerkErrorsInterface apiErrors={apiErrors} />
-        <div className="flex items-baseline">
-          <Text className="text-start mr-2">{t('Dont-have-an-account')}</Text>
-          <Link underline href="/sign-up">
-            {t('sign-up')}
-          </Link>
-        </div>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Input
+        type="email"
+        id="email"
+        {...register('email')}
+        className="w-full px-3 py-2 border rounded-md"
+        label="Email"
+        error={errors.email}
+        errorMessage={errors.email?.message}
+      />
+      <Input
+        type="password"
+        id="password"
+        {...register('password')}
+        className="w-full px-3 py-2 border rounded-md"
+        label={t('Password')}
+        error={errors.password}
+        errorMessage={errors.password?.message}
+      />
+      <Button
+        className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        isLoading={isSubmitting}
+        label={t('sign-in')}
+        type="submit"
+      />
+      <ClerkErrorsInterface apiErrors={apiErrors} />
+    </form>
   );
 };
