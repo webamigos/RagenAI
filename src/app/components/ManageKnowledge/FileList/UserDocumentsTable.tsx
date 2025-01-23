@@ -12,6 +12,7 @@ import { truncateFileName } from '../../../lib/utils/truncateFileName';
 import { useSettings } from '@/app/hooks/useSettings';
 import { DeleteFileModal } from './DeleteFileModal';
 import { FileSearch } from './FileSearch';
+import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
 
@@ -56,6 +57,8 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
   const { refreshSettings } = useSettings();
   const router = useRouter();
 
+  const fileIcon = getFileIcon(document.file_type);
+
   const { created_at: formattedCreatedAt, updated_at: formattedUpdatedAt } =
     useMemo(
       () => formatDates({ created_at, updated_at }),
@@ -98,8 +101,11 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
         />
       )}
       <CommonUi.TableRow className="relative text-sm overflow-x-hidden">
-        <CommonUi.TableCell title={file_name}>
-          {truncatedFileName}
+        <CommonUi.TableCell className="flex z-50">
+          <span className="w-6 h-6 -mb-2 mr-1">{fileIcon}</span>
+          <CommonUi.Tooltip place="top" content={file_name} id={file_name}>
+            <CommonUi.Text>{truncatedFileName}</CommonUi.Text>
+          </CommonUi.Tooltip>
         </CommonUi.TableCell>
         <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
         <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>

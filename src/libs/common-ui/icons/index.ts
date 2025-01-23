@@ -45,3 +45,7 @@ export { CreditCardIcon } from './CreditCardIcon';
 export { StackIcon } from './StackIcon';
 export { RSSIcon } from './RSSIcon';
 export { SoundWave } from './SoundWave';
+export { PdfIcon } from './PdfIcon';
+export { EpubIcon } from './EpubIcon';
+export { CsvIcon } from './CsvIcon';
+export { MarkdownIcon } from './MarkdownIcon';
