@@ -1,0 +1,110 @@
+import { LLMResult } from '@langchain/core/outputs';
+import { logger } from '../logger';
+import { UsageMetricsCore } from './usage-metrics-core';
+import { Role, UsagePeriod } from '@prisma/client';
+import type { ChatGenerationWithMetadata, UsageMetrics } from './types';
+import { CreateEmbeddingResponse } from 'openai/resources/embeddings';
+
+export class UsageTracker {
+  constructor(private readonly tracker: UsageMetricsCore) {}
+
+  //Safe track to avoid unhandled promise rejections, we don't want to await tracing operations
+  private async safeTrack(operation: () => Promise<void>) {
+    try {
+      await operation();
+    } catch (error) {
+      logger.error({ err: error }, 'Usage tracking failed');
+    }
+  }
+
+  incChatCompletionTokens(result: LLMResult) {
+    this.safeTrack(async () => {
+      const response = result.generations[0][0] as ChatGenerationWithMetadata;
+      const usageMetadata = response?.message?.usage_metadata;
+
+      if (!usageMetadata) {
+        logger.warn(
+          'No usage metadata found, cannot track chat completion tokens'
+        );
+        return;
+      }
+
+      const { input_tokens, output_tokens, total_tokens } = usageMetadata;
+
+      await this.tracker.track('chatCompletionInputTokens', input_tokens);
+      await this.tracker.track('chatCompletionOutputTokens', output_tokens);
+      await this.tracker.track('chatCompletionTotalTokens', total_tokens);
+    });
+  }
+
+  incEmbeddingsTokens(usage: CreateEmbeddingResponse['usage']) {
+    this.safeTrack(async () => {
+      if (!usage) {
+        logger.warn('No usage metadata found, cannot track embeddings tokens');
+        return;
+      }
+
+      const { prompt_tokens, total_tokens } = usage;
+
+      await this.tracker.track('embeddingsPromptTokens', prompt_tokens);
+      await this.tracker.track('embeddingsTotalTokens', total_tokens);
+    });
+  }
+
+  incMessagesCount(role: Role, count: number = 1) {
+    this.safeTrack(async () => {
+      switch (role) {
+        case Role.USER:
+          await this.tracker.track('messagesUser', count);
+          break;
+        case Role.ASSISTANT:
+          await this.tracker.track('messagesAssistant', count);
+          break;
+      }
+      await this.tracker.track('messagesTotal', count);
+    });
+  }
+
+  incUploadedFilesSize(fileSize: number) {
+    this.safeTrack(async () => {
+      await this.tracker.track('filesUploadedSize', fileSize);
+    });
+  }
+
+  incUploadedFilesCount(count: number = 1) {
+    this.safeTrack(async () => {
+      await this.tracker.track('filesUploaded', count);
+    });
+  }
+
+  incThreadsCount(count: number = 1) {
+    this.safeTrack(async () => {
+      await this.tracker.track('createdThreads', count);
+    });
+  }
+
+  async getCurrentPeriodMetrics(): Promise<{
+    metrics: UsageMetrics;
+    period: Pick<UsagePeriod, 'start_date' | 'end_date' | 'id'> | null;
+  }> {
+    try {
+      const currentPeriod = await this.tracker.getCurrentPeriod();
+
+      if (!currentPeriod) {
+        return { metrics: {}, period: null };
+      }
+
+      return {
+        metrics: currentPeriod?.metrics as UsageMetrics,
+        period: {
+          id: currentPeriod.id,
+          start_date: currentPeriod.start_date,
+          end_date: currentPeriod.end_date,
+        },
+      };
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to get active metrics');
+      throw error;
+    }
+  }
+}
