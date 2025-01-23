@@ -117,6 +117,9 @@
     "prompt-management": {
       "title": "Zarządzanie asystentem | Ragen AI"
     },
+    "plans": {
+      "title": "Cennik i plany subskrypcji | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
     }
@@ -212,6 +215,7 @@
     "manage-knowledge": "Zarządzaj wiedzą",
     "organization-list": "Lista organizacji",
     "assistant-management": "Zarządzanie asystentem",
+    "subscription-management": "Zarządzaj subskrypcją",
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
     "search-threads": "Przeszukaj wątki",
@@ -328,7 +332,38 @@
     "period-start": "Data aktywacji",
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",
-    "current-period-ends": "Data wygaśnięcia"
+    "current-period-ends": "Data wygaśnięcia",
+    "cancel-subscription": "Anuluj subskrypcję",
+    "cancel-subscription-success": "Subskrypcja anulowana",
+    "cancel-subscription-error": "Wystąpił błąd podczas anulowania subskrypcji",
+    "cancel-subscription-confirmation": "Twoja subskrypcja została anulowana, nie zostanie automatycznie odnowiona",
+    "show-available-plans": "Pokaż dostępne plany",
+    "checkout": {
+      "title": "Dziękujemy za zakup! 🎉",
+      "description": "Twoja subskrypcja została pomyślnie aktywowana.",
+      "next-payment-date": "Data kolejnej płatności",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Pobierz fakturę",
+      "manage-subscription": "Zarządzaj subskrypcją"
+    },
+    "confirm-cancel": "Tak, anuluj subskrypcję",
+    "keep-subscription": "Nie, zachowaj subskrypcję",
+    "activate-free-plan": "Aktywuj plan free",
+    "confirm-activate": "Zrezygnuj z bieżącej subskrypcji",
+    "cancel-activation": "Anuluj",
+    "activate-free-plan-success": "Plan free aktywowany",
+    "activate-free-plan-error": "Wystąpił błąd podczas aktywowania planu free"
+  },
+  "plans": {
+    "title": "Lista dostępnych planów subskrypcji",
+    "checkout-error": "Nie udało się rozpocząć procesu płatności. Spróbuj ponownie później.",
+    "subscribe": "Subskrybuj",
+    "per-month": "miesięcznie",
+    "per-year": "rocznie",
+    "already-active": "Masz już aktywny plan płatny!",
+    "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
+    "view-subscription": "Zarządzaj swoją subskrypcją"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
