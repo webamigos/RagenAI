@@ -127,6 +127,9 @@
     },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
+    },
+    "support-page": {
+      "title": "Contact Form | Support | Ragen AI"
     }
   },
   "chat": {
@@ -434,7 +437,11 @@
     "text-area-title": "Message",
     "text-area-placeholder": "Your message to us",
     "send": "Send",
+    "sending": "Sending...",
     "call-to-action": "Your opinions are extremely valuable to us. If you encounter any difficulties, have an idea to improve our platform or want to share your experiences – contact us!",
-    "submessage": "A copy of this message will also be sent to your email address."
+    "submessage": "A copy of this message will also be sent to your email address.",
+    "file-label": "Attach screenshot",
+    "send-success": "Wiadomość została wysłana",
+    "send-error": "Wystąpił błąd podczas wysyłania wiadomości"
   }
 }

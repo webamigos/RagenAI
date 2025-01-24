@@ -6,8 +6,10 @@ export const CTA = () => {
   const t = useTranslations('support-page');
 
   return (
-    <div className="w-1/2 mt-16 ml-2">
-      <Text color="gray-700">{t('call-to-action')}</Text>
+    <div className="w-full my-4">
+      <Text fontSize="lg" fontWeight="semibold" color="gray-700">
+        {t('call-to-action')}
+      </Text>
     </div>
   );
 };

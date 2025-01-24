@@ -29,7 +29,7 @@ export const ContactEmail = ({ email, message }: ContactEmailProps) => {
       <p>
         <strong>Wiadomość:</strong>
       </p>
-      <p>{message}</p>§
+      <p>{message}</p>
     </div>
   );
 };

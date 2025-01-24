@@ -64,3 +64,37 @@ export const uploadFiles = async (
   );
   return response.data;
 };
+
+type SupportRequestPayload = {
+  email: string;
+  title: string;
+  message: string;
+};
+
+type SupportResponse = {
+  message: string;
+  status: number;
+};
+
+export const sendSupportRequest = async (
+  data: SupportRequestPayload,
+  file?: File
+): Promise<SupportResponse> => {
+  const formData = new FormData();
+  formData.append('type', 'contact');
+  formData.append('email', data.email);
+  formData.append('title', data.title);
+  formData.append('message', data.message);
+
+  if (file) {
+    formData.append('file', file);
+  }
+
+  const response = await api.post<SupportResponse>('/send', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data;
+};

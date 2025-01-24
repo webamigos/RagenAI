@@ -9,18 +9,16 @@ import { type ComponentProps } from 'react';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { Button, Input, Textarea, Card, Text } from '@ragenai/common-ui';
+import { sendSupportRequest } from '@/app/lib/services/api';
 
 const supportFormSchema = z.object({
   email: z.string().email('Invalid email address'),
   title: z.string().min(5, 'Title must be at least 5 characters long'),
   message: z.string().min(10, 'Message must be at least 10 characters long'),
-  file: z
-    .instanceof(File)
-    .optional()
-    .refine(
-      (file) => !file || file.size < 5 * 1024 * 1024,
-      'File size must be less than 5MB'
-    ),
+  file:
+    typeof window === 'undefined'
+      ? z.any()
+      : z.instanceof(FileList).transform((fileList) => fileList[0]),
 });
 
 type SupportFormData = z.infer<typeof supportFormSchema>;
@@ -46,35 +44,27 @@ export const SupportForm = ({ className }: ComponentProps<'div'>) => {
 
   const onSubmit = async (data: SupportFormData) => {
     try {
-      const response = await fetch('/api/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'contact',
+      await sendSupportRequest(
+        {
           email: data.email,
-          message: data.message,
           title: data.title,
-        }),
-      });
+          message: data.message,
+        },
+        data.file
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to send email');
-      }
-
-      successToast({ message: 'Your request has been sent successfully.' });
+      successToast({ message: t('send-success') });
       reset();
     } catch (error) {
       logger.error({ err: error }, 'Failed to send email');
       errorToast({
-        message: 'Failed to send request. Please try again later.',
+        message: t('send-error'),
       });
     }
   };
 
   return (
-    <Card size="full" title={t('card-title')} className="max-w-lg mx-auto p-6">
+    <Card size="full" title={t('card-title')} className="w-full lg:max-w-md">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Input
@@ -129,7 +119,7 @@ export const SupportForm = ({ className }: ComponentProps<'div'>) => {
           className="w-full flex justify-center"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Sending...' : 'Submit'}
+          {isSubmitting ? t('sending') : t('send')}
         </Button>
       </form>
     </Card>
