@@ -27,6 +27,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       handleSubmit,
       formState: { errors },
       watch,
+      setValue,
     } = useForm<CreateMessageDto>({
       resolver: zodResolver(createMessageSchema),
       reValidateMode: 'onSubmit',
@@ -60,6 +61,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             register={register}
             onSend={handleSend}
             value={promptValue}
+            setPromptValue={(text: string) => setValue('prompt', text)}
           />
         </form>
       </div>

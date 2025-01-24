@@ -20,7 +20,7 @@ export const Logo = ({
   disableLink = false,
   ignoreTheme = false,
 }: Props) => {
-  const { refresh, } = useRouter();
+  const { refresh } = useRouter();
   const pathname = usePathname();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
@@ -55,7 +55,7 @@ export const Logo = ({
           )}
           onClick={() => {
             if (!disableLink) {
-              handleCloseThread(true)
+              handleCloseThread(true);
             }
           }}
           src={logoSrc}

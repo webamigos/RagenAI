@@ -2,7 +2,6 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
-import { convertTextToSpeech } from '../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
