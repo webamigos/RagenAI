@@ -108,7 +108,11 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
                   </CloseButton>
                 </div>
                 <div className="p-3">
-                  <CloseButton className="block rounded-lg py-2 px-3 transition hover:bg-white/5">
+                  <CloseButton
+                    className="block rounded-lg py-2 px-3 transition hover:bg-white/5"
+                    as={Link}
+                    href="/support"
+                  >
                     <p className="flex text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white">
                       <WrenchScrewdriverIcon className="mr-3" />
                       {t('sidebar.support-page')}
