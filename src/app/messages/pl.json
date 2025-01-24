@@ -111,7 +111,7 @@
       "title": "Bezpieczeństwo profilu | Ragen AI"
     },
     "create-organization": {
-      "title": "Utwórz organizację | Ragen AI"
+      "title": "Stwórz organizację | Ragen AI"
     },
     "organization-profile": {
       "title": "Zarządzaj organizacją | Ragen AI"
@@ -133,7 +133,7 @@
     "USER": "Ty",
     "ASSISTANT": "Asystent",
     "loading": "Chwileczkę...",
-    "create-new-thread": "Załóż nowy wątek",
+    "create-new-thread": "Stwórz nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni"
@@ -207,7 +207,7 @@
     "send": "Wyślij"
   },
   "manage-knowledge": {
-    "create-document": "Utwórz dokument",
+    "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki"
   },
@@ -254,7 +254,7 @@
     "updated": "Zaktualizowano",
     "preview": "Podgląd",
     "no-files": "Brak plików",
-    "search-placeholder": "Wyszukaj plik"
+    "search-placeholder": "Wyszukaj pliki"
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
