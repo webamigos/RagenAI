@@ -1,13 +1,13 @@
 import * as fs from 'node:fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { fileTypeFromBuffer } from 'file-type';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
@@ -26,9 +26,7 @@ import { QdrantVectorStore } from '@langchain/qdrant';
 import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { processPDFDocument } from '@/libs/chains/pdf-process-rag/chain';
-import { SUPPORTED_MIME_TYPES } from '../../../lib/constants/supportedMimeTypes';
-import { determineMimeType } from '@/app/lib/utils/determinateMimeType';
+import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -37,6 +35,7 @@ type ConvertAndStoreResult = {
   message: string;
   error?: Error;
 };
+
 type ConvertAndStoreDocumentParams = {
   fileContent: string | Buffer;
   fileName: string;
@@ -44,6 +43,7 @@ type ConvertAndStoreDocumentParams = {
   fileId: string;
   projectId: number | null;
 };
+
 const CHUNK_SETTINGS = {
   markdown: {
     chunkSize: 800,
@@ -62,12 +62,14 @@ const CHUNK_SETTINGS = {
     chunkOverlap: 200,
   },
 } as const;
+
 const saveBinaryToTempFile = async (
   content: string | Buffer,
   extension: string
 ) => {
   const projectDir = process.cwd();
   const filePath = path.join(projectDir, `temp-${uuidv4()}.${extension}`);
+
   try {
     setSentryServiceTag(serviceName);
     const data = content instanceof Buffer ? new Uint8Array(content) : content;
@@ -88,6 +90,7 @@ const saveBinaryToTempFile = async (
     };
   }
 };
+
 export const convertAndStoreDocument = async ({
   fileContent,
   fileName,
@@ -102,16 +105,30 @@ export const convertAndStoreDocument = async ({
       fileName,
       fileId,
     });
+
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }
+
     let rawDocs: Document[] = [];
     const apiKey = await getOpenaiAPIKey(organizationId);
+
     if (!apiKey) {
       throw new Error('OpenAI API key is required.');
     }
 
-    let mimeType = await determineMimeType(fileContent);
+    let mimeType: string | undefined;
+    if (fileContent instanceof Buffer) {
+      const fileType = await fileTypeFromBuffer(new Uint8Array(fileContent));
+      mimeType = fileType?.mime;
+    } else if (typeof fileContent === 'string') {
+      mimeType = 'text/markdown';
+    } else {
+      return {
+        success: false,
+        message: 'Unsupported file content type.',
+      };
+    }
 
     if (!mimeType) {
       return {
@@ -120,15 +137,25 @@ export const convertAndStoreDocument = async ({
       };
     }
 
+    logger.info({ mimeType }, 'Detected MIME type');
+
+    const supportedMimeTypes = {
+      'application/pdf': 'pdf',
+      'application/epub+zip': 'epub',
+      'text/csv': 'csv',
+      'text/markdown': 'md',
+    };
+
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
     const fileExtension =
-      SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES];
+      supportedMimeTypes[mimeType as keyof typeof supportedMimeTypes];
     if (!fileExtension) {
       return {
         success: false,
         message: `Unsupported file type: ${mimeType}`,
       };
     }
+
     const { filePath, message, success } = await saveBinaryToTempFile(
       fileContent,
       fileExtension
@@ -139,23 +166,18 @@ export const convertAndStoreDocument = async ({
         message: `Failed to save temporary file: ${message}`,
       };
     }
-    if (fileExtension === 'pdf') {
-      const {
-        rawDocs: pdfDocs,
-        success,
-        message,
-      } = await processPDFDocument(filePath, fileName, fileId, organizationId);
-      if (!success) {
-        return { success: false, message };
-      }
-      rawDocs = pdfDocs;
-    }
+
     try {
       await fs.promises.access(filePath, fs.constants.R_OK);
       let loader;
       switch (fileExtension) {
         case 'pdf':
-          loader = new PDFLoader(filePath);
+          loader = new PDFOCRDocumentLoader({
+            filePath,
+            fileName,
+            fileId,
+            organizationId,
+          });
           break;
         case 'csv':
           loader = new CSVLoader(filePath);
@@ -169,9 +191,14 @@ export const convertAndStoreDocument = async ({
         default:
           loader = undefined;
       }
-      if (loader) {
-        rawDocs = await loader.load();
+
+      if (!loader) {
+        throw new Error(
+          `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`
+        );
       }
+
+      rawDocs = await loader.load();
     } catch (error) {
       logger.error(
         { err: error },
@@ -183,11 +210,17 @@ export const convertAndStoreDocument = async ({
         error: error as Error,
       };
     } finally {
-      await fs.promises.rm(filePath, { recursive: true, force: true });
+      await fs.promises
+        .rm(filePath, { recursive: true, force: true })
+        .catch((error) => {
+          logger.error({ err: error }, `Error removing file: ${filePath}`);
+        });
     }
+
     const splitterSettings =
       CHUNK_SETTINGS[fileExtension as keyof typeof CHUNK_SETTINGS] ||
       CHUNK_SETTINGS.epub;
+
     const textSplitter =
       fileExtension === 'md'
         ? new MarkdownTextSplitter({
@@ -200,13 +233,18 @@ export const convertAndStoreDocument = async ({
             chunkOverlap: splitterSettings.chunkOverlap,
             keepSeparator: true,
           });
+
     const docs = await textSplitter.splitDocuments(rawDocs);
+
     const { orgId } = auth();
+
     if (!orgId) {
       throw new Error('Invalid organization!');
     }
+
     const orgMetadata = await getOrganizationMetadata(orgId);
     const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
+
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
@@ -228,6 +266,7 @@ export const convertAndStoreDocument = async ({
           status: 'active',
           embedding_model: embeddingModel.modelName,
         };
+
         if (vectorStoreType === 'qdrant') {
           return {
             pageContent: text,
@@ -244,6 +283,7 @@ export const convertAndStoreDocument = async ({
         }
       })
     );
+
     if (vectorStoreType === 'qdrant') {
       const vectorStore = await QdrantVectorStore.fromExistingCollection(
         embeddingModel,
@@ -253,6 +293,7 @@ export const convertAndStoreDocument = async ({
           collectionName: orgId,
         }
       );
+
       await vectorStore.addDocuments(updatedDocs);
     } else {
       const vectorStore = new SupabaseVectorStore(embeddingModel, {
@@ -260,6 +301,7 @@ export const convertAndStoreDocument = async ({
         tableName: VECTOR_STORE_TABLE_NAME,
         queryName: DOCUMENT_SEARCH_QUERY_NAME,
       });
+
       await vectorStore.addVectors(
         updatedDocs.map((doc) => doc.embedding),
         updatedDocs.map((doc) => ({
@@ -268,6 +310,7 @@ export const convertAndStoreDocument = async ({
         }))
       );
     }
+
     return {
       success: true,
       message: 'Document processed and stored successfully!',
