@@ -220,6 +220,7 @@
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
     "generate-access-key": "Public access",
+    "support-page": "Support Page",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -421,5 +422,14 @@
   "Chatbot": {
     "opening-chat-thread": "Opening chat thread...",
     "start-new-thread": "Start new thread"
+  },
+  "support-page": {
+    "card-title": "Share your comments with us",
+    "input-title": "Title",
+    "text-area-title": "Message",
+    "text-area-placeholder": "Your message to us",
+    "send": "Send",
+    "call-to-action": "Your opinions are extremely valuable to us. If you encounter any difficulties, have an idea to improve our platform or want to share your experiences – contact us!",
+    "submessage": "A copy of this message will also be sent to your email address."
   }
 }

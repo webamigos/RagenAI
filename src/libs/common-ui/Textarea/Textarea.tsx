@@ -26,6 +26,7 @@ type Props = {
   maxHeight?: number;
   onSend?: () => void;
   value?: string;
+  mandatory?: boolean;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -37,6 +38,7 @@ export const Textarea = forwardRef(
       errorMessage,
       className,
       containerClassName,
+      mandatory = false,
       maxHeight = 200,
       onSend,
       value,
@@ -80,6 +82,7 @@ export const Textarea = forwardRef(
           className="block text-sm font-medium leading-6 dark:text-gray-300"
         >
           {label}
+          {mandatory && <span className="text-red-600">*</span>}
         </label>
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
           <div className="relative">

@@ -22,7 +22,7 @@ type Props = {
   errorMessage?: string;
   containerClassName?: string;
   mandatory?: boolean;
-  type?: 'text' | 'range' | 'number' | 'email' | 'password';
+  type?: 'text' | 'range' | 'number' | 'email' | 'password' | 'file';
   min?: HTMLProps<'min'>;
   max?: HTMLProps<'max'>;
   step?: number;

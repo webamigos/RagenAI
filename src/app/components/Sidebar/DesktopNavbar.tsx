@@ -19,6 +19,7 @@ import {
   Text,
   PencilSquareIcon,
   HomeIcon,
+  WrenchScrewdriverIcon,
 } from '@ragenai/common-ui';
 import { useNewThread } from '@/app/hooks/useNewThread';
 
@@ -103,6 +104,14 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
                     <p className="flex text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white">
                       <UserCircleIcon className="mr-3 h-5 w-5" />
                       {t('sidebar.profile')}
+                    </p>
+                  </CloseButton>
+                </div>
+                <div className="p-3">
+                  <CloseButton className="block rounded-lg py-2 px-3 transition hover:bg-white/5">
+                    <p className="flex text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white">
+                      <WrenchScrewdriverIcon className="mr-3" />
+                      {t('sidebar.support-page')}
                     </p>
                   </CloseButton>
                 </div>

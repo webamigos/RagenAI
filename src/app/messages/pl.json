@@ -220,6 +220,7 @@
     "create-new-thread": "Załóż nowy wątek",
     "search-threads": "Przeszukaj wątki",
     "generate-access-key": "Dostęp publiczny",
+    "support-page": "Zgłoś błąd",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
@@ -421,5 +422,14 @@
   "Chatbot": {
     "opening-chat-thread": "Otwieranie wątku...",
     "start-new-thread": "Rozpocznij nowy wątek"
+  },
+  "support-page": {
+    "card-title": "Zgłoś nam swoje uwagi",
+    "input-title": "Tytuł",
+    "text-area-title": "Wiadomość",
+    "text-area-placeholder": "Twoja wiadomość do nas",
+    "send": "Wyślij",
+    "call-to-action": "Twoje opinie są dla nas niezwykle cenne. Jeśli napotkasz jakiekolwiek trudności, masz pomysł na ulepszenie naszej platformy lub chcesz podzielić się swoimi doświadczeniami – skontaktuj się z nami!",
+    "submessage": "Kopia tej wiadomości trafi także na Twoją skrzynkę email."
   }
 }
