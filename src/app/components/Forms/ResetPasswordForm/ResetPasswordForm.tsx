@@ -64,7 +64,7 @@ export const ResetPasswordForm = () => {
 
   return (
     <Card>
-      <Logo />
+      <Logo className="h-8" />
       <form onSubmit={handleSubmit(reset)}>
         <Input
           errorMessage={errors.password?.message}

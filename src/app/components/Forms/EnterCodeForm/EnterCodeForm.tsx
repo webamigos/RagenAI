@@ -93,7 +93,7 @@ export const EnterCodeForm = () => {
   return (
     <Card>
       <div className="flex justify-center">
-        <Logo />
+        <Logo className="h-8" />
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Text>{t('verification-code-hint')}</Text>
