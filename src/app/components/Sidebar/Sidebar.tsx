@@ -18,7 +18,6 @@ import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
-import { SidebarFooter } from './SidebarFooter';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
@@ -59,7 +58,9 @@ export const Sidebar = ({ children, membership }: Props) => {
         <div className="flex w-full flex-col h-full text-sm">
           <Header />
           <div className="flex flex-col mb-5">
-            {pathname === '/' || pathname.includes('/threads') ? (
+            {pathname === '/' ||
+            pathname.includes('/threads') ||
+            pathname === `/${locale}/support` ? (
               <Button
                 isLink
                 onClick={handleThread}

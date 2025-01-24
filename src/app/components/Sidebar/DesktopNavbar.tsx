@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { Link } from '@/i18n/routing';
 
-import { SettingsIcon, PencilSquareIcon, HomeIcon } from '@ragenai/common-ui';
+import { SettingsIcon, PencilSquareIcon } from '@ragenai/common-ui';
 import { useNewThread } from '@/app/hooks/useNewThread';
 
 import { LanguageSwitcher } from '../LanguageSwitcher';
@@ -22,12 +22,20 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
   const isMyProfile =
     pathname.includes('/my-profile') || pathname.includes('/manage-knowledge');
 
+  const shouldShowPencilIcon = () => {
+    const excludedPaths = ['/', 'threads'];
+    return (
+      !excludedPaths.some((path) => pathname.includes(path)) ||
+      window.innerWidth < 1024
+    );
+  };
+
   return (
     <>
       {userEmail && (
         <div className="lg:fixed flex justify-end content-center font-sans">
           <div className="bg-white dark:bg-secondary-dark flex items-center mt-4 lg:mt-2 gap-4 rounded-3xl shadow-md p-1">
-            {pathname !== '/' && !pathname.includes('threads') && (
+            {shouldShowPencilIcon() && (
               <button
                 onClick={handleNewThread}
                 className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
