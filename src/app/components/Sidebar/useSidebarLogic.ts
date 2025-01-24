@@ -89,6 +89,7 @@ export const useSidebarLogic = () => {
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,
+    handleCloseThread,
     getSidebarThreadsError,
   };
 };

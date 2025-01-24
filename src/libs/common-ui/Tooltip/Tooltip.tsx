@@ -41,6 +41,7 @@ export const Tooltip = ({
         delayShow={delayShow}
         delayHide={delayHide}
         anchorSelect={`[data-tooltip-id="${id}"]`}
+        className="text-sm"
       />
     </>
   );

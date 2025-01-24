@@ -6,9 +6,9 @@ import { useTranslations } from 'next-intl';
 import { Tabs, Tab, TabList } from '@ragenai/common-ui/Tabs';
 
 const tabRoutes = [
-  { label: 'create-document', path: '/manage-knowledge/create-document' },
-  { label: 'upload-files', path: '/manage-knowledge/upload-files' },
   { label: 'documents-list', path: '/manage-knowledge/documents-list' },
+  { label: 'upload-files', path: '/manage-knowledge/upload-files' },
+  { label: 'create-document', path: '/manage-knowledge/create-document' },
 ];
 
 export default function TabsWrapper() {
