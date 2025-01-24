@@ -33,3 +33,10 @@ export const ContactEmail = ({ email, message }: ContactEmailProps) => {
     </div>
   );
 };
+
+export const getUserResponseEmailContent = (title: string, message: string) => {
+  return {
+    subject: `Kopia Twojej wiadomości: ${title}`,
+    text: `Dziękujemy za kontakt z Ragen!\n\nOtrzymaliśmy Twoją wiadomość:\n\n${message}\n\nSkontaktujemy się z Tobą wkrótce.`,
+  };
+};

@@ -13,6 +13,7 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/20/solid';
 import type { FieldError } from 'react-hook-form';
+import { useTranslations } from 'use-intl';
 
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
@@ -48,6 +49,7 @@ export const Textarea = forwardRef(
   ) => {
     const id = useId();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const t = useTranslations('support-page');
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
@@ -111,7 +113,7 @@ export const Textarea = forwardRef(
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
               value={value}
-              placeholder="Your placeholder text here"
+              placeholder={t('text-area-placeholder')}
               {...rest}
             />
             {onSend && (

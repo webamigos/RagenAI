@@ -69,6 +69,7 @@ type SupportRequestPayload = {
   email: string;
   title: string;
   message: string;
+  file?: File[];
 };
 
 type SupportResponse = {
@@ -87,7 +88,13 @@ export const sendSupportRequest = async (
   formData.append('message', data.message);
 
   if (file) {
-    formData.append('file', file);
+    if (Array.isArray(file)) {
+      for (const f of file) {
+        formData.append('files', f);
+      }
+    } else {
+      formData.append('file', file);
+    }
   }
 
   const response = await api.post<SupportResponse>('/send', formData, {

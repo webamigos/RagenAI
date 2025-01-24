@@ -1,6 +1,6 @@
 import { CreateContactOptions, Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
-import { ContactEmail } from '../email-template';
+import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -37,15 +37,15 @@ export const sendContactEmail = async ({
   email,
   title,
   message,
-  file,
+  files,
 }: {
   title: string;
   email: string;
   message: string;
-  file?: { filename: string; content: string };
+  files?: { filename: string; content: string }[];
 }) => {
   try {
-    const attachments = file ? [file] : [];
+    const attachments = files && files.length > 0 ? files : [];
 
     const response = await resend.emails.send({
       from: 'Ragen <noreply@updates.ragen.ai>',
@@ -56,11 +56,13 @@ export const sendContactEmail = async ({
       attachments,
     });
 
+    const { subject, text } = getUserResponseEmailContent(title, message);
+
     const userResponse = await resend.emails.send({
       from: 'Ragen <noreply@updates.ragen.ai>',
       to: email,
-      subject: `Kopia Twojej wiadomości: ${title}`,
-      text: `Dziękujemy za kontakt z Ragen!\n\nOtrzymaliśmy Twoją wiadomość:\n\n${message}\n\nSkontaktujemy się z Tobą wkrótce.`,
+      subject,
+      text,
       attachments,
     });
 

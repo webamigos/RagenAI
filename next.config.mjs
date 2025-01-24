@@ -24,7 +24,7 @@ const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
   swcMinify: true,
   images: {
-    domains: ['img.clerk.com', 'files.stripe.com'],
+    domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
   },
 
   experimental: {

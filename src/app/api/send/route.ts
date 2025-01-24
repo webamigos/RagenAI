@@ -6,6 +6,7 @@ import { logger } from '@/app/lib/utils/logger';
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
+    const files = formData.getAll('files') as File[];
 
     const type = formData.get('type');
     const email = formData.get('email') as string;
@@ -27,22 +28,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let attachment;
-    if (file) {
-      const arrayBuffer = await file.arrayBuffer();
-      const base64File = Buffer.from(arrayBuffer).toString('base64');
+    let attachments = [];
 
-      attachment = {
-        filename: file.name,
-        content: base64File,
-      };
+    for (const file of files) {
+      if (file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        attachments.push({
+          filename: file.name,
+          content: Buffer.from(arrayBuffer).toString('base64'),
+        });
+      }
     }
 
     const response = await sendContactEmail({
       email,
       title,
       message,
-      file: attachment,
+      files: attachments,
     });
 
     if (response.error) {

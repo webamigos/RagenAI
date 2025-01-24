@@ -4,12 +4,13 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { type ComponentProps } from 'react';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { Button, Input, Textarea, Card, Text } from '@ragenai/common-ui';
 import { sendSupportRequest } from '@/app/lib/services/api';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const supportFormSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -18,12 +19,24 @@ const supportFormSchema = z.object({
   file:
     typeof window === 'undefined'
       ? z.any()
-      : z.instanceof(FileList).transform((fileList) => fileList[0]),
+      : z
+          .instanceof(FileList)
+          .transform((fileList) => Array.from(fileList) as File[])
+          .refine((fileList) => fileList.length > 0, {
+            message: 'You must upload at least one file.',
+          })
+          .refine(
+            (fileList) =>
+              Array.from(fileList).every((file) => file.size <= MAX_FILE_SIZE),
+            {
+              message: 'Each file cannot exceed 5MB.',
+            }
+          ),
 });
 
 type SupportFormData = z.infer<typeof supportFormSchema>;
 
-export const SupportForm = ({ className }: ComponentProps<'div'>) => {
+export const SupportForm = () => {
   const {
     register,
     handleSubmit,
@@ -105,6 +118,7 @@ export const SupportForm = ({ className }: ComponentProps<'div'>) => {
             mandatory={false}
             type="file"
             accept="image/*"
+            multiple
             {...register('file')}
             className="w-full mt-1 p-2 border rounded-md"
             error={errors.file}
