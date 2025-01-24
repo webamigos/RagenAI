@@ -110,7 +110,6 @@ export const Sidebar = ({ children, membership }: Props) => {
               <ProfileAndOrganizationTabs membership={membership} />
             )}
           </SidebarBody>
-          <SidebarFooter />
         </div>
       }
     >

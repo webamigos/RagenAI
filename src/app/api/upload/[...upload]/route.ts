@@ -12,6 +12,7 @@ import {
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
+import { usageTracker } from '@/app/lib/services/usage';
 import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 
@@ -119,6 +120,9 @@ export async function POST(request: NextRequest, { params }: Params) {
           uniqueFileId,
           content: parsedFile.content,
         });
+
+        usageTracker.incUploadedFilesSize(file.size);
+        usageTracker.incUploadedFilesCount();
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(

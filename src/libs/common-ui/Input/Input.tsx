@@ -101,7 +101,7 @@ export const Input = forwardRef(
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm text-gray-600 font-medium leading-6 dark:text-gray-300"
+            className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300"
           >
             {label}
             {mandatory && <span className="text-red-600">*</span>}

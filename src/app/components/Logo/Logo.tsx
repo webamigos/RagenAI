@@ -7,11 +7,21 @@ import { useTransition, useEffect, useState } from 'react';
 
 import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
+import { classMerge } from '@ragenai/common-ui/index';
 
-export const Logo = () => {
+type Props = {
+  className?: string;
+  disableLink?: boolean;
+  ignoreTheme?: boolean;
+};
+
+export const Logo = ({
+  className,
+  disableLink = false,
+  ignoreTheme = false,
+}: Props) => {
   const { refresh, push } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
   const [logoSrc, setLogoSrc] = useState('/assets/ragen-logo-on-light-bg.svg');
@@ -37,8 +47,15 @@ export const Logo = () => {
         <Image
           width={120}
           height={80}
-          className={`h-8 w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`}
-          onClick={() => push('/')}
+          className={classMerge(
+            `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
+            className
+          )}
+          onClick={() => {
+            if (!disableLink) {
+              push('/');
+            }
+          }}
           src={logoSrc}
           alt="Logo"
         />
