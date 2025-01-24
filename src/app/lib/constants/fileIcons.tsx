@@ -1,15 +1,23 @@
-import { PdfIcon } from '@ragenai/common-ui/icons/PdfIcon';
-import { EpubIcon } from '@ragenai/common-ui/icons/EpubIcon';
-import { CsvIcon } from '@ragenai/common-ui/icons/CsvIcon';
-import { TxtIcon } from '@ragenai/common-ui/icons/TxtIcon';
+import {
+  PdfIcon,
+  EpubIcon,
+  CsvIcon,
+  MarkdownIcon,
+  SrtIcon,
+  UnknownFileIcon,
+} from '@ragenai/common-ui/icons';
+import { SupportedFileType } from '../services/file';
 
-export const FILE_ICONS: Record<string, JSX.Element> = {
+export const FILE_ICONS: Record<SupportedFileType, JSX.Element> = {
   pdf: <PdfIcon />,
-  'epub+zip': <EpubIcon />,
+  epub: <EpubIcon />,
   csv: <CsvIcon />,
-  text: <TxtIcon />,
+  text: <MarkdownIcon />,
+  markdown: <MarkdownIcon />,
+  srt: <SrtIcon />,
+  unknown: <UnknownFileIcon />,
 };
 
-export const getFileIcon = (fileType: string): JSX.Element => {
-  return FILE_ICONS[fileType.toLowerCase()];
+export const getFileIcon = (fileType: SupportedFileType): JSX.Element => {
+  return FILE_ICONS[fileType];
 };
