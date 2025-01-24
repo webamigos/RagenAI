@@ -1,4 +1,8 @@
-export const CsvIcon = () => {
+import { type ComponentProps } from 'react';
+
+import { classMerge } from '../utils/cn';
+
+export const CsvIcon = ({ className }: ComponentProps<'svg'>) => {
   return (
     <svg
       version="1.1"
@@ -7,6 +11,7 @@ export const CsvIcon = () => {
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 303.188 303.188"
       xmlSpace="preserve"
+      className={classMerge('h-5 w-5', className)}
     >
       <g>
         <polygon

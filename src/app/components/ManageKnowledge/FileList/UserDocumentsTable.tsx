@@ -15,6 +15,7 @@ import { FileSearch } from './FileSearch';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
+import { SupportedFileType } from '@/app/lib/services/file';
 
 type Props = {
   documents: UserFileType[];
@@ -22,8 +23,10 @@ type Props = {
   onRemoveDocument: (documentId: string) => void;
 };
 
+type UserFileTypeSafe = UserFileType & { file_type: SupportedFileType };
+
 type DocumentRowProps = {
-  document: UserFileType;
+  document: UserFileTypeSafe;
   onRemoveDocument: (documentId: string) => void;
 };
 
@@ -65,7 +68,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       [created_at, updated_at]
     );
   const truncatedFileName = useMemo(
-    () => truncateFileName(file_name, 20),
+    () => truncateFileName(file_name, 40),
     [file_name]
   );
 
@@ -103,7 +106,12 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       <CommonUi.TableRow className="relative text-sm overflow-x-hidden">
         <CommonUi.TableCell className="flex z-50">
           <span className="w-6 h-6 -mb-2 mr-1">{fileIcon}</span>
-          <CommonUi.Tooltip place="top" content={file_name} id={file_name}>
+          <CommonUi.Tooltip
+            delayShow={1000}
+            place="top"
+            content={file_name}
+            id={file_name}
+          >
             <CommonUi.Text>{truncatedFileName}</CommonUi.Text>
           </CommonUi.Tooltip>
         </CommonUi.TableCell>
@@ -174,7 +182,7 @@ export const UserDocumentsTable = ({
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) =>
       doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
-    );
+    ) as UserFileTypeSafe[];
   }, [documents, searchValue]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {

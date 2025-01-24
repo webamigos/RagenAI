@@ -49,3 +49,5 @@ export { PdfIcon } from './PdfIcon';
 export { EpubIcon } from './EpubIcon';
 export { CsvIcon } from './CsvIcon';
 export { MarkdownIcon } from './MarkdownIcon';
+export { SrtIcon } from './SrtIcon';
+export { UnknownFileIcon } from './UnknownFileIcon';
