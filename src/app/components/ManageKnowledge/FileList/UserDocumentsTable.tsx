@@ -93,6 +93,20 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     }
   };
 
+  const fileNameTooltip = useMemo(
+    () => (
+      <CommonUi.Tooltip
+        delayShow={1000}
+        place="top"
+        content={file_name}
+        id={`tooltip-${id}`}
+      >
+        <CommonUi.Text>{truncatedFileName}</CommonUi.Text>
+      </CommonUi.Tooltip>
+    ),
+    [file_name, id, truncatedFileName]
+  );
+
   return (
     <>
       {showModal.isOpen && showModal.fileId === document.id && (
@@ -106,14 +120,7 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
       <CommonUi.TableRow className="relative text-sm overflow-x-hidden">
         <CommonUi.TableCell className="flex z-50">
           <span className="w-6 h-6 -mb-2 mr-1">{fileIcon}</span>
-          <CommonUi.Tooltip
-            delayShow={1000}
-            place="top"
-            content={file_name}
-            id={file_name}
-          >
-            <CommonUi.Text>{truncatedFileName}</CommonUi.Text>
-          </CommonUi.Tooltip>
+          {fileNameTooltip}
         </CommonUi.TableCell>
         <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
         <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
