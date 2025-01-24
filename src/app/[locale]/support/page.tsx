@@ -16,12 +16,12 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 
 export default function SupportPage() {
   return (
-    <div className="w-full h-full flex flex-col lg:flex-row items-center gap-4 lg:gap-0 mt-4 px-3">
+    <div className="w-full h-full flex flex-col lg:flex-row items-center gap-4 lg:gap-0 mt-4 px-3 lg:px-0 lg:pr-2">
       <div className="w-full lg:w-1/2 flex-none px-4 lg:px-0">
         <CTA />
         <Image
           alt="support"
-          src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&crop=focalpoint&fp-x=.4&w=2560&h=3413&q=80"
+          src="/assets/tech-support.png"
           width={1280}
           height={1706}
           quality={80}

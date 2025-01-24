@@ -1,7 +1,6 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 
@@ -10,40 +9,21 @@ import { logger } from '@/app/lib/utils/logger';
 import { Button, Input, Textarea, Card, Text } from '@ragenai/common-ui';
 import { sendSupportRequest } from '@/app/lib/services/api';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-const supportFormSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  title: z.string().min(5, 'Title must be at least 5 characters long'),
-  message: z.string().min(10, 'Message must be at least 10 characters long'),
-  file:
-    typeof window === 'undefined'
-      ? z.any()
-      : z
-          .instanceof(FileList)
-          .transform((fileList) => Array.from(fileList) as File[])
-          .refine((fileList) => fileList.length > 0, {
-            message: 'You must upload at least one file.',
-          })
-          .refine(
-            (fileList) =>
-              Array.from(fileList).every((file) => file.size <= MAX_FILE_SIZE),
-            {
-              message: 'Each file cannot exceed 5MB.',
-            }
-          ),
-});
-
-type SupportFormData = z.infer<typeof supportFormSchema>;
+import { getSupportFormSchema, SupportFormData } from './types';
 
 export const SupportForm = () => {
+  const t = useTranslations('support-page');
+  const schema = getSupportFormSchema(t);
+
+  const { errorToast, successToast } = statusToast();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
   } = useForm({
-    resolver: zodResolver(supportFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       email: '',
       title: '',
@@ -51,9 +31,6 @@ export const SupportForm = () => {
       file: undefined,
     },
   });
-
-  const { errorToast, successToast } = statusToast();
-  const t = useTranslations('support-page');
 
   const onSubmit = async (data: SupportFormData) => {
     try {
@@ -77,12 +54,16 @@ export const SupportForm = () => {
   };
 
   return (
-    <Card size="full" title={t('card-title')} className="w-full lg:max-w-md">
+    <Card
+      size="full"
+      title={t('card-title')}
+      className="w-full lg:max-w-lg lg:ml-4 max-h-[650px] overflow-auto"
+    >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Input
             mandatory
-            label="email"
+            label="Email"
             type="email"
             {...register('email')}
             className="w-full mt-1 p-2"
@@ -108,8 +89,10 @@ export const SupportForm = () => {
             {...register('message')}
             rows={4}
             className="w-full mt-1 p-2 border rounded-md"
+            placeholder={t('text-area-placeholder')}
             error={errors.message}
             errorMessage={errors.message?.message}
+            showVoiceInput={false}
           />
         </div>
         <div>

@@ -102,7 +102,8 @@ export const Sidebar = ({ children, membership }: Props) => {
             {isSignedIn &&
               !pathname.includes('/my-profile') &&
               !pathname.includes('/manage-knowledge') &&
-              !pathname.includes('generate-access-key') && (
+              !pathname.includes('generate-access-key') &&
+              !pathname.includes('/support') && (
                 <Button
                   onClick={handleSearch}
                   className="relative ml-4 w-10/12"

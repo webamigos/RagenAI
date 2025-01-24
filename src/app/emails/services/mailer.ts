@@ -17,7 +17,7 @@ export const sendWelcomeEmail = async ({
   name,
 }: {
   to: string;
-  name: string;
+  name: string | undefined;
 }) => {
   try {
     const response = await resend.emails.send({
