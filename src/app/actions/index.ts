@@ -33,7 +33,6 @@ import {
   ClerkOrganizationMetadata,
   ClerkOrganizationPublicMetadata,
 } from '../lib/types/organizations';
-import { usageTracker } from '../lib/services/usage';
 import {
   deleteFileFromDb,
   fetchFileDetails,
@@ -42,6 +41,7 @@ import {
 } from '../lib/services/file';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { deleteFromS3 } from '../lib/services/aws';
+import { usageTracker } from '../lib/services/usage';
 
 const serviceName = 'actions';
 
@@ -355,6 +355,6 @@ export async function fetchThreadSuggestions(
   }));
 }
 
-export const trackThreadCreated = async () => {
+export const trackThreadCreated = () => {
   usageTracker.incThreadsCount();
 };

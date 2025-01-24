@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AskQuestion } from './';
 import {
+  ChatType,
   type CreateMessageDto,
   createMessageSchema,
 } from '../../../contracts/Message';
@@ -30,6 +31,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     } = useForm<CreateMessageDto>({
       resolver: zodResolver(createMessageSchema),
       reValidateMode: 'onSubmit',
+      defaultValues: {
+        useKnowledge: true,
+      },
     });
 
     useImperativeHandle(ref, () => ({
@@ -38,7 +42,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
 
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
       reset({ prompt: '' });
-      onSubmit(data);
+      onSubmit({
+        ...data,
+        mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
+      });
     };
 
     const handleSend = () => {
@@ -46,6 +53,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     };
 
     const promptValue = watch('prompt', '');
+    const useKnowledge = watch('useKnowledge');
 
     return (
       <div className="mt-auto px-4 sm:px-4 lg:px-22">
@@ -53,14 +61,22 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           onSubmit={handleSubmit(handleFormSubmit)}
           className="flex w-full justify-center"
         >
-          <AskQuestion
-            isUserLogged={isUserLogged}
-            disabled={isLoading}
-            error={errors?.prompt}
-            register={register}
-            onSend={handleSend}
-            value={promptValue}
-          />
+          <div className="flex w-full justify-center flex-col pt-2">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input type="checkbox" {...register('useKnowledge')} />
+              Selected mode:{' '}
+              {useKnowledge ? ChatType.RAG : ChatType.CONVERSATION}
+            </label>
+
+            <AskQuestion
+              isUserLogged={isUserLogged}
+              disabled={isLoading}
+              error={errors?.prompt}
+              register={register}
+              onSend={handleSend}
+              value={promptValue}
+            />
+          </div>
         </form>
       </div>
     );
