@@ -8,6 +8,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   ArrowRightCircleIcon,
   ExclamationCircleIcon,
@@ -52,6 +53,7 @@ export const Textarea = forwardRef(
   ) => {
     const id = useId();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const t = useTranslations('text-area');
 
     const {
       startListening,
@@ -60,9 +62,17 @@ export const Textarea = forwardRef(
       error: voiceError,
     } = useVoiceInput({
       onResult: (text) => {
-        if (setValue) setValue(text);
+        if (setValue) {
+          setValue(text);
+        }
       },
     });
+
+    useEffect(() => {
+      if (!isRecording && value?.trim()) {
+        onSend?.();
+      }
+    }, [isRecording, value, onSend]);
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
@@ -163,12 +173,12 @@ export const Textarea = forwardRef(
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
               value={value}
-              placeholder="Twoje pytanie..."
+              placeholder={t('text-area')}
               {...rest}
             />
             <button
               type="button"
-              onClick={onClick as any}
+              onClick={onClick}
               className="absolute bottom-1.5 right-3 flex items-center"
               disabled={
                 !isRecording &&

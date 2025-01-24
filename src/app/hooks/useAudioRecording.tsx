@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
+import { logger } from '../lib/utils/logger';
+import { statusToast } from '../lib/utils/toast';
+
 type UseVoiceInputProps = {
   onResult: (text: string) => void;
 };
@@ -12,6 +15,10 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
 
   const t = useTranslations('useAudioRecorder');
 
+  const { errorToast } = statusToast();
+
+  const speechEndDelay = 3000;
+
   const cleanupRecognition = () => {
     if (recognitionRef.current) {
       recognitionRef.current.onstart = null;
@@ -22,7 +29,9 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
 
       try {
         recognitionRef.current.stop();
-      } catch (e) {}
+      } catch (e) {
+        logger.error({ err: e });
+      }
       recognitionRef.current = null;
     }
     setIsRecording(false);
@@ -30,7 +39,9 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
 
   const initializeRecognition = () => {
     const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let silenceTimeout: NodeJS.Timeout | null = null;
 
     if (!SpeechRecognition) {
       setError(t('browser-not-compatibility'));
@@ -38,8 +49,7 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'pl-PL';
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
 
     recognition.onstart = () => {
@@ -52,16 +62,44 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript);
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = 0; i < event.results.length; i++) {
+        const result = event.results[i];
+
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript + ' ';
+        } else {
+          interimTranscript += result[0].transcript + ' ';
+        }
+      }
+
+      if (finalTranscript) {
+        onResult(finalTranscript.trim());
+      } else {
+        onResult(interimTranscript.trim());
+      }
+      if (silenceTimeout) clearTimeout(silenceTimeout);
+      silenceTimeout = setTimeout(() => {
+        cleanupRecognition();
+      }, speechEndDelay);
     };
 
     recognition.onspeechend = () => {
       cleanupRecognition();
     };
 
-    recognition.onerror = (e: any) => {
+    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
       setError(t('recognition-error'));
+
+      logger.error(
+        {
+          error: { message: e },
+        },
+        'Recognition error'
+      );
+
       cleanupRecognition();
     };
 
@@ -79,6 +117,10 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       }
     } catch (err) {
       setError(t('recognition-error'));
+      if (err instanceof Error) {
+        errorToast({ message: err.message });
+      }
+      logger.error({ error: err }, 'Recognition error');
       cleanupRecognition();
     }
   };

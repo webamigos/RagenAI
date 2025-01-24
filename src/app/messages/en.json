@@ -147,6 +147,9 @@
     "provide-at-least-10-characters": "Provide at least 10 characters",
     "contact-with-us": "Contact with us"
   },
+  "text-area": {
+    "placeholder": "Your question..."
+  },
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
