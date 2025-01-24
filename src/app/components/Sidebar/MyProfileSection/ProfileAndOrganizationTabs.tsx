@@ -62,7 +62,7 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     {
       icon: OpenBookIcon,
       label: t('manage-knowledge'),
-      path: '/manage-knowledge/create-document',
+      path: '/manage-knowledge/documents-list',
     },
     {
       icon: SettingsIcon,
