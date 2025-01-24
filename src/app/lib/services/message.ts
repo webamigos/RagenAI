@@ -10,6 +10,7 @@ import { MessageDto } from '../../contracts/Message';
 import { createVisitorEntry } from './visitor';
 import { logger } from '../utils/logger';
 import { setSentryContext, setSentryServiceTag } from './sentry';
+import { usageTracker } from './usage';
 
 export type DbMessageDto = {
   id: Message['id'];
@@ -46,6 +47,9 @@ export const createMessageInDB = async ({
       visitorId,
       runId,
     });
+
+    usageTracker.incMessagesCount(role);
+
     return await db.message.create({
       data: {
         thread_id: thread.id,

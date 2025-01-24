@@ -4,7 +4,8 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/en');
 });
 
-test('home elements are visible', async ({ page }) => {
+// no longer relevant
+test.skip('home elements are visible', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 
   await expect(

@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { auth } from '@clerk/nextjs/server';
 
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  createDocumentDetailsInDB,
-  createMarkdownDocument,
-} from '@/app/lib/services/document';
+import { createMarkdownDocument } from '@/app/lib/services/document';
 import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
@@ -14,6 +12,9 @@ import {
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
+import { usageTracker } from '@/app/lib/services/usage';
+import { uploadToS3 } from '@/app/lib/services/aws';
+import { createFileDetailsInDB } from '@/app/lib/services/file';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -24,11 +25,17 @@ type Params = {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const uploaderId = params.upload[0];
+
+  const { orgId } = auth();
+  if (!orgId) {
+    throw new Error('Invalid organization');
+  }
+
   try {
     setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
-    const organizationId = formData.get('organizationId') as string;
+    const organizationId = orgId;
     setSentryClerkOrganizationTag(organizationId);
     if (!uploaderId) {
       logger.error('Uploader ID missing!');
@@ -50,6 +57,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       try {
         const parsedFile = await parseFile(file, organizationId);
         const fileType = getFileType(parsedFile.fileName);
+        const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
@@ -64,7 +72,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         });
 
         if (success) {
-          await createDocumentDetailsInDB(
+          const fileRecord = await createFileDetailsInDB(
             parsedFile.fileName,
             file.size,
             organizationId,
@@ -78,8 +86,24 @@ export async function POST(request: NextRequest, { params }: Params) {
               title: parsedFile.fileName,
               organization_id: organizationId,
               content: parsedFile.content as string,
+              file_id: fileRecord.id,
             });
           }
+
+          // upload file to S3 in the background
+          uploadToS3(
+            `${fileRecord.id}.${fileExtension}`,
+            parsedFile.content as Buffer
+          )
+            .then(() => {
+              logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
+            })
+            .catch((error) => {
+              logger.error(
+                { err: error },
+                `Error uploading file to S3: ${parsedFile.fileName}`
+              );
+            });
         }
 
         if (!success) {
@@ -96,6 +120,9 @@ export async function POST(request: NextRequest, { params }: Params) {
           uniqueFileId,
           content: parsedFile.content,
         });
+
+        usageTracker.incUploadedFilesSize(file.size);
+        usageTracker.incUploadedFilesCount();
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(

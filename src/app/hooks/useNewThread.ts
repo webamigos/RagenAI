@@ -11,6 +11,7 @@ import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
 import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
+import { trackThreadCreated } from '../actions';
 
 type ActionType =
   | { type: 'SET_VISITOR_ID'; payload: string | null }
@@ -134,6 +135,10 @@ export const useNewThread = () => {
 
     try {
       const result = user ? await createThread() : await createThreadForGuest();
+
+      if (result.data.public_id) {
+        trackThreadCreated();
+      }
 
       const threadId = result.data.public_id;
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);

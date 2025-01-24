@@ -14,7 +14,7 @@ import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
-import { Footer } from './Footer';
+import { SidebarFooter } from './SidebarFooter';
 import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
@@ -110,7 +110,6 @@ export const Sidebar = ({ children, membership }: Props) => {
               <ProfileAndOrganizationTabs membership={membership} />
             )}
           </SidebarBody>
-          <Footer />
         </div>
       }
     >

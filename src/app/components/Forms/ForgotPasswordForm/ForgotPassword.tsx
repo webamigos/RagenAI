@@ -63,7 +63,7 @@ export const ForgotPasswordForm = () => {
 
   return (
     <Card size="sm" className="w-full">
-      <Logo />
+      <Logo className="h-8" />
       <Text fontWeight="medium" className="my-2">
         {t('Forgot-password')}
       </Text>

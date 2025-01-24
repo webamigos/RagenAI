@@ -13,6 +13,7 @@ import {
   OpenBookIcon,
   SettingsIcon,
   SidebarItem,
+  CreditCardIcon,
   RSSIcon,
 } from '@ragenai/common-ui';
 
@@ -67,6 +68,11 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       icon: SettingsIcon,
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
+    },
+    {
+      icon: CreditCardIcon,
+      label: t('subscription-management'),
+      path: '/my-profile/subscription',
     },
     {
       icon: RSSIcon,
@@ -130,18 +136,22 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
   usePrefetchTabs(tabs);
 
   return (
-    <div>
-      {tabs.map(({ icon: Icon, label, path, className }) => (
-        <SidebarItem
-          hasIcon={true}
-          key={path}
-          href={path}
-          onClick={closeSidebar}
-          className={className}
-        >
-          <Icon />
-          {label}
-        </SidebarItem>
+    <div className="mt-4">
+      {tabs.map(({ icon: Icon, label, path, className }, index) => (
+        <div key={path}>
+          <SidebarItem
+            hasIcon={true}
+            href={path}
+            onClick={closeSidebar}
+            className={className}
+          >
+            <Icon />
+            {label}
+          </SidebarItem>
+          {index < tabs.length - 1 && (
+            <div className="border-b dark:border-gray-700 border-gray-200 my-2" />
+          )}
+        </div>
       ))}
     </div>
   );

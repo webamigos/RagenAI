@@ -32,7 +32,8 @@
       "resend-not-available": "Ponowne wysłanie kodu niemożliwe. Proszę przejdź ponownie proces rejestracji",
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
-    }
+    },
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -43,7 +44,11 @@
     "or": "lub",
     "Forgot-password": "Zapomniałeś hasła?",
     "invalid-email": "Nieprawidłowy adres email",
-    "invalid-password": "Hasło musi mieć co najmniej 8 znaków"
+    "invalid-password": "Hasło musi mieć co najmniej 8 znaków",
+    "sign-in-to-account": "Zaloguj się do konta",
+    "not-a-member": "Nie masz konta?",
+    "start-free-trial": "Rozpoznij 14 dniowy okres próbny",
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -106,7 +111,7 @@
       "title": "Bezpieczeństwo profilu | Ragen AI"
     },
     "create-organization": {
-      "title": "Utwórz organizację | Ragen AI"
+      "title": "Stwórz organizację | Ragen AI"
     },
     "organization-profile": {
       "title": "Zarządzaj organizacją | Ragen AI"
@@ -117,6 +122,9 @@
     "prompt-management": {
       "title": "Zarządzanie asystentem | Ragen AI"
     },
+    "plans": {
+      "title": "Cennik i plany subskrypcji | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
     }
@@ -125,7 +133,7 @@
     "USER": "Ty",
     "ASSISTANT": "Asystent",
     "loading": "Chwileczkę...",
-    "create-new-thread": "Załóż nowy wątek",
+    "create-new-thread": "Stwórz nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni"
@@ -199,7 +207,7 @@
     "send": "Wyślij"
   },
   "manage-knowledge": {
-    "create-document": "Utwórz dokument",
+    "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki"
   },
@@ -212,6 +220,7 @@
     "manage-knowledge": "Zarządzaj wiedzą",
     "organization-list": "Lista organizacji",
     "assistant-management": "Zarządzanie asystentem",
+    "subscription-management": "Zarządzaj subskrypcją",
     "api-keys": "Klucze API",
     "create-new-thread": "Załóż nowy wątek",
     "search-threads": "Przeszukaj wątki",
@@ -245,7 +254,7 @@
     "updated": "Zaktualizowano",
     "preview": "Podgląd",
     "no-files": "Brak plików",
-    "search-placeholder": "Wyszukaj plik"
+    "search-placeholder": "Wyszukaj pliki"
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
@@ -327,7 +336,38 @@
     "period-start": "Data aktywacji",
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",
-    "current-period-ends": "Data wygaśnięcia"
+    "current-period-ends": "Data wygaśnięcia",
+    "cancel-subscription": "Anuluj subskrypcję",
+    "cancel-subscription-success": "Subskrypcja anulowana",
+    "cancel-subscription-error": "Wystąpił błąd podczas anulowania subskrypcji",
+    "cancel-subscription-confirmation": "Twoja subskrypcja została anulowana, nie zostanie automatycznie odnowiona",
+    "show-available-plans": "Pokaż dostępne plany",
+    "checkout": {
+      "title": "Dziękujemy za zakup! 🎉",
+      "description": "Twoja subskrypcja została pomyślnie aktywowana.",
+      "next-payment-date": "Data kolejnej płatności",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Pobierz fakturę",
+      "manage-subscription": "Zarządzaj subskrypcją"
+    },
+    "confirm-cancel": "Tak, anuluj subskrypcję",
+    "keep-subscription": "Nie, zachowaj subskrypcję",
+    "activate-free-plan": "Aktywuj plan free",
+    "confirm-activate": "Zrezygnuj z bieżącej subskrypcji",
+    "cancel-activation": "Anuluj",
+    "activate-free-plan-success": "Plan free aktywowany",
+    "activate-free-plan-error": "Wystąpił błąd podczas aktywowania planu free"
+  },
+  "plans": {
+    "title": "Lista dostępnych planów subskrypcji",
+    "checkout-error": "Nie udało się rozpocząć procesu płatności. Spróbuj ponownie później.",
+    "subscribe": "Subskrybuj",
+    "per-month": "miesięcznie",
+    "per-year": "rocznie",
+    "already-active": "Masz już aktywny plan płatny!",
+    "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
+    "view-subscription": "Zarządzaj swoją subskrypcją"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",

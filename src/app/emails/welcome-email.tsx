@@ -6,7 +6,6 @@ import {
   Hr,
   Html,
   Img,
-  Link,
   Preview,
   Section,
   Text,
@@ -39,41 +38,16 @@ export const WelcomeEmail = ({ name }: Props) => (
           <Text style={paragraph}>Cześć{name ? ` ${name}` : ''}!</Text>
           <Text style={paragraph}>Dziękujemy za rejestrację w Ragen AI :)</Text>
           <Text style={paragraph}>
-            Pracujemy nad tym projektem, aby pomóc programistom i programistkom
-            szybciej tworzyć aplikacje z wykorzystujące modele AI.
+            Pracujemy nad tym projektem, aby pomóc w łatwy sposób
+            budować asystentów AI.
           </Text>
           <Text style={paragraph}>
             W najbliższym czasie będziemy rozwijać nasze rozwiązanie, więc warto
             dodać ten adres e-mail do kontaktów - nie ominą Cię wtedy informacje
             o nowych funkcjonalnościach.
           </Text>
-          <Text style={paragraphStrong}>
-            Zanim w pełni zaczniesz wykorzystywać Ragen musisz wykonać dwa
-            kroki:
-          </Text>
-          <Text style={paragraph}>
-            1) Wygeneruj{' '}
-            <Link
-              style={anchorStrong}
-              href="https://platform.openai.com/api-keys"
-            >
-              klucz API w OpenAI
-            </Link>
-            . Jest potrzebny do przeprocesowania Twoich dokumentów oraz
-            wyszukiwania w nich powiązanych informacji. Następnie wprowadź klucz
-            w{' '}
-            <Link
-              style={anchorStrong}
-              href={`${getBaseUrl()}/pl/my-profile/prompt-management`}
-            >
-              ustawieniach organizacji
-            </Link>{' '}
-            (kliknij w kłódkę po prawej stronie).
-          </Text>
-          <Text style={paragraph}>2) Zacznij dodawać swoje dokumenty :)</Text>
-          <Text style={paragraph}> To wszystko - efektywnej pracy!</Text>
           <Button style={button} href={getBaseUrl()}>
-            Przejdź do panelu Ragen
+            Przejdź do aplikacji Ragen
           </Button>
           <Hr style={hr} />
           <Text style={paragraph}>
