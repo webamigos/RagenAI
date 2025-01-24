@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 import { logger } from '../lib/utils/logger';
 import { statusToast } from '../lib/utils/toast';
@@ -8,10 +8,22 @@ type UseVoiceInputProps = {
   onResult: (text: string) => void;
 };
 
+const localeToSpeechLang = (locale: string): string => {
+  switch (locale) {
+    case 'en':
+      return 'en-US';
+    case 'pl':
+      return 'pl-PL';
+    default:
+      return 'pl-PL';
+  }
+};
+
 export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const locale = useLocale();
 
   const t = useTranslations('useAudioRecorder');
 
@@ -51,6 +63,7 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
+    recognition.lang = localeToSpeechLang(locale);
 
     recognition.onstart = () => {
       setIsRecording(true);
