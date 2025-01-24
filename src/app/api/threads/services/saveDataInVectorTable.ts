@@ -27,6 +27,8 @@ import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
+import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
+import { determineMimeType } from '@/app/lib/utils/determinateMimeType';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -117,18 +119,7 @@ export const convertAndStoreDocument = async ({
       throw new Error('OpenAI API key is required.');
     }
 
-    let mimeType: string | undefined;
-    if (fileContent instanceof Buffer) {
-      const fileType = await fileTypeFromBuffer(new Uint8Array(fileContent));
-      mimeType = fileType?.mime;
-    } else if (typeof fileContent === 'string') {
-      mimeType = 'text/markdown';
-    } else {
-      return {
-        success: false,
-        message: 'Unsupported file content type.',
-      };
-    }
+    let mimeType = await determineMimeType(fileContent);
 
     if (!mimeType) {
       return {
@@ -139,16 +130,9 @@ export const convertAndStoreDocument = async ({
 
     logger.info({ mimeType }, 'Detected MIME type');
 
-    const supportedMimeTypes = {
-      'application/pdf': 'pdf',
-      'application/epub+zip': 'epub',
-      'text/csv': 'csv',
-      'text/markdown': 'md',
-    };
-
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
     const fileExtension =
-      supportedMimeTypes[mimeType as keyof typeof supportedMimeTypes];
+      SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES];
     if (!fileExtension) {
       return {
         success: false,
