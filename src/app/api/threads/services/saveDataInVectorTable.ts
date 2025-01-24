@@ -7,7 +7,6 @@ import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { fileTypeFromBuffer } from 'file-type';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
@@ -139,7 +138,6 @@ export const convertAndStoreDocument = async ({
         message: `Unsupported file type: ${mimeType}`,
       };
     }
-
     const { filePath, message, success } = await saveBinaryToTempFile(
       fileContent,
       fileExtension

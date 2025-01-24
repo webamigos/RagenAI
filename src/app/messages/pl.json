@@ -150,6 +150,9 @@
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
     "contact-with-us": "Skontaktuj się z nami"
   },
+  "text-area": {
+    "placeholder": "Twoje pytanie..."
+  },
   "success-toast": {
     "copied": "Skopiowano!",
     "deleted": "Usunięto!",
@@ -444,5 +447,10 @@
     "file-label": "Załącz screenshot",
     "send-success": "Wiadomość została wysłana",
     "send-error": "Wystąpił błąd podczas wysyłania wiadomości"
+  }
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
+    "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
+    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
   }
 }
