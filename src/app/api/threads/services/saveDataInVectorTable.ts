@@ -26,8 +26,8 @@ import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
-import { determineMimeType } from '@/app/lib/utils/determineMimeType';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
+import { determineMimeType } from '@/app/lib/utils/determinateMimeType';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -126,6 +126,8 @@ export const convertAndStoreDocument = async ({
         message: 'Could not detect MIME type of the file.',
       };
     }
+
+    logger.info({ mimeType }, 'Detected MIME type');
 
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
     const fileExtension =

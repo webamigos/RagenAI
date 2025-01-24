@@ -1,14 +1,17 @@
-export const EpubIcon = () => {
+import { ComponentProps } from 'react';
+
+import { classMerge } from '../utils/cn';
+
+export const EpubIcon = ({ className }: ComponentProps<'svg'>) => {
   return (
     <svg
-      height="800px"
-      width="800px"
       version="1.1"
       id="Layer_1"
       xmlns="http://www.w3.org/2000/svg"
       xmlnsXlink="http://www.w3.org/1999/xlink"
       viewBox="0 0 303.188 303.188"
       xmlSpace="preserve"
+      className={classMerge('h-5 w-5', className)}
     >
       <g>
         <polygon

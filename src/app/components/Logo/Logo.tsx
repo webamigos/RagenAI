@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useLocale } from 'next-intl';
 import { useTransition, useEffect, useState } from 'react';
 
 import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
+import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { classMerge } from '@ragenai/common-ui/index';
 
 type Props = {
@@ -20,11 +20,13 @@ export const Logo = ({
   disableLink = false,
   ignoreTheme = false,
 }: Props) => {
-  const { refresh, push } = useRouter();
+  const { refresh } = useRouter();
   const pathname = usePathname();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
   const [logoSrc, setLogoSrc] = useState('/assets/ragen-logo-on-light-bg.svg');
+
+  const { handleCloseThread } = useCloseThread();
 
   useEffect(() => {
     if (theme === 'dark' || resolvedTheme === 'dark') {
@@ -53,7 +55,7 @@ export const Logo = ({
           )}
           onClick={() => {
             if (!disableLink) {
-              push('/');
+              handleCloseThread(true);
             }
           }}
           src={logoSrc}
