@@ -68,7 +68,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
               <PencilSquareIcon className="w-6 h-6" />
             </button>
 
-            <Popover>
+            <Popover data-testid="tw-popover">
               <PopoverButton className="block text-sm/6 font-semibold text-white/50 focus:outline-none data-[active]:text-white data-[hover]:text-white data-[focus]:outline-1 data-[focus]:outline-white">
                 <Avatar
                   className="w-9 h-9 mr-1 hidden sm:flex cursor-pointer group-hover:opacity-100"

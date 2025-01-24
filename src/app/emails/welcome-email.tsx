@@ -38,8 +38,8 @@ export const WelcomeEmail = ({ name }: Props) => (
           <Text style={paragraph}>Cześć{name ? ` ${name}` : ''}!</Text>
           <Text style={paragraph}>Dziękujemy za rejestrację w Ragen AI :)</Text>
           <Text style={paragraph}>
-            Pracujemy nad tym projektem, aby pomóc programistom i programistkom
-            szybciej tworzyć aplikacje z wykorzystujące modele AI.
+            Pracujemy nad tym projektem, aby pomóc w łatwy sposób
+            budować asystentów AI.
           </Text>
           <Text style={paragraph}>
             W najbliższym czasie będziemy rozwijać nasze rozwiązanie, więc warto
