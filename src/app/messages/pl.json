@@ -32,7 +32,8 @@
       "resend-not-available": "Ponowne wysłanie kodu niemożliwe. Proszę przejdź ponownie proces rejestracji",
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
-    }
+    },
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -43,7 +44,11 @@
     "or": "lub",
     "Forgot-password": "Zapomniałeś hasła?",
     "invalid-email": "Nieprawidłowy adres email",
-    "invalid-password": "Hasło musi mieć co najmniej 8 znaków"
+    "invalid-password": "Hasło musi mieć co najmniej 8 znaków",
+    "sign-in-to-account": "Zaloguj się do konta",
+    "not-a-member": "Nie masz konta?",
+    "start-free-trial": "Rozpoznij 14 dniowy okres próbny",
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
