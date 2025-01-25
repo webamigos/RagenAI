@@ -148,7 +148,10 @@
     "send": "Wyślij",
     "close-thread": "Zamknij wątek",
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
-    "contact-with-us": "Skontaktuj się z nami"
+    "contact-with-us": "Skontaktuj się z nami",
+    "selected-mode": "Korzystaj wyłącznie z wewnętrznej bazy wiedzy",
+    "rag": "tylko baza wiedzy",
+    "conversation": "baza wiedzy i inne źródła"
   },
   "text-area": {
     "placeholder": "Twoje pytanie..."

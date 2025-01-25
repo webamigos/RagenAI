@@ -17,7 +17,7 @@ import {
   fetchMessagesFromApi,
 } from '../../lib/services/api';
 
-import type { CreateMessageDto } from '../../contracts/Message';
+import { ChatType, type CreateMessageDto } from '../../contracts/Message';
 import {
   type State,
   type Action,
@@ -43,6 +43,7 @@ const {
   SET_STREAMED_MESSAGE,
   SET_IS_ERROR,
   REMOVE_MESSAGE,
+  SET_MODE,
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
@@ -60,6 +61,7 @@ export const useAssistantLogic = (threadId: string) => {
     isError: false,
     streamedMessage: null,
     messages: [],
+    mode: ChatType.CONVERSATION,
   };
 
   const userVisitorId = user?.id;
@@ -83,6 +85,7 @@ export const useAssistantLogic = (threadId: string) => {
     {
       isMessageLoading,
       userMessageId,
+      mode,
       isLimitLock,
       messageLoadingText,
       streamedMessage,
@@ -138,6 +141,8 @@ export const useAssistantLogic = (threadId: string) => {
             (message) => message.public_id !== action.payload
           ),
         };
+      case SET_MODE:
+        return { ...state, mode: action.payload };
       default:
         return state;
     }
@@ -204,9 +209,9 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
-  const connectToStream = (userMessageId: string) => {
+  const connectToStream = (userMessageId: string, mode: ChatType) => {
     const eventSourceUrl = user
-      ? `/api/threads/${threadId}/${userMessageId}`
+      ? `/api/threads/${threadId}/${userMessageId}?mode=${mode}`
       : `/api/guest-threads/${threadId}/${userMessageId}`;
     const eventSource = new EventSource(eventSourceUrl);
 
@@ -284,7 +289,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   useEffect(() => {
     if (userMessageId !== '') {
-      const eventSource = connectToStream(userMessageId);
+      const eventSource = connectToStream(userMessageId, mode);
 
       return () => eventSource.close();
     }
@@ -304,8 +309,10 @@ export const useAssistantLogic = (threadId: string) => {
       role: Role.USER,
       content: data.prompt,
       created_at: new Date(),
+      mode: data.mode,
     };
     dispatch({ type: ADD_MESSAGE, payload: userMessage });
+    dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
     dispatch({ type: SET_IS_ERROR, payload: false });
     dispatch({
       type: SET_MESSAGE_LOADING,
