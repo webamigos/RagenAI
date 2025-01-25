@@ -165,6 +165,7 @@
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
     "crypto-js": "^4.2.0",
+    "d3-dsv": "^2.0.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "dompurify": "^3.1.7",
