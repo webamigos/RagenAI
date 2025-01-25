@@ -31,6 +31,8 @@ type Props = {
   onSend?: () => void;
   setValue?: (text: string) => void;
   value?: string;
+  mandatory?: boolean;
+  showVoiceInput?: boolean;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -42,7 +44,9 @@ export const Textarea = forwardRef(
       errorMessage,
       className,
       disabled,
+      showVoiceInput = true,
       containerClassName,
+      mandatory = false,
       maxHeight = 200,
       onSend,
       setValue,
@@ -103,47 +107,46 @@ export const Textarea = forwardRef(
     let icon = null;
     let onClick = null;
 
-    if (isRecording) {
-      icon = (
-        <StopIcon
-          className="h-7 w-7 mb-1.5 text-red-500 hover:text-red-600 dark:text-red-400"
-          aria-hidden="true"
-        />
-      );
-      onClick = stopListening;
-    } else if (value?.trim()) {
-      icon = (
-        <ArrowRightCircleIcon
-          className="h-9 w-9 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
-          aria-hidden="true"
-        />
-      );
-      onClick = onSend;
-    } else {
-      icon = (
-        <MicrophoneIcon
-          className={classMerge(
-            'h-7 w-7 mb-1.5',
-            disabled
-              ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
-              : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
-          )}
-          aria-hidden="true"
-        />
-      );
-      onClick = disabled ? undefined : startListening;
+    if (showVoiceInput) {
+      if (isRecording) {
+        icon = (
+          <StopIcon
+            className="h-7 w-7 mb-1.5 text-red-500 hover:text-red-600 dark:text-red-400"
+            aria-hidden="true"
+          />
+        );
+        onClick = stopListening;
+      } else if (value?.trim()) {
+        icon = (
+          <ArrowRightCircleIcon
+            className="h-9 w-9 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
+            aria-hidden="true"
+          />
+        );
+        onClick = onSend;
+      } else if (!disabled) {
+        icon = (
+          <MicrophoneIcon
+            className={classMerge(
+              'h-7 w-7 mb-1.5',
+              'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+            )}
+            aria-hidden="true"
+          />
+        );
+        onClick = startListening;
+      }
     }
 
     return (
       <div className={classMerge('relative', containerClassName)}>
-        {label && (
-          <label
-            htmlFor={id}
-            className="block text-sm font-medium leading-6 dark:text-gray-300"
-          >
-            {label}
-          </label>
-        )}
+        <label
+          htmlFor={id}
+          className="block text-sm font-medium leading-6 dark:text-gray-300"
+        >
+          {label}
+          {mandatory && <span className="text-red-600">*</span>}
+        </label>
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
           <div className="relative">
             <textarea
@@ -178,7 +181,7 @@ export const Textarea = forwardRef(
             />
             <button
               type="button"
-              onClick={onClick}
+              onClick={onClick || undefined}
               className="absolute bottom-1.5 right-3 flex items-center"
               disabled={
                 !isRecording &&
