@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ApiKeysService } from './logic/services/api-keys.service';
 import { KeyId, OrgId, ProjectId } from './logic/types/brand';
 
+export const dynamic = 'force-dynamic';
+
 // TODO: it's experimental endpoint - this logic is to remove
 // You can verify if generating keys works correctly
 export const GET = async (request: NextRequest) => {

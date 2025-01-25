@@ -7,7 +7,7 @@ const API_HEADER = 'x-api-key';
 export class HttpException extends Error {}
 export class UnauthorizedException extends HttpException {}
 
-export const canActivate = async (request: NextRequest) => {
+export const canActivate = (request: NextRequest) => {
   const headers = request.headers;
   const apiKeyHeader = headers.get(API_HEADER);
 
