@@ -80,7 +80,11 @@ export async function POST(request: NextRequest, { params }: Params) {
             fileType
           );
 
-          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
+          if (
+            parsedFile.fileType === 'text' ||
+            parsedFile.fileType === 'srt' ||
+            parsedFile.fileType === 'csv'
+          ) {
             await createMarkdownDocument({
               public_id: uniqueFileId,
               title: parsedFile.fileName,

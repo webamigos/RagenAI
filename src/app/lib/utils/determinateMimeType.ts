@@ -9,7 +9,11 @@ export const determineMimeType = async (
     const fileType = await fileTypeFromBuffer(new Uint8Array(fileContent));
     mimeType = fileType?.mime || null;
   } else if (typeof fileContent === 'string') {
-    mimeType = 'text/markdown';
+    if (fileContent.trim().startsWith('sep=') || fileContent.includes(',')) {
+      mimeType = 'text/csv';
+    } else {
+      mimeType = 'text/markdown';
+    }
   }
 
   return mimeType;
