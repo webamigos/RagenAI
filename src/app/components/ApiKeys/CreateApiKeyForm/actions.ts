@@ -17,6 +17,9 @@ import {
   fetchOrganizationDefaultProject,
 } from '@/app/lib/services/apiKeys';
 import { getMessages } from 'next-intl/server';
+import { api } from '@/app/lib/services/config';
+import { ApiKeysService } from '@/app/api/v1/logic/services/api-keys.service';
+import { KeyId, OrgId, ProjectId } from '@/app/api/v1/logic/types/brand';
 
 type SuccessResponse = {
   payload: {
@@ -61,13 +64,10 @@ export const createApiKey = async (
       organization.id
     );
 
-    const user = await currentUser();
-
     const keyRecord = await db.apiKey.create({
       data: {
         name: data.name,
         masked_value: 'pending_*********',
-        // created_by: user?.fullName || 'Org Person', // TODO: change?
         project_id: defaultProject.id,
         organization_id: organization.id,
       },
@@ -77,23 +77,31 @@ export const createApiKey = async (
       throw new Error('API_BASE_URL is not set');
     }
 
-    const response = await fetch(`${apiBaseUrl}/v1/auth/generate-api-key`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        orgId: organization.id,
-        projectId: defaultProject.id,
-        keyId: keyRecord.id,
-      }),
-    });
+    // Moved logic from Nest.js temporary here
+    const apiKeysService = new ApiKeysService();
 
-    if (!response.ok) {
-      throw new Error('Failed to generate API key');
-    }
+    const keyPayload = {
+      orgId: orgId as OrgId,
+      projectId: defaultProject.id as ProjectId,
+      keyId: keyRecord.id as KeyId,
+    };
 
-    const { apiKey } = await response.json();
+    const hashResult = await apiKeysService.createAndHash(keyPayload);
+
+    // TODO: previous version with NestJS app
+    // const response = await fetch(`${apiBaseUrl}/v1/auth/generate-api-key`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     orgId: organization.id,
+    //     projectId: defaultProject.id,
+    //     keyId: keyRecord.id,
+    //   }),
+    // });
+
+    const { apiKey } = hashResult;
     const maskedKey = maskApiKey(apiKey);
 
     await db.apiKey.update({
@@ -111,17 +119,7 @@ export const createApiKey = async (
     };
   } catch (error) {
     Sentry.captureException(error);
-
-    // Log error with additional context
-    logger.error(
-      {
-        extra: {
-          sth: 'ok',
-        },
-        err: error,
-      },
-      'Failed to create API key 31'
-    );
+    logger.error({ err: error }, 'Failed to create API key');
 
     return {
       success: false,
