@@ -75,9 +75,13 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               setPromptValue={(text: string) => setValue('prompt', text)}
             />
           </div>
-          <div className="mt-4 sm:pl-4 md:pl-[40px]">
-            <label className="flex items-center gap-2 text-sm text-gray-400">
-              <input type="checkbox" {...register('useKnowledge')} />
+          <div className="flex w-full justify-center">
+            <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">
+              <input
+                type="checkbox"
+                {...register('useKnowledge')}
+                className="mr-1"
+              />
               {t('selected-mode')}
               {/* {useKnowledge ? t(ChatType.RAG) : t(ChatType.CONVERSATION)} */}
             </label>
