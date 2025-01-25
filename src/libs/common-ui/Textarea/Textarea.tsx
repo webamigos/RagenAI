@@ -76,7 +76,8 @@ export const Textarea = forwardRef(
       if (!isRecording && value?.trim()) {
         onSend?.();
       }
-    }, [isRecording, value, onSend]);
+    }, [isRecording]);
+    // }, [isRecording, value, onSend]); // FIXME: crashes the browser
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
