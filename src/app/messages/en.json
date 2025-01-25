@@ -148,7 +148,10 @@
     "send": "Send",
     "close-thread": "Close thread",
     "provide-at-least-10-characters": "Provide at least 10 characters",
-    "contact-with-us": "Contact with us"
+    "contact-with-us": "Contact with us",
+    "selected-mode": "Use only internal knowledge base",
+    "rag": "only knowledge base",
+    "conversation": "knowledge base and other sources"
   },
   "text-area": {
     "placeholder": "Your question..."

@@ -4,10 +4,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AskQuestion } from './';
 import {
+  ChatType,
   type CreateMessageDto,
   createMessageSchema,
 } from '../../../contracts/Message';
 import { forwardRef, useImperativeHandle } from 'react';
+import { useTranslations } from 'next-intl';
 
 type Props = {
   isLoading: boolean;
@@ -31,7 +33,11 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     } = useForm<CreateMessageDto>({
       resolver: zodResolver(createMessageSchema),
       reValidateMode: 'onSubmit',
+      defaultValues: {
+        useKnowledge: true,
+      },
     });
+    const t = useTranslations('form');
 
     useImperativeHandle(ref, () => ({
       reset: (prompt) => reset({ prompt }),
@@ -39,7 +45,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
 
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
       reset({ prompt: '' });
-      onSubmit(data);
+      onSubmit({
+        ...data,
+        mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
+      });
     };
 
     const handleSend = () => {
@@ -47,22 +56,32 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     };
 
     const promptValue = watch('prompt', '');
+    const useKnowledge = watch('useKnowledge');
 
     return (
-      <div className="mt-auto px-4 sm:px-4 lg:px-22">
+      <div className="mt-auto px-4 sm:px-4 md:px-2 lg:px-22">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="flex w-full justify-center"
+          className="flex flex-col w-full justify-center"
         >
-          <AskQuestion
-            isUserLogged={isUserLogged}
-            disabled={isLoading}
-            error={errors?.prompt}
-            register={register}
-            onSend={handleSend}
-            value={promptValue}
-            setPromptValue={(text: string) => setValue('prompt', text)}
-          />
+          <div className="flex w-full justify-center">
+            <AskQuestion
+              isUserLogged={isUserLogged}
+              disabled={isLoading}
+              error={errors?.prompt}
+              register={register}
+              onSend={handleSend}
+              value={promptValue}
+              setPromptValue={(text: string) => setValue('prompt', text)}
+            />
+          </div>
+          <div className="mt-4 sm:pl-4 md:pl-[40px]">
+            <label className="flex items-center gap-2 text-sm text-gray-400">
+              <input type="checkbox" {...register('useKnowledge')} />
+              {t('selected-mode')}
+              {/* {useKnowledge ? t(ChatType.RAG) : t(ChatType.CONVERSATION)} */}
+            </label>
+          </div>
         </form>
       </div>
     );

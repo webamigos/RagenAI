@@ -1,8 +1,13 @@
-import type { MessageDto, StreamedMessageDto } from '../../contracts/Message';
+import type {
+  ChatType,
+  MessageDto,
+  StreamedMessageDto,
+} from '../../contracts/Message';
 
 export type ErrorEvent = Event & { data?: string };
 
 export type State = {
+  mode: ChatType;
   isInitialLoad: boolean;
   isMessageLoading: boolean;
   userMessageId: string;
@@ -27,6 +32,7 @@ export enum reducerActions {
   ADD_MESSAGE,
   SET_IS_ERROR,
   REMOVE_MESSAGE,
+  SET_MODE,
 }
 
 const {
@@ -42,6 +48,7 @@ const {
   ADD_MESSAGE,
   SET_IS_ERROR,
   REMOVE_MESSAGE,
+  SET_MODE,
 } = reducerActions;
 
 export type Action =
@@ -62,4 +69,5 @@ export type Action =
   | { type: typeof SET_MESSAGES; payload: MessageDto[] }
   | { type: typeof ADD_MESSAGE; payload: MessageDto }
   | { type: typeof SET_IS_ERROR; payload: boolean }
-  | { type: typeof REMOVE_MESSAGE; payload: string };
+  | { type: typeof REMOVE_MESSAGE; payload: string }
+  | { type: typeof SET_MODE; payload: ChatType };

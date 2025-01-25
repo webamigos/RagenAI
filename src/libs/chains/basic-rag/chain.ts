@@ -4,18 +4,16 @@ import {
 } from '@langchain/core/runnables';
 import {
   generateFinalAnswer,
-  moderateContent,
   rephraseQuestion,
   retrieveRelevantDocuments,
-  sanitizeAndValidateInput,
 } from './operations';
+import {
+  sanitizeAndValidateInput,
+  moderateContent,
+} from '../utils/common-operations';
 import { CHAIN_FINAL_ANSWER_RUN_NAME } from './config';
-import type {
-  BasicRagChainInput,
-  BasicRagChainParams,
-  BasicRagChainOutput,
-} from '../types/basic-rag';
-
+import type { BasicRagChainParams } from '../types/basic-rag';
+import type { BaseChatChainInput, BaseChatChainOutput } from '../types/common';
 /**
  * Creates a basic RAG (Retrieval-Augmented Generation) chain.
  *
@@ -31,8 +29,8 @@ export const basicRagChain = async ({
   vectorStore,
   models,
   config,
-}: BasicRagChainParams): Promise<BasicRagChainOutput> => {
-  const chain = RunnableSequence.from<BasicRagChainInput, string>([
+}: BasicRagChainParams): Promise<BaseChatChainOutput> => {
+  const chain = RunnableSequence.from<BaseChatChainInput, string>([
     sanitizeAndValidateInput,
 
     moderateContent(models.contentModerator),

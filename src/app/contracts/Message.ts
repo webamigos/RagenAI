@@ -1,8 +1,15 @@
 import { z } from 'zod';
 import { Role, Message as MessageModel } from '@prisma/client';
 
+export enum ChatType {
+  CONVERSATION = 'conversation',
+  RAG = 'rag',
+}
+
 export const createMessageSchema = z.object({
   prompt: z.string().min(10, 'Provide what least 10 characters'),
+  mode: z.enum([ChatType.CONVERSATION, ChatType.RAG]).optional(),
+  useKnowledge: z.boolean().optional(),
 });
 
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;

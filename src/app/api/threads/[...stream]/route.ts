@@ -18,6 +18,7 @@ import {
 import { logger } from '../../../lib/utils/logger';
 import { getAuth } from '@clerk/nextjs/server';
 import { initializeRagChain } from '../services/initializeBasicRag';
+import { initializeConversationChain } from '../services/initializeConversationChain';
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
@@ -26,6 +27,8 @@ import {
   setSentryContext,
 } from '@/app/lib/services/sentry';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
+import { Runnable } from '@langchain/core/runnables';
+import { ChatType } from '@/app/contracts/Message';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,6 +55,9 @@ export async function GET(request: NextRequest, { params }: Params) {
     setSentryClerkOrganizationTag(orgId);
 
     const [publicThreadId, publicMessageId] = params.stream;
+    const mode = request?.nextUrl?.searchParams.get('mode');
+    const filteredMode =
+      mode === ChatType.CONVERSATION ? ChatType.CONVERSATION : ChatType.RAG;
 
     const encoder = new TextEncoder();
     return new Response(
@@ -67,9 +73,22 @@ export async function GET(request: NextRequest, { params }: Params) {
               throw new ApiKeyError();
             }
 
-            const { chain, finalAnswerRunName } = await initializeRagChain({
-              settings: { ...rawSettings, apiKey: rawSettings.apiKey },
-            });
+            let chain: Runnable;
+            let finalAnswerRunName: string;
+
+            if (filteredMode === ChatType.CONVERSATION) {
+              const conversation = await initializeConversationChain({
+                settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              });
+              chain = conversation.chain;
+              finalAnswerRunName = conversation.finalAnswerRunName;
+            } else {
+              const basicRag = await initializeRagChain({
+                settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              });
+              chain = basicRag.chain;
+              finalAnswerRunName = basicRag.finalAnswerRunName;
+            }
 
             const threadMessage = await getMessageById(publicMessageId);
 
