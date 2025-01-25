@@ -10,12 +10,10 @@ import { Link } from '@/i18n/routing';
 import { ArrowLeftEndOnRectangleIcon } from '@heroicons/react/24/outline';
 
 import {
-  SettingsIcon,
   Avatar,
   Text,
-  PencilSquareIcon,
-  HomeIcon,
   UserCircleIcon,
+  WrenchScrewdriverIcon,
 } from '@ragenai/common-ui';
 
 type Props = {
@@ -59,6 +57,18 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
             <p className="flex text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white">
               <UserCircleIcon className="mr-3 h-5 w-5" />
               {t('sidebar.profile')}
+            </p>
+          </CloseButton>
+        </div>
+        <div className="p-3">
+          <CloseButton
+            className="block rounded-lg py-2 px-3 transition hover:bg-white/5"
+            as={Link}
+            href="/support"
+          >
+            <p className="flex text-gray-500 hover:text-gray-600 dark:text-slate-200 dark:hover:text-white">
+              <WrenchScrewdriverIcon className="mr-3 h-5 w-5" />
+              {t('sidebar.support-page')}
             </p>
           </CloseButton>
         </div>
