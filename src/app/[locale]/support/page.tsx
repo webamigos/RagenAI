@@ -17,20 +17,8 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 export default function SupportPage() {
   return (
     <div className="w-full h-full flex flex-col lg:flex-row items-center gap-4 lg:gap-0 mt-4 px-3 lg:px-0 lg:pr-2">
-      <div className="w-full lg:w-1/2 flex-none px-4 lg:px-0">
-        <CTA />
-        <Image
-          alt="support"
-          src="/assets/tech-support.png"
-          width={1280}
-          height={1706}
-          quality={80}
-          className="w-full h-auto max-h-[500px] object-cover rounded-lg shadow-lg"
-        />
-      </div>
-      <div className="w-full lg:w-1/2 flex lg:justify-end">
-        <SupportForm />
-      </div>
+      <CTA />
+      <SupportForm />
     </div>
   );
 }

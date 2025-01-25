@@ -48,10 +48,10 @@ export const sendContactEmail = async ({
     const attachments = files && files.length > 0 ? files : [];
 
     const response = await resend.emails.send({
-      from: 'Ragen <noreply@updates.ragen.ai>',
+      from: 'Ragen AI <noreply@updates.ragen.ai>',
       to: ['hello@webamigos.pl'],
       replyTo: email,
-      subject: title,
+      subject: `[Ragen Support] ${title}`,
       text: message,
       attachments,
     });
@@ -59,9 +59,9 @@ export const sendContactEmail = async ({
     const { subject, text } = getUserResponseEmailContent(title, message);
 
     const userResponse = await resend.emails.send({
-      from: 'Ragen <noreply@updates.ragen.ai>',
+      from: 'Ragen AI <noreply@updates.ragen.ai>',
       to: email,
-      subject,
+      subject: `[Ragen Support] ${subject}`,
       text,
       attachments,
     });

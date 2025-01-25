@@ -25,7 +25,6 @@ export const SupportForm = () => {
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: '',
       title: '',
       message: '',
       file: undefined,
@@ -36,7 +35,6 @@ export const SupportForm = () => {
     try {
       await sendSupportRequest(
         {
-          email: data.email,
           title: data.title,
           message: data.message,
         },
@@ -60,17 +58,6 @@ export const SupportForm = () => {
       className="w-full lg:max-w-lg lg:ml-4 max-h-[650px] overflow-auto"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <Input
-            mandatory
-            label="Email"
-            type="email"
-            {...register('email')}
-            className="w-full mt-1 p-2"
-            error={errors.email}
-            errorMessage={errors.email?.message}
-          />
-        </div>
         <div>
           <Input
             label={t('input-title')}

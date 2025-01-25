@@ -4,7 +4,6 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export const getSupportFormSchema = (t: (key: string) => string) =>
   z.object({
-    email: z.string().email(t('errors.invalid-email')),
     title: z.string().min(5, t('errors.title-min')),
     message: z.string().min(10, t('errors.message-min')),
     file:
