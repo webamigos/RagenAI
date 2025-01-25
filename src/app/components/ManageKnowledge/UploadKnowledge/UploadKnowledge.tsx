@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 
@@ -11,10 +11,13 @@ import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 import { useSettings } from '@/app/hooks/useSettings';
 
 import { UploadList } from './UploadList';
+import { useRouter } from 'next/navigation';
 
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
+  const { push } = useRouter();
+  const [_, startTransition] = useTransition();
 
   const { refreshDocuments } = useUserDocumentsContext();
   const { successToast, errorToast } = statusToast();
@@ -58,6 +61,9 @@ export const UploadKnowledge = () => {
         successToast({ message: t('success') });
         setFiles([]);
         refreshDocuments();
+        startTransition(() => {
+          push('/manage-knowledge/documents-list');
+        });
         refreshSettings();
       } else {
         errorToast({ message: `${t('error')}: ${response.message}` });
