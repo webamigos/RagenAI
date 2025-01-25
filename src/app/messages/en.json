@@ -127,6 +127,9 @@
     },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
+    },
+    "support-page": {
+      "title": "Contact Form | Support | Ragen AI"
     }
   },
   "chat": {
@@ -145,7 +148,13 @@
     "send": "Send",
     "close-thread": "Close thread",
     "provide-at-least-10-characters": "Provide at least 10 characters",
-    "contact-with-us": "Contact with us"
+    "contact-with-us": "Contact with us",
+    "selected-mode": "Use only internal knowledge base",
+    "rag": "only knowledge base",
+    "conversation": "knowledge base and other sources"
+  },
+  "text-area": {
+    "placeholder": "Your question..."
   },
   "success-toast": {
     "copied": "Copied",
@@ -225,6 +234,7 @@
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
     "generate-access-key": "Public access",
+    "support-page": "Support Page",
     "return-to-home": "Return to home screen",
     "threads-categories": {
       "today": "Today",
@@ -427,5 +437,30 @@
   "Chatbot": {
     "opening-chat-thread": "Opening chat thread...",
     "start-new-thread": "Start new thread"
+  },
+  "support-page": {
+    "card-title": "Share your comments with us",
+    "input-title": "Title",
+    "text-area-title": "Message",
+    "text-area-placeholder": "Your message to us",
+    "send": "Send",
+    "sending": "Sending...",
+    "call-to-action": "Your opinions are extremely valuable to us. If you encounter any difficulties, have an idea to improve our application or want to share your experiences – contact us!",
+    "submessage": "A copy of this message will also be sent to your email address.",
+    "file-label": "Attach screenshot",
+    "send-success": "Wiadomość została wysłana",
+    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "errors": {
+      "invalid-email": "Invalid email address",
+      "title-min": "Title must be at least 5 characters long",
+      "message-min": "Message must be at least 10 characters long",
+      "file-required": "You must upload at least one file",
+      "file-size": "Each file cannot exceed 5MB"
+    }
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Your browser does not support audio recording",
+    "recognition-error": "Recognition error, try again",
+    "recording-error": "Error during recording, try again"
   }
 }

@@ -2,7 +2,6 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
-import { convertTextToSpeech } from '../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
@@ -116,7 +115,7 @@ export const ChatOutput = ({
         )}
 
         {isLoading && (
-          <div className="absolute bottom-[84px] md:left-14 flex items-center justify-center pointer-events-none">
+          <div className="absolute bottom-[120px] md:left-14 flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600  text-md">
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
           </div>

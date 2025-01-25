@@ -127,6 +127,9 @@
     },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
+    },
+    "support-page": {
+      "title": "Formularz kontaktowy | Wsparcie | Ragen AI"
     }
   },
   "chat": {
@@ -145,7 +148,13 @@
     "send": "Wyślij",
     "close-thread": "Zamknij wątek",
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
-    "contact-with-us": "Skontaktuj się z nami"
+    "contact-with-us": "Skontaktuj się z nami",
+    "selected-mode": "Korzystaj wyłącznie z wewnętrznej bazy wiedzy",
+    "rag": "tylko baza wiedzy",
+    "conversation": "baza wiedzy i inne źródła"
+  },
+  "text-area": {
+    "placeholder": "Twoje pytanie..."
   },
   "success-toast": {
     "copied": "Skopiowano!",
@@ -225,6 +234,7 @@
     "create-new-thread": "Załóż nowy wątek",
     "search-threads": "Przeszukaj wątki",
     "generate-access-key": "Dostęp publiczny",
+    "support-page": "Zgłoś błąd",
     "return-to-home": "Wróć do ekranu głównego",
     "threads-categories": {
       "today": "Dzisiaj",
@@ -427,5 +437,30 @@
   "Chatbot": {
     "opening-chat-thread": "Otwieranie wątku...",
     "start-new-thread": "Rozpocznij nowy wątek"
+  },
+  "support-page": {
+    "card-title": "Zgłoś nam swoje uwagi",
+    "input-title": "Tytuł",
+    "text-area-title": "Wiadomość",
+    "text-area-placeholder": "Twoja wiadomość do nas",
+    "send": "Wyślij",
+    "sending": "Wysyłanie...",
+    "call-to-action": "Twoje opinie są dla nas niezwykle cenne. Jeśli napotkasz jakiekolwiek trudności, masz pomysł na ulepszenie naszej aplikacji lub chcesz podzielić się swoimi doświadczeniami – skontaktuj się z nami!",
+    "submessage": "Kopia tej wiadomości trafi także na Twoją skrzynkę email.",
+    "file-label": "Załącz zrzut ekranu",
+    "send-success": "Wiadomość została wysłana",
+    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "errors": {
+      "invalid-email": "Nieprawidłowy adres e-mail",
+      "title-min": "Tytuł musi zawierać co najmniej 5 znaków",
+      "message-min": "Wiadomość musi zawierać co najmniej 10 znaków",
+      "file-required": "Musisz przesłać przynajmniej jeden plik",
+      "file-size": "Każdy plik nie może przekraczać 5 MB"
+    }
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
+    "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
+    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
   }
 }

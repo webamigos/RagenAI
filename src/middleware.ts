@@ -38,6 +38,7 @@ export const config = {
     '/api/settings/temperature',
     '/api/settings/model',
     '/api/settings/prompt',
+    '/api/send',
     '/api/upload/(.*)',
     '/:locale/admin/manage-knowledge',
     '/:locale/sso-callback',
