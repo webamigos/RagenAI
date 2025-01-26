@@ -2,24 +2,23 @@ import { NextRequest } from 'next/server';
 import { ApiKeysService } from '../services/api-keys.service';
 import { ApiKey } from '../types/brand';
 
-const API_HEADER = 'x-api-key';
+export const API_HEADER = 'x-api-key';
 
 export class HttpException extends Error {}
 export class UnauthorizedException extends HttpException {}
 
 export const canActivate = (request: NextRequest) => {
   const headers = request.headers;
-  const apiKeyHeader = headers.get(API_HEADER);
+  const apiKeyHeaderValue = headers.get(API_HEADER) as ApiKey;
 
-  if (!apiKeyHeader) {
+  if (!apiKeyHeaderValue) {
     throw new UnauthorizedException();
   }
 
-  const apiKeyValue = apiKeyHeader as ApiKey;
   const apiKeysService = new ApiKeysService();
 
   const { orgId, projectId, keyId } =
-    apiKeysService.extractDataFromApiKey(apiKeyValue);
+    apiKeysService.extractDataFromApiKey(apiKeyHeaderValue);
 
   return { orgId, projectId, keyId };
 };
