@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { ApiKeysService } from '../../logic/services/api-keys.service';
+import { ApiKeysService } from '../../__logic__/services/api-keys.service';
 import { isLocalTargetEnv } from '@/libs/utils/env';
 
 // FIXME: DANGER! IT'S ONLY FOR TESTING!!! Shouldn't be available outside dev

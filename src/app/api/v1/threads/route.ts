@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UnauthorizedException } from '../logic/guards/api-key.guard';
-import { LimitExceededException } from '../logic/guards/rate-limit.guard';
-import { verifyRequest } from '../logic/guards/verify-request';
+import { UnauthorizedException } from '../__logic__/guards/api-key.guard';
+import { LimitExceededException } from '../__logic__/guards/rate-limit.guard';
+import { getApiContext } from '../__logic__/context/api.context';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   try {
-    const { orgId, projectId, keyId } = await verifyRequest(request);
+    const { orgId, projectId, keyId } = await getApiContext(request);
 
     return NextResponse.json({ orgId, projectId, keyId });
   } catch (err) {

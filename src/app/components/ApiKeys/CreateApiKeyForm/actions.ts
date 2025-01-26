@@ -18,8 +18,8 @@ import {
 } from '@/app/lib/services/apiKeys';
 import { getMessages } from 'next-intl/server';
 import { api } from '@/app/lib/services/config';
-import { ApiKeysService } from '@/app/api/v1/logic/services/api-keys.service';
-import { KeyId, OrgId, ProjectId } from '@/app/api/v1/logic/types/brand';
+import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
+import { KeyId, OrgId, ProjectId } from '@/app/api/v1/__logic__/types/brand';
 
 type SuccessResponse = {
   payload: {
