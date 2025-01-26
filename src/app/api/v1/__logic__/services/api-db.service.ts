@@ -9,6 +9,9 @@ export class ApiDbService {
 
   constructor(context: ApiContext) {
     this.db = db;
+    if (!context.orgId) {
+      throw new Error('Invalid organization');
+    }
     this.context = context;
   }
 
