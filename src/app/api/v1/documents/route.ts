@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { UnauthorizedException } from '../__logic__/guards/api-key.guard';
-import { LimitExceededException } from '../__logic__/guards/rate-limit.guard';
+
 import { getApiContext } from '../__logic__/context/api.context';
 import { ApiDbService } from '../__logic__/services/api-db.service';
 import { ApiErrorService } from '../__logic__/services/api-errors.service';
