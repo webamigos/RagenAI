@@ -1,7 +1,17 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, UserDocument } from '@prisma/client';
+
 import db from '@ragenai/prisma-client';
 
 import { ApiContext } from '../types/ApiContext';
+import { replaceIds } from '../filters/replace-ids.filter';
+
+type ApiCollection<T extends { id: string | number | bigint }> = Omit<
+  T,
+  'public_id'
+> & {
+  id: T['id'];
+};
+type ApiUserDocument = ApiCollection<UserDocument>;
 
 export class ApiDbService {
   private db: PrismaClient;
@@ -15,8 +25,8 @@ export class ApiDbService {
     this.context = context;
   }
 
-  async fetchDocuments() {
-    return await db.userDocument.findMany({
+  async fetchDocuments(): Promise<ApiUserDocument[]> {
+    const documents = await db.userDocument.findMany({
       where: {
         organization_id: this.context.orgId,
       },
@@ -41,5 +51,7 @@ export class ApiDbService {
         created_at: 'desc',
       },
     });
+
+    return replaceIds(documents);
   }
 }

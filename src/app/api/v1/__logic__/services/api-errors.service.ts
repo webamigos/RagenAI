@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { UnauthorizedException } from '../guards/api-key.guard';
 import { LimitExceededException } from '../guards/rate-limit.guard';
+import { logger } from '@/app/lib/utils/logger';
 
 export class ApiErrorService {
   public static handleErrors(err: unknown) {
+    logger.error({ err }, 'ApiErrorService');
     if (err instanceof LimitExceededException) {
       return NextResponse.json(
         { message: 'Too many requests' },
