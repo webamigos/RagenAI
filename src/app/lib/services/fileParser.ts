@@ -1,6 +1,3 @@
-import { parseSrtToSegmentsUsingLLM } from '@/app/api/threads/services/parseSrtWithLLM';
-import OpenAI from 'openai';
-
 import { getFileType } from '../utils/getFileType';
 import { getFileExtension } from '../utils/getFileExtension';
 
@@ -19,18 +16,9 @@ type FileParser = (
 ) => Promise<string | Buffer>;
 
 const fileParsers: Record<SupportedFileType, FileParser> = {
-  srt: async (file, organizationId) => {
-    if (!organizationId) {
-      throw new Error('Organization ID is required for .srt files');
-    }
-    const fileText = await file.text();
-    const segments = await parseSrtToSegmentsUsingLLM(
-      organizationId,
-      fileText,
-      200,
-      300
-    );
-    return segments.join('\n\n');
+  srt: async (file) => {
+    const buffer = await file.arrayBuffer();
+    return new TextDecoder().decode(buffer);
   },
   pdf: async (file) => Buffer.from(await file.arrayBuffer()),
   epub: async (file) => Buffer.from(await file.arrayBuffer()),

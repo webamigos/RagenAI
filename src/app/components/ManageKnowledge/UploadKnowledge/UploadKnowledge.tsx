@@ -31,8 +31,21 @@ export const UploadKnowledge = () => {
 
   const orgId = organization.id;
 
-  const handleFilesAdded = (newFiles: File[]) =>
-    setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+  const handleFilesAdded = (newFiles: File[]) => {
+    //To refactor
+    const processedFiles = newFiles.map((file) => {
+      if (file.name.endsWith('.md')) {
+        // Added this line to fix the issue with mime type detection, it fallback to application/octet-stream while uploading markdown files
+        return new File([file], file.name, { type: 'text/markdown' });
+      }
+      if (file.name.endsWith('.srt')) {
+        // Set correct MIME type for SRT subtitle files
+        return new File([file], file.name, { type: 'application/x-subrip' });
+      }
+      return file;
+    });
+    setFiles((prevFiles) => [...prevFiles, ...processedFiles]);
+  };
 
   const handleFileRemove = (index: number) => {
     if (!uploading) {
