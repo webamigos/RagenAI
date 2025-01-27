@@ -1,7 +1,6 @@
 import * as fs from 'node:fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { CSVLoader } from '@langchain/community/document_loaders/fs/csv';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
 import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { Document } from 'langchain/document';
@@ -56,10 +55,6 @@ const CHUNK_SETTINGS = {
     chunkOverlap: 250,
   },
   pdf: {
-    chunkSize: 1000,
-    chunkOverlap: 200,
-  },
-  csv: {
     chunkSize: 1000,
     chunkOverlap: 200,
   },
@@ -172,9 +167,6 @@ export const convertAndStoreDocument = async ({
             fileId,
             organizationId,
           });
-          break;
-        case 'csv':
-          loader = new CSVLoader(filePath);
           break;
         case 'epub':
           loader = new EPubLoader(filePath);

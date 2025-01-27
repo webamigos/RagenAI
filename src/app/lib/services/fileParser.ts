@@ -8,7 +8,7 @@ export type ParsedFile = {
   fileExtension?: string;
 };
 
-export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text' | 'csv';
+export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text';
 
 type FileParser = (
   file: File,
@@ -22,7 +22,6 @@ const fileParsers: Record<SupportedFileType, FileParser> = {
   },
   pdf: async (file) => Buffer.from(await file.arrayBuffer()),
   epub: async (file) => Buffer.from(await file.arrayBuffer()),
-  csv: async (file) => file.text(),
   text: async (file) => file.text(),
 };
 
