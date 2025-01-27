@@ -3,6 +3,8 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 import { FileCard } from './FileCard';
+import { UserFileTypeSafe } from '../FileList/UserDocumentsTable';
+import { SupportedFileType } from '@/app/lib/services/file';
 
 type GridViewProps = {
   documents: UserFileType[];
@@ -31,10 +33,14 @@ export const GridView = ({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {documents.map((doc) => (
-        <FileCard key={doc.id} document={doc} />
-      ))}
+    <div className="grid grid-cols-4 gap-4 mt-10">
+      {documents.map((doc) => {
+        const safeDoc: UserFileTypeSafe = {
+          ...doc,
+          file_type: doc.file_type as SupportedFileType,
+        };
+        return <FileCard key={safeDoc.id} document={safeDoc} />;
+      })}
     </div>
   );
 };

@@ -1,0 +1,37 @@
+import prettyBytes from 'pretty-bytes';
+import { forwardRef } from 'react';
+
+type FileInfoPopupProps = {
+  createdAt: string;
+  updatedAt: string;
+  fileSize: number;
+};
+
+export const FileInfoPopup = forwardRef<HTMLDivElement, FileInfoPopupProps>(
+  ({ createdAt, updatedAt, fileSize }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className="absolute top-6 -right-52 bg-white shadow-lg border rounded-lg px-2 text-sm w-60 z-50"
+      >
+        <table className="w-full">
+          <tbody>
+            <tr className="border-b border-gray-300">
+              <td className="font-semibold p-2">Created:</td>
+              <td className="p-2 text-right">{createdAt}</td>
+            </tr>
+            <tr className="border-b border-gray-300">
+              <td className="font-semibold p-2">Updated:</td>
+              <td className="p-2 text-right">{updatedAt}</td>
+            </tr>
+            <tr>
+              <td className="font-semibold p-2">Size:</td>
+              <td className="p-2 text-right">{prettyBytes(fileSize)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+);
+FileInfoPopup.displayName = 'FileInfoPopup';
