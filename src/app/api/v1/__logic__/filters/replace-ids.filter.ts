@@ -6,10 +6,10 @@
  * 1. renames object property public_id to id
  * 2. to it recursively
  *
- * @param collection
+ * @param record
  * @returns
  */
-export const replaceIds = <T>(collection: T[]) => {
+export const replaceIds = <T>(record: T | T[]) => {
   const replacer = (elem: any): any => {
     if (Array.isArray(elem)) {
       return elem.map(replacer);
@@ -29,5 +29,8 @@ export const replaceIds = <T>(collection: T[]) => {
     return elem; // Return unchanged if not an object or array
   };
 
-  return collection.map(replacer);
+  if (Array.isArray(record)) {
+    return record.map(replacer);
+  }
+  return replacer(record);
 };

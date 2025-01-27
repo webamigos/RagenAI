@@ -54,4 +54,34 @@ export class ApiDbService {
 
     return replaceIds(documents);
   }
+
+  async fetchDocument(
+    publicId: UserDocument['public_id']
+  ): Promise<ApiUserDocument> {
+    const document = await db.userDocument.findFirst({
+      where: {
+        organization_id: this.context.orgId,
+        public_id: publicId,
+      },
+      select: {
+        public_id: true, // make an alias and return as id?
+        title: true,
+        // content: true, it may be large field
+        created_at: true,
+        updated_at: true,
+        file: {
+          // is this needed?
+          select: {
+            public_id: true, // make an alias and return as id?
+            file_name: true,
+            file_size: true,
+            created_at: true,
+            file_type: true,
+          },
+        },
+      },
+    });
+
+    return replaceIds(document);
+  }
 }
