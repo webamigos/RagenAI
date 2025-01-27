@@ -69,6 +69,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           organizationId,
           fileId: uniqueFileId,
           projectId: defaultProjectId,
+          mimeType: file.type,
         });
 
         if (success) {
