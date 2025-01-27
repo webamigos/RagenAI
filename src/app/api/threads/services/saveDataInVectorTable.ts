@@ -26,8 +26,8 @@ import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
+import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
-import { determineMimeType } from '@/app/lib/utils/determinateMimeType';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -43,6 +43,7 @@ type ConvertAndStoreDocumentParams = {
   organizationId: string;
   fileId: string;
   projectId: number | null;
+  mimeType: string;
 };
 
 const CHUNK_SETTINGS = {
@@ -61,6 +62,10 @@ const CHUNK_SETTINGS = {
   csv: {
     chunkSize: 1000,
     chunkOverlap: 200,
+  },
+  srt: {
+    chunkSize: 1500,
+    chunkOverlap: 250,
   },
 } as const;
 
@@ -98,6 +103,7 @@ export const convertAndStoreDocument = async ({
   organizationId,
   fileId,
   projectId,
+  mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
     setSentryServiceTag(serviceName);
@@ -117,8 +123,6 @@ export const convertAndStoreDocument = async ({
     if (!apiKey) {
       throw new Error('OpenAI API key is required.');
     }
-
-    let mimeType = await determineMimeType(fileContent);
 
     if (!mimeType) {
       return {
@@ -155,6 +159,14 @@ export const convertAndStoreDocument = async ({
       switch (fileExtension) {
         case 'pdf':
           loader = new PDFOCRDocumentLoader({
+            filePath,
+            fileName,
+            fileId,
+            organizationId,
+          });
+          break;
+        case 'srt':
+          loader = new SRTLLMDocumentLoader({
             filePath,
             fileName,
             fileId,
