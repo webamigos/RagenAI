@@ -8,10 +8,9 @@ import * as CommonUi from '@ragenai/common-ui';
 import { deleteDocumentAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { formatDates } from '@/app/lib/utils/formatDate';
-import { truncateFileName } from '../../../lib/utils/truncateFileName';
+import { truncateFileName } from '../../../../lib/utils/truncateFileName';
 import { useSettings } from '@/app/hooks/useSettings';
-import { DeleteFileModal } from './DeleteFileModal';
-import { FileSearch } from './FileSearch';
+import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
@@ -192,17 +191,8 @@ export const UserDocumentsTable = ({
     ) as UserFileTypeSafe[];
   }, [documents, searchValue]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(event.target.value.trim());
-  };
-
   return (
     <div className="relative">
-      <FileSearch
-        className="absolute right-0 -top-14"
-        value={searchValue}
-        onChange={handleSearchChange}
-      />
       <CommonUi.Table className="overflow-x-auto">
         <CommonUi.TableHead>
           <CommonUi.TableRow className="text-base">

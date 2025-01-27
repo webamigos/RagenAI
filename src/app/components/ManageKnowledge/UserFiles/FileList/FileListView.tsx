@@ -1,15 +1,26 @@
-import { memo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { UserDocumentsTable } from './UserDocumentsTable';
-import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
-import { Card } from '@ragenai/common-ui/Card';
 
-export const FileList = memo(() => {
-  const { documents, isLoading, isError, addDocument, removeDocument } =
-    useUserDocumentsContext();
+import { type UserFileType } from '@/app/contracts/Documents';
+
+type FileListViewProps = {
+  documents: UserFileType[];
+  isLoading: boolean;
+  isError: boolean;
+  addDocument: (newDocument: UserFileType) => void;
+  removeDocument: (documentId: string) => void;
+};
+
+export const FileListView = ({
+  documents,
+  isLoading,
+  isError,
+  addDocument,
+  removeDocument,
+}: FileListViewProps) => {
   const { errorToast } = statusToast();
   const t = useTranslations('admin-panel-page');
 
@@ -24,11 +35,10 @@ export const FileList = memo(() => {
   return (
     <UserDocumentsTable
       className="font-sans"
-      documents={documents || []}
+      documents={documents}
       onAddDocument={addDocument}
       onRemoveDocument={removeDocument}
     />
   );
-});
-
-FileList.displayName = 'FileList';
+};
+FileListView.displayName = 'FileListView';
