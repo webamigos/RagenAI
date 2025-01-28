@@ -7,9 +7,9 @@ export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   try {
-    const { orgId, projectId, keyId } = await getApiContext(request);
+    const { orgId, userId, projectId, keyId } = await getApiContext(request);
 
-    return NextResponse.json({ orgId, projectId, keyId });
+    return NextResponse.json({ orgId, userId, projectId, keyId });
   } catch (err) {
     if (err instanceof LimitExceededException) {
       return NextResponse.json(

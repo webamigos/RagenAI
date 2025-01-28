@@ -1,7 +1,7 @@
 'use server';
 
 import * as Sentry from '@sentry/nextjs';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
 import db from '@ragenai/prisma-client';
@@ -16,10 +16,13 @@ import {
   fetchOrganizationByProviderId,
   fetchOrganizationDefaultProject,
 } from '@/app/lib/services/apiKeys';
-import { getMessages } from 'next-intl/server';
-import { api } from '@/app/lib/services/config';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
-import { KeyId, OrgId, ProjectId } from '@/app/api/v1/__logic__/types/brand';
+import {
+  OrgId,
+  UserId,
+  ProjectId,
+  KeyId,
+} from '@/app/api/v1/__logic__/types/brand';
 
 type SuccessResponse = {
   payload: {
@@ -82,6 +85,7 @@ export const createApiKey = async (
 
     const keyPayload = {
       orgId: orgId as OrgId,
+      userId: userId as UserId,
       projectId: defaultProject.id as ProjectId,
       keyId: keyRecord.id as KeyId,
     };

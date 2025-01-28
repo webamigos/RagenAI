@@ -18,8 +18,8 @@ export const canActivate = (request: NextRequest): ApiContext => {
 
   const apiKeysService = new ApiKeysService();
 
-  const { orgId, projectId, keyId } =
+  const { orgId, userId, projectId, keyId } =
     apiKeysService.extractDataFromApiKey(apiKeyHeaderValue);
 
-  return { orgId, projectId, keyId };
+  return { orgId, userId, projectId, keyId };
 };

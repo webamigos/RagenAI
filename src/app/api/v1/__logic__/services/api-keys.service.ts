@@ -3,7 +3,14 @@ import { randomUUID } from 'crypto';
 import { RedisService } from '@/app/lib/services/redis';
 import { ApiKeyStorage } from './api-key-storage.service';
 import { HashingService } from './hashing.service';
-import { ApiKey, HashedKey, KeyId, OrgId, ProjectId } from '../types/brand';
+import {
+  ApiKey,
+  HashedKey,
+  OrgId,
+  UserId,
+  ProjectId,
+  KeyId,
+} from '../types/brand';
 import { GenerateApiKeyDto } from '../dtos/generate-api-key.dto';
 import { GeneratedApiKeyPayload } from '../dtos/generate-api-key.payload';
 
@@ -41,13 +48,13 @@ export class ApiKeysService {
   }
 
   private generateApiKey(apiKeyDto: GenerateApiKeyDto): ApiKey {
-    const { orgId, projectId, keyId } = apiKeyDto;
+    const { orgId, userId, projectId, keyId } = apiKeyDto;
     // TODO: below random id generates each new key for same data set
     // after removing it we can regenerate key (deactivate and activate). Activate will generate then the same value as before
     const content = `${randomUUID().substring(
       0,
       this.randomPartLength
-    )} ${orgId} ${projectId} ${keyId}`;
+    )} ${orgId} ${userId} ${projectId} ${keyId}`;
     return `${this.keyPrefix}${Buffer.from(content).toString(
       this.encoding
     )}` as ApiKey;
@@ -57,13 +64,19 @@ export class ApiKeysService {
     // sk-YTdlNDlkIDU1NSA2NiA3Nw
     const plainKey = apiKey.replace(this.keyPrefix, '');
     // eslint-disable-next-line
-    const [randomPart, extractedOrgId, extractedProjectId, extractedKeyId] =
-      Buffer.from(plainKey, this.encoding).toString('ascii').split(' ');
+    const [
+      randomPart,
+      extractedOrgId,
+      extractedUserId,
+      extractedProjectId,
+      extractedKeyId,
+    ] = Buffer.from(plainKey, this.encoding).toString('ascii').split(' ');
 
     const orgId = extractedOrgId as OrgId;
+    const userId = extractedUserId as UserId;
     const projectId = parseInt(extractedProjectId) as ProjectId;
     const keyId = parseInt(extractedKeyId) as KeyId;
 
-    return { orgId, projectId, keyId };
+    return { orgId, userId, projectId, keyId };
   }
 }
