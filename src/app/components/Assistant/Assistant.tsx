@@ -16,6 +16,7 @@ export const Assistant = ({ threadId }: Props) => {
     messagesEndDivRef,
     isGlobalLoading,
     streamedMessage,
+    isPublicAccess,
     userVisitorId,
     isSearchOpen,
     isLimitLock,
@@ -57,6 +58,7 @@ export const Assistant = ({ threadId }: Props) => {
               isUserLogged={!!isSignedIn}
               isLoading={isGlobalLoading}
               onSubmit={onSubmit}
+              isPublicAccess={isPublicAccess}
             />
           )}
         </div>
