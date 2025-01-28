@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ApiKeysService } from './__logic__/services/api-keys.service';
-import { KeyId, OrgId, ProjectId } from './__logic__/types/brand';
+import { KeyId, OrgId, ProjectId, UserId } from './__logic__/types/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +13,7 @@ export const GET = async (request: NextRequest) => {
 
   const data = {
     orgId: 'org_2s7TXecQmPYHPwYpQKw9UmPRcmt' as OrgId,
+    userId: 'user_123' as UserId,
     projectId: 456 as ProjectId,
     keyId: 789 as KeyId,
   };
