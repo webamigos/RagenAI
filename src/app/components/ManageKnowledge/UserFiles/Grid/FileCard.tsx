@@ -1,4 +1,3 @@
-import prettyBytes from 'pretty-bytes';
 import { format } from 'date-fns';
 
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
@@ -8,8 +7,21 @@ import { Text, Tooltip, InformationCircle } from '@ragenai/common-ui';
 import type { UserFileTypeSafe } from '../FileList/UserDocumentsTable';
 import { FileInfoPopup } from './FileInfoPopup';
 import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscapeAndOutsideClick';
+import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
 
-export const FileCard = ({ document }: { document: UserFileTypeSafe }) => {
+type Props = {
+  document: UserFileTypeSafe;
+  isLoading: boolean;
+  toggleModal: (fileId: string | null) => void;
+  handlePrefetch: (path: string) => void;
+};
+
+export const FileCard = ({
+  document,
+  isLoading,
+  toggleModal,
+  handlePrefetch,
+}: Props) => {
   const { isOpen, openModal, modalRef } =
     useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 
@@ -25,8 +37,8 @@ export const FileCard = ({ document }: { document: UserFileTypeSafe }) => {
     : 'N/A';
 
   return (
-    <div className="p-4 border w-full bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow relative">
-      <div className="flex items-center justify-between">
+    <div className="p-4 min-w-48 w-full h-48 pb-10 bg-slate-100 dark:bg-accent-dark-500 hover:bg-slate-200 rounded-lg shadow relative group">
+      <div className="h-6 flex items-center justify-between">
         <p className="mr-2">{fileIcon}</p>
         <Tooltip
           delayShow={1000}
@@ -34,14 +46,21 @@ export const FileCard = ({ document }: { document: UserFileTypeSafe }) => {
           content={file_name}
           id={`tooltip-${id}`}
         >
-          <Text fontSize="sm">{truncateFileName(file_name, 20)}</Text>
+          <Text fontSize="xs">{truncateFileName(file_name, 20)}</Text>
         </Tooltip>
         <button onClick={openModal}>
           <InformationCircle className="cursor-pointer" />
         </button>
       </div>
-      <div className="bg-slate-200 rounded-lg mt-2 p-2">
-        <p>{prettyBytes(file_size)}</p>
+      <div className="flex w-full justify-center bg-white dark:bg-accent-dark-lightness rounded-lg mt-2 p-2">
+        <div className="flex items-center h-28 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <ToolbarActionsMenu
+            toggleModal={toggleModal}
+            isLoading={isLoading}
+            documentId={id}
+            onPrefetch={handlePrefetch}
+          />
+        </div>
       </div>
       {isOpen && (
         <FileInfoPopup

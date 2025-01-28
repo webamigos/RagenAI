@@ -1,14 +1,10 @@
 import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 
 import * as CommonUi from '@ragenai/common-ui';
-import { deleteDocumentAction } from '@/app/actions';
-import { statusToast } from '@/app/lib/utils/toast';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';
-import { useSettings } from '@/app/hooks/useSettings';
 import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
@@ -18,15 +14,33 @@ import { ToolbarActions } from './ToolbarActions';
 
 type Props = {
   documents: UserFileType[];
+  showModal: ModalStateProps;
+  deleteLoading: boolean;
+  toggleModal: (fileId: string | null) => void;
   onAddDocument: (newDocument: UserFileType) => void;
   onRemoveDocument: (documentId: string) => void;
+  handlePrefetch: (path: string) => void;
+  handleDelete: (
+    organization_id: string,
+    documentId: string,
+    fileName: string
+  ) => void;
 };
 
 export type UserFileTypeSafe = UserFileType & { file_type: SupportedFileType };
 
 type DocumentRowProps = {
   document: UserFileTypeSafe;
+  showModal: ModalStateProps;
+  deleteLoading: boolean;
+  handleDelete: (
+    organization_id: string,
+    documentId: string,
+    fileName: string
+  ) => void;
+  toggleModal: (fileId: string | null) => void;
   onRemoveDocument: (documentId: string) => void;
+  handlePrefetch: (path: string) => void;
 };
 
 export type ModalStateProps = {
@@ -34,28 +48,18 @@ export type ModalStateProps = {
   fileId: string | null;
 };
 
-const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
+const DocumentRow = ({
+  document,
+  showModal,
+  deleteLoading,
+  toggleModal,
+  handlePrefetch,
+  handleDelete,
+}: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [showModal, setShowModal] = useState<ModalStateProps>({
-    isOpen: false,
-    fileId: null,
-  });
-
-  const toggleModal = (fileId: string | null = null) => {
-    setShowModal((prevState) => ({
-      ...prevState,
-      isOpen: !prevState.isOpen,
-      fileId: prevState.isOpen ? null : fileId,
-    }));
-  };
 
   const { created_at, updated_at, file_name, file_size, id, organization_id } =
     document;
-  const { successToast, errorToast } = statusToast();
-  const tSuccess = useTranslations('success-toast');
-  const tError = useTranslations('error-toast');
-  const { refreshSettings } = useSettings();
-  const router = useRouter();
 
   const fileIcon = getFileIcon(document.file_type);
 
@@ -70,35 +74,16 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
     [file_name]
   );
 
-  const handlePrefetch = (path: string) => {
-    router.prefetch(path);
-  };
-
-  const handleDelete = async () => {
-    setIsLoading(true);
-    try {
-      const { status } = await deleteDocumentAction(organization_id, id);
-      if (status === 200) {
-        onRemoveDocument(id);
-        refreshSettings();
-        successToast({ message: `${tSuccess('deleted')} ${file_name}` });
-      }
-    } catch {
-      errorToast({ message: tError('error-during-deleting-file') });
-    } finally {
-      setIsLoading(false);
-      setShowModal({ isOpen: false, fileId: null });
-    }
-  };
-
   return (
     <>
       {showModal.isOpen && showModal.fileId === document.id && (
         <DeleteFileModal
           toggleModal={toggleModal}
           handleDelete={handleDelete}
+          organization_id={organization_id}
+          documentId={document.id}
           fileName={document.file_name}
-          isLoading={isLoading}
+          isLoading={deleteLoading}
         />
       )}
       <CommonUi.TableRow className="relative text-sm overflow-x-hidden">
@@ -120,7 +105,6 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
           <ToolbarActions
             documentId={id}
             fileName={file_name}
-            onDelete={handleDelete}
             onPrefetch={handlePrefetch}
             toggleModal={toggleModal}
             isLoading={isLoading}
@@ -133,7 +117,12 @@ const DocumentRow = ({ document, onRemoveDocument }: DocumentRowProps) => {
 
 export const UserDocumentsTable = ({
   documents,
+  showModal,
+  deleteLoading,
+  toggleModal,
+  handleDelete,
   onRemoveDocument,
+  handlePrefetch,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const [searchValue, setSearchValue] = useState('');
@@ -162,9 +151,14 @@ export const UserDocumentsTable = ({
           {filteredDocuments.length > 0 ? (
             filteredDocuments.map((document) => (
               <DocumentRow
+                deleteLoading={deleteLoading}
                 key={document.id}
                 document={document}
+                showModal={showModal}
+                toggleModal={toggleModal}
+                handleDelete={handleDelete}
                 onRemoveDocument={onRemoveDocument}
+                handlePrefetch={handlePrefetch}
               />
             ))
           ) : (

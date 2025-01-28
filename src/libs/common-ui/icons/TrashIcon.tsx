@@ -11,7 +11,7 @@ export const TrashIcon = ({ onClick, className }: ComponentProps<'svg'>) => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={classMerge('w-5 h-5', className)}
+      className={classMerge('w-5 h-5 cursor-pointer', className)}
     >
       <path
         strokeLinecap="round"
