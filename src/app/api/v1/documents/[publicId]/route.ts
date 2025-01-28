@@ -15,9 +15,13 @@ export const GET = async (request: NextRequest, { params }: Params) => {
   try {
     const apiContext = await getApiContext(request);
     const apiDbService = new ApiDbService(apiContext);
-    const document = await apiDbService.fetchDocument(publicId);
+    const record = await apiDbService.getDocument(publicId);
 
-    return NextResponse.json(document, { status: 200 });
+    if (!record) {
+      return ApiErrorService.notFound();
+    }
+
+    return NextResponse.json(record, { status: 200 });
   } catch (err) {
     return ApiErrorService.handleErrors(err);
   }

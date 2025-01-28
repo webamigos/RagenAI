@@ -10,7 +10,7 @@ export const GET = async (request: NextRequest) => {
   try {
     const apiContext = await getApiContext(request);
     const apiDbService = new ApiDbService(apiContext);
-    const documents = await apiDbService.fetchDocuments();
+    const documents = await apiDbService.getDocuments();
 
     return NextResponse.json(documents, { status: 200 });
   } catch (err) {
