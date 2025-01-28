@@ -17,6 +17,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
     isGlobalLoading,
     streamedMessage,
     messages,
+    isPublicAccess,
     onSubmit,
     isLocked,
     promptFormRef,
@@ -39,6 +40,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           <PromptForm
             ref={promptFormRef}
             isUserLogged={false}
+            isPublicAccess={isPublicAccess}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
           />
