@@ -9,7 +9,7 @@ import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
-import { SupportedFileType } from '@/app/lib/services/file';
+import { type SupportedFileType } from '@/app/lib/services/fileParser';
 import { ToolbarActions } from './ToolbarActions';
 
 type Props = {

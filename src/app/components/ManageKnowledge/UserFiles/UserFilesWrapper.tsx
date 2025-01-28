@@ -7,6 +7,7 @@ import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 import { deleteDocumentAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useSettings } from '@/app/hooks/useSettings';
+import { useUser } from '@clerk/nextjs';
 
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
@@ -23,8 +24,11 @@ export const FileListWrapper = () => {
   const { successToast, errorToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
+  const { user } = useUser();
 
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const savedViewMode = user?.publicMetadata?.viewMode as 'grid' | 'list';
+
+  const [viewMode, setViewMode] = useState(savedViewMode);
   const [searchValue, setSearchValue] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
@@ -85,11 +89,16 @@ export const FileListWrapper = () => {
     }
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <Card title={t('title')} size="full" className="relative">
       <div className="absolute right-4 top-1 flex items-baseline gap-3">
         <FileSearch value={searchValue} onChange={handleSearchChange} />
         <LayoutToggle
+          clerkUserId={user!.id}
           className="hidden md:flex"
           viewMode={viewMode}
           onViewModeChange={setViewMode}

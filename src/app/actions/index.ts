@@ -211,23 +211,30 @@ export const deleteDocumentAction = async (
 //save data to clerk user profile
 export const saveUserMetadata = async (
   clerkUserId: string,
-  onboardingComplete?: boolean
-) => {
+  metadata: Record<string, unknown>
+): Promise<{ success: boolean; error?: string }> => {
+  if (!clerkUserId || typeof clerkUserId !== 'string') {
+    return { success: false, error: 'Invalid clerkUserId' };
+  }
+
   try {
     const user = await clerkClient().users.getUser(clerkUserId);
     const currentMetadata = user.publicMetadata || {};
 
-    setSentryServiceTag(serviceName);
-    setSentryClerkUserTag(clerkUserId);
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
         ...currentMetadata,
-        onboardingComplete: onboardingComplete,
+        ...metadata,
       },
     });
+
     return { success: true };
   } catch (error) {
-    return { success: false };
+    logger.error(`${{ err: error }} Error saving user metadata:`);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 };
 

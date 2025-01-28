@@ -12,7 +12,7 @@ import {
   type UserFileTypeSafe,
 } from '../FileList/UserDocumentsTable';
 import { type UserFileType } from '@/app/contracts/Documents';
-import { type SupportedFileType } from '@/app/lib/services/file';
+import { SupportedFileType } from '@/app/lib/services/fileParser';
 
 type GridViewProps = {
   documents: UserFileType[];
