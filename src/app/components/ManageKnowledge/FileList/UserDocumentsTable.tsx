@@ -15,7 +15,7 @@ import { FileSearch } from './FileSearch';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
-import { SupportedFileType } from '@/app/lib/services/file';
+import { SupportedFileType } from '@/app/lib/services/fileParser';
 
 type Props = {
   documents: UserFileType[];
