@@ -1,6 +1,8 @@
 import { PrismaClient, Thread, UserDocument } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
+import OpenAI from 'openai';
+import { Source } from '@prisma/client';
 
 import { ApiContext } from '../types/ApiContext';
 import { replaceIds } from '../filters/replace-ids.filter';
@@ -172,5 +174,26 @@ export class ApiDbService {
         user_id: this.context.userId,
       },
     });
+  }
+
+  // TODO: decouple from OpenAI
+  async createUserThread(): Promise<{ id: Thread['public_id'] }> {
+    const openai = new OpenAI();
+
+    // TODO: move creation of Open AI thread to first message
+    const thread = await openai.beta.threads.create();
+
+    const threadRecord = await db.thread.create({
+      data: {
+        openai_thread_id: thread.id,
+        organization_id: this.context.orgId,
+        user_id: this.context.userId,
+        source: Source.API,
+      },
+    });
+
+    return {
+      id: threadRecord.public_id,
+    };
   }
 }

@@ -5,6 +5,7 @@ import { ApiDbService } from '../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../__logic__/services/api-errors.service';
 import { updateThreadSchema } from '../../__logic__/dtos/update-thread.dto';
 import { StatusCodes } from 'http-status-codes';
+import { setSentryServiceTag } from '@/app/lib/services/sentry';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,7 @@ type Params = {
 export const GET = async (request: NextRequest, { params }: Params) => {
   const publicId = params.publicId;
   try {
+    setSentryServiceTag('api.threads.id.get');
     const apiContext = await getApiContext(request);
     const apiDbService = new ApiDbService(apiContext);
     const record = await apiDbService.getUserThread(publicId);
@@ -31,6 +33,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
 export const PATCH = async (request: NextRequest, { params }: Params) => {
   const publicId = params.publicId;
   try {
+    setSentryServiceTag('api.threads.id.patch');
     const body = await request.json();
     const parsedData = updateThreadSchema.parse(body);
 
@@ -47,6 +50,7 @@ export const PATCH = async (request: NextRequest, { params }: Params) => {
 export const DELETE = async (request: NextRequest, { params }: Params) => {
   const publicId = params.publicId;
   try {
+    setSentryServiceTag('api.threads.id.delete');
     const apiContext = await getApiContext(request);
     const apiDbService = new ApiDbService(apiContext);
     await apiDbService.deleteUserThread(publicId);

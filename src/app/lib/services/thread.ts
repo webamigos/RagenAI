@@ -8,7 +8,7 @@ import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
 import { logger } from '../utils/logger';
 
-const serviceName = 'thread';
+export const serviceName = 'thread';
 
 const openai = new OpenAI();
 
@@ -60,11 +60,11 @@ export const findOrCreateOpenAIThread = async (
   }
 };
 
-// TODO: refactor: decouple from OpenAI
+// TODO: decouple from OpenAI
 export const createNewOpenAIThread = async () => {
   try {
     setSentryServiceTag(serviceName);
-    const { orgId, userId } = auth();
+    const { orgId: orgId, userId: userId } = auth();
     // TODO: in scenario of public chat we should get organization id another way...
     // TODO: move creation of Open AI thread to first message
     const thread = await openai.beta.threads.create();
