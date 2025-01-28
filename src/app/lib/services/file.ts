@@ -2,15 +2,7 @@ import { UserFile } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
 import { getOrgIdOrThrow } from './clerk';
-
-export type SupportedFileType =
-  | 'pdf'
-  | 'epub'
-  | 'csv'
-  | 'markdown'
-  | 'unknown'
-  | 'srt'
-  | 'text';
+import { SupportedFileType } from './fileParser';
 
 export const getFileDetails = async (fileId: string) => {
   const orgId = getOrgIdOrThrow();
