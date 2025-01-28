@@ -9,7 +9,7 @@ import {
 import { SupportedFileType } from '../services/fileParser';
 
 export const FILE_ICONS: Record<
-  SupportedFileType | 'markdown' | 'unknown',
+  SupportedFileType | 'csv' | 'markdown' | 'unknown',
   JSX.Element
 > = {
   pdf: <PdfIcon />,
