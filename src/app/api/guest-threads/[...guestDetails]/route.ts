@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { Role } from '@prisma/client';
+import { Role, Thread } from '@prisma/client';
 import {
   getThreadMessages,
   getThreadDetails,
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             }
 
             const threadMessages = await getThreadMessages(publicThreadId);
-            const threadEntity = await getThreadDetails(publicThreadId);
+            const threadRecord = await getThreadDetails(publicThreadId);
 
             const conv_history = threadMessages?.messages
               .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
@@ -136,8 +136,8 @@ export async function GET(request: NextRequest, { params }: Params) {
               ) {
                 const dbMessage = await createMessageInDB({
                   thread: {
-                    ...threadEntity,
-                    visitor_id: threadEntity.visitor_id,
+                    ...(threadRecord as Thread),
+                    visitor_id: threadRecord.visitor_id,
                   },
                   message: {
                     id: publicMessageId,

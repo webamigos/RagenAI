@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 
 import { Thread } from '@prisma/client';
 import db from '@ragenai/prisma-client';
+import { auth } from '@clerk/nextjs/server';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
@@ -16,7 +17,7 @@ export const findOrCreateOpenAIThread = async (
   visitorId: string
 ) => {
   let thread;
-  let threadEntity: Thread;
+  let threadRecord: Thread;
 
   try {
     setSentryServiceTag(serviceName);
@@ -26,10 +27,11 @@ export const findOrCreateOpenAIThread = async (
     setSentryContext('EXTRA_DATA', {
       visitorId,
     });
-    threadEntity = await db.thread.findUniqueOrThrow({
+
+    threadRecord = await db.thread.findUniqueOrThrow({
       where: { public_id: threadPublicId },
     });
-    if (!threadEntity.openai_thread_id) {
+    if (!threadRecord.openai_thread_id) {
       thread = await openai.beta.threads.create();
       await db.thread.update({
         where: { public_id: threadPublicId },
@@ -40,7 +42,7 @@ export const findOrCreateOpenAIThread = async (
       });
     } else {
       thread = await openai.beta.threads.retrieve(
-        threadEntity.openai_thread_id
+        threadRecord.openai_thread_id
       );
       await db.thread.update({
         where: { public_id: threadPublicId },
@@ -50,7 +52,7 @@ export const findOrCreateOpenAIThread = async (
       });
     }
 
-    return { thread, threadEntity };
+    return { thread, threadRecord };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${threadPublicId}`);
     // TODO: implement
@@ -58,16 +60,24 @@ export const findOrCreateOpenAIThread = async (
   }
 };
 
+// TODO: refactor: decouple from OpenAI
 export const createNewOpenAIThread = async () => {
   try {
     setSentryServiceTag(serviceName);
+    const { orgId, userId } = auth();
+    // TODO: in scenario of public chat we should get organization id another way...
     // TODO: move creation of Open AI thread to first message
     const thread = await openai.beta.threads.create();
-    const threadEntity = await db.thread.create({
-      data: { openai_thread_id: thread.id },
+    // TODO: for guest records we should pass organization id
+    const threadRecord = await db.thread.create({
+      data: {
+        openai_thread_id: thread.id,
+        organization_id: orgId,
+        user_id: userId,
+      },
     });
     return {
-      public_id: threadEntity.public_id,
+      public_id: threadRecord.public_id,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create new Open AI thread');

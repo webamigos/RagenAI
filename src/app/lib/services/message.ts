@@ -113,12 +113,12 @@ export const fetchMessagesFromDb = async (
 export const createAndStoreOpenAIThreadMessage = async ({
   prompt,
   thread,
-  threadEntity,
+  threadRecord,
   visitorId,
 }: {
   prompt: string;
   thread: OpenAI.Beta.Threads.Thread;
-  threadEntity: Thread;
+  threadRecord: Thread;
   visitorId?: string;
 }): Promise<MessageDto> => {
   try {
@@ -138,7 +138,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
     const userMessageContent = parseThreadMessage(threadMessage);
 
     const dbMessage = await createMessageInDB({
-      thread: threadEntity,
+      thread: threadRecord,
       message: {
         id: threadMessage.id,
         created_at: threadMessage.created_at,

@@ -87,7 +87,7 @@ export const sendMessage = async (
       threadPublicId,
       visitorId,
     });
-    const { thread, threadEntity } = await findOrCreateOpenAIThread(
+    const { thread, threadRecord } = await findOrCreateOpenAIThread(
       threadPublicId,
       visitorId
     );
@@ -96,7 +96,7 @@ export const sendMessage = async (
     const messageResponse = await createAndStoreOpenAIThreadMessage({
       prompt,
       thread,
-      threadEntity,
+      threadRecord,
       visitorId,
     });
 
