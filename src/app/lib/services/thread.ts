@@ -12,8 +12,6 @@ export const findOrCreateThread = async (
   threadPublicId: CreateThreadDto['public_id'],
   visitorId: string
 ) => {
-  let threadEntity: Thread;
-
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('THREAD_ID', {
@@ -23,7 +21,7 @@ export const findOrCreateThread = async (
       visitorId,
     });
 
-    threadRecord = await db.thread.findUniqueOrThrow({
+    const threadRecord = await db.thread.findUniqueOrThrow({
       where: { public_id: threadPublicId },
     });
 
@@ -34,7 +32,7 @@ export const findOrCreateThread = async (
       },
     });
 
-    return { threadEntity };
+    return { threadRecord };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${threadPublicId}`);
     // TODO: implement
@@ -45,7 +43,7 @@ export const findOrCreateThread = async (
 export const createNewThread = async () => {
   try {
     setSentryServiceTag(serviceName);
-    const threadEntity = await db.thread.create({
+    const threadRecord = await db.thread.create({
       data: {},
     });
     return {

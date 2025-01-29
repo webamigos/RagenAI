@@ -84,7 +84,7 @@ export const sendMessage = async (
       threadPublicId,
       visitorId,
     });
-    const { threadEntity } = await findOrCreateThread(
+    const { threadRecord } = await findOrCreateThread(
       threadPublicId,
       visitorId
     );
@@ -92,7 +92,7 @@ export const sendMessage = async (
     // create user message
     const messageResponse = await createAndStoreMessage({
       prompt,
-      threadEntity,
+      threadRecord,
       visitorId,
     });
 

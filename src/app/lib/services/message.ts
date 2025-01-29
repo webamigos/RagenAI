@@ -62,17 +62,17 @@ export const createMessageInDB = async ({
 
 export const createAndStoreMessage = async ({
   prompt,
-  threadEntity,
+  threadRecord,
   visitorId,
 }: {
   prompt: string;
-  threadEntity: Thread;
+  threadRecord: Thread;
   visitorId?: string;
 }): Promise<MessageDto> => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('THREAD_ID', {
-      threadId: threadEntity.id,
+      threadId: threadRecord.id,
     });
     setSentryContext('EXTRA_DATA', {
       visitorId,

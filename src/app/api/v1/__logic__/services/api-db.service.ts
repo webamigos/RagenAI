@@ -9,26 +9,17 @@ import { replaceIds } from '../filters/replace-ids.filter';
 import { UpdateThreadDto } from '../dtos/update-thread.dto';
 import { NotFoundException } from './api-errors.service';
 import { ChatMessageDto } from '../dtos/chat.dto';
-import { Runnable } from '@langchain/core/runnables';
-import { initializeConversationChain } from '@/app/api/threads/services/initializeConversationChain';
-import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag';
+
 import {
-  runId,
-  prepareSseMessage,
-} from '@/app/api/guest-threads/[...guestDetails]/route';
-import { SseMessageEvent } from '@/app/contracts/Events';
-import {
-  createAndStoreOpenAIThreadMessage,
+  createAndStoreMessage,
   createMessageInDB,
 } from '@/app/lib/services/message';
-import { setSentryContext } from '@/app/lib/services/sentry';
 import {
+  findOrCreateThread,
   getThreadMessages,
-  getThreadDetails,
-  findOrCreateOpenAIThread,
 } from '@/app/lib/services/thread';
 
 type ApiCollection<T extends { id: string | number | bigint }> = Omit<
@@ -254,14 +245,13 @@ export class ApiDbService {
     }
     let runId = '';
 
-    const { thread, threadRecord } = await findOrCreateOpenAIThread(
+    const { threadRecord } = await findOrCreateThread(
       publicThreadId,
       this.context.userId
     );
 
-    const threadMessage = await createAndStoreOpenAIThreadMessage({
+    const threadMessage = await createAndStoreMessage({
       prompt: payload.content,
-      thread,
       threadRecord,
       visitorId: this.context.userId,
     });
@@ -315,7 +305,6 @@ export class ApiDbService {
           },
           message: {
             id: threadMessage.public_id,
-            created_at: Math.floor(Date.now() / 1000),
             content: event.data.output,
           },
           role: Role.ASSISTANT,

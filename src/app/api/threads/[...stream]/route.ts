@@ -155,7 +155,6 @@ export async function GET(request: NextRequest, { params }: Params) {
                   },
                   message: {
                     id: publicMessageId,
-                    created_at: Math.floor(Date.now() / 1000),
                     content: event.data.output,
                   },
                   role: Role.ASSISTANT,
