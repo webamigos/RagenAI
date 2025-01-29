@@ -196,4 +196,27 @@ export class ApiDbService {
       id: threadRecord.public_id,
     };
   }
+
+  async getChatMessages(publicThreadId: Thread['public_id']) {
+    const messages = await db.message.findMany({
+      where: {
+        thread: {
+          organization_id: this.context.orgId,
+          user_id: this.context.userId,
+          public_id: publicThreadId,
+        },
+      },
+      select: {
+        public_id: true,
+        created_at: true,
+        role: true,
+        content: true,
+      },
+      orderBy: {
+        created_at: 'asc',
+      },
+    });
+
+    return replaceIds(messages);
+  }
 }

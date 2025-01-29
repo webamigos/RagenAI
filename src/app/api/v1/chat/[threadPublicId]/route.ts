@@ -1,0 +1,47 @@
+import { StatusCodes } from 'http-status-codes';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { setSentryServiceTag } from '@/app/lib/services/sentry';
+
+import { getApiContext } from '../../__logic__/context/api.context';
+import { ApiDbService } from '../../__logic__/services/api-db.service';
+import { ApiErrorService } from '../../__logic__/services/api-errors.service';
+import { chatMessagesSchema } from '../../__logic__/dtos/chat.dto';
+
+export const dynamic = 'force-dynamic';
+
+export type Params = {
+  params: { threadPublicId: string };
+};
+
+export const GET = async (request: NextRequest, { params }: Params) => {
+  const threadPublicId = params.threadPublicId;
+  try {
+    setSentryServiceTag('api.chat.threadId.get');
+
+    const apiContext = await getApiContext(request);
+    const apiDbService = new ApiDbService(apiContext);
+    const messages = await apiDbService.getChatMessages(threadPublicId);
+
+    return NextResponse.json(messages, { status: StatusCodes.OK });
+  } catch (err) {
+    return ApiErrorService.handleErrors(err);
+  }
+};
+
+export const POST = async (request: NextRequest, { params }: Params) => {
+  const threadPublicId = params.threadPublicId;
+  try {
+    setSentryServiceTag('api.chat.threadId.post');
+    const body = await request.json();
+    const parsedData = chatMessagesSchema.parse(body);
+
+    const apiContext = await getApiContext(request);
+    const apiDbService = new ApiDbService(apiContext);
+    // const record = await apiDbService.updateUserThread(publicId, parsedData);
+
+    return NextResponse.json({}, { status: StatusCodes.ACCEPTED });
+  } catch (err) {
+    return ApiErrorService.handleErrors(err);
+  }
+};
