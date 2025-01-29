@@ -1,4 +1,10 @@
-import { useReducer, useEffect, useRef, startTransition } from 'react';
+import {
+  useReducer,
+  useEffect,
+  useRef,
+  startTransition,
+  useState,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
@@ -17,7 +23,11 @@ import {
   fetchMessagesFromApi,
 } from '../../lib/services/api';
 
-import { ChatType, type CreateMessageDto } from '../../contracts/Message';
+import {
+  ChatResponseType,
+  ChatType,
+  type CreateMessageDto,
+} from '../../contracts/Message';
 import {
   type State,
   type Action,
@@ -44,6 +54,7 @@ const {
   SET_IS_ERROR,
   REMOVE_MESSAGE,
   SET_MODE,
+  SET_MODE_VOICE,
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
@@ -62,6 +73,7 @@ export const useAssistantLogic = (threadId: string) => {
     streamedMessage: null,
     messages: [],
     mode: ChatType.CONVERSATION,
+    responseType: ChatResponseType.TEXT,
   };
 
   const userVisitorId = user?.id;
@@ -91,12 +103,14 @@ export const useAssistantLogic = (threadId: string) => {
       streamedMessage,
       messages,
       isError,
+      responseType,
     },
     dispatch,
   ] = useReducer(reducer, initialState);
 
   const isGlobalLoading = !isError && (isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -143,6 +157,8 @@ export const useAssistantLogic = (threadId: string) => {
         };
       case SET_MODE:
         return { ...state, mode: action.payload };
+      case SET_MODE_VOICE:
+        return { ...state, responseType: ChatResponseType.VOICE };
       default:
         return state;
     }
@@ -368,6 +384,16 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
+  const handleResponseType = () => {
+    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.VOICE });
+    setIsRecording(true);
+  };
+
+  const closeVoiceMode = () => {
+    setIsRecording(false);
+    dispatch({ type: SET_MODE, payload: ChatType.CONVERSATION });
+  };
+
   const isLocked = () => {
     if (isSignedIn) return false;
     return isLimitLock;
@@ -375,22 +401,23 @@ export const useAssistantLogic = (threadId: string) => {
 
   return {
     messageLoadingText,
+    handleResponseType,
     messagesEndDivRef,
-    isMessageLoading,
     isGlobalLoading,
     streamedMessage,
     userVisitorId,
-    userMessageId,
     isSearchOpen,
-    closeSearch,
+    responseType,
     isLimitLock,
+    closeSearch,
     isSignedIn,
     messages,
     modalRef,
+    onSubmit,
     isLocked,
     dispatch,
-    onSubmit,
-    isError,
     promptFormRef,
+    isRecording,
+    closeVoiceMode,
   };
 };

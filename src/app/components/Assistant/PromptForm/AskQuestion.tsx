@@ -7,6 +7,7 @@ type Props = {
   disabled: boolean;
   error?: FieldError;
   isUserLogged: boolean;
+  handleResponseType: () => void;
   register: UseFormRegister<{
     prompt: string;
   }>;
@@ -19,6 +20,7 @@ export const AskQuestion = ({
   disabled,
   error,
   value,
+  handleResponseType,
   setPromptValue,
   register,
   onSend,
@@ -37,6 +39,7 @@ export const AskQuestion = ({
       {...register('prompt')}
       setValue={setPromptValue}
       placeholder={t('enter-your-question')}
+      handleResponseType={handleResponseType}
     />
   );
 };

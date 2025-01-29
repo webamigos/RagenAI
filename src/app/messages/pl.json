@@ -462,5 +462,14 @@
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
     "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
     "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
+  },
+  "voice-mode": {
+    "recording": "Nagrywanie...",
+    "waiting": "Oczekiwanie na rozpoczęcie nagrywania",
+    "generating": "Generowanie odpowiedzi głosowej...",
+    "playing": "Odtwarzanie odpowiedzi...",
+    "instructions": "Mów wyraźnie do mikrofonu. Wiadomość zostanie wysłana automatycznie po 3 sekundach ciszy lub po kliknięciu przycisku stop. Odpowiedź asystenta zostanie odtworzona automatycznie.",
+    "api-error": "Wystąpił błąd podczas generowania odpowiedzi głosowej. Kontynuujemy w trybie tekstowym.",
+    "api-error-instructions": "Tryb głosowy jest obecnie niedostępny. Możesz kontynuować rozmowę, ale odpowiedzi będą tylko w formie tekstu."
   }
 }

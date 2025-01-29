@@ -1,4 +1,5 @@
 import type {
+  ChatResponseType,
   ChatType,
   MessageDto,
   StreamedMessageDto,
@@ -17,6 +18,7 @@ export type State = {
   streamedMessage: StreamedMessageDto | null;
   messages: MessageDto[];
   isError: boolean;
+  responseType: ChatResponseType;
 };
 
 export enum reducerActions {
@@ -33,6 +35,7 @@ export enum reducerActions {
   SET_IS_ERROR,
   REMOVE_MESSAGE,
   SET_MODE,
+  SET_MODE_VOICE,
 }
 
 const {
@@ -49,6 +52,7 @@ const {
   SET_IS_ERROR,
   REMOVE_MESSAGE,
   SET_MODE,
+  SET_MODE_VOICE,
 } = reducerActions;
 
 export type Action =
@@ -70,4 +74,5 @@ export type Action =
   | { type: typeof ADD_MESSAGE; payload: MessageDto }
   | { type: typeof SET_IS_ERROR; payload: boolean }
   | { type: typeof REMOVE_MESSAGE; payload: string }
-  | { type: typeof SET_MODE; payload: ChatType };
+  | { type: typeof SET_MODE; payload: ChatType }
+  | { type: typeof SET_MODE_VOICE; payload: ChatResponseType };

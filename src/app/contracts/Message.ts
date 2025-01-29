@@ -6,6 +6,11 @@ export enum ChatType {
   RAG = 'rag',
 }
 
+export enum ChatResponseType {
+  TEXT = 'text',
+  VOICE = 'voice',
+}
+
 export const createMessageSchema = z.object({
   prompt: z.string().min(10, 'Provide what least 10 characters'),
   mode: z.enum([ChatType.CONVERSATION, ChatType.RAG]).optional(),

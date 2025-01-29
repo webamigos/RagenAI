@@ -2,7 +2,6 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
-import { logger } from '@/app/lib/utils/logger';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
@@ -16,6 +15,7 @@ type Props = {
   messages: MessageDto[];
   isLoading: boolean;
   widgetMode?: boolean;
+  responseType: 'text' | 'voice';
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
 };
@@ -96,7 +96,6 @@ export const ChatOutput = ({
             />
           </div>
         ))}
-
         {streamedMessage && (
           <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base dark:shadow-none dark:text-gray-200">
             <div className="chat-response">

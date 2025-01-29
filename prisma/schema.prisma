@@ -42,12 +42,13 @@ model FlaggedMessage {
 }
 
 model Thread {
-  public_id        String    @unique @default(uuid())
-  openai_thread_id String
-  created_at       DateTime  @default(now()) @db.Timestamptz
-  id               String    @id @default(uuid())
-  visitor_id       String?
-  messages         Message[]
+  public_id                  String                    @unique @default(uuid())
+  openai_thread_id          String
+  created_at                DateTime                   @default(now()) @db.Timestamptz
+  id                        String                     @id @default(uuid())
+  visitor_id                String?
+  preferred_communication_type PreferredCommunicationType @default(TEXT)
+  messages                  Message[]
 }
 
 model VisitorMessages {
@@ -232,4 +233,9 @@ enum PlanStatus {
   ACTIVE
   ARCHIVED
   DELETED
+}
+
+enum PreferredCommunicationType {
+  TEXT
+  VOICE
 }
