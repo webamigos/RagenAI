@@ -20,8 +20,9 @@ model Settings {
 
 model Message {
   public_id         String   @unique @default(uuid())
-  openai_message_id String
-  openai_created_at Int
+  //To be removed, not null for now
+  openai_message_id String?
+  openai_created_at Int?
   created_at        DateTime @default(now()) @db.Timestamptz
   content           String
   role              Role     @default(USER)
@@ -43,7 +44,8 @@ model FlaggedMessage {
 
 model Thread {
   public_id        String    @unique @default(uuid())
-  openai_thread_id String
+    //To be removed, not null for now
+  openai_thread_id String?
   created_at       DateTime  @default(now()) @db.Timestamptz
   id               String    @id @default(uuid())
   visitor_id       String?

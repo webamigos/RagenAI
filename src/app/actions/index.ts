@@ -1,47 +1,44 @@
 'use server';
 
-import { StatusCodes } from 'http-status-codes';
 import { clerkClient } from '@clerk/nextjs/server';
+import { StatusCodes } from 'http-status-codes';
 
-import { submitFeedbackDirectly } from '../lib/services/feedback';
-import { logger } from '../lib/utils/logger';
-import {
-  ThreadHistoryResponse,
-  CreateMessageDto,
-  MessageDto,
-  createMessageSchema,
-} from '../contracts/Message';
-import { sendForModeration } from '../lib/services/moderation';
-import { findOrCreateOpenAIThread } from '../lib/services/thread';
-import {
-  createAndStoreOpenAIThreadMessage,
-  deleteMessageByPublicId,
-} from '../lib/services/message';
-import { getUserThreads } from '../lib/services/visitor';
-import {
-  deleteDocumentFromDb,
-  getDocumentDetailsByPublicId,
-} from '../lib/services/document';
 import { deleteDocumentFromVectorStore } from '../api/upload/services/TableService';
 import {
-  setSentryClerkOrganizationTag,
-  setSentryClerkUserTag,
-  setSentryContext,
-} from '../lib/services/sentry';
-import { setSentryServiceTag } from '../lib/services/sentry';
-import {
-  ClerkOrganizationMetadata,
-  ClerkOrganizationPublicMetadata,
-} from '../lib/types/organizations';
+  CreateMessageDto,
+  MessageDto,
+  ThreadHistoryResponse,
+  createMessageSchema,
+} from '../contracts/Message';
+import { deleteFromS3 } from '../lib/services/aws';
+import { deleteDocumentFromDb } from '../lib/services/document';
+import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
   deleteFileFromDb,
   fetchFileDetails,
   getFileDetails,
   getOrganizationFilesCount,
 } from '../lib/services/file';
-import { getFileExtension } from '../lib/utils/getFileExtension';
-import { deleteFromS3 } from '../lib/services/aws';
+import {
+  createAndStoreMessage,
+  deleteMessageByPublicId,
+} from '../lib/services/message';
+import { sendForModeration } from '../lib/services/moderation';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryClerkUserTag,
+  setSentryContext,
+  setSentryServiceTag,
+} from '../lib/services/sentry';
+import { findOrCreateThread } from '../lib/services/thread';
 import { usageTracker } from '../lib/services/usage';
+import { getUserThreads } from '../lib/services/visitor';
+import {
+  ClerkOrganizationMetadata,
+  ClerkOrganizationPublicMetadata,
+} from '../lib/types/organizations';
+import { getFileExtension } from '../lib/utils/getFileExtension';
+import { logger } from '../lib/utils/logger';
 
 const serviceName = 'actions';
 
@@ -87,15 +84,14 @@ export const sendMessage = async (
       threadPublicId,
       visitorId,
     });
-    const { thread, threadEntity } = await findOrCreateOpenAIThread(
+    const { threadEntity } = await findOrCreateThread(
       threadPublicId,
       visitorId
     );
 
     // create user message
-    const messageResponse = await createAndStoreOpenAIThreadMessage({
+    const messageResponse = await createAndStoreMessage({
       prompt,
-      thread,
       threadEntity,
       visitorId,
     });

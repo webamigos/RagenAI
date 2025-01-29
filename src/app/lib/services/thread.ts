@@ -1,5 +1,3 @@
-import OpenAI from 'openai';
-
 import { Thread } from '@prisma/client';
 import db from '@ragenai/prisma-client';
 
@@ -9,13 +7,10 @@ import { logger } from '../utils/logger';
 
 const serviceName = 'thread';
 
-const openai = new OpenAI();
-
-export const findOrCreateOpenAIThread = async (
+export const findOrCreateThread = async (
   threadPublicId: CreateThreadDto['public_id'],
   visitorId: string
 ) => {
-  let thread;
   let threadEntity: Thread;
 
   try {
@@ -29,28 +24,15 @@ export const findOrCreateOpenAIThread = async (
     threadEntity = await db.thread.findUniqueOrThrow({
       where: { public_id: threadPublicId },
     });
-    if (!threadEntity.openai_thread_id) {
-      thread = await openai.beta.threads.create();
-      await db.thread.update({
-        where: { public_id: threadPublicId },
-        data: {
-          openai_thread_id: thread.id,
-          visitor_id: visitorId,
-        },
-      });
-    } else {
-      thread = await openai.beta.threads.retrieve(
-        threadEntity.openai_thread_id
-      );
-      await db.thread.update({
-        where: { public_id: threadPublicId },
-        data: {
-          visitor_id: visitorId,
-        },
-      });
-    }
 
-    return { thread, threadEntity };
+    await db.thread.update({
+      where: { public_id: threadPublicId },
+      data: {
+        visitor_id: visitorId,
+      },
+    });
+
+    return { threadEntity };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${threadPublicId}`);
     // TODO: implement
@@ -58,19 +40,17 @@ export const findOrCreateOpenAIThread = async (
   }
 };
 
-export const createNewOpenAIThread = async () => {
+export const createNewThread = async () => {
   try {
     setSentryServiceTag(serviceName);
-    // TODO: move creation of Open AI thread to first message
-    const thread = await openai.beta.threads.create();
     const threadEntity = await db.thread.create({
-      data: { openai_thread_id: thread.id },
+      data: {},
     });
     return {
       public_id: threadEntity.public_id,
     };
   } catch (error) {
-    logger.error({ err: error }, 'Failed to create new Open AI thread');
+    logger.error({ err: error }, 'Failed to create new thread');
     throw error;
   }
 };
@@ -110,7 +90,6 @@ export const getThreadDetails = async (publicThreadId: string) => {
       select: {
         id: true,
         public_id: true,
-        openai_thread_id: true,
         created_at: true,
         visitor_id: true,
       },
