@@ -233,7 +233,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
   return (
     <>
-      <div className="fixed top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
+      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
