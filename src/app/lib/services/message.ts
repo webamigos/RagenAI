@@ -1,11 +1,8 @@
 'use server';
 
-import OpenAI from 'openai';
 import { Thread, Message, Role } from '@prisma/client';
-
 import db from '@ragenai/prisma-client';
 
-import { parseThreadMessage } from './utils';
 import { MessageDto } from '../../contracts/Message';
 import { createVisitorEntry } from './visitor';
 import { logger } from '../utils/logger';
@@ -14,13 +11,11 @@ import { usageTracker } from './usage';
 
 export type DbMessageDto = {
   id: Message['id'];
-  created_at: Message['openai_created_at'];
   content: Message['content'];
   role: Message['role'];
   run_id?: Message['run_id'];
 };
 
-const openai = new OpenAI();
 const serviceName = 'Message';
 
 export const createMessageInDB = async ({
@@ -53,8 +48,6 @@ export const createMessageInDB = async ({
     return await db.message.create({
       data: {
         thread_id: thread.id,
-        openai_message_id: message.id,
-        openai_created_at: message.created_at,
         content: message.content,
         role,
         visitor_id: visitorId,
@@ -67,86 +60,33 @@ export const createMessageInDB = async ({
   }
 };
 
-export const fetchMessagesFromDb = async (
-  threadPublicId: Thread['public_id'],
-  visitorId: Thread['visitor_id']
-) => {
-  try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadId: threadPublicId,
-    });
-    setSentryContext('EXTRA_DATA', {
-      visitorId,
-    });
-
-    const thread = await db.thread.findUnique({
-      where: { public_id: threadPublicId, visitor_id: visitorId },
-    });
-
-    if (!thread) {
-      return [];
-    }
-
-    return db.message.findMany({
-      where: { thread_id: thread?.id },
-      select: {
-        public_id: true,
-        created_at: true,
-        content: true,
-        role: true,
-        run_id: true,
-        rate: true,
-      },
-      orderBy: [
-        {
-          created_at: 'asc',
-        },
-      ],
-    });
-  } catch (error) {
-    logger.error({ err: error }, 'Failed to fetch messages from DB');
-    throw error;
-  }
-};
-
-export const createAndStoreOpenAIThreadMessage = async ({
+export const createAndStoreMessage = async ({
   prompt,
-  thread,
-  threadRecord,
+  threadEntity,
   visitorId,
 }: {
   prompt: string;
-  thread: OpenAI.Beta.Threads.Thread;
-  threadRecord: Thread;
+  threadEntity: Thread;
   visitorId?: string;
 }): Promise<MessageDto> => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('THREAD_ID', {
-      threadId: thread.id,
+      threadId: threadEntity.id,
     });
     setSentryContext('EXTRA_DATA', {
       visitorId,
     });
-    const threadId = thread.id;
-    const threadMessage = await openai.beta.threads.messages.create(threadId, {
-      role: 'user',
-      content: prompt.trim(), // TODO: sanitize
-    });
-    // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
-    const userMessageContent = parseThreadMessage(threadMessage);
 
     const dbMessage = await createMessageInDB({
       thread: threadRecord,
       message: {
-        id: threadMessage.id,
-        created_at: threadMessage.created_at,
-        content: userMessageContent,
+        id: `msg_${Date.now()}`,
+        content: prompt.trim(),
       },
       role: Role.USER,
       visitorId,
-    }); // TODO: can trow an error
+    });
 
     if (visitorId) {
       try {
@@ -163,10 +103,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
       content: dbMessage.content,
     };
   } catch (error) {
-    logger.error(
-      { err: error },
-      'Failed to create and store OpenAI thread message'
-    );
+    logger.error({ err: error }, 'Failed to create and store message');
     throw error;
   }
 };
@@ -210,6 +147,49 @@ export const deleteMessageByPublicId = (publicId: string) => {
     });
   } catch (error) {
     logger.error({ err: error }, 'Failed to delete message by public ID');
+    throw error;
+  }
+};
+
+export const fetchMessagesFromDb = async (
+  threadPublicId: Thread['public_id'],
+  visitorId: Thread['visitor_id']
+) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      threadId: threadPublicId,
+    });
+    setSentryContext('EXTRA_DATA', {
+      visitorId,
+    });
+
+    const thread = await db.thread.findUnique({
+      where: { public_id: threadPublicId, visitor_id: visitorId },
+    });
+
+    if (!thread) {
+      return [];
+    }
+
+    return db.message.findMany({
+      where: { thread_id: thread?.id },
+      select: {
+        public_id: true,
+        created_at: true,
+        content: true,
+        role: true,
+        run_id: true,
+        rate: true,
+      },
+      orderBy: [
+        {
+          created_at: 'asc',
+        },
+      ],
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch messages from DB');
     throw error;
   }
 };
