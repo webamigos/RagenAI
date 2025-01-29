@@ -9,7 +9,7 @@ import { setSentryServiceTag } from '@/app/lib/services/sentry';
 
 export const dynamic = 'force-dynamic';
 
-type Params = {
+export type Params = {
   params: { publicId: string };
 };
 

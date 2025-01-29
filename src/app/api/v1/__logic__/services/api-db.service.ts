@@ -1,4 +1,4 @@
-import { PrismaClient, Thread, UserDocument } from '@prisma/client';
+import { PrismaClient, Role, Thread, UserDocument } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
 import OpenAI from 'openai';
@@ -8,6 +8,28 @@ import { ApiContext } from '../types/ApiContext';
 import { replaceIds } from '../filters/replace-ids.filter';
 import { UpdateThreadDto } from '../dtos/update-thread.dto';
 import { NotFoundException } from './api-errors.service';
+import { ChatMessageDto } from '../dtos/chat.dto';
+import { Runnable } from '@langchain/core/runnables';
+import { initializeConversationChain } from '@/app/api/threads/services/initializeConversationChain';
+import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
+import { getAllSettings } from '@/app/lib/services/settings';
+import { ApiKeyError } from '@/libs/chains/errors';
+import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag';
+import {
+  runId,
+  prepareSseMessage,
+} from '@/app/api/guest-threads/[...guestDetails]/route';
+import { SseMessageEvent } from '@/app/contracts/Events';
+import {
+  createAndStoreOpenAIThreadMessage,
+  createMessageInDB,
+} from '@/app/lib/services/message';
+import { setSentryContext } from '@/app/lib/services/sentry';
+import {
+  getThreadMessages,
+  getThreadDetails,
+  findOrCreateOpenAIThread,
+} from '@/app/lib/services/thread';
 
 type ApiCollection<T extends { id: string | number | bigint }> = Omit<
   T,
@@ -218,5 +240,90 @@ export class ApiDbService {
     });
 
     return replaceIds(messages);
+  }
+
+  // TODO: moderation
+  async createChatMessages(
+    publicThreadId: Thread['public_id'],
+    payload: ChatMessageDto
+  ) {
+    // TODO: code duplication
+    const rawSettings = await getAllSettings(this.context.orgId);
+    if (!rawSettings.apiKey) {
+      throw new ApiKeyError();
+    }
+    let runId = '';
+
+    const { thread, threadRecord } = await findOrCreateOpenAIThread(
+      publicThreadId,
+      this.context.userId
+    );
+
+    const threadMessage = await createAndStoreOpenAIThreadMessage({
+      prompt: payload.content,
+      thread,
+      threadRecord,
+      visitorId: this.context.userId,
+    });
+
+    const basicRag = await initializePublicRagChain({
+      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+      organizationId: this.context.orgId,
+    });
+    const chain = basicRag.chain;
+    const finalAnswerRunName = basicRag.finalAnswerRunName;
+
+    const threadMessages = await getThreadMessages(publicThreadId);
+
+    const conv_history = threadMessages?.messages
+      .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
+      .join('\n');
+
+    const eventStream = chain.streamEvents(
+      {
+        question: payload.content,
+        chat_history: conv_history,
+      },
+      {
+        version: 'v2',
+      }
+    );
+
+    let fullMessage = '';
+    let chainRunIds = [];
+
+    for await (const event of eventStream) {
+      if (event.event === 'on_chain_start') {
+        chainRunIds.push(event.run_id);
+        runId = chainRunIds[0];
+      }
+
+      if (
+        event.event === 'on_parser_stream' &&
+        event.name === finalAnswerRunName
+      ) {
+        const textChunk = event.data.chunk || '';
+        fullMessage += textChunk;
+      } else if (
+        event.event === 'on_parser_end' &&
+        event.name === finalAnswerRunName
+      ) {
+        const dbMessage = await createMessageInDB({
+          thread: {
+            ...(threadRecord as Thread),
+            visitor_id: threadRecord.visitor_id,
+          },
+          message: {
+            id: threadMessage.public_id,
+            created_at: Math.floor(Date.now() / 1000),
+            content: event.data.output,
+          },
+          role: Role.ASSISTANT,
+          runId,
+        });
+
+        return dbMessage.content;
+      }
+    }
   }
 }

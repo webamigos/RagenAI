@@ -38,9 +38,12 @@ export const POST = async (request: NextRequest, { params }: Params) => {
 
     const apiContext = await getApiContext(request);
     const apiDbService = new ApiDbService(apiContext);
-    // const record = await apiDbService.updateUserThread(publicId, parsedData);
+    const result = await apiDbService.createChatMessages(
+      threadPublicId,
+      parsedData
+    );
 
-    return NextResponse.json({}, { status: StatusCodes.ACCEPTED });
+    return NextResponse.json({ response: result }, { status: StatusCodes.OK });
   } catch (err) {
     return ApiErrorService.handleErrors(err);
   }
