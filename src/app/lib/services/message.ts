@@ -14,6 +14,7 @@ export type DbMessageDto = {
   content: Message['content'];
   role: Message['role'];
   run_id?: Message['run_id'];
+  source?: Message['source'];
 };
 
 const serviceName = 'Message';

@@ -1,8 +1,14 @@
-import { PrismaClient, Role, Thread, UserDocument } from '@prisma/client';
+import {
+  PrismaClient,
+  Role,
+  Thread,
+  UserDocument,
+  Source,
+  Message,
+} from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
 import OpenAI from 'openai';
-import { Source } from '@prisma/client';
 
 import { ApiContext } from '../types/ApiContext';
 import { replaceIds } from '../filters/replace-ids.filter';
@@ -30,6 +36,7 @@ type ApiCollection<T extends { id: string | number | bigint }> = Omit<
 };
 type ApiUserDocument = ApiCollection<UserDocument>;
 type ApiThread = ApiCollection<Thread>;
+type ApiMessage = ApiCollection<Message>;
 
 export class ApiDbService {
   private db: PrismaClient;
@@ -210,7 +217,9 @@ export class ApiDbService {
     };
   }
 
-  async getChatMessages(publicThreadId: Thread['public_id']) {
+  async getChatMessages(
+    publicThreadId: Thread['public_id']
+  ): Promise<ApiMessage[]> {
     const messages = await db.message.findMany({
       where: {
         thread: {
@@ -263,9 +272,9 @@ export class ApiDbService {
     const chain = basicRag.chain;
     const finalAnswerRunName = basicRag.finalAnswerRunName;
 
-    const threadMessages = await getThreadMessages(publicThreadId);
+    const threadMessages = await this.getChatMessages(publicThreadId);
 
-    const conv_history = threadMessages?.messages
+    const conv_history = threadMessages
       .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
       .join('\n');
 
@@ -299,13 +308,11 @@ export class ApiDbService {
         event.name === finalAnswerRunName
       ) {
         const dbMessage = await createMessageInDB({
-          thread: {
-            ...(threadRecord as Thread),
-            visitor_id: threadRecord.visitor_id,
-          },
+          thread: threadRecord,
           message: {
             id: threadMessage.public_id,
             content: event.data.output,
+            source: Source.API,
           },
           role: Role.ASSISTANT,
           runId,
