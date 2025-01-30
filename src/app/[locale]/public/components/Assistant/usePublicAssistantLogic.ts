@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 
+import { usePathname } from 'next/navigation';
 import { sendMessage, deleteUserMessage } from '@/app/actions';
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import {
@@ -26,6 +27,7 @@ import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm'
 import { getErrorMessage } from '@/app/components/Assistant/utils';
 
 const { errorToast } = statusToast();
+
 const {
   SET_INITIAL_LOAD,
   ADD_MESSAGE,
@@ -56,7 +58,7 @@ export const usePublicAssistantLogic = (
     streamedMessage: null,
     messages: [],
   };
-
+  const pathname = usePathname();
   const visitorId = useRef<string>(
     localStorage.getItem('visitorId') ||
       `visitor-${Math.random().toString(36).substr(2, 9)}`
@@ -82,6 +84,7 @@ export const usePublicAssistantLogic = (
   const isGlobalLoading =
     !state.isError && (state.isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
+  const isPublicAccess = pathname.includes('/public');
 
   function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -324,6 +327,7 @@ export const usePublicAssistantLogic = (
     userMessageId: state.userMessageId,
     isLimitLock: state.isLimitLock,
     messages: state.messages,
+    isPublicAccess,
     isLocked,
     dispatch,
     onSubmit,

@@ -5,7 +5,6 @@ import { memo, useState } from 'react';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
-import { Divider } from '@ragenai/common-ui/Divider';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 
 import { logger } from '@/app/lib/utils/logger';
@@ -57,6 +56,11 @@ export const SocialAuthOptions = memo(
 
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
+    const metadata = {
+      onboardingComplete: false,
+      viewMode: 'list',
+    };
+
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
       if (loadingState[strategy]) return;
 
@@ -73,7 +77,7 @@ export const SocialAuthOptions = memo(
           });
           const user = await signUp?.id;
           if (user) {
-            await saveUserMetadata(user, false);
+            await saveUserMetadata(user, metadata);
           }
         } else {
           await signIn?.authenticateWithRedirect({

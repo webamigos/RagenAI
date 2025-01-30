@@ -167,7 +167,9 @@
     "error-during-deleting-file": "Error deleting document",
     "failed-to-update-temperature": "Failed to update temperature:",
     "failed-to-fetch-settings": "Failed to fetch settings:",
-    "failed-to-update-max-documents": "Failed to update max document to retreive:"
+    "failed-to-update-max-documents": "Failed to update max document to retreive:",
+    "fetching-docs-error": "Error fetching documents",
+    "no-files": "No files"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
