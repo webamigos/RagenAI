@@ -167,7 +167,9 @@
     "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
     "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
     "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
-    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:",
+    "fetching-docs-error": "Błąd podczas pobierania dokumentów",
+    "no-files": "Brak plików"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",

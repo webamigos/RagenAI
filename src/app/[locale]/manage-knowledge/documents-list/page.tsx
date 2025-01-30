@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { FileListWrapper } from '@/app/components/ManageKnowledge/FileList/FileListWrapper';
+import { FileListWrapper } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
 
 const UploadedListPage = () => {
   const t = useTranslations('Metadata');

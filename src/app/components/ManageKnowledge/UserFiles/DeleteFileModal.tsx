@@ -13,14 +13,22 @@ type Props = {
   className?: string;
   isLoading?: boolean;
   fileName: string;
-  toggleModal: (fileId?: string | null) => void;
-  handleDelete: () => void;
+  organization_id: string;
+  documentId: string;
+  toggleModal: (fileId: string | null) => void;
+  handleDelete: (
+    organizationId: string,
+    documentId: string,
+    fileName: string
+  ) => void;
 };
 
 export const DeleteFileModal = ({
   className,
   fileName,
   isLoading,
+  documentId,
+  organization_id,
   toggleModal,
   handleDelete,
 }: Props) => {
@@ -50,7 +58,7 @@ export const DeleteFileModal = ({
         </div>
         <div className="flex justify-center mt-4 gap-2">
           <Button
-            onClick={handleDelete}
+            onClick={() => handleDelete(organization_id, documentId, fileName)}
             iconRight={
               isLoading ? (
                 <SpinnerSVG size="sm" />
