@@ -15,6 +15,7 @@ import { replaceIds } from '../filters/replace-ids.filter';
 import { UpdateThreadDto } from '../dtos/update-thread.dto';
 import { NotFoundException } from './api-errors.service';
 import { ChatMessageDto } from '../dtos/chat.dto';
+import { QueryDto } from '../dtos/query.dto';
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag';
@@ -278,6 +279,60 @@ export class ApiDbService {
       .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
       .join('\n');
 
+    const chatResponse = await chain.invoke({
+      question: payload.content,
+      chat_history: conv_history,
+    });
+
+    const dbMessage = await createMessageInDB({
+      thread: threadRecord,
+      message: {
+        id: threadMessage.public_id,
+        content: chatResponse,
+        source: Source.API,
+      },
+      role: Role.ASSISTANT,
+      runId,
+    });
+
+    return dbMessage.content;
+  }
+
+  async streamChatMessages(
+    publicThreadId: Thread['public_id'],
+    payload: ChatMessageDto
+  ) {
+    // TODO: code duplication
+    const rawSettings = await getAllSettings(this.context.orgId);
+    if (!rawSettings.apiKey) {
+      throw new ApiKeyError();
+    }
+    let runId = '';
+
+    const { threadRecord } = await findOrCreateThread(
+      publicThreadId,
+      this.context.userId
+    );
+
+    const threadMessage = await createAndStoreMessage({
+      prompt: payload.content,
+      threadRecord,
+      visitorId: this.context.userId,
+    });
+
+    const basicRag = await initializePublicRagChain({
+      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+      organizationId: this.context.orgId,
+    });
+    const chain = basicRag.chain;
+    const finalAnswerRunName = basicRag.finalAnswerRunName;
+
+    const threadMessages = await this.getChatMessages(publicThreadId);
+
+    const conv_history = threadMessages
+      .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
+      .join('\n');
+
     const eventStream = chain.streamEvents(
       {
         question: payload.content,
@@ -321,5 +376,27 @@ export class ApiDbService {
         return dbMessage.content;
       }
     }
+  }
+
+  // FIXME: it takes a lot of time
+  async query(payload: QueryDto) {
+    // TODO: code duplication
+    const rawSettings = await getAllSettings(this.context.orgId);
+    if (!rawSettings.apiKey) {
+      throw new ApiKeyError();
+    }
+
+    const basicRag = await initializePublicRagChain({
+      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+      organizationId: this.context.orgId,
+    });
+    const chain = basicRag.chain;
+
+    const result = await chain.invoke({
+      question: payload.content,
+      chat_history: ' ', // FIXME: workaround
+    });
+
+    return result;
   }
 }
