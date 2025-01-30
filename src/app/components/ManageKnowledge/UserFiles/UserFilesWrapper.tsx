@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Card } from '@ragenai/common-ui/Card';
@@ -25,16 +25,20 @@ export const FileListWrapper = () => {
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const { user } = useUser();
-
-  const savedViewMode = user?.publicMetadata?.viewMode as 'grid' | 'list';
-
-  const [viewMode, setViewMode] = useState(savedViewMode);
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchValue, setSearchValue] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
     isOpen: false,
     fileId: null,
   });
+
+  useEffect(() => {
+    const savedViewMode = user?.publicMetadata?.viewMode as 'grid' | 'list';
+    if (savedViewMode === 'grid' || savedViewMode === 'list') {
+      setViewMode(savedViewMode);
+    }
+  }, [user]);
 
   const { refreshSettings } = useSettings();
 
