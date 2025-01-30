@@ -35,7 +35,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
         />
         <div ref={messagesEndDivRef} />
       </div>
-      <div className="flex-shrink-0 w-full mb-4">
+      <div className="flex-shrink-0 w-full mb-8">
         {!isLocked() && threadId && (
           <PromptForm
             ref={promptFormRef}

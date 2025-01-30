@@ -27,6 +27,7 @@ export const AskQuestion = ({
 
   return (
     <Textarea
+      autoFocus={true}
       value={value}
       onSend={onSend}
       containerClassName="w-full md:w-11/12 mt-3"
