@@ -1,5 +1,4 @@
 import { SpinnerSVG, Text } from '@ragenai/common-ui';
-import { Role, MessageType } from '@prisma/client';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';

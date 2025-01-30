@@ -159,7 +159,7 @@ export const useAssistantLogic = (threadId: string) => {
       case SET_MODE:
         return { ...state, mode: action.payload };
       case SET_MODE_VOICE:
-        return { ...state, responseType: ChatResponseType.VOICE };
+        return { ...state, responseType: action.payload };
       case SET_MESSAGE_PLAYED:
         return {
           ...state,
@@ -403,7 +403,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const closeVoiceMode = () => {
     setIsRecording(false);
-    dispatch({ type: SET_MODE, payload: ChatType.CONVERSATION });
+    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.TEXT });
   };
 
   const isLocked = () => {
@@ -417,6 +417,15 @@ export const useAssistantLogic = (threadId: string) => {
     } catch (error) {
       logger.error('Error marking message as played: %o', error);
     }
+  };
+
+  const handleVoiceResult = (text: string, recordingTime: number) => {
+    onSubmit({
+      mode,
+      prompt: text,
+      messageType: 'VOICE',
+      voiceDurationSeconds: recordingTime,
+    });
   };
 
   return {
@@ -440,5 +449,6 @@ export const useAssistantLogic = (threadId: string) => {
     isRecording,
     closeVoiceMode,
     setVoiceMessageAsPlayed,
+    handleVoiceResult,
   };
 };

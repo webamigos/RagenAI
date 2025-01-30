@@ -248,6 +248,7 @@ export const updateMessagePlayedStatus = async (messagePublicId: string) => {
       },
       data: {
         voice_played: true,
+        message_type: 'VOICE',
       },
     });
   } catch (error) {

@@ -468,6 +468,7 @@
     "waiting": "Waiting to start recording",
     "generating": "Generating voice response...",
     "playing": "Playing response...",
+    "waiting-for-response": "Waiting for response...",
     "instructions": "Speak clearly into the microphone. The message will be sent automatically after 3 seconds of silence or by clicking the stop button. The assistant's response will be played automatically.",
     "api-error": "An error occurred while generating the voice response. Continuing in text mode.",
     "api-error-instructions": "Voice mode is currently unavailable. You can continue the conversation, but responses will be in text form only."
