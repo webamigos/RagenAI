@@ -36,6 +36,7 @@ export enum reducerActions {
   REMOVE_MESSAGE,
   SET_MODE,
   SET_MODE_VOICE,
+  SET_MESSAGE_PLAYED,
 }
 
 const {
@@ -53,6 +54,7 @@ const {
   REMOVE_MESSAGE,
   SET_MODE,
   SET_MODE_VOICE,
+  SET_MESSAGE_PLAYED,
 } = reducerActions;
 
 export type Action =
@@ -75,4 +77,5 @@ export type Action =
   | { type: typeof SET_IS_ERROR; payload: boolean }
   | { type: typeof REMOVE_MESSAGE; payload: string }
   | { type: typeof SET_MODE; payload: ChatType }
-  | { type: typeof SET_MODE_VOICE; payload: ChatResponseType };
+  | { type: typeof SET_MODE_VOICE; payload: ChatResponseType }
+  | { type: typeof SET_MESSAGE_PLAYED; payload: string };

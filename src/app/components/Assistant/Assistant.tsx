@@ -32,6 +32,7 @@ export const Assistant = ({ threadId }: Props) => {
     promptFormRef,
     isRecording,
     closeVoiceMode,
+    setVoiceMessageAsPlayed,
   } = useAssistantLogic(threadId);
 
   const handleVoiceResult = (text: string, recordingTime: number) => {
@@ -61,6 +62,7 @@ export const Assistant = ({ threadId }: Props) => {
             isRecording={isRecording}
             onResult={handleVoiceResult}
             messages={messages}
+            onMessagePlayed={setVoiceMessageAsPlayed}
           />
         )}
         <div className="flex-grow overflow-y-auto">

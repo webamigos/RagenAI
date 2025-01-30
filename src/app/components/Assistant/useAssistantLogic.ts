@@ -55,6 +55,7 @@ const {
   REMOVE_MESSAGE,
   SET_MODE,
   SET_MODE_VOICE,
+  SET_MESSAGE_PLAYED,
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
@@ -159,6 +160,15 @@ export const useAssistantLogic = (threadId: string) => {
         return { ...state, mode: action.payload };
       case SET_MODE_VOICE:
         return { ...state, responseType: ChatResponseType.VOICE };
+      case SET_MESSAGE_PLAYED:
+        return {
+          ...state,
+          messages: state.messages.map((message) =>
+            message.public_id === action.payload
+              ? { ...message, voice_played: true }
+              : message
+          ),
+        };
       default:
         return state;
     }
@@ -401,6 +411,14 @@ export const useAssistantLogic = (threadId: string) => {
     return isLimitLock;
   };
 
+  const setVoiceMessageAsPlayed = async (messageId: string) => {
+    try {
+      dispatch({ type: SET_MESSAGE_PLAYED, payload: messageId });
+    } catch (error) {
+      logger.error('Error marking message as played: %o', error);
+    }
+  };
+
   return {
     messageLoadingText,
     handleResponseType,
@@ -421,5 +439,6 @@ export const useAssistantLogic = (threadId: string) => {
     promptFormRef,
     isRecording,
     closeVoiceMode,
+    setVoiceMessageAsPlayed,
   };
 };

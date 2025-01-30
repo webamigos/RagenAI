@@ -1,4 +1,5 @@
 import { SpinnerSVG, Text } from '@ragenai/common-ui';
+import { Role, MessageType } from '@prisma/client';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
@@ -19,6 +20,7 @@ type Props = {
   responseType: 'text' | 'voice';
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
+  onMessagePlayed?: (messageId: string) => void;
 };
 
 const MessageContent = ({
@@ -116,7 +118,6 @@ export const ChatOutput = ({
             </div>
           </div>
         )}
-
         {isLoading && (
           <div className="absolute bottom-[120px] md:left-14 flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600  text-md">
             <SpinnerSVG />

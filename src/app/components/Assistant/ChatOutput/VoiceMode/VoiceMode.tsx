@@ -8,15 +8,23 @@ import {
 import { Text, SpinnerSVG } from '@ragenai/common-ui';
 import { useVoiceInput } from '@/app/hooks/useAudioRecording';
 import { convertTextToSpeech } from '../../elevenLabsTTS';
-import { Role } from '@prisma/client';
+import { Role, MessageType } from '@prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
+import { updateMessagePlayedStatus } from '@/app/lib/services/message';
 
 type Props = {
   onClose: () => void;
   isRecording: boolean;
   onResult: (text: string, recordingTime: number) => void;
-  messages: Array<{ role: string; content: string }>;
+  messages: Array<{
+    role: string;
+    content: string;
+    message_type?: MessageType;
+    voice_played?: boolean;
+    public_id?: string;
+  }>;
+  onMessagePlayed?: (messageId: string) => void;
 };
 
 export const VoiceMode = ({
@@ -24,6 +32,7 @@ export const VoiceMode = ({
   isRecording: initialIsRecording,
   onResult,
   messages,
+  onMessagePlayed,
 }: Props) => {
   const t = useTranslations('voice-mode');
   const [recordingTime, setRecordingTime] = useState(0);
@@ -33,6 +42,7 @@ export const VoiceMode = ({
   const [hasApiError, setHasApiError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const { errorToast } = statusToast();
+  const [currentMessages, setCurrentMessages] = useState(messages);
 
   const {
     startListening,
@@ -44,6 +54,10 @@ export const VoiceMode = ({
       setTranscriptText(text);
     },
   });
+
+  useEffect(() => {
+    setCurrentMessages(messages);
+  }, [messages]);
 
   useEffect(() => {
     if (initialIsRecording) {
@@ -74,19 +88,36 @@ export const VoiceMode = ({
   }, [localIsRecording]);
 
   useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === Role.ASSISTANT && !hasApiError) {
-      playAssistantResponse(lastMessage.content);
+    const lastMessage = currentMessages[currentMessages.length - 1];
+    if (
+      lastMessage?.role === Role.ASSISTANT &&
+      !lastMessage.voice_played &&
+      !hasApiError
+    ) {
+      playAssistantResponse(lastMessage);
     }
-  }, [messages, hasApiError]);
+  }, [currentMessages, hasApiError]);
 
-  const playAssistantResponse = async (text: string) => {
+  const playAssistantResponse = async (message: (typeof messages)[0]) => {
     setIsGeneratingAudio(true);
     try {
-      const audioUrl = await convertTextToSpeech(text);
+      const audioUrl = await convertTextToSpeech(message.content);
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
         audioRef.current.play();
+        if (message.public_id) {
+          await updateMessagePlayedStatus(message.public_id);
+          setCurrentMessages((prev) =>
+            prev.map((msg) =>
+              msg.public_id === message.public_id
+                ? { ...msg, voice_played: true }
+                : msg
+            )
+          );
+          if (onMessagePlayed) {
+            onMessagePlayed(message.public_id);
+          }
+        }
       }
     } catch (error) {
       logger.error({ err: error }, 'Error while generating audio:');

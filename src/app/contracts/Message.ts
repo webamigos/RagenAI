@@ -30,6 +30,7 @@ export type MessageDto = {
   rate?: MessageModel['rate'];
   message_type?: MessageModel['message_type'];
   voice_duration_seconds?: MessageModel['voice_duration_seconds'];
+  voice_played?: MessageModel['voice_played'];
 };
 
 export type Thread = {

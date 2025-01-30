@@ -32,6 +32,7 @@ model Message {
   run_id            String?
   message_type      MessageType @default(TEXT)
   voice_duration_seconds Int?
+  voice_played      Boolean   @default(false)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
 }
 

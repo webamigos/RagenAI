@@ -107,6 +107,7 @@ export const fetchMessagesFromDb = async (
         rate: true,
         voice_duration_seconds: true,
         message_type: true,
+        voice_played: true,
       },
       orderBy: [
         {
@@ -181,6 +182,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
       content: dbMessage.content,
       message_type: dbMessage.message_type,
       voice_duration_seconds: dbMessage.voice_duration_seconds,
+      voice_played: dbMessage.voice_played,
     };
   } catch (error) {
     logger.error(
@@ -230,6 +232,26 @@ export const deleteMessageByPublicId = (publicId: string) => {
     });
   } catch (error) {
     logger.error({ err: error }, 'Failed to delete message by public ID');
+    throw error;
+  }
+};
+
+export const updateMessagePlayedStatus = async (messagePublicId: string) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      messageId: messagePublicId,
+    });
+    return await db.message.update({
+      where: {
+        public_id: messagePublicId,
+      },
+      data: {
+        voice_played: true,
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to update message played status');
     throw error;
   }
 };
