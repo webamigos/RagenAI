@@ -49,6 +49,8 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       onSubmit({
         ...data,
         mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
+        messageType: data.messageType || 'TEXT',
+        voiceDurationSeconds: data.voiceDurationSeconds,
       });
     };
 

@@ -15,7 +15,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 type Props = {
   onClose: () => void;
   isRecording: boolean;
-  onResult: (text: string) => void;
+  onResult: (text: string, recordingTime: number) => void;
   messages: Array<{ role: string; content: string }>;
 };
 
@@ -59,10 +59,10 @@ export const VoiceMode = ({
         setRecordingTime((prev) => prev + 1);
       }, 1000);
     } else {
-      setRecordingTime(0);
       if (transcriptText.trim()) {
-        onResult(transcriptText.trim());
+        onResult(transcriptText.trim(), recordingTime);
         setTranscriptText('');
+        setRecordingTime(0);
       }
     }
 

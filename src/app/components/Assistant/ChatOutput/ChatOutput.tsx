@@ -2,6 +2,8 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
+import { ReadAnswer } from './ReadAnswer';
+import { DurationTime } from './DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
@@ -9,7 +11,6 @@ import type {
 } from '../../../contracts/Message';
 
 import './chat-response.css';
-import { ReadAnswer } from './ReadAnswer';
 
 type Props = {
   messages: MessageDto[];
@@ -60,6 +61,9 @@ const MessageContent = ({
             <CopyToClipboardButton message={message} />
             <ReadAnswer content={content} />
           </div>
+        )}
+        {role === 'USER' && message?.message_type === 'VOICE' && (
+          <DurationTime messageDurationTime={message.voice_duration_seconds!} />
         )}
       </div>
     </>

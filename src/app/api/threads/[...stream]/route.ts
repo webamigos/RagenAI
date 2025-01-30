@@ -152,6 +152,8 @@ export async function GET(request: NextRequest, { params }: Params) {
                   thread: {
                     ...threadEntity,
                     visitor_id: threadEntity.visitor_id,
+                    preferred_communication_type:
+                      threadEntity.preferred_communication_type,
                   },
                   message: {
                     id: publicMessageId,

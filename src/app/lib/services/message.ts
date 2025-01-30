@@ -1,7 +1,7 @@
 'use server';
 
 import OpenAI from 'openai';
-import { Thread, Message, Role } from '@prisma/client';
+import { Thread, Message, Role, MessageType } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
 
@@ -29,12 +29,16 @@ export const createMessageInDB = async ({
   role,
   visitorId,
   runId,
+  messageType = 'TEXT',
+  voiceDurationSeconds,
 }: {
   thread: Thread;
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
   runId?: string;
+  messageType?: MessageType;
+  voiceDurationSeconds?: number;
 }) => {
   try {
     setSentryServiceTag(serviceName);
@@ -46,6 +50,8 @@ export const createMessageInDB = async ({
       role,
       visitorId,
       runId,
+      messageType,
+      voiceDurationSeconds,
     });
 
     usageTracker.incMessagesCount(role);
@@ -59,6 +65,8 @@ export const createMessageInDB = async ({
         role,
         visitor_id: visitorId,
         run_id: runId,
+        message_type: messageType,
+        voice_duration_seconds: voiceDurationSeconds,
       },
     });
   } catch (error) {
@@ -97,6 +105,8 @@ export const fetchMessagesFromDb = async (
         role: true,
         run_id: true,
         rate: true,
+        voice_duration_seconds: true,
+        message_type: true,
       },
       orderBy: [
         {
@@ -115,11 +125,15 @@ export const createAndStoreOpenAIThreadMessage = async ({
   thread,
   threadEntity,
   visitorId,
+  messageType = 'TEXT',
+  voiceDurationSeconds,
 }: {
   prompt: string;
   thread: OpenAI.Beta.Threads.Thread;
   threadEntity: Thread;
   visitorId?: string;
+  messageType?: MessageType;
+  voiceDurationSeconds?: number;
 }): Promise<MessageDto> => {
   try {
     setSentryServiceTag(serviceName);
@@ -128,6 +142,8 @@ export const createAndStoreOpenAIThreadMessage = async ({
     });
     setSentryContext('EXTRA_DATA', {
       visitorId,
+      messageType,
+      voiceDurationSeconds,
     });
     const threadId = thread.id;
     const threadMessage = await openai.beta.threads.messages.create(threadId, {
@@ -146,7 +162,9 @@ export const createAndStoreOpenAIThreadMessage = async ({
       },
       role: Role.USER,
       visitorId,
-    }); // TODO: can trow an error
+      messageType,
+      voiceDurationSeconds,
+    });
 
     if (visitorId) {
       try {
@@ -161,6 +179,8 @@ export const createAndStoreOpenAIThreadMessage = async ({
       role: dbMessage.role,
       created_at: dbMessage.created_at,
       content: dbMessage.content,
+      message_type: dbMessage.message_type,
+      voice_duration_seconds: dbMessage.voice_duration_seconds,
     };
   } catch (error) {
     logger.error(

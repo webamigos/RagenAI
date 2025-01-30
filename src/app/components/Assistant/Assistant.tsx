@@ -34,10 +34,12 @@ export const Assistant = ({ threadId }: Props) => {
     closeVoiceMode,
   } = useAssistantLogic(threadId);
 
-  const handleVoiceResult = (text: string) => {
+  const handleVoiceResult = (text: string, recordingTime: number) => {
     onSubmit({
       prompt: text,
       mode: ChatType.CONVERSATION,
+      messageType: 'VOICE',
+      voiceDurationSeconds: recordingTime,
     });
   };
 
