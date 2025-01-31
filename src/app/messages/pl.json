@@ -467,6 +467,7 @@
     "recording": "Nagrywanie...",
     "waiting": "Oczekiwanie na rozpoczęcie nagrywania",
     "generating": "Generowanie odpowiedzi głosowej...",
+    "ready-to-record": "Kliknij, aby rozpocząć nagrywanie",
     "playing": "Odtwarzanie odpowiedzi...",
     "waiting-for-response": "Oczekiwanie na odpowiedź...",
     "instructions": "Mów wyraźnie do mikrofonu. Wiadomość zostanie wysłana automatycznie po 3 sekundach ciszy lub po kliknięciu przycisku stop. Odpowiedź asystenta zostanie odtworzona automatycznie.",
