@@ -40,7 +40,9 @@ export const LayoutToggle = ({
       <button
         onClick={() => handleViewModeChange('list')}
         className={`flex items-center px-4 py-2 rounded-full transition ${
-          viewMode === 'list' ? 'bg-blue-200 text-black' : 'text-gray-600'
+          viewMode === 'list'
+            ? 'dark:bg-slate-600 bg-slate-200 text-black'
+            : 'text-gray-600'
         } `}
       >
         <ListIcon />
@@ -48,7 +50,9 @@ export const LayoutToggle = ({
       <button
         onClick={() => handleViewModeChange('grid')}
         className={`flex items-center px-4 py-2 rounded-full transition ${
-          viewMode === 'grid' ? 'bg-blue-200 text-black' : 'text-gray-600'
+          viewMode === 'grid'
+            ? 'dark:bg-slate-600 bg-slate-200 text-black'
+            : 'text-gray-600'
         } `}
       >
         <GridIcon />

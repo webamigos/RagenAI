@@ -201,7 +201,8 @@
     "drag-n-drop": "Drag and drop files here",
     "or": "or",
     "choose-files": "Choose files",
-    "supported-formats": "Supports"
+    "supported-formats": "Supports",
+    "send-and-process": "Send and process"
   },
   "create-document": {
     "title": "Create document",
@@ -226,12 +227,12 @@
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
-    "manage-organization": "Manage organization",
-    "manage-members": "Manage members",
-    "manage-knowledge": "Manage knowledge",
+    "manage-organization": "Organization",
+    "manage-members": "Members",
+    "manage-knowledge": "Knowledge",
     "subscription-management": "Subscription management",
     "organization-list": "Organization list",
-    "assistant-management": "Assistant management",
+    "assistant-management": "Assistant settings",
     "api-keys": "API Keys",
     "create-new-thread": "Create a new thread",
     "search-threads": "Search threads",
@@ -362,7 +363,7 @@
       "status": "Status",
       "plan": "Plan",
       "download-invoice": "Download Invoice",
-      "manage-subscription": "Manage Subscription"
+      "manage-subscription": "Subscription"
     },
     "confirm-cancel": "Yes, cancel subscription",
     "keep-subscription": "No, keep subscription",
