@@ -98,8 +98,8 @@ export const FileListWrapper = () => {
   }
 
   return (
-    <Card title={t('title')} size="full" className="relative">
-      <div className="absolute right-4 top-1 flex items-baseline gap-3">
+    <Card size="full" className="pt-2">
+      <div className="flex items-baseline justify-end gap-3">
         <FileSearch value={searchValue} onChange={handleSearchChange} />
         <LayoutToggle
           clerkUserId={user!.id}

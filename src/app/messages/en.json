@@ -201,7 +201,8 @@
     "drag-n-drop": "Drag and drop files here",
     "or": "or",
     "choose-files": "Choose files",
-    "supported-formats": "Supports"
+    "supported-formats": "Supports",
+    "send-and-process": "Send and process"
   },
   "create-document": {
     "title": "Create document",

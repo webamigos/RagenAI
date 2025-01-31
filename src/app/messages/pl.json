@@ -201,7 +201,8 @@
     "drag-n-drop": "Przeciągnij i upuść pliki tutaj",
     "or": "lub",
     "choose-files": "Wybierz pliki",
-    "supported-formats": "Obsługiwany format"
+    "supported-formats": "Obsługiwany format",
+    "send-and-process": "Wyślij i przekonwertuj"
   },
   "create-document": {
     "title": "Stwórz dokument",
