@@ -39,7 +39,10 @@ export const VoiceMode = ({
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-secondary-dark z-50 flex flex-col items-center justify-center">
-      <VoiceModeHeader onClose={handlers.handleClose} />
+      <VoiceModeHeader
+        disabled={isWaitingForResponse}
+        onClose={handlers.handleClose}
+      />
 
       <div className="flex flex-col items-center space-y-8">
         <VoiceModeButton

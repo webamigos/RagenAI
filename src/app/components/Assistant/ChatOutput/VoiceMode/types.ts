@@ -42,6 +42,7 @@ export type VoiceModeButtonProps = {
 
 export type VoiceModeHeaderProps = {
   onClose: () => void;
+  disabled: boolean;
 };
 
 export type VoiceModeStatusProps = {
