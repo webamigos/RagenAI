@@ -134,7 +134,7 @@ export const UserDocumentsTable = ({
   }, [documents, searchValue]);
 
   return (
-    <div className="relative">
+    <div className="relative mt-6">
       <CommonUi.Table className="overflow-x-auto">
         <CommonUi.TableHead>
           <CommonUi.TableRow className="text-base">

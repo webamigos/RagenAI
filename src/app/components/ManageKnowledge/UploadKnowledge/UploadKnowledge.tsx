@@ -89,7 +89,7 @@ export const UploadKnowledge = () => {
   };
 
   return (
-    <Card className="p-6" size="full" title={t('Add-files')}>
+    <Card className="p-6" size="full">
       <FileUploader onFilesAdded={handleFilesAdded} disabled={uploading} />
       {files.length > 0 && (
         <UploadList

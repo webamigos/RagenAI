@@ -110,7 +110,7 @@ export const DocumentCreator = () => {
   };
 
   return (
-    <Card title={t('title')} size="full" className="flex flex-col">
+    <Card size="full" className="flex flex-col">
       <form onSubmit={handleSubmit(onSubmit)} className="h-full flex flex-col">
         <Tabs activeTab={activeTab} setActiveTab={setActiveTab}>
           <TabList activeTab={activeTab} setActiveTab={setActiveTab}>
