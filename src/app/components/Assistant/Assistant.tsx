@@ -32,12 +32,15 @@ export const Assistant = ({ threadId }: Props) => {
   return (
     <>
       {isSearchOpen && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          onClick={closeSearch}
-        >
-          <SearchThreads visitorId={userVisitorId!} ref={modalRef} />
-        </div>
+        <>
+          <div className="absolute inset-0 bg-primary-light dark:bg-primary-dark opacity-80 z-40" />
+          <div
+            className="absolute inset-0 flex items-center justify-center z-50"
+            onClick={closeSearch}
+          >
+            <SearchThreads visitorId={userVisitorId!} ref={modalRef} />
+          </div>
+        </>
       )}
 
       <div className="h-full flex flex-col font-sans">
