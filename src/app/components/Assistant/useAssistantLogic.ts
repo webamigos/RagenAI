@@ -5,7 +5,7 @@ import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 
-import { useRouter } from '@/i18n/routing';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
 import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
@@ -48,6 +48,7 @@ const {
 
 export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
+  const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
   const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
 
@@ -65,7 +66,6 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const userVisitorId = user?.id;
-
   const id = user?.id;
 
   const { isLoading } = useApi(() => {
@@ -80,6 +80,7 @@ export const useAssistantLogic = (threadId: string) => {
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const { dispatch: threadsDispatch } = useThreadsContext();
+  const isPublicAccess = pathname.includes('/public');
 
   const [
     {
@@ -379,6 +380,7 @@ export const useAssistantLogic = (threadId: string) => {
     isMessageLoading,
     isGlobalLoading,
     streamedMessage,
+    isPublicAccess,
     userVisitorId,
     userMessageId,
     isSearchOpen,

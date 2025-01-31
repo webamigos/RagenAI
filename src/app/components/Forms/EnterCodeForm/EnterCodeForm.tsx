@@ -1,7 +1,7 @@
 'use client';
 
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
-import { useEffect, useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
@@ -37,7 +37,7 @@ export const EnterCodeForm = () => {
   } = useForm<VerificationFormData>({
     resolver: zodResolver(schema),
   });
-  const codeField = watch('email_code');
+  // const codeField = watch('email_code');
   const resendAvailable = signUp?.verifications.emailAddress.status;
 
   const onSubmit = async (data: VerificationFormData) => {
@@ -53,8 +53,14 @@ export const EnterCodeForm = () => {
       });
 
       if (completeSignUp.status === 'complete') {
+        const metadata = {
+          onboardingComplete: false,
+          viewMode: 'list',
+        };
+
         const { success } = await saveUserMetadata(
-          completeSignUp.createdUserId as string
+          completeSignUp.createdUserId as string,
+          metadata
         );
 
         if (success) {

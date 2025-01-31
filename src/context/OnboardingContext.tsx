@@ -65,13 +65,18 @@ export const JoyrideProvider = ({
     setStepIndex(0);
   };
 
+  const metadata = {
+    onboardingComplete: true,
+    viewMode: 'list',
+  };
+
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
     if (!user) return;
 
     if (action === ACTIONS.CLOSE || status === STATUS.SKIPPED) {
-      await saveUserMetadata(user.id, true);
+      await saveUserMetadata(user.id, metadata);
       await user.reload();
       stopJoyride();
       return;
@@ -125,7 +130,7 @@ export const JoyrideProvider = ({
         setStepIndex(nextIndex);
       }
     } else if (status === STATUS.FINISHED) {
-      await saveUserMetadata(user.id, true);
+      await saveUserMetadata(user.id, metadata);
       await user.reload();
       stopJoyride();
     }

@@ -60,11 +60,6 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
       path: '/my-profile/organization-profile/organization-members',
     },
     {
-      icon: OpenBookIcon,
-      label: t('manage-knowledge'),
-      path: '/manage-knowledge/documents-list',
-    },
-    {
       icon: SettingsIcon,
       label: t('assistant-management'),
       path: '/my-profile/prompt-management',
@@ -123,6 +118,11 @@ export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
     const organizationTabs = getOrganizationTabs();
 
     return [
+      {
+        icon: OpenBookIcon,
+        label: t('manage-knowledge'),
+        path: '/manage-knowledge/documents-list',
+      },
       { icon: UserCircleIcon, label: t('profile'), path: '/my-profile' },
       {
         icon: SheffieldCheck,

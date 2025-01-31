@@ -10,7 +10,7 @@ export const PencilIcon = ({ className, ...rest }: ComponentProps<'svg'>) => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={classMerge(className, 'w-4 h-4')}
+      className={classMerge('w-4 h-4 cursor-pointer', className)}
       {...rest}
     >
       <path
