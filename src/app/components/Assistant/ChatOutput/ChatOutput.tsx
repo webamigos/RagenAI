@@ -64,9 +64,13 @@ const MessageContent = ({
             <ReadAnswer content={content} />
           </div>
         )}
-        {role === 'USER' && message?.message_type === 'VOICE' && (
-          <DurationTime messageDurationTime={message.voice_duration_seconds!} />
-        )}
+        {role === 'USER' &&
+          message?.message_type === 'VOICE' &&
+          message.voice_duration_seconds && (
+            <DurationTime
+              messageDurationTime={message.voice_duration_seconds}
+            />
+          )}
       </div>
     </>
   );

@@ -337,8 +337,9 @@ export const useAssistantLogic = (threadId: string) => {
       content: data.prompt,
       created_at: new Date(),
       mode: data.mode,
-      messageType: data.messageType || 'TEXT',
-      voiceDurationSeconds: data.voiceDurationSeconds,
+      message_type: data.messageType || 'TEXT',
+      voice_duration_seconds: data.voiceDurationSeconds,
+      voice_played: false,
     };
     dispatch({ type: ADD_MESSAGE, payload: userMessage });
     dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });

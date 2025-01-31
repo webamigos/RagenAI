@@ -11,9 +11,7 @@ export const DurationTime = ({ messageDurationTime }: Props) => {
   return (
     <div className="absolute top-8 -right-2 flex items-center">
       <MicrophoneIcon className="w-4 h-4" />
-      <Text fontSize="sm">
-        {messageDurationTime && formatSecondsToMMSS(messageDurationTime)}
-      </Text>
+      <Text fontSize="sm">{formatSecondsToMMSS(messageDurationTime)}</Text>
     </div>
   );
 };
