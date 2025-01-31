@@ -15,6 +15,7 @@ type Props = {
   isLoading: boolean;
   isUserLogged: boolean;
   handleResponseType: () => void;
+  isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
 };
 
@@ -23,7 +24,7 @@ export type PromptFormRef = {
 };
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
-  ({ isLoading, isUserLogged, onSubmit, handleResponseType }, ref) => {
+  ({ isLoading, isUserLogged, onSubmit, isPublicAccess, handleResponseType }, ref) => {
     const {
       register,
       reset,
@@ -79,17 +80,19 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               setPromptValue={(text: string) => setValue('prompt', text)}
             />
           </div>
-          <div className="flex w-full justify-center">
-            <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">
-              <input
-                type="checkbox"
-                {...register('useKnowledge')}
-                className="mr-1"
-              />
-              {t('selected-mode')}
-              {/* {useKnowledge ? t(ChatType.RAG) : t(ChatType.CONVERSATION)} */}
-            </label>
-          </div>
+          {!isPublicAccess && (
+            <div className="flex w-full justify-center">
+              <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">
+                <input
+                  type="checkbox"
+                  {...register('useKnowledge')}
+                  className="mr-1"
+                />
+                {t('selected-mode')}
+                {/* {useKnowledge ? t(ChatType.RAG) : t(ChatType.CONVERSATION)} */}
+              </label>
+            </div>
+          )}
         </form>
       </div>
     );

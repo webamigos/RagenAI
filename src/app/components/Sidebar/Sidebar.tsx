@@ -86,7 +86,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                 <Button
                   isLink
                   onClick={() => handleCloseThread(true)}
-                  className="relative ml-4 w-10/12"
+                  className="relative ml-3 w-10/12"
                 >
                   <ArrowIcon className="w-5 h-5 dark:text-gray-200" />
                   <Text

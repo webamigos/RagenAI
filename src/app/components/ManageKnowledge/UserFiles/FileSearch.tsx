@@ -10,7 +10,7 @@ type FileSearchProps = {
 };
 
 export const FileSearch = ({
-  className = '',
+  className,
   value,
   onChange,
 }: ComponentProps<'div'> & FileSearchProps) => {
@@ -78,7 +78,7 @@ export const FileSearch = ({
           value={value}
           onChange={onChange}
           className={`
-          h-7 pl-3
+          h-7 pl-3 py-[1rem]
           transition-all duration-300 ease-in-out
           w-56 focus:w-64
         `}

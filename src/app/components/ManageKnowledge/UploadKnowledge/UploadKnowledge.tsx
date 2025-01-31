@@ -89,7 +89,7 @@ export const UploadKnowledge = () => {
   };
 
   return (
-    <Card className="p-6" size="full" title={t('Add-files')}>
+    <Card className="p-6" size="full">
       <FileUploader onFilesAdded={handleFilesAdded} disabled={uploading} />
       {files.length > 0 && (
         <UploadList
@@ -98,14 +98,16 @@ export const UploadKnowledge = () => {
           uploading={uploading}
         />
       )}
-      <Button
-        disabled={uploading || files.length < 1}
-        className="mt-5"
-        isLoading={uploading}
-        isSubmit={!uploading}
-        onClick={handleSend}
-        label={t('send')}
-      />
+      <div className="w-full flex justify-center">
+        <Button
+          disabled={uploading || files.length < 1}
+          className="mt-5"
+          isLoading={uploading}
+          isSubmit={!uploading}
+          onClick={handleSend}
+          label={t('send-and-process')}
+        />
+      </div>
     </Card>
   );
 };
