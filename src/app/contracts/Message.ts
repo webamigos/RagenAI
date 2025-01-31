@@ -7,8 +7,8 @@ export enum ChatType {
 }
 
 export enum ChatResponseType {
-  TEXT = 'text',
-  VOICE = 'voice',
+  TEXT = 'TEXT',
+  VOICE = 'VOICE',
 }
 
 export const createMessageSchema = z.object({

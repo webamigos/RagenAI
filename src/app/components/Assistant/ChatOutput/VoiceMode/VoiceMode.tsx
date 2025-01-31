@@ -101,13 +101,12 @@ export const VoiceMode = ({
     const lastMessage = currentMessages[currentMessages.length - 1];
     if (
       lastMessage?.role === Role.ASSISTANT &&
-      lastMessage.message_type === 'VOICE' &&
       !lastMessage.voice_played &&
-      !hasApiError
+      lastMessage?.message_type === MessageType.VOICE
     ) {
       playAssistantResponse(lastMessage);
     }
-  }, [currentMessages, hasApiError]);
+  }, [currentMessages]);
 
   const playAssistantResponse = async (message: (typeof messages)[0]) => {
     dispatch({ type: 'SET_GENERATING_AUDIO', payload: true });

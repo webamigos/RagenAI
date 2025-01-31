@@ -8,6 +8,7 @@ import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
   StreamedMessageDto,
+  ChatResponseType,
 } from '../../../contracts/Message';
 
 import './chat-response.css';
@@ -16,7 +17,7 @@ type Props = {
   messages: MessageDto[];
   isLoading: boolean;
   widgetMode?: boolean;
-  responseType: 'text' | 'voice';
+  responseType: ChatResponseType;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
   onMessagePlayed?: (messageId: string) => void;

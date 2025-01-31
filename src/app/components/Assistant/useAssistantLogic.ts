@@ -266,6 +266,7 @@ export const useAssistantLogic = (threadId: string) => {
               content: accumulatingMessage,
               created_at: eventMessage.payload.created_at,
               run_id: eventMessage.payload.runId,
+              message_type: responseType,
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });

@@ -47,7 +47,7 @@ export const Assistant = ({ threadId }: Props) => {
       )}
 
       <div className="h-full flex flex-col font-sans">
-        {responseType === 'voice' && (
+        {responseType === 'VOICE' && (
           <VoiceMode
             onClose={closeVoiceMode}
             isRecording={isRecording}
