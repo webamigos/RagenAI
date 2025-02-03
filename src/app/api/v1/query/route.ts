@@ -1,7 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
 
 import { getApiContext } from '../__logic__/context/api.context';
 import { ApiDbService } from '../__logic__/services/api-db.service';
@@ -17,6 +20,8 @@ export const POST = async (request: NextRequest) => {
     const parsedData = querySchema.parse(body);
 
     const apiContext = await getApiContext(request);
+    setSentryClerkOrganizationTag(apiContext.orgId);
+
     const apiDbService = new ApiDbService(apiContext);
     const result = await apiDbService.query(parsedData);
 

@@ -1,7 +1,10 @@
 import { StatusCodes } from 'http-status-codes';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
+import {
+  setSentryClerkOrganizationTag,
+  setSentryServiceTag,
+} from '@/app/lib/services/sentry';
 
 import { getApiContext } from '../../__logic__/context/api.context';
 import { ApiDbService } from '../../__logic__/services/api-db.service';
@@ -18,8 +21,10 @@ export const GET = async (request: NextRequest, { params }: Params) => {
   const threadPublicId = params.threadPublicId;
   try {
     setSentryServiceTag('api.chat.threadId.get');
-
     const apiContext = await getApiContext(request);
+
+    setSentryClerkOrganizationTag(apiContext.orgId);
+
     const apiDbService = new ApiDbService(apiContext);
     const messages = await apiDbService.getChatMessages(threadPublicId);
 
@@ -37,6 +42,8 @@ export const POST = async (request: NextRequest, { params }: Params) => {
     const parsedData = chatMessagesSchema.parse(body);
 
     const apiContext = await getApiContext(request);
+    setSentryClerkOrganizationTag(apiContext.orgId);
+
     const apiDbService = new ApiDbService(apiContext);
     const result = await apiDbService.createChatMessages(
       threadPublicId,
