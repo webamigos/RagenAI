@@ -27,6 +27,7 @@ import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { initializePublicRagChain } from './services/initializePublicBasicRag';
 import { SseExceptionFilter } from '../../threads/services/sseExceptionFilter';
 import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';
+import { prepareSseMessage } from '@/libs/sse/prepare-sse-message';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,12 +36,6 @@ type Params = {
   params: { guestDetails: string[] };
 };
 
-const prepareSseMessage = (
-  event: string,
-  data: SseInitEvent | SseMessageEvent | SseMessageDelta | SseMessageError
-): string => {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-};
 let runId: string;
 
 export async function GET(request: NextRequest, { params }: Params) {

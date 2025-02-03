@@ -29,6 +29,7 @@ import {
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { Runnable } from '@langchain/core/runnables';
 import { ChatType } from '@/app/contracts/Message';
+import { prepareSseMessage } from '@/libs/sse/prepare-sse-message';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,12 +38,6 @@ type Params = {
   params: { stream: string[] };
 };
 
-const prepareSseMessage = (
-  event: string,
-  data: SseInitEvent | SseMessageEvent | SseMessageDelta | SseMessageError
-): string => {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-};
 let runId: string;
 
 export async function GET(request: NextRequest, { params }: Params) {

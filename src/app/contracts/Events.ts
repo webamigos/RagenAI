@@ -24,3 +24,7 @@ export type SseMessageError = {
   originalErrorMessage?: string;
   code: ChainErrorCode;
 };
+
+export type SseEndEvent = {
+  type: 'end';
+};

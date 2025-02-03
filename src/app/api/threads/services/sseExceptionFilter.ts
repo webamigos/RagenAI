@@ -6,12 +6,13 @@ import {
 import { SseMessageError } from '@/app/contracts/Events';
 import { TextEncoder } from 'util';
 import { setSentryContext } from '@/app/lib/services/sentry';
+import { prepareSseMessage } from '@/libs/sse/prepare-sse-message';
 
 export class SseExceptionFilter {
   private encoder = new TextEncoder();
 
   private prepareSseMessage(event: string, data: any): string {
-    return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+    return prepareSseMessage(event, data);
   }
 
   handleError(error: any, controller: ReadableStreamDefaultController) {

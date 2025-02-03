@@ -243,12 +243,10 @@ export class ApiDbService {
     return replaceIds(messages);
   }
 
-  // TODO: moderation
-  async createChatMessages(
+  private async prepareChainToRun(
     publicThreadId: Thread['public_id'],
     payload: ChatMessageDto
   ) {
-    // TODO: code duplication
     const rawSettings = await getAllSettings(this.context.orgId);
     if (!rawSettings.apiKey) {
       throw new ApiKeyError();
@@ -279,6 +277,25 @@ export class ApiDbService {
       .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
       .join('\n');
 
+    return {
+      chain,
+      finalAnswerRunName,
+      runId,
+      threadRecord,
+      threadMessage,
+      conv_history,
+    };
+  }
+
+  // TODO: moderation
+  async createChatMessages(
+    publicThreadId: Thread['public_id'],
+    payload: ChatMessageDto
+  ) {
+    const { chain, threadRecord, threadMessage, runId, conv_history } =
+      await this.prepareChainToRun(publicThreadId, payload);
+
+    // for chat without streaming:
     const chatResponse = await chain.invoke({
       question: payload.content,
       chat_history: conv_history,
@@ -302,36 +319,14 @@ export class ApiDbService {
     publicThreadId: Thread['public_id'],
     payload: ChatMessageDto
   ) {
-    // TODO: code duplication
-    const rawSettings = await getAllSettings(this.context.orgId);
-    if (!rawSettings.apiKey) {
-      throw new ApiKeyError();
-    }
-    let runId = '';
-
-    const { threadRecord } = await findOrCreateThread(
-      publicThreadId,
-      this.context.userId
-    );
-
-    const threadMessage = await createAndStoreMessage({
-      prompt: payload.content,
+    const {
+      chain,
+      finalAnswerRunName,
       threadRecord,
-      visitorId: this.context.userId,
-    });
-
-    const basicRag = await initializePublicRagChain({
-      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
-      organizationId: this.context.orgId,
-    });
-    const chain = basicRag.chain;
-    const finalAnswerRunName = basicRag.finalAnswerRunName;
-
-    const threadMessages = await this.getChatMessages(publicThreadId);
-
-    const conv_history = threadMessages
-      .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
-      .join('\n');
+      threadMessage,
+      runId,
+      conv_history,
+    } = await this.prepareChainToRun(publicThreadId, payload);
 
     const eventStream = chain.streamEvents(
       {
@@ -343,39 +338,7 @@ export class ApiDbService {
       }
     );
 
-    let fullMessage = '';
-    let chainRunIds = [];
-
-    for await (const event of eventStream) {
-      if (event.event === 'on_chain_start') {
-        chainRunIds.push(event.run_id);
-        runId = chainRunIds[0];
-      }
-
-      if (
-        event.event === 'on_parser_stream' &&
-        event.name === finalAnswerRunName
-      ) {
-        const textChunk = event.data.chunk || '';
-        fullMessage += textChunk;
-      } else if (
-        event.event === 'on_parser_end' &&
-        event.name === finalAnswerRunName
-      ) {
-        const dbMessage = await createMessageInDB({
-          thread: threadRecord,
-          message: {
-            id: threadMessage.public_id,
-            content: event.data.output,
-            source: Source.API,
-          },
-          role: Role.ASSISTANT,
-          runId,
-        });
-
-        return dbMessage.content;
-      }
-    }
+    return { eventStream, finalAnswerRunName, threadRecord, threadMessage };
   }
 
   // FIXME: it takes a lot of time
