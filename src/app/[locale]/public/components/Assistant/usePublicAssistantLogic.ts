@@ -1,18 +1,19 @@
-import { useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
-
+import { useRouter } from '@/i18n/routing';
 import { usePathname } from 'next/navigation';
 import { sendMessage, deleteUserMessage } from '@/app/actions';
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
+import { useNewThread } from '@/app/[locale]/public/hooks/useNewThread';
+import { useSessionStorage } from '@/app/[locale]/public/hooks/useSessionStorage';
 import {
   checkVisitorVisits,
   fetchMessagesFromApi,
 } from '@/app/lib/services/api';
 
-import type { CreateMessageDto } from '@/app/contracts/Message';
 import {
   type State,
   type Action,
@@ -44,8 +45,9 @@ const {
 } = reducerActions;
 
 export const usePublicAssistantLogic = (
-  threadId: string,
-  organizationId: string
+  initialThreadId: string | null,
+  organizationId: string,
+  widgetMode = false
 ) => {
   const initialState: State = {
     isInitialLoad: true,
@@ -58,6 +60,12 @@ export const usePublicAssistantLogic = (
     streamedMessage: null,
     messages: [],
   };
+
+  const { push } = useRouter();
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(
+    initialThreadId
+  );
+
   const pathname = usePathname();
   const visitorId = useRef<string>(
     localStorage.getItem('visitorId') ||
@@ -71,7 +79,11 @@ export const usePublicAssistantLogic = (
   }, []);
 
   const { isLoading } = useApi(() =>
-    fetchMessagesFromApi(threadId, visitorId.current)
+    Promise.resolve(
+      activeThreadId
+        ? fetchMessagesFromApi(activeThreadId, visitorId.current)
+        : undefined
+    )
   );
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
@@ -85,6 +97,41 @@ export const usePublicAssistantLogic = (
     !state.isError && (state.isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
   const isPublicAccess = pathname.includes('/public');
+
+  const { handleNewThread, isLoading: isNewThreadLoading } = useNewThread({
+    organizationId,
+    widgetMode,
+    onThreadCreated: (threadId: string) => setActiveThreadId(threadId),
+  });
+
+  const {
+    storedValue: initialPrompt,
+    setValue: setInitialPrompt,
+    removeValue: removeInitialPrompt,
+  } = useSessionStorage<string | null>('initialPrompt', null);
+
+  const {
+    storedValue: lastUserMessage,
+    setValue: setLastUserMessage,
+    removeValue: removeLastUserMessage,
+  } = useSessionStorage<{ content: string; id: string } | null>(
+    'lastUserMessage',
+    null
+  );
+
+  const {
+    storedValue: processedMessages,
+    setValue: setProcessedMessages,
+    removeValue: removeProcessedMessages,
+  } = useSessionStorage<string[]>(`processed_messages_${activeThreadId}`, []);
+
+  useEffect(() => {
+    if (!activeThreadId) {
+      removeInitialPrompt();
+      removeLastUserMessage();
+      removeProcessedMessages();
+    }
+  }, [activeThreadId]);
 
   function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -138,9 +185,14 @@ export const usePublicAssistantLogic = (
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const fetchData = async () => {
+    if (!activeThreadId) return;
+
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
     try {
-      const response = await fetchMessagesFromApi(threadId, visitorId.current);
+      const response = await fetchMessagesFromApi(
+        activeThreadId,
+        visitorId.current
+      );
       if (response) {
         dispatch({ type: SET_INITIAL_LOAD, payload: false });
         dispatch({ type: SET_MESSAGES, payload: response.data });
@@ -151,9 +203,11 @@ export const usePublicAssistantLogic = (
   };
 
   useEffect(() => {
-    fetchData();
-    loadVisitorMessages();
-  }, []);
+    if (activeThreadId) {
+      fetchData();
+      loadVisitorMessages();
+    }
+  }, [activeThreadId]);
 
   const loadVisitorMessages = async () => {
     try {
@@ -167,9 +221,14 @@ export const usePublicAssistantLogic = (
   };
 
   const connectToStream = (userMessageId: string) => {
-    const eventSourceUrl = `/api/guest-threads/${threadId}/${userMessageId}/${organizationId}`;
-    const eventSource = new EventSource(eventSourceUrl);
+    if (!activeThreadId) return null;
 
+    if (processedMessages.includes(userMessageId)) {
+      return null;
+    }
+
+    const eventSourceUrl = `/api/guest-threads/${activeThreadId}/${userMessageId}/${organizationId}`;
+    const eventSource = new EventSource(eventSourceUrl);
     let accumulatingMessage = '';
 
     eventSource.addEventListener('message', (event) => {
@@ -199,6 +258,8 @@ export const usePublicAssistantLogic = (
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
           dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+
+          setProcessedMessages([...processedMessages, userMessageId]);
         }
 
         accumulatingMessage = '';
@@ -214,24 +275,20 @@ export const usePublicAssistantLogic = (
         return;
       }
 
-      const lastUserMessage = state.messages.findLast(
-        (message) => message.role === Role.USER
-      );
-
       if (lastUserMessage) {
         try {
           //Move to backend after refactoring message handling
-          await deleteUserMessage(state.userMessageId);
+          await deleteUserMessage(lastUserMessage.id);
           dispatch({
             type: REMOVE_MESSAGE,
-            payload: lastUserMessage.public_id,
+            payload: lastUserMessage.id,
           });
+          removeLastUserMessage();
         } catch (error) {
           logger.error('Error removing message: %o', error);
         }
       }
 
-      //Update user prompt input with last message data
       dispatch({ type: SET_IS_ERROR, payload: true });
 
       promptFormRef.current?.reset(lastUserMessage?.content || '');
@@ -244,14 +301,18 @@ export const usePublicAssistantLogic = (
   };
 
   useEffect(() => {
-    if (state.userMessageId !== '') {
+    if (
+      state.userMessageId !== '' &&
+      !processedMessages.includes(state.userMessageId)
+    ) {
       const eventSource = connectToStream(state.userMessageId);
-
-      return () => eventSource.close();
+      return () => eventSource?.close();
     }
-  }, [state.userMessageId]);
+  }, [state.userMessageId, processedMessages]);
 
-  const onSubmit = async (data: CreateMessageDto) => {
+  const onSubmit = async (data: { prompt: string }) => {
+    if (!activeThreadId) return;
+
     scrollToBottom();
     const userMessage = {
       public_id: `user-${Date.now()}`,
@@ -270,15 +331,10 @@ export const usePublicAssistantLogic = (
 
     try {
       const messageResponse = await sendMessage(
-        threadId,
+        activeThreadId,
         data,
         visitorId.current
       );
-      const newThread = {
-        public_id: threadId,
-        messages: [userMessage],
-        created_at: new Date(),
-      };
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
@@ -290,6 +346,11 @@ export const usePublicAssistantLogic = (
         messageResponse.status === StatusCodes.CREATED &&
         messageResponse.message?.public_id
       ) {
+        setLastUserMessage({
+          content: data.prompt,
+          id: messageResponse.message.public_id,
+        });
+
         dispatch({
           type: SET_MESSAGE_ID,
           payload: messageResponse.message.public_id,
@@ -302,7 +363,11 @@ export const usePublicAssistantLogic = (
 
       threadsDispatch({
         type: 'ADD_THREAD',
-        payload: newThread,
+        payload: {
+          public_id: activeThreadId,
+          messages: [userMessage],
+          created_at: new Date(),
+        },
       });
     } catch (error) {
       if (
@@ -317,6 +382,52 @@ export const usePublicAssistantLogic = (
   };
 
   const isLocked = () => state.isLimitLock;
+
+  const handleInitialSubmit = async (data: { prompt: string }) => {
+    try {
+      const newThreadId = await handleNewThread();
+      if (newThreadId) {
+        setInitialPrompt(data.prompt);
+
+        push(`/public/${organizationId}/threads/${newThreadId}`);
+
+        sendMessage(newThreadId, { prompt: data.prompt }, visitorId.current)
+          .then((messageResponse) => {
+            if (
+              messageResponse.status === StatusCodes.CREATED &&
+              messageResponse.message?.public_id
+            ) {
+              const assistantMessageId = messageResponse.message.public_id;
+              push(
+                `/public/${organizationId}/threads/${newThreadId}?msg=${assistantMessageId}`
+              );
+              setLastUserMessage({
+                content: data.prompt,
+                id: messageResponse.message.public_id,
+              });
+            } else {
+              errorToast({ message: 'Błąd podczas wysyłania wiadomości' });
+            }
+          })
+          .catch((error) => {
+            logger.error('Error sending initial message: %o', error);
+            errorToast({ message: 'Błąd podczas wysyłania wiadomości' });
+          });
+
+        threadsDispatch({
+          type: 'ADD_THREAD',
+          payload: {
+            public_id: newThreadId,
+            messages: [],
+            created_at: new Date(),
+          },
+        });
+      }
+    } catch (error) {
+      logger.error('Error sending initial message: %o', error);
+      errorToast({ message: 'Błąd podczas wysyłania wiadomości' });
+    }
+  };
 
   return {
     messageLoadingText: state.messageLoadingText,
@@ -333,5 +444,11 @@ export const usePublicAssistantLogic = (
     onSubmit,
     isError: state.isError,
     promptFormRef,
+    activeThreadId,
+    handleInitialSubmit,
+    isNewThreadLoading,
+    initialPrompt,
+    lastUserMessage,
+    processedMessages,
   };
 };

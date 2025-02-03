@@ -14,7 +14,7 @@ import { useTranslations } from 'next-intl';
 type Props = {
   isLoading: boolean;
   isUserLogged: boolean;
-  handleResponseType: () => void;
+  handleResponseType?: () => void;
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
 };
@@ -24,7 +24,10 @@ export type PromptFormRef = {
 };
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
-  ({ isLoading, isUserLogged, onSubmit, isPublicAccess, handleResponseType }, ref) => {
+  (
+    { isLoading, isUserLogged, onSubmit, isPublicAccess, handleResponseType },
+    ref
+  ) => {
     const {
       register,
       reset,
@@ -76,7 +79,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               register={register}
               onSend={handleSend}
               value={promptValue}
-              handleResponseType={handleResponseType}
+              handleResponseType={
+                handleResponseType ? handleResponseType : () => {}
+              }
               setPromptValue={(text: string) => setValue('prompt', text)}
             />
           </div>

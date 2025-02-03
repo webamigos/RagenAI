@@ -1,14 +1,17 @@
-'use client';
-
 import { useReducer, useTransition, useCallback, useEffect } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
-
 import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { createThreadForGuest } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { useSessionStorage } from './useSessionStorage';
+
+type UseNewThreadOptions = {
+  organizationId: string;
+  widgetMode?: boolean;
+  onThreadCreated?: (threadId: string) => void;
+};
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -38,10 +41,8 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 export const useNewThread = ({
   organizationId,
   widgetMode = false,
-}: {
-  organizationId: string;
-  widgetMode?: boolean;
-}) => {
+  onThreadCreated,
+}: UseNewThreadOptions) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isPending, startTransition] = useTransition();
   const { push } = useRouter();
@@ -55,7 +56,7 @@ export const useNewThread = ({
     removeValue: removeThreadId,
   } = useSessionStorage<string | null>(LOCAL_STORAGE_THREAD_KEY, null);
 
-  const handleNewThread = async () => {
+  const handleNewThread = async (): Promise<string> => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
       handleCloseThread(false);
@@ -69,15 +70,18 @@ export const useNewThread = ({
       const newThreadId = result.data.public_id;
       setThreadId(newThreadId);
 
-      startTransition(() =>
-        push(`/public/${organizationId}/threads/${newThreadId}`)
-      );
+      if (onThreadCreated) {
+        onThreadCreated(newThreadId);
+      }
+
+      return newThreadId;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to create new thread.';
       dispatch({ type: 'SET_ERROR', payload: errorMessage });
       errorToast({ message: errorMessage });
       logger.error({ err }, 'Failed to create new thread');
+      throw err;
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }

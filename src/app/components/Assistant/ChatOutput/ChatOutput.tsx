@@ -17,7 +17,7 @@ type Props = {
   messages: MessageDto[];
   isLoading: boolean;
   widgetMode?: boolean;
-  responseType: ChatResponseType;
+  responseType?: ChatResponseType;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
   onMessagePlayed?: (messageId: string) => void;
