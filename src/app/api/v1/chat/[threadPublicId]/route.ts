@@ -47,12 +47,12 @@ export const POST = async (request: NextRequest, { params }: Params) => {
     setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
-    const result = await apiDbService.createChatMessages(
+    const message = await apiDbService.createChatMessages(
       threadPublicId,
       parsedData
     );
 
-    return NextResponse.json({ response: result }, { status: StatusCodes.OK });
+    return NextResponse.json(message, { status: StatusCodes.OK });
   } catch (err) {
     return ApiErrorService.handleErrors(err);
   }

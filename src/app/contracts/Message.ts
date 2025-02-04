@@ -23,6 +23,13 @@ export type MessageDto = {
   rate?: MessageModel['rate'];
 };
 
+export type ApiMessageDto = {
+  id: MessageModel['public_id'];
+  content: MessageModel['content'];
+  role: Role;
+  created_at: MessageModel['created_at'];
+};
+
 export type Thread = {
   thread: ThreadHistoryResponse[];
 };

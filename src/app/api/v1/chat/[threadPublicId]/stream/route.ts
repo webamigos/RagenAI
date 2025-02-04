@@ -19,7 +19,7 @@ import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetai
 import { createMessageInDB, getMessageById } from '@/app/lib/services/message';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
-import { SseMessageEvent } from '@/app/contracts/Events';
+import { ApiSseMessageEvent, SseMessageEvent } from '@/app/contracts/Events';
 import { Role, Source } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -85,9 +85,9 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 fullMessage += textChunk;
                 controller.enqueue(
                   encoder.encode(
-                    prepareSseMessage('message', {
+                    prepareSseMessage('delta', {
                       type: 'delta',
-                      payload: { content: textChunk, runId },
+                      payload: { content: textChunk },
                     })
                   )
                 );
@@ -106,14 +106,13 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                   runId,
                 });
 
-                const messageToSend: SseMessageEvent = {
+                const messageToSend: ApiSseMessageEvent = {
                   type: 'message',
                   payload: {
-                    public_id: dbMessage.public_id,
+                    id: dbMessage.public_id,
+                    content: dbMessage.content,
                     role: dbMessage.role,
                     created_at: dbMessage.created_at,
-                    content: dbMessage.content,
-                    run_id: runId,
                   },
                 };
 

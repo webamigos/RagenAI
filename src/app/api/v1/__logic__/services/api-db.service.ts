@@ -312,7 +312,12 @@ export class ApiDbService {
       runId,
     });
 
-    return dbMessage.content;
+    return {
+      id: dbMessage.public_id,
+      content: dbMessage.content,
+      role: dbMessage.role,
+      created_at: dbMessage.created_at,
+    };
   }
 
   async streamChatMessages(

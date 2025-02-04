@@ -4,6 +4,8 @@ import {
   SseMessageDelta,
   SseMessageError,
   SseMessageEvent,
+  ApiSseMessageEvent,
+  ApiSseMessageDelta,
 } from '@/app/contracts/Events';
 
 export const prepareSseMessage = (
@@ -14,6 +16,8 @@ export const prepareSseMessage = (
     | SseMessageDelta
     | SseMessageError
     | SseEndEvent
+    | ApiSseMessageEvent
+    | ApiSseMessageDelta
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
