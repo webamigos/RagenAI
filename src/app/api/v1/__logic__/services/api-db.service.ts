@@ -11,7 +11,7 @@ import db from '@ragenai/prisma-client';
 import OpenAI from 'openai';
 
 import { ApiContext } from '../types/ApiContext';
-import { replaceIds } from '../filters/replace-ids.filter';
+import { parseResponse } from '../filters/replace-ids.filter';
 import { UpdateThreadDto } from '../dtos/update-thread.dto';
 import { NotFoundException } from './api-errors.service';
 import { ChatMessageDto } from '../dtos/chat.dto';
@@ -78,7 +78,7 @@ export class ApiDbService {
       },
     });
 
-    return replaceIds(documents);
+    return parseResponse(documents);
   }
 
   async getDocument(
@@ -108,7 +108,7 @@ export class ApiDbService {
       },
     });
 
-    return replaceIds(document);
+    return parseResponse(document);
   }
 
   // ======== THREADS ========
@@ -129,7 +129,7 @@ export class ApiDbService {
       },
     });
 
-    return replaceIds(documents);
+    return parseResponse(documents);
   }
 
   async getUserThread(publicId: Thread['public_id']): Promise<ApiThread> {
@@ -147,7 +147,7 @@ export class ApiDbService {
       },
     });
 
-    return replaceIds(document);
+    return parseResponse(document);
   }
 
   async updateUserThread(
@@ -177,7 +177,7 @@ export class ApiDbService {
       },
     });
 
-    return replaceIds(updatedThread);
+    return parseResponse(updatedThread);
   }
 
   async deleteUserThread(publicId: Thread['public_id']): Promise<void> {
@@ -240,7 +240,7 @@ export class ApiDbService {
       },
     });
 
-    return replaceIds(messages);
+    return parseResponse(messages);
   }
 
   private async prepareChainToRun(

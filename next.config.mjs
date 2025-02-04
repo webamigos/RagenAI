@@ -27,6 +27,28 @@ const nextConfig = {
     domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
   },
 
+  async headers() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*', // Set your origin
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-API-KEY, x-api-key',
+          },
+        ],
+      },
+    ];
+  },
+
   experimental: {
     serverComponentsExternalPackages: [
       'pino',

@@ -28,7 +28,9 @@ export const GET = async (request: NextRequest, { params }: Params) => {
     const apiDbService = new ApiDbService(apiContext);
     const messages = await apiDbService.getChatMessages(threadPublicId);
 
-    return NextResponse.json(messages, { status: StatusCodes.OK });
+    return NextResponse.json(messages, {
+      status: StatusCodes.OK,
+    });
   } catch (err) {
     return ApiErrorService.handleErrors(err);
   }

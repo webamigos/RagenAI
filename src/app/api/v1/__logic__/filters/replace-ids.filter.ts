@@ -1,3 +1,6 @@
+import { formatDates } from '@/app/lib/utils/formatDate';
+import { format } from 'date-fns';
+
 /**
  * This function renames `public_id` field to `id`
  * It's important from our perspective to share only public_id value but
@@ -9,16 +12,22 @@
  * @param record
  * @returns
  */
-export const replaceIds = <T>(record: T | T[]) => {
+export const parseResponse = <T>(record: T | T[]) => {
   const replacer = (elem: any): any => {
     if (Array.isArray(elem)) {
       return elem.map(replacer);
     } else if (elem && typeof elem === 'object') {
-      const { public_id, ...doc } = elem;
+      const { public_id, created_at, updated_at, ...doc } = elem;
       const normalizedDoc = {
         id: public_id,
         ...doc,
       };
+      if (created_at) {
+        normalizedDoc['created_at'] = created_at.toISOString();
+      }
+      if (updated_at) {
+        normalizedDoc['updated_at'] = updated_at.toISOString();
+      }
 
       // Recursively normalize nested objects
       Object.keys(normalizedDoc).forEach((key) => {
