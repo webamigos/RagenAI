@@ -167,7 +167,9 @@
     "error-during-deleting-file": "Error deleting document",
     "failed-to-update-temperature": "Failed to update temperature:",
     "failed-to-fetch-settings": "Failed to fetch settings:",
-    "failed-to-update-max-documents": "Failed to update max document to retreive:"
+    "failed-to-update-max-documents": "Failed to update max document to retreive:",
+    "fetching-docs-error": "Error fetching documents",
+    "no-files": "No files"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
@@ -199,7 +201,8 @@
     "drag-n-drop": "Drag and drop files here",
     "or": "or",
     "choose-files": "Choose files",
-    "supported-formats": "Supports"
+    "supported-formats": "Supports",
+    "send-and-process": "Send and process"
   },
   "create-document": {
     "title": "Create document",
@@ -224,18 +227,18 @@
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
-    "manage-organization": "Manage organization",
-    "manage-members": "Manage members",
-    "manage-knowledge": "Manage knowledge",
+    "manage-organization": "Organization",
+    "manage-members": "Members",
+    "manage-knowledge": "Knowledge",
     "subscription-management": "Subscription management",
     "organization-list": "Organization list",
-    "assistant-management": "Assistant management",
+    "assistant-management": "Assistant settings",
     "api-keys": "API Keys",
-    "create-new-thread": "Create a new thread",
-    "search-threads": "Search threads",
+    "create-new-thread": "New thread",
+    "search-threads": "Search in threads",
     "generate-access-key": "Public access",
     "support-page": "Support Page",
-    "return-to-home": "Return to home screen",
+    "return-to-home": "Threads",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -360,7 +363,7 @@
       "status": "Status",
       "plan": "Plan",
       "download-invoice": "Download Invoice",
-      "manage-subscription": "Manage Subscription"
+      "manage-subscription": "Subscription"
     },
     "confirm-cancel": "Yes, cancel subscription",
     "keep-subscription": "No, keep subscription",

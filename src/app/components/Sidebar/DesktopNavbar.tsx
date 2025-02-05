@@ -45,7 +45,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
             )}
             {!isMyProfile && (
               <Link
-                href={'/my-profile'}
+                href={'/manage-knowledge/documents-list'}
                 className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
                 data-testid="home-or-settings-button"
               >

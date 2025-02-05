@@ -101,13 +101,13 @@ export const FileUploader = ({
           onChange={handleFileSelect}
         />
       </div>
-      <Text fontWeight="light" fontSize="sm" color="gray-500" className="-mt-4">
-        <Tooltip
-          id="supported formats"
-          content={`${t('supported-formats')}: .md, .epub, .srt`}
-        >
-          <InformationCircle className="cursor-pointer" />
-        </Tooltip>
+      <Text
+        fontWeight="light"
+        fontSize="sm"
+        color="gray-500"
+        className="mt-4 w-full flex justify-center"
+      >
+        {t('supported-formats')}: .pdf, .md, .epub, .srt
       </Text>
     </>
   );

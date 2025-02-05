@@ -2,6 +2,7 @@
 
 import { type ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import { LayoutGroup, motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 import { classMerge } from '../utils/cn';
 import { AnimatedArrow } from '../icons';
@@ -146,6 +147,8 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
     },
     ref
   ) {
+    const pathname = usePathname();
+
     if (!href) {
       return null;
     }
@@ -156,6 +159,10 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
       current && 'bg-zinc-950/5 text-blue-500',
       disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
       'group',
+      {
+        'bg-zinc-950/5 text-primary-blue-500 dark:text-gray-200':
+          pathname.includes(href),
+      },
       className
     );
 
