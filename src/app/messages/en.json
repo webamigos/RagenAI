@@ -439,7 +439,8 @@
   },
   "Chatbot": {
     "opening-chat-thread": "Opening chat thread...",
-    "start-new-thread": "Start new thread"
+    "start-new-thread": "Start new thread",
+    "welcome-message": "Hi! How can I help you today?"
   },
   "support-page": {
     "card-title": "Share your comments with us",

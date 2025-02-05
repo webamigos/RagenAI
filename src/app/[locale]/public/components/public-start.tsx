@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 
 import { PublicChatInterface } from './PublicChatInterface';
+import { useNewThread } from '../hooks/useNewThread';
 
 const PublicStart = memo(
   ({
@@ -13,21 +13,20 @@ const PublicStart = memo(
     organizationId: string;
     widgetMode?: boolean;
   }) => {
-    const t = useTranslations('Chatbot');
-    // const {  checkExistingThread } = useNewThread({
-    //   organizationId,
-    //   widgetMode,
-    // });
+    const { checkExistingThread } = useNewThread({
+      organizationId,
+      widgetMode,
+    });
 
-    // useEffect(() => {
-    //   const checkThread = async () => {
-    //     if (widgetMode) {
-    //       await checkExistingThread();
-    //     }
-    //   };
+    useEffect(() => {
+      const checkThread = async () => {
+        if (widgetMode) {
+          await checkExistingThread();
+        }
+      };
 
-    //   checkThread();
-    // }, [widgetMode, checkExistingThread]);
+      checkThread();
+    }, [widgetMode, checkExistingThread]);
     return (
       <PublicChatInterface
         organizationId={organizationId}
