@@ -27,7 +27,7 @@ export type ApiMessageDto = {
   id: MessageModel['public_id'];
   content: MessageModel['content'];
   role: Role;
-  created_at: MessageModel['created_at'];
+  created_at: string;
 };
 
 export type Thread = {

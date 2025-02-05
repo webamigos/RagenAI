@@ -12,7 +12,7 @@ import { ApiDbService } from '../../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../../__logic__/services/api-errors.service';
 import { chatMessagesSchema } from '../../../__logic__/dtos/chat.dto';
 import { ChatType } from '@/app/contracts/Message';
-import { prepareSseMessage } from '@/libs/sse/prepare-sse-message';
+import { prepareApiSseMessage } from '@/libs/sse/prepare-sse-message';
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag';
@@ -47,9 +47,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
     return new Response(
       new ReadableStream({
         async start(controller) {
-          controller.enqueue(
-            encoder.encode(prepareSseMessage('init', { type: 'init' }))
-          );
+          controller.enqueue(encoder.encode(prepareApiSseMessage('init')));
 
           try {
             const {
@@ -85,10 +83,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 fullMessage += textChunk;
                 controller.enqueue(
                   encoder.encode(
-                    prepareSseMessage('delta', {
-                      type: 'delta',
-                      payload: { content: textChunk },
-                    })
+                    prepareApiSseMessage('delta', { content: textChunk })
                   )
                 );
               } else if (
@@ -107,24 +102,18 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 });
 
                 const messageToSend: ApiSseMessageEvent = {
-                  type: 'message',
-                  payload: {
-                    id: dbMessage.public_id,
-                    content: dbMessage.content,
-                    role: dbMessage.role,
-                    created_at: dbMessage.created_at,
-                  },
+                  id: dbMessage.public_id,
+                  content: dbMessage.content,
+                  role: dbMessage.role,
+                  created_at: dbMessage.created_at.toISOString(),
                 };
 
-                // completed message
                 controller.enqueue(
-                  encoder.encode(prepareSseMessage('message', messageToSend))
+                  encoder.encode(prepareApiSseMessage('message', messageToSend))
                 );
 
                 // close stream
-                controller.enqueue(
-                  encoder.encode(prepareSseMessage('end', { type: 'end' }))
-                );
+                controller.enqueue(encoder.encode(prepareApiSseMessage('end')));
                 controller.close();
               }
             }

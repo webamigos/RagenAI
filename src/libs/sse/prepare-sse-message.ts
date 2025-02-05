@@ -16,8 +16,15 @@ export const prepareSseMessage = (
     | SseMessageDelta
     | SseMessageError
     | SseEndEvent
-    | ApiSseMessageEvent
-    | ApiSseMessageDelta
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+};
+
+type ApiEvent = 'init' | 'delta' | 'message' | 'end';
+
+export const prepareApiSseMessage = (
+  event: ApiEvent,
+  data?: ApiSseMessageEvent | ApiSseMessageDelta
+) => {
+  return `event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`;
 };

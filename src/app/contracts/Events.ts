@@ -10,10 +10,7 @@ export type SseMessageEvent = {
   payload: MessageDto;
 };
 
-export type ApiSseMessageEvent = {
-  type: 'message';
-  payload: ApiMessageDto;
-};
+export type ApiSseMessageEvent = ApiMessageDto;
 
 export type SseMessageDelta = {
   type: 'delta';
@@ -24,10 +21,7 @@ export type SseMessageDelta = {
 };
 
 export type ApiSseMessageDelta = {
-  type: 'delta';
-  payload: {
-    content: string;
-  };
+  content: string;
 };
 
 export type SseMessageError = {
