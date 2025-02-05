@@ -83,6 +83,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
                 handleResponseType ? handleResponseType : () => {}
               }
               setPromptValue={(text: string) => setValue('prompt', text)}
+              showVoiceInput={!isPublicAccess}
             />
           </div>
           {!isPublicAccess && (

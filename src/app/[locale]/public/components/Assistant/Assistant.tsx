@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { ChatOutput } from '@/app/components/Assistant/ChatOutput';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 import { usePublicAssistantLogic } from './usePublicAssistantLogic';
 import { PromptForm } from '@/app/components/Assistant/PromptForm';
@@ -27,57 +27,39 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
     promptFormRef,
     userMessageId,
     dispatch,
-    processedMessages,
   } = usePublicAssistantLogic(threadId, organizationId);
 
   const searchParams = useSearchParams();
   const initialMessageId = searchParams.get('msg');
-
-  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const messageExists = messages.some(
       (msg) => msg.public_id === initialMessageId
     );
 
-    if (
-      initialMessageId &&
-      !userMessageId &&
-      !messageExists &&
-      !processedMessages.includes(initialMessageId)
-    ) {
+    if (initialMessageId && !userMessageId && !messageExists) {
       dispatch({
         type: reducerActions.SET_MESSAGE_ID,
         payload: initialMessageId,
       });
     }
-  }, [initialMessageId, userMessageId, messages, processedMessages]);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, []);
+  }, [initialMessageId, userMessageId, messages]);
 
   return (
-    <div className="h-full flex flex-col font-sans min-h-screen relative">
-      <div
-        ref={chatContainerRef}
-        className="flex-grow overflow-y-auto pb-[72px]"
-      >
+    <div className="h-full flex flex-col font-sans">
+      <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
           widgetMode={true}
+          isPublicAccess={isPublicAccess}
         />
         <div ref={messagesEndDivRef} />
       </div>
-
-      {!isLocked() && threadId && (
-        <div className="absolute inset-x-0 bottom-0 w-full mb-8">
+      <div className="flex-shrink-0 w-full mb-8">
+        {!isLocked() && threadId && (
           <PromptForm
             ref={promptFormRef}
             isUserLogged={false}
@@ -85,8 +67,8 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
           />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

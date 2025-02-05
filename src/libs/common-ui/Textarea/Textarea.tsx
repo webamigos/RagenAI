@@ -84,7 +84,6 @@ export const Textarea = forwardRef(
         onSend?.();
       }
     }, [isRecording]);
-    // }, [isRecording, value, onSend]); // FIXME: crashes the browser
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
@@ -113,7 +112,8 @@ export const Textarea = forwardRef(
     const maxHeightClass = `max-h-[${maxHeight}px]`;
 
     let icon = null;
-    let onClick = null;
+    let onClick: (() => void) | undefined = undefined;
+    let isDisabled = false;
 
     if (showVoiceInput) {
       if (isRecording) {
@@ -135,15 +135,28 @@ export const Textarea = forwardRef(
       } else if (!disabled) {
         icon = (
           <MicrophoneIcon
-            className={classMerge(
-              'h-7 w-7 mb-1.5',
-              'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
-            )}
+            className="h-7 w-7 mb-1.5 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
             aria-hidden="true"
           />
         );
         onClick = handleStartListening;
       }
+    }
+
+    if (!icon) {
+      icon = (
+        <ArrowRightCircleIcon
+          className={classMerge(
+            'h-9 w-9',
+            !value?.trim()
+              ? 'text-gray-400 cursor-not-allowed'
+              : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+          )}
+          aria-hidden="true"
+        />
+      );
+      onClick = value?.trim() ? onSend : undefined;
+      isDisabled = !value?.trim();
     }
 
     return (
@@ -189,14 +202,9 @@ export const Textarea = forwardRef(
             />
             <button
               type="button"
-              onClick={onClick || undefined}
+              onClick={onClick}
               className="absolute bottom-1.5 right-3 flex items-center"
-              disabled={
-                !isRecording &&
-                !value?.trim() &&
-                icon !== null &&
-                icon.type === ArrowRightCircleIcon
-              }
+              disabled={isDisabled}
             >
               {icon}
             </button>

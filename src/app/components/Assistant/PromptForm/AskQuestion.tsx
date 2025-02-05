@@ -14,6 +14,7 @@ type Props = {
   onSend: () => void;
   setPromptValue: (text: string) => void;
   value: string;
+  showVoiceInput?: boolean;
 };
 
 export const AskQuestion = ({
@@ -24,6 +25,7 @@ export const AskQuestion = ({
   setPromptValue,
   register,
   onSend,
+  showVoiceInput,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -41,6 +43,7 @@ export const AskQuestion = ({
       setValue={setPromptValue}
       placeholder={t('enter-your-question')}
       handleResponseType={handleResponseType}
+      showVoiceInput={showVoiceInput}
     />
   );
 };

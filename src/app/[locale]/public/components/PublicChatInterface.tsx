@@ -6,7 +6,6 @@ import {
   PromptForm,
   PromptFormRef,
 } from '@/app/components/Assistant/PromptForm/PromptForm';
-import { PublicAssistant } from './Assistant/Assistant';
 import { usePublicAssistantLogic } from './Assistant/usePublicAssistantLogic';
 
 type PublicChatInterfaceProps = {
@@ -19,17 +18,11 @@ export const PublicChatInterface = memo(
     const t = useTranslations('Chatbot');
     const promptFormRef = useRef<PromptFormRef>(null);
 
-    const { activeThreadId, handleInitialSubmit, isNewThreadLoading } =
-      usePublicAssistantLogic(null, organizationId, widgetMode);
-
-    if (activeThreadId) {
-      return (
-        <PublicAssistant
-          threadId={activeThreadId}
-          organizationId={organizationId}
-        />
-      );
-    }
+    const { handleInitialSubmit, isNewThreadLoading } = usePublicAssistantLogic(
+      null,
+      organizationId,
+      widgetMode
+    );
 
     return (
       <div className="h-screen flex flex-col items-center justify-center px-4">
