@@ -109,7 +109,9 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 };
 
                 controller.enqueue(
-                  encoder.encode(prepareApiSseMessage('message', messageToSend))
+                  encoder.encode(
+                    prepareApiSseMessage('response', messageToSend)
+                  )
                 );
 
                 // close stream

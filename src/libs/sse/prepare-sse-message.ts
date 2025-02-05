@@ -20,7 +20,7 @@ export const prepareSseMessage = (
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
 
-type ApiEvent = 'init' | 'delta' | 'message' | 'end';
+type ApiEvent = 'init' | 'delta' | 'response' | 'end';
 
 export const prepareApiSseMessage = (
   event: ApiEvent,
