@@ -1,6 +1,6 @@
 import { useEffect, useReducer, RefObject } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role, MessageType } from '@prisma/client';
+import { Role, MessageContentType } from '@prisma/client';
 import { useVoiceInput } from '@/app/hooks/useAudioRecording';
 import { convertTextToSpeech } from '../../../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
@@ -84,7 +84,7 @@ export const useVoiceMode = ({
     if (
       lastMessage?.role === Role.ASSISTANT &&
       !lastMessage.voice_played &&
-      lastMessage?.message_type === MessageType.VOICE
+      lastMessage?.message_type === MessageContentType.VOICE
     ) {
       playAssistantResponse(lastMessage);
     }

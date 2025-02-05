@@ -154,7 +154,7 @@
     "conversation": "knowledge base and other sources"
   },
   "text-area": {
-    "placeholder": "Your question..."
+    "placeholder": "Type your question..."
   },
   "success-toast": {
     "copied": "Copied",
