@@ -33,19 +33,29 @@ type ApiEvent =
   | 'get_thread_messages'
   | 'add_thread_messages_to_lmm'
   | 'start_lmm'
+  | 'start_lmm'
   | 'llm_completed'
   | 'save_assistant_response'
   | 'assistant_response_saved'
   | 'final_response'
   | 'close';
 
-export const prepareApiSseMessage = (
-  event: ApiEvent,
-  data?:
-    | ApiSseMessageEvent
-    | ApiSseMessageDelta
-    | ApiSseThreadFound
-    | ApiSseMessageCreated
-) => {
+type ApiEventData =
+  | ApiSseMessageEvent
+  | ApiSseMessageDelta
+  | ApiSseThreadFound
+  | ApiSseMessageCreated;
+
+export const prepareApiSseMessage = (event: ApiEvent, data?: ApiEventData) => {
   return `event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`;
+};
+
+const encoder = new TextEncoder();
+
+export const sendApiEvent = (
+  controller: ReadableStreamDefaultController,
+  event: ApiEvent,
+  data?: ApiEventData
+) => {
+  controller.enqueue(encoder.encode(prepareApiSseMessage(event, data)));
 };

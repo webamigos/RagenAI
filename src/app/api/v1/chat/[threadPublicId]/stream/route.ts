@@ -12,11 +12,11 @@ import { ApiDbService } from '../../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../../__logic__/services/api-errors.service';
 import { chatMessagesSchema } from '../../../__logic__/dtos/chat.dto';
 import { ChatType } from '@/app/contracts/Message';
-import { prepareApiSseMessage } from '@/libs/sse/prepare-sse-message';
-import { getAllSettings } from '@/app/lib/services/settings';
-import { ApiKeyError } from '@/libs/chains/errors';
-import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag';
-import { createMessageInDB, getMessageById } from '@/app/lib/services/message';
+import {
+  prepareApiSseMessage,
+  sendApiEvent,
+} from '@/libs/sse/prepare-sse-message';
+import { createMessageInDB } from '@/app/lib/services/message';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
 import { ApiSseMessageEvent, SseMessageEvent } from '@/app/contracts/Events';
@@ -42,12 +42,11 @@ export const POST = async (request: NextRequest, { params }: Params) => {
     const apiDbService = new ApiDbService(apiContext);
 
     let runId: string;
-    const encoder = new TextEncoder();
 
     return new Response(
       new ReadableStream({
         async start(controller) {
-          controller.enqueue(encoder.encode(prepareApiSseMessage('init')));
+          sendApiEvent(controller, 'init');
 
           try {
             const {
@@ -82,24 +81,14 @@ export const POST = async (request: NextRequest, { params }: Params) => {
               ) {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
-                controller.enqueue(
-                  encoder.encode(
-                    prepareApiSseMessage('delta', { content: textChunk })
-                  )
-                );
+                sendApiEvent(controller, 'delta', { content: textChunk });
               } else if (
                 event.event === 'on_parser_end' &&
                 event.name === finalAnswerRunName
               ) {
-                controller.enqueue(
-                  encoder.encode(prepareApiSseMessage('llm_completed'))
-                );
+                sendApiEvent(controller, 'llm_completed');
 
-                controller.enqueue(
-                  encoder.encode(
-                    prepareApiSseMessage('save_assistant_response')
-                  )
-                );
+                sendApiEvent(controller, 'save_assistant_response');
 
                 const dbMessage = await createMessageInDB({
                   thread: threadRecord,
@@ -112,11 +101,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                   runId,
                 });
 
-                controller.enqueue(
-                  encoder.encode(
-                    prepareApiSseMessage('assistant_response_saved')
-                  )
-                );
+                sendApiEvent(controller, 'assistant_response_saved');
 
                 // TODO: replace to: { messaage: {}, response: {}}
                 const messageToSend: ApiSseMessageEvent = {
@@ -126,16 +111,11 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                   created_at: dbMessage.created_at.toISOString(),
                 };
 
-                controller.enqueue(
-                  encoder.encode(
-                    prepareApiSseMessage('final_response', messageToSend)
-                  )
-                );
+                sendApiEvent(controller, 'final_response', messageToSend);
 
                 // close stream
-                controller.enqueue(
-                  encoder.encode(prepareApiSseMessage('close'))
-                );
+                sendApiEvent(controller, 'close');
+
                 controller.close();
               }
             }
