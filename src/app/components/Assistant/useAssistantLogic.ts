@@ -38,6 +38,8 @@ import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
 import { getErrorMessage } from './utils';
+import { ApiEvent, parseSseString } from '@/libs/sse/prepare-sse-message';
+import { ApiSseMessageDelta, ApiSseMessageEvent } from '@/app/contracts/Events';
 
 const { errorToast } = statusToast();
 const {
@@ -63,6 +65,7 @@ export const useAssistantLogic = (threadId: string) => {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
   const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
+  const [apiEvent, setApiEvent] = useState<ApiEvent | undefined>();
 
   const initialState: State = {
     isInitialLoad: true,
@@ -354,48 +357,128 @@ export const useAssistantLogic = (threadId: string) => {
       payload: t('status-thinking'),
     });
 
-    try {
-      const messageResponse = await sendMessage(threadId, data, userVisitorId);
-      const response = await getUserMessages(userVisitorId);
-      const threads = response.threads;
-      const newThread = {
-        public_id: threads![0].public_id,
-        messages: [userMessage],
-        created_at: new Date(),
-      };
+    const streamUrl = user
+      ? `/api/threads/${threadId}?mode=${mode}`
+      : `/api/guest-threads/${threadId}/`;
+    const apiStream = await fetch(streamUrl, {
+      method: 'POST',
+      headers: {
+        Accept: 'text/event-stream',
+      },
+      body: JSON.stringify(data),
+    });
 
-      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'sending-error' });
-        return;
+    if (!apiStream.body) {
+      return;
+    }
+
+    const reader = apiStream.body
+      .pipeThrough(new TextDecoderStream())
+      .getReader();
+
+    let accumulatingMessage = '';
+    let runId = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break; // Exit the loop if the stream is done
       }
 
-      if (
-        messageResponse.status === StatusCodes.CREATED &&
-        messageResponse.message?.public_id
-      ) {
+      // Process the value (which is a string)
+      // const message = parseSseString(decoder.decode(data)); // Decode the buffer to a string and then parse SSE event format to JSON
+      // const messageEvent = message.event as ApiEvent;
+      // const messageData = message.data;
+
+      const message = parseSseString(value);
+      // You can see message format in browser console
+      // console.log('on frontend: ', message);
+      const messageEvent = message.event;
+      const messageData = message.data;
+
+      // setApiEvent(messageEvent);
+
+      if (messageEvent === 'delta') {
+        const data = messageData as ApiSseMessageDelta;
+        const textChunk = data.content;
+        runId = data.runId || ''; // TODO: refactor to reduce transfer
+        accumulatingMessage += textChunk;
+
+        // console.log({ accumulatingMessage, textChunk });
+
         dispatch({
-          type: SET_MESSAGE_ID,
-          payload: messageResponse.message.public_id,
+          type: APPEND_TO_STREAMED_MESSAGE,
+          payload: { content: textChunk, run_id: runId },
         });
-        dispatch({
-          type: SET_LOADING_TEXT,
-          payload: t('status-asking-ai'),
-        });
+
+        scrollToBottom();
+      } else if (messageEvent == 'final_response' && messageData) {
+        const data = messageData as ApiSseMessageEvent;
+        if (accumulatingMessage.trim()) {
+          dispatch({
+            type: ADD_MESSAGE,
+            payload: {
+              public_id: data.id,
+              role: data.role,
+              content: data.content,
+              created_at: new Date(), // FIXME: resolved in DEV-78
+              run_id: runId,
+              message_type: responseType,
+            },
+          });
+          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+        }
       }
-      threadsDispatch({
-        type: 'ADD_THREAD',
-        payload: newThread,
-      });
-    } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.status === StatusCodes.BAD_REQUEST
-      ) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'sending-error' });
-      }
-      logger.error('Error submitting message: %o', error);
+
+      //   try {
+      //     const messageResponse = await sendMessage(
+      //       threadId,
+      //       data,
+      //       userVisitorId
+      //     );
+      //     const response = await getUserMessages(userVisitorId);
+      //     const threads = response.threads;
+      //     const newThread = {
+      //       public_id: threads![0].public_id,
+      //       messages: [userMessage],
+      //       created_at: new Date(),
+      //     };
+
+      //     if (messageResponse.status === StatusCodes.BAD_REQUEST) {
+      //       dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+      //       errorToast({ message: 'sending-error' });
+      //       return;
+      //     }
+
+      //     if (
+      //       messageResponse.status === StatusCodes.CREATED &&
+      //       messageResponse.message?.public_id
+      //     ) {
+      //       dispatch({
+      //         type: SET_MESSAGE_ID,
+      //         payload: messageResponse.message.public_id,
+      //       });
+      //       dispatch({
+      //         type: SET_LOADING_TEXT,
+      //         payload: t('status-asking-ai'),
+      //       });
+      //     }
+      //     threadsDispatch({
+      //       type: 'ADD_THREAD',
+      //       payload: newThread,
+      //     });
+      //   } catch (error) {
+      //     if (
+      //       error instanceof AxiosError &&
+      //       error.status === StatusCodes.BAD_REQUEST
+      //     ) {
+      //       dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+      //       errorToast({ message: 'sending-error' });
+      //     }
+      //     logger.error('Error submitting message: %o', error);
+      //   }
+      // }
     }
   };
 
