@@ -154,7 +154,7 @@
     "conversation": "baza wiedzy i inne źródła"
   },
   "text-area": {
-    "placeholder": "Twoje pytanie..."
+    "placeholder": "Wpisz swoje pytanie..."
   },
   "success-toast": {
     "copied": "Skopiowano!",

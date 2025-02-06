@@ -197,7 +197,7 @@ export const Textarea = forwardRef(
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
               value={value}
-              placeholder={t('text-area')}
+              placeholder={t('placeholder')}
               {...rest}
             />
             <button

@@ -7,6 +7,8 @@ import { useAssistantLogic } from './useAssistantLogic';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 
+import { MessageContentType } from '@prisma/client';
+
 type Props = {
   threadId: string;
 };
@@ -51,7 +53,7 @@ export const Assistant = ({ threadId }: Props) => {
       )}
 
       <div className="h-full flex flex-col font-sans">
-        {responseType === 'VOICE' && (
+        {responseType === MessageContentType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
             isRecording={isRecording}

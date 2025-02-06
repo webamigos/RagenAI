@@ -30,7 +30,7 @@ model Message {
   id                String   @id @default(uuid())
   rate              Int?     @db.SmallInt
   run_id            String?
-  message_type      MessageType @default(TEXT)
+  message_type      MessageContentType @default(TEXT)
   voice_duration_seconds Int?
   voice_played      Boolean   @default(false)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
@@ -50,7 +50,7 @@ model Thread {
   created_at                DateTime                   @default(now()) @db.Timestamptz
   id                        String                     @id @default(uuid())
   visitor_id                String?
-  preferred_communication_type PreferredCommunicationType @default(TEXT)
+  preferred_communication_type ThreadCommunicationType @default(TEXT)
   messages                  Message[]
 }
 
@@ -238,12 +238,12 @@ enum PlanStatus {
   DELETED
 }
 
-enum PreferredCommunicationType {
+enum ThreadCommunicationType {
   TEXT
   VOICE
 }
 
-enum MessageType {
+enum MessageContentType {
   TEXT
   VOICE
 }
