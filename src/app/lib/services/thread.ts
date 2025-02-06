@@ -113,6 +113,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
         openai_thread_id: true,
         created_at: true,
         visitor_id: true,
+        preferred_communication_type: true,
       },
     });
   } catch (error) {

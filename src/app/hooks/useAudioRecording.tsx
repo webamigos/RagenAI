@@ -22,7 +22,9 @@ const localeToSpeechLang = (locale: string): string => {
 export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+
   const locale = useLocale();
 
   const t = useTranslations('useAudioRecorder');
