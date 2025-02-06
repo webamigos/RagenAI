@@ -38,7 +38,11 @@ import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
 import { getErrorMessage } from './utils';
-import { ApiEvent, parseSseString } from '@/libs/sse/prepare-sse-message';
+import {
+  ApiEvent,
+  ApiEventData,
+  parseSseString,
+} from '@/libs/sse/prepare-sse-message';
 import { ApiSseMessageDelta, ApiSseMessageEvent } from '@/app/contracts/Events';
 
 const { errorToast } = statusToast();
@@ -356,140 +360,138 @@ export const useAssistantLogic = (threadId: string) => {
       payload: t('status-thinking'),
     });
 
-    const streamUrl = user
-      ? `/api/threads/${threadId}?mode=${mode}`
-      : `/api/guest-threads/${threadId}/`;
-    const apiStream = await axios.post(streamUrl, data, {
-      responseType: 'stream',
-      adapter: 'fetch',
-      headers: {
-        Accept: 'text/event-stream',
-      },
-    });
+    try {
+      // This flow:
+      // Creates new thread message
+      // Initializes chain
+      // Adds thread messages to chain
+      // Starts chain
+      // Adds assistant message to db
+      // And stream progress using Server Sent Events format
+      const streamUrl = user
+        ? `/api/threads/${threadId}?mode=${mode}`
+        : `/api/guest-threads/${threadId}/`;
+      const apiStream = await axios.post(streamUrl, data, {
+        responseType: 'stream',
+        adapter: 'fetch',
+        headers: {
+          Accept: 'text/event-stream',
+        },
+      });
 
-    if (!apiStream.data) {
-      return;
-    }
-
-    const reader = apiStream.data
-      .pipeThrough(new TextDecoderStream())
-      .getReader();
-
-    let buffer = ''; // Initialize a buffer to accumulate chunks
-    let accumulatingMessage = '';
-    let runId = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break; // Exit the loop if the stream is done
+      if (!apiStream.data) {
+        return;
       }
 
-      buffer += value;
+      const reader = apiStream.data
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
 
-      // Process the buffer to extract complete messages
-      let messages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
-      buffer = messages.pop() || ''; // Keep the last incomplete message in the buffer
+      let buffer = ''; // Initialize a buffer to accumulate chunks
+      let accumulatingMessage = '';
+      let runId = '';
 
-      for (const msg of messages) {
-        // Process the value (which is a string)
-        // const message = parseSseString(decoder.decode(data)); // Decode the buffer to a string and then parse SSE event format to JSON
-        // const messageEvent = message.event as ApiEvent;
-        // const messageData = message.data;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break; // Exit the loop if the stream is done
+        }
 
-        const message = parseSseString(msg);
-        // You can see message format in browser console
-        // console.log('on frontend: ', message);
-        const messageEvent = message.event;
-        const messageData = message.data;
+        buffer += value;
 
-        dispatch({
-          type: SET_LOADING_TEXT,
-          payload: messageEvent,
-        });
+        // Process the buffer to extract complete messages
+        let messages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
+        buffer = messages.pop() || ''; // Keep the last incomplete message in the buffer
 
-        if (messageEvent === 'delta') {
-          const data = messageData as ApiSseMessageDelta;
-          const textChunk = data.content;
-          runId = data.runId || ''; // TODO: refactor to reduce transfer
-          accumulatingMessage += textChunk;
-
-          // console.log({ accumulatingMessage, textChunk });
+        for (const msg of messages) {
+          // Process the value (which is a string)
+          const message = parseSseString(msg);
+          const messageEvent = message.event as ApiEvent;
+          const messageData = message.data as ApiEventData;
 
           dispatch({
-            type: APPEND_TO_STREAMED_MESSAGE,
-            payload: { content: textChunk, run_id: runId },
+            type: SET_LOADING_TEXT,
+            payload: messageEvent,
           });
 
-          scrollToBottom();
-        } else if (messageEvent == 'final_response' && messageData) {
-          const data = messageData as ApiSseMessageEvent;
-          if (accumulatingMessage.trim()) {
+          if (messageEvent === 'delta') {
+            const data = messageData as ApiSseMessageDelta;
+            const textChunk = data.content;
+            runId = data.runId || ''; // TODO: refactor to reduce transfer
+            accumulatingMessage += textChunk;
+
             dispatch({
-              type: ADD_MESSAGE,
-              payload: {
-                public_id: data.id,
-                role: data.role,
-                content: data.content,
-                created_at: new Date(), // FIXME: resolved in DEV-78
-                run_id: runId,
-                message_type: responseType,
-              },
+              type: APPEND_TO_STREAMED_MESSAGE,
+              payload: { content: textChunk, run_id: runId },
             });
-            dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-            dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+
+            scrollToBottom();
+          } else if (messageEvent == 'final_response' && messageData) {
+            const data = messageData as ApiSseMessageEvent;
+            if (accumulatingMessage.trim()) {
+              dispatch({
+                type: ADD_MESSAGE,
+                payload: {
+                  public_id: data.id,
+                  role: data.role,
+                  content: data.content,
+                  created_at: new Date(), // FIXME: resolved in DEV-78
+                  run_id: runId,
+                  message_type: responseType,
+                },
+              });
+              dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+              dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+            }
           }
         }
+
+        //     const messageResponse = await sendMessage(
+        //       threadId,
+        //       data,
+        //       userVisitorId
+        //     );
+        //     const response = await getUserMessages(userVisitorId);
+        //     const threads = response.threads;
+        //     const newThread = {
+        //       public_id: threads![0].public_id,
+        //       messages: [userMessage],
+        //       created_at: new Date(),
+        //     };
+
+        //     if (messageResponse.status === StatusCodes.BAD_REQUEST) {
+        //       dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        //       errorToast({ message: 'sending-error' });
+        //       return;
+        //     }
+
+        //     if (
+        //       messageResponse.status === StatusCodes.CREATED &&
+        //       messageResponse.message?.public_id
+        //     ) {
+        //       dispatch({
+        //         type: SET_MESSAGE_ID,
+        //         payload: messageResponse.message.public_id,
+        //       });
+        //       dispatch({
+        //         type: SET_LOADING_TEXT,
+        //         payload: t('status-asking-ai'),
+        //       });
+        //     }
+        //     threadsDispatch({
+        //       type: 'ADD_THREAD',
+        //       payload: newThread,
+        //     });
       }
-
-      //   try {
-      //     const messageResponse = await sendMessage(
-      //       threadId,
-      //       data,
-      //       userVisitorId
-      //     );
-      //     const response = await getUserMessages(userVisitorId);
-      //     const threads = response.threads;
-      //     const newThread = {
-      //       public_id: threads![0].public_id,
-      //       messages: [userMessage],
-      //       created_at: new Date(),
-      //     };
-
-      //     if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-      //       dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-      //       errorToast({ message: 'sending-error' });
-      //       return;
-      //     }
-
-      //     if (
-      //       messageResponse.status === StatusCodes.CREATED &&
-      //       messageResponse.message?.public_id
-      //     ) {
-      //       dispatch({
-      //         type: SET_MESSAGE_ID,
-      //         payload: messageResponse.message.public_id,
-      //       });
-      //       dispatch({
-      //         type: SET_LOADING_TEXT,
-      //         payload: t('status-asking-ai'),
-      //       });
-      //     }
-      //     threadsDispatch({
-      //       type: 'ADD_THREAD',
-      //       payload: newThread,
-      //     });
-      //   } catch (error) {
-      //     if (
-      //       error instanceof AxiosError &&
-      //       error.status === StatusCodes.BAD_REQUEST
-      //     ) {
-      //       dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-      //       errorToast({ message: 'sending-error' });
-      //     }
-      //     logger.error('Error submitting message: %o', error);
-      //   }
-      // }
+    } catch (error) {
+      if (
+        error instanceof AxiosError &&
+        error.status === StatusCodes.BAD_REQUEST
+      ) {
+        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        errorToast({ message: 'sending-error' });
+      }
+      logger.error('Error submitting message: %o', error);
     }
   };
 
