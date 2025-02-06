@@ -36,7 +36,6 @@ export const Assistant = ({ threadId }: Props) => {
     closeVoiceMode,
     handleVoiceResult,
     setVoiceMessageAsPlayed,
-    apiEvent,
   } = useAssistantLogic(threadId);
 
   return (

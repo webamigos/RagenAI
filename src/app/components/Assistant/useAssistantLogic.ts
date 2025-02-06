@@ -65,7 +65,6 @@ export const useAssistantLogic = (threadId: string) => {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
   const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
-  const [apiEvent, setApiEvent] = useState<ApiEvent | undefined>();
 
   const initialState: State = {
     isInitialLoad: true,
@@ -404,8 +403,6 @@ export const useAssistantLogic = (threadId: string) => {
         const messageEvent = message.event;
         const messageData = message.data;
 
-        setApiEvent(messageEvent);
-
         dispatch({
           type: SET_LOADING_TEXT,
           payload: messageEvent,
@@ -551,6 +548,5 @@ export const useAssistantLogic = (threadId: string) => {
     closeVoiceMode,
     setVoiceMessageAsPlayed,
     handleVoiceResult,
-    apiEvent,
   };
 };
