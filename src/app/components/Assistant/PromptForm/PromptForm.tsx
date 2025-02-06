@@ -63,7 +63,6 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         await onSubmit(messageData);
         reset({ prompt: '' });
       } catch (error) {
-        // Przywracamy poprzednią wartość w przypadku błędu
         setValue('prompt', data.prompt);
         throw error;
       } finally {

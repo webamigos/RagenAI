@@ -18,11 +18,12 @@ export const PublicChatInterface = memo(
     const t = useTranslations('Chatbot');
     const promptFormRef = useRef<PromptFormRef>(null);
 
-    const { handleInitialSubmit, isNewThreadLoading } = usePublicAssistantLogic(
-      null,
-      organizationId,
-      widgetMode
-    );
+    const {
+      handleInitialSubmit,
+      isNewThreadLoading: isSubmitLoading,
+      isGlobalLoading,
+      isMessageLoading,
+    } = usePublicAssistantLogic(null, organizationId, widgetMode);
 
     return (
       <div className="h-screen flex flex-col items-center justify-center px-4">
@@ -36,7 +37,7 @@ export const PublicChatInterface = memo(
             <PromptForm
               ref={promptFormRef}
               isUserLogged={false}
-              isLoading={isNewThreadLoading}
+              isLoading={isGlobalLoading || isMessageLoading}
               onSubmit={handleInitialSubmit}
               isPublicAccess={true}
             />

@@ -10,7 +10,7 @@ import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import { useNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 import { useSessionStorage } from '@/app/[locale]/public/hooks/useSessionStorage';
 import {
-  checkVisitorVisits,
+  // checkVisitorVisits,
   fetchMessagesFromApi,
 } from '@/app/lib/services/api';
 
@@ -23,7 +23,6 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 
-import { useApi } from '@/app/hooks/useApi';
 import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
 import { getErrorMessage } from '@/app/components/Assistant/utils';
 
@@ -78,23 +77,11 @@ export const usePublicAssistantLogic = (
     }
   }, []);
 
-  const { isLoading } = useApi(() =>
-    Promise.resolve(
-      activeThreadId
-        ? fetchMessagesFromApi(activeThreadId, visitorId.current)
-        : undefined
-    )
-  );
-
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
-
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const { dispatch: threadsDispatch } = useThreadsContext();
-
   const [state, dispatch] = useReducer(reducer, initialState);
-  const isGlobalLoading =
-    !state.isError && (state.isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
   const isPublicAccess = pathname.includes('/public');
 
@@ -103,6 +90,44 @@ export const usePublicAssistantLogic = (
     widgetMode,
     onThreadCreated: (threadId: string) => setActiveThreadId(threadId),
   });
+
+  const fetchData = async () => {
+    if (!activeThreadId) return;
+
+    dispatch({ type: SET_MESSAGE_LOADING, payload: true });
+    try {
+      const response = await fetchMessagesFromApi(
+        activeThreadId,
+        visitorId.current
+      );
+      if (response) {
+        dispatch({ type: SET_MESSAGES, payload: response.data });
+        dispatch({ type: SET_INITIAL_LOAD, payload: false });
+      }
+    } catch (error) {
+      logger.error('Error fetching messages: %o', error);
+      dispatch({ type: SET_IS_ERROR, payload: true });
+    }
+  };
+
+  useEffect(() => {
+    if (activeThreadId) {
+      fetchData();
+    }
+  }, [activeThreadId]);
+
+  useEffect(() => {
+    const createInitialThread = async () => {
+      if (!initialThreadId) {
+        const newThreadId = await handleNewThread();
+        if (newThreadId) {
+          setActiveThreadId(newThreadId);
+        }
+      }
+    };
+
+    createInitialThread();
+  }, [initialThreadId]);
 
   const {
     storedValue: initialPrompt,
@@ -184,41 +209,16 @@ export const usePublicAssistantLogic = (
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  const fetchData = async () => {
-    if (!activeThreadId) return;
-
-    dispatch({ type: SET_INITIAL_LOAD, payload: true });
-    try {
-      const response = await fetchMessagesFromApi(
-        activeThreadId,
-        visitorId.current
-      );
-      if (response) {
-        dispatch({ type: SET_INITIAL_LOAD, payload: false });
-        dispatch({ type: SET_MESSAGES, payload: response.data });
-      }
-    } catch (error) {
-      logger.error('Error fetching messages: %o', error);
-    }
-  };
-
-  useEffect(() => {
-    if (activeThreadId) {
-      fetchData();
-      loadVisitorMessages();
-    }
-  }, [activeThreadId]);
-
-  const loadVisitorMessages = async () => {
-    try {
-      const { data } = await checkVisitorVisits(visitorId.current);
-      if (data.messages >= 1111) {
-        dispatch({ type: SET_LIMIT_LOCK, payload: true });
-      }
-    } catch (error) {
-      logger.error('Error loading visitor messages: %o', error);
-    }
-  };
+  // const loadVisitorMessages = async () => {
+  //   try {
+  //     const { data } = await checkVisitorVisits(visitorId.current);
+  //     if (data.messages >= 1111) {
+  //       dispatch({ type: SET_LIMIT_LOCK, payload: true });
+  //     }
+  //   } catch (error) {
+  //     logger.error('Error loading visitor messages: %o', error);
+  //   }
+  // };
 
   const connectToStream = (userMessageId: string) => {
     if (!activeThreadId) return null;
@@ -381,53 +381,83 @@ export const usePublicAssistantLogic = (
     }
   };
 
-  const isLocked = () => state.isLimitLock;
-
   const handleInitialSubmit = async (data: { prompt: string }) => {
+    if (!activeThreadId) return;
+
     try {
-      const newThreadId = await handleNewThread();
-      if (newThreadId) {
-        setInitialPrompt(data.prompt);
+      setInitialPrompt(data.prompt);
+      dispatch({ type: SET_MESSAGE_LOADING, payload: true });
+      dispatch({ type: SET_LOADING_TEXT, payload: t('status-thinking') });
 
-        push(`/public/${organizationId}/threads/${newThreadId}`);
+      const userMessage = {
+        public_id: `user-${Date.now()}`,
+        role: Role.USER,
+        content: data.prompt,
+        created_at: new Date(),
+      };
 
-        sendMessage(newThreadId, { prompt: data.prompt }, visitorId.current)
-          .then((messageResponse) => {
-            if (
-              messageResponse.status === StatusCodes.CREATED &&
-              messageResponse.message?.public_id
-            ) {
-              const assistantMessageId = messageResponse.message.public_id;
-              push(
-                `/public/${organizationId}/threads/${newThreadId}?msg=${assistantMessageId}`
-              );
-              setLastUserMessage({
-                content: data.prompt,
-                id: messageResponse.message.public_id,
-              });
-            } else {
-              errorToast({ message: 'Błąd podczas wysyłania wiadomości' });
-            }
-          })
-          .catch((error) => {
-            logger.error('Error sending initial message: %o', error);
-            errorToast({ message: 'Błąd podczas wysyłania wiadomości' });
-          });
+      dispatch({ type: ADD_MESSAGE, payload: userMessage });
+
+      const messageResponse = await sendMessage(
+        activeThreadId,
+        { prompt: data.prompt },
+        visitorId.current
+      );
+
+      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
+        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+        errorToast({ message: 'Error occurred while sending message' });
+        return;
+      }
+
+      if (
+        messageResponse.status === StatusCodes.CREATED &&
+        messageResponse.message?.public_id
+      ) {
+        const assistantMessageId = messageResponse.message.public_id;
+        setLastUserMessage({
+          content: data.prompt,
+          id: messageResponse.message.public_id,
+        });
 
         threadsDispatch({
           type: 'ADD_THREAD',
           payload: {
-            public_id: newThreadId,
-            messages: [],
+            public_id: activeThreadId,
+            messages: [userMessage],
             created_at: new Date(),
           },
         });
+
+        // Set loading state before redirect
+        dispatch({ type: SET_LOADING_TEXT, payload: t('status-asking-ai') });
+        localStorage.setItem('isWaitingForResponse', 'true');
+
+        push(
+          `/public/${organizationId}/threads/${activeThreadId}?msg=${assistantMessageId}`
+        );
       }
     } catch (error) {
+      dispatch({ type: SET_MESSAGE_ERROR, payload: true });
       logger.error('Error sending initial message: %o', error);
-      errorToast({ message: 'Błąd podczas wysyłania wiadomości' });
+      errorToast({ message: 'Error sending message' });
     }
   };
+
+  // Add effect to check for waiting response state
+  useEffect(() => {
+    const isWaiting = localStorage.getItem('isWaitingForResponse');
+    if (isWaiting === 'true') {
+      dispatch({ type: SET_MESSAGE_LOADING, payload: true });
+      dispatch({ type: SET_LOADING_TEXT, payload: t('status-asking-ai') });
+    }
+    return () => {
+      localStorage.removeItem('isWaitingForResponse');
+    };
+  }, []);
+
+  const isGlobalLoading =
+    !state.isError && (state.isMessageLoading || isNewThreadLoading);
 
   return {
     messageLoadingText: state.messageLoadingText,
@@ -439,7 +469,7 @@ export const usePublicAssistantLogic = (
     isLimitLock: state.isLimitLock,
     messages: state.messages,
     isPublicAccess,
-    isLocked,
+    isLocked: () => state.isLimitLock,
     dispatch,
     onSubmit,
     isError: state.isError,

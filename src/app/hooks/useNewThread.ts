@@ -143,12 +143,7 @@ export const useNewThread = () => {
       const threadId = result.data.public_id;
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
-      setTransition(() => {
-        const route = user
-          ? `/threads/${threadId}`
-          : `/guest-threads/${threadId}`;
-        push(route);
-      });
+      return threadId;
     } catch (err) {
       errorToast({ message: 'Failed to create new thread.' });
     } finally {

@@ -19,6 +19,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
     messageLoadingText,
     messagesEndDivRef,
     isGlobalLoading,
+    isMessageLoading,
     streamedMessage,
     messages,
     isPublicAccess,
@@ -50,7 +51,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
       <div className="flex-grow overflow-y-auto">
         <ChatOutput
           messages={messages}
-          isLoading={isGlobalLoading}
+          isLoading={isGlobalLoading || isMessageLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
           widgetMode={true}
