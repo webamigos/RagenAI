@@ -20,6 +20,7 @@ type Props = {
   responseType: ChatResponseType;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
+  isPublicAccess?: boolean;
   onMessagePlayed?: (messageId: string) => void;
 };
 
@@ -28,11 +29,13 @@ const MessageContent = ({
   role,
   message,
   streamedMessageRunId,
+  responseType,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
   streamedMessageRunId?: string;
+  responseType: ChatResponseType;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -82,6 +85,8 @@ export const ChatOutput = ({
   widgetMode = false,
   loadingMessage = '',
   streamedMessage,
+  isPublicAccess = false,
+  responseType,
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
@@ -103,6 +108,7 @@ export const ChatOutput = ({
               role={message.role}
               message={message}
               streamedMessageRunId={streamedMessageRunId}
+              responseType={responseType}
             />
           </div>
         ))}
@@ -123,7 +129,13 @@ export const ChatOutput = ({
           </div>
         )}
         {isLoading && (
-          <div className="absolute bottom-[120px] md:left-14 flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600  text-md">
+          <div
+            className={`absolute ${
+              isPublicAccess
+                ? 'bottom-[90px] md:left-[71px]'
+                : 'bottom-[120px] md:left-14'
+            } flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600 text-md`}
+          >
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
           </div>
