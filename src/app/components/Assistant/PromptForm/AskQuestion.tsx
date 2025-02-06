@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { FieldError, UseFormRegister } from 'react-hook-form';
-
 import { Textarea } from '@ragenai/common-ui';
+import clsx from 'clsx';
 
 type Props = {
   disabled: boolean;
@@ -15,6 +15,7 @@ type Props = {
   setPromptValue: (text: string) => void;
   value: string;
   showVoiceInput?: boolean;
+  isPending?: boolean;
 };
 
 export const AskQuestion = ({
@@ -26,6 +27,7 @@ export const AskQuestion = ({
   register,
   onSend,
   showVoiceInput,
+  isPending = false,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -34,14 +36,20 @@ export const AskQuestion = ({
       autoFocus={true}
       value={value}
       onSend={onSend}
-      containerClassName="w-full md:w-11/12 mt-3"
-      className="h-10 mt-6 lg:mt-0 lg:-mb-0.5"
+      containerClassName={clsx(
+        'w-full md:w-11/12 mt-3',
+        isPending && 'opacity-50'
+      )}
+      className={clsx(
+        'h-10 mt-6 lg:mt-0 lg:-mb-0.5',
+        isPending && 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed'
+      )}
       errorMessage={t('provide-at-least-10-characters')}
       error={error}
       disabled={disabled}
       {...register('prompt')}
       setValue={setPromptValue}
-      placeholder={t('enter-your-question')}
+      placeholder={isPending ? t('processing') : t('enter-your-question')}
       handleResponseType={handleResponseType}
       showVoiceInput={showVoiceInput}
     />

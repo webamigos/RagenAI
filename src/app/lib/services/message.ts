@@ -1,7 +1,7 @@
 'use server';
 
 import OpenAI from 'openai';
-import { Thread, Message, Role, MessageType } from '@prisma/client';
+import { Thread, Message, Role, MessageContentType } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
 
@@ -37,7 +37,7 @@ export const createMessageInDB = async ({
   role: Role;
   visitorId?: string;
   runId?: string;
-  messageType?: MessageType;
+  messageType?: MessageContentType;
   voiceDurationSeconds?: number;
 }) => {
   try {
@@ -133,7 +133,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
   thread: OpenAI.Beta.Threads.Thread;
   threadEntity: Thread;
   visitorId?: string;
-  messageType?: MessageType;
+  messageType?: MessageContentType;
   voiceDurationSeconds?: number;
 }): Promise<MessageDto> => {
   try {
@@ -248,7 +248,7 @@ export const updateMessagePlayedStatus = async (messagePublicId: string) => {
       },
       data: {
         voice_played: true,
-        message_type: 'VOICE',
+        message_type: MessageContentType.VOICE,
       },
     });
   } catch (error) {

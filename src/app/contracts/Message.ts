@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { Role, Message as MessageModel } from '@prisma/client';
+import {
+  Role,
+  Message as MessageModel,
+  MessageContentType,
+} from '@prisma/client';
 
 export enum ChatType {
   CONVERSATION = 'conversation',
@@ -15,7 +19,7 @@ export const createMessageSchema = z.object({
   prompt: z.string().min(10, 'Provide what least 10 characters'),
   mode: z.enum([ChatType.CONVERSATION, ChatType.RAG]).optional(),
   useKnowledge: z.boolean().optional(),
-  messageType: z.enum(['TEXT', 'VOICE']).optional(),
+  messageType: z.nativeEnum(MessageContentType).optional(),
   voiceDurationSeconds: z.number().optional(),
 });
 

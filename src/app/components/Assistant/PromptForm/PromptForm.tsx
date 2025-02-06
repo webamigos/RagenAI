@@ -1,15 +1,14 @@
 import { SubmitHandler, useForm } from 'react-hook-form';
-
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import { AskQuestion } from './';
 import {
   ChatType,
   type CreateMessageDto,
   createMessageSchema,
 } from '../../../contracts/Message';
-import { forwardRef, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { MessageContentType } from '@prisma/client';
 
 type Props = {
   isLoading: boolean;
@@ -28,6 +27,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     { isLoading, isUserLogged, onSubmit, isPublicAccess, handleResponseType },
     ref
   ) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const {
       register,
       reset,
@@ -49,13 +49,26 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     }));
 
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
-      reset({ prompt: '' });
-      onSubmit({
-        ...data,
-        mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
-        messageType: data.messageType || 'TEXT',
-        voiceDurationSeconds: data.voiceDurationSeconds,
-      });
+      if (isSubmitting) return;
+
+      try {
+        setIsSubmitting(true);
+        const messageData = {
+          ...data,
+          mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
+          messageType: data.messageType || MessageContentType.TEXT,
+          voiceDurationSeconds: data.voiceDurationSeconds,
+        };
+
+        await onSubmit(messageData);
+        reset({ prompt: '' });
+      } catch (error) {
+        // Przywracamy poprzednią wartość w przypadku błędu
+        setValue('prompt', data.prompt);
+        throw error;
+      } finally {
+        setIsSubmitting(false);
+      }
     };
 
     const handleSend = () => {
@@ -64,6 +77,8 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
 
     const promptValue = watch('prompt', '');
     const useKnowledge = watch('useKnowledge');
+
+    const isDisabled = isLoading || isSubmitting;
 
     return (
       <div className="mt-auto px-4 sm:px-4 md:px-2 lg:px-22">
@@ -74,7 +89,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           <div className="flex w-full justify-center">
             <AskQuestion
               isUserLogged={isUserLogged}
-              disabled={isLoading}
+              disabled={isDisabled}
               error={errors?.prompt}
               register={register}
               onSend={handleSend}
@@ -84,6 +99,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               }
               setPromptValue={(text: string) => setValue('prompt', text)}
               showVoiceInput={!isPublicAccess}
+              isPending={isSubmitting}
             />
           </div>
           {!isPublicAccess && (
@@ -93,9 +109,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
                   type="checkbox"
                   {...register('useKnowledge')}
                   className="mr-1"
+                  disabled={isDisabled}
                 />
                 {t('selected-mode')}
-                {/* {useKnowledge ? t(ChatType.RAG) : t(ChatType.CONVERSATION)} */}
               </label>
             </div>
           )}
