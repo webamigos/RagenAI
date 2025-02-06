@@ -57,7 +57,8 @@ export const POST = async (request: NextRequest, { params }: Params) => {
               threadMessage,
             } = await apiDbService.streamChatMessages(
               threadPublicId,
-              parsedData
+              parsedData,
+              controller
             );
 
             setSentryContext('EXTRA_DATA', {
@@ -90,6 +91,16 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 event.event === 'on_parser_end' &&
                 event.name === finalAnswerRunName
               ) {
+                controller.enqueue(
+                  encoder.encode(prepareApiSseMessage('lmm_completed'))
+                );
+
+                controller.enqueue(
+                  encoder.encode(
+                    prepareApiSseMessage('save_assistant_response')
+                  )
+                );
+
                 const dbMessage = await createMessageInDB({
                   thread: threadRecord,
                   message: {
@@ -101,6 +112,13 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                   runId,
                 });
 
+                controller.enqueue(
+                  encoder.encode(
+                    prepareApiSseMessage('assistant_response_saved')
+                  )
+                );
+
+                // TODO: replace to: { messaage: {}, response: {}}
                 const messageToSend: ApiSseMessageEvent = {
                   id: dbMessage.public_id,
                   content: dbMessage.content,
@@ -110,12 +128,14 @@ export const POST = async (request: NextRequest, { params }: Params) => {
 
                 controller.enqueue(
                   encoder.encode(
-                    prepareApiSseMessage('response', messageToSend)
+                    prepareApiSseMessage('final_response', messageToSend)
                   )
                 );
 
                 // close stream
-                controller.enqueue(encoder.encode(prepareApiSseMessage('end')));
+                controller.enqueue(
+                  encoder.encode(prepareApiSseMessage('close'))
+                );
                 controller.close();
               }
             }

@@ -1,3 +1,4 @@
+import { Message, Thread } from '@prisma/client';
 import { ApiMessageDto, type MessageDto } from './Message';
 import type { ChainErrorCode } from '@/libs/chains/types/errors';
 
@@ -22,6 +23,14 @@ export type SseMessageDelta = {
 
 export type ApiSseMessageDelta = {
   content: string;
+};
+
+export type ApiSseThreadFound = {
+  id: Thread['public_id'];
+};
+
+export type ApiSseMessageCreated = {
+  id: Message['public_id'];
 };
 
 export type SseMessageError = {

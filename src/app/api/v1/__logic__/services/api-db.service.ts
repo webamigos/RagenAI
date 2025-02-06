@@ -28,6 +28,7 @@ import {
   findOrCreateThread,
   getThreadMessages,
 } from '@/app/lib/services/thread';
+import { prepareApiSseMessage } from '@/libs/sse/prepare-sse-message';
 
 type ApiCollection<T extends { id: string | number | bigint }> = Omit<
   T,
@@ -245,17 +246,33 @@ export class ApiDbService {
 
   private async prepareChainToRun(
     publicThreadId: Thread['public_id'],
-    payload: ChatMessageDto
+    payload: ChatMessageDto,
+    controller?: ReadableStreamDefaultController
   ) {
     const rawSettings = await getAllSettings(this.context.orgId);
     if (!rawSettings.apiKey) {
       throw new ApiKeyError();
     }
     let runId = '';
+    const encoder = new TextEncoder();
+
+    controller?.enqueue(encoder.encode(prepareApiSseMessage('find_thread')));
 
     const { threadRecord } = await findOrCreateThread(
       publicThreadId,
       this.context.userId
+    );
+
+    controller?.enqueue(
+      encoder.encode(
+        prepareApiSseMessage('thread_found', {
+          id: threadRecord.public_id,
+        })
+      )
+    );
+
+    controller?.enqueue(
+      encoder.encode(prepareApiSseMessage('save_user_message'))
     );
 
     const threadMessage = await createAndStoreMessage({
@@ -264,6 +281,16 @@ export class ApiDbService {
       visitorId: this.context.userId,
     });
 
+    controller?.enqueue(
+      encoder.encode(
+        prepareApiSseMessage('user_message_saved', {
+          id: threadMessage.public_id,
+        })
+      )
+    );
+
+    controller?.enqueue(encoder.encode(prepareApiSseMessage('init_lmm')));
+
     const basicRag = await initializePublicRagChain({
       settings: { ...rawSettings, apiKey: rawSettings.apiKey },
       organizationId: this.context.orgId,
@@ -271,7 +298,15 @@ export class ApiDbService {
     const chain = basicRag.chain;
     const finalAnswerRunName = basicRag.finalAnswerRunName;
 
+    controller?.enqueue(
+      encoder.encode(prepareApiSseMessage('get_thread_messages'))
+    );
+
     const threadMessages = await this.getChatMessages(publicThreadId);
+
+    controller?.enqueue(
+      encoder.encode(prepareApiSseMessage('add_thread_messages_to_lmm'))
+    );
 
     const conv_history = threadMessages
       .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
@@ -322,7 +357,8 @@ export class ApiDbService {
 
   async streamChatMessages(
     publicThreadId: Thread['public_id'],
-    payload: ChatMessageDto
+    payload: ChatMessageDto,
+    controller: ReadableStreamDefaultController
   ) {
     const {
       chain,
@@ -331,7 +367,10 @@ export class ApiDbService {
       threadMessage,
       runId,
       conv_history,
-    } = await this.prepareChainToRun(publicThreadId, payload);
+    } = await this.prepareChainToRun(publicThreadId, payload, controller);
+
+    const encoder = new TextEncoder();
+    controller.enqueue(encoder.encode(prepareApiSseMessage('start_lmm')));
 
     const eventStream = chain.streamEvents(
       {
