@@ -4,6 +4,7 @@ import { ChatOutput } from '@/app/components/Assistant/ChatOutput';
 
 import { usePublicAssistantLogic } from './usePublicAssistantLogic';
 import { PromptForm } from '@/app/components/Assistant/PromptForm';
+import { ChatResponseType } from '@/app/contracts/Message';
 
 type Props = {
   threadId: string;
@@ -32,6 +33,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
           widgetMode={true}
+          responseType={ChatResponseType.TEXT}
         />
         <div ref={messagesEndDivRef} />
       </div>
