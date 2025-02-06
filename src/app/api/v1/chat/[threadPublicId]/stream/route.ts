@@ -92,7 +92,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 event.name === finalAnswerRunName
               ) {
                 controller.enqueue(
-                  encoder.encode(prepareApiSseMessage('lmm_completed'))
+                  encoder.encode(prepareApiSseMessage('llm_completed'))
                 );
 
                 controller.enqueue(

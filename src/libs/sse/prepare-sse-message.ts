@@ -33,7 +33,7 @@ type ApiEvent =
   | 'get_thread_messages'
   | 'add_thread_messages_to_lmm'
   | 'start_lmm'
-  | 'lmm_completed'
+  | 'llm_completed'
   | 'save_assistant_response'
   | 'assistant_response_saved'
   | 'final_response'
