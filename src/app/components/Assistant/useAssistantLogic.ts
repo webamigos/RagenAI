@@ -371,6 +371,7 @@ export const useAssistantLogic = (threadId: string) => {
       const streamUrl = user
         ? `/api/threads/${threadId}?mode=${mode}`
         : `/api/guest-threads/${threadId}/`;
+
       const apiStream = await axios.post(streamUrl, data, {
         responseType: 'stream',
         adapter: 'fetch',
