@@ -30,6 +30,9 @@ model Message {
   id                String   @id @default(uuid())
   rate              Int?     @db.SmallInt
   run_id            String?
+  message_type      MessageContentType @default(TEXT)
+  voice_duration_seconds Int?
+  voice_played      Boolean   @default(false)
   thread            Thread?  @relation(fields: [thread_id], references: [id])
 }
 
@@ -42,12 +45,13 @@ model FlaggedMessage {
 }
 
 model Thread {
-  public_id        String    @unique @default(uuid())
-  openai_thread_id String
-  created_at       DateTime  @default(now()) @db.Timestamptz
-  id               String    @id @default(uuid())
-  visitor_id       String?
-  messages         Message[]
+  public_id                  String                    @unique @default(uuid())
+  openai_thread_id          String
+  created_at                DateTime                   @default(now()) @db.Timestamptz
+  id                        String                     @id @default(uuid())
+  visitor_id                String?
+  preferred_communication_type ThreadCommunicationType @default(TEXT)
+  messages                  Message[]
 }
 
 model VisitorMessages {
@@ -232,4 +236,14 @@ enum PlanStatus {
   ACTIVE
   ARCHIVED
   DELETED
+}
+
+enum ThreadCommunicationType {
+  TEXT
+  VOICE
+}
+
+enum MessageContentType {
+  TEXT
+  VOICE
 }

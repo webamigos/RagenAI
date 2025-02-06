@@ -98,6 +98,8 @@ export const sendMessage = async (
       thread,
       threadEntity,
       visitorId,
+      messageType: requestData.data.messageType,
+      voiceDurationSeconds: requestData.data.voiceDurationSeconds,
     });
 
     return { message: messageResponse, status: StatusCodes.CREATED };

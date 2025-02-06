@@ -5,6 +5,9 @@ import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
+import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
+
+import { MessageContentType } from '@prisma/client';
 
 type Props = {
   threadId: string;
@@ -13,12 +16,14 @@ type Props = {
 export const Assistant = ({ threadId }: Props) => {
   const {
     messageLoadingText,
+    handleResponseType,
     messagesEndDivRef,
     isGlobalLoading,
     streamedMessage,
     isPublicAccess,
     userVisitorId,
     isSearchOpen,
+    responseType,
     isLimitLock,
     closeSearch,
     isSignedIn,
@@ -27,6 +32,10 @@ export const Assistant = ({ threadId }: Props) => {
     onSubmit,
     isLocked,
     promptFormRef,
+    isRecording,
+    closeVoiceMode,
+    handleVoiceResult,
+    setVoiceMessageAsPlayed,
   } = useAssistantLogic(threadId);
 
   return (
@@ -44,8 +53,18 @@ export const Assistant = ({ threadId }: Props) => {
       )}
 
       <div className="h-full flex flex-col font-sans">
+        {responseType === MessageContentType.VOICE && (
+          <VoiceMode
+            onClose={closeVoiceMode}
+            isRecording={isRecording}
+            onResult={handleVoiceResult}
+            messages={messages}
+            onMessagePlayed={setVoiceMessageAsPlayed}
+          />
+        )}
         <div className="flex-grow overflow-y-auto">
           <ChatOutput
+            responseType={responseType}
             messages={messages}
             isLoading={isGlobalLoading}
             loadingMessage={messageLoadingText}
@@ -57,6 +76,7 @@ export const Assistant = ({ threadId }: Props) => {
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm
+              handleResponseType={handleResponseType}
               ref={promptFormRef}
               isUserLogged={!!isSignedIn}
               isLoading={isGlobalLoading}
