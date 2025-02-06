@@ -7,7 +7,7 @@ import {
 } from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 
@@ -360,22 +360,23 @@ export const useAssistantLogic = (threadId: string) => {
     const streamUrl = user
       ? `/api/threads/${threadId}?mode=${mode}`
       : `/api/guest-threads/${threadId}/`;
-    const apiStream = await fetch(streamUrl, {
-      method: 'POST',
+    const apiStream = await axios.post(streamUrl, data, {
+      responseType: 'stream',
+      adapter: 'fetch',
       headers: {
         Accept: 'text/event-stream',
       },
-      body: JSON.stringify(data),
     });
 
-    if (!apiStream.body) {
+    if (!apiStream.data) {
       return;
     }
 
-    const reader = apiStream.body
+    const reader = apiStream.data
       .pipeThrough(new TextDecoderStream())
       .getReader();
 
+    let buffer = ''; // Initialize a buffer to accumulate chunks
     let accumulatingMessage = '';
     let runId = '';
 
@@ -385,49 +386,57 @@ export const useAssistantLogic = (threadId: string) => {
         break; // Exit the loop if the stream is done
       }
 
-      // Process the value (which is a string)
-      // const message = parseSseString(decoder.decode(data)); // Decode the buffer to a string and then parse SSE event format to JSON
-      // const messageEvent = message.event as ApiEvent;
-      // const messageData = message.data;
+      buffer += value;
 
-      const message = parseSseString(value);
-      // You can see message format in browser console
-      // console.log('on frontend: ', message);
-      const messageEvent = message.event;
-      const messageData = message.data;
+      // Process the buffer to extract complete messages
+      let messages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
+      buffer = messages.pop() || ''; // Keep the last incomplete message in the buffer
 
-      // setApiEvent(messageEvent);
+      for (const msg of messages) {
+        // Process the value (which is a string)
+        // const message = parseSseString(decoder.decode(data)); // Decode the buffer to a string and then parse SSE event format to JSON
+        // const messageEvent = message.event as ApiEvent;
+        // const messageData = message.data;
 
-      if (messageEvent === 'delta') {
-        const data = messageData as ApiSseMessageDelta;
-        const textChunk = data.content;
-        runId = data.runId || ''; // TODO: refactor to reduce transfer
-        accumulatingMessage += textChunk;
+        const message = parseSseString(msg);
+        // You can see message format in browser console
+        // console.log('on frontend: ', message);
+        const messageEvent = message.event;
+        const messageData = message.data;
 
-        // console.log({ accumulatingMessage, textChunk });
+        // setApiEvent(messageEvent);
 
-        dispatch({
-          type: APPEND_TO_STREAMED_MESSAGE,
-          payload: { content: textChunk, run_id: runId },
-        });
+        if (messageEvent === 'delta') {
+          const data = messageData as ApiSseMessageDelta;
+          const textChunk = data.content;
+          runId = data.runId || ''; // TODO: refactor to reduce transfer
+          accumulatingMessage += textChunk;
 
-        scrollToBottom();
-      } else if (messageEvent == 'final_response' && messageData) {
-        const data = messageData as ApiSseMessageEvent;
-        if (accumulatingMessage.trim()) {
+          // console.log({ accumulatingMessage, textChunk });
+
           dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              public_id: data.id,
-              role: data.role,
-              content: data.content,
-              created_at: new Date(), // FIXME: resolved in DEV-78
-              run_id: runId,
-              message_type: responseType,
-            },
+            type: APPEND_TO_STREAMED_MESSAGE,
+            payload: { content: textChunk, run_id: runId },
           });
-          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+
+          scrollToBottom();
+        } else if (messageEvent == 'final_response' && messageData) {
+          const data = messageData as ApiSseMessageEvent;
+          if (accumulatingMessage.trim()) {
+            dispatch({
+              type: ADD_MESSAGE,
+              payload: {
+                public_id: data.id,
+                role: data.role,
+                content: data.content,
+                created_at: new Date(), // FIXME: resolved in DEV-78
+                run_id: runId,
+                message_type: responseType,
+              },
+            });
+            dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+            dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+          }
         }
       }
 
