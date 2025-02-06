@@ -404,7 +404,12 @@ export const useAssistantLogic = (threadId: string) => {
         const messageEvent = message.event;
         const messageData = message.data;
 
-        // setApiEvent(messageEvent);
+        setApiEvent(messageEvent);
+
+        dispatch({
+          type: SET_LOADING_TEXT,
+          payload: messageEvent,
+        });
 
         if (messageEvent === 'delta') {
           const data = messageData as ApiSseMessageDelta;
@@ -546,5 +551,6 @@ export const useAssistantLogic = (threadId: string) => {
     closeVoiceMode,
     setVoiceMessageAsPlayed,
     handleVoiceResult,
+    apiEvent,
   };
 };
