@@ -5,7 +5,6 @@ import { usePathname, useRouter } from '@/i18n/routing';
 
 import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
-import { createThreadForGuest } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { useSessionStorage } from './useSessionStorage';
