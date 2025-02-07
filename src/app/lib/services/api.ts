@@ -1,6 +1,5 @@
 import { api } from './config';
 import { MessageDto } from '../../contracts/Message';
-import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 export const fetchMessagesFromApi = async (
   threadId: string,

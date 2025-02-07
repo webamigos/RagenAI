@@ -63,6 +63,7 @@ export const Sidebar = ({ children, membership }: Props) => {
             pathname === `/${locale}/support` ? (
               <Button
                 isLink
+                disabled={isThreadLoading}
                 onClick={handleThread}
                 className="relative ml-4 w-10/12"
               >
