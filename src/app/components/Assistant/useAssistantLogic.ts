@@ -193,6 +193,7 @@ export const useAssistantLogic = (threadId: string) => {
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
     try {
       const response = await fetchMessagesFromApi(threadId, id);
+
       if (response) {
         dispatch({ type: SET_INITIAL_LOAD, payload: false });
         dispatch({ type: SET_MESSAGES, payload: response.data });
@@ -243,46 +244,11 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const connectToStream = (userMessageId: string, mode: ChatType) => {
+    // TODO: to remove after team consultations
     const eventSourceUrl = user
       ? `/api/threads/${threadId}/${userMessageId}?mode=${mode}`
       : `/api/guest-threads/${threadId}/${userMessageId}`;
     const eventSource = new EventSource(eventSourceUrl);
-
-    let accumulatingMessage = '';
-
-    eventSource.addEventListener('message', (event) => {
-      const eventMessage = JSON.parse(event.data);
-      if (eventMessage.type === 'delta') {
-        const textChunk = eventMessage.payload.content;
-        const runId = eventMessage.payload.runId;
-        accumulatingMessage += textChunk;
-
-        dispatch({
-          type: APPEND_TO_STREAMED_MESSAGE,
-          payload: { content: textChunk, run_id: runId },
-        });
-
-        scrollToBottom();
-      } else if (eventMessage.type === 'message') {
-        if (accumulatingMessage.trim()) {
-          dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              public_id: eventMessage.payload.public_id,
-              role: eventMessage.payload.role,
-              content: accumulatingMessage,
-              created_at: eventMessage.payload.created_at,
-              run_id: eventMessage.payload.runId,
-              message_type: responseType,
-            },
-          });
-          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-        }
-
-        accumulatingMessage = '';
-      }
-    });
 
     eventSource.addEventListener('error', async (event: ErrorEvent) => {
       eventSource.close();
@@ -320,14 +286,6 @@ export const useAssistantLogic = (threadId: string) => {
 
     return eventSource;
   };
-
-  useEffect(() => {
-    if (userMessageId !== '') {
-      const eventSource = connectToStream(userMessageId, mode);
-
-      return () => eventSource.close();
-    }
-  }, [userMessageId]);
 
   const onSubmit = async (data: CreateMessageDto) => {
     // TODO: Temporary restriction - only authenticated users can send messages
@@ -401,10 +359,10 @@ export const useAssistantLogic = (threadId: string) => {
         buffer += value;
 
         // Process the buffer to extract complete messages
-        let messages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
-        buffer = messages.pop() || ''; // Keep the last incomplete message in the buffer
+        let bufferMessages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
+        buffer = bufferMessages.pop() || ''; // Keep the last incomplete message in the buffer
 
-        for (const msg of messages) {
+        for (const msg of bufferMessages) {
           // Process the value (which is a string)
           const message = parseSseString(msg);
           const messageEvent = message.event as ApiEvent;

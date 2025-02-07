@@ -113,6 +113,8 @@ export async function POST(request: NextRequest, { params }: Params) {
             // save message
             sendApiEvent(controller, 'save_user_message');
 
+            // TODO: moderation!
+
             const threadMessage = await createAndStoreOpenAIThreadMessage({
               threadEntity: threadRecord,
               prompt: parsedData.prompt,
