@@ -370,7 +370,7 @@ export const useAssistantLogic = (threadId: string) => {
 
           dispatch({
             type: SET_LOADING_TEXT,
-            payload: messageEvent,
+            payload: messageEvent, // TODO: translations
           });
 
           if (messageEvent === 'delta') {
@@ -391,7 +391,7 @@ export const useAssistantLogic = (threadId: string) => {
               dispatch({
                 type: ADD_MESSAGE,
                 payload: {
-                  public_id: data.id,
+                  public_id: data.id, // it's public id
                   role: data.role,
                   content: data.content,
                   created_at: new Date(), // FIXME: resolved in DEV-78
@@ -402,6 +402,8 @@ export const useAssistantLogic = (threadId: string) => {
               dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
               dispatch({ type: SET_MESSAGE_LOADING, payload: false });
             }
+
+            accumulatingMessage = '';
           }
         }
 

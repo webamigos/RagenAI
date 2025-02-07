@@ -1,7 +1,7 @@
 import { useReducer, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 
 import { usePathname } from 'next/navigation';
@@ -25,6 +25,12 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { useApi } from '@/app/hooks/useApi';
 import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
 import { getErrorMessage } from '@/app/components/Assistant/utils';
+import {
+  ApiEvent,
+  ApiEventData,
+  parseSseString,
+} from '@/libs/sse/prepare-sse-message';
+import { ApiSseMessageDelta, ApiSseMessageEvent } from '@/app/contracts/Events';
 
 const { errorToast } = statusToast();
 
@@ -172,39 +178,6 @@ export const usePublicAssistantLogic = (
 
     let accumulatingMessage = '';
 
-    eventSource.addEventListener('message', (event) => {
-      const eventMessage = JSON.parse(event.data);
-      if (eventMessage.type === 'delta') {
-        const textChunk = eventMessage.payload.content;
-        const runId = eventMessage.payload.runId;
-        accumulatingMessage += textChunk;
-
-        dispatch({
-          type: APPEND_TO_STREAMED_MESSAGE,
-          payload: { content: textChunk, run_id: runId },
-        });
-
-        scrollToBottom();
-      } else if (eventMessage.type === 'message') {
-        if (accumulatingMessage.trim()) {
-          dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              public_id: eventMessage.payload.public_id,
-              role: eventMessage.payload.role,
-              content: accumulatingMessage,
-              created_at: eventMessage.payload.created_at,
-              run_id: eventMessage.payload.runId,
-            },
-          });
-          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-        }
-
-        accumulatingMessage = '';
-      }
-    });
-
     eventSource.addEventListener('error', async (event: ErrorEvent) => {
       eventSource.close();
 
@@ -243,14 +216,6 @@ export const usePublicAssistantLogic = (
     return eventSource;
   };
 
-  useEffect(() => {
-    if (state.userMessageId !== '') {
-      const eventSource = connectToStream(state.userMessageId);
-
-      return () => eventSource.close();
-    }
-  }, [state.userMessageId]);
-
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
@@ -269,48 +234,122 @@ export const usePublicAssistantLogic = (
     });
 
     try {
-      const messageResponse = await sendMessage(
-        threadId,
-        data,
-        visitorId.current
-      );
-      const newThread = {
-        public_id: threadId,
-        messages: [userMessage],
-        created_at: new Date(),
-      };
+      // const messageResponse = await sendMessage(
+      //   threadId,
+      //   data,
+      //   visitorId.current
+      // );
+      // const newThread = {
+      //   public_id: threadId,
+      //   messages: [userMessage],
+      //   created_at: new Date(),
+      // };
 
-      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
+      // if (
+      //   messageResponse.status === StatusCodes.CREATED &&
+      //   messageResponse.message?.public_id
+      // ) {
+      //   dispatch({
+      //     type: SET_MESSAGE_ID,
+      //     payload: messageResponse.message.public_id,
+      //   });
+      //   dispatch({
+      //     type: SET_LOADING_TEXT,
+      //     payload: t('status-asking-ai'),
+      //   });
+      // }
+
+      // threadsDispatch({
+      //   type: 'ADD_THREAD',
+      //   payload: newThread,
+      // });
+
+      const streamUrl = `/api/guest-threads/${threadId}/${organizationId}`;
+
+      const apiStream = await axios.post(streamUrl, data, {
+        responseType: 'stream',
+        adapter: 'fetch',
+        headers: {
+          Accept: 'text/event-stream',
+        },
+      });
+
+      if (!apiStream.data) {
         return;
       }
 
-      if (
-        messageResponse.status === StatusCodes.CREATED &&
-        messageResponse.message?.public_id
-      ) {
-        dispatch({
-          type: SET_MESSAGE_ID,
-          payload: messageResponse.message.public_id,
-        });
-        dispatch({
-          type: SET_LOADING_TEXT,
-          payload: t('status-asking-ai'),
-        });
-      }
+      const reader = apiStream.data
+        .pipeThrough(new TextDecoderStream())
+        .getReader();
 
-      threadsDispatch({
-        type: 'ADD_THREAD',
-        payload: newThread,
-      });
+      let buffer = ''; // Initialize a buffer to accumulate chunks
+      let accumulatingMessage = '';
+      let runId = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break; // Exit the loop if the stream is done
+        }
+
+        buffer += value;
+
+        // Process the buffer to extract complete messages
+        let bufferMessages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
+        buffer = bufferMessages.pop() || ''; // Keep the last incomplete message in the buffer
+
+        for (const msg of bufferMessages) {
+          // Process the value (which is a string)
+          const message = parseSseString(msg);
+          const messageEvent = message.event as ApiEvent;
+          const messageData = message.data as ApiEventData;
+
+          dispatch({
+            type: SET_LOADING_TEXT,
+            payload: messageEvent, // TODO: translations
+          });
+
+          if (messageEvent === 'delta') {
+            const data = messageData as ApiSseMessageDelta;
+            const textChunk = data.content;
+            accumulatingMessage += textChunk;
+
+            dispatch({
+              type: APPEND_TO_STREAMED_MESSAGE,
+              payload: { content: textChunk, run_id: runId },
+            });
+
+            scrollToBottom();
+          } else if (messageEvent == 'final_response' && messageData) {
+            const data = messageData as ApiSseMessageEvent;
+            runId = data.run_id;
+
+            if (accumulatingMessage.trim()) {
+              dispatch({
+                type: ADD_MESSAGE,
+                payload: {
+                  public_id: data.id, // it's public id
+                  role: data.role,
+                  content: data.content,
+                  created_at: new Date(), // FIXME: resolved in DEV-78
+                  run_id: runId,
+                },
+              });
+              dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+              dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+            }
+
+            accumulatingMessage = '';
+          }
+        }
+      }
     } catch (error) {
       if (
         error instanceof AxiosError &&
         error.status === StatusCodes.BAD_REQUEST
       ) {
         dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
+        errorToast({ message: 'Error occurred while sending message' });
       }
       logger.error('Error submitting message: %o', error);
     }

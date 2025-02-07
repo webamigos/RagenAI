@@ -104,10 +104,9 @@ export async function POST(request: NextRequest, { params }: Params) {
               id: threadRecord.public_id,
             });
 
+            // TODO: handle moderated message
             // save message
             sendApiEvent(controller, 'save_user_message');
-
-            // TODO: moderation!
 
             const threadMessage = await createAndStoreOpenAIThreadMessage({
               threadEntity: threadRecord,
@@ -204,7 +203,7 @@ export async function POST(request: NextRequest, { params }: Params) {
                       threadRecord.preferred_communication_type,
                   },
                   message: {
-                    id: threadMessage.public_id,
+                    id: threadMessage.public_id, // fixed in DEV-78
                     created_at: Math.floor(Date.now() / 1000),
                     content: event.data.output,
                   },

@@ -6,6 +6,7 @@ import {
   getThreadDetails,
 } from '../../../lib/services/thread';
 import {
+  createAndStoreOpenAIThreadMessage,
   createMessageInDB,
   getMessageById,
 } from '../../../lib/services/message';
@@ -14,6 +15,7 @@ import {
   SseMessageEvent,
   SseMessageDelta,
   SseMessageError,
+  ApiSseMessageEvent,
 } from '../../../contracts/Events';
 import { logger } from '../../../lib/utils/logger';
 
@@ -27,6 +29,8 @@ import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { initializePublicRagChain } from './services/initializePublicBasicRag';
 import { SseExceptionFilter } from '../../threads/services/sseExceptionFilter';
 import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';
+import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
+import { createMessageSchema } from '@/app/contracts/Message';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -41,12 +45,12 @@ const prepareSseMessage = (
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
-let runId: string;
 
-export async function GET(request: NextRequest, { params }: Params) {
+// TODO: a lot duplication with src/app/api/threads/[publicThreadId]/route.ts
+// the most difference is creating initializePublicRagChain instead of initializeRagChain
+export async function POST(request: NextRequest, { params }: Params) {
   try {
-    const [publicThreadId, publicMessageId, organizationAccessToken] =
-      params.guestDetails;
+    const [publicThreadId, organizationAccessToken] = params.guestDetails;
 
     const orgId = await decodeKey(organizationAccessToken);
 
@@ -56,13 +60,15 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
     setSentryClerkOrganizationTag(orgId);
 
-    const encoder = new TextEncoder();
+    const body = await request.json();
+    const parsedData = createMessageSchema.parse(body);
+
     return new Response(
       new ReadableStream({
         async start(controller) {
-          controller.enqueue(
-            encoder.encode(prepareSseMessage('init', { type: 'init' }))
-          );
+          sendApiEvent(controller, 'init');
+
+          let runId: string = '';
 
           try {
             const rawSettings = await getAllSettings(orgId);
@@ -70,13 +76,32 @@ export async function GET(request: NextRequest, { params }: Params) {
               throw new ApiKeyError();
             }
 
+            sendApiEvent(controller, 'find_thread');
+
+            const threadRecord = await getThreadDetails(publicThreadId);
+
+            sendApiEvent(controller, 'thread_found', {
+              id: threadRecord.public_id,
+            });
+
+            // TODO: handle moderated message
+            // save message
+            sendApiEvent(controller, 'save_user_message');
+
+            const threadMessage = await createAndStoreOpenAIThreadMessage({
+              threadEntity: threadRecord,
+              prompt: parsedData.prompt,
+            });
+
+            sendApiEvent(controller, 'user_message_saved', {
+              id: threadMessage.public_id,
+            });
+
             const { chain, finalAnswerRunName } =
               await initializePublicRagChain({
                 settings: { ...rawSettings, apiKey: rawSettings.apiKey },
                 organizationId: orgId,
               });
-
-            const threadMessage = await getMessageById(publicMessageId);
 
             if (!threadMessage) {
               logger.error('Thread message not found');
@@ -84,12 +109,16 @@ export async function GET(request: NextRequest, { params }: Params) {
               return;
             }
 
+            sendApiEvent(controller, 'get_thread_messages');
             const threadMessages = await getThreadMessages(publicThreadId);
-            const threadEntity = await getThreadDetails(publicThreadId);
+
+            sendApiEvent(controller, 'add_thread_messages_to_lmm');
 
             const conv_history = threadMessages?.messages
               .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
               .join('\n');
+
+            sendApiEvent(controller, 'start_lmm');
 
             const eventStream = chain.streamEvents(
               {
@@ -104,7 +133,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             setSentryContext('EXTRA_DATA', {
               userQuestion: threadMessage.content,
               publicThreadId,
-              publicMessageId,
+              publicMessageId: threadMessage.public_id,
             });
 
             let fullMessage = '';
@@ -122,52 +151,55 @@ export async function GET(request: NextRequest, { params }: Params) {
               ) {
                 const textChunk = event.data.chunk || '';
                 fullMessage += textChunk;
-                controller.enqueue(
-                  encoder.encode(
-                    prepareSseMessage('message', {
-                      type: 'delta',
-                      payload: { content: textChunk, runId },
-                    })
-                  )
-                );
+
+                sendApiEvent(controller, 'delta', {
+                  content: textChunk,
+                });
               } else if (
                 event.event === 'on_parser_end' &&
                 event.name === finalAnswerRunName
               ) {
+                sendApiEvent(controller, 'llm_completed');
+
+                sendApiEvent(controller, 'save_assistant_response');
+
                 const dbMessage = await createMessageInDB({
                   thread: {
-                    ...threadEntity,
-                    visitor_id: threadEntity.visitor_id,
+                    ...threadRecord,
+                    visitor_id: threadRecord.visitor_id,
                   },
                   message: {
-                    id: publicMessageId,
+                    id: threadMessage.public_id, // fixed in DEV-78
                     created_at: Math.floor(Date.now() / 1000),
                     content: event.data.output,
                   },
                   role: Role.ASSISTANT,
                   runId,
+                  messageType: threadRecord.preferred_communication_type,
                 });
 
-                const messageToSend: SseMessageEvent = {
-                  type: 'message',
-                  payload: {
-                    public_id: dbMessage.public_id,
-                    role: dbMessage.role,
-                    created_at: dbMessage.created_at,
-                    content: dbMessage.content,
-                    run_id: runId,
-                  },
+                sendApiEvent(controller, 'assistant_response_saved');
+
+                const messageToSend: ApiSseMessageEvent = {
+                  id: dbMessage.public_id,
+                  role: dbMessage.role,
+                  created_at: dbMessage.created_at.toISOString(),
+                  content: dbMessage.content,
+                  run_id: runId,
                 };
 
-                controller.enqueue(
-                  encoder.encode(prepareSseMessage('message', messageToSend))
-                );
+                sendApiEvent(controller, 'final_response', messageToSend);
+
+                sendApiEvent(controller, 'close');
+
+                controller.close();
               }
             }
           } catch (error) {
             const exceptionFilter = new SseExceptionFilter();
             logger.error({ err: error }, 'Error processing SSE');
             exceptionFilter.handleError(error, controller);
+            controller.close();
           }
         },
       }),
@@ -183,7 +215,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   } catch (error) {
     logger.error(
       { err: error },
-      'Unexpected error in thread streamGET handler'
+      'Unexpected error in thread stream GET handler'
     );
     return new Response('Internal Server Error', { status: 500 });
   }

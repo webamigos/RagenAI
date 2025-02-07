@@ -9,6 +9,7 @@ import { createThreadForGuest } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { useSessionStorage } from './useSessionStorage';
+import { createGuestThreadAction } from '@/app/lib/actions/threads';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -60,13 +61,13 @@ export const useNewThread = ({
       dispatch({ type: 'SET_IS_LOADING', payload: true });
       handleCloseThread(false);
 
-      const result = await createThreadForGuest();
+      const result = await createGuestThreadAction();
 
-      if (!result?.data?.public_id) {
+      if (!result.success) {
         throw new Error('Invalid response from server - missing thread ID');
       }
 
-      const newThreadId = result.data.public_id;
+      const newThreadId = result.thread.public_id;
       setThreadId(newThreadId);
 
       startTransition(() =>
