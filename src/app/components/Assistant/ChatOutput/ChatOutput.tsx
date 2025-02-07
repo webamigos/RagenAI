@@ -2,22 +2,26 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
-import { logger } from '@/app/lib/utils/logger';
+import { ReadAnswer } from './ReadAnswer';
+import { DurationTime } from './DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
   StreamedMessageDto,
+  ChatResponseType,
 } from '../../../contracts/Message';
 
 import './chat-response.css';
-import { ReadAnswer } from './ReadAnswer';
 
 type Props = {
   messages: MessageDto[];
   isLoading: boolean;
   widgetMode?: boolean;
+  responseType: ChatResponseType;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
+  isPublicAccess?: boolean;
+  onMessagePlayed?: (messageId: string) => void;
 };
 
 const MessageContent = ({
@@ -25,11 +29,13 @@ const MessageContent = ({
   role,
   message,
   streamedMessageRunId,
+  responseType,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
   streamedMessageRunId?: string;
+  responseType: ChatResponseType;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -61,6 +67,13 @@ const MessageContent = ({
             <ReadAnswer content={content} />
           </div>
         )}
+        {role === 'USER' &&
+          message?.message_type === 'VOICE' &&
+          message.voice_duration_seconds && (
+            <DurationTime
+              messageDurationTime={message.voice_duration_seconds}
+            />
+          )}
       </div>
     </>
   );
@@ -72,6 +85,8 @@ export const ChatOutput = ({
   widgetMode = false,
   loadingMessage = '',
   streamedMessage,
+  isPublicAccess = false,
+  responseType,
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
@@ -93,10 +108,10 @@ export const ChatOutput = ({
               role={message.role}
               message={message}
               streamedMessageRunId={streamedMessageRunId}
+              responseType={responseType}
             />
           </div>
         ))}
-
         {streamedMessage && (
           <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-10/12 shadow-lg shadow-slate-200 text-left self-start text-base dark:shadow-none dark:text-gray-200">
             <div className="chat-response">
@@ -113,9 +128,14 @@ export const ChatOutput = ({
             </div>
           </div>
         )}
-
         {isLoading && (
-          <div className="absolute bottom-[120px] md:left-14 flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600  text-md">
+          <div
+            className={`absolute ${
+              isPublicAccess
+                ? 'bottom-[90px] md:left-[71px]'
+                : 'bottom-[120px] md:left-14'
+            } flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600 text-md`}
+          >
             <SpinnerSVG />
             <span className="ml-2">{loadingMessage}</span>
           </div>

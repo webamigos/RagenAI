@@ -154,7 +154,7 @@
     "conversation": "baza wiedzy i inne źródła"
   },
   "text-area": {
-    "placeholder": "Twoje pytanie..."
+    "placeholder": "Wpisz swoje pytanie..."
   },
   "success-toast": {
     "copied": "Skopiowano!",
@@ -483,5 +483,16 @@
     "success": {
       "created": "Projekt został utworzony pomyślnie"
     }
+  },
+  "voice-mode": {
+    "recording": "Nagrywanie...",
+    "waiting": "Oczekiwanie na rozpoczęcie nagrywania",
+    "generating": "Generowanie odpowiedzi głosowej...",
+    "ready-to-record": "Kliknij, aby rozpocząć nagrywanie",
+    "playing": "Odtwarzanie odpowiedzi...",
+    "waiting-for-response": "Oczekiwanie na odpowiedź...",
+    "instructions": "Mów wyraźnie do mikrofonu. Wiadomość zostanie wysłana automatycznie po 3 sekundach ciszy lub po kliknięciu przycisku stop. Odpowiedź asystenta zostanie odtworzona automatycznie.",
+    "api-error": "Wystąpił błąd podczas generowania odpowiedzi głosowej. Kontynuujemy w trybie tekstowym.",
+    "api-error-instructions": "Tryb głosowy jest obecnie niedostępny. Możesz kontynuować rozmowę, ale odpowiedzi będą tylko w formie tekstu."
   }
 }

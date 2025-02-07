@@ -1,4 +1,10 @@
-import { useReducer, useEffect, useRef, startTransition } from 'react';
+import {
+  useReducer,
+  useEffect,
+  useRef,
+  startTransition,
+  useState,
+} from 'react';
 import { useTranslations } from 'next-intl';
 import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
@@ -17,7 +23,11 @@ import {
   fetchMessagesFromApi,
 } from '../../lib/services/api';
 
-import { ChatType, type CreateMessageDto } from '../../contracts/Message';
+import {
+  ChatResponseType,
+  ChatType,
+  type CreateMessageDto,
+} from '../../contracts/Message';
 import {
   type State,
   type Action,
@@ -44,6 +54,8 @@ const {
   SET_IS_ERROR,
   REMOVE_MESSAGE,
   SET_MODE,
+  SET_MODE_VOICE,
+  SET_MESSAGE_PLAYED,
 } = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
@@ -63,6 +75,7 @@ export const useAssistantLogic = (threadId: string) => {
     streamedMessage: null,
     messages: [],
     mode: ChatType.CONVERSATION,
+    responseType: ChatResponseType.TEXT,
   };
 
   const userVisitorId = user?.id;
@@ -92,12 +105,14 @@ export const useAssistantLogic = (threadId: string) => {
       streamedMessage,
       messages,
       isError,
+      responseType,
     },
     dispatch,
   ] = useReducer(reducer, initialState);
 
   const isGlobalLoading = !isError && (isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -144,6 +159,17 @@ export const useAssistantLogic = (threadId: string) => {
         };
       case SET_MODE:
         return { ...state, mode: action.payload };
+      case SET_MODE_VOICE:
+        return { ...state, responseType: action.payload };
+      case SET_MESSAGE_PLAYED:
+        return {
+          ...state,
+          messages: state.messages.map((message) =>
+            message.public_id === action.payload
+              ? { ...message, voice_played: true }
+              : message
+          ),
+        };
       default:
         return state;
     }
@@ -241,6 +267,7 @@ export const useAssistantLogic = (threadId: string) => {
               content: accumulatingMessage,
               created_at: eventMessage.payload.created_at,
               run_id: eventMessage.payload.runId,
+              message_type: responseType,
             },
           });
           dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
@@ -311,6 +338,9 @@ export const useAssistantLogic = (threadId: string) => {
       content: data.prompt,
       created_at: new Date(),
       mode: data.mode,
+      message_type: data.messageType || 'TEXT',
+      voice_duration_seconds: data.voiceDurationSeconds,
+      voice_played: false,
     };
     dispatch({ type: ADD_MESSAGE, payload: userMessage });
     dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
@@ -369,30 +399,60 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
+  const handleResponseType = () => {
+    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.VOICE });
+    setIsRecording(true);
+  };
+
+  const closeVoiceMode = () => {
+    setIsRecording(false);
+    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.TEXT });
+  };
+
   const isLocked = () => {
     if (isSignedIn) return false;
     return isLimitLock;
   };
 
+  const setVoiceMessageAsPlayed = async (messageId: string) => {
+    try {
+      dispatch({ type: SET_MESSAGE_PLAYED, payload: messageId });
+    } catch (error) {
+      logger.error('Error marking message as played: %o', error);
+    }
+  };
+
+  const handleVoiceResult = (text: string, recordingTime: number) => {
+    onSubmit({
+      mode,
+      prompt: text,
+      messageType: 'VOICE',
+      voiceDurationSeconds: recordingTime,
+    });
+  };
+
   return {
     messageLoadingText,
+    handleResponseType,
     messagesEndDivRef,
-    isMessageLoading,
     isGlobalLoading,
     streamedMessage,
     isPublicAccess,
     userVisitorId,
-    userMessageId,
     isSearchOpen,
-    closeSearch,
+    responseType,
     isLimitLock,
+    closeSearch,
     isSignedIn,
     messages,
     modalRef,
+    onSubmit,
     isLocked,
     dispatch,
-    onSubmit,
-    isError,
     promptFormRef,
+    isRecording,
+    closeVoiceMode,
+    setVoiceMessageAsPlayed,
+    handleVoiceResult,
   };
 };

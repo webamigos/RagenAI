@@ -6,10 +6,17 @@ export enum ChatType {
   RAG = 'rag',
 }
 
+export enum ChatResponseType {
+  TEXT = 'TEXT',
+  VOICE = 'VOICE',
+}
+
 export const createMessageSchema = z.object({
   prompt: z.string().min(10, 'Provide what least 10 characters'),
   mode: z.enum([ChatType.CONVERSATION, ChatType.RAG]).optional(),
   useKnowledge: z.boolean().optional(),
+  messageType: z.enum(['TEXT', 'VOICE']).optional(),
+  voiceDurationSeconds: z.number().optional(),
 });
 
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;
@@ -21,6 +28,9 @@ export type MessageDto = {
   public_id: MessageModel['public_id'];
   run_id?: MessageModel['run_id'];
   rate?: MessageModel['rate'];
+  message_type?: MessageModel['message_type'];
+  voice_duration_seconds?: MessageModel['voice_duration_seconds'];
+  voice_played?: MessageModel['voice_played'];
 };
 
 export type Thread = {
