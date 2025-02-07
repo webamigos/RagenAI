@@ -9,7 +9,6 @@ import {
   Button,
   SpinnerSVG,
   SearchIcon,
-  ArrowPath,
   ArrowIcon,
 } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
@@ -18,7 +17,7 @@ import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
-import { ProfileAndOrganizationTabs } from './MyProfileSection';
+import { UserAndOrganizationNavigation } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { DesktopNavbar } from './DesktopNavbar';
@@ -133,7 +132,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                 />
               )
             ) : (
-              <ProfileAndOrganizationTabs membership={membership} />
+              <UserAndOrganizationNavigation membership={membership} />
             )}
           </SidebarBody>
         </div>
