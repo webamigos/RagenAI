@@ -376,7 +376,6 @@ export const useAssistantLogic = (threadId: string) => {
           if (messageEvent === 'delta') {
             const data = messageData as ApiSseMessageDelta;
             const textChunk = data.content;
-            runId = data.runId || ''; // TODO: refactor to reduce transfer
             accumulatingMessage += textChunk;
 
             dispatch({
@@ -387,6 +386,7 @@ export const useAssistantLogic = (threadId: string) => {
             scrollToBottom();
           } else if (messageEvent == 'final_response' && messageData) {
             const data = messageData as ApiSseMessageEvent;
+            runId = data.run_id;
             if (accumulatingMessage.trim()) {
               dispatch({
                 type: ADD_MESSAGE,

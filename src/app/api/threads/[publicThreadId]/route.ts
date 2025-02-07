@@ -41,14 +41,6 @@ type Params = {
   params: { publicThreadId: string };
 };
 
-const prepareSseMessage = (
-  event: string,
-  data: SseInitEvent | SseMessageEvent | SseMessageDelta | SseMessageError
-): string => {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-};
-let runId: string;
-
 export async function POST(request: NextRequest, { params }: Params) {
   try {
     const { orgId, userId } = getAuth(request);
@@ -95,6 +87,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       new ReadableStream({
         async start(controller) {
           sendApiEvent(controller, 'init');
+
+          let runId: string = '';
 
           try {
             const rawSettings = await getAllSettings(orgId);
@@ -193,7 +187,6 @@ export async function POST(request: NextRequest, { params }: Params) {
 
                 sendApiEvent(controller, 'delta', {
                   content: textChunk,
-                  runId,
                 });
               } else if (
                 event.event === 'on_parser_end' &&
