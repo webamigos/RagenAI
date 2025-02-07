@@ -14,7 +14,7 @@ import { useUser } from '@clerk/nextjs';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
-import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
+import { deleteUserMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
@@ -243,50 +243,6 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
-  const connectToStream = (userMessageId: string, mode: ChatType) => {
-    // TODO: to remove after team consultations
-    const eventSourceUrl = user
-      ? `/api/threads/${threadId}/${userMessageId}?mode=${mode}`
-      : `/api/guest-threads/${threadId}/${userMessageId}`;
-    const eventSource = new EventSource(eventSourceUrl);
-
-    eventSource.addEventListener('error', async (event: ErrorEvent) => {
-      eventSource.close();
-      const errorMessage = getErrorMessage(event, tChainErrors);
-      const shouldIgnoreError = !errorMessage && !streamedMessage;
-      if (shouldIgnoreError) {
-        return;
-      }
-
-      const lastUserMessage = messages.findLast(
-        (message) => message.role === Role.USER
-      );
-
-      if (lastUserMessage) {
-        try {
-          //Move to backend after refactoring message handling
-          await deleteUserMessage(userMessageId);
-          dispatch({
-            type: REMOVE_MESSAGE,
-            payload: lastUserMessage.public_id,
-          });
-        } catch (error) {
-          logger.error('Error removing message: %o', error);
-        }
-      }
-
-      //Update user prompt input with last message data
-      dispatch({ type: SET_IS_ERROR, payload: true });
-
-      promptFormRef.current?.reset(lastUserMessage?.content || '');
-      errorToast({ message: errorMessage || tChainErrors('unknown-error') });
-
-      logger.error('Stream error: %o', errorMessage);
-    });
-
-    return eventSource;
-  };
-
   const onSubmit = async (data: CreateMessageDto) => {
     // TODO: Temporary restriction - only authenticated users can send messages
     // Future implementation should include guest user support or a clear user journey for non-authenticated users
@@ -316,6 +272,17 @@ export const useAssistantLogic = (threadId: string) => {
     dispatch({
       type: SET_LOADING_TEXT,
       payload: t('status-thinking'),
+    });
+
+    const newThread = {
+      public_id: threadId,
+      messages: [userMessage],
+      created_at: new Date(),
+    };
+
+    threadsDispatch({
+      type: 'ADD_THREAD',
+      payload: newThread,
     });
 
     try {
@@ -405,44 +372,38 @@ export const useAssistantLogic = (threadId: string) => {
 
             accumulatingMessage = '';
           }
+          // TODO: handle chain errors
+          // const errorMessage = getErrorMessage(event, tChainErrors);
+          // const shouldIgnoreError = !errorMessage && !streamedMessage;
+          // if (shouldIgnoreError) {
+          //   return;
+          // }
+
+          // const lastUserMessage = messages.findLast(
+          //   (message) => message.role === Role.USER
+          // );
+
+          // if (lastUserMessage) {
+          //   try {
+          //     //Move to backend after refactoring message handling
+          //     await deleteUserMessage(userMessageId);
+          //     dispatch({
+          //       type: REMOVE_MESSAGE,
+          //       payload: lastUserMessage.public_id,
+          //     });
+          //   } catch (error) {
+          //     logger.error('Error removing message: %o', error);
+          //   }
+          // }
+
+          // //Update user prompt input with last message data
+          // dispatch({ type: SET_IS_ERROR, payload: true });
+
+          // promptFormRef.current?.reset(lastUserMessage?.content || '');
+          // errorToast({ message: errorMessage || tChainErrors('unknown-error') });
+
+          // logger.error('Stream error: %o', errorMessage);
         }
-
-        //     const messageResponse = await sendMessage(
-        //       threadId,
-        //       data,
-        //       userVisitorId
-        //     );
-        //     const response = await getUserMessages(userVisitorId);
-        //     const threads = response.threads;
-        //     const newThread = {
-        //       public_id: threads![0].public_id,
-        //       messages: [userMessage],
-        //       created_at: new Date(),
-        //     };
-
-        //     if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-        //       dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        //       errorToast({ message: 'sending-error' });
-        //       return;
-        //     }
-
-        //     if (
-        //       messageResponse.status === StatusCodes.CREATED &&
-        //       messageResponse.message?.public_id
-        //     ) {
-        //       dispatch({
-        //         type: SET_MESSAGE_ID,
-        //         payload: messageResponse.message.public_id,
-        //       });
-        //       dispatch({
-        //         type: SET_LOADING_TEXT,
-        //         payload: t('status-asking-ai'),
-        //       });
-        //     }
-        //     threadsDispatch({
-        //       type: 'ADD_THREAD',
-        //       payload: newThread,
-        //     });
       }
     } catch (error) {
       if (

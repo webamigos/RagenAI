@@ -5,7 +5,7 @@ import axios, { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 
 import { usePathname } from 'next/navigation';
-import { sendMessage, deleteUserMessage } from '@/app/actions';
+import { deleteUserMessage } from '@/app/actions';
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import {
   checkVisitorVisits,
@@ -172,50 +172,6 @@ export const usePublicAssistantLogic = (
     }
   };
 
-  const connectToStream = (userMessageId: string) => {
-    const eventSourceUrl = `/api/guest-threads/${threadId}/${userMessageId}/${organizationId}`;
-    const eventSource = new EventSource(eventSourceUrl);
-
-    let accumulatingMessage = '';
-
-    eventSource.addEventListener('error', async (event: ErrorEvent) => {
-      eventSource.close();
-
-      const errorMessage = getErrorMessage(event, tChainErrors);
-      const shouldIgnoreError = !errorMessage && !state.streamedMessage;
-      if (shouldIgnoreError) {
-        return;
-      }
-
-      const lastUserMessage = state.messages.findLast(
-        (message) => message.role === Role.USER
-      );
-
-      if (lastUserMessage) {
-        try {
-          //Move to backend after refactoring message handling
-          await deleteUserMessage(state.userMessageId);
-          dispatch({
-            type: REMOVE_MESSAGE,
-            payload: lastUserMessage.public_id,
-          });
-        } catch (error) {
-          logger.error('Error removing message: %o', error);
-        }
-      }
-
-      //Update user prompt input with last message data
-      dispatch({ type: SET_IS_ERROR, payload: true });
-
-      promptFormRef.current?.reset(lastUserMessage?.content || '');
-      errorToast({ message: errorMessage || tChainErrors('unknown-error') });
-
-      logger.error('Stream error: %o', errorMessage);
-    });
-
-    return eventSource;
-  };
-
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
@@ -234,35 +190,16 @@ export const usePublicAssistantLogic = (
     });
 
     try {
-      // const messageResponse = await sendMessage(
-      //   threadId,
-      //   data,
-      //   visitorId.current
-      // );
-      // const newThread = {
-      //   public_id: threadId,
-      //   messages: [userMessage],
-      //   created_at: new Date(),
-      // };
+      const newThread = {
+        public_id: threadId,
+        messages: [userMessage],
+        created_at: new Date(),
+      };
 
-      // if (
-      //   messageResponse.status === StatusCodes.CREATED &&
-      //   messageResponse.message?.public_id
-      // ) {
-      //   dispatch({
-      //     type: SET_MESSAGE_ID,
-      //     payload: messageResponse.message.public_id,
-      //   });
-      //   dispatch({
-      //     type: SET_LOADING_TEXT,
-      //     payload: t('status-asking-ai'),
-      //   });
-      // }
-
-      // threadsDispatch({
-      //   type: 'ADD_THREAD',
-      //   payload: newThread,
-      // });
+      threadsDispatch({
+        type: 'ADD_THREAD',
+        payload: newThread,
+      });
 
       const streamUrl = `/api/guest-threads/${threadId}/${organizationId}`;
 
@@ -341,6 +278,37 @@ export const usePublicAssistantLogic = (
 
             accumulatingMessage = '';
           }
+          // TODO: handle stream errors
+          // const errorMessage = getErrorMessage(event, tChainErrors);
+          // const shouldIgnoreError = !errorMessage && !state.streamedMessage;
+          // if (shouldIgnoreError) {
+          //   return;
+          // }
+
+          // const lastUserMessage = state.messages.findLast(
+          //   (message) => message.role === Role.USER
+          // );
+
+          // if (lastUserMessage) {
+          //   try {
+          //     //Move to backend after refactoring message handling
+          //     await deleteUserMessage(state.userMessageId);
+          //     dispatch({
+          //       type: REMOVE_MESSAGE,
+          //       payload: lastUserMessage.public_id,
+          //     });
+          //   } catch (error) {
+          //     logger.error('Error removing message: %o', error);
+          //   }
+          // }
+
+          // //Update user prompt input with last message data
+          // dispatch({ type: SET_IS_ERROR, payload: true });
+
+          // promptFormRef.current?.reset(lastUserMessage?.content || '');
+          // errorToast({ message: errorMessage || tChainErrors('unknown-error') });
+
+          // logger.error('Stream error: %o', errorMessage);
         }
       }
     } catch (error) {
