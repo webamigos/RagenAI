@@ -7,9 +7,7 @@ import {
   SidebarLayout,
   Text,
   Button,
-  SpinnerSVG,
   SearchIcon,
-  ArrowPath,
   ArrowIcon,
 } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
@@ -22,6 +20,7 @@ import { ProfileAndOrganizationTabs } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { DesktopNavbar } from './DesktopNavbar';
+import { CreateThreadButton } from './CreateThreadButton';
 
 type Props = {
   children: React.ReactNode;
@@ -61,27 +60,10 @@ export const Sidebar = ({ children, membership }: Props) => {
             {pathname === '/' ||
             pathname.includes('/threads') ||
             pathname === `/${locale}/support` ? (
-              <Button
-                isLink
-                disabled={isThreadLoading}
-                onClick={handleThread}
-                className="relative ml-4 w-10/12"
-              >
-                <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
-                <Text
-                  className="m-1 mt-1 dark:text-gray-100"
-                  color="gray-700"
-                  fontWeight="normal"
-                >
-                  {t('create-new-thread')}
-                </Text>
-                {isThreadLoading && (
-                  <SpinnerSVG
-                    size="sm"
-                    className="absolute right-24 bottom-2.5"
-                  />
-                )}
-              </Button>
+              <CreateThreadButton
+                isThreadLoading={isThreadLoading}
+                handleThread={handleThread}
+              />
             ) : (
               <Link href={'/'}>
                 <Button
