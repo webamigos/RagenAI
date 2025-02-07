@@ -33,14 +33,18 @@ export const findOrganizationByProviderId = async (providerId: string) => {
 };
 
 export const createProjectForOrganization = async (
-  organizationId: number,
-  title: string
+  organizationInternalId: number,
+  title: string,
+  organizationId: string,
+  userId: string
 ) => {
   try {
     return await db.project.create({
       data: {
         title,
-        internal_organization_id: organizationId,
+        internal_organization_id: organizationInternalId,
+        organization_id: organizationId,
+        owner_id: userId,
       },
       select: {
         id: true,
@@ -48,10 +52,32 @@ export const createProjectForOrganization = async (
         title: true,
         created_at: true,
         internal_organization_id: true,
+        owner_id: true,
       },
     });
   } catch (error) {
     logger.error({ err: error }, 'Error creating project in database');
     throw error;
   }
+};
+
+export const fetchProjectsForUser = async (
+  organizationId: string,
+  userId: string
+) => {
+  const projects = await db.project.findMany({
+    where: {
+      organization_id: organizationId,
+      owner_id: userId,
+    },
+    select: {
+      id: true,
+      public_id: true,
+      title: true,
+      created_at: true,
+      threads: true,
+    },
+  });
+
+  return projects;
 };

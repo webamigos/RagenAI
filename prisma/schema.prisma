@@ -45,13 +45,15 @@ model FlaggedMessage {
 }
 
 model Thread {
-  public_id                  String                    @unique @default(uuid())
+  public_id                 String                    @unique @default(uuid())
   openai_thread_id          String
   created_at                DateTime                   @default(now()) @db.Timestamptz
   id                        String                     @id @default(uuid())
   visitor_id                String?
   preferred_communication_type ThreadCommunicationType @default(TEXT)
   messages                  Message[]
+  project                   Project?                @relation(fields: [project_id], references: [id])
+  project_id                Int?
 }
 
 model VisitorMessages {
@@ -181,7 +183,9 @@ model Project {
   updated_at      DateTime      @updatedAt @db.Timestamptz
   internal_organization_id Int?
   api_key         ApiKey[]
-
+  threads         Thread[]
+  organization_id String?
+  owner_id        String?
 
   @@index([public_id])
 }
@@ -209,7 +213,6 @@ enum Role {
   USER
   ASSISTANT
 }
-
 enum SubscriptionPlan {
   TRIAL
   FREE

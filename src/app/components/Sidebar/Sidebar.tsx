@@ -21,6 +21,8 @@ import { UserAndOrganizationNavigation } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { DesktopNavbar } from './DesktopNavbar';
+import { CreateProject } from './Projects/CreateProject';
+import { ProjectsList } from './Projects/ProjectsList';
 
 type Props = {
   children: React.ReactNode;
@@ -32,6 +34,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     error,
     locale,
     hasMore,
+    projects,
     userEmail,
     isLoading,
     userAvatar,
@@ -43,7 +46,9 @@ export const Sidebar = ({ children, membership }: Props) => {
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,
+    isCreateModalOpen,
     handleCloseThread,
+    setIsCreateModalOpen,
     getSidebarThreadsError,
   } = useSidebarLogic();
   const pathname = usePathname();
@@ -121,20 +126,34 @@ export const Sidebar = ({ children, membership }: Props) => {
                   <Button isError={isError} onClick={refetchThreads} />
                 </div>
               ) : (
-                <UserThreadsHistory
-                  error={error}
-                  hasMore={hasMore}
-                  isLoading={isLoading}
-                  isSignedIn={isSignedIn}
-                  userThreads={userThreads}
-                  activeThread={activeThread}
-                  isThreadsLoaded={isThreadsLoaded}
-                />
+                <>
+                  <ProjectsList
+                    projects={projects}
+                    setIsCreateModalOpen={setIsCreateModalOpen}
+                  />
+                  <UserThreadsHistory
+                    error={error}
+                    hasMore={hasMore}
+                    isLoading={isLoading}
+                    isSignedIn={isSignedIn}
+                    userThreads={userThreads}
+                    activeThread={activeThread}
+                    isThreadsLoaded={isThreadsLoaded}
+                  />
+                </>
               )
             ) : (
               <UserAndOrganizationNavigation membership={membership} />
             )}
           </SidebarBody>
+          {isCreateModalOpen && (
+            <CreateProject
+              isOpen={isCreateModalOpen}
+              onClose={() => {
+                setIsCreateModalOpen(false);
+              }}
+            />
+          )}
         </div>
       }
     >

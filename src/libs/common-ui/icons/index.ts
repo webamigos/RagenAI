@@ -1,4 +1,3 @@
-import { Grid } from './../Table/Table.stories';
 export { SpinnerSVG } from './SpinnerSVG';
 export { CursorSVG } from './CursorSVG';
 export { DownIcon } from './DownIcon';
@@ -54,3 +53,5 @@ export { SrtIcon } from './SrtIcon';
 export { UnknownFileIcon } from './UnknownFileIcon';
 export { GridIcon } from './GridIcon';
 export { ListIcon } from './ListIcon';
+export { FolderPlusIcon } from './FolderPlusIcon';
+export { FolderIcon } from './FolderIcon';

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useOrganization } from '@clerk/nextjs';
+import { StatusCodes } from 'http-status-codes';
+import { useUser } from '@clerk/nextjs';
+
 import { Dialog, DialogTitle } from '@ragenai/common-ui';
 import { Button, Input } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
-import { createProject } from '@/app/[locale]/manage-knowledge/projects/actions';
-import { useOrganization } from '@clerk/nextjs';
-import { StatusCodes } from 'http-status-codes';
+import { createProject } from '@/app/components/Sidebar/Projects/actions';
 
 interface CreateProjectProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
   const { organization, isLoaded } = useOrganization();
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,11 +47,16 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
       return;
     }
 
+    if (!user) {
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { status, error, project } = await createProject(
         organization.id,
-        title.trim()
+        title.trim(),
+        user.id
       );
 
       if (error || !project) {

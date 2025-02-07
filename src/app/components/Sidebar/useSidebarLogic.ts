@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
-
 import { usePathname } from '@/i18n/routing';
+import { useOrganization } from '@clerk/nextjs';
+
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useNewThread } from '@/app/hooks/useNewThread';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
+import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+
+import type { ProjectType } from './Projects/types';
 
 type SidebarThreadsFetchError = {
   status: number | null;
@@ -17,9 +21,13 @@ type SidebarThreadsFetchError = {
 
 export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [projects, setProjects] = useState<ProjectType[]>([]);
+
   const { state, refetchThreads } = useThreadsContext();
   const { userThreads, error, isLoading, hasMore } = state;
   const { user, isSignedIn } = useUser();
+  const { organization } = useOrganization();
   const pathname = usePathname();
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
@@ -73,10 +81,26 @@ export const useSidebarLogic = () => {
     }
   }, [pathname]);
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!organization?.id || !user?.id) {
+        return;
+      }
+      const fetchedProjects = await getProjects(organization.id, user.id);
+
+      if (fetchedProjects.projects) {
+        setProjects(fetchedProjects.projects);
+      }
+    };
+
+    fetchProjects();
+  }, [organization?.id, user?.id]);
+
   return {
     error,
     locale,
     hasMore,
+    projects,
     userEmail,
     isLoading,
     userAvatar,
@@ -91,5 +115,7 @@ export const useSidebarLogic = () => {
     isThreadsLoaded,
     handleCloseThread,
     getSidebarThreadsError,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
   };
 };

@@ -10,7 +10,7 @@ import {
 import {
   findOrganizationByProviderId,
   createProjectForOrganization,
-  fetchOrganizationDefaultProjectId,
+  fetchProjectsForUser,
 } from '@/app/lib/services/project';
 
 const serviceName = 'projects/actions';
@@ -20,7 +20,8 @@ type Project = {
   public_id: string;
   title: string;
   created_at: Date;
-  organization_id: number;
+  internal_organization_id: number | null;
+  owner_id: string | null;
 };
 
 type CreateProjectResponse = {
@@ -31,13 +32,15 @@ type CreateProjectResponse = {
 
 export const createProject = async (
   providerOrgId: string,
-  title: string
+  title: string,
+  userId: string
 ): Promise<CreateProjectResponse> => {
   try {
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(providerOrgId);
     setSentryContext('EXTRA_DATA', {
       title,
+      userId,
     });
 
     const organization = await findOrganizationByProviderId(providerOrgId);
@@ -53,50 +56,59 @@ export const createProject = async (
       };
     }
 
-    // Check if organization already has a default project
-    const defaultProjectId = await fetchOrganizationDefaultProjectId(
-      providerOrgId
+    const project = await createProjectForOrganization(
+      organization.id,
+      title,
+      providerOrgId,
+      userId
     );
 
-    // If this is the first project, create it
-    if (!defaultProjectId) {
-      const project = await createProjectForOrganization(
-        organization.id,
-        title
-      );
+    logger.info({ projectId: project.id }, 'Project created successfully');
 
-      logger.info(
-        { projectId: project.id },
-        'Default project created successfully'
-      );
-
-      return {
-        project: project as Project,
-        status: StatusCodes.CREATED,
-      };
-    }
-
-    // If organization already has a project, we can either:
-    // Option 1: Return an error
     return {
-      error: 'Organization already has a default project',
-      status: StatusCodes.CONFLICT,
+      project,
+      status: StatusCodes.CREATED,
     };
-
-    // Option 2: Allow creating additional projects (uncomment if this is the desired behavior)
-    // const project = await createProjectForOrganization(organization.id, title);
-    // logger.info({ projectId: project.id }, 'Additional project created successfully');
-    // return {
-    //   project: project as Project,
-    //   status: StatusCodes.CREATED,
-    // };
   } catch (error) {
     logger.error(
-      { err: error, providerOrgId, title },
+      { err: error, providerOrgId, title, userId },
       'Error creating project'
     );
     return {
       error: 'Failed to create project',
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+    };
+  }
+};
+
+export const getProjects = async (organizationId: string, userId: string) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryClerkOrganizationTag(organizationId);
+    setSentryContext('EXTRA_DATA', {
+      userId,
+    });
+
+    logger.info(
+      { organizationId, userId },
+      'Getting projects from Clerk organization'
+    );
+
+    const projects = await fetchProjectsForUser(organizationId, userId);
+
+    logger.info({ count: projects.length }, 'Successfully fetched projects');
+
+    return {
+      projects,
+      status: StatusCodes.OK,
+    };
+  } catch (error) {
+    logger.error(
+      { err: error, organizationId, userId },
+      'Error fetching projects'
+    );
+    return {
+      error: 'Failed to fetch projects',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
   }
