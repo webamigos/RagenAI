@@ -247,6 +247,7 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
+  // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
     // TODO: Temporary restriction - only authenticated users can send messages
     // Future implementation should include guest user support or a clear user journey for non-authenticated users
@@ -266,8 +267,9 @@ export const useAssistantLogic = (threadId: string) => {
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
-    dispatch({ type: ADD_MESSAGE, payload: userMessage });
     dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
+
+    dispatch({ type: ADD_MESSAGE, payload: userMessage });
     dispatch({ type: SET_IS_ERROR, payload: false });
     dispatch({
       type: SET_MESSAGE_LOADING,
@@ -278,17 +280,6 @@ export const useAssistantLogic = (threadId: string) => {
       payload: t('status-thinking'),
     });
 
-    const newThread = {
-      public_id: threadId,
-      messages: [userMessage],
-      created_at: new Date(),
-    };
-
-    threadsDispatch({
-      type: 'ADD_THREAD',
-      payload: newThread,
-    });
-
     try {
       // This flow:
       // Creates new thread message
@@ -297,6 +288,17 @@ export const useAssistantLogic = (threadId: string) => {
       // Starts chain
       // Adds assistant message to db
       // And stream progress using Server Sent Events format
+      const newThread = {
+        public_id: threadId,
+        messages: [userMessage],
+        created_at: new Date(),
+      };
+
+      threadsDispatch({
+        type: 'ADD_THREAD',
+        payload: newThread,
+      });
+
       const streamUrl = user
         ? `/api/threads/${threadId}?mode=${mode}`
         : `/api/guest-threads/${threadId}/`;

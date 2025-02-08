@@ -176,6 +176,7 @@ export const usePublicAssistantLogic = (
     }
   };
 
+  // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
@@ -194,6 +195,13 @@ export const usePublicAssistantLogic = (
     });
 
     try {
+      // This flow:
+      // Creates new thread message
+      // Initializes chain
+      // Adds thread messages to chain
+      // Starts chain
+      // Adds assistant message to db
+      // And stream progress using Server Sent Events format
       const newThread = {
         public_id: threadId,
         messages: [userMessage],
