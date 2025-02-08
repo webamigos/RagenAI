@@ -205,6 +205,7 @@ export async function streamEvents({
         } catch (error) {
           const exceptionFilter = new SseExceptionFilter();
           logger.error({ err: error }, 'Error processing SSE');
+          // this also sends error event which can be handled in UI
           exceptionFilter.handleError(error, controller);
           controller.close();
         }

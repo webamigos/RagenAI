@@ -30,7 +30,11 @@ import {
   ApiEventData,
   parseSseString,
 } from '@/libs/sse/prepare-sse-message';
-import { ApiSseMessageDelta, ApiSseMessageEvent } from '@/app/contracts/Events';
+import {
+  ApiSseMessageDelta,
+  ApiSseMessageEvent,
+  SseMessageError,
+} from '@/app/contracts/Events';
 
 const { errorToast } = statusToast();
 
@@ -277,38 +281,38 @@ export const usePublicAssistantLogic = (
             }
 
             accumulatingMessage = '';
+          } else if (messageEvent === 'error' && messageData) {
+            // chain errors
+            const data = messageData as Event & SseMessageError;
+
+            const errorMessage = getErrorMessage(data, tChainErrors);
+            const shouldIgnoreError = !errorMessage && !state.streamedMessage;
+            if (shouldIgnoreError) {
+              return;
+            }
+            const lastUserMessage = state.messages.findLast(
+              (message) => message.role === Role.USER
+            );
+            if (lastUserMessage) {
+              try {
+                //Move to backend after refactoring message handling
+                await deleteUserMessage(state.userMessageId);
+                dispatch({
+                  type: REMOVE_MESSAGE,
+                  payload: lastUserMessage.public_id,
+                });
+              } catch (error) {
+                logger.error('Error removing message: %o', error);
+              }
+            }
+            //Update user prompt input with last message data
+            dispatch({ type: SET_IS_ERROR, payload: true });
+            promptFormRef.current?.reset(lastUserMessage?.content || '');
+            errorToast({
+              message: errorMessage || tChainErrors('unknown-error'),
+            });
+            logger.error('Stream error: %o', errorMessage);
           }
-          // TODO: handle stream errors
-          // const errorMessage = getErrorMessage(event, tChainErrors);
-          // const shouldIgnoreError = !errorMessage && !state.streamedMessage;
-          // if (shouldIgnoreError) {
-          //   return;
-          // }
-
-          // const lastUserMessage = state.messages.findLast(
-          //   (message) => message.role === Role.USER
-          // );
-
-          // if (lastUserMessage) {
-          //   try {
-          //     //Move to backend after refactoring message handling
-          //     await deleteUserMessage(state.userMessageId);
-          //     dispatch({
-          //       type: REMOVE_MESSAGE,
-          //       payload: lastUserMessage.public_id,
-          //     });
-          //   } catch (error) {
-          //     logger.error('Error removing message: %o', error);
-          //   }
-          // }
-
-          // //Update user prompt input with last message data
-          // dispatch({ type: SET_IS_ERROR, payload: true });
-
-          // promptFormRef.current?.reset(lastUserMessage?.content || '');
-          // errorToast({ message: errorMessage || tChainErrors('unknown-error') });
-
-          // logger.error('Stream error: %o', errorMessage);
         }
       }
     } catch (error) {

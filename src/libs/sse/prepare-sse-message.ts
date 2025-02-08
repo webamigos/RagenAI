@@ -38,13 +38,15 @@ export type ApiEvent =
   | 'save_assistant_response'
   | 'assistant_response_saved'
   | 'final_response'
+  | 'error'
   | 'close';
 
 export type ApiEventData =
   | ApiSseMessageEvent
   | ApiSseMessageDelta
   | ApiSseThreadFound
-  | ApiSseMessageCreated;
+  | ApiSseMessageCreated
+  | SseMessageError;
 
 export const prepareApiSseMessage = (event: ApiEvent, data?: ApiEventData) => {
   return `event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`;
