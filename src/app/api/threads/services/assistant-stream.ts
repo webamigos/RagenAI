@@ -144,6 +144,12 @@ export async function streamEvents({
           let chainRunIds = [];
 
           for await (const event of eventStream) {
+            // TODO: stream selected chain events
+            // e. g. related to start and end of vector store  retrieval
+            // sendApiEvent(controller, event.event, {
+            //   name: event.name,
+            // });
+
             if (event.event === 'on_chain_start') {
               chainRunIds.push(event.run_id);
               runId = chainRunIds[0];
