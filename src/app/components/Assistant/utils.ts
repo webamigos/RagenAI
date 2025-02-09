@@ -167,7 +167,7 @@ export const handleAssistantStream = async ({
       throw new Error('Cannot create a stream');
     }
 
-    const apiStream = await axios.post(streamUrl, data, {
+    const apiStream = await axios.post<ReadableStream>(streamUrl, data, {
       responseType: 'stream',
       adapter: 'fetch',
       headers: {
@@ -176,7 +176,7 @@ export const handleAssistantStream = async ({
     });
 
     if (!apiStream.data) {
-      return;
+      throw new Error('Cannot read data from the stream');
     }
 
     const reader = apiStream.data
@@ -220,7 +220,10 @@ export const handleAssistantStream = async ({
             payload: { content: textChunk, run_id: runId },
           });
 
-          scrollFn();
+          if (accumulatingMessage.length % 200 === 0) {
+            // scroll each 200 characters
+            scrollFn();
+          }
         } else if (messageEvent === 'final_response' && messageData) {
           const data = messageData as ApiSseMessageEvent;
           runId = data.run_id;
