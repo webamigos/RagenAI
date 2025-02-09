@@ -1,3 +1,5 @@
+'use client';
+
 import { type Dispatch, ReducerAction, RefObject } from 'react';
 
 import {
@@ -77,6 +79,7 @@ type CommonConfig = {
   userMessageId: string;
   t: TranslationFn;
   tChainErrors: TranslationFn;
+  tApiEvents: TranslationFn;
   threadId: Thread['public_id'];
   responseType: ChatResponseType;
   threadsDispatch: Dispatch<ReducerAction<typeof threadsReducer>>;
@@ -113,6 +116,7 @@ export const handleAssistantStream = async ({
   userMessageId,
   t,
   tChainErrors,
+  tApiEvents,
   threadId,
   responseType,
   threadsDispatch,
@@ -207,7 +211,7 @@ export const handleAssistantStream = async ({
 
         dispatch({
           type: SET_LOADING_TEXT,
-          payload: messageEvent, // TODO: translations
+          payload: tApiEvents(messageEvent), // not each events should be translated e.g. delta
         });
 
         if (messageEvent === 'delta') {
@@ -220,8 +224,8 @@ export const handleAssistantStream = async ({
             payload: { content: textChunk, run_id: runId },
           });
 
-          if (accumulatingMessage.length % 200 === 0) {
-            // scroll each 200 characters
+          if (accumulatingMessage.length % 20 === 0) {
+            // scroll each 20 characters
             scrollFn();
           }
         } else if (messageEvent === 'final_response' && messageData) {

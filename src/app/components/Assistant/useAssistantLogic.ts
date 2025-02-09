@@ -77,6 +77,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
+  const tApiEvents = useTranslations('api-events');
   const { dispatch: threadsDispatch } = useThreadsContext();
   const isPublicAccess = pathname.includes('/public');
 
@@ -184,6 +185,7 @@ export const useAssistantLogic = (threadId: string) => {
         userMessage,
         t,
         tChainErrors,
+        tApiEvents,
         threadId,
         responseType: state.responseType,
         streamedMessage: state.streamedMessage,

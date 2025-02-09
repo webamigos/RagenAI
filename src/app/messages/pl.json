@@ -476,5 +476,23 @@
     "instructions": "Mów wyraźnie do mikrofonu. Wiadomość zostanie wysłana automatycznie po 3 sekundach ciszy lub po kliknięciu przycisku stop. Odpowiedź asystenta zostanie odtworzona automatycznie.",
     "api-error": "Wystąpił błąd podczas generowania odpowiedzi głosowej. Kontynuujemy w trybie tekstowym.",
     "api-error-instructions": "Tryb głosowy jest obecnie niedostępny. Możesz kontynuować rozmowę, ale odpowiedzi będą tylko w formie tekstu."
+  },
+  "api-events": {
+    "init": "inicjalizacja",
+    "delta": "generuję odpowiedź",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "zapisywanie wiadomości",
+    "user_message_saved": "zapisano",
+    "init_lmm": "pytam AI",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "zapisywanie odpowiedzi",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "error": "Wystąpił błąd",
+    "close": ""
   }
 }

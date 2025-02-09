@@ -25,8 +25,7 @@ import { sharedReducerActions } from '@/app/components/Assistant/reducer';
 
 const { errorToast } = statusToast();
 
-const { SET_INITIAL_LOAD, ADD_MESSAGE, SET_LIMIT_LOCK, SET_MESSAGES } =
-  sharedReducerActions;
+const { SET_INITIAL_LOAD, SET_LIMIT_LOCK, SET_MESSAGES } = sharedReducerActions;
 
 export const usePublicAssistantLogic = (
   threadId: string,
@@ -63,6 +62,7 @@ export const usePublicAssistantLogic = (
 
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
+  const tApiEvents = useTranslations('api-events');
   const { dispatch: threadsDispatch } = useThreadsContext();
 
   const [state, dispatch] = useReducer(publicAssistantReducer, initialState);
@@ -123,6 +123,7 @@ export const usePublicAssistantLogic = (
         userMessage,
         t,
         tChainErrors,
+        tApiEvents,
         threadId,
         responseType: ChatResponseType.TEXT,
         streamedMessage: state.streamedMessage,
