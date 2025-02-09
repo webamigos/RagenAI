@@ -94,6 +94,8 @@ export const sendMessage = async (
       prompt,
       threadRecord,
       visitorId,
+      messageType: requestData.data.messageType,
+      voiceDurationSeconds: requestData.data.voiceDurationSeconds,
     });
 
     return { message: messageResponse, status: StatusCodes.CREATED };

@@ -1,6 +1,7 @@
 'use server';
 
-import { Thread, Message, Role } from '@prisma/client';
+import { Thread, Message, Role, MessageContentType } from '@prisma/client';
+
 import db from '@ragenai/prisma-client';
 
 import { MessageDto } from '../../contracts/Message';
@@ -25,12 +26,16 @@ export const createMessageInDB = async ({
   role,
   visitorId,
   runId,
+  messageType = 'TEXT',
+  voiceDurationSeconds,
 }: {
   thread: Thread;
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
   runId?: string;
+  messageType?: MessageContentType;
+  voiceDurationSeconds?: number;
 }) => {
   try {
     setSentryServiceTag(serviceName);
@@ -42,6 +47,8 @@ export const createMessageInDB = async ({
       role,
       visitorId,
       runId,
+      messageType,
+      voiceDurationSeconds,
     });
 
     usageTracker.incMessagesCount(role);
@@ -53,6 +60,8 @@ export const createMessageInDB = async ({
         role,
         visitor_id: visitorId,
         run_id: runId,
+        message_type: messageType,
+        voice_duration_seconds: voiceDurationSeconds,
       },
     });
   } catch (error) {
@@ -61,14 +70,64 @@ export const createMessageInDB = async ({
   }
 };
 
-export const createAndStoreMessage = async ({
+export const fetchMessagesFromDb = async (
+  threadPublicId: Thread['public_id'],
+  visitorId: Thread['visitor_id']
+) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      threadId: threadPublicId,
+    });
+    setSentryContext('EXTRA_DATA', {
+      visitorId,
+    });
+
+    const thread = await db.thread.findUnique({
+      where: { public_id: threadPublicId, visitor_id: visitorId },
+    });
+
+    if (!thread) {
+      return [];
+    }
+
+    return db.message.findMany({
+      where: { thread_id: thread?.id },
+      select: {
+        public_id: true,
+        created_at: true,
+        content: true,
+        role: true,
+        run_id: true,
+        rate: true,
+        voice_duration_seconds: true,
+        message_type: true,
+        voice_played: true,
+      },
+      orderBy: [
+        {
+          created_at: 'asc',
+        },
+      ],
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch messages from DB');
+    throw error;
+  }
+};
+
+export const createAndStoreOpenAIThreadMessage = async ({
   prompt,
   threadRecord,
   visitorId,
+  messageType = 'TEXT',
+  voiceDurationSeconds,
 }: {
   prompt: string;
   threadRecord: Thread;
   visitorId?: string;
+  messageType?: MessageContentType;
+  voiceDurationSeconds?: number;
 }): Promise<MessageDto> => {
   try {
     setSentryServiceTag(serviceName);
@@ -77,6 +136,8 @@ export const createAndStoreMessage = async ({
     });
     setSentryContext('EXTRA_DATA', {
       visitorId,
+      messageType,
+      voiceDurationSeconds,
     });
 
     const dbMessage = await createMessageInDB({
@@ -87,6 +148,8 @@ export const createAndStoreMessage = async ({
       },
       role: Role.USER,
       visitorId,
+      messageType,
+      voiceDurationSeconds,
     });
 
     if (visitorId) {
@@ -102,6 +165,9 @@ export const createAndStoreMessage = async ({
       role: dbMessage.role,
       created_at: dbMessage.created_at,
       content: dbMessage.content,
+      message_type: dbMessage.message_type,
+      voice_duration_seconds: dbMessage.voice_duration_seconds,
+      voice_played: dbMessage.voice_played,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create and store message');
@@ -152,45 +218,23 @@ export const deleteMessageByPublicId = (publicId: string) => {
   }
 };
 
-export const fetchMessagesFromDb = async (
-  threadPublicId: Thread['public_id'],
-  visitorId: Thread['visitor_id']
-) => {
+export const updateMessagePlayedStatus = async (messagePublicId: string) => {
   try {
     setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadId: threadPublicId,
-    });
     setSentryContext('EXTRA_DATA', {
-      visitorId,
+      messageId: messagePublicId,
     });
-
-    const thread = await db.thread.findUnique({
-      where: { public_id: threadPublicId, visitor_id: visitorId },
-    });
-
-    if (!thread) {
-      return [];
-    }
-
-    return db.message.findMany({
-      where: { thread_id: thread?.id },
-      select: {
-        public_id: true,
-        created_at: true,
-        content: true,
-        role: true,
-        run_id: true,
-        rate: true,
+    return await db.message.update({
+      where: {
+        public_id: messagePublicId,
       },
-      orderBy: [
-        {
-          created_at: 'asc',
-        },
-      ],
+      data: {
+        voice_played: true,
+        message_type: 'VOICE',
+      },
     });
   } catch (error) {
-    logger.error({ err: error }, 'Failed to fetch messages from DB');
+    logger.error({ err: error }, 'Failed to update message played status');
     throw error;
   }
 };

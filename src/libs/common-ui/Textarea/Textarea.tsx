@@ -26,6 +26,7 @@ type Props = {
   hint?: string;
   error?: FieldError;
   containerClassName?: string;
+  handleResponseType?: () => void;
   errorMessage?: string; // for translations
   maxHeight?: number;
   onSend?: () => void;
@@ -42,6 +43,7 @@ export const Textarea = forwardRef(
       hint,
       error,
       errorMessage,
+      handleResponseType,
       className,
       disabled,
       showVoiceInput = true,
@@ -71,6 +73,11 @@ export const Textarea = forwardRef(
         }
       },
     });
+
+    const handleStartListening = () => {
+      handleResponseType?.();
+      startListening();
+    };
 
     useEffect(() => {
       if (!isRecording && value?.trim()) {
@@ -135,7 +142,7 @@ export const Textarea = forwardRef(
             aria-hidden="true"
           />
         );
-        onClick = startListening;
+        onClick = handleStartListening;
       }
     }
 
@@ -177,7 +184,7 @@ export const Textarea = forwardRef(
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
               value={value}
-              placeholder={t('text-area')}
+              placeholder={t('placeholder')}
               {...rest}
             />
             <button

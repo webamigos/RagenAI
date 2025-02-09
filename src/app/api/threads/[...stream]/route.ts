@@ -147,6 +147,8 @@ export async function GET(request: NextRequest, { params }: Params) {
                   thread: {
                     ...(threadRecord as Thread),
                     visitor_id: threadRecord.visitor_id,
+                    preferred_communication_type:
+                      threadRecord.preferred_communication_type,
                   },
                   message: {
                     id: publicMessageId,
@@ -154,6 +156,7 @@ export async function GET(request: NextRequest, { params }: Params) {
                   },
                   role: Role.ASSISTANT,
                   runId,
+                  messageType: threadEntity.preferred_communication_type,
                 });
 
                 const messageToSend: SseMessageEvent = {
