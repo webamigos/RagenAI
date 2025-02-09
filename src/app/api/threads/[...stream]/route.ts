@@ -156,7 +156,7 @@ export async function GET(request: NextRequest, { params }: Params) {
                   },
                   role: Role.ASSISTANT,
                   runId,
-                  messageType: threadEntity.preferred_communication_type,
+                  messageType: threadRecord.preferred_communication_type,
                 });
 
                 const messageToSend: SseMessageEvent = {
