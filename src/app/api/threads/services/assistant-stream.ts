@@ -19,12 +19,13 @@ import { Runnable } from '@langchain/core/runnables';
 import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
+import { AssistantMode } from '@/app/contracts/Assistant';
 
 type Config = {
   publicThreadId: string;
   userMessage: CreateMessageDto;
   orgId: string;
-  mode: 'internal' | 'public';
+  mode: AssistantMode;
   filteredMode?: ChatType;
   userId?: string;
 };

@@ -6,15 +6,13 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { StatusCodes } from 'http-status-codes';
-import axios, { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
+import { type UserResource } from '@clerk/types';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { dailyMessageLimit } from '../../config';
-import { deleteUserMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
@@ -22,51 +20,28 @@ import {
   checkVisitorVisits,
   fetchMessagesFromApi,
 } from '../../lib/services/api';
-
+import {
+  assistantReducer,
+  reducerActions,
+  sharedReducerActions,
+  State,
+} from './reducer';
 import {
   ChatResponseType,
   ChatType,
   type CreateMessageDto,
 } from '../../contracts/Message';
-import {
-  type State,
-  type Action,
-  reducerActions,
-  type ErrorEvent,
-} from './types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
-import { getErrorMessage } from './utils';
-import {
-  ApiEvent,
-  ApiEventData,
-  parseSseString,
-} from '@/libs/sse/prepare-sse-message';
-import {
-  ApiSseMessageDelta,
-  ApiSseMessageEvent,
-  SseMessageError,
-} from '@/app/contracts/Events';
+import { handleAssistantStream } from './utils';
+import { AssistantMode } from '@/app/contracts/Assistant';
+
+const { SET_MODE, SET_MODE_VOICE, SET_MESSAGE_PLAYED } = reducerActions;
+
+const { SET_INITIAL_LOAD, SET_LIMIT_LOCK, SET_MESSAGES } = sharedReducerActions;
 
 const { errorToast } = statusToast();
-const {
-  SET_INITIAL_LOAD,
-  ADD_MESSAGE,
-  APPEND_TO_STREAMED_MESSAGE,
-  SET_LIMIT_LOCK,
-  SET_LOADING_TEXT,
-  SET_MESSAGES,
-  SET_MESSAGE_ERROR,
-  SET_MESSAGE_ID,
-  SET_MESSAGE_LOADING,
-  SET_STREAMED_MESSAGE,
-  SET_IS_ERROR,
-  REMOVE_MESSAGE,
-  SET_MODE,
-  SET_MODE_VOICE,
-  SET_MESSAGE_PLAYED,
-} = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
@@ -105,85 +80,12 @@ export const useAssistantLogic = (threadId: string) => {
   const { dispatch: threadsDispatch } = useThreadsContext();
   const isPublicAccess = pathname.includes('/public');
 
-  const [
-    {
-      isMessageLoading,
-      userMessageId,
-      mode,
-      isLimitLock,
-      messageLoadingText,
-      streamedMessage,
-      messages,
-      isError,
-      responseType,
-    },
-    dispatch,
-  ] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(assistantReducer, initialState);
 
-  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
+  const isGlobalLoading =
+    !state.isError && (state.isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
   const [isRecording, setIsRecording] = useState(false);
-
-  function reducer(state: State, action: Action): State {
-    switch (action.type) {
-      case SET_INITIAL_LOAD:
-        return { ...state, isInitialLoad: action.payload };
-      case SET_MESSAGE_LOADING:
-        return { ...state, isMessageLoading: action.payload };
-      case SET_MESSAGE_ID:
-        return { ...state, userMessageId: action.payload };
-      case SET_LIMIT_LOCK:
-        return { ...state, isLimitLock: action.payload };
-      case SET_LOADING_TEXT:
-        return { ...state, messageLoadingText: action.payload };
-      case SET_MESSAGE_ERROR:
-        return { ...state, isMessageError: action.payload };
-      case SET_STREAMED_MESSAGE:
-        return { ...state, streamedMessage: action.payload };
-      case APPEND_TO_STREAMED_MESSAGE:
-        return {
-          ...state,
-          streamedMessage: {
-            content:
-              (state.streamedMessage?.content || '') + action.payload.content,
-            runId: action.payload.run_id,
-            created_at:
-              state.streamedMessage?.created_at || new Date().toISOString(),
-          },
-        };
-      case SET_MESSAGES:
-        return { ...state, messages: action.payload };
-      case ADD_MESSAGE:
-        return {
-          ...state,
-          messages: [...state.messages, action.payload],
-        };
-      case SET_IS_ERROR:
-        return { ...state, isError: action.payload, isMessageLoading: false };
-      case REMOVE_MESSAGE:
-        return {
-          ...state,
-          messages: state.messages.filter(
-            (message) => message.public_id !== action.payload
-          ),
-        };
-      case SET_MODE:
-        return { ...state, mode: action.payload };
-      case SET_MODE_VOICE:
-        return { ...state, responseType: action.payload };
-      case SET_MESSAGE_PLAYED:
-        return {
-          ...state,
-          messages: state.messages.map((message) =>
-            message.public_id === action.payload
-              ? { ...message, voice_played: true }
-              : message
-          ),
-        };
-      default:
-        return state;
-    }
-  }
 
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -224,14 +126,14 @@ export const useAssistantLogic = (threadId: string) => {
   }, [threadId]);
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if (state.messages.length > 0) {
       scrollToBottom();
       const id = userVisitorId;
       if (id) {
         loadVisitorMessages(id);
       }
     }
-  }, [messages, userVisitorId]);
+  }, [state.messages, userVisitorId]);
 
   const loadVisitorMessages = async (id: string) => {
     try {
@@ -269,162 +171,32 @@ export const useAssistantLogic = (threadId: string) => {
     };
     dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
 
-    dispatch({ type: ADD_MESSAGE, payload: userMessage });
-    dispatch({ type: SET_IS_ERROR, payload: false });
-    dispatch({
-      type: SET_MESSAGE_LOADING,
-      payload: true,
-    });
-    dispatch({
-      type: SET_LOADING_TEXT,
-      payload: t('status-thinking'),
-    });
+    // Cast to unknown first to avoid type mismatch
+    // ugly workaround to satisfied Clerk UserResourceTypes
+    const clerkUser = user as unknown as UserResource;
 
     try {
-      // This flow:
-      // Creates new thread message
-      // Initializes chain
-      // Adds thread messages to chain
-      // Starts chain
-      // Adds assistant message to db
-      // And stream progress using Server Sent Events format
-      const newThread = {
-        public_id: threadId,
-        messages: [userMessage],
-        created_at: new Date(),
-      };
-
-      threadsDispatch({
-        type: 'ADD_THREAD',
-        payload: newThread,
+      await handleAssistantStream({
+        mode: AssistantMode.INTERNAL,
+        dispatch,
+        messages: state.messages,
+        userMessageId: state.userMessageId,
+        userMessage,
+        t,
+        tChainErrors,
+        threadId,
+        responseType: state.responseType,
+        streamedMessage: state.streamedMessage,
+        threadsDispatch,
+        scrollFn: scrollToBottom,
+        errorToast,
+        promptFormRef,
+        data,
+        chatType: data.mode,
+        user: clerkUser,
       });
-
-      const streamUrl = user
-        ? `/api/threads/${threadId}?mode=${mode}`
-        : `/api/guest-threads/${threadId}/`;
-
-      const apiStream = await axios.post(streamUrl, data, {
-        responseType: 'stream',
-        adapter: 'fetch',
-        headers: {
-          Accept: 'text/event-stream',
-        },
-      });
-
-      if (!apiStream.data) {
-        return;
-      }
-
-      const reader = apiStream.data
-        .pipeThrough(new TextDecoderStream())
-        .getReader();
-
-      let buffer = ''; // Initialize a buffer to accumulate chunks
-      let accumulatingMessage = '';
-      let runId = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break; // Exit the loop if the stream is done
-        }
-
-        buffer += value;
-
-        // Process the buffer to extract complete messages
-        let bufferMessages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
-        buffer = bufferMessages.pop() || ''; // Keep the last incomplete message in the buffer
-
-        for (const msg of bufferMessages) {
-          // Process the value (which is a string)
-          const message = parseSseString(msg);
-          const messageEvent = message.event as ApiEvent;
-          const messageData = message.data as ApiEventData;
-
-          dispatch({
-            type: SET_LOADING_TEXT,
-            payload: messageEvent, // TODO: translations
-          });
-
-          if (messageEvent === 'delta') {
-            const data = messageData as ApiSseMessageDelta;
-            const textChunk = data.content;
-            accumulatingMessage += textChunk;
-
-            dispatch({
-              type: APPEND_TO_STREAMED_MESSAGE,
-              payload: { content: textChunk, run_id: runId },
-            });
-
-            scrollToBottom();
-          } else if (messageEvent === 'final_response' && messageData) {
-            const data = messageData as ApiSseMessageEvent;
-            runId = data.run_id;
-            if (accumulatingMessage.trim()) {
-              dispatch({
-                type: ADD_MESSAGE,
-                payload: {
-                  public_id: data.id, // it's public id
-                  role: data.role,
-                  content: data.content,
-                  created_at: new Date(), // FIXME: resolved in DEV-78
-                  run_id: runId,
-                  message_type: responseType,
-                },
-              });
-              dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-              dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-            }
-
-            accumulatingMessage = '';
-          } else if (messageEvent === 'error' && messageData) {
-            // chain errors
-            const data = messageData as Event & SseMessageError;
-
-            const errorMessage = getErrorMessage(data, tChainErrors);
-            const shouldIgnoreError = !errorMessage && !streamedMessage;
-            if (shouldIgnoreError) {
-              return;
-            }
-
-            const lastUserMessage = messages.findLast(
-              (message) => message.role === Role.USER
-            );
-
-            if (lastUserMessage) {
-              try {
-                //Move to backend after refactoring message handling
-                await deleteUserMessage(userMessageId);
-                dispatch({
-                  type: REMOVE_MESSAGE,
-                  payload: lastUserMessage.public_id,
-                });
-              } catch (error) {
-                logger.error('Error removing message: %o', error);
-              }
-            }
-
-            //Update user prompt input with last message data
-            dispatch({ type: SET_IS_ERROR, payload: true });
-
-            promptFormRef.current?.reset(lastUserMessage?.content || '');
-            errorToast({
-              message: errorMessage || tChainErrors('unknown-error'),
-            });
-
-            logger.error('Stream error: %o', errorMessage);
-          }
-        }
-      }
-    } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.status === StatusCodes.BAD_REQUEST
-      ) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'sending-error' });
-      }
-      logger.error('Error submitting message: %o', error);
+    } catch {
+      errorToast({ message: 'sending-error' });
     }
   };
 
@@ -440,7 +212,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const isLocked = () => {
     if (isSignedIn) return false;
-    return isLimitLock;
+    return state.isLimitLock;
   };
 
   const setVoiceMessageAsPlayed = async (messageId: string) => {
@@ -453,7 +225,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const handleVoiceResult = (text: string, recordingTime: number) => {
     onSubmit({
-      mode,
+      mode: state.mode,
       prompt: text,
       messageType: 'VOICE',
       voiceDurationSeconds: recordingTime,
@@ -461,19 +233,19 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   return {
-    messageLoadingText,
+    messageLoadingText: state.messageLoadingText,
     handleResponseType,
     messagesEndDivRef,
     isGlobalLoading,
-    streamedMessage,
+    streamedMessage: state.streamedMessage,
     isPublicAccess,
     userVisitorId,
     isSearchOpen,
-    responseType,
-    isLimitLock,
+    responseType: state.responseType,
+    isLimitLock: state.isLimitLock,
     closeSearch,
     isSignedIn,
-    messages,
+    messages: state.messages,
     modalRef,
     onSubmit,
     isLocked,
