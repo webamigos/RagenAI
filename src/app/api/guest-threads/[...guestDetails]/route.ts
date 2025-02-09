@@ -16,9 +16,9 @@ type Params = {
   params: { guestDetails: string[] };
 };
 
-// TODO: a lot duplication with src/app/api/threads/[publicThreadId]/route.ts
-// the most difference is creating initializePublicRagChain instead of initializeRagChain
 export async function POST(request: NextRequest, { params }: Params) {
+  let stream: ReadableStream | undefined;
+
   try {
     const [publicThreadId, organizationAccessToken] = params.guestDetails;
 
@@ -33,17 +33,31 @@ export async function POST(request: NextRequest, { params }: Params) {
     const body = await request.json();
     const parsedData = createMessageSchema.parse(body);
 
-    return streamEvents({
+    stream = await streamEvents({
       publicThreadId,
       userMessage: parsedData,
       orgId,
       mode: AssistantMode.PUBLIC,
+    });
+
+    return new Response(stream, {
+      headers: {
+        Connection: 'keep-alive',
+        'Content-Encoding': 'none',
+        'Cache-Control': 'no-cache, no-transform',
+        'Content-Type': 'text/event-stream; charset=utf-8',
+      },
     });
   } catch (error) {
     logger.error(
       { err: error },
       'Unexpected error in thread stream GET handler'
     );
+
+    if (stream) {
+      stream.cancel();
+    }
+
     return new Response('Internal Server Error', { status: 500 });
   }
 }
