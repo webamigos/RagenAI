@@ -6,6 +6,7 @@ import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { ChatType, createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '@/app/api/threads/services/assistant-stream';
+import { AssistantMode } from '@/app/contracts/Assistant';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       publicThreadId,
       userMessage: parsedData,
       orgId,
-      mode: 'internal',
+      mode: AssistantMode.INTERNAL,
       userId,
       filteredMode,
     });

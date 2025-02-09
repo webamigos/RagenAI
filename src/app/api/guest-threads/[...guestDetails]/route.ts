@@ -7,6 +7,7 @@ import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';
 import { createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '../../threads/services/assistant-stream';
+import { AssistantMode } from '@/app/contracts/Assistant';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       publicThreadId,
       userMessage: parsedData,
       orgId,
-      mode: 'public',
+      mode: AssistantMode.PUBLIC,
     });
   } catch (error) {
     logger.error(

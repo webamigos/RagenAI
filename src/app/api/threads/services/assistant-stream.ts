@@ -51,6 +51,7 @@ export async function streamEvents({
             throw new ApiKeyError();
           }
 
+          // TODO: to optimize we can move database queries after chain run
           sendApiEvent(controller, 'find_thread');
 
           const threadRecord = await getThreadDetails(publicThreadId);
@@ -69,6 +70,12 @@ export async function streamEvents({
             visitorId: userId,
           });
 
+          if (!threadMessage) {
+            logger.error('Thread message not found');
+            controller.close();
+            return;
+          }
+
           sendApiEvent(controller, 'user_message_saved', {
             id: threadMessage.public_id,
           });
@@ -77,7 +84,7 @@ export async function streamEvents({
           let finalAnswerRunName: string | undefined = undefined;
 
           // TODO: stream chain errors
-          if (mode === 'internal') {
+          if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
               const conversation = await initializeConversationChain({
                 settings: { ...rawSettings, apiKey: rawSettings.apiKey },
@@ -91,7 +98,7 @@ export async function streamEvents({
               chain = basicRag.chain;
               finalAnswerRunName = basicRag.finalAnswerRunName;
             }
-          } else if (mode === 'public') {
+          } else if (mode === AssistantMode.PUBLIC) {
             const publicRag = await initializePublicRagChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
               organizationId: orgId,
@@ -108,12 +115,7 @@ export async function streamEvents({
             return;
           }
 
-          if (!threadMessage) {
-            logger.error('Thread message not found');
-            controller.close();
-            return;
-          }
-
+          // TODO: to optimize db queries we can pass messages from client instead of fetching from db?
           sendApiEvent(controller, 'get_thread_messages');
           const threadMessages = await getThreadMessages(publicThreadId);
 
