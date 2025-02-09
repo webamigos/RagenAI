@@ -34,7 +34,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
-import { handleAssistantStream } from './utils';
+import { handleAssistantStream } from './handle-assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
 
 const { SET_MODE, SET_MODE_VOICE, SET_MESSAGE_PLAYED } = reducerActions;

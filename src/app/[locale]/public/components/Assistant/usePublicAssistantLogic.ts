@@ -18,7 +18,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 
 import { useApi } from '@/app/hooks/useApi';
 import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
-import { handleAssistantStream } from '@/app/components/Assistant/utils';
+import { handleAssistantStream } from '@/app/components/Assistant/handle-assistant-stream';
 import { publicAssistantReducer, type State } from './publicAssistantReducer';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { sharedReducerActions } from '@/app/components/Assistant/reducer';
