@@ -239,11 +239,14 @@
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
     "return-to-home": "Lista wątków",
-    "create-project": "Stwórz projekt",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
+    },
+    "projects": {
+      "title": "Projekty",
+      "create-project": "Stwórz projekt"
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",

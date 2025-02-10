@@ -239,11 +239,14 @@
     "generate-access-key": "Public access",
     "support-page": "Support Page",
     "return-to-home": "Threads",
-    "create-project": "Create project",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
       "older": "Older"
+    },
+    "projects": {
+      "title": "Projects",
+      "create-project": "Create Project"
     },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",

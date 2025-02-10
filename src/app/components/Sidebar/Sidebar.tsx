@@ -21,8 +21,8 @@ import { UserAndOrganizationNavigation } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { DesktopNavbar } from './DesktopNavbar';
-import { CreateProject } from './Projects/CreateProject';
-import { ProjectsList } from './Projects/ProjectsList';
+import { CreateProject } from './Projects/components/CreateProject';
+import { ProjectsList } from './Projects/ProjectList';
 
 type Props = {
   children: React.ReactNode;
@@ -130,6 +130,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                   <ProjectsList
                     projects={projects}
                     setIsCreateModalOpen={setIsCreateModalOpen}
+                    activeThread={activeThread}
                   />
                   <UserThreadsHistory
                     error={error}

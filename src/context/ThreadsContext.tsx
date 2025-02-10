@@ -58,26 +58,31 @@ function threadsReducer(state: State, action: Action): State {
     case 'ERROR':
       return { ...state, isLoading: false, error: action.payload };
     case 'ADD_THREADS':
+      const newThreads = action.payload.filter(
+        (newThread) =>
+          !state.userThreads.some(
+            (existingThread) => existingThread.public_id === newThread.public_id
+          )
+      );
       return {
         ...state,
         isLoading: false,
-        userThreads: [...state.userThreads, ...(action.payload || [])],
+        userThreads: [...state.userThreads, ...newThreads],
       };
     case 'ADD_THREAD':
-      const existingThread = state.userThreads.find(
+      const existingThreadIndex = state.userThreads.findIndex(
         (thread) => thread.public_id === action.payload.public_id
       );
-      if (existingThread) {
+
+      if (existingThreadIndex !== -1) {
+        const updatedThreads = [...state.userThreads];
+        updatedThreads[existingThreadIndex] = {
+          ...updatedThreads[existingThreadIndex],
+          messages: [...action.payload.messages],
+        };
         return {
           ...state,
-          userThreads: state.userThreads.map((thread) =>
-            thread.public_id === action.payload.public_id
-              ? {
-                  ...thread,
-                  messages: [...thread.messages, ...action.payload.messages],
-                }
-              : thread
-          ),
+          userThreads: updatedThreads,
         };
       }
       return {

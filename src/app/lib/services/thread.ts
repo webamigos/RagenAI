@@ -64,7 +64,7 @@ export const createNewOpenAIThread = async (projectId?: number) => {
     // TODO: move creation of Open AI thread to first message
     const thread = await openai.beta.threads.create();
     const threadEntity = await db.thread.create({
-      data: { openai_thread_id: thread.id },
+      data: { openai_thread_id: thread.id, project_id: projectId },
     });
     return {
       public_id: threadEntity.public_id,

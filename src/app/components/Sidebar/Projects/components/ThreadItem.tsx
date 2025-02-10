@@ -1,0 +1,24 @@
+import { SidebarItem, classMerge } from '@ragenai/common-ui';
+import type { ThreadItemProps } from '../types';
+import { getThreadTitle } from '../utils/threadUtils';
+
+export const ThreadItem = ({
+  thread,
+  projectId,
+  isActive,
+  onClose,
+}: ThreadItemProps) => (
+  <SidebarItem
+    href={`/projects/${projectId}/threads/${thread.public_id}`}
+    current={isActive}
+    className={classMerge(
+      'font-normal text-gray-700',
+      isActive
+        ? 'text-primary-blue-400 dark:text-gray-100'
+        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+    )}
+    onClick={onClose}
+  >
+    <div className="flex items-center">{getThreadTitle(thread)}</div>
+  </SidebarItem>
+);
