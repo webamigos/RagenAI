@@ -43,7 +43,6 @@ export const ThreadsSection = ({
                 const isLastThreadInAllCategories =
                   categoryIndex === threadCategories.length - 1 &&
                   index === threads.length - 1;
-
                 return (
                   <div
                     className="first-of-type:mt-1.5 last-of-type:mb-2"

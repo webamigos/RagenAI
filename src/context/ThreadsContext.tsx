@@ -79,15 +79,22 @@ function threadsReducer(state: State, action: Action): State {
         updatedThreads[existingThreadIndex] = {
           ...updatedThreads[existingThreadIndex],
           messages: [...action.payload.messages],
+          project_id: action.payload.project_id,
         };
         return {
           ...state,
           userThreads: updatedThreads,
         };
       }
+
+      const newThread = {
+        ...action.payload,
+        project_id: action.payload.project_id,
+      };
+
       return {
         ...state,
-        userThreads: [action.payload, ...state.userThreads],
+        userThreads: [newThread, ...state.userThreads],
       };
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload };

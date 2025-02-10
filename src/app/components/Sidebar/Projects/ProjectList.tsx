@@ -24,16 +24,12 @@ export const ProjectsList = ({
   } = useThreadsContext();
 
   const projectsWithUpdatedThreads = projects.map((project) => {
-    // Get all threads that belong to this project (including new ones)
     const projectThreads = userThreads.filter(
       (thread) =>
-        // Match existing project threads
         project.threads.some((pt) => pt.public_id === thread.public_id) ||
-        // Or match threads that were newly created for this project
         thread.project_id === project.id
     );
 
-    // Map threads to maintain the correct ThreadType structure
     const updatedThreads = projectThreads.map((thread) => {
       const existingThread = project.threads.find(
         (pt) => pt.public_id === thread.public_id
@@ -45,7 +41,6 @@ export const ProjectsList = ({
         created_at: thread.created_at,
         messages: thread.messages.map((msg) => ({ content: msg.content })),
         project_id: project.id,
-        // Use existing thread values or defaults for required ThreadType fields
         id: existingThread?.id || thread.public_id,
         openai_thread_id: existingThread?.openai_thread_id || thread.public_id,
         visitor_id: existingThread?.visitor_id || null,

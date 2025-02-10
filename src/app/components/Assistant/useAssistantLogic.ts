@@ -362,6 +362,7 @@ export const useAssistantLogic = (threadId: string) => {
         public_id: threads![0].public_id,
         messages: [userMessage],
         created_at: new Date(),
+        project_id: threads![0].project_id,
       };
 
       if (messageResponse.status === StatusCodes.BAD_REQUEST) {
