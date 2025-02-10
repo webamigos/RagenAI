@@ -12,8 +12,8 @@ export const fetchMessagesFromApi = async (
   return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
 };
 
-export const createThread = () => {
-  return api.post<CreateThreadDto>('/threads');
+export const createThread = (projectId?: number) => {
+  return api.post<CreateThreadDto>('/threads', { projectId });
 };
 
 export const submitFeedback = async (

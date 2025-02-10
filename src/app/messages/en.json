@@ -468,6 +468,7 @@
     "recording-error": "Error during recording, try again"
   },
   "projects": {
+    "title": "Projects",
     "create": "Create Project",
     "placeholder": "Enter project title",
     "what-is-project": "What is a project?",

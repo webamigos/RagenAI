@@ -65,19 +65,42 @@ export const fetchProjectsForUser = async (
   organizationId: string,
   userId: string
 ) => {
-  const projects = await db.project.findMany({
-    where: {
-      organization_id: organizationId,
-      owner_id: userId,
-    },
-    select: {
-      id: true,
-      public_id: true,
-      title: true,
-      created_at: true,
-      threads: true,
-    },
-  });
-
-  return projects;
+  try {
+    const projects = await db.project.findMany({
+      where: {
+        organization_id: organizationId,
+        owner_id: userId,
+      },
+      select: {
+        id: true,
+        public_id: true,
+        title: true,
+        created_at: true,
+        threads: {
+          select: {
+            id: true,
+            public_id: true,
+            openai_thread_id: true,
+            created_at: true,
+            visitor_id: true,
+            preferred_communication_type: true,
+            project_id: true,
+            messages: {
+              take: 1,
+              orderBy: {
+                created_at: 'desc',
+              },
+              select: {
+                content: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    return projects;
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching projects for user');
+    throw error;
+  }
 };

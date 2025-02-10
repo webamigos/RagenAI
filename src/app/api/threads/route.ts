@@ -7,10 +7,14 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
-export const POST = async () => {
+export const POST = async (request: Request) => {
   try {
     setSentryServiceTag('threads');
-    const threadResult = await createNewOpenAIThread();
+    const body = await request.json();
+    const projectId = body?.projectId;
+    const threadResult = await createNewOpenAIThread(
+      projectId ? parseInt(projectId, 10) : undefined
+    );
 
     return NextResponse.json(threadResult, { status: StatusCodes.CREATED });
   } catch (error) {

@@ -9,6 +9,7 @@ import { Dialog, DialogTitle } from '@ragenai/common-ui';
 import { Button, Input } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { createProject } from '@/app/components/Sidebar/Projects/actions';
+import { logger } from '@/app/lib/utils/logger';
 
 interface CreateProjectProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
     }
 
     if (!isLoaded) {
+      logger.error('Organization not loaded');
       errorToast({
         message: t('projects.error.loading-organization'),
       });
@@ -41,6 +43,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
     }
 
     if (!organization?.id) {
+      logger.error('No organization ID');
       errorToast({
         message: t('projects.error.no-organization'),
       });
@@ -48,6 +51,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
     }
 
     if (!user) {
+      logger.error('No user');
       return;
     }
 
@@ -60,6 +64,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
       );
 
       if (error || !project) {
+        logger.error('Project creation failed', { status, error });
         if (status === StatusCodes.CONFLICT) {
           errorToast({
             message: t('projects.error.project-exists'),
@@ -76,6 +81,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
       router.refresh();
       onClose();
     } catch (error) {
+      logger.error({ err: error }, 'Project creation failed');
       errorToast({
         message: t('projects.error.creation-failed'),
       });

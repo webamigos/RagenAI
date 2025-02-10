@@ -468,6 +468,7 @@
     "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
   },
   "projects": {
+    "title": "Projekty",
     "create": "Utwórz projekt",
     "placeholder": "Wprowadź nazwę projektu",
     "what-is-project": "Czym jest projekt?",

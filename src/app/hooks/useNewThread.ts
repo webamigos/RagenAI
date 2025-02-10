@@ -1,7 +1,7 @@
 import { useEffect, useTransition, useReducer, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
-
 import { usePathname, useRouter } from '@/i18n/routing';
+
 import {
   checkVisitorVisits,
   createThread,
@@ -123,7 +123,7 @@ export const useNewThread = () => {
     }
   }, [pathname]);
 
-  const handleNewThread = async () => {
+  const handleNewThread = async (projectId?: number) => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
     if (state.isLimitLock) {
@@ -134,18 +134,21 @@ export const useNewThread = () => {
     handleCloseThread(false);
 
     try {
-      const result = user ? await createThread() : await createThreadForGuest();
+      const result = user
+        ? await createThread(projectId)
+        : await createThreadForGuest();
 
       if (result.data.public_id) {
         trackThreadCreated();
       }
-
       const threadId = result.data.public_id;
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
       setTransition(() => {
         const route = user
-          ? `/threads/${threadId}`
+          ? projectId
+            ? `/projects/${projectId}/threads/${threadId}`
+            : `/threads/${threadId}`
           : `/guest-threads/${threadId}`;
         push(route);
       });
