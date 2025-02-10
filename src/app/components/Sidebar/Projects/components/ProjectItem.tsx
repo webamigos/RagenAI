@@ -47,8 +47,8 @@ export const ProjectItem = ({
     <div className="space-y-1">
       <div
         className={classMerge(
-          'w-[92%] flex items-center px-4 py-2 rounded-lg transition-colors duration-200',
-          'hover:bg-gray-100 dark:hover:bg-gray-800',
+          'flex items-center px-4 py-2 rounded-lg transition-colors duration-200',
+          'hover:bg-gray-100 dark:hover:bg-accent-dark-500',
           'cursor-pointer'
         )}
         onClick={handleProjectClick}
@@ -72,7 +72,7 @@ export const ProjectItem = ({
               e.key === 'Enter' && setIsExpanded((prev) => !prev)
             }
             aria-label={isExpanded ? 'Collapse threads' : 'Expand threads'}
-            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+            className="p-1 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors"
           >
             <ChevronDownIcon
               className={classMerge(

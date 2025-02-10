@@ -72,9 +72,17 @@ export const useSidebarLogic = () => {
   useEffect(() => {
     const parts = pathname.split('/');
     const threadIndex = parts.indexOf('threads');
+    const projectIndex = parts.indexOf('projects');
 
     if (threadIndex !== -1 && parts[threadIndex + 1]) {
       const threadId = parts[threadIndex + 1];
+      setActiveThread(threadId);
+    } else if (
+      projectIndex !== -1 &&
+      parts[projectIndex + 2] === 'threads' &&
+      parts[projectIndex + 3]
+    ) {
+      const threadId = parts[projectIndex + 3];
       setActiveThread(threadId);
     } else {
       setActiveThread('');

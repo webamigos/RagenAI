@@ -147,8 +147,6 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
     },
     ref
   ) {
-    const pathname = usePathname();
-
     if (!href) {
       return null;
     }
@@ -159,10 +157,6 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
       current && 'bg-zinc-950/5 text-blue-500',
       disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
       'group',
-      {
-        'bg-zinc-950/5 text-primary-blue-500 dark:text-gray-200':
-          pathname.includes(href),
-      },
       className
     );
 

@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { SidebarLabel } from '@ragenai/common-ui';
+import { SidebarLabel, SidebarSection } from '@ragenai/common-ui';
 import type { ThreadType, ThreadsListProps } from '../types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 import { ThreadItem } from './ThreadItem';
@@ -26,7 +26,7 @@ export const ThreadsList = ({
       {categories.map(
         ({ title, threads }) =>
           threads.length > 0 && (
-            <div key={title} className="w-11/12">
+            <SidebarSection key={title} className="w-11/12">
               <SidebarLabel className="text-gray-500 dark:text-gray-400 text-xs font-medium pl-2">
                 {title}
               </SidebarLabel>
@@ -39,7 +39,7 @@ export const ThreadsList = ({
                   onClose={onClose}
                 />
               ))}
-            </div>
+            </SidebarSection>
           )
       )}
     </div>
