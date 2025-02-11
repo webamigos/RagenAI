@@ -1,21 +1,38 @@
 import { useState, useCallback, KeyboardEvent } from 'react';
+import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
+import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 
-import { useNewThread } from '@/app/hooks/useNewThread';
+type Props = {
+  organizationId?: string;
+  isPublicAccess?: boolean;
+  widgetMode?: boolean;
+};
 
-export const useNewThreadInput = () => {
+export const useNewThreadInput = ({
+  organizationId,
+  isPublicAccess,
+  widgetMode,
+}: Props) => {
   const [prompt, setPrompt] = useState('');
-  const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
+  const privateThread = usePrivateNewThread();
+  const publicThread = usePublicNewThread({
+    organizationId: organizationId || '',
+    widgetMode: widgetMode || false,
+  });
+
+  const threadHandler = isPublicAccess ? publicThread : privateThread;
 
   const handleInputChange = (value: string) => {
     setPrompt(value);
   };
 
   const handleSubmit = useCallback(async () => {
-    if (!prompt.trim() || isLoading || isPending || isLimitLock) return;
+    if (!prompt.trim() || threadHandler.isLoading || threadHandler.isPending)
+      return;
 
-    await handleNewThread(prompt.trim());
+    await threadHandler.handleNewThread(prompt.trim());
     setPrompt('');
-  }, [prompt, handleNewThread, isLoading, isPending, isLimitLock]);
+  }, [prompt, threadHandler]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -26,9 +43,8 @@ export const useNewThreadInput = () => {
 
   return {
     prompt,
-    isLoading,
-    isPending,
-    isLimitLock,
+    isLoading: threadHandler.isLoading,
+    isPending: threadHandler.isPending,
     handleInputChange,
     handleSubmit,
     handleKeyDown,

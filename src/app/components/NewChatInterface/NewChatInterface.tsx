@@ -5,25 +5,29 @@ import { classMerge, Textarea } from '@ragenai/common-ui/index';
 
 import { useNewThreadInput } from './useNewThreadInput';
 
-interface NewThreadInputProps {
+interface NewChatInterfaceProps {
   className?: string;
   isEmbedded?: boolean;
+  organizationId?: string;
+  isPublicAccess?: boolean;
+  widgetMode?: boolean;
 }
 
 export const NewChatInterface = ({
   className,
   isEmbedded = false,
-}: NewThreadInputProps) => {
+  organizationId,
+  isPublicAccess = false,
+  widgetMode = false,
+}: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const {
-    prompt,
-    isLoading,
-    isPending,
-    isLimitLock,
-    handleInputChange,
-    handleKeyDown,
-  } = useNewThreadInput();
+  const { prompt, isLoading, isPending, handleInputChange, handleKeyDown } =
+    useNewThreadInput({
+      organizationId,
+      isPublicAccess,
+      widgetMode,
+    });
 
   useEffect(() => {
     if (!isEmbedded && inputRef.current) {
@@ -54,7 +58,8 @@ export const NewChatInterface = ({
           onKeyDown={handleKeyDown}
           placeholder={t('new-thread-placeholder')}
           className="w-full min-h-[100px]"
-          disabled={isLoading || isPending || isLimitLock}
+          disabled={isLoading || isPending}
+          showVoiceInput={!isPublicAccess}
         />
       </div>
     </div>
