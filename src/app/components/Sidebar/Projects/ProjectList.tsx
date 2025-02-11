@@ -68,13 +68,13 @@ export const ProjectsList = ({
 
   return (
     <div className="mb-4">
-      <SidebarLabel className="text-gray-600 dark:text-gray-100 font-bold p-2">
+      <SidebarLabel className="p-2 text-gray-600 dark:text-gray-100 font-bold">
         {t('title')}
       </SidebarLabel>
       {!projectsWithUpdatedThreads.length ? (
         <EmptyProjectsState onCreateClick={() => setIsCreateModalOpen(true)} />
       ) : (
-        <div className="space-y-1">
+        <div className="space-y-1 mt-2">
           {projectsWithUpdatedThreads.map((project) => (
             <ProjectItem
               key={project.public_id}
