@@ -123,7 +123,7 @@ export const useNewThread = () => {
     }
   }, [pathname]);
 
-  const handleNewThread = async () => {
+  const handleNewThread = async (initialMessage?: string) => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
     if (state.isLimitLock) {
@@ -148,6 +148,15 @@ export const useNewThread = () => {
           const route = user
             ? `/threads/${threadId}`
             : `/guest-threads/${threadId}`;
+
+          // Store the initial message in localStorage to be picked up by the thread view
+          if (initialMessage) {
+            localStorage.setItem(
+              `thread_${threadId}_initial_message`,
+              initialMessage
+            );
+          }
+
           push(route);
         });
       }

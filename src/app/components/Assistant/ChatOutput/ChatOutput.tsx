@@ -3,7 +3,7 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer';
-import { DurationTime } from './DurationTime';
+import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,

@@ -12,7 +12,10 @@
     "log-in": "log in",
     "or": "or",
     "to-still-use": "to continue using the service",
-    "start-tour": "Start tour"
+    "start-tour": "Start tour",
+    "new-thread-header": "Got a question?",
+    "new-thread-description": "Just ask me anything!",
+    "new-thread-placeholder": "Type your message here..."
   },
   "sign-up": {
     "create-account": "Create your account",
@@ -399,9 +402,9 @@
   "onboarding": {
     "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",
     "second-step": "To use the assistant and allow others access to documents, you must belong to an 'organization'. This is the first important step.",
-    "third-step": "In the organization registration form, you’ll find three fields, with only the organization name being required.",
+    "third-step": "In the organization registration form, you'll find three fields, with only the organization name being required.",
     "fourth-step": "Once the form is completed, you can confirm the organization setup to proceed.",
-    "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let’s go to the assistant management section.",
+    "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let's go to the assistant management section.",
     "sixth-step": "In this section, you have the option to customize your assistant to suit your needs. For now, fill in only the 'OpenAI API Key' field to activate the assistant.",
     "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
     "eighth-step": "If you do not have epub or markdown documents, use the editor to create a document adapted to the assistant or paste prepared content.",
@@ -434,7 +437,7 @@
   },
   "page404": {
     "page-not-found": "Page not found",
-    "sorry-we-could-not-find": "Sorry, we couldn’t find the page you’re looking for.",
+    "sorry-we-could-not-find": "Sorry, we couldn't find the page you're looking for.",
     "go-back-home": "Go back to home"
   },
   "Chatbot": {

@@ -234,6 +234,21 @@ export const useAssistantLogic = (threadId: string) => {
     });
   };
 
+  useEffect(() => {
+    const initialMessageKey = `thread_${threadId}_initial_message`;
+    const initialMessage = localStorage.getItem(initialMessageKey);
+
+    if (initialMessage) {
+      localStorage.removeItem(initialMessageKey);
+
+      onSubmit({
+        prompt: initialMessage,
+        mode: ChatType.CONVERSATION,
+        messageType: 'TEXT',
+      });
+    }
+  }, [threadId]);
+
   return {
     messageLoadingText: state.messageLoadingText,
     handleResponseType,
