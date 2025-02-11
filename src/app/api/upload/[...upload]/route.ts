@@ -63,7 +63,6 @@ export async function POST(request: NextRequest, { params }: Params) {
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
           organizationId
         );
-
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
