@@ -477,5 +477,23 @@
     "instructions": "Speak clearly into the microphone. The message will be sent automatically after 3 seconds of silence or by clicking the stop button. The assistant's response will be played automatically.",
     "api-error": "An error occurred while generating the voice response. Continuing in text mode.",
     "api-error-instructions": "Voice mode is currently unavailable. You can continue the conversation, but responses will be in text form only."
+  },
+  "api-events": {
+    "init": "initialization",
+    "delta": "generating response",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "init_lmm": "asking AI",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "saving response",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "error": "An Error has occurred",
+    "close": ""
   }
 }

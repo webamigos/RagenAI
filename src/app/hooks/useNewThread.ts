@@ -2,16 +2,16 @@ import { useEffect, useTransition, useReducer, useCallback } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 import { usePathname, useRouter } from '@/i18n/routing';
-import {
-  checkVisitorVisits,
-  createThread,
-  createThreadForGuest,
-} from '../lib/services/api';
+import { checkVisitorVisits } from '../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
 import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
 import { trackThreadCreated } from '../actions';
+import {
+  createGuestThreadAction,
+  createThreadAction,
+} from '../lib/actions/threads';
 
 type ActionType =
   | { type: 'SET_VISITOR_ID'; payload: string | null }
@@ -134,16 +134,25 @@ export const useNewThread = () => {
     handleCloseThread(false);
 
     try {
-      const result = user ? await createThread() : await createThreadForGuest();
+      const result = user
+        ? await createThreadAction()
+        : await createGuestThreadAction();
 
-      if (result.data.public_id) {
+      if (result.success) {
         trackThreadCreated();
+
+        const threadId = result.thread.public_id;
+        localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+
+        setTransition(() => {
+          const route = user
+            ? `/threads/${threadId}`
+            : `/guest-threads/${threadId}`;
+          push(route);
+        });
+
+        return threadId;
       }
-
-      const threadId = result.data.public_id;
-      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
-
-      return threadId;
     } catch (err) {
       errorToast({ message: 'Failed to create new thread.' });
     } finally {

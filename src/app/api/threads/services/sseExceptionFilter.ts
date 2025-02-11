@@ -4,16 +4,10 @@ import {
   UnknownChainError,
 } from '@/libs/chains/errors';
 import { SseMessageError } from '@/app/contracts/Events';
-import { TextEncoder } from 'util';
 import { setSentryContext } from '@/app/lib/services/sentry';
+import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 
 export class SseExceptionFilter {
-  private encoder = new TextEncoder();
-
-  private prepareSseMessage(event: string, data: any): string {
-    return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  }
-
   handleError(error: any, controller: ReadableStreamDefaultController) {
     let chainError: ChainError;
 
@@ -38,9 +32,8 @@ export class SseExceptionFilter {
     setSentryContext('CHAIN_SSE_ERROR', {
       errorMessage,
     });
-    controller.enqueue(
-      this.encoder.encode(this.prepareSseMessage('error', errorMessage))
-    );
+    sendApiEvent(controller, 'error', errorMessage);
+
     controller.close();
   }
 }

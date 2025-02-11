@@ -6,7 +6,8 @@ import { useEffect } from 'react';
 
 import { usePublicAssistantLogic } from './usePublicAssistantLogic';
 import { PromptForm } from '@/app/components/Assistant/PromptForm';
-import { reducerActions } from './types';
+import { sharedReducerActions } from '@/app/components/Assistant/reducer';
+import { ChatResponseType } from '@/app/contracts/Message';
 
 type Props = {
   threadId: string;
@@ -40,7 +41,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
 
     if (initialMessageId && !userMessageId && !messageExists) {
       dispatch({
-        type: reducerActions.SET_MESSAGE_ID,
+        type: sharedReducerActions.SET_MESSAGE_ID,
         payload: initialMessageId,
       });
     }
@@ -56,6 +57,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           streamedMessage={streamedMessage}
           widgetMode={true}
           isPublicAccess={isPublicAccess}
+          responseType={ChatResponseType.TEXT}
         />
         <div ref={messagesEndDivRef} />
       </div>

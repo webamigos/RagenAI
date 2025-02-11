@@ -29,11 +29,13 @@ const MessageContent = ({
   role,
   message,
   streamedMessageRunId,
+  responseType,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
   streamedMessageRunId?: string;
+  responseType?: ChatResponseType;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -84,6 +86,7 @@ export const ChatOutput = ({
   loadingMessage = '',
   streamedMessage,
   isPublicAccess = false,
+  responseType,
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
@@ -105,6 +108,7 @@ export const ChatOutput = ({
               role={message.role}
               message={message}
               streamedMessageRunId={streamedMessageRunId}
+              responseType={responseType}
             />
           </div>
         ))}

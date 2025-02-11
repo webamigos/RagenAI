@@ -1,11 +1,9 @@
 import { useReducer, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
 import { Role } from '@prisma/client';
 import { useRouter } from '@/i18n/routing';
 import { usePathname } from 'next/navigation';
-import { sendMessage, deleteUserMessage } from '@/app/actions';
+
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import { useNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 import { useSessionStorage } from '@/app/[locale]/public/hooks/useSessionStorage';
@@ -15,33 +13,32 @@ import {
 } from '@/app/lib/services/api';
 
 import {
-  type State,
-  type Action,
-  reducerActions,
-  type ErrorEvent,
-} from './types';
+  ChatResponseType,
+  type CreateMessageDto,
+} from '@/app/contracts/Message';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 
 import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
-import { getErrorMessage } from '@/app/components/Assistant/utils';
+import { handleAssistantStream } from '@/app/components/Assistant/handle-assistant-stream';
+import { publicAssistantReducer, type State } from './publicAssistantReducer';
+import { AssistantMode } from '@/app/contracts/Assistant';
+import { sharedReducerActions } from '@/app/components/Assistant/reducer';
+import { sendMessage } from '@/app/actions';
+import { StatusCodes } from 'http-status-codes';
 
 const { errorToast } = statusToast();
 
 const {
   SET_INITIAL_LOAD,
-  ADD_MESSAGE,
-  APPEND_TO_STREAMED_MESSAGE,
   SET_LIMIT_LOCK,
-  SET_LOADING_TEXT,
-  SET_MESSAGES,
-  SET_MESSAGE_ERROR,
-  SET_MESSAGE_ID,
-  SET_MESSAGE_LOADING,
-  SET_STREAMED_MESSAGE,
   SET_IS_ERROR,
-  REMOVE_MESSAGE,
-} = reducerActions;
+  SET_MESSAGE_ERROR,
+  ADD_MESSAGE,
+  SET_MESSAGES,
+  SET_MESSAGE_LOADING,
+  SET_LOADING_TEXT,
+} = sharedReducerActions;
 
 export const usePublicAssistantLogic = (
   initialThreadId: string | null,
@@ -80,8 +77,11 @@ export const usePublicAssistantLogic = (
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
+  const tApiEvents = useTranslations('api-events');
   const { dispatch: threadsDispatch } = useThreadsContext();
-  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const [state, dispatch] = useReducer(publicAssistantReducer, initialState);
+
   const promptFormRef = useRef<PromptFormRef>(null);
   const isPublicAccess = pathname.includes('/public');
 
@@ -158,159 +158,10 @@ export const usePublicAssistantLogic = (
     }
   }, [activeThreadId]);
 
-  function reducer(state: State, action: Action): State {
-    switch (action.type) {
-      case SET_INITIAL_LOAD:
-        return { ...state, isInitialLoad: action.payload };
-      case SET_MESSAGE_LOADING:
-        return { ...state, isMessageLoading: action.payload };
-      case SET_MESSAGE_ID:
-        return { ...state, userMessageId: action.payload };
-      case SET_LIMIT_LOCK:
-        return { ...state, isLimitLock: action.payload };
-      case SET_LOADING_TEXT:
-        return { ...state, messageLoadingText: action.payload };
-      case SET_MESSAGE_ERROR:
-        return { ...state, isMessageError: action.payload };
-      case SET_STREAMED_MESSAGE:
-        return { ...state, streamedMessage: action.payload };
-      case APPEND_TO_STREAMED_MESSAGE:
-        return {
-          ...state,
-          streamedMessage: {
-            content:
-              (state.streamedMessage?.content || '') + action.payload.content,
-            runId: action.payload.run_id,
-            created_at:
-              state.streamedMessage?.created_at || new Date().toISOString(),
-          },
-        };
-      case SET_MESSAGES:
-        return { ...state, messages: action.payload };
-      case ADD_MESSAGE:
-        return {
-          ...state,
-          messages: [...state.messages, action.payload],
-        };
-      case SET_IS_ERROR:
-        return { ...state, isError: action.payload, isMessageLoading: false };
-      case REMOVE_MESSAGE:
-        return {
-          ...state,
-          messages: state.messages.filter(
-            (message) => message.public_id !== action.payload
-          ),
-        };
-      default:
-        return state;
-    }
-  }
-
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  // const loadVisitorMessages = async () => {
-  //   try {
-  //     const { data } = await checkVisitorVisits(visitorId.current);
-  //     if (data.messages >= 1111) {
-  //       dispatch({ type: SET_LIMIT_LOCK, payload: true });
-  //     }
-  //   } catch (error) {
-  //     logger.error('Error loading visitor messages: %o', error);
-  //   }
-  // };
-
-  const connectToStream = (userMessageId: string) => {
-    if (!activeThreadId) return null;
-
-    if (processedMessages.includes(userMessageId)) {
-      return null;
-    }
-
-    const eventSourceUrl = `/api/guest-threads/${activeThreadId}/${userMessageId}/${organizationId}`;
-    const eventSource = new EventSource(eventSourceUrl);
-    let accumulatingMessage = '';
-
-    eventSource.addEventListener('message', (event) => {
-      const eventMessage = JSON.parse(event.data);
-      if (eventMessage.type === 'delta') {
-        const textChunk = eventMessage.payload.content;
-        const runId = eventMessage.payload.runId;
-        accumulatingMessage += textChunk;
-
-        dispatch({
-          type: APPEND_TO_STREAMED_MESSAGE,
-          payload: { content: textChunk, run_id: runId },
-        });
-
-        scrollToBottom();
-      } else if (eventMessage.type === 'message') {
-        if (accumulatingMessage.trim()) {
-          dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              public_id: eventMessage.payload.public_id,
-              role: eventMessage.payload.role,
-              content: accumulatingMessage,
-              created_at: eventMessage.payload.created_at,
-              run_id: eventMessage.payload.runId,
-            },
-          });
-          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-
-          setProcessedMessages([...processedMessages, userMessageId]);
-        }
-
-        accumulatingMessage = '';
-      }
-    });
-
-    eventSource.addEventListener('error', async (event: ErrorEvent) => {
-      eventSource.close();
-
-      const errorMessage = getErrorMessage(event, tChainErrors);
-      const shouldIgnoreError = !errorMessage && !state.streamedMessage;
-      if (shouldIgnoreError) {
-        return;
-      }
-
-      if (lastUserMessage) {
-        try {
-          //Move to backend after refactoring message handling
-          await deleteUserMessage(lastUserMessage.id);
-          dispatch({
-            type: REMOVE_MESSAGE,
-            payload: lastUserMessage.id,
-          });
-          removeLastUserMessage();
-        } catch (error) {
-          logger.error('Error removing message: %o', error);
-        }
-      }
-
-      dispatch({ type: SET_IS_ERROR, payload: true });
-
-      promptFormRef.current?.reset(lastUserMessage?.content || '');
-      errorToast({ message: errorMessage || tChainErrors('unknown-error') });
-
-      logger.error('Stream error: %o', errorMessage);
-    });
-
-    return eventSource;
-  };
-
-  useEffect(() => {
-    if (
-      state.userMessageId !== '' &&
-      !processedMessages.includes(state.userMessageId)
-    ) {
-      const eventSource = connectToStream(state.userMessageId);
-      return () => eventSource?.close();
-    }
-  }, [state.userMessageId, processedMessages]);
-
-  const onSubmit = async (data: { prompt: string }) => {
+  const onSubmit = async (data: CreateMessageDto) => {
     if (!activeThreadId) return;
 
     scrollToBottom();
@@ -321,63 +172,30 @@ export const usePublicAssistantLogic = (
       created_at: new Date(),
     };
 
-    dispatch({ type: ADD_MESSAGE, payload: userMessage });
-    dispatch({ type: SET_IS_ERROR, payload: false });
-    dispatch({ type: SET_MESSAGE_LOADING, payload: true });
-    dispatch({
-      type: SET_LOADING_TEXT,
-      payload: t('status-thinking'),
-    });
-
     try {
-      const messageResponse = await sendMessage(
-        activeThreadId,
+      await handleAssistantStream({
+        mode: AssistantMode.PUBLIC,
+        organizationId,
+        dispatch,
+        messages: state.messages,
+        userMessageId: state.userMessageId,
+        userMessage,
+        t,
+        tChainErrors,
+        tApiEvents,
+        threadId: activeThreadId,
+        responseType: ChatResponseType.TEXT,
+        streamedMessage: state.streamedMessage,
+        threadsDispatch,
+        scrollFn: scrollToBottom,
+        errorToast,
+        promptFormRef,
         data,
-        visitorId.current
-      );
-
-      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
-        return;
-      }
-
-      if (
-        messageResponse.status === StatusCodes.CREATED &&
-        messageResponse.message?.public_id
-      ) {
-        setLastUserMessage({
-          content: data.prompt,
-          id: messageResponse.message.public_id,
-        });
-
-        dispatch({
-          type: SET_MESSAGE_ID,
-          payload: messageResponse.message.public_id,
-        });
-        dispatch({
-          type: SET_LOADING_TEXT,
-          payload: t('status-asking-ai'),
-        });
-      }
-
-      threadsDispatch({
-        type: 'ADD_THREAD',
-        payload: {
-          public_id: activeThreadId,
-          messages: [userMessage],
-          created_at: new Date(),
-        },
+        chatType: data.mode,
+        // visitorId.current
       });
     } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.status === StatusCodes.BAD_REQUEST
-      ) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'Error occured while sending message' });
-      }
-      logger.error('Error submitting message: %o', error);
+      errorToast({ message: 'sending-error' });
     }
   };
 
