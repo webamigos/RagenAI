@@ -1,5 +1,4 @@
-import { StatusCodes } from 'http-status-codes';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
 import {
   setSentryClerkOrganizationTag,
@@ -7,31 +6,27 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 
-import { getApiContext } from '../../../__logic__/context/api.context';
-import { ApiDbService } from '../../../__logic__/services/api-db.service';
-import { ApiErrorService } from '../../../__logic__/services/api-errors.service';
-import { chatMessagesSchema } from '../../../__logic__/dtos/chat.dto';
-import { ChatType } from '@/app/contracts/Message';
-import {
-  prepareApiSseMessage,
-  sendApiEvent,
-} from '@/libs/sse/prepare-sse-message';
+import { getApiContext } from '../../../../__logic__/context/api.context';
+import { ApiDbService } from '../../../../__logic__/services/api-db.service';
+import { ApiErrorService } from '../../../../__logic__/services/api-errors.service';
+import { chatMessagesSchema } from '../../../../__logic__/dtos/chat.dto';
+import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { createMessageInDB } from '@/app/lib/services/message';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
-import { ApiSseMessageEvent, SseMessageEvent } from '@/app/contracts/Events';
+import { ApiSseMessageEvent } from '@/app/contracts/Events';
 import { Role, Source } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 export type Params = {
-  params: { threadPublicId: string };
+  params: { publicId: string };
 };
 
 export const POST = async (request: NextRequest, { params }: Params) => {
-  const threadPublicId = params.threadPublicId;
+  const threadPublicId = params.publicId;
   try {
-    setSentryServiceTag('api.chat.threadId.stream.get');
+    setSentryServiceTag('api.threads.threadId.messages.stream.get');
     const body = await request.json();
     const parsedData = chatMessagesSchema.parse(body);
 

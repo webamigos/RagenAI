@@ -6,21 +6,21 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 
-import { getApiContext } from '../../__logic__/context/api.context';
-import { ApiDbService } from '../../__logic__/services/api-db.service';
-import { ApiErrorService } from '../../__logic__/services/api-errors.service';
-import { chatMessagesSchema } from '../../__logic__/dtos/chat.dto';
+import { getApiContext } from '../../../__logic__/context/api.context';
+import { ApiDbService } from '../../../__logic__/services/api-db.service';
+import { ApiErrorService } from '../../../__logic__/services/api-errors.service';
+import { chatMessagesSchema } from '../../../__logic__/dtos/chat.dto';
 
 export const dynamic = 'force-dynamic';
 
 export type Params = {
-  params: { threadPublicId: string };
+  params: { publicId: string };
 };
 
 export const GET = async (request: NextRequest, { params }: Params) => {
-  const threadPublicId = params.threadPublicId;
+  const threadPublicId = params.publicId;
   try {
-    setSentryServiceTag('api.chat.threadId.get');
+    setSentryServiceTag('api.threads.threadId.messages.get');
     const apiContext = await getApiContext(request);
 
     setSentryClerkOrganizationTag(apiContext.orgId);
@@ -37,9 +37,9 @@ export const GET = async (request: NextRequest, { params }: Params) => {
 };
 
 export const POST = async (request: NextRequest, { params }: Params) => {
-  const threadPublicId = params.threadPublicId;
+  const threadPublicId = params.publicId;
   try {
-    setSentryServiceTag('api.chat.threadId.post');
+    setSentryServiceTag('api.threads.threadId.messages.post');
     const body = await request.json();
     const parsedData = chatMessagesSchema.parse(body);
 

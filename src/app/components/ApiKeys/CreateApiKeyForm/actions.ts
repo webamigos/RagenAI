@@ -75,10 +75,6 @@ export const createApiKey = async (
         organization_id: organization.id,
       },
     });
-    const apiBaseUrl = process.env.API_BASE_URL;
-    if (!apiBaseUrl) {
-      throw new Error('API_BASE_URL is not set');
-    }
 
     // Moved logic from Nest.js temporary here
     const apiKeysService = new ApiKeysService();
