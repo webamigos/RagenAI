@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { auth } from '@clerk/nextjs/server';
 
 import { Thread } from '@prisma/client';
 import db from '@ragenai/prisma-client';
@@ -61,10 +62,13 @@ export const findOrCreateOpenAIThread = async (
 export const createNewOpenAIThread = async () => {
   try {
     setSentryServiceTag(serviceName);
+
+    const { userId } = auth();
+
     // TODO: move creation of Open AI thread to first message
     const thread = await openai.beta.threads.create();
     const threadEntity = await db.thread.create({
-      data: { openai_thread_id: thread.id },
+      data: { openai_thread_id: thread.id, visitor_id: userId },
     });
     return {
       public_id: threadEntity.public_id,
@@ -114,6 +118,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
         created_at: true,
         visitor_id: true,
         preferred_communication_type: true,
+        project_id: true,
       },
     });
   } catch (error) {

@@ -19,21 +19,21 @@ model Settings {
 }
 
 model Message {
-  public_id         String   @unique @default(uuid())
-  openai_message_id String
-  openai_created_at Int
-  created_at        DateTime @default(now()) @db.Timestamptz
-  content           String
-  role              Role     @default(USER)
-  thread_id         String?
-  visitor_id        String?
-  id                String   @id @default(uuid())
-  rate              Int?     @db.SmallInt
-  run_id            String?
-  message_type      MessageContentType @default(TEXT)
+  public_id              String             @unique @default(uuid())
+  openai_message_id      String
+  openai_created_at      Int
+  created_at             DateTime           @default(now()) @db.Timestamptz
+  content                String
+  role                   Role               @default(USER)
+  thread_id              String?
+  visitor_id             String?
+  id                     String             @id @default(uuid())
+  rate                   Int?               @db.SmallInt
+  run_id                 String?
+  message_type           MessageContentType @default(TEXT)
   voice_duration_seconds Int?
-  voice_played      Boolean   @default(false)
-  thread            Thread?  @relation(fields: [thread_id], references: [id])
+  voice_played           Boolean            @default(false)
+  thread                 Thread?            @relation(fields: [thread_id], references: [id])
 }
 
 model FlaggedMessage {
@@ -45,13 +45,15 @@ model FlaggedMessage {
 }
 
 model Thread {
-  public_id                  String                    @unique @default(uuid())
-  openai_thread_id          String
-  created_at                DateTime                   @default(now()) @db.Timestamptz
-  id                        String                     @id @default(uuid())
-  visitor_id                String?
+  public_id                    String                  @unique @default(uuid())
+  openai_thread_id             String
+  created_at                   DateTime                @default(now()) @db.Timestamptz
+  id                           String                  @id @default(uuid())
+  visitor_id                   String?
   preferred_communication_type ThreadCommunicationType @default(TEXT)
-  messages                  Message[]
+  messages                     Message[]
+  project                      Project?                @relation(fields: [project_id], references: [id])
+  project_id                   Int?
 }
 
 model VisitorMessages {
@@ -181,6 +183,7 @@ model Project {
   updated_at      DateTime      @updatedAt @db.Timestamptz
   organization_id Int?
   api_key         ApiKey[]
+  Thread          Thread[]
 
   @@index([public_id])
 }

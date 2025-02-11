@@ -33,6 +33,14 @@ export type MessageDto = {
   voice_played?: MessageModel['voice_played'];
 };
 
+export type ApiMessageDto = {
+  id: MessageModel['public_id'];
+  content: MessageModel['content'];
+  role: Role;
+  created_at: string;
+  run_id: string;
+};
+
 export type Thread = {
   thread: ThreadHistoryResponse[];
 };
