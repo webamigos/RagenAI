@@ -4,11 +4,12 @@ import { EmptyProjectsStateProps } from '../types';
 
 export const EmptyProjectsState = ({
   onCreateClick,
+  isLoading,
 }: EmptyProjectsStateProps) => {
   const t = useTranslations('sidebar.projects');
 
   return (
-    <Button isLink onClick={onCreateClick}>
+    <Button disabled={isLoading} isLink onClick={onCreateClick}>
       <FolderPlusIcon className="w-6 h-6" />
       <Text className="ml-1">{t('create-project')}</Text>
     </Button>

@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { SidebarLabel } from '@ragenai/common-ui';
+import { PlusIcon, SidebarLabel } from '@ragenai/common-ui';
 import { ThreadCommunicationType } from '@prisma/client';
 
 import { useNewThread } from '@/app/hooks/useNewThread';
@@ -10,11 +10,14 @@ import { ProjectItem } from './components/ProjectItem';
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 
 import type { ProjectsListProps, ThreadType } from './types';
+import { CreateProject } from './components/CreateProject';
 
 export const ProjectsList = ({
   projects,
   setIsCreateModalOpen,
   activeThread,
+  isCreateModalOpen,
+  isLoading,
 }: ProjectsListProps) => {
   const t = useTranslations('sidebar.projects');
   const { handleNewThread } = useNewThread();
@@ -67,25 +70,46 @@ export const ProjectsList = ({
   };
 
   return (
-    <div className="mb-4">
-      <SidebarLabel className="p-2 text-gray-600 dark:text-gray-100 font-bold">
-        {t('title')}
-      </SidebarLabel>
-      {!projectsWithUpdatedThreads.length ? (
-        <EmptyProjectsState onCreateClick={() => setIsCreateModalOpen(true)} />
-      ) : (
-        <div className="space-y-1 mt-2">
-          {projectsWithUpdatedThreads.map((project) => (
-            <ProjectItem
-              key={project.public_id}
-              project={project}
-              activeThread={activeThread}
-              onProjectClick={handleProjectClick}
-              onSidebarClose={closeSidebar}
-            />
-          ))}
+    <>
+      <div className="mb-4">
+        <div className="w-full flex items-center justify-between">
+          <SidebarLabel className="p-2 text-gray-600 dark:text-gray-100 font-bold">
+            {t('title')}
+          </SidebarLabel>
+          <div
+            onClick={() => setIsCreateModalOpen(true)}
+            className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
+          >
+            <PlusIcon className="w-4 h-4" />
+          </div>
         </div>
+        {!projectsWithUpdatedThreads.length ? (
+          <EmptyProjectsState
+            isLoading={isLoading}
+            onCreateClick={() => setIsCreateModalOpen(true)}
+          />
+        ) : (
+          <div className="space-y-1 mt-2">
+            {projectsWithUpdatedThreads.map((project) => (
+              <ProjectItem
+                key={project.public_id}
+                project={project}
+                activeThread={activeThread}
+                onProjectClick={handleProjectClick}
+                onSidebarClose={closeSidebar}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      {isCreateModalOpen && (
+        <CreateProject
+          isOpen={isCreateModalOpen}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+          }}
+        />
       )}
-    </div>
+    </>
   );
 };

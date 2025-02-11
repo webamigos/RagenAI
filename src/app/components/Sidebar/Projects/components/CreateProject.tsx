@@ -92,10 +92,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
 
   return (
     <Dialog open={isOpen} onClose={onClose}>
-      {/* <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader> */}
       <DialogTitle>{t('projects.create')}</DialogTitle>
-      {/* </DialogHeader> */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Input
@@ -104,6 +101,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             disabled={isLoading}
+            className="py-1"
           />
           <div className="text-sm text-muted-foreground">
             <h4 className="font-medium">{t('projects.what-is-project')}</h4>
@@ -111,12 +109,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
           </div>
         </div>
         <div className="flex justify-end space-x-2">
-          <Button
-            type="button"
-            // variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-          >
+          <Button type="button" onClick={onClose} disabled={isLoading}>
             {t('projects.cancel')}
           </Button>
           <Button type="submit" disabled={isLoading}>
@@ -124,7 +117,6 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
           </Button>
         </div>
       </form>
-      {/* </DialogContent> */}
     </Dialog>
   );
 }

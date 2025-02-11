@@ -25,6 +25,8 @@ export type ProjectsListProps = {
   projects: ProjectType[];
   setIsCreateModalOpen: (isOpen: boolean) => void;
   activeThread?: string;
+  isCreateModalOpen: boolean;
+  isLoading: boolean;
 };
 
 export type ThreadsListProps = {
@@ -50,4 +52,5 @@ export type ProjectItemProps = {
 
 export type EmptyProjectsStateProps = {
   onCreateClick: () => void;
+  isLoading: boolean;
 };

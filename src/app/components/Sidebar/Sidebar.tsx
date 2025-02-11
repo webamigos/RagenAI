@@ -128,9 +128,11 @@ export const Sidebar = ({ children, membership }: Props) => {
               ) : (
                 <>
                   <ProjectsList
+                    isLoading={isThreadLoading}
                     projects={projects}
                     setIsCreateModalOpen={setIsCreateModalOpen}
                     activeThread={activeThread}
+                    isCreateModalOpen={isCreateModalOpen}
                   />
                   <UserThreadsHistory
                     error={error}
@@ -147,14 +149,6 @@ export const Sidebar = ({ children, membership }: Props) => {
               <UserAndOrganizationNavigation membership={membership} />
             )}
           </SidebarBody>
-          {isCreateModalOpen && (
-            <CreateProject
-              isOpen={isCreateModalOpen}
-              onClose={() => {
-                setIsCreateModalOpen(false);
-              }}
-            />
-          )}
         </div>
       }
     >
