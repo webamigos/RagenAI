@@ -12,6 +12,8 @@ import {
   saveModel,
   saveOpenaiAPIKey,
   saveTemperatureSetting,
+  getVoiceId,
+  saveVoiceId,
 } from '@/app/lib/services/settings';
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
@@ -153,3 +155,21 @@ export const saveSetting = async (
     return { success: false, message: `Failed to save ${type}` };
   }
 };
+
+export async function fetchVoiceId(organizationId: string) {
+  try {
+    const voiceId = await getVoiceId(organizationId);
+    return { success: true, data: { voiceId } };
+  } catch (error) {
+    return { success: false, error: 'Failed to fetch voice ID' };
+  }
+}
+
+export async function updateVoiceId(organizationId: string, voiceId: string) {
+  try {
+    await saveVoiceId(organizationId, voiceId);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'Failed to update voice ID' };
+  }
+}

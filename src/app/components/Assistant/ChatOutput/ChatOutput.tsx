@@ -1,8 +1,10 @@
 import { SpinnerSVG, Text } from '@ragenai/common-ui';
+import { useEffect, useState } from 'react';
+import { useOrganization } from '@clerk/nextjs';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
-import { ReadAnswer } from './ReadAnswer';
+import { ReadAnswer } from './ReadAnswer/ReadAnswer';
 import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
@@ -10,6 +12,7 @@ import type {
   StreamedMessageDto,
   ChatResponseType,
 } from '../../../contracts/Message';
+import { fetchVoiceId } from './ReadAnswer/actions';
 
 import './chat-response.css';
 
@@ -30,12 +33,14 @@ const MessageContent = ({
   message,
   streamedMessageRunId,
   responseType,
+  voiceId,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
   streamedMessageRunId?: string;
   responseType: ChatResponseType;
+  voiceId: string;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -63,8 +68,10 @@ const MessageContent = ({
               publicId={message.public_id}
               runId={streamedMessageRunId || message.run_id}
             />
-            <CopyToClipboardButton message={message} />
-            <ReadAnswer content={content} />
+            <div className="flex items-center gap-2">
+              <CopyToClipboardButton message={message} />
+              <ReadAnswer content={content} voiceId={voiceId} />
+            </div>
           </div>
         )}
         {role === 'USER' &&
@@ -90,6 +97,20 @@ export const ChatOutput = ({
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
+  const { organization } = useOrganization();
+  const [voiceId, setVoiceId] = useState('JBFqnCBsd6RMkjVDRZzb');
+
+  useEffect(() => {
+    const getVoiceSettings = async () => {
+      if (organization?.id) {
+        const response = await fetchVoiceId(organization.id);
+        if (response.success && response.data?.voiceId) {
+          setVoiceId(response.data.voiceId);
+        }
+      }
+    };
+    getVoiceSettings();
+  }, [organization?.id]);
 
   return (
     <div className="px-5 mt-5 mr-3 lg:px-22">
@@ -109,6 +130,7 @@ export const ChatOutput = ({
               message={message}
               streamedMessageRunId={streamedMessageRunId}
               responseType={responseType}
+              voiceId={voiceId}
             />
           </div>
         ))}

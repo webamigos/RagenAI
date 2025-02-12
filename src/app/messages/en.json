@@ -246,6 +246,12 @@
       "failed-to-update-prompt": "Error updating assistant customization instructions:",
       "prompt-updated-successfully": "Updated",
       "no-changes-detected": "No changes detected to assistant customization instructions"
+    },
+    "voice-mode-settings": {
+      "title": "Voice Mode Settings",
+      "voice-select": "Select Voice",
+      "voice-updated": "Voice updated successfully",
+      "voice-update-failed": "Failed to update voice"
     }
   },
   "manage-knowledge": {

@@ -248,6 +248,12 @@
       "failed-to-update-prompt": "Błąd podczas aktualizacji instrukcji personalizacji asystenta:",
       "prompt-updated-successfully": "Zaktualizowano",
       "no-changes-detected": "Brak zmian w instrukcji personalizacji asystenta"
+    },
+    "voice-mode-settings": {
+      "title": "Ustawienia Trybu Głosowego",
+      "voice-select": "Wybierz Głos",
+      "voice-updated": "Głos został zaktualizowany",
+      "voice-update-failed": "Nie udało się zaktualizować głosu"
     }
   },
   "manage-knowledge": {

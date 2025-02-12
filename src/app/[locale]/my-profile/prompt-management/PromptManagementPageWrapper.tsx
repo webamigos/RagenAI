@@ -8,6 +8,7 @@ import {
   EditablePrompt,
   SetChatTemperature,
   SetMaxDocumentsToRetrieve,
+  VoiceModeSettings,
 } from '@/app/components/MyProfile/ChatInstanceSettings';
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { Fallback } from '@/app/components/Fallback';
@@ -19,7 +20,7 @@ export default function PromptManagementPage() {
   const t = useTranslations('assistant-settings');
 
   return (
-    <div className="container flex flex-col">
+    <div className="container flex flex-col gap-3">
       <Suspense fallback={<Fallback />}>
         {hasApiKey ? (
           <Suspense fallback={<Fallback />}>
@@ -42,6 +43,7 @@ export default function PromptManagementPage() {
           <SetApiKeyWrapper />
         )}
       </Suspense>
+      <VoiceModeSettings />
     </div>
   );
 }
