@@ -22,7 +22,7 @@ export default function PromptManagementPage() {
     <div className="container flex flex-col">
       <Suspense fallback={<Fallback />}>
         {hasApiKey ? (
-          <>
+          <Suspense fallback={<Fallback />}>
             <SetApiKeyWrapper />
             <Card
               title={t('prompt-assistant-settings')}
@@ -37,7 +37,7 @@ export default function PromptManagementPage() {
               </div>
               <EditablePrompt />
             </Card>
-          </>
+          </Suspense>
         ) : (
           <SetApiKeyWrapper />
         )}

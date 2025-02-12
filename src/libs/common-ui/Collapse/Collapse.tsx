@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState, useLayoutEffect } from 'react';
 import clsx from 'clsx';
 
 type CollapseProps = {
@@ -18,7 +18,7 @@ export const Collapse = ({
   const [height, setHeight] = useState('0px');
   const [shouldRender, setShouldRender] = useState(isOpen);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (isOpen) {
       setShouldRender(true);
 
