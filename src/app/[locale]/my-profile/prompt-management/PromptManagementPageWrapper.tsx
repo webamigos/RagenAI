@@ -11,6 +11,7 @@ import {
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { Fallback } from '@/app/components/Fallback';
 import { useSettings } from '@/app/hooks/useSettings';
+import { Card } from '@ragenai/common-ui/Card';
 
 export default function PromptManagementPage() {
   const { hasApiKey } = useSettings();
@@ -21,12 +22,14 @@ export default function PromptManagementPage() {
         {hasApiKey ? (
           <>
             <SetApiKeyWrapper />
-            <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
-              <ChatModelSelect />
-              <SetChatTemperature />
-              <SetMaxDocumentsToRetrieve />
-            </div>
-            <EditablePrompt />
+            <Card size="full" collapsible defaultCollapsed>
+              <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
+                <ChatModelSelect />
+                <SetChatTemperature />
+                <SetMaxDocumentsToRetrieve />
+              </div>
+              <EditablePrompt />
+            </Card>
           </>
         ) : (
           <SetApiKeyWrapper />
