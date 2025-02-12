@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
+import { useTranslations } from 'next-intl';
 
 import {
   ChatModelSelect,
@@ -15,6 +16,7 @@ import { Card } from '@ragenai/common-ui/Card';
 
 export default function PromptManagementPage() {
   const { hasApiKey } = useSettings();
+  const t = useTranslations('assistant-settings');
 
   return (
     <div className="container flex flex-col">
@@ -22,7 +24,12 @@ export default function PromptManagementPage() {
         {hasApiKey ? (
           <>
             <SetApiKeyWrapper />
-            <Card size="full" collapsible defaultCollapsed>
+            <Card
+              title={t('prompt-assistant-settings')}
+              size="full"
+              collapsible
+              defaultCollapsed
+            >
               <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
                 <ChatModelSelect />
                 <SetChatTemperature />
