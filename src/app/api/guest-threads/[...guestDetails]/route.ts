@@ -38,6 +38,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       userMessage: parsedData,
       orgId,
       mode: AssistantMode.PUBLIC,
+      visitorId: parsedData.visitorId,
     });
 
     return new Response(stream, {

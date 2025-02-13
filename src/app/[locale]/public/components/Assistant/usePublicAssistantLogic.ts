@@ -111,6 +111,12 @@ export const usePublicAssistantLogic = (
       role: Role.USER,
       content: data.prompt,
       created_at: new Date(),
+      visitorId: visitorId.current,
+    };
+
+    const dataWithVisitor = {
+      ...data,
+      visitorId: visitorId.current,
     };
 
     try {
@@ -131,7 +137,7 @@ export const usePublicAssistantLogic = (
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,
-        data,
+        data: dataWithVisitor,
         chatType: data.mode,
       });
     } catch {
