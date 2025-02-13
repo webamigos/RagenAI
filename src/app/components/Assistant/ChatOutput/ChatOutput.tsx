@@ -12,9 +12,8 @@ import type {
   StreamedMessageDto,
   ChatResponseType,
 } from '../../../contracts/Message';
-import { fetchVoiceId } from './ReadAnswer/actions';
-
 import './chat-response.css';
+import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 
 type Props = {
   messages: MessageDto[];
