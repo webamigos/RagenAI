@@ -5,6 +5,7 @@ import { useEffect, memo } from 'react';
 
 import { useNewThread } from '../hooks/useNewThread';
 import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { makeVisitorCookieRequest } from '@/app/lib/services/cookies.browser';
 
 const PublicStart = memo(
   ({
@@ -19,6 +20,15 @@ const PublicStart = memo(
       organizationId,
       widgetMode,
     });
+
+    useEffect(() => {
+      // set visitor cookie
+      const setCookie = async () => {
+        await makeVisitorCookieRequest();
+      };
+
+      setCookie();
+    }, []);
 
     useEffect(() => {
       const checkThread = async () => {

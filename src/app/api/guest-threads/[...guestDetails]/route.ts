@@ -8,6 +8,7 @@ import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/action
 import { createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '../../threads/services/assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
+import { getVisitorIdFromCookie } from '@/app/lib/services/cookies';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,11 +34,18 @@ export async function POST(request: NextRequest, { params }: Params) {
     const body = await request.json();
     const parsedData = createMessageSchema.parse(body);
 
+    const visitorId = await getVisitorIdFromCookie();
+
+    if (!visitorId) {
+      throw new Error('Invalid visitor id');
+    }
+
     stream = await streamEvents({
       publicThreadId,
       userMessage: parsedData,
       orgId,
       mode: AssistantMode.PUBLIC,
+      visitorId,
     });
 
     return new Response(stream, {

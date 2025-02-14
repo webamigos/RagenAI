@@ -121,6 +121,7 @@ export const fetchMessagesFromDb = async (
   }
 };
 
+// TODO: visitorId shouldn't be passed here - it can be userId or public visitorId...
 export const createAndStoreOpenAIThreadMessage = async ({
   prompt,
   thread,

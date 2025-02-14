@@ -4,6 +4,7 @@ export const timezone = 'Europe/Warsaw';
 export const defaultLocale = 'en';
 export const redisChannelPrefix = 'assistant-messages-';
 export const dailyMessageLimit = 3;
+export const visitorCookieName = 'ragen-visitor';
 
 export const TEMPLATE = `Answer the user's questions based only on the following context. If the answer is not in the context, reply politely that you do not have that information available.:
 ==============================

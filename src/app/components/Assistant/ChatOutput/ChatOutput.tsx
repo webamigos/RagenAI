@@ -33,6 +33,7 @@ const MessageContent = ({
   streamedMessageRunId,
   responseType,
   voiceId,
+  isPublicAccess,
 }: {
   content: string;
   role: string;
@@ -40,6 +41,7 @@ const MessageContent = ({
   streamedMessageRunId?: string;
   responseType: ChatResponseType;
   voiceId: string;
+  isPublicAccess: boolean;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -69,6 +71,7 @@ const MessageContent = ({
             />
             <div className="flex items-center gap-2">
               <CopyToClipboardButton message={message} />
+              {/* voice read also should be enabled for public threads */}
               <ReadAnswer content={content} voiceId={voiceId} />
             </div>
           </div>
@@ -127,6 +130,7 @@ export const ChatOutput = ({
               content={message.content}
               role={message.role}
               message={message}
+              isPublicAccess={isPublicAccess}
               streamedMessageRunId={streamedMessageRunId}
               responseType={responseType}
               voiceId={voiceId}
