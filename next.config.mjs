@@ -27,14 +27,15 @@ const nextConfig = {
     domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
   },
 
-  async rewrites() {
-    return [
-      {
-        source: 'https://api.ragen.io',
-        destination: '/api',
-      },
-    ];
-  },
+  // TODO: cloudflare config
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: 'https://api.ragen.io',
+  //       destination: '/api',
+  //     },
+  //   ];
+  // },
 
   async headers() {
     return [
