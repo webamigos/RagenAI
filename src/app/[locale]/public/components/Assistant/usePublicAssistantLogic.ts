@@ -2,7 +2,6 @@ import { useReducer, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role } from '@prisma/client';
 import { usePathname } from 'next/navigation';
-import Cookies from 'js-cookie';
 
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import {
@@ -26,6 +25,7 @@ import { AssistantMode } from '@/app/contracts/Assistant';
 import { sharedReducerActions } from '@/app/components/Assistant/reducer';
 import { visitorCookieName } from '@/app/config';
 import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
+import { getVisitorIdFromBrowserCookie } from '@/app/lib/services/cookies.browser';
 
 const { errorToast } = statusToast();
 
@@ -48,13 +48,6 @@ export const usePublicAssistantLogic = (
   };
   const pathname = usePathname();
   const [visitorId, setVisitorId] = useState('');
-
-  useEffect(() => {
-    const visitorCookieValue = Cookies.get(visitorCookieName);
-    if (visitorCookieValue) {
-      setVisitorId(visitorCookieValue);
-    }
-  }, []);
 
   const { isLoading } = useApi(() => fetchMessagesFromApi(threadId, visitorId));
 
@@ -129,15 +122,22 @@ export const usePublicAssistantLogic = (
   };
 
   useEffect(() => {
+    const visitorCookieValue = getVisitorIdFromBrowserCookie();
+    if (visitorCookieValue) {
+      setVisitorId(visitorCookieValue);
+    }
+
     fetchData();
     loadVisitorMessages();
-  }, []);
+  }, [visitorId]);
 
   const loadVisitorMessages = async () => {
     try {
-      const { data } = await checkVisitorVisits(visitorId);
-      if (data.messages >= 1111) {
-        dispatch({ type: SET_LIMIT_LOCK, payload: true });
+      if (visitorId) {
+        const { data } = await checkVisitorVisits(visitorId);
+        if (data.messages >= 1111) {
+          dispatch({ type: SET_LIMIT_LOCK, payload: true });
+        }
       }
     } catch (error) {
       logger.error('Error loading visitor messages: %o', error);
@@ -152,11 +152,6 @@ export const usePublicAssistantLogic = (
       role: Role.USER,
       content: data.prompt,
       created_at: new Date(),
-      visitorId: visitorId,
-    };
-
-    const dataWithVisitor = {
-      ...data,
       visitorId: visitorId,
     };
 
@@ -178,7 +173,7 @@ export const usePublicAssistantLogic = (
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,
-        data: dataWithVisitor,
+        data,
         chatType: data.mode,
       });
     } catch {

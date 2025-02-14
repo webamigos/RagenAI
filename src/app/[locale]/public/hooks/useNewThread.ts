@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
-import Cookies from 'js-cookie';
 
 import {
   LOCAL_STORAGE_THREAD_KEY,
@@ -19,7 +18,6 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { useSessionStorage } from './useSessionStorage';
 import { createGuestThreadAction } from '@/app/lib/actions/threads';
-import { visitorCookieName } from '@/app/config';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -54,7 +52,6 @@ export const useNewThread = ({
   widgetMode?: boolean;
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [visitorId, setVisitorId] = useState('');
   const [isPending, startTransition] = useTransition();
   const { push } = useRouter();
   const pathname = usePathname();
@@ -72,7 +69,7 @@ export const useNewThread = ({
       dispatch({ type: 'SET_IS_LOADING', payload: true });
       handleCloseThread(false);
 
-      const result = await createGuestThreadAction(undefined, visitorId);
+      const result = await createGuestThreadAction(undefined);
 
       if (!result.success) {
         throw new Error('Invalid response from server');
@@ -123,13 +120,6 @@ export const useNewThread = ({
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
   }, [organizationId, threadId]);
-
-  useEffect(() => {
-    const visitorCookieValue = Cookies.get(visitorCookieName);
-    if (visitorCookieValue) {
-      setVisitorId(visitorCookieValue);
-    }
-  }, []);
 
   useEffect(() => {
     if (!widgetMode && !pathname.includes('/threads')) {

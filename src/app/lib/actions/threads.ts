@@ -1,14 +1,13 @@
 'use server';
 
-import { cookies } from 'next/headers';
 import { Thread } from '@prisma/client';
 import { setSentryServiceTag } from '../services/sentry';
 import { createNewOpenAIThread } from '../services/thread';
 import { logger } from '../utils/logger';
-import { visitorCookieName } from '@/app/config';
 import { createAndStoreOpenAIThreadMessage } from '../services/message';
 import db from '@ragenai/prisma-client';
 import OpenAI from 'openai';
+import { getVisitorIdFromCookie } from '../services/cookies';
 
 const openai = new OpenAI();
 
@@ -37,18 +36,12 @@ export const createThreadAction = async (): Promise<ThreadAction> => {
 };
 
 export const createGuestThreadAction = async (
-  initialMessage?: string,
-  visitorId?: string
+  initialMessage?: string
 ): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('guest-threads');
-    const cookieStore = await cookies();
-    const visitorCookie = cookieStore.get(visitorCookieName);
 
-    if (!visitorCookie) {
-      throw new Error('Invalid visitor id');
-    }
-    const visitorId = visitorCookie.value;
+    const visitorId = await getVisitorIdFromCookie();
 
     // TODO: this will be removed in API ticket
     const openAiThread = await openai.beta.threads.create();

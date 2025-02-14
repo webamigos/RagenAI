@@ -1,11 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, memo, useState } from 'react';
+import { useEffect, memo } from 'react';
 
 import { useNewThread } from '../hooks/useNewThread';
 import { NewChatInterface } from '@/app/components/NewChatInterface';
-import { api } from '@/app/lib/services/config';
+import { makeVisitorCookieRequest } from '@/app/lib/services/cookies.browser';
 
 const PublicStart = memo(
   ({
@@ -24,7 +24,7 @@ const PublicStart = memo(
     useEffect(() => {
       // set visitor cookie
       const setCookie = async () => {
-        await api.post('/visitor');
+        await makeVisitorCookieRequest();
       };
 
       setCookie();
