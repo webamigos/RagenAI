@@ -207,7 +207,6 @@ export class ApiDbService {
 
     const threadRecord = await db.thread.create({
       data: {
-        openai_thread_id: thread.id,
         organization_id: this.context.orgId,
         user_id: this.context.userId,
         source: Source.API,
