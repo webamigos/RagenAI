@@ -1,6 +1,15 @@
-import { useState, useCallback, KeyboardEvent } from 'react';
+import { useCallback, KeyboardEvent } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
+
+const threadSchema = z.object({
+  prompt: z.string().min(10, 'Message must be at least 10 characters long'),
+});
+
+type ThreadFormData = z.infer<typeof threadSchema>;
 
 type Props = {
   organizationId?: string;
@@ -13,7 +22,20 @@ export const useNewThreadInput = ({
   isPublicAccess,
   widgetMode,
 }: Props) => {
-  const [prompt, setPrompt] = useState('');
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    reset,
+  } = useForm<ThreadFormData>({
+    resolver: zodResolver(threadSchema),
+    defaultValues: {
+      prompt: '',
+    },
+  });
+
   const privateThread = usePrivateNewThread();
   const publicThread = usePublicNewThread({
     organizationId: organizationId || '',
@@ -21,23 +43,26 @@ export const useNewThreadInput = ({
   });
 
   const threadHandler = isPublicAccess ? publicThread : privateThread;
+  const prompt = watch('prompt');
 
   const handleInputChange = (value: string) => {
-    setPrompt(value);
+    setValue('prompt', value);
   };
 
-  const handleSubmit = useCallback(async () => {
-    if (!prompt.trim() || threadHandler.isLoading || threadHandler.isPending)
-      return;
+  const onSubmit = useCallback(
+    async (data: ThreadFormData) => {
+      if (threadHandler.isLoading || threadHandler.isPending) return;
 
-    await threadHandler.handleNewThread(prompt.trim());
-    setPrompt('');
-  }, [prompt, threadHandler]);
+      await threadHandler.handleNewThread(data.prompt.trim());
+      reset();
+    },
+    [threadHandler, reset]
+  );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleFormSubmit(onSubmit)();
     }
   };
 
@@ -46,7 +71,8 @@ export const useNewThreadInput = ({
     isLoading: threadHandler.isLoading,
     isPending: threadHandler.isPending,
     handleInputChange,
-    handleSubmit,
+    handleSubmit: handleFormSubmit(onSubmit),
     handleKeyDown,
+    errors,
   };
 };

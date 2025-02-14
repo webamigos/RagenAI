@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { classMerge, Textarea } from '@ragenai/common-ui/index';
 
 import { useNewThreadInput } from './useNewThreadInput';
-import { usePublicAssistantLogic } from '@/app/[locale]/public/components/Assistant/usePublicAssistantLogic';
 
 interface NewChatInterfaceProps {
   className?: string;
@@ -23,12 +22,18 @@ export const NewChatInterface = ({
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const { prompt, isLoading, isPending, handleInputChange, handleKeyDown } =
-    useNewThreadInput({
-      organizationId,
-      isPublicAccess,
-      widgetMode,
-    });
+  const {
+    prompt,
+    isLoading,
+    isPending,
+    handleInputChange,
+    handleKeyDown,
+    errors,
+  } = useNewThreadInput({
+    organizationId,
+    isPublicAccess,
+    widgetMode,
+  });
 
   useEffect(() => {
     if (!isEmbedded && inputRef.current) {
@@ -61,6 +66,7 @@ export const NewChatInterface = ({
           className="w-full min-h-[100px]"
           disabled={isLoading || isPending}
           showVoiceInput={!isPublicAccess}
+          error={errors.prompt}
         />
       </div>
     </div>
