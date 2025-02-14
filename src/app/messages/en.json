@@ -244,6 +244,10 @@
       "yesterday": "Yesterday",
       "older": "Older"
     },
+    "projects": {
+      "title": "Projects",
+      "create-project": "Create Project"
+    },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",
       "database-connection": "Unable to connect to the database. Please try again later.",
@@ -465,6 +469,25 @@
     "browser-not-compatibility": "Your browser does not support audio recording",
     "recognition-error": "Recognition error, try again",
     "recording-error": "Error during recording, try again"
+  },
+  "projects": {
+    "title": "Projects",
+    "create": "Create Project",
+    "placeholder": "Enter project title",
+    "what-is-project": "What is a project?",
+    "project-description": "A project helps you organize your knowledge base and conversations.",
+    "cancel": "Cancel",
+    "create-project": "Create Project",
+    "error": {
+      "title-required": "Project title is required",
+      "creation-failed": "Failed to create project",
+      "no-organization": "No organization selected",
+      "loading-organization": "Loading organization details...",
+      "project-exists": "Organization already has a default project"
+    },
+    "success": {
+      "created": "Project created successfully"
+    }
   },
   "voice-mode": {
     "recording": "Recording...",

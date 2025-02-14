@@ -31,7 +31,7 @@ type TabItem = {
   className?: string;
 };
 
-export const ProfileAndOrganizationTabs = ({ membership }: Props) => {
+export const UserAndOrganizationNavigation = ({ membership }: Props) => {
   const { closeSidebar } = useSidebar();
   const t = useTranslations('sidebar');
   const { orgRole } = useAuth();

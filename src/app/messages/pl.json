@@ -244,6 +244,10 @@
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
     },
+    "projects": {
+      "title": "Projekty",
+      "create-project": "Stwórz projekt"
+    },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
       "database-connection": "Nie można połączyć się z bazą danych. Spróbuj ponownie później.",
@@ -465,6 +469,25 @@
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
     "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
     "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
+  },
+  "projects": {
+    "title": "Projekty",
+    "create": "Utwórz projekt",
+    "placeholder": "Wprowadź nazwę projektu",
+    "what-is-project": "Czym jest projekt?",
+    "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
+    "cancel": "Anuluj",
+    "create-project": "Utwórz projekt",
+    "error": {
+      "title-required": "Nazwa projektu jest wymagana",
+      "creation-failed": "Nie udało się utworzyć projektu",
+      "no-organization": "Nie wybrano organizacji",
+      "loading-organization": "Ładowanie szczegółów organizacji...",
+      "project-exists": "Organizacja posiada już projekt domyślny"
+    },
+    "success": {
+      "created": "Projekt został utworzony pomyślnie"
+    }
   },
   "voice-mode": {
     "recording": "Nagrywanie...",

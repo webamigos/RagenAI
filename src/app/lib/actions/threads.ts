@@ -17,10 +17,12 @@ type ThreadAction =
       errorMessage: string;
     };
 
-export const createThreadAction = async (): Promise<ThreadAction> => {
+export const createThreadAction = async (
+  projectId?: number
+): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
-    const thread = await createNewOpenAIThread();
+    const thread = await createNewOpenAIThread(projectId);
 
     return { success: true, thread };
   } catch (error) {
