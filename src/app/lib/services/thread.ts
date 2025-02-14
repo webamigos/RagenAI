@@ -59,7 +59,7 @@ export const findOrCreateOpenAIThread = async (
   }
 };
 
-export const createNewOpenAIThread = async (projectId?: number) => {
+export const createNewOpenAIThread = async (visitorId?: string | null, projectId?: number) => {
   try {
     setSentryServiceTag(serviceName);
 
@@ -70,8 +70,8 @@ export const createNewOpenAIThread = async (projectId?: number) => {
     const threadEntity = await db.thread.create({
       data: {
         openai_thread_id: thread.id,
-        visitor_id: userId,
         project_id: projectId,
+        visitor_id: userId ? userId : visitorId,
       },
     });
     return {

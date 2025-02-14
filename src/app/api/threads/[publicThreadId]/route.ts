@@ -39,7 +39,6 @@ export async function POST(request: NextRequest, { params }: Params) {
       userMessage: parsedData,
       orgId,
       mode: AssistantMode.INTERNAL,
-      userId,
       filteredMode,
     });
 

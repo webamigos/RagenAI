@@ -1,0 +1,78 @@
+import { useCallback, KeyboardEvent } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
+import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
+
+const threadSchema = z.object({
+  prompt: z.string().min(10, 'Message must be at least 10 characters long'),
+});
+
+type ThreadFormData = z.infer<typeof threadSchema>;
+
+type Props = {
+  organizationId?: string;
+  isPublicAccess?: boolean;
+  widgetMode?: boolean;
+};
+
+export const useNewThreadInput = ({
+  organizationId,
+  isPublicAccess,
+  widgetMode,
+}: Props) => {
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    reset,
+  } = useForm<ThreadFormData>({
+    resolver: zodResolver(threadSchema),
+    defaultValues: {
+      prompt: '',
+    },
+  });
+
+  const privateThread = usePrivateNewThread();
+  const publicThread = usePublicNewThread({
+    organizationId: organizationId || '',
+    widgetMode: widgetMode || false,
+  });
+
+  const threadHandler = isPublicAccess ? publicThread : privateThread;
+  const prompt = watch('prompt');
+
+  const handleInputChange = (value: string) => {
+    setValue('prompt', value);
+  };
+
+  const onSubmit = useCallback(
+    async (data: ThreadFormData) => {
+      if (threadHandler.isLoading || threadHandler.isPending) return;
+
+      await threadHandler.handleNewThread(data.prompt.trim());
+      reset();
+    },
+    [threadHandler, reset]
+  );
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleFormSubmit(onSubmit)();
+    }
+  };
+
+  return {
+    prompt,
+    isLoading: threadHandler.isLoading,
+    isPending: threadHandler.isPending,
+    handleInputChange,
+    handleSubmit: handleFormSubmit(onSubmit),
+    handleKeyDown,
+    errors,
+  };
+};

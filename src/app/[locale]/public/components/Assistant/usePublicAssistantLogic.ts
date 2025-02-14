@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role } from '@prisma/client';
 import { usePathname } from 'next/navigation';
@@ -11,6 +11,7 @@ import {
 
 import {
   ChatResponseType,
+  ChatType,
   type CreateMessageDto,
 } from '@/app/contracts/Message';
 import { logger } from '@/app/lib/utils/logger';
@@ -22,6 +23,9 @@ import { handleAssistantStream } from '@/app/components/Assistant/handle-assista
 import { publicAssistantReducer, type State } from './publicAssistantReducer';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { sharedReducerActions } from '@/app/components/Assistant/reducer';
+import { visitorCookieName } from '@/app/config';
+import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
+import { getVisitorIdFromBrowserCookie } from '@/app/lib/services/cookies.browser';
 
 const { errorToast } = statusToast();
 
@@ -43,20 +47,9 @@ export const usePublicAssistantLogic = (
     messages: [],
   };
   const pathname = usePathname();
-  const visitorId = useRef<string>(
-    localStorage.getItem('visitorId') ||
-      `visitor-${Math.random().toString(36).substr(2, 9)}`
-  );
+  const [visitorId, setVisitorId] = useState('');
 
-  useEffect(() => {
-    if (!localStorage.getItem('visitorId')) {
-      localStorage.setItem('visitorId', visitorId.current);
-    }
-  }, []);
-
-  const { isLoading } = useApi(() =>
-    fetchMessagesFromApi(threadId, visitorId.current)
-  );
+  const { isLoading } = useApi(() => fetchMessagesFromApi(threadId, visitorId));
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
@@ -76,11 +69,52 @@ export const usePublicAssistantLogic = (
 
   const fetchData = async () => {
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
+
     try {
-      const response = await fetchMessagesFromApi(threadId, visitorId.current);
+      const response = await fetchMessagesFromApi(threadId, visitorId);
+
       if (response) {
         dispatch({ type: SET_INITIAL_LOAD, payload: false });
         dispatch({ type: SET_MESSAGES, payload: response.data });
+
+        // Check if we have a temporary message to process
+        const tempMessage = sessionStorage.getItem(
+          SESSION_STORAGE_TEMP_MESSAGE_KEY
+        );
+        if (tempMessage) {
+          sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
+
+          const userMessage = {
+            public_id: `user-${Date.now()}`,
+            role: Role.USER,
+            content: tempMessage,
+            created_at: new Date(),
+          };
+
+          await handleAssistantStream({
+            mode: AssistantMode.PUBLIC,
+            organizationId,
+            dispatch,
+            messages: response.data,
+            userMessageId: userMessage.public_id,
+            userMessage,
+            t,
+            tChainErrors,
+            tApiEvents,
+            threadId,
+            responseType: ChatResponseType.TEXT,
+            streamedMessage: state.streamedMessage,
+            threadsDispatch,
+            scrollFn: scrollToBottom,
+            errorToast,
+            promptFormRef,
+            data: {
+              prompt: tempMessage,
+              messageType: 'TEXT',
+            },
+            chatType: ChatType.RAG,
+          });
+        }
       }
     } catch (error) {
       logger.error('Error fetching messages: %o', error);
@@ -88,15 +122,22 @@ export const usePublicAssistantLogic = (
   };
 
   useEffect(() => {
+    const visitorCookieValue = getVisitorIdFromBrowserCookie();
+    if (visitorCookieValue) {
+      setVisitorId(visitorCookieValue);
+    }
+
     fetchData();
     loadVisitorMessages();
-  }, []);
+  }, [visitorId]);
 
   const loadVisitorMessages = async () => {
     try {
-      const { data } = await checkVisitorVisits(visitorId.current);
-      if (data.messages >= 1111) {
-        dispatch({ type: SET_LIMIT_LOCK, payload: true });
+      if (visitorId) {
+        const { data } = await checkVisitorVisits(visitorId);
+        if (data.messages >= 1111) {
+          dispatch({ type: SET_LIMIT_LOCK, payload: true });
+        }
       }
     } catch (error) {
       logger.error('Error loading visitor messages: %o', error);
@@ -111,6 +152,7 @@ export const usePublicAssistantLogic = (
       role: Role.USER,
       content: data.prompt,
       created_at: new Date(),
+      visitorId: visitorId,
     };
 
     try {
