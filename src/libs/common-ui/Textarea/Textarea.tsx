@@ -128,12 +128,17 @@ export const Textarea = forwardRef(
       } else if (value?.trim()) {
         icon = (
           <ArrowRightCircleIcon
-            className="h-9 w-9 text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300"
+            className={classMerge(
+              'h-9 w-9',
+              disabled
+                ? 'text-gray-300 dark:text-gray-600'
+                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+            )}
             aria-hidden="true"
           />
         );
-        onClick = onSend;
-      } else if (!disabled) {
+        onClick = disabled ? undefined : onSend;
+      } else {
         icon = (
           <MicrophoneIcon
             className={classMerge(
