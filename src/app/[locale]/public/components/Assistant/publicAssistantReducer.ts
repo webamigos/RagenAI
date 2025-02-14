@@ -8,9 +8,9 @@ export type State = {
   isLimitLock: boolean;
   messageLoadingText: string;
   isMessageError: boolean;
+  isError: boolean;
   streamedMessage: StreamedMessageDto | null;
   messages: MessageDto[];
-  isError: boolean;
 };
 
 const {

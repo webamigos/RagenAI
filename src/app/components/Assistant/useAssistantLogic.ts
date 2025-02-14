@@ -16,10 +16,7 @@ import { dailyMessageLimit } from '../../config';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
-import {
-  checkVisitorVisits,
-  fetchMessagesFromApi,
-} from '../../lib/services/api';
+import { fetchMessagesFromApi } from '../../lib/services/api';
 import {
   assistantReducer,
   reducerActions,
@@ -126,30 +123,6 @@ export const useAssistantLogic = (threadId: string) => {
     }
   }, [threadId]);
 
-  useEffect(() => {
-    if (state.messages.length > 0) {
-      scrollToBottom();
-      const id = userVisitorId;
-      if (id) {
-        loadVisitorMessages(id);
-      }
-    }
-  }, [state.messages, userVisitorId]);
-
-  const loadVisitorMessages = async (id: string) => {
-    try {
-      if (isSignedIn) {
-        return;
-      }
-      const { data } = await checkVisitorVisits(id);
-      if (data.messages >= dailyMessageLimit) {
-        dispatch({ type: SET_LIMIT_LOCK, payload: true });
-      }
-    } catch (error) {
-      logger.error('Error loading visitor messages: %o', error);
-    }
-  };
-
   // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
     // TODO: Temporary restriction - only authenticated users can send messages
@@ -233,6 +206,21 @@ export const useAssistantLogic = (threadId: string) => {
       voiceDurationSeconds: recordingTime,
     });
   };
+
+  useEffect(() => {
+    const initialMessageKey = `thread_${threadId}_initial_message`;
+    const initialMessage = localStorage.getItem(initialMessageKey);
+
+    if (initialMessage) {
+      localStorage.removeItem(initialMessageKey);
+
+      onSubmit({
+        prompt: initialMessage,
+        mode: ChatType.CONVERSATION,
+        messageType: 'TEXT',
+      });
+    }
+  }, [threadId]);
 
   return {
     messageLoadingText: state.messageLoadingText,
