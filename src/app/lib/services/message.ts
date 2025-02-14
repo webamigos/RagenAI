@@ -116,7 +116,7 @@ export const fetchMessagesFromDb = async (
   }
 };
 
-export const createAndStoreOpenAIThreadMessage = async ({
+export const createAndStoreMessage = async ({
   prompt,
   threadRecord,
   visitorId,

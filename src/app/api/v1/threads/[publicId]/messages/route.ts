@@ -47,6 +47,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
     setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
+
     const message = await apiDbService.createChatMessages(
       threadPublicId,
       parsedData
