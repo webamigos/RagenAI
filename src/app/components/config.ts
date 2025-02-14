@@ -1,4 +1,5 @@
-export const LOCAL_STORAGE_THREAD_KEY = 'ragenai_thread_id';
+export const LOCAL_STORAGE_THREAD_KEY = 'threadId';
+export const SESSION_STORAGE_TEMP_MESSAGE_KEY = 'tempMessage';
 export const availableModels = [
   { value: 'gpt-4', label: 'GPT-4' },
   { value: 'gpt-4o', label: 'GPT-4o' },
