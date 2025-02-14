@@ -1,6 +1,3 @@
-import { formatDates } from '@/app/lib/utils/formatDate';
-import { format } from 'date-fns';
-
 /**
  * This function renames `public_id` field to `id`
  * It's important from our perspective to share only public_id value but

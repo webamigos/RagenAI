@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { StatusCodes } from 'http-status-codes';
 
 import { getApiContext } from '../__logic__/context/api.context';
 import { ApiDbService } from '../__logic__/services/api-db.service';
@@ -12,7 +13,7 @@ export const GET = async (request: NextRequest) => {
     const apiDbService = new ApiDbService(apiContext);
     const documents = await apiDbService.getDocuments();
 
-    return NextResponse.json(documents, { status: 200 });
+    return NextResponse.json(documents, { status: StatusCodes.OK });
   } catch (err) {
     return ApiErrorService.handleErrors(err);
   }
