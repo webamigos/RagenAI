@@ -30,12 +30,14 @@ const MessageContent = ({
   message,
   streamedMessageRunId,
   responseType,
+  isPublicAccess,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
   streamedMessageRunId?: string;
   responseType: ChatResponseType;
+  isPublicAccess: boolean;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -64,7 +66,7 @@ const MessageContent = ({
               runId={streamedMessageRunId || message.run_id}
             />
             <CopyToClipboardButton message={message} />
-            <ReadAnswer content={content} />
+            {!isPublicAccess && <ReadAnswer content={content} />}
           </div>
         )}
         {role === 'USER' &&
@@ -107,6 +109,7 @@ export const ChatOutput = ({
               content={message.content}
               role={message.role}
               message={message}
+              isPublicAccess={isPublicAccess}
               streamedMessageRunId={streamedMessageRunId}
               responseType={responseType}
             />

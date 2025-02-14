@@ -34,6 +34,7 @@ type Props = {
   value?: string;
   mandatory?: boolean;
   showVoiceInput?: boolean;
+  disabled?: boolean;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -144,6 +145,19 @@ export const Textarea = forwardRef(
         );
         onClick = handleStartListening;
       }
+    } else {
+      icon = (
+        <ArrowRightCircleIcon
+          className={classMerge(
+            'h-9 w-9',
+            value?.trim()
+              ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+              : 'text-gray-300 dark:text-gray-600'
+          )}
+          aria-hidden="true"
+        />
+      );
+      onClick = value?.trim() ? onSend : undefined;
     }
 
     return (
@@ -170,6 +184,7 @@ export const Textarea = forwardRef(
                 }
               }}
               rows={1}
+              disabled={disabled}
               className={classMerge(
                 'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-2xl border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
