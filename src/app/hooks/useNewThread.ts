@@ -136,7 +136,7 @@ export const useNewThread = () => {
     try {
       const result = user
         ? await createThreadAction()
-        : await createGuestThreadAction(state.visitorId);
+        : await createGuestThreadAction();
 
       if (result.success) {
         trackThreadCreated();

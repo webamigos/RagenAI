@@ -1,7 +1,8 @@
-import { useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role } from '@prisma/client';
 import { usePathname } from 'next/navigation';
+import Cookies from 'js-cookie';
 
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import {
@@ -22,6 +23,7 @@ import { handleAssistantStream } from '@/app/components/Assistant/handle-assista
 import { publicAssistantReducer, type State } from './publicAssistantReducer';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { sharedReducerActions } from '@/app/components/Assistant/reducer';
+import { visitorCookieName } from '@/app/config';
 
 const { errorToast } = statusToast();
 
@@ -43,20 +45,16 @@ export const usePublicAssistantLogic = (
     messages: [],
   };
   const pathname = usePathname();
-  const visitorId = useRef<string>(
-    localStorage.getItem('visitorId') ||
-      `visitor-${Math.random().toString(36).substr(2, 9)}`
-  );
+  const [visitorId, setVisitorId] = useState('');
 
   useEffect(() => {
-    if (!localStorage.getItem('visitorId')) {
-      localStorage.setItem('visitorId', visitorId.current);
+    const visitorCookieValue = Cookies.get(visitorCookieName);
+    if (visitorCookieValue) {
+      setVisitorId(visitorCookieValue);
     }
   }, []);
 
-  const { isLoading } = useApi(() =>
-    fetchMessagesFromApi(threadId, visitorId.current)
-  );
+  const { isLoading } = useApi(() => fetchMessagesFromApi(threadId, visitorId));
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +76,8 @@ export const usePublicAssistantLogic = (
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
 
     try {
-      const response = await fetchMessagesFromApi(threadId, visitorId.current);
+      const response = await fetchMessagesFromApi(threadId, visitorId);
+
       if (response) {
         dispatch({ type: SET_INITIAL_LOAD, payload: false });
         dispatch({ type: SET_MESSAGES, payload: response.data });
@@ -95,7 +94,7 @@ export const usePublicAssistantLogic = (
 
   const loadVisitorMessages = async () => {
     try {
-      const { data } = await checkVisitorVisits(visitorId.current);
+      const { data } = await checkVisitorVisits(visitorId);
       if (data.messages >= 1111) {
         dispatch({ type: SET_LIMIT_LOCK, payload: true });
       }
@@ -112,12 +111,12 @@ export const usePublicAssistantLogic = (
       role: Role.USER,
       content: data.prompt,
       created_at: new Date(),
-      visitorId: visitorId.current,
+      visitorId: visitorId,
     };
 
     const dataWithVisitor = {
       ...data,
-      visitorId: visitorId.current,
+      visitorId: visitorId,
     };
 
     try {

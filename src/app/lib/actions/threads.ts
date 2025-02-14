@@ -1,9 +1,11 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { Thread } from '@prisma/client';
 import { setSentryServiceTag } from '../services/sentry';
 import { createNewOpenAIThread } from '../services/thread';
 import { logger } from '../utils/logger';
+import { visitorCookieName } from '@/app/config';
 
 type ThreadAction =
   | {
@@ -29,13 +31,16 @@ export const createThreadAction = async (): Promise<ThreadAction> => {
   }
 };
 
-// TODO: code duplication
-export const createGuestThreadAction = async (
-  visitorId?: string | null
-): Promise<ThreadAction> => {
+export const createGuestThreadAction = async (): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('guest-threads');
-    const thread = await createNewOpenAIThread(visitorId);
+    const cookieStore = await cookies();
+    const visitorId = cookieStore.get(visitorCookieName);
+
+    if (!visitorId) {
+      throw new Error('Invalid visitor id');
+    }
+    const thread = await createNewOpenAIThread(visitorId?.value);
 
     return { success: true, thread };
   } catch (error) {

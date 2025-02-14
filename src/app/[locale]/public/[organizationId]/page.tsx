@@ -25,6 +25,7 @@ export default function Index({
   searchParams,
 }: Props) {
   setRequestLocale(locale);
+
   return (
     <div>
       <div className="container mx-auto h-full">

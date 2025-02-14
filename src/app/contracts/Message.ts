@@ -17,7 +17,6 @@ export const createMessageSchema = z.object({
   useKnowledge: z.boolean().optional(),
   messageType: z.enum(['TEXT', 'VOICE']).optional(),
   voiceDurationSeconds: z.number().optional(),
-  visitorId: z.string().optional(),
 });
 
 export type CreateMessageDto = z.infer<typeof createMessageSchema>;

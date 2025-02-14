@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 
 import { logger } from '../../../lib/utils/logger';
 
@@ -8,6 +9,7 @@ import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/action
 import { createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '../../threads/services/assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
+import { visitorCookieName } from '@/app/config';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -33,12 +35,19 @@ export async function POST(request: NextRequest, { params }: Params) {
     const body = await request.json();
     const parsedData = createMessageSchema.parse(body);
 
+    const cookieStore = await cookies();
+    const visitorCookie = cookieStore.get(visitorCookieName);
+
+    if (!visitorCookie) {
+      throw new Error('Invalid visitor id');
+    }
+
     stream = await streamEvents({
       publicThreadId,
       userMessage: parsedData,
       orgId,
       mode: AssistantMode.PUBLIC,
-      visitorId: parsedData.visitorId,
+      visitorId: visitorCookie?.value,
     });
 
     return new Response(stream, {

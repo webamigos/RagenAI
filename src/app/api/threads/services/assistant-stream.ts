@@ -27,7 +27,6 @@ type Config = {
   orgId: string;
   mode: AssistantMode;
   filteredMode?: ChatType;
-  userId?: string;
   visitorId?: string;
 };
 
@@ -37,7 +36,6 @@ export async function streamEvents({
   orgId,
   mode,
   filteredMode,
-  userId,
   visitorId,
 }: Config) {
   return new ReadableStream({
@@ -68,7 +66,7 @@ export async function streamEvents({
         const threadMessage = await createAndStoreOpenAIThreadMessage({
           threadEntity: threadRecord,
           prompt: userMessage.prompt,
-          visitorId,
+          visitorId, // only for public threads
         });
 
         if (!threadMessage) {

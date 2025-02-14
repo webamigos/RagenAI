@@ -1,10 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, memo } from 'react';
+import { useEffect, memo, useState } from 'react';
 
 import { useNewThread } from '../hooks/useNewThread';
 import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { api } from '@/app/lib/services/config';
 
 const PublicStart = memo(
   ({
@@ -19,6 +20,15 @@ const PublicStart = memo(
       organizationId,
       widgetMode,
     });
+
+    useEffect(() => {
+      // set visitor cookie
+      const setCookie = async () => {
+        await api.post('/visitor');
+      };
+
+      setCookie();
+    }, []);
 
     useEffect(() => {
       const checkThread = async () => {
