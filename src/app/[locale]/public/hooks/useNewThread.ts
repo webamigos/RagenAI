@@ -10,7 +10,10 @@ import {
 import { usePathname, useRouter } from '@/i18n/routing';
 import Cookies from 'js-cookie';
 
-import { LOCAL_STORAGE_THREAD_KEY } from '@/app/components/config';
+import {
+  LOCAL_STORAGE_THREAD_KEY,
+  SESSION_STORAGE_TEMP_MESSAGE_KEY,
+} from '@/app/components/config';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
@@ -64,19 +67,27 @@ export const useNewThread = ({
     removeValue: removeThreadId,
   } = useSessionStorage<string | null>(LOCAL_STORAGE_THREAD_KEY, null);
 
-  const handleNewThread = async () => {
+  const handleNewThread = async (initialMessage?: string) => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
       handleCloseThread(false);
 
-      const result = await createGuestThreadAction();
+      const result = await createGuestThreadAction(undefined, visitorId);
 
       if (!result.success) {
-        throw new Error('Invalid response from server - missing thread ID');
+        throw new Error('Invalid response from server');
       }
 
       const newThreadId = result.thread.public_id;
       setThreadId(newThreadId);
+
+      // Save initial message to sessionStorage if provided
+      if (initialMessage) {
+        sessionStorage.setItem(
+          SESSION_STORAGE_TEMP_MESSAGE_KEY,
+          initialMessage
+        );
+      }
 
       startTransition(() =>
         push(`/public/${organizationId}/threads/${newThreadId}`)

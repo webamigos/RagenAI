@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { classMerge, Textarea } from '@ragenai/common-ui/index';
 
 import { useNewThreadInput } from './useNewThreadInput';
+import { usePublicAssistantLogic } from '@/app/[locale]/public/components/Assistant/usePublicAssistantLogic';
 
 interface NewChatInterfaceProps {
   className?: string;
