@@ -30,10 +30,12 @@ export const createThreadAction = async (): Promise<ThreadAction> => {
 };
 
 // TODO: code duplication
-export const createGuestThreadAction = async (): Promise<ThreadAction> => {
+export const createGuestThreadAction = async (
+  visitorId?: string | null
+): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('guest-threads');
-    const thread = await createNewOpenAIThread();
+    const thread = await createNewOpenAIThread(visitorId);
 
     return { success: true, thread };
   } catch (error) {

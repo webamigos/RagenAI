@@ -76,6 +76,7 @@ export const usePublicAssistantLogic = (
 
   const fetchData = async () => {
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
+
     try {
       const response = await fetchMessagesFromApi(threadId, visitorId.current);
       if (response) {
