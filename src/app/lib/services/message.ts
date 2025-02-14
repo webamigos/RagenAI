@@ -21,7 +21,7 @@ export type DbMessageDto = {
 const serviceName = 'Message';
 
 export const createMessageInDB = async ({
-  thread,
+  threadId,
   message,
   role,
   visitorId,
@@ -29,7 +29,7 @@ export const createMessageInDB = async ({
   messageType = 'TEXT',
   voiceDurationSeconds,
 }: {
-  thread: Thread;
+  threadId: Thread['id'];
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
@@ -40,10 +40,10 @@ export const createMessageInDB = async ({
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('THREAD_ID', {
-      threadId: thread.id,
+      threadId: threadId,
     });
     setSentryContext('EXTRA_DATA', {
-      messageId: message.id,
+      // messageId: message.id,
       role,
       visitorId,
       runId,
@@ -55,7 +55,7 @@ export const createMessageInDB = async ({
 
     return await db.message.create({
       data: {
-        thread_id: thread.id,
+        thread_id: threadId,
         content: message.content,
         role,
         visitor_id: visitorId,
@@ -118,13 +118,13 @@ export const fetchMessagesFromDb = async (
 
 export const createAndStoreMessage = async ({
   prompt,
-  threadRecord,
+  threadId,
   visitorId,
   messageType = 'TEXT',
   voiceDurationSeconds,
 }: {
   prompt: string;
-  threadRecord: Thread;
+  threadId: Thread['id'];
   visitorId?: string;
   messageType?: MessageContentType;
   voiceDurationSeconds?: number;
@@ -132,7 +132,7 @@ export const createAndStoreMessage = async ({
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('THREAD_ID', {
-      threadId: threadRecord.id,
+      threadId: threadId,
     });
     setSentryContext('EXTRA_DATA', {
       visitorId,
@@ -141,7 +141,7 @@ export const createAndStoreMessage = async ({
     });
 
     const dbMessage = await createMessageInDB({
-      thread: threadRecord,
+      threadId: threadId,
       message: {
         id: `msg_${Date.now()}`,
         content: prompt.trim(),

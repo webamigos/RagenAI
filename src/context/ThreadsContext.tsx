@@ -44,7 +44,7 @@ const initialState: State = {
   hasMore: true,
 };
 
-function threadsReducer(state: State, action: Action): State {
+export const threadsReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'LOADING':
       return { ...state, isLoading: true, error: null };
@@ -93,7 +93,7 @@ function threadsReducer(state: State, action: Action): State {
     default:
       return state;
   }
-}
+};
 
 type ThreadsContextType = {
   state: State;

@@ -24,6 +24,7 @@ export const AskQuestion = ({
   setPromptValue,
   register,
   onSend,
+  isUserLogged,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -41,6 +42,7 @@ export const AskQuestion = ({
       setValue={setPromptValue}
       placeholder={t('enter-your-question')}
       handleResponseType={handleResponseType}
+      showVoiceInput={isUserLogged}
     />
   );
 };

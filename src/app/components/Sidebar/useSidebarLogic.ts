@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -32,7 +32,7 @@ export const useSidebarLogic = () => {
   const { closeSidebar } = useSidebar();
   const { openSearch } = useSearchThreads();
 
-  const handleThread = () => {
+  const handleThread: MouseEventHandler<HTMLButtonElement> = () => {
     handleNewThread();
     handleCloseThread(false);
     closeSidebar();

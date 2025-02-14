@@ -1,6 +1,6 @@
 import { toast } from 'react-toastify';
 
-type ToastProps = {
+export type ToastProps = {
   message: string;
   autoClose?: number;
   position?:

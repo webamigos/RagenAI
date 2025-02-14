@@ -19,13 +19,13 @@ model Settings {
 }
 
 model Message {
+  id                     String             @id @default(uuid())
   public_id              String             @unique @default(uuid())
   created_at             DateTime           @default(now()) @db.Timestamptz
   content                String
   role                   Role               @default(USER)
   thread_id              String?
   visitor_id             String?
-  id                     String             @id @default(uuid())
   rate                   Int?               @db.SmallInt
   run_id                 String?
   message_type           MessageContentType @default(TEXT)
@@ -53,6 +53,8 @@ model Thread {
   user_id                      String? // api related field
   preferred_communication_type ThreadCommunicationType @default(TEXT)
   source                       Source                  @default(UI)
+  project                      Project?                @relation(fields: [project_id], references: [id])
+  project_id                   Int?
   created_at                   DateTime                @default(now()) @db.Timestamptz
 
   @@index([public_id])
@@ -187,6 +189,7 @@ model Project {
   updated_at      DateTime      @updatedAt @db.Timestamptz
   organization_id Int?
   api_key         ApiKey[]
+  Thread          Thread[]
 
   @@index([public_id])
 }

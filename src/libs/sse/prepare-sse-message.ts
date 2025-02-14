@@ -22,7 +22,7 @@ export const prepareSseMessage = (
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
 
-type ApiEvent =
+export type ApiEvent =
   | 'init'
   | 'delta'
   | 'find_thread'
@@ -33,11 +33,11 @@ type ApiEvent =
   | 'get_thread_messages'
   | 'add_thread_messages_to_lmm'
   | 'start_lmm'
-  | 'start_lmm'
   | 'llm_completed'
   | 'save_assistant_response'
   | 'assistant_response_saved'
   | 'final_response'
+  | 'error'
   | 'close';
 
 type ApiEventData =
@@ -46,8 +46,22 @@ type ApiEventData =
   | ApiSseThreadFound
   | ApiSseMessageCreated;
 
-export const prepareApiSseMessage = (event: ApiEvent, data?: ApiEventData) => {
+export const prepareApiSseMessage = (
+  event: ApiEvent,
+  data?: ApiEventData | SseMessageError
+) => {
   return `event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`;
+};
+
+export const parseSseString = (sseString: string) => {
+  const lines = sseString.split('\n');
+  const eventLine = lines[0].split(': ')[1];
+  const dataLine = lines[1].split(': ')[1];
+
+  return {
+    event: eventLine as ApiEvent,
+    data: JSON.parse(dataLine) as ApiEventData | undefined,
+  };
 };
 
 const encoder = new TextEncoder();
@@ -55,7 +69,7 @@ const encoder = new TextEncoder();
 export const sendApiEvent = (
   controller: ReadableStreamDefaultController,
   event: ApiEvent,
-  data?: ApiEventData
+  data?: ApiEventData | SseMessageError
 ) => {
   controller.enqueue(encoder.encode(prepareApiSseMessage(event, data)));
 };

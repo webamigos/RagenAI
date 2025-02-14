@@ -1,4 +1,3 @@
-import { Thread } from '@prisma/client';
 import db from '@ragenai/prisma-client';
 import { auth } from '@clerk/nextjs/server';
 
@@ -40,11 +39,17 @@ export const findOrCreateThread = async (
   }
 };
 
-export const createNewThread = async () => {
+export const createNewOpenAIThread = async (visitorId?: string | null) => {
   try {
     setSentryServiceTag(serviceName);
+
+    const { userId } = auth();
+
+    // TODO: move creation of Open AI thread to first message
     const threadRecord = await db.thread.create({
-      data: {},
+      data: {
+        visitor_id: userId ? userId : visitorId,
+      },
     });
     return {
       public_id: threadRecord.public_id,
@@ -93,6 +98,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
         created_at: true,
         visitor_id: true,
         preferred_communication_type: true,
+        project_id: true,
       },
     });
   } catch (error) {

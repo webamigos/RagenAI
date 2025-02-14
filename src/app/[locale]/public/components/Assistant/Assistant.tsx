@@ -34,6 +34,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           streamedMessage={streamedMessage}
           widgetMode={true}
           responseType={ChatResponseType.TEXT}
+          isPublicAccess={isPublicAccess}
         />
         <div ref={messagesEndDivRef} />
       </div>
