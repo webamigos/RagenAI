@@ -1,12 +1,10 @@
-import {
-  ChatOpenAI,
-  ChatOpenAIFields,
-  OpenAIEmbeddings,
-} from '@langchain/openai';
+import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ChatOpenAIFields, OpenAIEmbeddings } from '@langchain/openai';
 import { OpenAIModerationChain } from 'langchain/chains';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
-import { usageTracker } from './usage';
 import type { EmbeddingCreateParams } from 'openai/resources/embeddings';
+import { usageTracker } from './usage';
 
 const verbose = process.env.NODE_ENV === 'development';
 
@@ -23,15 +21,25 @@ class TrackedOpenAIEmbeddings extends OpenAIEmbeddings {
 }
 
 export const createChatCompletionInstance = (
-  options: ChatOpenAIFields,
+  options: ChatOpenAIFields, //todo use BaseCompletionConfig
   streaming: boolean = true
-) => {
-  if (!options.apiKey) {
-    throw new Error('Cannot create chat instance, apiKey is required');
-  }
+): BaseChatModel => {
+  //todo temporal credentials
+  const credentials: ProviderCredentials = {
+    provider: 'bedrock',
+    region: process.env.AWS_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  };
 
-  return new ChatOpenAI({
+  //todo remove this
+  const model = 'anthropic.claude-3-haiku-20240307-v1:0';
+
+  return ChatCompletionFactory.createInstance(credentials, {
     ...options,
+    model,
     verbose,
     streaming,
     callbacks: [
