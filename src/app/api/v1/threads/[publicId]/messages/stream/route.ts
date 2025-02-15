@@ -86,7 +86,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 sendApiEvent(controller, 'save_assistant_response');
 
                 const dbMessage = await createMessageInDB({
-                  thread: threadRecord,
+                  threadId: threadRecord.id,
                   message: {
                     id: threadMessage.public_id,
                     content: event.data.output,
@@ -104,6 +104,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                   content: dbMessage.content,
                   role: dbMessage.role,
                   created_at: dbMessage.created_at.toISOString(),
+                  run_id: runId,
                 };
 
                 sendApiEvent(controller, 'final_response', messageToSend);

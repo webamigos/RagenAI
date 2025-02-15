@@ -40,7 +40,7 @@ export type ApiEvent =
   | 'error'
   | 'close';
 
-type ApiEventData =
+export type ApiEventData =
   | ApiSseMessageEvent
   | ApiSseMessageDelta
   | ApiSseThreadFound

@@ -92,7 +92,7 @@ export const sendMessage = async (
     // create user message
     const messageResponse = await createAndStoreMessage({
       prompt,
-      threadRecord,
+      threadId: threadRecord.id,
       visitorId,
       messageType: requestData.data.messageType,
       voiceDurationSeconds: requestData.data.voiceDurationSeconds,

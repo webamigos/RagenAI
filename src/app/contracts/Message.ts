@@ -38,6 +38,7 @@ export type ApiMessageDto = {
   content: MessageModel['content'];
   role: Role;
   created_at: string;
+  run_id: string; // TODO: to remove
 };
 
 export type Thread = {

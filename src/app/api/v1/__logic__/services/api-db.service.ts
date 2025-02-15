@@ -273,7 +273,7 @@ export class ApiDbService {
 
     const threadMessage = await createAndStoreMessage({
       prompt: payload.content,
-      threadRecord,
+      threadId: threadRecord.id,
       visitorId: this.context.userId,
     });
 
@@ -331,7 +331,7 @@ export class ApiDbService {
     });
 
     const dbMessage = await createMessageInDB({
-      thread: threadRecord,
+      threadId: threadRecord.id,
       message: {
         id: threadMessage.public_id,
         content: chatResponse,

@@ -194,6 +194,7 @@ export async function streamEvents({
               role: dbMessage.role,
               created_at: dbMessage.created_at.toISOString(),
               content: dbMessage.content,
+              run_id: runId,
             };
 
             sendApiEvent(controller, 'final_response', messageToSend);

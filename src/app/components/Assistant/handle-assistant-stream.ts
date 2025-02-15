@@ -7,6 +7,7 @@ import {
   ApiSseMessageEvent,
   SseMessageError,
 } from '@/app/contracts/Events';
+import { ErrorEvent } from '../Assistant/types';
 import {
   type Action as InternalAssistantReducerAction,
   sharedReducerActions,
@@ -164,7 +165,7 @@ export const handleAssistantStream = async ({
 
     let buffer = ''; // Initialize a buffer to accumulate chunks
     let accumulatingMessage = '';
-    let runId = '';
+    let runId: string = '';
 
     while (true) {
       const { done, value } = await reader.read();
@@ -182,7 +183,7 @@ export const handleAssistantStream = async ({
         // Process the value (which is a string)
         const message = parseSseString(msg);
         const messageEvent = message.event as ApiEvent;
-        const messageData = message.data as ApiEventData;
+        const messageData = message.data as ApiEventData | ErrorEvent;
 
         dispatch({
           type: SET_LOADING_TEXT,
@@ -225,7 +226,7 @@ export const handleAssistantStream = async ({
           accumulatingMessage = '';
         } else if (messageEvent === 'error' && messageData) {
           // chain errors
-          const data = messageData as Event & SseMessageError;
+          const data = messageData as ErrorEvent;
 
           const errorMessage = getErrorMessage(data, tChainErrors);
           const shouldIgnoreError = !errorMessage && !streamedMessage;

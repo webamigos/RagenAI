@@ -46,7 +46,7 @@ export const createGuestThreadAction = async (
 
     if (initialMessage && visitorId) {
       await createAndStoreMessage({
-        threadRecord,
+        threadId: threadRecord.id,
         prompt: initialMessage,
         visitorId: visitorId,
       });
