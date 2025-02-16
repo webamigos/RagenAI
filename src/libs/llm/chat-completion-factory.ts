@@ -6,7 +6,7 @@ import type {
   OpenAICredentials,
   ProviderCredentials,
   BaseCompletionConfig,
-} from './types/chat-completion';
+} from './types';
 
 export class ChatCompletionFactory {
   private static createBedrockInstance(
