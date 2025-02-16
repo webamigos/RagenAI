@@ -1,11 +1,14 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { BedrockChat } from '@langchain/community/chat_models/bedrock';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ChatOllama } from '@langchain/ollama';
+
 import type {
   BedrockCredentials,
   OpenAICredentials,
   ProviderCredentials,
   BaseCompletionConfig,
+  OllamaCredentials,
 } from './types';
 
 export class ChatCompletionFactory {
@@ -42,6 +45,16 @@ export class ChatCompletionFactory {
     });
   }
 
+  private static createOllamaInstance(
+    credentials: OllamaCredentials,
+    config: BaseCompletionConfig
+  ): ChatOllama {
+    return new ChatOllama({
+      ...config,
+      baseUrl: credentials.baseUrl,
+    });
+  }
+
   static createInstance(
     credentials: ProviderCredentials,
     config: BaseCompletionConfig
@@ -51,6 +64,8 @@ export class ChatCompletionFactory {
         return this.createBedrockInstance(credentials, config);
       case 'openai':
         return this.createOpenAIInstance(credentials, config);
+      case 'ollama':
+        return this.createOllamaInstance(credentials, config);
       default:
         throw new Error(`Unsupported LLM provider`);
     }

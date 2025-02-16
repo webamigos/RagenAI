@@ -15,16 +15,27 @@ let customCredentials: ProviderCredentials | null = null;
 let customEmbeddingsModel: string | null = null;
 
 //------------Example bedrock credentials, uncomment to use------------
+// customCredentials = {
+//   provider: 'bedrock',
+//   region: process.env.AWS_REGION!,
+//   credentials: {
+//     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+//   },
+// };
+// customChatModel = 'anthropic.claude-3-haiku-20240307-v1:0';
+// customEmbeddingsModel = 'amazon.titan-embed-text-v1';
+//-----------------------------------------------------
+
+//------------Example ollama credentials, uncomment to use------------
+//ollama run llama3.1
+//ollama run mxbai-embed-large
 customCredentials = {
-  provider: 'bedrock',
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
+  provider: 'ollama',
+  baseUrl: 'http://127.0.0.1:11434',
 };
-customChatModel = 'anthropic.claude-3-haiku-20240307-v1:0';
-customEmbeddingsModel = 'amazon.titan-embed-text-v1';
+customChatModel = 'llama3.1';
+customEmbeddingsModel = 'mxbai-embed-large';
 //-----------------------------------------------------
 
 export const createChatCompletionInstance = (
@@ -51,7 +62,7 @@ export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
   }
 
   //todo remove this once we have a way to select provider's credentials
-  const credentials = customCredentials || {
+  const credentials: ProviderCredentials = customCredentials || {
     provider: 'openai',
     apiKey,
   };

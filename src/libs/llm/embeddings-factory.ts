@@ -5,12 +5,14 @@ import {
   TrackedBedrockEmbeddings,
   TrackedOpenAIEmbeddings,
 } from './embeddings';
+import { OllamaEmbeddings, OllamaEmbeddingsParams } from '@langchain/ollama';
 
 import type {
   BedrockCredentials,
   OpenAICredentials,
   ProviderCredentials,
   BaseEmbeddingsConfig,
+  OllamaCredentials,
 } from './types';
 import { BedrockEmbeddingsParams } from '@langchain/aws';
 
@@ -43,6 +45,16 @@ export class EmbeddingsFactory {
     return new TrackedOpenAIEmbeddings(config, credentials, usageTracker);
   }
 
+  private static createOllamaInstance(
+    credentials: OllamaCredentials,
+    config: OllamaEmbeddingsParams
+  ): OllamaEmbeddings {
+    if (!credentials.baseUrl) {
+      throw new Error('Base URL is required for Ollama');
+    }
+
+    return new OllamaEmbeddings({ ...config, baseUrl: credentials.baseUrl });
+  }
   static createInstance(
     credentials: ProviderCredentials,
     config: BaseEmbeddingsConfig,
@@ -62,6 +74,10 @@ export class EmbeddingsFactory {
           config as OpenAIEmbeddingsParams,
           usageTracker
         );
+
+      //todo add tracker!
+      case 'ollama':
+        return this.createOllamaInstance(credentials, config);
 
       default:
         throw new Error('Unsupported provider');

@@ -1,4 +1,4 @@
-export type ModelProvider = 'bedrock' | 'openai';
+export type ModelProvider = 'bedrock' | 'openai' | 'ollama';
 
 export type BaseProviderCredentials = {
   provider: ModelProvider;
@@ -18,4 +18,12 @@ export type BedrockCredentials = BaseProviderCredentials & {
   };
 };
 
-export type ProviderCredentials = OpenAICredentials | BedrockCredentials;
+export type OllamaCredentials = BaseProviderCredentials & {
+  provider: 'ollama';
+  baseUrl: string;
+};
+
+export type ProviderCredentials =
+  | OpenAICredentials
+  | BedrockCredentials
+  | OllamaCredentials;
