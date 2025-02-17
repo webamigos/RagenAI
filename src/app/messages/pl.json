@@ -162,14 +162,12 @@
   "success-toast": {
     "copied": "Skopiowano!",
     "deleted": "Usunięto!",
-    "saved": "Zapisano!",
-    "model-updated-successfully": "Model zaktualizowany pomyślnie"
+    "saved": "Zapisano!"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
     "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
     "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
-    "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
     "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:",
     "fetching-docs-error": "Błąd podczas pobierania dokumentów",
     "no-files": "Brak plików"
@@ -220,6 +218,43 @@
     "created-successful": "Stworzono dokument",
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
+  },
+  "assistant-settings": {
+    "prompt-assistant-settings": "Ustawienia asystenta",
+    "model-select": {
+      "title": "Model językowy",
+      "failed-to-fetch-model": "Błąd podczas pobierania modelu językowego",
+      "failed-to-update-model": "Błąd podczas aktualizacji modelu językowego",
+      "failed-to-update-temperature": "Błąd podczas aktualizacji temperatury",
+      "model-updated-successfully": "Model językowy zaktualizowany pomyślnie"
+    },
+    "max-documents-to-retreive": {
+      "title": "Maks. liczba fragmentów wyszukiwania",
+      "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
+      "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    },
+    "set-temperature": {
+      "title": "Poziom kreatywności odpowiedzi",
+      "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+      "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    },
+    "set-env": {
+      "title": "Ustaw zmienne środowiskowe"
+    },
+    "editable-prompt": {
+      "title": "Instrukcje personalizacji asystenta",
+      "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
+      "update": "Zaktualizuj",
+      "failed-to-update-prompt": "Błąd podczas aktualizacji instrukcji personalizacji asystenta:",
+      "prompt-updated-successfully": "Zaktualizowano",
+      "no-changes-detected": "Brak zmian w instrukcji personalizacji asystenta"
+    },
+    "voice-mode-settings": {
+      "title": "Ustawienia Trybu Głosowego",
+      "voice-select": "Wybierz Głos",
+      "voice-updated": "Głos został zaktualizowany",
+      "voice-update-failed": "Nie udało się zaktualizować głosu"
+    }
   },
   "manage-knowledge": {
     "create-document": "Stwórz dokument",
@@ -286,9 +321,6 @@
     "save-successfully": "Klucz API przypisano do Twojego konta!",
     "failed-to-fetch": "Błąd podczas pobierania kluacza API"
   },
-  "set-temperature": {
-    "set-temperature": "Poziom kreatywności odpowiedzi"
-  },
   "document-preview": {
     "document-not-found": "Nie znaleziono dokumentu",
     "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
@@ -297,17 +329,6 @@
     "edit-successfully": "Dokument został zedytowany",
     "content-empty": "Treść dokumentu nie może być pusta",
     "title-empty": "Tytuł nie może być pusty"
-  },
-  "max-documents-to-retreive": {
-    "input-label": "Maks. liczba fragmentów wyszukiwania"
-  },
-  "model-select": {
-    "select-model": "Model językowy"
-  },
-  "editable-prompt": {
-    "title": "Instrukcje personalizacji asystenta",
-    "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
-    "update": "Zaktualizuj"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",

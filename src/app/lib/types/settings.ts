@@ -4,6 +4,7 @@ export type OrganizationSettings = {
   model: string;
   temperature: number;
   maxDocumentsToRetrieve: number;
+  voiceId: string;
 };
 
 export type RawOrganizationSettings = Omit<OrganizationSettings, 'apiKey'> & {

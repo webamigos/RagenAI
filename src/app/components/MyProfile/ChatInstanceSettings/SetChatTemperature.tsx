@@ -17,8 +17,7 @@ export const SetChatTemperature = () => {
 
   const { successToast, errorToast } = statusToast();
   const successMessage = useTranslations('success-toast');
-  const errorMessage = useTranslations('error-toast');
-  const t = useTranslations('set-temperature');
+  const t = useTranslations('assistant-settings.set-temperature');
 
   const updateTemperature = async (temp: number) => {
     try {
@@ -31,7 +30,7 @@ export const SetChatTemperature = () => {
       }
     } catch (error) {
       errorToast({
-        message: `${errorMessage('failed-to-update-temperature')} ${error}`,
+        message: `${t('failed-to-update-temperature')} ${error}`,
       });
     }
   };
@@ -47,7 +46,7 @@ export const SetChatTemperature = () => {
         }
       } catch (error) {
         errorToast({
-          message: `${errorMessage('failed-to-fetch-settings')} ${error}`,
+          message: `${t('failed-to-fetch-settings')} ${error}`,
         });
       } finally {
         setIsLoading(false);
@@ -69,7 +68,7 @@ export const SetChatTemperature = () => {
   };
 
   return (
-    <Card title={t('set-temperature')} size="full">
+    <Card title={t('title')} size="full">
       <div className="flex items-center">
         <Input
           className="cursor-pointer"

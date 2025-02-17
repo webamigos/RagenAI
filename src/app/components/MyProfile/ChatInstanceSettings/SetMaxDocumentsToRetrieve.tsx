@@ -22,8 +22,7 @@ export const SetMaxDocumentsToRetrieve = () => {
 
   const { successToast, errorToast } = statusToast();
   const successMessage = useTranslations('success-toast');
-  const errorMessage = useTranslations('error-toast');
-  const t = useTranslations('max-documents-to-retreive');
+  const t = useTranslations('assistant-settings.max-documents-to-retreive');
 
   const { min, max, step } = organizationSettingsLimits.maxDocumentsToRetrieve;
 
@@ -41,7 +40,7 @@ export const SetMaxDocumentsToRetrieve = () => {
       }
     } catch (error) {
       errorToast({
-        message: `${errorMessage('failed-to-update-max-documents')} ${error}`,
+        message: `${t('failed-to-update-max-documents')} ${error}`,
       });
     }
   };
@@ -57,7 +56,7 @@ export const SetMaxDocumentsToRetrieve = () => {
         }
       } catch (error) {
         errorToast({
-          message: `${errorMessage('failed-to-fetch-settings')} ${error}`,
+          message: `${t('failed-to-fetch-settings')} ${error}`,
         });
       } finally {
         setIsLoading(false);
@@ -82,7 +81,7 @@ export const SetMaxDocumentsToRetrieve = () => {
   };
 
   return (
-    <Card title={t('input-label')} size="full">
+    <Card title={t('title')} size="full">
       <div className="flex items-center">
         <Input
           className="cursor-pointer"
