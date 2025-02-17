@@ -1,13 +1,13 @@
 import { useTranslations } from 'next-intl';
 import { PlusIcon, SidebarLabel } from '@ragenai/common-ui';
 import { ThreadCommunicationType } from '@prisma/client';
-
-import { useNewThread } from '@/app/hooks/useNewThread';
+import { useRouter } from 'next/navigation';
 import { logger } from '@/app/lib/utils/logger';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { EmptyProjectsState } from './components/EmptyProjectsState';
 import { ProjectItem } from './components/ProjectItem';
 import { useThreadsContext } from '@/app/hooks/useThreadsContext';
+import { createThreadAction } from '@/app/lib/actions/threads';
 
 import type { ProjectsListProps, ThreadType } from './types';
 import { CreateProject } from './components/CreateProject';
@@ -20,13 +20,14 @@ export const ProjectsList = ({
   isLoading,
 }: ProjectsListProps) => {
   const t = useTranslations('sidebar.projects');
-  const { handleNewThread } = useNewThread();
   const { closeSidebar } = useSidebar();
+  const router = useRouter();
+
   const {
     state: { userThreads },
   } = useThreadsContext();
 
-  const projectsWithUpdatedThreads = projects.map((project) => {
+  const projectsWithUpdatedThreads = projects?.map((project) => {
     const projectThreads = userThreads.filter(
       (thread) =>
         project.threads.some((pt) => pt.public_id === thread.public_id) ||
@@ -61,14 +62,27 @@ export const ProjectsList = ({
     };
   });
 
-  const handleProjectClick = async (projectId: number) => {
+  const handleProjectClick = async (projectPublicId: string) => {
     try {
-      await handleNewThread(projectId);
+      const project = projectsWithUpdatedThreads?.find(
+        (p) => p.public_id === projectPublicId
+      );
+      if (!project) return;
+
+      const result = await createThreadAction(project.id);
+      if (result.success) {
+        router.push(
+          `/projects/${project.public_id}/threads/${result.thread.public_id}`
+        );
+        closeSidebar();
+      }
     } catch (error) {
-      logger.error('Error creating thread for project:', { projectId, error });
+      logger.error('Error creating thread for project:', {
+        projectPublicId,
+        error,
+      });
     }
   };
-
   return (
     <>
       <div className="mb-4">
@@ -76,12 +90,14 @@ export const ProjectsList = ({
           <SidebarLabel className="p-2 text-gray-600 dark:text-gray-100 font-bold">
             {t('title')}
           </SidebarLabel>
-          <div
-            onClick={() => setIsCreateModalOpen(true)}
-            className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
-          >
-            <PlusIcon className="w-4 h-4" />
-          </div>
+          {projects.length > 0 && (
+            <div
+              onClick={() => setIsCreateModalOpen(true)}
+              className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
+            >
+              <PlusIcon className="w-4 h-4" />
+            </div>
+          )}
         </div>
         {!projectsWithUpdatedThreads.length ? (
           <EmptyProjectsState

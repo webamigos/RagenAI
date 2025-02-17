@@ -46,7 +46,7 @@ export type ThreadItemProps = {
 export type ProjectItemProps = {
   project: ProjectType;
   activeThread?: string;
-  onProjectClick: (projectId: number) => Promise<void>;
+  onProjectClick: (projectId: string) => Promise<void>;
   onSidebarClose: () => void;
 };
 

@@ -1,5 +1,5 @@
 import { MouseEventHandler, useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { usePathname } from '@/i18n/routing';
@@ -9,6 +9,9 @@ import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
+import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+
+import type { ProjectType } from './Projects/types';
 
 type SidebarThreadsFetchError = {
   status: number | null;
@@ -17,6 +20,9 @@ type SidebarThreadsFetchError = {
 
 export const useSidebarLogic = () => {
   const [activeThread, setActiveThread] = useState<string>('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [projects, setProjects] = useState<ProjectType[]>([]);
+
   const { state, refetchThreads } = useThreadsContext();
   const { userThreads, error, isLoading, hasMore } = state;
   const { user, isSignedIn } = useUser();
@@ -31,6 +37,7 @@ export const useSidebarLogic = () => {
   const t = useTranslations('sidebar');
   const { closeSidebar } = useSidebar();
   const { openSearch } = useSearchThreads();
+  const { organization } = useOrganization();
 
   const handleThread: MouseEventHandler<HTMLButtonElement> = () => {
     handleNewThread();
@@ -64,19 +71,43 @@ export const useSidebarLogic = () => {
   useEffect(() => {
     const parts = pathname.split('/');
     const threadIndex = parts.indexOf('threads');
+    const projectIndex = parts.indexOf('projects');
 
     if (threadIndex !== -1 && parts[threadIndex + 1]) {
       const threadId = parts[threadIndex + 1];
+      setActiveThread(threadId);
+    } else if (
+      projectIndex !== -1 &&
+      parts[projectIndex + 2] === 'threads' &&
+      parts[projectIndex + 3]
+    ) {
+      const threadId = parts[projectIndex + 3];
       setActiveThread(threadId);
     } else {
       setActiveThread('');
     }
   }, [pathname]);
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!organization?.id || !user?.id) {
+        return;
+      }
+      const fetchedProjects = await getProjects(organization.id, user.id);
+
+      if (fetchedProjects.projects) {
+        setProjects(fetchedProjects.projects);
+      }
+    };
+
+    fetchProjects();
+  }, [organization?.id, user?.id]);
+
   return {
     error,
     locale,
     hasMore,
+    projects,
     userEmail,
     isLoading,
     userAvatar,
@@ -89,7 +120,9 @@ export const useSidebarLogic = () => {
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,
+    isCreateModalOpen,
     handleCloseThread,
+    setIsCreateModalOpen,
     getSidebarThreadsError,
   };
 };

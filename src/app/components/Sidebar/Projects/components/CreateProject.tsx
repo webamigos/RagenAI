@@ -8,8 +8,8 @@ import { useUser } from '@clerk/nextjs';
 import { Dialog, DialogTitle } from '@ragenai/common-ui';
 import { Button, Input } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
-import { createProject } from '@/app/components/Sidebar/Projects/actions';
 import { logger } from '@/app/lib/utils/logger';
+import { createProject } from '../actions';
 
 interface CreateProjectProps {
   isOpen: boolean;

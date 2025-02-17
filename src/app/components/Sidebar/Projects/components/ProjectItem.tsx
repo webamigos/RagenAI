@@ -35,7 +35,7 @@ export const ProjectItem = ({
 
   const handleProjectClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    onProjectClick(project.id);
+    onProjectClick(project.public_id);
   };
 
   const handleExpandClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -55,7 +55,9 @@ export const ProjectItem = ({
         role="button"
         tabIndex={0}
         aria-label={`Select project ${project.title}`}
-        onKeyDown={(e) => e.key === 'Enter' && onProjectClick(project.id)}
+        onKeyDown={(e) =>
+          e.key === 'Enter' && onProjectClick(project.public_id)
+        }
       >
         <div className="flex items-center flex-1">
           <FolderIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />

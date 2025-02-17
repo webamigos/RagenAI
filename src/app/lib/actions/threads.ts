@@ -28,7 +28,7 @@ export const createThreadAction = async (
 ): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
-    const thread = await createNewOpenAIThread(projectId);
+    const thread = await createNewOpenAIThread(null, projectId);
 
     return { success: true, thread };
   } catch (error) {

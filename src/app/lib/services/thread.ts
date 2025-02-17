@@ -59,7 +59,10 @@ export const findOrCreateOpenAIThread = async (
   }
 };
 
-export const createNewOpenAIThread = async (visitorId?: string | null, projectId?: number) => {
+export const createNewOpenAIThread = async (
+  visitorId?: string | null,
+  projectId?: number
+) => {
   try {
     setSentryServiceTag(serviceName);
 

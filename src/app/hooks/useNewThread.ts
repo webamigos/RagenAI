@@ -114,7 +114,10 @@ export const useNewThread = () => {
     }
   }, [pathname]);
 
-  const handleNewThread = async (initialMessage?: string, projectId?: number) => {
+  const handleNewThread = async (
+    initialMessage?: string,
+    projectId?: number
+  ) => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
     if (state.isLimitLock) {
