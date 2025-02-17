@@ -28,8 +28,8 @@ let customEmbeddingsModel: string | null = null;
 //-----------------------------------------------------
 
 //------------Example ollama credentials, uncomment to use------------
-//ollama run llama3.1
-//ollama run mxbai-embed-large
+//ollama pull llama3.1
+//ollama pull snowflake-arctic-embed2
 // customCredentials = {
 //   provider: 'ollama',
 //   baseUrl: process.env.OLLAMA_BASE_URL!,
