@@ -60,6 +60,9 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string(),
   AWS_SECRET_DOCUMENTS_BUCKET: z.string(),
 
+  // OLLAMA
+  OLLAMA_BASE_URL: z.string(),
+
   // Stripe
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
   STRIPE_SECRET_KEY: z.string(),

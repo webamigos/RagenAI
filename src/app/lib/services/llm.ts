@@ -30,12 +30,12 @@ let customEmbeddingsModel: string | null = null;
 //------------Example ollama credentials, uncomment to use------------
 //ollama run llama3.1
 //ollama run mxbai-embed-large
-customCredentials = {
-  provider: 'ollama',
-  baseUrl: 'http://127.0.0.1:11434',
-};
-customChatModel = 'llama3.1';
-customEmbeddingsModel = 'mxbai-embed-large';
+// customCredentials = {
+//   provider: 'ollama',
+//   baseUrl: process.env.OLLAMA_BASE_URL!,
+// };
+// customChatModel = 'llama3.1';
+// customEmbeddingsModel = 'snowflake-arctic-embed2';
 //-----------------------------------------------------
 
 export const createChatCompletionInstance = (

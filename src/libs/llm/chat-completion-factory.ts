@@ -51,6 +51,7 @@ export class ChatCompletionFactory {
   ): ChatOllama {
     return new ChatOllama({
       ...config,
+      checkOrPullModel: true,
       baseUrl: credentials.baseUrl,
     });
   }
