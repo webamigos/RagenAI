@@ -53,7 +53,7 @@ export const threadsReducer = (state: State, action: Action): State => {
         ...state,
         isLoading: false,
         userThreads: action.payload || [],
-        hasMore: action.payload.length > 0,
+        hasMore: (action.payload || []).length > 0,
       };
     case 'ERROR':
       return { ...state, isLoading: false, error: action.payload };
@@ -89,6 +89,7 @@ export const threadsReducer = (state: State, action: Action): State => {
 
       const newThread = {
         ...action.payload,
+        messages: action.payload.messages || [],
         project_id: action.payload.project_id,
       };
 

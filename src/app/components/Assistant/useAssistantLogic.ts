@@ -75,7 +75,8 @@ export const useAssistantLogic = (threadId: string) => {
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
-  const { dispatch: threadsDispatch } = useThreadsContext();
+  const { dispatch: threadsDispatch, state: threadsState } =
+    useThreadsContext();
   const isPublicAccess = pathname.includes('/public');
 
   const [state, dispatch] = useReducer(assistantReducer, initialState);
@@ -163,6 +164,7 @@ export const useAssistantLogic = (threadId: string) => {
         responseType: state.responseType,
         streamedMessage: state.streamedMessage,
         threadsDispatch,
+        threadsState: threadsState.userThreads,
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,

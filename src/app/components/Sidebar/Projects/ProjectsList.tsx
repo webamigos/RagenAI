@@ -25,6 +25,7 @@ export const ProjectsList = ({
 
   const {
     state: { userThreads },
+    dispatch,
   } = useThreadsContext();
 
   const projectsWithUpdatedThreads = projects?.map((project) => {
@@ -71,6 +72,16 @@ export const ProjectsList = ({
 
       const result = await createThreadAction(project.id);
       if (result.success) {
+        dispatch({
+          type: 'ADD_THREAD',
+          payload: {
+            public_id: result.thread.public_id,
+            project_id: project.id,
+            messages: [],
+            created_at: new Date(),
+          },
+        });
+
         router.push(
           `/projects/${project.public_id}/threads/${result.thread.public_id}`
         );

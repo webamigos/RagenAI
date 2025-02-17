@@ -18,6 +18,7 @@ import {
   CreateMessageDto,
   MessageDto,
   StreamedMessageDto,
+  ThreadHistoryResponse,
 } from '@/app/contracts/Message';
 import { threadsReducer } from '@/context/ThreadsContext';
 import axios, { AxiosError } from 'axios';
@@ -52,6 +53,7 @@ type CommonConfig = {
   messages: MessageDto[];
   userMessage: MessageDto;
   userMessageId: string;
+  threadsState: ThreadHistoryResponse[];
   t: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
@@ -95,6 +97,7 @@ export const handleAssistantStream = async ({
   threadId,
   responseType,
   threadsDispatch,
+  threadsState,
   data,
   scrollFn,
   streamedMessage,
@@ -122,10 +125,12 @@ export const handleAssistantStream = async ({
     // Starts chain
     // Adds assistant message to db
     // And stream progress using Server Sent Events format
+
     const newThread = {
       public_id: threadId,
       messages: [userMessage],
       created_at: new Date(),
+      project_id: threadsState[0].project_id,
     };
 
     threadsDispatch({
