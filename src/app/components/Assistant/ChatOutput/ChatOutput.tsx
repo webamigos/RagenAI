@@ -24,6 +24,7 @@ type Props = {
   streamedMessage: StreamedMessageDto | null;
   isPublicAccess?: boolean;
   onMessagePlayed?: (messageId: string) => void;
+  voiceId: string;
 };
 
 const MessageContent = ({
@@ -96,23 +97,11 @@ export const ChatOutput = ({
   streamedMessage,
   isPublicAccess = false,
   responseType,
+  voiceId,
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
   const { organization } = useOrganization();
-  const [voiceId, setVoiceId] = useState('JBFqnCBsd6RMkjVDRZzb');
-
-  useEffect(() => {
-    const getVoiceSettings = async () => {
-      if (organization?.id) {
-        const response = await fetchVoiceId(organization.id);
-        if (response.success && response.data?.voiceId) {
-          setVoiceId(response.data.voiceId);
-        }
-      }
-    };
-    getVoiceSettings();
-  }, [organization?.id]);
 
   return (
     <div className="px-5 mt-5 mr-3 lg:px-22">
