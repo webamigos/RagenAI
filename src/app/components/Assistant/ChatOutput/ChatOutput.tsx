@@ -1,6 +1,4 @@
 import { SpinnerSVG, Text } from '@ragenai/common-ui';
-import { useEffect, useState } from 'react';
-import { useOrganization } from '@clerk/nextjs';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
@@ -13,7 +11,6 @@ import type {
   ChatResponseType,
 } from '../../../contracts/Message';
 import './chat-response.css';
-import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 
 type Props = {
   messages: MessageDto[];
@@ -24,7 +21,7 @@ type Props = {
   streamedMessage: StreamedMessageDto | null;
   isPublicAccess?: boolean;
   onMessagePlayed?: (messageId: string) => void;
-  voiceId: string;
+  voiceId?: string;
 };
 
 const MessageContent = ({
@@ -41,7 +38,7 @@ const MessageContent = ({
   message?: MessageDto;
   streamedMessageRunId?: string;
   responseType: ChatResponseType;
-  voiceId: string;
+  voiceId?: string;
   isPublicAccess: boolean;
 }) => {
   const { md, t } = useChatViewLogic(null);
@@ -73,7 +70,9 @@ const MessageContent = ({
             <div className="flex items-center gap-2">
               <CopyToClipboardButton message={message} />
               {/* voice read also should be enabled for public threads */}
-              <ReadAnswer content={content} voiceId={voiceId} />
+              {!isPublicAccess && (
+                <ReadAnswer content={content} voiceId={voiceId!} />
+              )}
             </div>
           </div>
         )}
@@ -101,7 +100,6 @@ export const ChatOutput = ({
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
-  const { organization } = useOrganization();
 
   return (
     <div className="px-5 mt-5 mr-3 lg:px-22">
@@ -122,7 +120,7 @@ export const ChatOutput = ({
               isPublicAccess={isPublicAccess}
               streamedMessageRunId={streamedMessageRunId}
               responseType={responseType}
-              voiceId={voiceId}
+              voiceId={!isPublicAccess ? voiceId : undefined}
             />
           </div>
         ))}
