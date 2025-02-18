@@ -36,7 +36,15 @@
       "verification-code-sent": "Verification code has been sent to the email address provided",
       "resend-failed": "Error sending code"
     },
-    "or-continue-with": "Or continue with"
+    "or-continue-with": "Or continue with",
+    "forgot-password": "Forgot password?",
+    "i-agree-to": "I agree to",
+    "terms-of-use": "terms of use",
+    "validation": {
+      "terms": "You need to accept terms of use",
+      "email": "Invalid email",
+      "password": "Invalid password"
+    }
   },
   "sign-in": {
     "sign-in": "Sign in",

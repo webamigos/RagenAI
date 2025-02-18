@@ -36,7 +36,15 @@
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
     },
-    "or-continue-with": "Lub zaloguj się za pomocą"
+    "or-continue-with": "Lub zaloguj się za pomocą",
+    "forgot-password": "Nie pamiętasz hasła?",
+    "i-agree-to": "Zgadzam się z",
+    "terms-of-use": "regulaminem",
+    "validation": {
+      "terms": "Musisz zaakceptować warunki użytkowania",
+      "email": "Nieprawidłowy adres email",
+      "password": "Hasło musi mieć co najmniej 8 znaków"
+    }
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
