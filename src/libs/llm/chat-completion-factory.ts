@@ -2,6 +2,8 @@ import { ChatOpenAI } from '@langchain/openai';
 import { BedrockChat } from '@langchain/community/chat_models/bedrock';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ChatOllama } from '@langchain/ollama';
+import { ChatAnthropic } from '@langchain/anthropic';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 
 import type {
   BedrockCredentials,
@@ -9,6 +11,9 @@ import type {
   ProviderCredentials,
   BaseCompletionConfig,
   OllamaCredentials,
+  GoogleCredentials,
+  AnthropicCredentials,
+  OpenRouterCredentials,
 } from './types';
 
 export class ChatCompletionFactory {
@@ -56,6 +61,53 @@ export class ChatCompletionFactory {
     });
   }
 
+  private static createAnthropicInstance(
+    credentials: AnthropicCredentials,
+    config: BaseCompletionConfig
+  ): any {
+    if (!credentials.apiKey) {
+      throw new Error('API key is required for Anthropic');
+    }
+
+    return new ChatAnthropic({
+      ...config,
+      apiKey: credentials.apiKey,
+    });
+  }
+
+  private static createGoogleInstance(
+    credentials: GoogleCredentials,
+    config: BaseCompletionConfig
+  ): any {
+    if (!credentials.apiKey) {
+      throw new Error('API key is required for Google');
+    }
+
+    return new ChatGoogleGenerativeAI({
+      ...config,
+      apiKey: credentials.apiKey,
+    });
+  }
+
+  // OpenAI SDK is officially recommended for OpenRouter
+  //https://openrouter.ai/docs/quickstart
+  private static createOpenRouterInstance(
+    credentials: OpenRouterCredentials,
+    config: BaseCompletionConfig
+  ): ChatOpenAI {
+    if (!credentials.apiKey) {
+      throw new Error('API key is required for OpenRouter');
+    }
+
+    return new ChatOpenAI({
+      ...config,
+      apiKey: credentials.apiKey,
+      configuration: {
+        baseURL: 'https://openrouter.ai/api/v1',
+      },
+    });
+  }
+
   static createInstance(
     credentials: ProviderCredentials,
     config: BaseCompletionConfig
@@ -67,6 +119,12 @@ export class ChatCompletionFactory {
         return this.createOpenAIInstance(credentials, config);
       case 'ollama':
         return this.createOllamaInstance(credentials, config);
+      case 'anthropic':
+        return this.createAnthropicInstance(credentials, config);
+      case 'google':
+        return this.createGoogleInstance(credentials, config);
+      case 'openrouter':
+        return this.createOpenRouterInstance(credentials, config);
       default:
         throw new Error(`Unsupported LLM provider`);
     }

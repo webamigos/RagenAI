@@ -12,7 +12,6 @@ const verbose = process.env.NODE_ENV === 'development';
 //------------Keep values below as null to use openai and config from settings------------
 let customChatModel: string | null = null;
 let customCredentials: ProviderCredentials | null = null;
-let customEmbeddingsModel: string | null = null;
 
 //------------Example bedrock credentials, uncomment to use------------
 // customCredentials = {
@@ -36,6 +35,30 @@ let customEmbeddingsModel: string | null = null;
 // };
 // customChatModel = 'llama3.1';
 // customEmbeddingsModel = 'snowflake-arctic-embed2';
+//-----------------------------------------------------
+
+//------------Example openrouter credentials, uncomment to use------------
+// customCredentials = {
+//   provider: 'openrouter',
+//   apiKey: process.env.OPENROUTER_API_KEY!,
+// };
+// customChatModel = 'meta-llama/llama-3.3-70b-instruct:free';
+//-----------------------------------------------------
+
+//------------Example anthropic credentials, uncomment to use------------
+// customCredentials = {
+//   provider: 'anthropic',
+//   apiKey: process.env.ANTHROPIC_API_KEY!,
+// };
+// customChatModel = 'claude-3-5-sonnet-20241022';
+//-----------------------------------------------------
+
+//------------Example google credentials, uncomment to use------------
+// customCredentials = {
+//   provider: 'google',
+//   apiKey: process.env.GOOGLE_API_KEY!,
+// };
+// customChatModel = 'gemini-1.5-flash';
 //-----------------------------------------------------
 
 export const createChatCompletionInstance = (

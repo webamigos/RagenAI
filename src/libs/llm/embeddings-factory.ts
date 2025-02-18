@@ -1,5 +1,4 @@
 import { UsageTracker } from '@/app/lib/utils/usage/usage-tracker';
-import { Embeddings } from '@langchain/core/embeddings';
 import { OpenAIEmbeddingsParams } from '@langchain/openai';
 import {
   TrackedBedrockEmbeddings,
@@ -13,6 +12,7 @@ import type {
   ProviderCredentials,
   BaseEmbeddingsConfig,
   OllamaCredentials,
+  EmbeddingsWithModel,
 } from './types';
 import { BedrockEmbeddingsParams } from '@langchain/aws';
 
@@ -59,7 +59,7 @@ export class EmbeddingsFactory {
     credentials: ProviderCredentials,
     config: BaseEmbeddingsConfig,
     usageTracker?: UsageTracker
-  ): Embeddings {
+  ): EmbeddingsWithModel {
     switch (credentials.provider) {
       case 'bedrock':
         return this.createBedrockInstance(
