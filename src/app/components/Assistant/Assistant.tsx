@@ -7,10 +7,11 @@ import { useAssistantLogic } from './useAssistantLogic';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 
-import { MessageContentType } from '@prisma/client';
 import { useOrganization } from '@clerk/nextjs';
 import { useState, useEffect } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
+import { ChatResponseType } from '@/app/contracts/Message';
+import { reducerActions } from './reducer';
 
 type Props = {
   threadId: string;
@@ -57,6 +58,24 @@ export const Assistant = ({ threadId }: Props) => {
     getVoiceSettings();
   }, [organization?.id]);
 
+  useEffect(() => {
+    const wasVoiceModeActive = sessionStorage.getItem('voice_mode_active');
+    const responseTypeStored = sessionStorage.getItem('response_type');
+
+    if (
+      wasVoiceModeActive === 'true' &&
+      responseTypeStored === ChatResponseType.VOICE
+    ) {
+      dispatch({
+        type: reducerActions.SET_MODE_VOICE,
+        payload: ChatResponseType.VOICE,
+      });
+      handleResponseType();
+      sessionStorage.removeItem('voice_mode_active');
+      sessionStorage.removeItem('response_type');
+    }
+  }, []);
+
   return (
     <>
       {isSearchOpen && (
@@ -66,7 +85,7 @@ export const Assistant = ({ threadId }: Props) => {
       )}
 
       <div className="h-full flex flex-col font-sans">
-        {responseType === MessageContentType.VOICE && (
+        {responseType === ChatResponseType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
             isRecording={isRecording}
@@ -98,6 +117,7 @@ export const Assistant = ({ threadId }: Props) => {
               isLoading={isGlobalLoading}
               onSubmit={onSubmit}
               isPublicAccess={isPublicAccess}
+              responseType={responseType}
             />
           )}
         </div>

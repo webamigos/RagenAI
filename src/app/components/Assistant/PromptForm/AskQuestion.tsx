@@ -7,7 +7,7 @@ type Props = {
   disabled: boolean;
   error?: FieldError;
   isUserLogged: boolean;
-  handleResponseType: () => void;
+  handleResponseType?: () => void;
   register: UseFormRegister<{
     prompt: string;
   }>;

@@ -488,7 +488,8 @@
   "useAudioRecorder": {
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
     "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
-    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
+    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie",
+    "microphone-permission-denied": "Brak dostępu do mikrofonu. Sprawdź uprawnienia przeglądarki."
   },
   "voice-mode": {
     "recording": "Nagrywanie...",

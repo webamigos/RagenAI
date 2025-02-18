@@ -36,9 +36,9 @@ export enum sharedReducerActions {
 }
 
 export enum reducerActions {
-  SET_MODE,
-  SET_MODE_VOICE,
-  SET_MESSAGE_PLAYED,
+  SET_MODE = 'SET_MODE',
+  SET_MODE_VOICE = 'SET_MODE_VOICE',
+  SET_MESSAGE_PLAYED = 'SET_MESSAGE_PLAYED',
 }
 
 const {
@@ -127,7 +127,8 @@ export const assistantReducer = (state: State, action: Action): State => {
     case SET_MODE:
       return { ...state, mode: action.payload };
     case SET_MODE_VOICE:
-      return { ...state, responseType: action.payload };
+      const newState = { ...state, responseType: action.payload };
+      return newState;
     case SET_MESSAGE_PLAYED:
       return {
         ...state,
