@@ -486,7 +486,8 @@
   "useAudioRecorder": {
     "browser-not-compatibility": "Your browser does not support audio recording",
     "recognition-error": "Recognition error, try again",
-    "recording-error": "Error during recording, try again"
+    "recording-error": "Error during recording, try again",
+    "microphone-permission-denied": "No access to microphone. Check browser permissions."
   },
   "voice-mode": {
     "recording": "Recording...",

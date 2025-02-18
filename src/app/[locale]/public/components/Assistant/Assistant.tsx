@@ -46,6 +46,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
             isPublicAccess={isPublicAccess}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
+            responseType={ChatResponseType.TEXT}
           />
         )}
       </div>

@@ -24,9 +24,9 @@ import {
   State,
 } from './reducer';
 import {
-  ChatResponseType,
   ChatType,
   type CreateMessageDto,
+  ChatResponseType,
 } from '../../contracts/Message';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -36,7 +36,7 @@ import { AssistantMode } from '@/app/contracts/Assistant';
 
 const { SET_MODE, SET_MODE_VOICE, SET_MESSAGE_PLAYED } = reducerActions;
 
-const { SET_INITIAL_LOAD, SET_LIMIT_LOCK, SET_MESSAGES } = sharedReducerActions;
+const { SET_INITIAL_LOAD, SET_MESSAGES } = sharedReducerActions;
 
 const { errorToast } = statusToast();
 
@@ -139,7 +139,7 @@ export const useAssistantLogic = (threadId: string) => {
       content: data.prompt,
       created_at: new Date(),
       mode: data.mode,
-      message_type: data.messageType || 'TEXT',
+      message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
@@ -176,13 +176,19 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const handleResponseType = () => {
-    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.VOICE });
+    dispatch({
+      type: SET_MODE_VOICE,
+      payload: ChatResponseType.VOICE,
+    });
     setIsRecording(true);
   };
 
   const closeVoiceMode = () => {
     setIsRecording(false);
-    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.TEXT });
+    dispatch({
+      type: SET_MODE_VOICE,
+      payload: ChatResponseType.TEXT,
+    });
   };
 
   const isLocked = () => {
