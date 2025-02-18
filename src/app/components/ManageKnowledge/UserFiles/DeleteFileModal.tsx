@@ -1,13 +1,6 @@
 import { useTranslations } from 'next-intl';
-import {
-  Button,
-  Card,
-  SpinnerSVG,
-  Text,
-  TrashIcon,
-  XMarkIcon,
-  classMerge,
-} from '@ragenai/common-ui';
+import { Button, Card, Text, classMerge } from '@ragenai/common-ui';
+import { KeyboardEventHandler } from 'react';
 
 type Props = {
   className?: string;
@@ -42,7 +35,7 @@ export const DeleteFileModal = ({
       <Card
         size="md"
         className={classMerge(
-          'relative p-6 bg-white rounded-lg shadow-lg',
+          'relative p-6 bg-white rounded-md shadow-lg',
           className
         )}
         onClick={(e) => e.stopPropagation()}
@@ -58,23 +51,12 @@ export const DeleteFileModal = ({
         </div>
         <div className="flex justify-center mt-4 gap-2">
           <Button
+            className="bg-red-500 hover:bg-red-400"
             onClick={() => handleDelete(organization_id, documentId, fileName)}
-            iconRight={
-              isLoading ? (
-                <SpinnerSVG size="sm" />
-              ) : (
-                <TrashIcon className="w-4 h-4" />
-              )
-            }
           >
             {t('yes')}
           </Button>
-          <Button
-            onClick={() => toggleModal(null)}
-            iconRight={<XMarkIcon className="w-5 h-5" />}
-          >
-            {t('no')}
-          </Button>
+          <Button onClick={() => toggleModal(null)}>{t('no')}</Button>
         </div>
       </Card>
     </div>

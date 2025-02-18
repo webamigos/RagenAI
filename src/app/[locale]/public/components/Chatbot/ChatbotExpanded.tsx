@@ -17,7 +17,7 @@ export const ChatbotExpanded = ({
     <div
       className={`w-[400px] ${
         isMinimized ? 'min-h-[64px]' : 'max-h-[600px]'
-      } h-[600px] bg-background rounded-lg shadow-xl overflow-hidden flex flex-col transition-height duration-300`}
+      } h-[600px] bg-background rounded-md shadow-xl overflow-hidden flex flex-col transition-height duration-300`}
     >
       <div className="flex justify-between items-center p-4 border-b shrink-0">
         <div>

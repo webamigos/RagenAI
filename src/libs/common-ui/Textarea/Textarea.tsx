@@ -194,7 +194,7 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-2xl border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
