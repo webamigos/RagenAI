@@ -32,7 +32,7 @@ let customEmbeddingsModel: string | null = null;
 //ollama pull snowflake-arctic-embed2
 // customCredentials = {
 //   provider: 'ollama',
-//   baseUrl: process.env.OLLAMA_BASE_URL!,
+//   baseUrl: 'http://127.0.0.1:11434', // localhost will not work, use 127.0.0.1,
 // };
 // customChatModel = 'llama3.1';
 // customEmbeddingsModel = 'snowflake-arctic-embed2';
@@ -56,22 +56,20 @@ export const createChatCompletionInstance = (
   });
 };
 
+//We decided to use openai embeddings always, independent of the provider
 export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
   if (!apiKey) {
     throw new Error('Cannot create embeddings instance, apiKey is required');
   }
 
-  //todo remove this once we have a way to select provider's credentials
-  const credentials: ProviderCredentials = customCredentials || {
-    provider: 'openai',
-    apiKey,
-  };
-  const model = customEmbeddingsModel || 'text-embedding-3-small';
-
-  return EmbeddingsFactory.createInstance(credentials, { model }, usageTracker);
+  return EmbeddingsFactory.createInstance(
+    { provider: 'openai', apiKey },
+    { model: 'text-embedding-3-small' },
+    usageTracker
+  );
 };
 
-//for now moderation always by openai
+//We decided to use openai moderation always, independent of the provider
 export const createModerationInstance = (
   options: OpenAIModerationChainInput
 ) => {
