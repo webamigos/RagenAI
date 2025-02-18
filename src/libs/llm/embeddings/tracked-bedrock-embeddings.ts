@@ -1,7 +1,8 @@
-import { UsageTracker } from '@/app/lib/utils/usage/usage-tracker';
 import { BedrockEmbeddings, BedrockEmbeddingsParams } from '@langchain/aws';
+import { UsageTracker } from '@/app/lib/utils/usage/usage-tracker';
 import { BedrockCredentials } from '../types';
 
+//Based on LangChain implementation:
 //https://github.com/langchain-ai/langchainjs/blob/main/libs/langchain-aws/src/embeddings.ts
 export class TrackedBedrockEmbeddings extends BedrockEmbeddings {
   private usageTracker?: UsageTracker;

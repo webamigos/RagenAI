@@ -1,5 +1,5 @@
 import type { BedrockEmbeddingsParams } from '@langchain/aws';
-import { Embeddings } from '@langchain/core/embeddings';
+import type { Embeddings } from '@langchain/core/embeddings';
 import type { OpenAIEmbeddingsParams } from '@langchain/openai';
 
 export type BaseEmbeddingsConfig = Omit<

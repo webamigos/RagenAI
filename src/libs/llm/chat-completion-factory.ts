@@ -64,7 +64,7 @@ export class ChatCompletionFactory {
   private static createAnthropicInstance(
     credentials: AnthropicCredentials,
     config: BaseCompletionConfig
-  ): any {
+  ): ChatAnthropic {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Anthropic');
     }

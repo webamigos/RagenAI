@@ -1,14 +1,14 @@
-import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
-import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ChatOpenAIFields } from '@langchain/openai';
 import { OpenAIModerationChain } from 'langchain/chains';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
+import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
 import { usageTracker } from './usage';
 
 const verbose = process.env.NODE_ENV === 'development';
 
-//Todo implement logic to select provider's credentials
+//Todo implement logic to select provider's credentials, ditch logic below after adding provider to the settings
 //------------Keep values below as null to use openai and config from settings------------
 let customChatModel: string | null = null;
 let customCredentials: ProviderCredentials | null = null;
@@ -62,10 +62,10 @@ let customCredentials: ProviderCredentials | null = null;
 //-----------------------------------------------------
 
 export const createChatCompletionInstance = (
-  options: ChatOpenAIFields, //todo use BaseCompletionConfig
+  options: ChatOpenAIFields, //todo use BaseCompletionConfig after adding provider to the settings
   streaming: boolean = true
 ): BaseChatModel => {
-  //todo remove this once we have a way to select provider's credentials
+  //todo remove this once we have a way to select provider's credentials using settings
   const credentials: ProviderCredentials = customCredentials || {
     provider: 'openai',
     apiKey: process.env.OPENAI_API_KEY!,
@@ -76,6 +76,13 @@ export const createChatCompletionInstance = (
     model: customChatModel || options.model,
     verbose,
     streaming,
+    callbacks: [
+      {
+        handleLLMEnd: (output) => {
+          usageTracker.incChatCompletionTokens(output);
+        },
+      },
+    ],
   });
 };
 

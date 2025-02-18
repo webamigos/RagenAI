@@ -5,7 +5,6 @@ import type { OpenAICredentials, OpenAIEmbeddingsConfig } from '../types';
 
 //Based on LangChain implementation:
 //https://github.com/langchain-ai/langchainjs/blob/main/libs/langchain-openai/src/embeddings.ts
-
 export class TrackedOpenAIEmbeddings extends OpenAIEmbeddings {
   private usageTracker?: UsageTracker;
 
