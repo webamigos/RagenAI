@@ -9,7 +9,7 @@ export const ForgotPasswordLink = ({ label }: Props) => {
     <div className="flex w-full mt-8 justify-center">
       <Link
         href="/forgot-password"
-        className="font-normal text-indigo-600 hover:text-indigo-500"
+        className="font-normal dark:text-indigo-400 text-indigo-600 hover:text-indigo-500"
       >
         {label}
       </Link>

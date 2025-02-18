@@ -113,7 +113,10 @@ export const RegisterForm = () => {
               </div>
             </div>
             <div className="flex w-full text-sm/6">
-              <label htmlFor="terms" className="font-normal text-gray-900">
+              <label
+                htmlFor="terms"
+                className="font-normal dark:text-gray-300 text-gray-900"
+              >
                 {t('i-agree-to')}{' '}
                 <a href="https://ragen.ai/en/terms-of-use" target="_blank">
                   {t('terms-of-use')}

@@ -53,7 +53,7 @@
     "to-continue": "aby przejść do Ragen Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
-    "Forgot-password": "Zapomniałeś hasła?",
+    "forgot-password": "Nie pamiętasz hasła?",
     "invalid-email": "Nieprawidłowy adres email",
     "invalid-password": "Hasło musi mieć co najmniej 8 znaków",
     "sign-in-to-account": "Zaloguj się do konta",
@@ -63,7 +63,7 @@
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
-    "Provide-email": "Proszę wprowadź swój adres email",
+    "Provide-email": "Twój email",
     "Send-reset-code": "Wyślij kod do resetowania hasła",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
