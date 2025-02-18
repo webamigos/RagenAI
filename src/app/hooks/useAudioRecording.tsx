@@ -87,13 +87,11 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     );
 
     recognition.onstart = () => {
-      logger.info('Speech recognition started');
       setIsRecording(true);
       setError(null);
     };
 
     recognition.onend = () => {
-      logger.info('Speech recognition ended');
       setIsRecording(false);
     };
 
@@ -104,16 +102,6 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       // Get the last result
       const lastResultIndex = event.results.length - 1;
       const lastResult = event.results[lastResultIndex];
-
-      logger.info(
-        {
-          resultIndex: lastResultIndex,
-          isFinal: lastResult.isFinal,
-          confidence: lastResult[0].confidence,
-          transcript: lastResult[0].transcript,
-        },
-        'Latest speech recognition result'
-      );
 
       // Process all results
       for (let i = 0; i < event.results.length; i++) {
@@ -130,7 +118,6 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       const trimmedInterim = interimTranscript.trim();
 
       if (trimmedFinal) {
-        logger.info({ transcript: trimmedFinal }, 'Final transcript');
         onResult(trimmedFinal);
       } else if (trimmedInterim) {
         logger.info({ transcript: trimmedInterim }, 'Interim transcript');
@@ -145,14 +132,12 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       // Only start silence timeout if we have some text
       if (trimmedFinal || trimmedInterim) {
         silenceTimeout = setTimeout(() => {
-          logger.info('Silence timeout - stopping recognition');
           cleanupRecognition();
         }, speechEndDelay);
       }
     };
 
     recognition.onspeechend = () => {
-      logger.info('Speech ended');
       cleanupRecognition();
     };
 
@@ -200,16 +185,6 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       if (!audioTracks || audioTracks.length === 0) {
         throw new Error('No audio tracks available');
       }
-
-      // Log microphone state
-      logger.info(
-        {
-          microphoneEnabled: audioTracks[0].enabled,
-          microphoneState: audioTracks[0].readyState,
-          microphoneLabel: audioTracks[0].label,
-        },
-        'Microphone state'
-      );
 
       const recognition = initializeRecognition();
       if (recognition) {
