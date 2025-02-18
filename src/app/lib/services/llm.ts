@@ -27,7 +27,6 @@ let customCredentials: ProviderCredentials | null = null;
 
 //------------Example ollama credentials, uncomment to use------------
 //ollama pull llama3.1
-//ollama pull snowflake-arctic-embed2
 // customCredentials = {
 //   provider: 'ollama',
 //   baseUrl: 'http://127.0.0.1:11434', // localhost will not work, use 127.0.0.1,
