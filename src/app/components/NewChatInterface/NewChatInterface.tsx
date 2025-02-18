@@ -1,9 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
-
 import { classMerge, Textarea } from '@ragenai/common-ui/index';
-
 import { useNewThreadInput } from './useNewThreadInput';
+import { ChatResponseType } from '@/app/contracts/Message';
 
 interface NewChatInterfaceProps {
   className?: string;
@@ -11,6 +10,7 @@ interface NewChatInterfaceProps {
   organizationId?: string;
   isPublicAccess?: boolean;
   widgetMode?: boolean;
+  voiceId?: string;
 }
 
 export const NewChatInterface = ({
@@ -22,12 +22,14 @@ export const NewChatInterface = ({
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
   const {
     prompt,
     isLoading,
     isPending,
     handleInputChange,
     handleKeyDown,
+    createVoiceThread,
     errors,
   } = useNewThreadInput({
     organizationId,
@@ -44,6 +46,12 @@ export const NewChatInterface = ({
   if (isEmbedded) {
     return null;
   }
+
+  const handleVoiceModeActivation = async () => {
+    sessionStorage.setItem('voice_mode_active', 'true');
+    sessionStorage.setItem('response_type', ChatResponseType.VOICE);
+    await createVoiceThread();
+  };
 
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
@@ -67,6 +75,7 @@ export const NewChatInterface = ({
           disabled={isLoading || isPending}
           showVoiceInput={!isPublicAccess}
           error={errors.prompt}
+          handleResponseType={handleVoiceModeActivation}
         />
       </div>
     </div>

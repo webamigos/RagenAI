@@ -6,13 +6,12 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role } from '@prisma/client';
+import { Role, MessageContentType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 import { type UserResource } from '@clerk/types';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { dailyMessageLimit } from '../../config';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
@@ -216,14 +215,19 @@ export const useAssistantLogic = (threadId: string) => {
   useEffect(() => {
     const initialMessageKey = `thread_${threadId}_initial_message`;
     const initialMessage = localStorage.getItem(initialMessageKey);
+    const initialMessageType = sessionStorage.getItem(
+      'initial_message_type'
+    ) as MessageContentType;
 
     if (initialMessage) {
       localStorage.removeItem(initialMessageKey);
+      sessionStorage.removeItem('initial_message_type');
 
       onSubmit({
         prompt: initialMessage,
         mode: ChatType.CONVERSATION,
-        messageType: 'TEXT',
+        messageType: initialMessageType || MessageContentType.TEXT,
+        voiceDurationSeconds: 0,
       });
     }
   }, [threadId]);
