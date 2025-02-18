@@ -23,7 +23,6 @@ let customCredentials: ProviderCredentials | null = null;
 //   },
 // };
 // customChatModel = 'anthropic.claude-3-haiku-20240307-v1:0';
-// customEmbeddingsModel = 'amazon.titan-embed-text-v1';
 //-----------------------------------------------------
 
 //------------Example ollama credentials, uncomment to use------------
@@ -34,7 +33,6 @@ let customCredentials: ProviderCredentials | null = null;
 //   baseUrl: 'http://127.0.0.1:11434', // localhost will not work, use 127.0.0.1,
 // };
 // customChatModel = 'llama3.1';
-// customEmbeddingsModel = 'snowflake-arctic-embed2';
 //-----------------------------------------------------
 
 //------------Example openrouter credentials, uncomment to use------------
