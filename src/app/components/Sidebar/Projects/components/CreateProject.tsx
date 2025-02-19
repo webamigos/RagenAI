@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -24,6 +25,14 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
   const router = useRouter();
   const { organization, isLoaded } = useOrganization();
   const { user } = useUser();
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const {
     register,
@@ -88,6 +97,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
             id="title"
             placeholder={t('projects.placeholder')}
             {...register('title')}
+            ref={inputRef}
             disabled={isSubmitting}
             className="py-1"
             error={errors.title}
