@@ -31,10 +31,10 @@ export const FileCard = ({
   const fileIcon = getFileIcon(file_type);
   const formattedCreatedAt = created_at
     ? format(new Date(created_at), 'yyyy-MM-dd HH:mm')
-    : 'N/A';
+    : '-';
   const formattedUpdatedAt = updated_at
     ? format(new Date(updated_at), 'yyyy-MM-dd HH:mm')
-    : 'N/A';
+    : '-';
 
   return (
     <div className="p-4 min-w-48 w-full h-48 pb-10 bg-slate-100 dark:bg-accent-dark-500 hover:bg-slate-200 rounded-md shadow relative group">

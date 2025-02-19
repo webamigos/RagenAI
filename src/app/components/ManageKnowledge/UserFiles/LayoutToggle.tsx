@@ -41,8 +41,8 @@ export const LayoutToggle = ({
         onClick={() => handleViewModeChange('list')}
         className={`flex items-center px-4 py-2 rounded-md transition ${
           viewMode === 'list'
-            ? 'dark:bg-slate-600 bg-slate-200 text-black'
-            : 'text-gray-600'
+            ? 'dark:bg-slate-500 bg-slate-200 text-black'
+            : 'text-gray-500'
         } `}
       >
         <ListIcon />

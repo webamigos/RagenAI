@@ -15,7 +15,7 @@ export const FileInfoPopup = forwardRef<HTMLDivElement, FileInfoPopupProps>(
     return (
       <div
         ref={ref}
-        className="absolute top-2 -right-52 bg-white shadow-lg border rounded-md px-2 text-sm w-60 z-50"
+        className="absolute top-2 -right-52 bg-white dark:bg-slate-700 shadow-lg border rounded-md px-2 text-sm w-60 z-50"
       >
         <table className="w-full">
           <tbody>

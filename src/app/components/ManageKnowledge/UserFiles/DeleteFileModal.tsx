@@ -51,7 +51,7 @@ export const DeleteFileModal = ({
         </div>
         <div className="flex justify-center mt-4 gap-2">
           <Button
-            className="bg-red-500 hover:bg-red-400"
+            className="bg-red-500 hover:bg-red-400 dark:bg-red-500 dark:hover:bg-red-400"
             onClick={() => handleDelete(organization_id, documentId, fileName)}
           >
             {t('yes')}
