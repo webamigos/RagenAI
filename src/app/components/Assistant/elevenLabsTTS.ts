@@ -6,16 +6,16 @@ const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
 
 const client = new ElevenLabsClient({ apiKey });
 
-export const convertTextToSpeech = async (text: string): Promise<string> => {
+export const convertTextToSpeech = async (
+  text: string,
+  voiceId: string
+): Promise<string> => {
   try {
-    const voiceId = 'JBFqnCBsd6RMkjVDRZzb';
-
     const response = await client.textToSpeech.convert(voiceId, {
       output_format: 'mp3_44100_128',
       text,
       model_id: 'eleven_multilingual_v2',
     });
-
     const chunks: Uint8Array[] = [];
 
     for await (const chunk of response) {

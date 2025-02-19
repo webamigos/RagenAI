@@ -51,6 +51,15 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     setIsRecording(false);
   };
 
+  const checkBrowserCompatibility = () => {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      logger.error('Browser does not support Web Speech API');
+      setError(t('browser-not-compatibility'));
+      return false;
+    }
+    return true;
+  };
+
   const initializeRecognition = () => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -67,6 +76,16 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     recognition.interimResults = true;
     recognition.lang = localeToSpeechLang(locale);
 
+    logger.info(
+      {
+        continuous: recognition.continuous,
+        interimResults: recognition.interimResults,
+        lang: recognition.lang,
+        maxAlternatives: recognition.maxAlternatives,
+      },
+      'Speech recognition configuration'
+    );
+
     recognition.onstart = () => {
       setIsRecording(true);
       setError(null);
@@ -80,9 +99,13 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       let finalTranscript = '';
       let interimTranscript = '';
 
+      // Get the last result
+      const lastResultIndex = event.results.length - 1;
+      const lastResult = event.results[lastResultIndex];
+
+      // Process all results
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
-
         if (result.isFinal) {
           finalTranscript += result[0].transcript + ' ';
         } else {
@@ -90,15 +113,28 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
         }
       }
 
-      if (finalTranscript) {
-        onResult(finalTranscript.trim());
-      } else {
-        onResult(interimTranscript.trim());
+      // Only update if we have some text
+      const trimmedFinal = finalTranscript.trim();
+      const trimmedInterim = interimTranscript.trim();
+
+      if (trimmedFinal) {
+        onResult(trimmedFinal);
+      } else if (trimmedInterim) {
+        logger.info({ transcript: trimmedInterim }, 'Interim transcript');
+        onResult(trimmedInterim);
       }
-      if (silenceTimeout) clearTimeout(silenceTimeout);
-      silenceTimeout = setTimeout(() => {
-        cleanupRecognition();
-      }, speechEndDelay);
+
+      // Reset silence timeout
+      if (silenceTimeout) {
+        clearTimeout(silenceTimeout);
+      }
+
+      // Only start silence timeout if we have some text
+      if (trimmedFinal || trimmedInterim) {
+        silenceTimeout = setTimeout(() => {
+          cleanupRecognition();
+        }, speechEndDelay);
+      }
     };
 
     recognition.onspeechend = () => {
@@ -106,11 +142,20 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     };
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-      setError(t('recognition-error'));
+      const errorMessage =
+        e.error === 'not-allowed'
+          ? t('microphone-permission-denied')
+          : t('recognition-error');
+
+      setError(errorMessage);
 
       logger.error(
         {
-          error: { message: e },
+          error: {
+            type: e.error,
+            message: e.message,
+            event: e,
+          },
         },
         'Recognition error'
       );
@@ -121,15 +166,36 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     return recognition;
   };
 
-  const startListening = () => {
+  const startListening = async () => {
+    if (!checkBrowserCompatibility()) {
+      return;
+    }
+
     cleanupRecognition();
 
     try {
+      // Check microphone permissions
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (!stream) {
+        throw new Error('Microphone permission denied');
+      }
+
+      // Ensure we have access to the microphone
+      const audioTracks = stream.getAudioTracks();
+      if (!audioTracks || audioTracks.length === 0) {
+        throw new Error('No audio tracks available');
+      }
+
       const recognition = initializeRecognition();
       if (recognition) {
         recognitionRef.current = recognition;
         recognition.start();
       }
+
+      // Cleanup stream when done
+      return () => {
+        stream.getTracks().forEach((track) => track.stop());
+      };
     } catch (err) {
       setError(t('recognition-error'));
       if (err instanceof Error) {

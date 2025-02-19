@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
+import { ChatResponseType } from '@/app/contracts/Message';
 
 const threadSchema = z.object({
   prompt: z.string().min(10, 'Message must be at least 10 characters long'),
@@ -49,6 +50,13 @@ export const useNewThreadInput = ({
     setValue('prompt', value);
   };
 
+  const createVoiceThread = useCallback(async () => {
+    if (threadHandler.isLoading || threadHandler.isPending) return;
+
+    sessionStorage.setItem('response_type', ChatResponseType.VOICE);
+    await threadHandler.handleNewThread();
+  }, [threadHandler]);
+
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
       if (threadHandler.isLoading || threadHandler.isPending) return;
@@ -73,6 +81,7 @@ export const useNewThreadInput = ({
     handleInputChange,
     handleSubmit: handleFormSubmit(onSubmit),
     handleKeyDown,
+    createVoiceThread,
     errors,
   };
 };

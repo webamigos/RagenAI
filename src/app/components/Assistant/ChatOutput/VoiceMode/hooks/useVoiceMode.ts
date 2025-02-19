@@ -16,6 +16,7 @@ type UseVoiceModeProps = {
   onClose: () => void;
   onResult: (text: string, recordingTime: number) => void;
   onMessagePlayed?: (messageId: string) => void;
+  voiceId: string;
 };
 
 export const useVoiceMode = ({
@@ -25,6 +26,7 @@ export const useVoiceMode = ({
   onClose,
   onResult,
   onMessagePlayed,
+  voiceId,
 }: UseVoiceModeProps) => {
   const [state, dispatch] = useReducer(voiceModeReducer, {
     ...initialState,
@@ -97,7 +99,7 @@ export const useVoiceMode = ({
     dispatch({ type: 'SET_GENERATING_AUDIO', payload: true });
 
     try {
-      const audioUrl = await convertTextToSpeech(message.content);
+      const audioUrl = await convertTextToSpeech(message.content, voiceId);
 
       if (audioRef.current) {
         audioRef.current.src = audioUrl;
