@@ -1,7 +1,7 @@
 'use server';
 
+import { type Project } from '@prisma/client';
 import { StatusCodes } from 'http-status-codes';
-import { ThreadCommunicationType } from '@prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryServiceTag,
@@ -15,24 +15,6 @@ import {
 } from '@/app/lib/services/project';
 
 const serviceName = 'projects/actions';
-
-type Project = {
-  id: number;
-  public_id: string;
-  title: string;
-  created_at: Date;
-  organization_id: string | null;
-  owner_id: string;
-  threads: {
-    id: string;
-    public_id: string;
-    created_at: Date;
-    openai_thread_id: string;
-    visitor_id: string | null;
-    preferred_communication_type: ThreadCommunicationType;
-    project_id: number | null;
-  }[];
-};
 
 type CreateProjectResponse = {
   status: StatusCodes;

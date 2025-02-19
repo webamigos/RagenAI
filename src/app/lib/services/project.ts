@@ -51,6 +51,8 @@ export const createProjectForOrganization = async (
         public_id: true,
         title: true,
         created_at: true,
+        updated_at: true,
+        internal_organization_id: true,
         organization_id: true,
         threads: true,
         owner_id: true,

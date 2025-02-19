@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { ThreadCommunicationType } from '@prisma/client';
 
 export type ThreadType = {
@@ -54,3 +56,9 @@ export type EmptyProjectsStateProps = {
   onCreateClick: () => void;
   isLoading: boolean;
 };
+
+export type CreateProjectFormData = z.infer<typeof createProjectSchema>;
+
+export const createProjectSchema = z.object({
+  title: z.string().min(1, 'Title is required').trim(),
+});

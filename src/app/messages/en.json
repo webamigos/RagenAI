@@ -473,23 +473,24 @@
     "recognition-error": "Recognition error, try again",
     "recording-error": "Error during recording, try again"
   },
+
   "projects": {
     "title": "Projects",
-    "create": "Create Project",
-    "placeholder": "Enter project title",
-    "what-is-project": "What is a project?",
-    "project-description": "A project helps you organize your knowledge base and conversations.",
-    "cancel": "Cancel",
     "create-project": "Create Project",
-    "error": {
-      "title-required": "Project title is required",
-      "creation-failed": "Failed to create project",
-      "no-organization": "No organization selected",
-      "loading-organization": "Loading organization details...",
-      "project-exists": "Organization already has a default project"
-    },
+    "create": "Create Project",
+    "placeholder": "Enter project name...",
+    "what-is-project": "What is a project?",
+    "project-description": "A project allows you to manage tasks and organize team work.",
+    "cancel": "Cancel",
     "success": {
-      "created": "Project created successfully"
+      "created": "Project has been successfully created."
+    },
+    "error": {
+      "title-required": "Project name is required.",
+      "loading-organization": "Error while loading organization.",
+      "no-organization": "No organization assigned.",
+      "project-exists": "A project with this name already exists.",
+      "creation-failed": "Failed to create project."
     }
   },
   "voice-mode": {

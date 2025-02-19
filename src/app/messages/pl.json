@@ -247,9 +247,25 @@
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
     },
+
     "projects": {
       "title": "Projekty",
-      "create-project": "Stwórz projekt"
+      "create-project": "Stwórz projekt",
+      "create": "Utwórz projekt",
+      "placeholder": "Wpisz nazwę projektu...",
+      "what-is-project": "Co to jest projekt?",
+      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
+      "cancel": "Anuluj",
+      "success": {
+        "created": "Projekt został pomyślnie utworzony."
+      },
+      "error": {
+        "title-required": "Nazwa projektu jest wymagana.",
+        "loading-organization": "Błąd podczas ładowania organizacji.",
+        "no-organization": "Brak przypisanej organizacji.",
+        "project-exists": "Projekt o tej nazwie już istnieje.",
+        "creation-failed": "Nie udało się utworzyć projektu."
+      }
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",

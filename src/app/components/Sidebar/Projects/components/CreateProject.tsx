@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization, useUser } from '@clerk/nextjs';
 import { StatusCodes } from 'http-status-codes';
-import { useUser } from '@clerk/nextjs';
 
 import { Dialog, DialogTitle } from '@ragenai/common-ui';
 import { Button, Input } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { createProject } from '../actions';
+
+import { type CreateProjectFormData, createProjectSchema } from '../types';
 
 interface CreateProjectProps {
   isOpen: boolean;
@@ -21,32 +23,27 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
   const { successToast, errorToast } = statusToast();
   const router = useRouter();
   const { organization, isLoaded } = useOrganization();
-  const [title, setTitle] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) {
-      errorToast({
-        message: t('projects.error.title-required'),
-      });
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<CreateProjectFormData>({
+    resolver: zodResolver(createProjectSchema),
+  });
 
+  const onSubmit = async (data: CreateProjectFormData) => {
     if (!isLoaded) {
       logger.error('Organization not loaded');
-      errorToast({
-        message: t('projects.error.loading-organization'),
-      });
+      errorToast({ message: t('projects.error.loading-organization') });
       return;
     }
 
     if (!organization?.id) {
       logger.error('No organization ID');
-      errorToast({
-        message: t('projects.error.no-organization'),
-      });
+      errorToast({ message: t('projects.error.no-organization') });
       return;
     }
 
@@ -55,53 +52,46 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
       return;
     }
 
-    setIsLoading(true);
     try {
       const { status, error, project } = await createProject(
         organization.id,
-        title.trim(),
+        data.title,
         user.id
       );
 
       if (error || !project) {
         logger.error('Project creation failed', { status, error });
         if (status === StatusCodes.CONFLICT) {
-          errorToast({
-            message: t('projects.error.project-exists'),
-          });
+          errorToast({ message: t('projects.error.project-exists') });
         } else {
           throw new Error(error || t('projects.error.creation-failed'));
         }
         return;
       }
 
-      successToast({
-        message: t('projects.success.created'),
-      });
+      successToast({ message: t('projects.success.created') });
       router.refresh();
       onClose();
+      reset();
     } catch (error) {
       logger.error({ err: error }, 'Project creation failed');
-      errorToast({
-        message: t('projects.error.creation-failed'),
-      });
-    } finally {
-      setIsLoading(false);
+      errorToast({ message: t('projects.error.creation-failed') });
     }
   };
 
   return (
     <Dialog open={isOpen} onClose={onClose}>
       <DialogTitle>{t('projects.create')}</DialogTitle>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-2">
           <Input
             id="title"
             placeholder={t('projects.placeholder')}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            disabled={isLoading}
+            {...register('title')}
+            disabled={isSubmitting}
             className="py-1"
+            error={errors.title}
+            errorMessage={errors.title?.message}
           />
           <div className="text-sm text-muted-foreground">
             <h4 className="font-medium">{t('projects.what-is-project')}</h4>
@@ -109,10 +99,10 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
           </div>
         </div>
         <div className="flex justify-end space-x-2">
-          <Button type="button" onClick={onClose} disabled={isLoading}>
+          <Button type="button" onClick={onClose} disabled={isSubmitting}>
             {t('projects.cancel')}
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isSubmitting}>
             {t('projects.create-project')}
           </Button>
         </div>
