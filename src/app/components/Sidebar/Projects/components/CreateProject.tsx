@@ -10,16 +10,22 @@ import { Dialog, DialogTitle } from '@ragenai/common-ui';
 import { Button, Input } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
+
 import { createProject } from '../actions';
 
 import { type CreateProjectFormData, createProjectSchema } from '../types';
 
-interface CreateProjectProps {
+type CreateProjectProps = {
   isOpen: boolean;
   onClose: () => void;
-}
+  refreshProjects: () => Promise<void>;
+};
 
-export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
+export function CreateProject({
+  isOpen,
+  onClose,
+  refreshProjects,
+}: CreateProjectProps) {
   const t = useTranslations();
   const { successToast, errorToast } = statusToast();
   const router = useRouter();
@@ -80,6 +86,7 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
 
       successToast({ message: t('projects.success.created') });
       router.refresh();
+      await refreshProjects();
       onClose();
       reset();
     } catch (error) {
@@ -97,7 +104,10 @@ export function CreateProject({ isOpen, onClose }: CreateProjectProps) {
             id="title"
             placeholder={t('projects.placeholder')}
             {...register('title')}
-            ref={inputRef}
+            ref={(e) => {
+              register('title').ref(e);
+              inputRef.current = e;
+            }}
             disabled={isSubmitting}
             className="py-1"
             error={errors.title}

@@ -514,20 +514,20 @@
   "projects": {
     "title": "Projekty",
     "create": "Utwórz projekt",
-    "placeholder": "Wprowadź nazwę projektu",
+    "placeholder": "Nazwa projektu",
     "what-is-project": "Czym jest projekt?",
     "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
     "cancel": "Anuluj",
     "create-project": "Utwórz projekt",
     "error": {
-      "title-required": "Nazwa projektu jest wymagana",
-      "creation-failed": "Nie udało się utworzyć projektu",
-      "no-organization": "Nie wybrano organizacji",
-      "loading-organization": "Ładowanie szczegółów organizacji...",
-      "project-exists": "Organizacja posiada już projekt domyślny"
+      "title-required": "Tytuł jest wymagany",
+      "loading-organization": "Błąd podczas ładowania organizacji",
+      "no-organization": "Brak organizacji",
+      "project-exists": "Projekt o takiej nazwie już istnieje",
+      "creation-failed": "Nie udało się utworzyć projektu"
     },
     "success": {
-      "created": "Projekt został utworzony pomyślnie"
+      "created": "Projekt został utworzony"
     }
   },
   "voice-mode": {

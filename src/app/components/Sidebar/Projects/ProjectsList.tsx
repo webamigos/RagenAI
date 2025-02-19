@@ -18,6 +18,7 @@ export const ProjectsList = ({
   activeThread,
   isCreateModalOpen,
   isLoading,
+  refreshProjects,
 }: ProjectsListProps) => {
   const t = useTranslations('sidebar.projects');
   const { closeSidebar } = useSidebar();
@@ -135,6 +136,7 @@ export const ProjectsList = ({
           onClose={() => {
             setIsCreateModalOpen(false);
           }}
+          refreshProjects={refreshProjects}
         />
       )}
     </>

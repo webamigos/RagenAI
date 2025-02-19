@@ -88,18 +88,18 @@ export const useSidebarLogic = () => {
     }
   }, [pathname]);
 
+  const fetchProjects = async () => {
+    if (!organization?.id || !user?.id) {
+      return;
+    }
+    const fetchedProjects = await getProjects(organization.id, user.id);
+
+    if (fetchedProjects.projects) {
+      setProjects(fetchedProjects.projects);
+    }
+  };
+
   useEffect(() => {
-    const fetchProjects = async () => {
-      if (!organization?.id || !user?.id) {
-        return;
-      }
-      const fetchedProjects = await getProjects(organization.id, user.id);
-
-      if (fetchedProjects.projects) {
-        setProjects(fetchedProjects.projects);
-      }
-    };
-
     fetchProjects();
   }, [organization?.id, user?.id]);
 
@@ -124,5 +124,6 @@ export const useSidebarLogic = () => {
     handleCloseThread,
     setIsCreateModalOpen,
     getSidebarThreadsError,
+    refreshProjects: fetchProjects,
   };
 };

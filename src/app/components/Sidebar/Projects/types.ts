@@ -29,6 +29,7 @@ export type ProjectsListProps = {
   activeThread?: string;
   isCreateModalOpen: boolean;
   isLoading: boolean;
+  refreshProjects: () => Promise<void>;
 };
 
 export type ThreadsListProps = {
@@ -60,5 +61,5 @@ export type EmptyProjectsStateProps = {
 export type CreateProjectFormData = z.infer<typeof createProjectSchema>;
 
 export const createProjectSchema = z.object({
-  title: z.string().min(1, 'Title is required').trim(),
+  title: z.string().min(1, { message: 'projects.error.title-required' }),
 });

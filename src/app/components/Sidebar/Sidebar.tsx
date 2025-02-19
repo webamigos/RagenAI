@@ -48,6 +48,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     handleCloseThread,
     setIsCreateModalOpen,
     getSidebarThreadsError,
+    refreshProjects,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
@@ -115,6 +116,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                     setIsCreateModalOpen={setIsCreateModalOpen}
                     activeThread={activeThread}
                     isCreateModalOpen={isCreateModalOpen}
+                    refreshProjects={refreshProjects}
                   />
                   <UserThreadsHistory
                     error={error}

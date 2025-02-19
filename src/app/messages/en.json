@@ -506,11 +506,11 @@
       "created": "Project has been successfully created."
     },
     "error": {
-      "title-required": "Project name is required.",
-      "loading-organization": "Error while loading organization.",
-      "no-organization": "No organization assigned.",
-      "project-exists": "A project with this name already exists.",
-      "creation-failed": "Failed to create project."
+      "title-required": "Title is required",
+      "loading-organization": "Error loading organization",
+      "no-organization": "No organization",
+      "project-exists": "Project with this name already exists",
+      "creation-failed": "Failed to create project"
     }
   },
   "voice-mode": {
