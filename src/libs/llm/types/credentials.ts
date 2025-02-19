@@ -4,7 +4,8 @@ export type ModelProvider =
   | 'ollama'
   | 'anthropic'
   | 'google'
-  | 'openrouter';
+  | 'openrouter'
+  | 'fireworks';
 
 export type BaseProviderCredentials = {
   provider: ModelProvider;
@@ -44,10 +45,16 @@ export type OpenRouterCredentials = BaseProviderCredentials & {
   apiKey: string;
 };
 
+export type FireworksCredentials = BaseProviderCredentials & {
+  provider: 'fireworks';
+  apiKey: string;
+};
+
 export type ProviderCredentials =
   | OpenAICredentials
   | BedrockCredentials
   | OllamaCredentials
   | AnthropicCredentials
   | GoogleCredentials
-  | OpenRouterCredentials;
+  | OpenRouterCredentials
+  | FireworksCredentials;

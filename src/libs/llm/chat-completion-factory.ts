@@ -4,6 +4,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ChatOllama } from '@langchain/ollama';
 import { ChatAnthropic } from '@langchain/anthropic';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatFireworks } from '@langchain/community/chat_models/fireworks';
 
 import type {
   BedrockCredentials,
@@ -14,6 +15,7 @@ import type {
   GoogleCredentials,
   AnthropicCredentials,
   OpenRouterCredentials,
+  FireworksCredentials,
 } from './types';
 
 export class ChatCompletionFactory {
@@ -108,6 +110,20 @@ export class ChatCompletionFactory {
     });
   }
 
+  private static createFireworksInstance(
+    credentials: FireworksCredentials,
+    config: BaseCompletionConfig
+  ): ChatFireworks {
+    if (!credentials.apiKey) {
+      throw new Error('API key is required for Fireworks');
+    }
+
+    return new ChatFireworks({
+      ...config,
+      apiKey: credentials.apiKey,
+    });
+  }
+
   static createInstance(
     credentials: ProviderCredentials,
     config: BaseCompletionConfig
@@ -125,6 +141,8 @@ export class ChatCompletionFactory {
         return this.createGoogleInstance(credentials, config);
       case 'openrouter':
         return this.createOpenRouterInstance(credentials, config);
+      case 'fireworks':
+        return this.createFireworksInstance(credentials, config);
       default:
         throw new Error(`Unsupported LLM provider`);
     }

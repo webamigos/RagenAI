@@ -58,6 +58,14 @@ let customCredentials: ProviderCredentials | null = null;
 // customChatModel = 'gemini-1.5-flash';
 //-----------------------------------------------------
 
+//------------Example fireworks credentials, uncomment to use------------
+// customCredentials = {
+//   provider: 'fireworks',
+//   apiKey: process.env.FIREWORKS_API_KEY!,
+// };
+// customChatModel = 'accounts/fireworks/models/llama-v3p2-3b-instruct';
+//-----------------------------------------------------
+
 export const createChatCompletionInstance = (
   options: ChatOpenAIFields, //todo use BaseCompletionConfig after adding provider to the settings
   streaming: boolean = true
