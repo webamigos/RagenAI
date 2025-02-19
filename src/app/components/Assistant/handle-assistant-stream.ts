@@ -126,11 +126,14 @@ export const handleAssistantStream = async ({
     // Adds assistant message to db
     // And stream progress using Server Sent Events format
 
+    const currentThread = threadsState.find(
+      (thread) => thread.public_id === threadId
+    );
     const newThread = {
       public_id: threadId,
       messages: [userMessage],
       created_at: new Date(),
-      project_id: threadsState[0].project_id,
+      project_id: currentThread?.project_id,
     };
 
     threadsDispatch({
