@@ -11,7 +11,6 @@ import { plPL } from '../messages/pl-PL-clerk';
 import { timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
-import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
@@ -67,11 +66,9 @@ export default async function LocaleLayout({
             <ThreadsContextProvider>
               <SearchThreadsProvider>
                 <Providers>
-                  <SidebarProvider>
-                    <SettingsProvider>
-                      <JoyrideProvider>{children}</JoyrideProvider>
-                    </SettingsProvider>
-                  </SidebarProvider>
+                  <SettingsProvider>
+                    <JoyrideProvider>{children}</JoyrideProvider>
+                  </SettingsProvider>
                 </Providers>
               </SearchThreadsProvider>
             </ThreadsContextProvider>
