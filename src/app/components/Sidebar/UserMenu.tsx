@@ -26,7 +26,10 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
 
   return (
     <Popover>
-      <PopoverButton className="block text-sm/6 font-semibold text-white/50 focus:outline-none data-[active]:text-white data-[hover]:text-white data-[focus]:outline-1 data-[focus]:outline-white">
+      <PopoverButton
+        data-testid="avatar-icon"
+        className="block text-sm/6 font-semibold text-white/50 focus:outline-none data-[active]:text-white data-[hover]:text-white data-[focus]:outline-1 data-[focus]:outline-white"
+      >
         <Avatar
           className="w-9 h-9 mr-1 hidden sm:flex cursor-pointer group-hover:opacity-100"
           src={userAvatar}
