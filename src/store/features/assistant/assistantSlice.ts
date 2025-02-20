@@ -3,7 +3,9 @@ import {
   MessageDto,
   StreamedMessageDto,
   ChatResponseType,
+  ChatType,
 } from '@/app/contracts/Message';
+import { AssistantMode } from '@/app/contracts/Assistant';
 
 export interface AssistantState {
   messages: MessageDto[];
@@ -14,6 +16,8 @@ export interface AssistantState {
   responseType: ChatResponseType;
   userMessageId: string;
   isInitialLoad: boolean;
+  mode: ChatType;
+  assistantMode: AssistantMode;
 }
 
 const initialState: AssistantState = {
@@ -25,6 +29,8 @@ const initialState: AssistantState = {
   responseType: ChatResponseType.TEXT,
   userMessageId: '',
   isInitialLoad: true,
+  mode: ChatType.CONVERSATION,
+  assistantMode: AssistantMode.INTERNAL,
 };
 
 export const assistantSlice = createSlice({
@@ -58,6 +64,12 @@ export const assistantSlice = createSlice({
     setInitialLoad: (state, action: PayloadAction<boolean>) => {
       state.isInitialLoad = action.payload;
     },
+    setMode: (state, action: PayloadAction<ChatType>) => {
+      state.mode = action.payload;
+    },
+    setAssistantMode: (state, action: PayloadAction<AssistantMode>) => {
+      state.assistantMode = action.payload;
+    },
   },
 });
 
@@ -70,6 +82,8 @@ export const {
   setResponseType,
   setUserMessageId,
   setInitialLoad,
+  setMode,
+  setAssistantMode,
 } = assistantSlice.actions;
 
 export default assistantSlice.reducer;

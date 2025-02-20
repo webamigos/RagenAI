@@ -1,23 +1,23 @@
-import { useEffect, useReducer, RefObject } from 'react';
+import { useEffect, useReducer } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role, MessageContentType } from '@prisma/client';
+import { statusToast } from '@/app/lib/utils/toast';
 import { useVoiceInput } from '@/app/hooks/useAudioRecording';
 import { convertTextToSpeech } from '../../../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
-import { statusToast } from '@/app/lib/utils/toast';
 import { updateMessagePlayedStatus } from '@/app/lib/services/message';
 import { voiceModeReducer, initialState } from '../voiceModeReducer';
 import { VoiceModeProps, VoiceModeHandlers } from '../types';
 
-type UseVoiceModeProps = {
-  audioRef: RefObject<HTMLAudioElement>;
+interface UseVoiceModeProps {
+  audioRef: React.RefObject<HTMLAudioElement>;
   initialIsRecording: boolean;
   messages: VoiceModeProps['messages'];
   onClose: () => void;
   onResult: (text: string, recordingTime: number) => void;
   onMessagePlayed?: (messageId: string) => void;
   voiceId: string;
-};
+}
 
 export const useVoiceMode = ({
   audioRef,
