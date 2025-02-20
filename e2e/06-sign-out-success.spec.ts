@@ -8,17 +8,14 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/en');
 });
 
-test.skip('sign out success', async ({ page }) => {
+test('sign out success', async ({ page }) => {
   await login(page);
 
   await page.waitForTimeout(2000);
 
-  // FIXME: Playwrights detects two Popovers which are almost the same instead of random generated id using useId... it's hard to catch this one
-  // await page.locator('[data-testid="tw-popover"] > button').click();
-
-  await page.getByText('Sign out').click();
-
+  await page.getByTestId('avatar-icon').last().click();
   await page.waitForTimeout(1000);
+  await page.getByText(/sign out/i).click();
 
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 });
