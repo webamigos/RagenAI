@@ -55,13 +55,11 @@ type CommonConfig = {
   messages: MessageDto[];
   userMessage: MessageDto;
   userMessageId: string;
-  threadsState: ThreadHistoryResponse[];
   t: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
   threadId: Thread['public_id'];
   responseType: ChatResponseType;
-  threadsDispatch: AppDispatch;
   data: CreateMessageDto;
   scrollFn: () => void;
   streamedMessage: StreamedMessageDto | null;
@@ -71,6 +69,7 @@ type CommonConfig = {
   chatType?: ChatType;
   reduxDispatch?: AppDispatch;
 };
+
 type HandleAssistantStreamConfig =
   | ({
       // internal
@@ -78,6 +77,8 @@ type HandleAssistantStreamConfig =
       dispatch: Dispatch<InternalAssistantReducerAction>;
       user: UserResource | undefined | null;
       organizationId?: undefined;
+      threadsState: ThreadHistoryResponse[];
+      threadsDispatch: AppDispatch;
     } & CommonConfig)
   | ({
       // public
@@ -85,6 +86,8 @@ type HandleAssistantStreamConfig =
       dispatch: Dispatch<PublicAssistantReducerAction>;
       user?: undefined;
       organizationId: string;
+      threadsState?: ThreadHistoryResponse[];
+      threadsDispatch?: AppDispatch;
     } & CommonConfig);
 
 export const handleAssistantStream = async ({
@@ -133,7 +136,7 @@ export const handleAssistantStream = async ({
     // Adds assistant message to db
     // And stream progress using Server Sent Events format
 
-    const currentThread = threadsState.find(
+    const currentThread = threadsState?.find(
       (thread) => thread.public_id === threadId
     );
     const newThread = {
@@ -143,7 +146,9 @@ export const handleAssistantStream = async ({
       project_id: currentThread?.project_id,
     };
 
-    threadsDispatch(addThread(newThread));
+    if (threadsDispatch) {
+      threadsDispatch(addThread(newThread));
+    }
 
     let streamUrl = '';
     if (mode === AssistantMode.INTERNAL) {
