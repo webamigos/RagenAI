@@ -6,12 +6,10 @@ import dynamic from 'next/dynamic';
 import { GoogleTagManager } from '@next/third-parties/google';
 
 import { Providers } from '../components/Providers';
-import { ThreadsContextProvider } from '../../context/ThreadsContext';
 import { plPL } from '../messages/pl-PL-clerk';
 import { timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
-import { SidebarProvider } from '@/context/SidebarContext';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
@@ -64,17 +62,13 @@ export default async function LocaleLayout({
         <html lang={locale} className="h-full" suppressHydrationWarning>
           {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
           <body className={`${interFont.className} h-full`}>
-            <ThreadsContextProvider>
+            <Providers>
               <SearchThreadsProvider>
-                <Providers>
-                  <SidebarProvider>
-                    <SettingsProvider>
-                      <JoyrideProvider>{children}</JoyrideProvider>
-                    </SettingsProvider>
-                  </SidebarProvider>
-                </Providers>
+                <SettingsProvider>
+                  <JoyrideProvider>{children}</JoyrideProvider>
+                </SettingsProvider>
               </SearchThreadsProvider>
-            </ThreadsContextProvider>
+            </Providers>
           </body>
         </html>
       </ClerkProvider>

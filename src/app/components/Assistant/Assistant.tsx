@@ -12,6 +12,9 @@ import { useState, useEffect } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/app/contracts/Message';
 import { reducerActions } from './reducer';
+import { useDispatch, useSelector } from 'react-redux';
+import { setVoiceId, setRecording } from '@/store/features/voice/voiceSlice';
+import { RootState } from '@/store';
 
 type Props = {
   threadId: string;
@@ -35,28 +38,30 @@ export const Assistant = ({ threadId }: Props) => {
     modalRef,
     onSubmit,
     isLocked,
-    dispatch,
+    dispatch: assistantDispatch,
     promptFormRef,
-    isRecording,
     closeVoiceMode,
     setVoiceMessageAsPlayed,
     handleVoiceResult,
   } = useAssistantLogic(threadId);
 
   const { organization } = useOrganization();
-  const [voiceId, setVoiceId] = useState('JBFqnCBsd6RMkjVDRZzb');
+  const dispatch = useDispatch();
+  const { voiceId, isRecording } = useSelector(
+    (state: RootState) => state.assistant.voice
+  );
 
   useEffect(() => {
     const getVoiceSettings = async () => {
       if (organization?.id) {
         const response = await fetchVoiceId(organization.id);
         if (response.success && response.data?.voiceId) {
-          setVoiceId(response.data.voiceId);
+          dispatch(setVoiceId(response.data.voiceId));
         }
       }
     };
     getVoiceSettings();
-  }, [organization?.id]);
+  }, [organization?.id, dispatch]);
 
   useEffect(() => {
     const wasVoiceModeActive = sessionStorage.getItem('voice_mode_active');
@@ -66,10 +71,7 @@ export const Assistant = ({ threadId }: Props) => {
       wasVoiceModeActive === 'true' &&
       responseTypeStored === ChatResponseType.VOICE
     ) {
-      dispatch({
-        type: reducerActions.SET_MODE_VOICE,
-        payload: ChatResponseType.VOICE,
-      });
+      dispatch(setRecording(true));
       handleResponseType();
       sessionStorage.removeItem('voice_mode_active');
       sessionStorage.removeItem('response_type');

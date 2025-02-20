@@ -1,11 +1,9 @@
 import { useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { format, subDays } from 'date-fns';
 
 import { SidebarSection, SidebarLabel, SpinnerSVG } from '@ragenai/common-ui';
 import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
-import { useThreadsContext } from '../../../hooks/useThreadsContext';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 
 type Props = {
@@ -13,9 +11,10 @@ type Props = {
   isLoading: boolean;
   isSignedIn?: boolean;
   error: string | null;
-  activeThread: string;
+  activeThread?: string;
   userThreads: ThreadHistoryResponse[];
   isThreadsLoaded: boolean;
+  loadMoreThreads: () => void;
 };
 
 export const UserThreadsHistory = ({
@@ -24,13 +23,13 @@ export const UserThreadsHistory = ({
   isLoading,
   isSignedIn,
   userThreads,
-  activeThread,
+  activeThread = '',
   isThreadsLoaded,
+  loadMoreThreads,
 }: Props) => {
   const t = useTranslations('chat');
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastThreadElementRef = useRef<HTMLDivElement | null>(null);
-  const { loadMoreThreads } = useThreadsContext();
 
   useEffect(() => {
     if (isLoading || !hasMore) return;

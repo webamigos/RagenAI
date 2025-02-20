@@ -3,7 +3,6 @@ import { useTranslations } from 'next-intl';
 import { Role } from '@prisma/client';
 import { usePathname } from 'next/navigation';
 
-import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import {
   checkVisitorVisits,
   fetchMessagesFromApi,
@@ -56,8 +55,6 @@ export const usePublicAssistantLogic = (
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
-  const { dispatch: threadsDispatch, state: threadsState } =
-    useThreadsContext();
 
   const [state, dispatch] = useReducer(publicAssistantReducer, initialState);
   const isGlobalLoading =
@@ -103,10 +100,8 @@ export const usePublicAssistantLogic = (
             tChainErrors,
             tApiEvents,
             threadId,
-            threadsState: threadsState.userThreads,
             responseType: ChatResponseType.TEXT,
             streamedMessage: state.streamedMessage,
-            threadsDispatch,
             scrollFn: scrollToBottom,
             errorToast,
             promptFormRef,
@@ -146,7 +141,6 @@ export const usePublicAssistantLogic = (
     }
   };
 
-  // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
@@ -169,10 +163,8 @@ export const usePublicAssistantLogic = (
         tChainErrors,
         tApiEvents,
         threadId,
-        threadsState: threadsState.userThreads,
         responseType: ChatResponseType.TEXT,
         streamedMessage: state.streamedMessage,
-        threadsDispatch,
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,

@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
-import { useSidebarLogic } from './useSidebarLogic';
+import { useSidebarLogic } from '@/app/components/Sidebar/useSidebarLogic';
 import { UserAndOrganizationNavigation } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { DesktopNavbar } from './DesktopNavbar';
@@ -49,6 +49,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     setIsCreateModalOpen,
     getSidebarThreadsError,
     refreshProjects,
+    loadMoreThreads,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
@@ -126,6 +127,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                     userThreads={userThreads}
                     activeThread={activeThread}
                     isThreadsLoaded={isThreadsLoaded}
+                    loadMoreThreads={loadMoreThreads}
                   />
                 </>
               )
