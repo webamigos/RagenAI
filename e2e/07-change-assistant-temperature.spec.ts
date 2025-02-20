@@ -30,7 +30,7 @@ test('change-assistant-temperature', async ({ page }) => {
   await page.mouse.down();
   await expect(page.getByText('0.3')).toBeVisible();
 
-  await page.locator('#max-documents').fill('4');
+  await page.locator('#max-documents').fill('6');
   await page.mouse.down();
-  await expect(page.getByText('4')).toBeVisible();
+  await expect(page.getByText('6')).toBeVisible();
 });
