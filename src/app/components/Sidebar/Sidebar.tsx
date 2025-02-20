@@ -49,6 +49,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     setIsCreateModalOpen,
     getSidebarThreadsError,
     refreshProjects,
+    loadMoreThreads,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
@@ -126,6 +127,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                     userThreads={userThreads}
                     activeThread={activeThread}
                     isThreadsLoaded={isThreadsLoaded}
+                    loadMoreThreads={loadMoreThreads}
                   />
                 </>
               )
