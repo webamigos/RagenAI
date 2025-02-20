@@ -33,6 +33,7 @@ export const config = {
   matcher: [
     '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
     '/api/threads/(.*)',
+    '/api/threads',
     '/api/settings/',
     '/api/settings/api-key',
     '/api/settings/temperature',
@@ -42,6 +43,7 @@ export const config = {
     '/api/upload/(.*)',
     '/:locale/admin/manage-knowledge',
     '/:locale/sso-callback',
+    '/:locale/sign-in',
   ],
 };
 

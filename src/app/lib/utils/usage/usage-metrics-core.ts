@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import { UsagePeriod } from '@prisma/client';
 
 import { auth } from '@clerk/nextjs/server';
@@ -5,6 +6,10 @@ import { PrismaClient } from '@prisma/client';
 import { logger } from '../logger';
 import { UsageMetrics } from './types';
 import { addMonths } from 'date-fns';
+import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
+import { ApiKey } from '@/app/api/v1/__logic__/types/brand';
+import { P } from 'pino';
+import { API_HEADER } from '@/app/api/v1/__logic__/guards/api-key.guard';
 
 export class UsageMetricsCore {
   private static instance: UsageMetricsCore;
@@ -21,11 +26,21 @@ export class UsageMetricsCore {
     return UsageMetricsCore.instance;
   }
 
-  private get organizationId(): string {
+  private async getOrganizationId(): Promise<string> {
+    const headersList = await headers();
+    const apiKeyHeaderValue = headersList.get(API_HEADER) as ApiKey;
+    const apiKeysService = new ApiKeysService();
+
+    if (apiKeyHeaderValue) {
+      const { orgId } = apiKeysService.extractDataFromApiKey(apiKeyHeaderValue);
+      return orgId;
+    }
+
     const { orgId } = auth();
     if (!orgId) {
       throw new Error("Can't track usage, organization ID not found");
     }
+
     return orgId;
   }
 
@@ -105,7 +120,7 @@ export class UsageMetricsCore {
   }
 
   private async getCurrentSubscription() {
-    const organizationId = this.organizationId;
+    const organizationId = await this.getOrganizationId();
     const org = await this.dbClient.organization.findUnique({
       where: { provider_id: organizationId },
       include: { subscription: true },
@@ -149,7 +164,7 @@ export class UsageMetricsCore {
   }
 
   async track(metric: keyof UsageMetrics, increment: number = 1) {
-    const organizationId = this.organizationId;
+    const organizationId = await this.getOrganizationId();
     logger.info({ organizationId, metric, increment }, 'Tracking usage');
 
     // Get current subscription for the organization

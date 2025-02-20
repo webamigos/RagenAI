@@ -58,6 +58,8 @@ export const GET = async (_request: Request, { params }: Params) => {
     setSentryUserId(visitorId);
     setSentryContext('THREAD_ID', threadPublicId);
 
+    // 🚨 what if someone from outside organization somehow will with get thread id
+    // and then will use /messages/{threadId} endpoint?
     const messages = await fetchMessagesFromDb(threadPublicId, visitorId);
     return NextResponse.json(messages);
   } catch (e) {

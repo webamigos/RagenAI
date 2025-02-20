@@ -50,8 +50,6 @@ export const ProjectsList = ({
           })),
           project_id: project.id,
           id: existingThread?.id || thread.public_id,
-          openai_thread_id:
-            existingThread?.openai_thread_id || thread.public_id,
           visitor_id: existingThread?.visitor_id || null,
           preferred_communication_type:
             existingThread?.preferred_communication_type ||

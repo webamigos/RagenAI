@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
-
 import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';

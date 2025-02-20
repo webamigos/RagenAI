@@ -1,11 +1,9 @@
 'use server';
 
-import OpenAI from 'openai';
 import { Thread, Message, Role, MessageContentType } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
 
-import { parseThreadMessage } from './utils';
 import { MessageDto } from '../../contracts/Message';
 import { createVisitorEntry } from './visitor';
 import { logger } from '../utils/logger';
@@ -14,17 +12,16 @@ import { usageTracker } from './usage';
 
 export type DbMessageDto = {
   id: Message['id'];
-  created_at: Message['openai_created_at'];
   content: Message['content'];
   role: Message['role'];
   run_id?: Message['run_id'];
+  source?: Message['source'];
 };
 
-const openai = new OpenAI();
 const serviceName = 'Message';
 
 export const createMessageInDB = async ({
-  thread,
+  threadId,
   message,
   role,
   visitorId,
@@ -32,7 +29,7 @@ export const createMessageInDB = async ({
   messageType = 'TEXT',
   voiceDurationSeconds,
 }: {
-  thread: Thread;
+  threadId: Thread['id'];
   message: Omit<DbMessageDto, 'role'>;
   role: Role;
   visitorId?: string;
@@ -43,7 +40,7 @@ export const createMessageInDB = async ({
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('THREAD_ID', {
-      threadId: thread.id,
+      threadId: threadId,
     });
     setSentryContext('EXTRA_DATA', {
       // messageId: message.id,
@@ -58,9 +55,7 @@ export const createMessageInDB = async ({
 
     return await db.message.create({
       data: {
-        thread_id: thread.id,
-        openai_message_id: message.id,
-        openai_created_at: message.created_at,
+        thread_id: threadId,
         content: message.content,
         role,
         visitor_id: visitorId,
@@ -121,49 +116,34 @@ export const fetchMessagesFromDb = async (
   }
 };
 
-// TODO: visitorId shouldn't be passed here - it can be userId or public visitorId...
-export const createAndStoreOpenAIThreadMessage = async ({
+export const createAndStoreMessage = async ({
   prompt,
-  thread,
-  threadEntity,
+  threadId,
   visitorId,
   messageType = 'TEXT',
   voiceDurationSeconds,
 }: {
   prompt: string;
-  thread?: OpenAI.Beta.Threads.Thread;
-  threadEntity: Thread;
+  threadId: Thread['id'];
   visitorId?: string;
   messageType?: MessageContentType;
   voiceDurationSeconds?: number;
 }): Promise<MessageDto> => {
   try {
     setSentryServiceTag(serviceName);
-    if (thread) {
-      setSentryContext('THREAD_ID', {
-        threadId: thread.id,
-      });
-    }
-
+    setSentryContext('THREAD_ID', {
+      threadId: threadId,
+    });
     setSentryContext('EXTRA_DATA', {
       visitorId,
       messageType,
       voiceDurationSeconds,
     });
-    // TODO: this is refactored inside DEV-78
-    // const threadId = thread?.id;
-    // const threadMessage = await openai.beta.threads.messages.create(threadId, {
-    //   role: 'user',
-    //   content: prompt.trim(), // TODO: sanitize
-    // });
-    // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
-    // const userMessageContent = parseThreadMessage(threadMessage);
 
     const dbMessage = await createMessageInDB({
-      thread: threadEntity,
+      threadId: threadId,
       message: {
         id: `msg_${Date.now()}`,
-        created_at: Math.floor(new Date().getTime() / 1000), // FIXME: temporary and solved in DEV-78
         content: prompt.trim(),
       },
       role: Role.USER,
@@ -190,10 +170,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
       voice_played: dbMessage.voice_played,
     };
   } catch (error) {
-    logger.error(
-      { err: error },
-      'Failed to create and store OpenAI thread message'
-    );
+    logger.error({ err: error }, 'Failed to create and store message');
     throw error;
   }
 };

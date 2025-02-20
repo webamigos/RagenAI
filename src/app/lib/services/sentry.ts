@@ -36,7 +36,7 @@ export const setSentryContext = (name: SentryContextKey, payload: any) =>
   Sentry.setContext(SentryContext[name], payload);
 
 type SentryContextPayload = {
-  sessionId: string;
+  sessionId?: string; // may come from API
   orgId: string;
   userId: string;
 };
@@ -49,9 +49,11 @@ export const setSentryTagsAndContextForClerk = (
 ) => {
   const { sessionId, orgId, userId } = payload;
   setSentryUserId(userId);
-  setSentryClerkSessionTag(sessionId);
   setSentryClerkOrganizationTag(orgId);
   setSentryClerkUserTag(userId);
+  if (sessionId) {
+    setSentryClerkSessionTag(sessionId);
+  }
   setSentryClerkContext({
     sessionId,
     orgId,
