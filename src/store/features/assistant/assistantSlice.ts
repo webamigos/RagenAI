@@ -6,6 +6,7 @@ import {
   ChatType,
 } from '@/app/contracts/Message';
 import { AssistantMode } from '@/app/contracts/Assistant';
+import voiceReducer from '../voice/voiceSlice';
 
 export interface AssistantState {
   messages: MessageDto[];
@@ -18,6 +19,7 @@ export interface AssistantState {
   isInitialLoad: boolean;
   mode: ChatType;
   assistantMode: AssistantMode;
+  voice: ReturnType<typeof voiceReducer>;
 }
 
 const initialState: AssistantState = {
@@ -31,6 +33,7 @@ const initialState: AssistantState = {
   isInitialLoad: true,
   mode: ChatType.CONVERSATION,
   assistantMode: AssistantMode.INTERNAL,
+  voice: voiceReducer(undefined, { type: '@@INIT' }),
 };
 
 export const assistantSlice = createSlice({
@@ -70,6 +73,13 @@ export const assistantSlice = createSlice({
     setAssistantMode: (state, action: PayloadAction<AssistantMode>) => {
       state.assistantMode = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addDefaultCase((state, action) => {
+      if (action.type.startsWith('voice/')) {
+        state.voice = voiceReducer(state.voice, action);
+      }
+    });
   },
 });
 

@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
 
-type ErrorState = {
+export type ErrorState = {
   status: number | null;
   message: string | null;
 };
@@ -10,6 +10,8 @@ export interface ThreadState {
   userThreads: ThreadHistoryResponse[];
   error: ErrorState | null;
   isLoading: boolean;
+  isThreadLoading: boolean;
+  isThreadsLoaded: boolean;
   skip: number;
   hasMore: boolean;
   currentThreadId: string;
@@ -20,6 +22,8 @@ const initialState: ThreadState = {
   userThreads: [],
   error: null,
   isLoading: false,
+  isThreadLoading: false,
+  isThreadsLoaded: false,
   skip: 0,
   hasMore: true,
   currentThreadId: '',
@@ -36,10 +40,17 @@ export const threadsSlice = createSlice({
         state.error = null;
       }
     },
+    setThreadLoading: (state, action: PayloadAction<boolean>) => {
+      state.isThreadLoading = action.payload;
+    },
+    setThreadsLoaded: (state, action: PayloadAction<boolean>) => {
+      state.isThreadsLoaded = action.payload;
+    },
     setUserThreads: (state, action: PayloadAction<ThreadHistoryResponse[]>) => {
       state.isLoading = false;
       state.userThreads = action.payload || [];
       state.hasMore = (action.payload || []).length > 0;
+      state.isThreadsLoaded = true;
     },
     setError: (state, action: PayloadAction<ErrorState>) => {
       state.isLoading = false;
@@ -85,6 +96,7 @@ export const threadsSlice = createSlice({
       state.userThreads = [];
       state.skip = 0;
       state.hasMore = true;
+      state.isThreadsLoaded = false;
     },
     setCurrentThreadId: (state, action: PayloadAction<string>) => {
       state.currentThreadId = action.payload;
@@ -97,6 +109,8 @@ export const threadsSlice = createSlice({
 
 export const {
   setLoading,
+  setThreadLoading,
+  setThreadsLoaded,
   setUserThreads,
   setError,
   addThreads,

@@ -5,11 +5,12 @@ import { useUser } from '@clerk/nextjs';
 import { type UserResource } from '@clerk/types';
 import { useDispatch } from 'react-redux';
 import { setRecording } from '@/store/features/voice/voiceSlice';
+import { setMessages } from '@/store/features/assistant/assistantSlice';
+import { useAppSelector } from '@/store/hooks';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { useApi } from '../../hooks/useApi';
-import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { fetchMessagesFromApi } from '../../lib/services/api';
 import {
@@ -70,8 +71,7 @@ export const useAssistantLogic = (threadId: string) => {
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
-  const { dispatch: threadsDispatch, state: threadsState } =
-    useThreadsContext();
+  const { userThreads } = useAppSelector((state) => state.threads);
   const isPublicAccess = pathname.includes('/public');
 
   const [state, dispatch] = useReducer(assistantReducer, initialState);
@@ -97,6 +97,7 @@ export const useAssistantLogic = (threadId: string) => {
       if (response) {
         dispatch({ type: SET_INITIAL_LOAD, payload: false });
         dispatch({ type: SET_MESSAGES, payload: response.data });
+        reduxDispatch(setMessages(response.data));
       }
     } catch (error) {
       logger.error('Error fetching messages: %o', error);
@@ -158,14 +159,15 @@ export const useAssistantLogic = (threadId: string) => {
         threadId,
         responseType: state.responseType,
         streamedMessage: state.streamedMessage,
-        threadsDispatch,
-        threadsState: threadsState.userThreads,
+        threadsDispatch: reduxDispatch,
+        threadsState: userThreads,
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,
         data,
         chatType: data.mode,
         user: clerkUser,
+        reduxDispatch,
       });
     } catch {
       errorToast({ message: 'sending-error' });

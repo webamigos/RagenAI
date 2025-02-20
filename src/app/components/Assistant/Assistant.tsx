@@ -48,7 +48,7 @@ export const Assistant = ({ threadId }: Props) => {
   const { organization } = useOrganization();
   const dispatch = useDispatch();
   const { voiceId, isRecording } = useSelector(
-    (state: RootState) => state.voice
+    (state: RootState) => state.assistant.voice
   );
 
   useEffect(() => {

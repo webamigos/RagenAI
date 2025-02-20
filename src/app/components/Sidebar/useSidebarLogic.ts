@@ -1,39 +1,47 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useNewThread } from '../../hooks/useNewThread';
 import { useCloseThread } from '../../hooks/useCloseThreads';
 import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
+import { getUserMessages } from '@/app/actions';
 import {
   setActiveThread,
   setProjects,
   closeSidebar,
   setCreateModalOpen,
-  type SidebarThreadsFetchError,
 } from '@/store/features/sidebar/sidebarSlice';
+import {
+  setLoading,
+  addThreads,
+  incrementSkip,
+  setHasMore,
+  setError,
+  resetThreads,
+} from '@/store/features/threads/threadsSlice';
+import type { ErrorState } from '@/store/features/threads/threadsSlice';
 
 export const useSidebarLogic = () => {
   const dispatch = useAppDispatch();
+  const { isOpen, activeThread, projects, isCreateModalOpen } = useAppSelector(
+    (state) => state.sidebar
+  );
+
   const {
-    isOpen,
-    activeThread,
-    projects,
     error,
     isLoading,
     hasMore,
     isThreadLoading,
     isThreadsLoaded,
-    isCreateModalOpen,
-  } = useAppSelector((state) => state.sidebar);
+    userThreads,
+    skip,
+  } = useAppSelector((state) => state.threads);
 
-  const { state, refetchThreads } = useThreadsContext();
-  const { userThreads } = state;
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const locale = useLocale();
@@ -46,6 +54,46 @@ export const useSidebarLogic = () => {
   const { openSearch } = useSearchThreads();
   const { organization } = useOrganization();
 
+  const loadMoreThreads = useCallback(async () => {
+    if (isLoading || !hasMore || !user?.id) return;
+
+    dispatch(setLoading(true));
+
+    try {
+      const { status, error, threads } = await getUserMessages(
+        user.id,
+        skip,
+        16
+      );
+
+      if (status === 200) {
+        dispatch(addThreads(threads || []));
+        dispatch(incrementSkip(threads?.length || 0));
+
+        if (!threads || threads.length < 16) {
+          dispatch(setHasMore(false));
+        }
+      } else {
+        const errorPayload = {
+          status,
+          message: error || 'Unknown error',
+        };
+        dispatch(setError(errorPayload));
+      }
+    } catch (err) {
+      const errorPayload = {
+        status: 500,
+        message: err?.toString() || 'Unknown error',
+      };
+      dispatch(setError(errorPayload));
+    }
+  }, [isLoading, hasMore, user?.id, skip, dispatch]);
+
+  const refetchThreads = useCallback(() => {
+    dispatch(resetThreads());
+    loadMoreThreads();
+  }, [dispatch, loadMoreThreads]);
+
   const handleThread = () => {
     handleNewThread();
     handleCloseThread(false);
@@ -57,7 +105,7 @@ export const useSidebarLogic = () => {
     dispatch(closeSidebar());
   };
 
-  function getSidebarThreadsError(error: SidebarThreadsFetchError): string {
+  function getSidebarThreadsError(error: ErrorState): string {
     switch (error.status) {
       case 400:
         if (error.message?.includes('prisma')) {
@@ -110,6 +158,18 @@ export const useSidebarLogic = () => {
     fetchProjects();
   }, [organization?.id, user?.id]);
 
+  useEffect(() => {
+    if (user?.id) {
+      loadMoreThreads();
+    }
+  }, [user?.id, loadMoreThreads]);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      dispatch(resetThreads());
+    }
+  }, [isSignedIn, dispatch]);
+
   return {
     error,
     locale,
@@ -129,6 +189,7 @@ export const useSidebarLogic = () => {
     isThreadsLoaded,
     isCreateModalOpen,
     handleCloseThread,
+    loadMoreThreads,
     setIsCreateModalOpen: (value: boolean) =>
       dispatch(setCreateModalOpen(value)),
     getSidebarThreadsError,
