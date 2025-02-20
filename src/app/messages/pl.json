@@ -282,6 +282,26 @@
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
     },
+
+    "projects": {
+      "title": "Projekty",
+      "create-project": "Stwórz projekt",
+      "create": "Utwórz projekt",
+      "placeholder": "Wpisz nazwę projektu...",
+      "what-is-project": "Co to jest projekt?",
+      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
+      "cancel": "Anuluj",
+      "success": {
+        "created": "Projekt został pomyślnie utworzony."
+      },
+      "error": {
+        "title-required": "Nazwa projektu jest wymagana.",
+        "loading-organization": "Błąd podczas ładowania organizacji.",
+        "no-organization": "Brak przypisanej organizacji.",
+        "project-exists": "Projekt o tej nazwie już istnieje.",
+        "creation-failed": "Nie udało się utworzyć projektu."
+      }
+    },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
       "database-connection": "Nie można połączyć się z bazą danych. Spróbuj ponownie później.",
@@ -490,6 +510,25 @@
     "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
     "recording-error": "Błąd podczas nagrywania, spróbuj ponownie",
     "microphone-permission-denied": "Brak dostępu do mikrofonu. Sprawdź uprawnienia przeglądarki."
+  },
+  "projects": {
+    "title": "Projekty",
+    "create": "Utwórz projekt",
+    "placeholder": "Nazwa projektu",
+    "what-is-project": "Czym jest projekt?",
+    "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
+    "cancel": "Anuluj",
+    "create-project": "Utwórz projekt",
+    "error": {
+      "title-required": "Tytuł jest wymagany",
+      "loading-organization": "Błąd podczas ładowania organizacji",
+      "no-organization": "Brak organizacji",
+      "project-exists": "Projekt o takiej nazwie już istnieje",
+      "creation-failed": "Nie udało się utworzyć projektu"
+    },
+    "success": {
+      "created": "Projekt został utworzony"
+    }
   },
   "voice-mode": {
     "recording": "Nagrywanie...",

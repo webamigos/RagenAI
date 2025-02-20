@@ -59,7 +59,10 @@ export const findOrCreateOpenAIThread = async (
   }
 };
 
-export const createNewOpenAIThread = async (visitorId?: string | null) => {
+export const createNewOpenAIThread = async (
+  visitorId?: string | null,
+  projectId?: number
+) => {
   try {
     setSentryServiceTag(serviceName);
 
@@ -70,11 +73,13 @@ export const createNewOpenAIThread = async (visitorId?: string | null) => {
     const threadEntity = await db.thread.create({
       data: {
         openai_thread_id: thread.id,
+        project_id: projectId,
         visitor_id: userId ? userId : visitorId,
       },
     });
     return {
       public_id: threadEntity.public_id,
+      project_id: projectId,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create new Open AI thread');

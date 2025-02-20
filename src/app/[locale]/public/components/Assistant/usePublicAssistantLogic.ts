@@ -56,7 +56,8 @@ export const usePublicAssistantLogic = (
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
-  const { dispatch: threadsDispatch } = useThreadsContext();
+  const { dispatch: threadsDispatch, state: threadsState } =
+    useThreadsContext();
 
   const [state, dispatch] = useReducer(publicAssistantReducer, initialState);
   const isGlobalLoading =
@@ -102,6 +103,7 @@ export const usePublicAssistantLogic = (
             tChainErrors,
             tApiEvents,
             threadId,
+            threadsState: threadsState.userThreads,
             responseType: ChatResponseType.TEXT,
             streamedMessage: state.streamedMessage,
             threadsDispatch,
@@ -167,6 +169,7 @@ export const usePublicAssistantLogic = (
         tChainErrors,
         tApiEvents,
         threadId,
+        threadsState: threadsState.userThreads,
         responseType: ChatResponseType.TEXT,
         streamedMessage: state.streamedMessage,
         threadsDispatch,

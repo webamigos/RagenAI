@@ -5,7 +5,7 @@
 
 */
 -- CreateEnum
-CREATE TYPE "MessageContentType" AS ENUM ('TEXT', 'VOICE');
+-- CREATE TYPE "MessageContentType" AS ENUM ('TEXT', 'VOICE');
 
 -- AlterTable
 ALTER TABLE "Message" DROP COLUMN "message_type",
@@ -15,7 +15,7 @@ ADD COLUMN     "message_type" "MessageContentType" NOT NULL DEFAULT 'TEXT';
 ALTER TABLE "Thread" ADD COLUMN     "project_id" INTEGER;
 
 -- DropEnum
-DROP TYPE "MessageType";
+DROP TYPE IF EXISTS "MessageType";
 
 -- AddForeignKey
 ALTER TABLE "Thread" ADD CONSTRAINT "Thread_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "Project"("id") ON DELETE SET NULL ON UPDATE CASCADE;

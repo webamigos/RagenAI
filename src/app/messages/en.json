@@ -280,6 +280,10 @@
       "yesterday": "Yesterday",
       "older": "Older"
     },
+    "projects": {
+      "title": "Projects",
+      "create-project": "Create Project"
+    },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",
       "database-connection": "Unable to connect to the database. Please try again later.",
@@ -488,6 +492,26 @@
     "recognition-error": "Recognition error, try again",
     "recording-error": "Error during recording, try again",
     "microphone-permission-denied": "No access to microphone. Check browser permissions."
+  },
+
+  "projects": {
+    "title": "Projects",
+    "create-project": "Create Project",
+    "create": "Create Project",
+    "placeholder": "Enter project name...",
+    "what-is-project": "What is a project?",
+    "project-description": "A project allows you to manage tasks and organize team work.",
+    "cancel": "Cancel",
+    "success": {
+      "created": "Project has been successfully created."
+    },
+    "error": {
+      "title-required": "Title is required",
+      "loading-organization": "Error loading organization",
+      "no-organization": "No organization",
+      "project-exists": "Project with this name already exists",
+      "creation-failed": "Failed to create project"
+    }
   },
   "voice-mode": {
     "recording": "Recording...",
