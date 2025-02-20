@@ -15,7 +15,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
-import { useSidebarLogic } from './useSidebarLogic';
+import { useSidebarLogic } from '@/app/components/Sidebar/useSidebarLogic';
 import { UserAndOrganizationNavigation } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
 import { DesktopNavbar } from './DesktopNavbar';

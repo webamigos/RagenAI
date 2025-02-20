@@ -13,7 +13,7 @@ type Props = {
   isLoading: boolean;
   isSignedIn?: boolean;
   error: string | null;
-  activeThread: string;
+  activeThread?: string;
   userThreads: ThreadHistoryResponse[];
   isThreadsLoaded: boolean;
 };
@@ -24,7 +24,7 @@ export const UserThreadsHistory = ({
   isLoading,
   isSignedIn,
   userThreads,
-  activeThread,
+  activeThread = '',
   isThreadsLoaded,
 }: Props) => {
   const t = useTranslations('chat');

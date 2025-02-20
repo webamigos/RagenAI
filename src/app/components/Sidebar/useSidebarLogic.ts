@@ -1,53 +1,60 @@
-import { MouseEventHandler, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
-
 import { usePathname } from '@/i18n/routing';
-import { useThreadsContext } from '../../hooks/useThreadsContext';
-import { useNewThread } from '@/app/hooks/useNewThread';
-import { useCloseThread } from '@/app/hooks/useCloseThreads';
-import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
-import { useSidebar } from '@/app/hooks/useSidebar';
-import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
+
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-
-import type { ProjectType } from './Projects/types';
-
-type SidebarThreadsFetchError = {
-  status: number | null;
-  message: string | null;
-};
+import { useThreadsContext } from '../../hooks/useThreadsContext';
+import { useNewThread } from '../../hooks/useNewThread';
+import { useCloseThread } from '../../hooks/useCloseThreads';
+import { useOnboardingContext } from '../../hooks/useOnboardingContext';
+import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
+import {
+  setActiveThread,
+  setProjects,
+  closeSidebar,
+  setCreateModalOpen,
+  type SidebarThreadsFetchError,
+} from '@/store/features/sidebar/sidebarSlice';
 
 export const useSidebarLogic = () => {
-  const [activeThread, setActiveThread] = useState<string>('');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [projects, setProjects] = useState<ProjectType[]>([]);
+  const dispatch = useAppDispatch();
+  const {
+    isOpen,
+    activeThread,
+    projects,
+    error,
+    isLoading,
+    hasMore,
+    isThreadLoading,
+    isThreadsLoaded,
+    isCreateModalOpen,
+  } = useAppSelector((state) => state.sidebar);
 
   const { state, refetchThreads } = useThreadsContext();
-  const { userThreads, error, isLoading, hasMore } = state;
+  const { userThreads } = state;
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
-  const isThreadsLoaded = state.userThreads.length > 0;
-  const { handleNewThread, isLoading: isThreadLoading } = useNewThread();
+  const { handleNewThread } = useNewThread();
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
-  const { closeSidebar } = useSidebar();
   const { openSearch } = useSearchThreads();
   const { organization } = useOrganization();
 
-  const handleThread: MouseEventHandler<HTMLButtonElement> = () => {
+  const handleThread = () => {
     handleNewThread();
     handleCloseThread(false);
-    closeSidebar();
+    dispatch(closeSidebar());
   };
 
   const handleSearch = () => {
     openSearch();
-    closeSidebar();
+    dispatch(closeSidebar());
   };
 
   function getSidebarThreadsError(error: SidebarThreadsFetchError): string {
@@ -75,18 +82,18 @@ export const useSidebarLogic = () => {
 
     if (threadIndex !== -1 && parts[threadIndex + 1]) {
       const threadId = parts[threadIndex + 1];
-      setActiveThread(threadId);
+      dispatch(setActiveThread(threadId));
     } else if (
       projectIndex !== -1 &&
       parts[projectIndex + 2] === 'threads' &&
       parts[projectIndex + 3]
     ) {
       const threadId = parts[projectIndex + 3];
-      setActiveThread(threadId);
+      dispatch(setActiveThread(threadId));
     } else {
-      setActiveThread('');
+      dispatch(setActiveThread(undefined));
     }
-  }, [pathname]);
+  }, [pathname, dispatch]);
 
   const fetchProjects = async () => {
     if (!organization?.id || !user?.id) {
@@ -95,7 +102,7 @@ export const useSidebarLogic = () => {
     const fetchedProjects = await getProjects(organization.id, user.id);
 
     if (fetchedProjects.projects) {
-      setProjects(fetchedProjects.projects);
+      dispatch(setProjects(fetchedProjects.projects));
     }
   };
 
@@ -122,7 +129,8 @@ export const useSidebarLogic = () => {
     isThreadsLoaded,
     isCreateModalOpen,
     handleCloseThread,
-    setIsCreateModalOpen,
+    setIsCreateModalOpen: (value: boolean) =>
+      dispatch(setCreateModalOpen(value)),
     getSidebarThreadsError,
     refreshProjects: fetchProjects,
   };
