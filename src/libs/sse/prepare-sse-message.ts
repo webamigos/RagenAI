@@ -44,10 +44,12 @@ export type ApiEventData =
   | ApiSseMessageEvent
   | ApiSseMessageDelta
   | ApiSseThreadFound
-  | ApiSseMessageCreated
-  | SseMessageError;
+  | ApiSseMessageCreated;
 
-export const prepareApiSseMessage = (event: ApiEvent, data?: ApiEventData) => {
+export const prepareApiSseMessage = (
+  event: ApiEvent,
+  data?: ApiEventData | SseMessageError
+) => {
   return `event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`;
 };
 
@@ -67,7 +69,7 @@ const encoder = new TextEncoder();
 export const sendApiEvent = (
   controller: ReadableStreamDefaultController,
   event: ApiEvent,
-  data?: ApiEventData
+  data?: ApiEventData | SseMessageError
 ) => {
   controller.enqueue(encoder.encode(prepareApiSseMessage(event, data)));
 };

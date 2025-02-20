@@ -14,12 +14,12 @@ export type ThreadCategories<T extends BaseThreadType> = {
 
 export const getThreadTitle = (thread: ThreadType): string => {
   if (!thread.messages?.length) {
-    return `Thread ${thread.openai_thread_id.substring(0, 8)}...`;
+    return `Thread ${thread.public_id.substring(0, 8)}...`;
   }
 
   const firstMessage = thread.messages[0];
   if (!firstMessage?.content) {
-    return `Thread ${thread.openai_thread_id.substring(0, 8)}...`;
+    return `Thread ${thread.public_id.substring(0, 8)}...`;
   }
 
   return firstMessage.content.length > 30

@@ -2,11 +2,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
+import { auth } from '@clerk/nextjs/server';
 
 import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { PropsWihLocale } from '@/app/lib/types/types';
+import { redirect } from 'next/navigation';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
@@ -18,7 +20,13 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 }
 
 export default function SignInPage() {
+  const { userId } = auth();
   const t = useTranslations('sign-in');
+
+  if (userId) {
+    redirect('/');
+  }
+
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">

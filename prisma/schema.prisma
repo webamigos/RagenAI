@@ -19,21 +19,20 @@ model Settings {
 }
 
 model Message {
+  id                     String             @id @default(uuid())
   public_id              String             @unique @default(uuid())
-  openai_message_id      String
-  openai_created_at      Int
   created_at             DateTime           @default(now()) @db.Timestamptz
   content                String
   role                   Role               @default(USER)
   thread_id              String?
   visitor_id             String?
-  id                     String             @id @default(uuid())
   rate                   Int?               @db.SmallInt
   run_id                 String?
   message_type           MessageContentType @default(TEXT)
   voice_duration_seconds Int?
   voice_played           Boolean            @default(false)
   thread                 Thread?            @relation(fields: [thread_id], references: [id])
+  source                 Source             @default(UI)
 }
 
 model FlaggedMessage {
@@ -45,15 +44,22 @@ model FlaggedMessage {
 }
 
 model Thread {
-  public_id                    String                  @unique @default(uuid())
-  openai_thread_id             String
-  created_at                   DateTime                @default(now()) @db.Timestamptz
   id                           String                  @id @default(uuid())
-  visitor_id                   String?
-  preferred_communication_type ThreadCommunicationType @default(TEXT)
+  public_id                    String                  @unique @default(uuid())
+  title                        String? // optional value displayed in sidebar
+  visitor_id                   String? // -> owner_id
   messages                     Message[]
+  organization_id              String?
+  user_id                      String? // api related field
+  preferred_communication_type ThreadCommunicationType @default(TEXT)
+  source                       Source                  @default(UI)
   project                      Project?                @relation(fields: [project_id], references: [id])
   project_id                   Int?
+  created_at                   DateTime                @default(now()) @db.Timestamptz
+
+  @@index([public_id])
+  @@index([organization_id])
+  @@index([user_id])
 }
 
 model VisitorMessages {
@@ -208,6 +214,11 @@ model ApiKey {
 
   @@index([public_id])
   @@index([organization_id])
+}
+
+enum Source {
+  UI
+  API
 }
 
 enum Role {

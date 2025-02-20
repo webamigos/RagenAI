@@ -1,15 +1,12 @@
 'use server';
 
+import db from '@ragenai/prisma-client';
 import { Thread } from '@prisma/client';
 import { setSentryServiceTag } from '../services/sentry';
 import { createNewOpenAIThread } from '../services/thread';
 import { logger } from '../utils/logger';
-import { createAndStoreOpenAIThreadMessage } from '../services/message';
-import db from '@ragenai/prisma-client';
-import OpenAI from 'openai';
+import { createAndStoreMessage } from '../services/message';
 import { getVisitorIdFromCookie } from '../services/cookies';
-
-const openai = new OpenAI();
 
 type ThreadAction =
   | {
@@ -52,21 +49,19 @@ export const createGuestThreadAction = async (
 
     const visitorId = await getVisitorIdFromCookie();
 
-    // TODO: this will be removed in API ticket
-    const openAiThread = await openai.beta.threads.create();
-    const threadEntity = await db.thread.create({
-      data: { openai_thread_id: openAiThread.id, visitor_id: visitorId },
+    const threadRecord = await db.thread.create({
+      data: { visitor_id: visitorId },
     });
 
     if (initialMessage && visitorId) {
-      await createAndStoreOpenAIThreadMessage({
-        threadEntity,
+      await createAndStoreMessage({
+        threadId: threadRecord.id,
         prompt: initialMessage,
         visitorId: visitorId,
       });
     }
 
-    return { success: true, thread: { public_id: threadEntity.public_id } };
+    return { success: true, thread: { public_id: threadRecord.public_id } };
   } catch (error) {
     logger.error({ err: error }, 'Cannot create guest thread');
     return { success: false, errorMessage: 'Cannot create thread' };

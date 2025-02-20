@@ -1,10 +1,10 @@
-import { Role } from '@prisma/client';
+import { Role, Source } from '@prisma/client';
 import {
   getThreadMessages,
   getThreadDetails,
 } from '../../../lib/services/thread';
 import {
-  createAndStoreOpenAIThreadMessage,
+  createAndStoreMessage,
   createMessageInDB,
 } from '../../../lib/services/message';
 import { ApiSseMessageEvent } from '../../../contracts/Events';
@@ -63,8 +63,8 @@ export async function streamEvents({
         // save message
         sendApiEvent(controller, 'save_user_message');
 
-        const threadMessage = await createAndStoreOpenAIThreadMessage({
-          threadEntity: threadRecord,
+        const threadMessage = await createAndStoreMessage({
+          threadId: threadRecord.id,
           prompt: userMessage.prompt,
           visitorId, // only for public threads
         });
@@ -176,16 +176,11 @@ export async function streamEvents({
             sendApiEvent(controller, 'save_assistant_response');
 
             const dbMessage = await createMessageInDB({
-              thread: {
-                ...threadRecord,
-                visitor_id: threadRecord.visitor_id,
-                preferred_communication_type:
-                  threadRecord.preferred_communication_type,
-              },
+              threadId: threadRecord.id,
               message: {
-                id: threadMessage.public_id, // fixed in DEV-78
-                created_at: Math.floor(Date.now() / 1000),
+                id: threadMessage.public_id,
                 content: event.data.output,
+                source: Source.UI,
               },
               role: Role.ASSISTANT,
               runId,
