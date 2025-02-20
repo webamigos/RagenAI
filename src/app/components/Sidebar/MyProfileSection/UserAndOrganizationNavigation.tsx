@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
+import Link from 'next/link';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSyncActiveOrganization } from '@/app/hooks/useSyncActiveOrganization';

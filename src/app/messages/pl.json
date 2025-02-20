@@ -294,7 +294,7 @@
     "projects": {
       "title": "Projekty",
       "create-project": "Stwórz projekt",
-      "create": "Utwórz projekt",
+      "create": "Stwórz projekt",
       "placeholder": "Wpisz nazwę projektu...",
       "what-is-project": "Co to jest projekt?",
       "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
@@ -307,7 +307,7 @@
         "loading-organization": "Błąd podczas ładowania organizacji.",
         "no-organization": "Brak przypisanej organizacji.",
         "project-exists": "Projekt o tej nazwie już istnieje.",
-        "creation-failed": "Nie udało się utworzyć projektu."
+        "creation-failed": "Nie udało się stworzyć projektu."
       }
     },
     "errors": {
@@ -521,18 +521,18 @@
   },
   "projects": {
     "title": "Projekty",
-    "create": "Utwórz projekt",
+    "create": "Stwórz projekt",
     "placeholder": "Nazwa projektu",
     "what-is-project": "Czym jest projekt?",
     "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
     "cancel": "Anuluj",
-    "create-project": "Utwórz projekt",
+    "create-project": "Stwórz projekt",
     "error": {
       "title-required": "Tytuł jest wymagany",
       "loading-organization": "Błąd podczas ładowania organizacji",
       "no-organization": "Brak organizacji",
       "project-exists": "Projekt o takiej nazwie już istnieje",
-      "creation-failed": "Nie udało się utworzyć projektu"
+      "creation-failed": "Nie udało się stowrzyć projektu"
     },
     "success": {
       "created": "Projekt został utworzony"

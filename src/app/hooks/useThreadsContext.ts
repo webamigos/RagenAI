@@ -1,13 +1,11 @@
-import { useContext } from 'react';
-
-import { ThreadsContext } from '../../context/ThreadsContext';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 export const useThreadsContext = () => {
-  const context = useContext(ThreadsContext);
-  if (!context) {
-    throw new Error(
-      'useThreadsContext must be used within a ThreadsContextProvider'
-    );
-  }
-  return context;
+  const dispatch = useAppDispatch();
+  const state = useAppSelector((state) => state.threads);
+
+  return {
+    dispatch,
+    state,
+  };
 };

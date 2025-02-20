@@ -6,8 +6,10 @@ import { logger } from '@/app/lib/utils/logger';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { EmptyProjectsState } from './components/EmptyProjectsState';
 import { ProjectItem } from './components/ProjectItem';
-import { useThreadsContext } from '@/app/hooks/useThreadsContext';
 import { createThreadAction } from '@/app/lib/actions/threads';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { addThread } from '@/store/features/threads/threadsSlice';
+import { ThreadHistoryResponse } from '@/app/contracts/Message';
 
 import type { ProjectsListProps, ThreadType } from './types';
 import { CreateProject } from './components/CreateProject';
@@ -23,39 +25,40 @@ export const ProjectsList = ({
   const t = useTranslations('sidebar.projects');
   const { closeSidebar } = useSidebar();
   const router = useRouter();
-
-  const {
-    state: { userThreads },
-    dispatch,
-  } = useThreadsContext();
+  const dispatch = useAppDispatch();
+  const { userThreads } = useAppSelector((state) => state.threads);
 
   const projectsWithUpdatedThreads = projects?.map((project) => {
     const projectThreads = userThreads.filter(
-      (thread) =>
+      (thread: ThreadHistoryResponse) =>
         project.threads.some((pt) => pt.public_id === thread.public_id) ||
         thread.project_id === project.id
     );
 
-    const updatedThreads = projectThreads.map((thread) => {
-      const existingThread = project.threads.find(
-        (pt) => pt.public_id === thread.public_id
-      );
+    const updatedThreads = projectThreads.map(
+      (thread: ThreadHistoryResponse) => {
+        const existingThread = project.threads.find(
+          (pt) => pt.public_id === thread.public_id
+        );
 
-      const threadType: ThreadType = {
-        ...existingThread,
-        public_id: thread.public_id,
-        created_at: thread.created_at,
-        messages: thread.messages.map((msg) => ({ content: msg.content })),
-        project_id: project.id,
-        id: existingThread?.id || thread.public_id,
-        visitor_id: existingThread?.visitor_id || null,
-        preferred_communication_type:
-          existingThread?.preferred_communication_type ||
-          ThreadCommunicationType.TEXT,
-      };
+        const threadType: ThreadType = {
+          ...existingThread,
+          public_id: thread.public_id,
+          created_at: thread.created_at,
+          messages: thread.messages.map((msg: { content: string }) => ({
+            content: msg.content,
+          })),
+          project_id: project.id,
+          id: existingThread?.id || thread.public_id,
+          visitor_id: existingThread?.visitor_id || null,
+          preferred_communication_type:
+            existingThread?.preferred_communication_type ||
+            ThreadCommunicationType.TEXT,
+        };
 
-      return threadType;
-    });
+        return threadType;
+      }
+    );
 
     return {
       ...project,
@@ -72,15 +75,14 @@ export const ProjectsList = ({
 
       const result = await createThreadAction(project.id);
       if (result.success) {
-        dispatch({
-          type: 'ADD_THREAD',
-          payload: {
+        dispatch(
+          addThread({
             public_id: result.thread.public_id,
             project_id: project.id,
             messages: [],
             created_at: new Date(),
-          },
-        });
+          })
+        );
 
         router.push(
           `/projects/${project.public_id}/threads/${result.thread.public_id}`
@@ -94,6 +96,7 @@ export const ProjectsList = ({
       });
     }
   };
+
   return (
     <>
       <div className="mb-4">
