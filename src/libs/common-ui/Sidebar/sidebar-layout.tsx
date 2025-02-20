@@ -104,12 +104,12 @@ export function SidebarLayout({
     'flex flex-1 flex-col bg-primary-light dark:bg-primary-dark overflow-y-auto';
   const baseNavbarWrapperStyles = 'flex justify-end hidden lg:flex';
   const baseContentWrapperStyles =
-    'flex flex-1 h-full lg:rounded-lg lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
+    'flex flex-1 h-full lg:rounded-md lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
 
   return (
     <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-primary-dark dark:bg-primary-dark">
       {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-5 top-5 bottom-5 w-88 rounded-3xl bg-white dark:bg-secondary-dark max-lg:hidden">
+      <div className="fixed inset-y-0 w-80  bg-white dark:bg-secondary-dark max-lg:hidden">
         {sidebar}
       </div>
 
@@ -132,8 +132,8 @@ export function SidebarLayout({
       <main
         className={`${baseMainStyles} ${
           isMyProfile
-            ? 'pb-6 px-2.5 lg:ml-[22rem] lg:pt-2'
-            : 'relative justify-center pb-2 lg:ml-96 lg:pt-2 overflow-auto'
+            ? 'pb-6 px-2.5 lg:ml-[19rem] lg:pt-2'
+            : 'relative justify-center pb-2 lg:ml-[21rem] lg:pt-2 overflow-auto'
         }`}
       >
         <div

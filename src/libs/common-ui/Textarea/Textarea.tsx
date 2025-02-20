@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/20/solid';
 import type { FieldError } from 'react-hook-form';
 
+import { SpinnerSVG } from '../icons';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
 import { useVoiceInput } from '../../../app/hooks/useAudioRecording';
@@ -85,7 +86,6 @@ export const Textarea = forwardRef(
         onSend?.();
       }
     }, [isRecording]);
-    // }, [isRecording, value, onSend]); // FIXME: crashes the browser
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
@@ -117,7 +117,10 @@ export const Textarea = forwardRef(
     let onClick = null;
 
     if (showVoiceInput) {
-      if (isRecording) {
+      if (disabled && !value?.trim()) {
+        icon = <SpinnerSVG className="mb-1.5" aria-hidden="true" />;
+        onClick = undefined;
+      } else if (isRecording) {
         icon = (
           <StopIcon
             className="h-7 w-7 mb-1.5 text-red-500 hover:text-red-600 dark:text-red-400"
@@ -191,7 +194,7 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-2xl border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':

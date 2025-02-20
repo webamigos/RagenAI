@@ -6,13 +6,12 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role } from '@prisma/client';
+import { Role, MessageContentType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 import { type UserResource } from '@clerk/types';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { dailyMessageLimit } from '../../config';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
@@ -24,9 +23,9 @@ import {
   State,
 } from './reducer';
 import {
-  ChatResponseType,
   ChatType,
   type CreateMessageDto,
+  ChatResponseType,
 } from '../../contracts/Message';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -36,7 +35,7 @@ import { AssistantMode } from '@/app/contracts/Assistant';
 
 const { SET_MODE, SET_MODE_VOICE, SET_MESSAGE_PLAYED } = reducerActions;
 
-const { SET_INITIAL_LOAD, SET_LIMIT_LOCK, SET_MESSAGES } = sharedReducerActions;
+const { SET_INITIAL_LOAD, SET_MESSAGES } = sharedReducerActions;
 
 const { errorToast } = statusToast();
 
@@ -75,7 +74,8 @@ export const useAssistantLogic = (threadId: string) => {
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
-  const { dispatch: threadsDispatch } = useThreadsContext();
+  const { dispatch: threadsDispatch, state: threadsState } =
+    useThreadsContext();
   const isPublicAccess = pathname.includes('/public');
 
   const [state, dispatch] = useReducer(assistantReducer, initialState);
@@ -139,7 +139,7 @@ export const useAssistantLogic = (threadId: string) => {
       content: data.prompt,
       created_at: new Date(),
       mode: data.mode,
-      message_type: data.messageType || 'TEXT',
+      message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
@@ -163,6 +163,7 @@ export const useAssistantLogic = (threadId: string) => {
         responseType: state.responseType,
         streamedMessage: state.streamedMessage,
         threadsDispatch,
+        threadsState: threadsState.userThreads,
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,
@@ -176,13 +177,19 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const handleResponseType = () => {
-    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.VOICE });
+    dispatch({
+      type: SET_MODE_VOICE,
+      payload: ChatResponseType.VOICE,
+    });
     setIsRecording(true);
   };
 
   const closeVoiceMode = () => {
     setIsRecording(false);
-    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.TEXT });
+    dispatch({
+      type: SET_MODE_VOICE,
+      payload: ChatResponseType.TEXT,
+    });
   };
 
   const isLocked = () => {
@@ -210,14 +217,19 @@ export const useAssistantLogic = (threadId: string) => {
   useEffect(() => {
     const initialMessageKey = `thread_${threadId}_initial_message`;
     const initialMessage = localStorage.getItem(initialMessageKey);
+    const initialMessageType = sessionStorage.getItem(
+      'initial_message_type'
+    ) as MessageContentType;
 
     if (initialMessage) {
       localStorage.removeItem(initialMessageKey);
+      sessionStorage.removeItem('initial_message_type');
 
       onSubmit({
         prompt: initialMessage,
         mode: ChatType.CONVERSATION,
-        messageType: 'TEXT',
+        messageType: initialMessageType || MessageContentType.TEXT,
+        voiceDurationSeconds: 0,
       });
     }
   }, [threadId]);

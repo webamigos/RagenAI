@@ -71,7 +71,7 @@ export const Plan = ({ plan, displayOnly }: Props) => {
   return (
     <div
       key={plan.id}
-      className="rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6"
+      className="rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 p-6"
     >
       <div className="flex flex-col space-y-4">
         <div className="flex items-center space-x-4">

@@ -1,1 +1,1 @@
-export { ProfileAndOrganizationTabs } from './ProfileAndOrganizationTabs';
+export { UserAndOrganizationNavigation } from './UserAndOrganizationNavigation';

@@ -26,7 +26,7 @@ export const EditablePrompt = () => {
   );
 
   const { successToast, errorToast } = statusToast();
-  const t = useTranslations('editable-prompt');
+  const t = useTranslations('assistant-settings.editable-prompt');
 
   const {
     register,
@@ -62,7 +62,7 @@ export const EditablePrompt = () => {
     try {
       const { editablePrompt } = data;
       if (!isDirty) {
-        errorToast({ message: 'No changes detected in the prompt' });
+        errorToast({ message: 'no-changes-detected' });
         return;
       }
 
@@ -71,16 +71,16 @@ export const EditablePrompt = () => {
       const { success } = await saveSetting(SettingsType.prompt, fullPrompt);
 
       if (success) {
-        successToast({ message: 'Prompt updated successfully' });
+        successToast({ message: 'prompt-updated-successfully' });
         reset({ editablePrompt });
       }
     } catch (err) {
-      errorToast({ message: 'Error updating prompt' });
+      errorToast({ message: 'failed-to-update-prompt' });
     }
   };
 
   return (
-    <Card size="full" className="py-4 max-h-fit" title={t('title')}>
+    <Card size="full" className="py-4 max-h-fit mb-3" title={t('title')}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Textarea
@@ -91,6 +91,7 @@ export const EditablePrompt = () => {
             errorMessage={errors.editablePrompt?.message}
             label={t('label')}
             className="mt-1 block w-full dark:bg-accent-dark-500 border border-primary-blue-500 dark:border-gray-600 shadow-none focus:ring-primary-blue-500 focus:border-primary-blue-500 sm:text-sm"
+            showVoiceInput={false}
           />
         </div>
         <Button

@@ -250,7 +250,7 @@ export const convertAndStoreDocument = async ({
           previous_chunk_id: index > 0 ? index - 1 : -1,
           next_chunk_id: index < docs.length - 1 ? index + 1 : -1,
           status: 'active',
-          embedding_model: embeddingModel.modelName,
+          embedding_model: embeddingModel.model,
         };
 
         if (vectorStoreType === 'qdrant') {

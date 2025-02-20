@@ -50,7 +50,7 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
         </div>
         <div className="p-3">
           <CloseButton
-            className="block rounded-lg py-2 px-3 transition hover:bg-white/5"
+            className="block rounded-md py-2 px-3 transition hover:bg-white/5"
             as={Link}
             href="/my-profile"
           >
@@ -62,7 +62,7 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
         </div>
         <div className="p-3">
           <CloseButton
-            className="block rounded-lg py-2 px-3 transition hover:bg-white/5"
+            className="block rounded-md py-2 px-3 transition hover:bg-white/5"
             as={Link}
             href="/support"
           >

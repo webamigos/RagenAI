@@ -36,7 +36,15 @@
       "verification-code-sent": "Verification code has been sent to the email address provided",
       "resend-failed": "Error sending code"
     },
-    "or-continue-with": "Or continue with"
+    "or-continue-with": "Or continue with",
+    "forgot-password": "Forgot password?",
+    "i-agree-to": "I agree to",
+    "terms-of-use": "terms of use",
+    "validation": {
+      "terms": "You need to accept terms of use",
+      "email": "Invalid email",
+      "password": "Invalid password"
+    }
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -45,7 +53,7 @@
     "to-continue": "to continue to Ragen Assistant",
     "Dont-have-an-account": "Dont have an account?",
     "or": "or",
-    "Forgot-password": "Forgot your password?",
+    "forgot-password": "Forgot password?",
     "invalid-email": "Email is invalid",
     "invalid-password": "Password should have at least 8 characters",
     "sign-in-to-account": "Sign in to your account",
@@ -55,7 +63,7 @@
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
-    "Provide-email": "Please provide your email address",
+    "Provide-email": "Your email",
     "Send-reset-code": "Send password reset code",
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
@@ -162,15 +170,11 @@
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
-    "saved": "Saved",
-    "model-updated-successfully": "Model updated successfully"
+    "saved": "Saved"
   },
   "error-toast": {
     "no-user-id": "user id missing",
     "error-during-deleting-file": "Error deleting document",
-    "failed-to-update-temperature": "Failed to update temperature:",
-    "failed-to-fetch-settings": "Failed to fetch settings:",
-    "failed-to-update-max-documents": "Failed to update max document to retreive:",
     "fetching-docs-error": "Error fetching documents",
     "no-files": "No files"
   },
@@ -221,6 +225,43 @@
     "send-error": "Error creating document",
     "send": "Send"
   },
+  "assistant-settings": {
+    "prompt-assistant-settings": "Assistant settings",
+    "model-select": {
+      "title": "Language model",
+      "failed-to-fetch-model": "Error fetching language model",
+      "failed-to-update-model": "Error updating language model",
+      "failed-to-update-temperature": "Error updating temperature",
+      "model-updated-successfully": "Language model updated successfully"
+    },
+    "max-documents-to-retreive": {
+      "title": "Max. number of search snippets",
+      "failed-to-update-max-documents": "Error updating max. search snippets:",
+      "failed-to-fetch-settings": "Error fetching settings:"
+    },
+    "set-temperature": {
+      "title": "Response creativity level",
+      "failed-to-update-temperature": "Error updating temperature:",
+      "failed-to-fetch-settings": "Error fetching settings:"
+    },
+    "set-env": {
+      "title": "Set environment variables"
+    },
+    "editable-prompt": {
+      "title": "Assistant customization instructions",
+      "label": "Give the assistant a style or tone of response. Example: \"Respond professionally and matter-of-factly.\"",
+      "update": "Update",
+      "failed-to-update-prompt": "Error updating assistant customization instructions:",
+      "prompt-updated-successfully": "Updated",
+      "no-changes-detected": "No changes detected to assistant customization instructions"
+    },
+    "voice-mode-settings": {
+      "title": "Voice Mode Settings",
+      "voice-select": "Select Voice",
+      "voice-updated": "Voice updated successfully",
+      "voice-update-failed": "Failed to update voice"
+    }
+  },
   "manage-knowledge": {
     "create-document": "Create document",
     "documents-list": "List of documents",
@@ -246,6 +287,10 @@
       "today": "Today",
       "yesterday": "Yesterday",
       "older": "Older"
+    },
+    "projects": {
+      "title": "Projects",
+      "create-project": "Create Project"
     },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",
@@ -286,9 +331,6 @@
     "save-successfully": "API Key saved successfully",
     "failed-to-fetch": "Failed to fetch API Key"
   },
-  "set-temperature": {
-    "set-temperature": "Set temperature"
-  },
   "document-preview": {
     "document-not-found": "Document not found",
     "fetching-error": "An error occurred while downloading the document",
@@ -297,17 +339,6 @@
     "edit-successfully": "The document has been edited",
     "content-empty": "Document content cannot be empty",
     "title-empty": "Title cannot be empty"
-  },
-  "max-documents-to-retreive": {
-    "input-label": "Max fragments retrieved in search"
-  },
-  "model-select": {
-    "select-model": "Language model"
-  },
-  "editable-prompt": {
-    "title": "Assistant personalization instructions",
-    "label": "Set the assistant's response style or tone. Example: \"Respond professionally and concisely.\"",
-    "update": "Update"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "An account with this email already exists.",
@@ -467,7 +498,28 @@
   "useAudioRecorder": {
     "browser-not-compatibility": "Your browser does not support audio recording",
     "recognition-error": "Recognition error, try again",
-    "recording-error": "Error during recording, try again"
+    "recording-error": "Error during recording, try again",
+    "microphone-permission-denied": "No access to microphone. Check browser permissions."
+  },
+
+  "projects": {
+    "title": "Projects",
+    "create-project": "Create Project",
+    "create": "Create Project",
+    "placeholder": "Enter project name...",
+    "what-is-project": "What is a project?",
+    "project-description": "A project allows you to manage tasks and organize team work.",
+    "cancel": "Cancel",
+    "success": {
+      "created": "Project has been successfully created."
+    },
+    "error": {
+      "title-required": "Title is required",
+      "loading-organization": "Error loading organization",
+      "no-organization": "No organization",
+      "project-exists": "Project with this name already exists",
+      "creation-failed": "Failed to create project"
+    }
   },
   "voice-mode": {
     "recording": "Recording...",

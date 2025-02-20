@@ -36,7 +36,15 @@
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
     },
-    "or-continue-with": "Lub zaloguj się za pomocą"
+    "or-continue-with": "Lub zaloguj się za pomocą",
+    "forgot-password": "Nie pamiętasz hasła?",
+    "i-agree-to": "Zgadzam się z",
+    "terms-of-use": "regulaminem",
+    "validation": {
+      "terms": "Musisz zaakceptować warunki użytkowania",
+      "email": "Nieprawidłowy adres email",
+      "password": "Hasło musi mieć co najmniej 8 znaków"
+    }
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -45,7 +53,7 @@
     "to-continue": "aby przejść do Ragen Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
-    "Forgot-password": "Zapomniałeś hasła?",
+    "forgot-password": "Nie pamiętasz hasła?",
     "invalid-email": "Nieprawidłowy adres email",
     "invalid-password": "Hasło musi mieć co najmniej 8 znaków",
     "sign-in-to-account": "Zaloguj się do konta",
@@ -55,7 +63,7 @@
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
-    "Provide-email": "Proszę wprowadź swój adres email",
+    "Provide-email": "Twój email",
     "Send-reset-code": "Wyślij kod do resetowania hasła",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
@@ -162,14 +170,12 @@
   "success-toast": {
     "copied": "Skopiowano!",
     "deleted": "Usunięto!",
-    "saved": "Zapisano!",
-    "model-updated-successfully": "Model zaktualizowany pomyślnie"
+    "saved": "Zapisano!"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
     "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
     "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
-    "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
     "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:",
     "fetching-docs-error": "Błąd podczas pobierania dokumentów",
     "no-files": "Brak plików"
@@ -221,6 +227,43 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "assistant-settings": {
+    "prompt-assistant-settings": "Ustawienia asystenta",
+    "model-select": {
+      "title": "Model językowy",
+      "failed-to-fetch-model": "Błąd podczas pobierania modelu językowego",
+      "failed-to-update-model": "Błąd podczas aktualizacji modelu językowego",
+      "failed-to-update-temperature": "Błąd podczas aktualizacji temperatury",
+      "model-updated-successfully": "Model językowy zaktualizowany pomyślnie"
+    },
+    "max-documents-to-retreive": {
+      "title": "Maks. liczba fragmentów wyszukiwania",
+      "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
+      "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    },
+    "set-temperature": {
+      "title": "Poziom kreatywności odpowiedzi",
+      "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+      "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    },
+    "set-env": {
+      "title": "Ustaw zmienne środowiskowe"
+    },
+    "editable-prompt": {
+      "title": "Instrukcje personalizacji asystenta",
+      "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
+      "update": "Zaktualizuj",
+      "failed-to-update-prompt": "Błąd podczas aktualizacji instrukcji personalizacji asystenta:",
+      "prompt-updated-successfully": "Zaktualizowano",
+      "no-changes-detected": "Brak zmian w instrukcji personalizacji asystenta"
+    },
+    "voice-mode-settings": {
+      "title": "Ustawienia Trybu Głosowego",
+      "voice-select": "Wybierz Głos",
+      "voice-updated": "Głos został zaktualizowany",
+      "voice-update-failed": "Nie udało się zaktualizować głosu"
+    }
+  },
   "manage-knowledge": {
     "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
@@ -246,6 +289,26 @@
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
+    },
+
+    "projects": {
+      "title": "Projekty",
+      "create-project": "Stwórz projekt",
+      "create": "Utwórz projekt",
+      "placeholder": "Wpisz nazwę projektu...",
+      "what-is-project": "Co to jest projekt?",
+      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
+      "cancel": "Anuluj",
+      "success": {
+        "created": "Projekt został pomyślnie utworzony."
+      },
+      "error": {
+        "title-required": "Nazwa projektu jest wymagana.",
+        "loading-organization": "Błąd podczas ładowania organizacji.",
+        "no-organization": "Brak przypisanej organizacji.",
+        "project-exists": "Projekt o tej nazwie już istnieje.",
+        "creation-failed": "Nie udało się utworzyć projektu."
+      }
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
@@ -286,9 +349,6 @@
     "save-successfully": "Klucz API przypisano do Twojego konta!",
     "failed-to-fetch": "Błąd podczas pobierania kluacza API"
   },
-  "set-temperature": {
-    "set-temperature": "Poziom kreatywności odpowiedzi"
-  },
   "document-preview": {
     "document-not-found": "Nie znaleziono dokumentu",
     "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
@@ -297,17 +357,6 @@
     "edit-successfully": "Dokument został zedytowany",
     "content-empty": "Treść dokumentu nie może być pusta",
     "title-empty": "Tytuł nie może być pusty"
-  },
-  "max-documents-to-retreive": {
-    "input-label": "Maks. liczba fragmentów wyszukiwania"
-  },
-  "model-select": {
-    "select-model": "Model językowy"
-  },
-  "editable-prompt": {
-    "title": "Instrukcje personalizacji asystenta",
-    "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
-    "update": "Zaktualizuj"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",
@@ -467,7 +516,27 @@
   "useAudioRecorder": {
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
     "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
-    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie"
+    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie",
+    "microphone-permission-denied": "Brak dostępu do mikrofonu. Sprawdź uprawnienia przeglądarki."
+  },
+  "projects": {
+    "title": "Projekty",
+    "create": "Utwórz projekt",
+    "placeholder": "Nazwa projektu",
+    "what-is-project": "Czym jest projekt?",
+    "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
+    "cancel": "Anuluj",
+    "create-project": "Utwórz projekt",
+    "error": {
+      "title-required": "Tytuł jest wymagany",
+      "loading-organization": "Błąd podczas ładowania organizacji",
+      "no-organization": "Brak organizacji",
+      "project-exists": "Projekt o takiej nazwie już istnieje",
+      "creation-failed": "Nie udało się utworzyć projektu"
+    },
+    "success": {
+      "created": "Projekt został utworzony"
+    }
   },
   "voice-mode": {
     "recording": "Nagrywanie...",

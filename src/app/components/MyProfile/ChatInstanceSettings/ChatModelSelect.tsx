@@ -16,9 +16,7 @@ export const ChatModelSelect = ({}) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { successToast, errorToast } = statusToast();
-  const successMessage = useTranslations('success-toast');
-  const errorMessage = useTranslations('error-toast');
-  const t = useTranslations('model-select');
+  const t = useTranslations('assistant-settings.model-select');
 
   useEffect(() => {
     const fetchModel = async () => {
@@ -30,7 +28,7 @@ export const ChatModelSelect = ({}) => {
         }
       } catch (error) {
         errorToast({
-          message: `${errorMessage('failed-to-fetch-model')} ${error}`,
+          message: `${t('failed-to-fetch-model')} ${error}`,
         });
       } finally {
         setIsLoading(false);
@@ -49,17 +47,17 @@ export const ChatModelSelect = ({}) => {
     try {
       const { success } = await saveSetting(SettingsType.model, newModel);
       if (success) {
-        successToast({ message: successMessage('model-updated-successfully') });
+        successToast({ message: t('model-updated-successfully') });
       }
     } catch (error) {
       errorToast({
-        message: `${errorMessage('failed-to-update-model')} ${error}`,
+        message: `${t('failed-to-update-model')} ${error}`,
       });
     }
   };
 
   return (
-    <Card title={t('select-model')} size="full">
+    <Card title={t('title')} size="full">
       <div className="mt-4">
         {isLoading ? (
           <div

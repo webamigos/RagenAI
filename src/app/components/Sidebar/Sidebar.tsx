@@ -16,11 +16,11 @@ import { usePathname } from '@/i18n/routing';
 import { UserThreadsHistory } from './ThreadsHistory/UserThreadsHistory';
 import { Header } from './Header';
 import { useSidebarLogic } from './useSidebarLogic';
-import { ProfileAndOrganizationTabs } from './MyProfileSection';
+import { UserAndOrganizationNavigation } from './MyProfileSection';
 import { OrganizationRoles } from '@/app/contracts/User';
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
 import { DesktopNavbar } from './DesktopNavbar';
 import { CreateThreadButton } from './CreateThreadButton';
+import { ProjectsList } from './Projects/ProjectsList';
 
 type Props = {
   children: React.ReactNode;
@@ -32,6 +32,7 @@ export const Sidebar = ({ children, membership }: Props) => {
     error,
     locale,
     hasMore,
+    projects,
     userEmail,
     isLoading,
     userAvatar,
@@ -43,8 +44,11 @@ export const Sidebar = ({ children, membership }: Props) => {
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,
+    isCreateModalOpen,
     handleCloseThread,
+    setIsCreateModalOpen,
     getSidebarThreadsError,
+    refreshProjects,
   } = useSidebarLogic();
   const pathname = usePathname();
   const isError = error ? true : false;
@@ -105,18 +109,28 @@ export const Sidebar = ({ children, membership }: Props) => {
                   <Button isError={isError} onClick={refetchThreads} />
                 </div>
               ) : (
-                <UserThreadsHistory
-                  error={error}
-                  hasMore={hasMore}
-                  isLoading={isLoading}
-                  isSignedIn={isSignedIn}
-                  userThreads={userThreads}
-                  activeThread={activeThread}
-                  isThreadsLoaded={isThreadsLoaded}
-                />
+                <>
+                  <ProjectsList
+                    isLoading={isThreadLoading}
+                    projects={projects}
+                    setIsCreateModalOpen={setIsCreateModalOpen}
+                    activeThread={activeThread}
+                    isCreateModalOpen={isCreateModalOpen}
+                    refreshProjects={refreshProjects}
+                  />
+                  <UserThreadsHistory
+                    error={error}
+                    hasMore={hasMore}
+                    isLoading={isLoading}
+                    isSignedIn={isSignedIn}
+                    userThreads={userThreads}
+                    activeThread={activeThread}
+                    isThreadsLoaded={isThreadsLoaded}
+                  />
+                </>
               )
             ) : (
-              <ProfileAndOrganizationTabs membership={membership} />
+              <UserAndOrganizationNavigation membership={membership} />
             )}
           </SidebarBody>
         </div>

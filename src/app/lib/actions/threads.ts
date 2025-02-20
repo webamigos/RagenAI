@@ -13,6 +13,7 @@ type ThreadAction =
       success: true;
       thread: {
         public_id: Thread['public_id'];
+        project_id?: number;
       };
     }
   | {
@@ -20,12 +21,20 @@ type ThreadAction =
       errorMessage: string;
     };
 
-export const createThreadAction = async (): Promise<ThreadAction> => {
+export const createThreadAction = async (
+  projectId?: number
+): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
-    const thread = await createNewOpenAIThread();
+    const thread = await createNewOpenAIThread(null, projectId);
 
-    return { success: true, thread };
+    return {
+      success: true,
+      thread: {
+        public_id: thread.public_id,
+        project_id: thread.project_id,
+      },
+    };
   } catch (error) {
     logger.error({ err: error }, 'Cannot create thread');
     return { success: false, errorMessage: 'Cannot create thread' };

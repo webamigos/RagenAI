@@ -17,7 +17,7 @@ export const fetchOrganizationDefaultProject = async (
 ) => {
   return await db.project.findFirstOrThrow({
     where: {
-      organization_id: systemOrgId,
+      internal_organization_id: systemOrgId,
     },
   });
 };
@@ -36,7 +36,7 @@ export const createOrganizationWithDefaultProject = async (
     await tx.project.create({
       data: {
         title: 'Default',
-        organization_id: organization.id,
+        internal_organization_id: organization.id,
       },
     });
 

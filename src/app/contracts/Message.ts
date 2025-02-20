@@ -51,6 +51,7 @@ export type ThreadHistoryResponse = {
   created_at: Date;
   public_id: string;
   messages: MessageDtoWithoutPublicId[];
+  project_id?: number | null;
 };
 
 export type StreamedMessageDto = {
