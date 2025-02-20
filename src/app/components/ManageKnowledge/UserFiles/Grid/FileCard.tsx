@@ -31,13 +31,13 @@ export const FileCard = ({
   const fileIcon = getFileIcon(file_type);
   const formattedCreatedAt = created_at
     ? format(new Date(created_at), 'yyyy-MM-dd HH:mm')
-    : 'N/A';
+    : '-';
   const formattedUpdatedAt = updated_at
     ? format(new Date(updated_at), 'yyyy-MM-dd HH:mm')
-    : 'N/A';
+    : '-';
 
   return (
-    <div className="p-4 min-w-48 w-full h-48 pb-10 bg-slate-100 dark:bg-accent-dark-500 hover:bg-slate-200 rounded-lg shadow relative group">
+    <div className="p-4 min-w-48 w-full h-48 pb-10 bg-slate-100 dark:bg-accent-dark-500 hover:bg-slate-200 rounded-md shadow relative group">
       <div className="h-6 flex items-center justify-between">
         <p className="mr-2">{fileIcon}</p>
         <Tooltip
@@ -52,7 +52,7 @@ export const FileCard = ({
           <InformationCircle className="cursor-pointer" />
         </button>
       </div>
-      <div className="flex w-full justify-center bg-white dark:bg-accent-dark-lightness rounded-lg mt-2 p-2">
+      <div className="flex w-full justify-center bg-white dark:bg-accent-dark-lightness rounded-md mt-2 p-2">
         <div className="flex items-center h-28 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <ToolbarActionsMenu
             toggleModal={toggleModal}
