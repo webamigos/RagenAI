@@ -1,10 +1,19 @@
-import { useContext } from 'react';
-import { SidebarContext } from '@/context/SidebarContext';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  closeSidebar as closeAction,
+  openSidebar as openAction,
+} from '@/store/features/sidebar/sidebarSlice';
 
 export const useSidebar = () => {
-  const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider');
-  }
-  return context;
+  const dispatch = useAppDispatch();
+  const isOpen = useAppSelector((state) => state.sidebar.isOpen);
+
+  const openSidebar = () => dispatch(openAction());
+  const closeSidebar = () => dispatch(closeAction());
+
+  return {
+    isOpen,
+    openSidebar,
+    closeSidebar,
+  };
 };

@@ -4,7 +4,12 @@ import React, { ComponentProps } from 'react';
 import * as Headless from '@headlessui/react';
 
 import { usePathname } from '@/i18n/routing';
-import { useSidebar } from '@/app/hooks/useSidebar';
+// import { useSidebar } from '@/app/hooks/useSidebar';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import {
+  closeSidebar,
+  openSidebar,
+} from '@/store/features/sidebar/sidebarSlice';
 
 import { classMerge } from '../utils/cn';
 import { NavbarItem } from '../Navbar';
@@ -48,7 +53,8 @@ function CloseMenuIcon() {
 }
 
 function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
-  const { isSidebarOpen, closeSidebar } = useSidebar();
+  const dispatch = useAppDispatch();
+  const isOpen = useAppSelector((state) => state.sidebar.isOpen);
 
   const tabClasses = [
     'absolute w-92 h-5 create-organization-tab-mobile top-[15.5rem]',
@@ -58,8 +64,8 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
 
   return (
     <Headless.Dialog
-      open={isSidebarOpen}
-      onClose={closeSidebar}
+      open={isOpen}
+      onClose={() => dispatch(closeSidebar())}
       className="lg:hidden"
     >
       <Headless.DialogBackdrop
@@ -94,7 +100,8 @@ export function SidebarLayout({
   navbar?: React.ReactNode;
   sidebar: React.ReactNode;
 }>) {
-  const { openSidebar } = useSidebar();
+  const dispatch = useAppDispatch();
+  const openSidebarFn = () => dispatch(openSidebar());
   const pathname = usePathname();
 
   const isMyProfile =
@@ -120,7 +127,7 @@ export function SidebarLayout({
       <header className="flex items-center px-4 lg:hidden bg-primary-light dark:bg-primary-dark">
         <NavbarItem
           className="relative"
-          onClick={openSidebar}
+          onClick={openSidebarFn}
           aria-label="Open navigation"
         >
           <OpenMenuIcon className="mt-4 text-secondary-dark dark:text-white" />

@@ -20,7 +20,6 @@ import {
   StreamedMessageDto,
   ThreadHistoryResponse,
 } from '@/app/contracts/Message';
-import { threadsReducer } from '@/context/ThreadsContext';
 import axios, { AxiosError } from 'axios';
 import { type UserResource } from '@clerk/types';
 import {
@@ -37,6 +36,9 @@ import { StatusCodes } from 'http-status-codes';
 import { type Action as PublicAssistantReducerAction } from '@/app/[locale]/public/components/Assistant/publicAssistantReducer';
 import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';
+import { AppDispatch } from '@/store';
+import { setMessages } from '@/store/features/assistant/assistantSlice';
+import { addThread } from '@/store/features/threads/threadsSlice';
 
 const {
   ADD_MESSAGE,
@@ -53,13 +55,11 @@ type CommonConfig = {
   messages: MessageDto[];
   userMessage: MessageDto;
   userMessageId: string;
-  threadsState: ThreadHistoryResponse[];
   t: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
   threadId: Thread['public_id'];
   responseType: ChatResponseType;
-  threadsDispatch: Dispatch<ReducerAction<typeof threadsReducer>>;
   data: CreateMessageDto;
   scrollFn: () => void;
   streamedMessage: StreamedMessageDto | null;
@@ -67,7 +67,9 @@ type CommonConfig = {
   promptFormRef: RefObject<PromptFormRef>;
   organizationId?: string;
   chatType?: ChatType;
+  reduxDispatch?: AppDispatch;
 };
+
 type HandleAssistantStreamConfig =
   | ({
       // internal
@@ -75,6 +77,8 @@ type HandleAssistantStreamConfig =
       dispatch: Dispatch<InternalAssistantReducerAction>;
       user: UserResource | undefined | null;
       organizationId?: undefined;
+      threadsState: ThreadHistoryResponse[];
+      threadsDispatch: AppDispatch;
     } & CommonConfig)
   | ({
       // public
@@ -82,6 +86,8 @@ type HandleAssistantStreamConfig =
       dispatch: Dispatch<PublicAssistantReducerAction>;
       user?: undefined;
       organizationId: string;
+      threadsState?: ThreadHistoryResponse[];
+      threadsDispatch?: AppDispatch;
     } & CommonConfig);
 
 export const handleAssistantStream = async ({
@@ -105,8 +111,12 @@ export const handleAssistantStream = async ({
   promptFormRef,
   chatType,
   user,
+  reduxDispatch,
 }: HandleAssistantStreamConfig) => {
   dispatch({ type: ADD_MESSAGE, payload: userMessage });
+  if (reduxDispatch) {
+    reduxDispatch(setMessages([...messages, userMessage]));
+  }
   dispatch({ type: SET_IS_ERROR, payload: false });
   dispatch({
     type: SET_MESSAGE_LOADING,
@@ -126,7 +136,7 @@ export const handleAssistantStream = async ({
     // Adds assistant message to db
     // And stream progress using Server Sent Events format
 
-    const currentThread = threadsState.find(
+    const currentThread = threadsState?.find(
       (thread) => thread.public_id === threadId
     );
     const newThread = {
@@ -136,10 +146,9 @@ export const handleAssistantStream = async ({
       project_id: currentThread?.project_id,
     };
 
-    threadsDispatch({
-      type: 'ADD_THREAD',
-      payload: newThread,
-    });
+    if (threadsDispatch) {
+      threadsDispatch(addThread(newThread));
+    }
 
     let streamUrl = '';
     if (mode === AssistantMode.INTERNAL) {

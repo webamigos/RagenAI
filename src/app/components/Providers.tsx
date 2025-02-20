@@ -2,6 +2,8 @@
 
 import { ThemeProvider, useTheme } from 'next-themes';
 import { useEffect } from 'react';
+import { Provider } from 'react-redux';
+import { store } from '@/store';
 
 type Props = {
   readonly children: React.ReactNode;
@@ -33,11 +35,13 @@ function ThemeWatcher() {
 
 export function Providers({ children }: Props) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system">
-      <>
-        <ThemeWatcher />
-        {children}
-      </>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider attribute="class" defaultTheme="system">
+        <>
+          <ThemeWatcher />
+          {children}
+        </>
+      </ThemeProvider>
+    </Provider>
   );
 }
