@@ -1,14 +1,10 @@
-import {
-  useReducer,
-  useEffect,
-  useRef,
-  startTransition,
-  useState,
-} from 'react';
+import { useReducer, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role, MessageContentType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 import { type UserResource } from '@clerk/types';
+import { useDispatch } from 'react-redux';
+import { setRecording } from '@/store/features/voice/voiceSlice';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
@@ -79,11 +75,11 @@ export const useAssistantLogic = (threadId: string) => {
   const isPublicAccess = pathname.includes('/public');
 
   const [state, dispatch] = useReducer(assistantReducer, initialState);
+  const reduxDispatch = useDispatch();
 
   const isGlobalLoading =
     !state.isError && (state.isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
-  const [isRecording, setIsRecording] = useState(false);
 
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,11 +177,11 @@ export const useAssistantLogic = (threadId: string) => {
       type: SET_MODE_VOICE,
       payload: ChatResponseType.VOICE,
     });
-    setIsRecording(true);
+    reduxDispatch(setRecording(true));
   };
 
   const closeVoiceMode = () => {
-    setIsRecording(false);
+    reduxDispatch(setRecording(false));
     dispatch({
       type: SET_MODE_VOICE,
       payload: ChatResponseType.TEXT,
@@ -253,7 +249,6 @@ export const useAssistantLogic = (threadId: string) => {
     isLocked,
     dispatch,
     promptFormRef,
-    isRecording,
     closeVoiceMode,
     setVoiceMessageAsPlayed,
     handleVoiceResult,
