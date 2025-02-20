@@ -7,6 +7,7 @@ import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
 import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { PropsWihLocale } from '@/app/lib/types/types';
+import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
@@ -42,15 +43,16 @@ export default function SignInPage() {
             <LoginForm />
 
             <SocialAuthOptions isSignUp={false} />
+
+            <ForgotPasswordLink label={t('forgot-password')} />
           </div>
         </div>
       </div>
-      <div className="relative hidden lg:block lg:w-1/2">
+      <div className="relative hidden w-0 flex-1 lg:block">
         <Image
-          className="absolute inset-0 w-full h-full object-cover dark:opacity-10 opacity-20"
-          src="/assets/robot-3.png"
+          className="absolute inset-0 w-full h-full object-cover dark:opacity-20 opacity-30"
+          src="/assets/documents_1.jpeg"
           fill
-          sizes="(max-width: 768px) 0px, 50vw"
           alt=""
         />
       </div>

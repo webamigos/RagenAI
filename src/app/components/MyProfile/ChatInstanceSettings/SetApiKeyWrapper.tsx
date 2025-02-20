@@ -6,7 +6,7 @@ import { SetApiKeys } from './SetApiKeys';
 export const SetApiKeyWrapper = () => {
   const t = useTranslations('set-openai-api-key');
   return (
-    <Card title={t('set-env')} size="full" className="mb-5">
+    <Card title={t('set-env')} size="full">
       <SetApiKeys />
     </Card>
   );

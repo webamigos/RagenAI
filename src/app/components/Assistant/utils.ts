@@ -1,9 +1,9 @@
 import { SseMessageError } from '@/app/contracts/Events';
-import type { ErrorEvent } from './types';
+import { type TranslationFn, type ErrorEvent } from './types';
 
 export function getErrorMessage(
   event: ErrorEvent,
-  t: (key: string, values?: Record<string, any>) => string
+  t: TranslationFn
 ): string | null {
   const defaultErrorMessage = null;
 

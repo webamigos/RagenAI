@@ -6,57 +6,38 @@ import {
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
-import { StatusCodes } from 'http-status-codes';
-import { AxiosError } from 'axios';
-import { Role } from '@prisma/client';
+import { Role, MessageContentType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
+import { type UserResource } from '@clerk/types';
 
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
-import { dailyMessageLimit } from '../../config';
-import { getUserMessages, sendMessage, deleteUserMessage } from '../../actions';
 import { useApi } from '../../hooks/useApi';
 import { useThreadsContext } from '../../hooks/useThreadsContext';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
+import { fetchMessagesFromApi } from '../../lib/services/api';
 import {
-  checkVisitorVisits,
-  fetchMessagesFromApi,
-} from '../../lib/services/api';
-
+  assistantReducer,
+  reducerActions,
+  sharedReducerActions,
+  State,
+} from './reducer';
 import {
-  ChatResponseType,
   ChatType,
   type CreateMessageDto,
+  ChatResponseType,
 } from '../../contracts/Message';
-import {
-  type State,
-  type Action,
-  reducerActions,
-  type ErrorEvent,
-} from './types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
-import { getErrorMessage } from './utils';
+import { handleAssistantStream } from './handle-assistant-stream';
+import { AssistantMode } from '@/app/contracts/Assistant';
+
+const { SET_MODE, SET_MODE_VOICE, SET_MESSAGE_PLAYED } = reducerActions;
+
+const { SET_INITIAL_LOAD, SET_MESSAGES } = sharedReducerActions;
 
 const { errorToast } = statusToast();
-const {
-  SET_INITIAL_LOAD,
-  ADD_MESSAGE,
-  APPEND_TO_STREAMED_MESSAGE,
-  SET_LIMIT_LOCK,
-  SET_LOADING_TEXT,
-  SET_MESSAGES,
-  SET_MESSAGE_ERROR,
-  SET_MESSAGE_ID,
-  SET_MESSAGE_LOADING,
-  SET_STREAMED_MESSAGE,
-  SET_IS_ERROR,
-  REMOVE_MESSAGE,
-  SET_MODE,
-  SET_MODE_VOICE,
-  SET_MESSAGE_PLAYED,
-} = reducerActions;
 
 export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
@@ -92,88 +73,17 @@ export const useAssistantLogic = (threadId: string) => {
 
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
-  const { dispatch: threadsDispatch } = useThreadsContext();
+  const tApiEvents = useTranslations('api-events');
+  const { dispatch: threadsDispatch, state: threadsState } =
+    useThreadsContext();
   const isPublicAccess = pathname.includes('/public');
 
-  const [
-    {
-      isMessageLoading,
-      userMessageId,
-      mode,
-      isLimitLock,
-      messageLoadingText,
-      streamedMessage,
-      messages,
-      isError,
-      responseType,
-    },
-    dispatch,
-  ] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(assistantReducer, initialState);
 
-  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
+  const isGlobalLoading =
+    !state.isError && (state.isMessageLoading || isLoading);
   const promptFormRef = useRef<PromptFormRef>(null);
   const [isRecording, setIsRecording] = useState(false);
-
-  function reducer(state: State, action: Action): State {
-    switch (action.type) {
-      case SET_INITIAL_LOAD:
-        return { ...state, isInitialLoad: action.payload };
-      case SET_MESSAGE_LOADING:
-        return { ...state, isMessageLoading: action.payload };
-      case SET_MESSAGE_ID:
-        return { ...state, userMessageId: action.payload };
-      case SET_LIMIT_LOCK:
-        return { ...state, isLimitLock: action.payload };
-      case SET_LOADING_TEXT:
-        return { ...state, messageLoadingText: action.payload };
-      case SET_MESSAGE_ERROR:
-        return { ...state, isMessageError: action.payload };
-      case SET_STREAMED_MESSAGE:
-        return { ...state, streamedMessage: action.payload };
-      case APPEND_TO_STREAMED_MESSAGE:
-        return {
-          ...state,
-          streamedMessage: {
-            content:
-              (state.streamedMessage?.content || '') + action.payload.content,
-            runId: action.payload.run_id,
-            created_at:
-              state.streamedMessage?.created_at || new Date().toISOString(),
-          },
-        };
-      case SET_MESSAGES:
-        return { ...state, messages: action.payload };
-      case ADD_MESSAGE:
-        return {
-          ...state,
-          messages: [...state.messages, action.payload],
-        };
-      case SET_IS_ERROR:
-        return { ...state, isError: action.payload, isMessageLoading: false };
-      case REMOVE_MESSAGE:
-        return {
-          ...state,
-          messages: state.messages.filter(
-            (message) => message.public_id !== action.payload
-          ),
-        };
-      case SET_MODE:
-        return { ...state, mode: action.payload };
-      case SET_MODE_VOICE:
-        return { ...state, responseType: action.payload };
-      case SET_MESSAGE_PLAYED:
-        return {
-          ...state,
-          messages: state.messages.map((message) =>
-            message.public_id === action.payload
-              ? { ...message, voice_played: true }
-              : message
-          ),
-        };
-      default:
-        return state;
-    }
-  }
 
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -187,6 +97,7 @@ export const useAssistantLogic = (threadId: string) => {
     dispatch({ type: SET_INITIAL_LOAD, payload: true });
     try {
       const response = await fetchMessagesFromApi(threadId, id);
+
       if (response) {
         dispatch({ type: SET_INITIAL_LOAD, payload: false });
         dispatch({ type: SET_MESSAGES, payload: response.data });
@@ -212,117 +123,7 @@ export const useAssistantLogic = (threadId: string) => {
     }
   }, [threadId]);
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom();
-      const id = userVisitorId;
-      if (id) {
-        loadVisitorMessages(id);
-      }
-    }
-  }, [messages, userVisitorId]);
-
-  const loadVisitorMessages = async (id: string) => {
-    try {
-      if (isSignedIn) {
-        return;
-      }
-      const { data } = await checkVisitorVisits(id);
-      if (data.messages >= dailyMessageLimit) {
-        dispatch({ type: SET_LIMIT_LOCK, payload: true });
-      }
-    } catch (error) {
-      logger.error('Error loading visitor messages: %o', error);
-    }
-  };
-
-  const connectToStream = (userMessageId: string, mode: ChatType) => {
-    const eventSourceUrl = user
-      ? `/api/threads/${threadId}/${userMessageId}?mode=${mode}`
-      : `/api/guest-threads/${threadId}/${userMessageId}`;
-    const eventSource = new EventSource(eventSourceUrl);
-
-    let accumulatingMessage = '';
-
-    eventSource.addEventListener('message', (event) => {
-      const eventMessage = JSON.parse(event.data);
-      if (eventMessage.type === 'delta') {
-        const textChunk = eventMessage.payload.content;
-        const runId = eventMessage.payload.runId;
-        accumulatingMessage += textChunk;
-
-        dispatch({
-          type: APPEND_TO_STREAMED_MESSAGE,
-          payload: { content: textChunk, run_id: runId },
-        });
-
-        scrollToBottom();
-      } else if (eventMessage.type === 'message') {
-        if (accumulatingMessage.trim()) {
-          dispatch({
-            type: ADD_MESSAGE,
-            payload: {
-              public_id: eventMessage.payload.public_id,
-              role: eventMessage.payload.role,
-              content: accumulatingMessage,
-              created_at: eventMessage.payload.created_at,
-              run_id: eventMessage.payload.runId,
-              message_type: responseType,
-            },
-          });
-          dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-          dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-        }
-
-        accumulatingMessage = '';
-      }
-    });
-
-    eventSource.addEventListener('error', async (event: ErrorEvent) => {
-      eventSource.close();
-      const errorMessage = getErrorMessage(event, tChainErrors);
-      const shouldIgnoreError = !errorMessage && !streamedMessage;
-      if (shouldIgnoreError) {
-        return;
-      }
-
-      const lastUserMessage = messages.findLast(
-        (message) => message.role === Role.USER
-      );
-
-      if (lastUserMessage) {
-        try {
-          //Move to backend after refactoring message handling
-          await deleteUserMessage(userMessageId);
-          dispatch({
-            type: REMOVE_MESSAGE,
-            payload: lastUserMessage.public_id,
-          });
-        } catch (error) {
-          logger.error('Error removing message: %o', error);
-        }
-      }
-
-      //Update user prompt input with last message data
-      dispatch({ type: SET_IS_ERROR, payload: true });
-
-      promptFormRef.current?.reset(lastUserMessage?.content || '');
-      errorToast({ message: errorMessage || tChainErrors('unknown-error') });
-
-      logger.error('Stream error: %o', errorMessage);
-    });
-
-    return eventSource;
-  };
-
-  useEffect(() => {
-    if (userMessageId !== '') {
-      const eventSource = connectToStream(userMessageId, mode);
-
-      return () => eventSource.close();
-    }
-  }, [userMessageId]);
-
+  // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
     // TODO: Temporary restriction - only authenticated users can send messages
     // Future implementation should include guest user support or a clear user journey for non-authenticated users
@@ -338,80 +139,62 @@ export const useAssistantLogic = (threadId: string) => {
       content: data.prompt,
       created_at: new Date(),
       mode: data.mode,
-      message_type: data.messageType || 'TEXT',
+      message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
-    dispatch({ type: ADD_MESSAGE, payload: userMessage });
     dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
-    dispatch({ type: SET_IS_ERROR, payload: false });
-    dispatch({
-      type: SET_MESSAGE_LOADING,
-      payload: true,
-    });
-    dispatch({
-      type: SET_LOADING_TEXT,
-      payload: t('status-thinking'),
-    });
+
+    // Cast to unknown first to avoid type mismatch
+    // ugly workaround to satisfied Clerk UserResourceTypes
+    const clerkUser = user as unknown as UserResource;
 
     try {
-      const messageResponse = await sendMessage(threadId, data, userVisitorId);
-      const response = await getUserMessages(userVisitorId);
-      const threads = response.threads;
-      const newThread = {
-        public_id: threads![0].public_id,
-        messages: [userMessage],
-        created_at: new Date(),
-      };
-
-      if (messageResponse.status === StatusCodes.BAD_REQUEST) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'sending-error' });
-        return;
-      }
-
-      if (
-        messageResponse.status === StatusCodes.CREATED &&
-        messageResponse.message?.public_id
-      ) {
-        dispatch({
-          type: SET_MESSAGE_ID,
-          payload: messageResponse.message.public_id,
-        });
-        dispatch({
-          type: SET_LOADING_TEXT,
-          payload: t('status-asking-ai'),
-        });
-      }
-      threadsDispatch({
-        type: 'ADD_THREAD',
-        payload: newThread,
+      await handleAssistantStream({
+        mode: AssistantMode.INTERNAL,
+        dispatch,
+        messages: state.messages,
+        userMessageId: state.userMessageId,
+        userMessage,
+        t,
+        tChainErrors,
+        tApiEvents,
+        threadId,
+        responseType: state.responseType,
+        streamedMessage: state.streamedMessage,
+        threadsDispatch,
+        threadsState: threadsState.userThreads,
+        scrollFn: scrollToBottom,
+        errorToast,
+        promptFormRef,
+        data,
+        chatType: data.mode,
+        user: clerkUser,
       });
-    } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.status === StatusCodes.BAD_REQUEST
-      ) {
-        dispatch({ type: SET_MESSAGE_ERROR, payload: true });
-        errorToast({ message: 'sending-error' });
-      }
-      logger.error('Error submitting message: %o', error);
+    } catch {
+      errorToast({ message: 'sending-error' });
     }
   };
 
   const handleResponseType = () => {
-    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.VOICE });
+    dispatch({
+      type: SET_MODE_VOICE,
+      payload: ChatResponseType.VOICE,
+    });
     setIsRecording(true);
   };
 
   const closeVoiceMode = () => {
     setIsRecording(false);
-    dispatch({ type: SET_MODE_VOICE, payload: ChatResponseType.TEXT });
+    dispatch({
+      type: SET_MODE_VOICE,
+      payload: ChatResponseType.TEXT,
+    });
   };
 
   const isLocked = () => {
     if (isSignedIn) return false;
-    return isLimitLock;
+    return state.isLimitLock;
   };
 
   const setVoiceMessageAsPlayed = async (messageId: string) => {
@@ -424,27 +207,47 @@ export const useAssistantLogic = (threadId: string) => {
 
   const handleVoiceResult = (text: string, recordingTime: number) => {
     onSubmit({
-      mode,
+      mode: state.mode,
       prompt: text,
       messageType: 'VOICE',
       voiceDurationSeconds: recordingTime,
     });
   };
 
+  useEffect(() => {
+    const initialMessageKey = `thread_${threadId}_initial_message`;
+    const initialMessage = localStorage.getItem(initialMessageKey);
+    const initialMessageType = sessionStorage.getItem(
+      'initial_message_type'
+    ) as MessageContentType;
+
+    if (initialMessage) {
+      localStorage.removeItem(initialMessageKey);
+      sessionStorage.removeItem('initial_message_type');
+
+      onSubmit({
+        prompt: initialMessage,
+        mode: ChatType.CONVERSATION,
+        messageType: initialMessageType || MessageContentType.TEXT,
+        voiceDurationSeconds: 0,
+      });
+    }
+  }, [threadId]);
+
   return {
-    messageLoadingText,
+    messageLoadingText: state.messageLoadingText,
     handleResponseType,
     messagesEndDivRef,
     isGlobalLoading,
-    streamedMessage,
+    streamedMessage: state.streamedMessage,
     isPublicAccess,
     userVisitorId,
     isSearchOpen,
-    responseType,
-    isLimitLock,
+    responseType: state.responseType,
+    isLimitLock: state.isLimitLock,
     closeSearch,
     isSignedIn,
-    messages,
+    messages: state.messages,
     modalRef,
     onSubmit,
     isLocked,

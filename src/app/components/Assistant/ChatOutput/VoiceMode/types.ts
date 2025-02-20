@@ -12,6 +12,7 @@ export type VoiceModeProps = {
     public_id?: string;
   }>;
   onMessagePlayed?: (messageId: string) => void;
+  voiceId: string;
 };
 
 export type VoiceModeState = {

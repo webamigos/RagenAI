@@ -2,15 +2,14 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
-import { ReadAnswer } from './ReadAnswer';
-import { DurationTime } from './DurationTime';
+import { ReadAnswer } from './ReadAnswer/ReadAnswer';
+import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
   StreamedMessageDto,
   ChatResponseType,
 } from '../../../contracts/Message';
-
 import './chat-response.css';
 
 type Props = {
@@ -22,6 +21,7 @@ type Props = {
   streamedMessage: StreamedMessageDto | null;
   isPublicAccess?: boolean;
   onMessagePlayed?: (messageId: string) => void;
+  voiceId?: string;
 };
 
 const MessageContent = ({
@@ -30,12 +30,16 @@ const MessageContent = ({
   message,
   streamedMessageRunId,
   responseType,
+  voiceId,
+  isPublicAccess,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
   streamedMessageRunId?: string;
   responseType: ChatResponseType;
+  voiceId?: string;
+  isPublicAccess: boolean;
 }) => {
   const { md, t } = useChatViewLogic(null);
 
@@ -63,8 +67,13 @@ const MessageContent = ({
               publicId={message.public_id}
               runId={streamedMessageRunId || message.run_id}
             />
-            <CopyToClipboardButton message={message} />
-            <ReadAnswer content={content} />
+            <div className="flex items-center gap-2">
+              <CopyToClipboardButton message={message} />
+              {/* voice read also should be enabled for public threads */}
+              {!isPublicAccess && (
+                <ReadAnswer content={content} voiceId={voiceId!} />
+              )}
+            </div>
           </div>
         )}
         {role === 'USER' &&
@@ -87,6 +96,7 @@ export const ChatOutput = ({
   streamedMessage,
   isPublicAccess = false,
   responseType,
+  voiceId,
 }: Props) => {
   const { t, streamedMessageRunId, renderedStreamedMessage } =
     useChatViewLogic(streamedMessage);
@@ -107,8 +117,10 @@ export const ChatOutput = ({
               content={message.content}
               role={message.role}
               message={message}
+              isPublicAccess={isPublicAccess}
               streamedMessageRunId={streamedMessageRunId}
               responseType={responseType}
+              voiceId={!isPublicAccess ? voiceId : undefined}
             />
           </div>
         ))}

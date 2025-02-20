@@ -44,7 +44,7 @@ const initialState: State = {
   hasMore: true,
 };
 
-function threadsReducer(state: State, action: Action): State {
+export const threadsReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'LOADING':
       return { ...state, isLoading: true, error: null };
@@ -53,36 +53,49 @@ function threadsReducer(state: State, action: Action): State {
         ...state,
         isLoading: false,
         userThreads: action.payload || [],
-        hasMore: action.payload.length > 0,
+        hasMore: (action.payload || []).length > 0,
       };
     case 'ERROR':
       return { ...state, isLoading: false, error: action.payload };
     case 'ADD_THREADS':
+      const newThreads = action.payload.filter(
+        (newThread) =>
+          !state.userThreads.some(
+            (existingThread) => existingThread.public_id === newThread.public_id
+          )
+      );
       return {
         ...state,
         isLoading: false,
-        userThreads: [...state.userThreads, ...(action.payload || [])],
+        userThreads: [...state.userThreads, ...newThreads],
       };
     case 'ADD_THREAD':
-      const existingThread = state.userThreads.find(
+      const existingThreadIndex = state.userThreads.findIndex(
         (thread) => thread.public_id === action.payload.public_id
       );
-      if (existingThread) {
+
+      if (existingThreadIndex !== -1) {
+        const updatedThreads = [...state.userThreads];
+        updatedThreads[existingThreadIndex] = {
+          ...updatedThreads[existingThreadIndex],
+          messages: [...action.payload.messages],
+          project_id: action.payload.project_id,
+        };
         return {
           ...state,
-          userThreads: state.userThreads.map((thread) =>
-            thread.public_id === action.payload.public_id
-              ? {
-                  ...thread,
-                  messages: [...thread.messages, ...action.payload.messages],
-                }
-              : thread
-          ),
+          userThreads: updatedThreads,
         };
       }
+
+      const newThread = {
+        ...action.payload,
+        messages: action.payload.messages || [],
+        project_id: action.payload.project_id,
+      };
+
       return {
         ...state,
-        userThreads: [action.payload, ...state.userThreads],
+        userThreads: [newThread, ...state.userThreads],
       };
     case 'SET_HAS_MORE':
       return { ...state, hasMore: action.payload };
@@ -93,7 +106,7 @@ function threadsReducer(state: State, action: Action): State {
     default:
       return state;
   }
-}
+};
 
 type ThreadsContextType = {
   state: State;

@@ -1,4 +1,4 @@
-import { RunnableBinding, RunnableConfig } from '@langchain/core/runnables';
+import { Runnable, RunnableConfig } from '@langchain/core/runnables';
 
 export interface BaseChatChainInput {
   question: string;
@@ -6,7 +6,7 @@ export interface BaseChatChainInput {
 }
 
 export interface BaseChatChainOutput {
-  chain: RunnableBinding<
+  chain: Runnable<
     BaseChatChainInput,
     string,
     RunnableConfig<Record<string, any>>

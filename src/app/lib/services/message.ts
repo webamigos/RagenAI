@@ -46,7 +46,7 @@ export const createMessageInDB = async ({
       threadId: thread.id,
     });
     setSentryContext('EXTRA_DATA', {
-      messageId: message.id,
+      // messageId: message.id,
       role,
       visitorId,
       runId,
@@ -121,6 +121,7 @@ export const fetchMessagesFromDb = async (
   }
 };
 
+// TODO: visitorId shouldn't be passed here - it can be userId or public visitorId...
 export const createAndStoreOpenAIThreadMessage = async ({
   prompt,
   thread,
@@ -130,7 +131,7 @@ export const createAndStoreOpenAIThreadMessage = async ({
   voiceDurationSeconds,
 }: {
   prompt: string;
-  thread: OpenAI.Beta.Threads.Thread;
+  thread?: OpenAI.Beta.Threads.Thread;
   threadEntity: Thread;
   visitorId?: string;
   messageType?: MessageContentType;
@@ -138,28 +139,32 @@ export const createAndStoreOpenAIThreadMessage = async ({
 }): Promise<MessageDto> => {
   try {
     setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadId: thread.id,
-    });
+    if (thread) {
+      setSentryContext('THREAD_ID', {
+        threadId: thread.id,
+      });
+    }
+
     setSentryContext('EXTRA_DATA', {
       visitorId,
       messageType,
       voiceDurationSeconds,
     });
-    const threadId = thread.id;
-    const threadMessage = await openai.beta.threads.messages.create(threadId, {
-      role: 'user',
-      content: prompt.trim(), // TODO: sanitize
-    });
+    // TODO: this is refactored inside DEV-78
+    // const threadId = thread?.id;
+    // const threadMessage = await openai.beta.threads.messages.create(threadId, {
+    //   role: 'user',
+    //   content: prompt.trim(), // TODO: sanitize
+    // });
     // https://github.com/openai/openai-node/issues/454#issuecomment-1806646751
-    const userMessageContent = parseThreadMessage(threadMessage);
+    // const userMessageContent = parseThreadMessage(threadMessage);
 
     const dbMessage = await createMessageInDB({
       thread: threadEntity,
       message: {
-        id: threadMessage.id,
-        created_at: threadMessage.created_at,
-        content: userMessageContent,
+        id: `msg_${Date.now()}`,
+        created_at: Math.floor(new Date().getTime() / 1000), // FIXME: temporary and solved in DEV-78
+        content: prompt.trim(),
       },
       role: Role.USER,
       visitorId,

@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
-  return new PrismaClient({ log: ['query'] });
+  // prisma logs are too verbose and nobody reads it even on localhost ;)
+  // return new PrismaClient({ log: ['query'] });
+  return new PrismaClient();
 };
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;

@@ -14,6 +14,7 @@ export const VoiceMode = ({
   onResult,
   messages,
   onMessagePlayed,
+  voiceId,
 }: VoiceModeProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const t = useTranslations('voice-mode');
@@ -25,6 +26,7 @@ export const VoiceMode = ({
     onClose,
     onResult,
     onMessagePlayed,
+    voiceId,
   });
 
   const {

@@ -160,8 +160,8 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
       disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
       'group',
       {
-        'bg-zinc-950/5 text-primary-blue-500 dark:text-gray-200':
-          pathname.includes(href),
+        // TODO: add text-blue-600  for active tab after cleanup because currently almost each tab has my-profile in pathname
+        'bg-zinc-950/5 dark:text-gray-200': pathname.includes(href),
       },
       className
     );
@@ -171,7 +171,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
         {current && (
           <motion.span
             layoutId="current-indicator"
-            className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400 dark:bg-white"
+            className="absolute inset-y-2 left-0.5 w-0.5 rounded-md bg-primary-blue-400 dark:bg-white"
           />
         )}
         <Link

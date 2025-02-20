@@ -34,6 +34,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           streamedMessage={streamedMessage}
           widgetMode={true}
           responseType={ChatResponseType.TEXT}
+          isPublicAccess={isPublicAccess}
         />
         <div ref={messagesEndDivRef} />
       </div>
@@ -45,6 +46,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
             isPublicAccess={isPublicAccess}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
+            responseType={ChatResponseType.TEXT}
           />
         )}
       </div>

@@ -78,6 +78,7 @@
     "@types/html-to-text": "^9.0.4",
     "@types/jest": "^29.5.14",
     "@types/jest-axe": "^3.5.9",
+    "@types/js-cookie": "^3.0.6",
     "@types/markdown-it": "^13.0.9",
     "@types/node": "18.16.9",
     "@types/react": "18.2.33",
@@ -127,8 +128,11 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@aws-crypto/sha256-js": "^5.2.0",
     "@aws-sdk/client-s3": "^3.732.0",
+    "@aws-sdk/credential-provider-node": "^3.749.0",
     "@aws-sdk/lib-storage": "^3.732.0",
+    "@aws-sdk/types": "^3.734.0",
     "@clerk/localizations": "^1.26.13",
     "@clerk/nextjs": "^5.4.1",
     "@clerk/themes": "^2.2.9",
@@ -140,8 +144,12 @@
     "@heroicons/react": "^2.1.1",
     "@hookform/resolvers": "^3.3.4",
     "@hyzyla/pdfium": "^2.1.2",
-    "@langchain/community": "^0.3.19",
-    "@langchain/core": "^0.2.36",
+    "@langchain/anthropic": "^0.3.13",
+    "@langchain/aws": "^0.1.3",
+    "@langchain/community": "^0.3.30",
+    "@langchain/core": "^0.3.17",
+    "@langchain/google-genai": "^0.1.8",
+    "@langchain/ollama": "^0.2.0",
     "@langchain/openai": "^0.2.11",
     "@langchain/qdrant": "^0.1.1",
     "@next/third-parties": "^15.0.3",
@@ -152,6 +160,10 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@react-email/components": "^0.0.31",
     "@sentry/nextjs": "^7.105.0",
+    "@smithy/eventstream-codec": "^2.2.0",
+    "@smithy/protocol-http": "^3.3.0",
+    "@smithy/signature-v4": "^2.3.0",
+    "@smithy/util-utf8": "^2.3.0",
     "@supabase/supabase-js": "^2.45.4",
     "@tailwindcss/typography": "^0.5.15",
     "@temporalio/activity": "^1.11.5",
@@ -182,6 +194,7 @@
     "install": "^0.13.0",
     "ioredis": "^5.4.1",
     "jest-axe": "^9.0.0",
+    "js-cookie": "^3.0.5",
     "katex": "^0.16.19",
     "langchain": "^0.3.2",
     "langsmith": "^0.1.41",
@@ -221,5 +234,11 @@
     "turndown": "^7.2.0",
     "use-debounce": "^10.0.0",
     "zod": "^3.22.4"
+  },
+  "overrides": {
+    "@langchain/core": "^0.3.17"
+  },
+  "resolutions": {
+    "@langchain/core": "^0.3.17"
   }
 }

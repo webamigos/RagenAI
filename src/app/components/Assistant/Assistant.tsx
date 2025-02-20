@@ -7,7 +7,11 @@ import { useAssistantLogic } from './useAssistantLogic';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 
-import { MessageContentType } from '@prisma/client';
+import { useOrganization } from '@clerk/nextjs';
+import { useState, useEffect } from 'react';
+import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
+import { ChatResponseType } from '@/app/contracts/Message';
+import { reducerActions } from './reducer';
 
 type Props = {
   threadId: string;
@@ -31,35 +35,64 @@ export const Assistant = ({ threadId }: Props) => {
     modalRef,
     onSubmit,
     isLocked,
+    dispatch,
     promptFormRef,
     isRecording,
     closeVoiceMode,
-    handleVoiceResult,
     setVoiceMessageAsPlayed,
+    handleVoiceResult,
   } = useAssistantLogic(threadId);
+
+  const { organization } = useOrganization();
+  const [voiceId, setVoiceId] = useState('JBFqnCBsd6RMkjVDRZzb');
+
+  useEffect(() => {
+    const getVoiceSettings = async () => {
+      if (organization?.id) {
+        const response = await fetchVoiceId(organization.id);
+        if (response.success && response.data?.voiceId) {
+          setVoiceId(response.data.voiceId);
+        }
+      }
+    };
+    getVoiceSettings();
+  }, [organization?.id]);
+
+  useEffect(() => {
+    const wasVoiceModeActive = sessionStorage.getItem('voice_mode_active');
+    const responseTypeStored = sessionStorage.getItem('response_type');
+
+    if (
+      wasVoiceModeActive === 'true' &&
+      responseTypeStored === ChatResponseType.VOICE
+    ) {
+      dispatch({
+        type: reducerActions.SET_MODE_VOICE,
+        payload: ChatResponseType.VOICE,
+      });
+      handleResponseType();
+      sessionStorage.removeItem('voice_mode_active');
+      sessionStorage.removeItem('response_type');
+    }
+  }, []);
 
   return (
     <>
       {isSearchOpen && (
-        <>
-          <div className="absolute inset-0 bg-primary-light dark:bg-primary-dark opacity-80 z-40" />
-          <div
-            className="absolute inset-0 flex items-center justify-center z-50"
-            onClick={closeSearch}
-          >
-            <SearchThreads visitorId={userVisitorId!} ref={modalRef} />
-          </div>
-        </>
+        <div onClick={closeSearch}>
+          <SearchThreads ref={modalRef} visitorId={userVisitorId!} />
+        </div>
       )}
 
       <div className="h-full flex flex-col font-sans">
-        {responseType === MessageContentType.VOICE && (
+        {responseType === ChatResponseType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
             isRecording={isRecording}
             onResult={handleVoiceResult}
             messages={messages}
             onMessagePlayed={setVoiceMessageAsPlayed}
+            voiceId={voiceId}
           />
         )}
         <div className="flex-grow overflow-y-auto">
@@ -69,6 +102,8 @@ export const Assistant = ({ threadId }: Props) => {
             isLoading={isGlobalLoading}
             loadingMessage={messageLoadingText}
             streamedMessage={streamedMessage}
+            isPublicAccess={isPublicAccess}
+            voiceId={voiceId}
           />
           <div ref={messagesEndDivRef} />
         </div>
@@ -82,6 +117,7 @@ export const Assistant = ({ threadId }: Props) => {
               isLoading={isGlobalLoading}
               onSubmit={onSubmit}
               isPublicAccess={isPublicAccess}
+              responseType={responseType}
             />
           )}
         </div>

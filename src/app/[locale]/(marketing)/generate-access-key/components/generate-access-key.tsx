@@ -84,7 +84,7 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
         </Button>
         {embedScript && (
           <div className="space-y-4 mt-6 overflow-y-auto">
-            <div className="space-y-2 p-4 bg-gray-50 rounded-lg">
+            <div className="space-y-2 p-4 bg-gray-50 rounded-md">
               <p className="text-sm text-gray-600">
                 {t('embed-code')}:
                 <code className="block mt-1 p-2  rounded font-mono text-sm overflow-x-auto whitespace-pre-wrap break-all">
@@ -111,7 +111,7 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
         </div>
         {publicUrl && (
           <div className="space-y-4 mt-6 overflow-y-auto">
-            <div className="space-y-2 p-4 bg-gray-50 rounded-lg overflow-x-auto whitespace-pre-wrap break-all">
+            <div className="space-y-2 p-4 bg-gray-50 rounded-md overflow-x-auto whitespace-pre-wrap break-all">
               <p className="text-sm text-gray-600">
                 {t('public-access-URL')}:
                 <a

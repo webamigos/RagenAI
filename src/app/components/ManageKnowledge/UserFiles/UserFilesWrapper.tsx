@@ -33,11 +33,23 @@ export const FileListWrapper = () => {
     fileId: null,
   });
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      toggleModal(null);
+    }
+  };
+
   useEffect(() => {
     const savedViewMode = user?.publicMetadata?.viewMode as 'grid' | 'list';
     if (savedViewMode === 'grid' || savedViewMode === 'list') {
       setViewMode(savedViewMode);
     }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [user]);
 
   const { refreshSettings } = useSettings();

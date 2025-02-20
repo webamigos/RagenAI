@@ -10,6 +10,7 @@ export const defaultOrganizationSettings: RawOrganizationSettings = {
   model: 'gpt-4o',
   temperature: 0.8,
   maxDocumentsToRetrieve: 3,
+  voiceId: 'JBFqnCBsd6RMkjVDRZzb',
 } as const;
 
 export const organizationSettingsLimits: OrganizationSettingsLimits = {

@@ -1,11 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useEffect, memo } from 'react';
 
-import { Button } from '@ragenai/common-ui';
 import { useNewThread } from '../hooks/useNewThread';
+import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { makeVisitorCookieRequest } from '@/app/lib/services/cookies.browser';
 
 const PublicStart = memo(
   ({
@@ -16,10 +16,19 @@ const PublicStart = memo(
     widgetMode?: boolean;
   }) => {
     const t = useTranslations('Chatbot');
-    const { handleNewThread, isLoading, checkExistingThread } = useNewThread({
+    const { checkExistingThread, isLoading } = useNewThread({
       organizationId,
       widgetMode,
     });
+
+    useEffect(() => {
+      // set visitor cookie
+      const setCookie = async () => {
+        await makeVisitorCookieRequest();
+      };
+
+      setCookie();
+    }, []);
 
     useEffect(() => {
       const checkThread = async () => {
@@ -32,21 +41,13 @@ const PublicStart = memo(
     }, [widgetMode, checkExistingThread]);
 
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center">
+      <div className="h-screen w-full flex items-center justify-center">
+        <div className="flex w-full flex-col items-center">
           {!widgetMode && (
-            <Button
-              label={t('start-new-thread')}
-              className="px-5 py-3 sm:mb-12 mb-8"
-              onClick={handleNewThread}
-              isLoading={isLoading}
-              disabled={isLoading}
-              iconRight={
-                <RocketLaunchIcon
-                  className="h-5 w-5 flex-none text-white cursor-pointer"
-                  aria-hidden="true"
-                />
-              }
+            <NewChatInterface
+              organizationId={organizationId}
+              isPublicAccess={true}
+              widgetMode={widgetMode}
             />
           )}
 

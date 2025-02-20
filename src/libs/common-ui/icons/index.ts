@@ -54,3 +54,6 @@ export { SrtIcon } from './SrtIcon';
 export { UnknownFileIcon } from './UnknownFileIcon';
 export { GridIcon } from './GridIcon';
 export { ListIcon } from './ListIcon';
+export { FolderPlusIcon } from './FolderPlusIcon';
+export { FolderIcon } from './FolderIcon';
+export { PlusIcon } from './PlusIcon';

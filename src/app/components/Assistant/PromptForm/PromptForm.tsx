@@ -7,6 +7,7 @@ import {
   ChatType,
   type CreateMessageDto,
   createMessageSchema,
+  ChatResponseType,
 } from '../../../contracts/Message';
 import { forwardRef, useImperativeHandle } from 'react';
 import { useTranslations } from 'next-intl';
@@ -17,6 +18,7 @@ type Props = {
   handleResponseType?: () => void;
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
+  responseType: ChatResponseType;
 };
 
 export type PromptFormRef = {
@@ -25,7 +27,14 @@ export type PromptFormRef = {
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
   (
-    { isLoading, isUserLogged, onSubmit, isPublicAccess, handleResponseType },
+    {
+      isLoading,
+      isUserLogged,
+      onSubmit,
+      isPublicAccess,
+      handleResponseType,
+      responseType,
+    },
     ref
   ) => {
     const {
@@ -53,7 +62,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       onSubmit({
         ...data,
         mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
-        messageType: data.messageType || 'TEXT',
+        messageType: responseType,
         voiceDurationSeconds: data.voiceDurationSeconds,
       });
     };
@@ -79,9 +88,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               register={register}
               onSend={handleSend}
               value={promptValue}
-              handleResponseType={
-                handleResponseType ? handleResponseType : () => {}
-              }
+              handleResponseType={handleResponseType}
               setPromptValue={(text: string) => setValue('prompt', text)}
             />
           </div>

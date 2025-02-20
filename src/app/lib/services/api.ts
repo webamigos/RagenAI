@@ -1,6 +1,5 @@
 import { api } from './config';
 import { MessageDto } from '../../contracts/Message';
-import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
@@ -12,20 +11,12 @@ export const fetchMessagesFromApi = async (
   return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
 };
 
-export const createThread = () => {
-  return api.post<CreateThreadDto>('/threads');
-};
-
 export const submitFeedback = async (
   messageId: string,
   feedback: 'up' | 'down',
   runId: string
 ) => {
   return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
-};
-
-export const createThreadForGuest = () => {
-  return api.post<CreateThreadDto>(`/guest-threads/`);
 };
 
 export const checkVisitorVisits = async (visitorId: string) => {
