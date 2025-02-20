@@ -31,6 +31,3 @@ jobs:
 
       - name: Apply all pending migrations to the database
         run: npx prisma migrate deploy
-
-      - name: Apply all pending migrations to the vector store
-        run: npm run vectorstore:migrate
