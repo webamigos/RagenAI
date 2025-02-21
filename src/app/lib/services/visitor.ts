@@ -73,7 +73,9 @@ export const getUserThreads = async (
               },
             },
           }
-        : undefined,
+        : {
+            some: {},
+          },
     },
     orderBy: {
       created_at: 'desc',
