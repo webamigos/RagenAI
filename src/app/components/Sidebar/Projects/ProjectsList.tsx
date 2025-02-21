@@ -8,7 +8,7 @@ import { EmptyProjectsState } from './components/EmptyProjectsState';
 import { ProjectItem } from './components/ProjectItem';
 import { createThreadAction } from '@/app/lib/actions/threads';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { addThread } from '@/store/features/threads/threadsSlice';
+import { addThread } from '@/store/threads/threadsSlice';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
 
 import type { ProjectsListProps, ThreadType } from './types';

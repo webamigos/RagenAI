@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   closeSidebar as closeAction,
   openSidebar as openAction,
-} from '@/store/features/sidebar/sidebarSlice';
+} from '@/store/sidebar/sidebarSlice';
 
 export const useSidebar = () => {
   const dispatch = useAppDispatch();
