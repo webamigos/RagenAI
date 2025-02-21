@@ -1,12 +1,8 @@
 'use client';
 
-import { type Dispatch, ReducerAction, RefObject } from 'react';
+import { type Dispatch, RefObject } from 'react';
 
-import {
-  ApiSseMessageDelta,
-  ApiSseMessageEvent,
-  SseMessageError,
-} from '@/app/contracts/Events';
+import { ApiSseMessageDelta, ApiSseMessageEvent } from '@/app/contracts/Events';
 import { ErrorEvent } from '../Assistant/types';
 import {
   type Action as InternalAssistantReducerAction,
@@ -38,8 +34,8 @@ import { type Action as PublicAssistantReducerAction } from '@/app/[locale]/publ
 import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';
 import { AppDispatch } from '@/store';
-import { setMessages } from '@/store/features/assistant/assistantSlice';
-import { addThread } from '@/store/features/threads/threadsSlice';
+import { setMessages } from '@/store/assistant/assistantSlice';
+import { addThread } from '@/store/threads/threadsSlice';
 
 const {
   ADD_MESSAGE,

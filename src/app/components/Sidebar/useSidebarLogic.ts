@@ -10,12 +10,13 @@ import { useCloseThread } from '../../hooks/useCloseThreads';
 import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
 import { getUserMessages } from '@/app/actions';
+import { statusToast } from '@/app/lib/utils/toast';
 import {
   setActiveThread,
   setProjects,
   closeSidebar,
   setCreateModalOpen,
-} from '@/store/features/sidebar/sidebarSlice';
+} from '@/store/sidebar/sidebarSlice';
 import {
   setLoading,
   addThreads,
@@ -23,14 +24,15 @@ import {
   setHasMore,
   setError,
   resetThreads,
-} from '@/store/features/threads/threadsSlice';
-import type { ErrorState } from '@/store/features/threads/threadsSlice';
-
+} from '@/store/threads/threadsSlice';
+import type { ErrorState } from '@/store/threads/threadsSlice';
+import { logger } from '@/app/lib/utils/logger';
 export const useSidebarLogic = () => {
   const dispatch = useAppDispatch();
   const { isOpen, activeThread, projects, isCreateModalOpen } = useAppSelector(
     (state) => state.sidebar
   );
+  const { errorToast } = statusToast();
 
   const {
     error,
@@ -54,45 +56,82 @@ export const useSidebarLogic = () => {
   const { openSearch } = useSearchThreads();
   const { organization } = useOrganization();
 
+  const prefetchThreads = useCallback(
+    async (userId: string, skipCount: number, limit: number) => {
+      try {
+        await getUserMessages(userId, skipCount, limit);
+      } catch (error) {
+        logger.error({ err: error }, 'Error prefetching threads');
+        return errorToast({ message: 'Error prefetching threads' });
+      } // Silently fail prefetch attempts
+    },
+    []
+  );
+
   const loadMoreThreads = useCallback(async () => {
     if (isLoading || !hasMore || !user?.id) return;
 
+    // Adaptive batch size based on viewport
+    const viewportHeight = window.innerHeight;
+    const avgThreadHeight = 100; // pixels
+    const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5; // +5 for buffer
+
     dispatch(setLoading(true));
 
-    try {
-      const { status, error, threads } = await getUserMessages(
-        user.id,
-        skip,
-        16
-      );
+    let retryCount = 0;
+    const maxRetries = 3;
 
-      if (status === 200) {
-        dispatch(addThreads(threads || []));
-        dispatch(incrementSkip(threads?.length || 0));
+    while (retryCount < maxRetries) {
+      try {
+        const { status, error, threads } = await getUserMessages(
+          user.id,
+          skip,
+          limit
+        );
 
-        if (!threads || threads.length < 16) {
-          dispatch(setHasMore(false));
+        if (status === 200) {
+          if (threads?.length) {
+            dispatch(addThreads(threads));
+            dispatch(incrementSkip(threads.length));
+            dispatch(setHasMore(threads.length === limit));
+
+            // Prefetch next batch
+            if (threads.length === limit) {
+              prefetchThreads(user.id, skip + limit, limit);
+            }
+          } else {
+            dispatch(setHasMore(false));
+          }
+          break;
         }
-      } else {
-        const errorPayload = {
-          status,
-          message: error || 'Unknown error',
-        };
-        dispatch(setError(errorPayload));
+        throw new Error(error);
+      } catch (err) {
+        retryCount++;
+        if (retryCount === maxRetries) {
+          dispatch(
+            setError({
+              status: 500,
+              message: err?.toString() || 'Unknown error',
+            })
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
       }
-    } catch (err) {
-      const errorPayload = {
-        status: 500,
-        message: err?.toString() || 'Unknown error',
-      };
-      dispatch(setError(errorPayload));
     }
-  }, [isLoading, hasMore, user?.id, skip, dispatch]);
 
-  const refetchThreads = useCallback(() => {
-    dispatch(resetThreads());
-    loadMoreThreads();
-  }, [dispatch, loadMoreThreads]);
+    dispatch(setLoading(false));
+  }, [isLoading, hasMore, user?.id, skip, dispatch, prefetchThreads]);
+
+  const refetchThreads = useCallback(async () => {
+    const cachedThreads = [...userThreads];
+    try {
+      dispatch(resetThreads());
+      await loadMoreThreads();
+    } catch {
+      // Restore cached state on failure
+      dispatch(addThreads(cachedThreads));
+    }
+  }, [dispatch, loadMoreThreads, userThreads]);
 
   const handleThread = () => {
     handleNewThread();
@@ -159,10 +198,16 @@ export const useSidebarLogic = () => {
   }, [organization?.id, user?.id]);
 
   useEffect(() => {
-    if (user?.id) {
+    let mounted = true;
+
+    if (user?.id && mounted && !isThreadsLoaded) {
       loadMoreThreads();
     }
-  }, [user?.id, loadMoreThreads]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id, loadMoreThreads, isThreadsLoaded]);
 
   useEffect(() => {
     if (!isSignedIn) {

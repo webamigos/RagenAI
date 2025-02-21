@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import sidebarReducer from '@/store/features/sidebar/sidebarSlice';
-import assistantReducer from '@/store/features/assistant/assistantSlice';
-import threadsReducer from '@/store/features/threads/threadsSlice';
+import sidebarReducer from '@/store/sidebar/sidebarSlice';
+import assistantReducer from '@/store/assistant/assistantSlice';
+import threadsReducer from '@/store/threads/threadsSlice';
 
 export const store = configureStore({
   reducer: {

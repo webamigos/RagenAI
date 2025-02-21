@@ -65,6 +65,7 @@ export const threadsSlice = createSlice({
       );
       state.isLoading = false;
       state.userThreads = [...state.userThreads, ...newThreads];
+      state.isThreadsLoaded = true;
     },
     addThread: (state, action: PayloadAction<ThreadHistoryResponse>) => {
       const existingThreadIndex = state.userThreads.findIndex(
