@@ -61,6 +61,7 @@ export const getUserThreads = async (
   return await db.thread.findMany({
     where: {
       visitor_id: visitorId,
+      project_id: null, // Only get threads not assigned to projects
       messages: query
         ? {
             some: {

@@ -120,7 +120,7 @@ export const useSidebarLogic = () => {
     }
 
     dispatch(setLoading(false));
-  }, [isLoading, hasMore, user?.id, skip, dispatch]);
+  }, [isLoading, hasMore, user?.id, skip, dispatch, prefetchThreads]);
 
   const refetchThreads = useCallback(async () => {
     const cachedThreads = [...userThreads];

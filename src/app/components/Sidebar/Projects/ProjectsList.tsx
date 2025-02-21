@@ -1,18 +1,22 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
-import { PlusIcon, SidebarLabel } from '@ragenai/common-ui';
-import { ThreadCommunicationType } from '@prisma/client';
 import { useRouter } from 'next/navigation';
-import { logger } from '@/app/lib/utils/logger';
+
+import { PlusIcon, SidebarLabel } from '@ragenai/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
+import { useAppDispatch } from '@/store/hooks';
+
+import { createThreadAction } from '@/app/lib/actions/threads';
+import { addThread } from '@/store/threads/threadsSlice';
+
+import { logger } from '@/app/lib/utils/logger';
+
 import { EmptyProjectsState } from './components/EmptyProjectsState';
 import { ProjectItem } from './components/ProjectItem';
-import { createThreadAction } from '@/app/lib/actions/threads';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { addThread } from '@/store/threads/threadsSlice';
-import { ThreadHistoryResponse } from '@/app/contracts/Message';
+import { CreateProject } from './components/CreateProject';
 
 import type { ProjectsListProps, ThreadType } from './types';
-import { CreateProject } from './components/CreateProject';
 
 export const ProjectsList = ({
   projects,
@@ -26,49 +30,27 @@ export const ProjectsList = ({
   const { closeSidebar } = useSidebar();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { userThreads } = useAppSelector((state) => state.threads);
 
-  const projectsWithUpdatedThreads = projects?.map((project) => {
-    const projectThreads = userThreads.filter(
-      (thread: ThreadHistoryResponse) =>
-        project.threads.some((pt) => pt.public_id === thread.public_id) ||
-        thread.project_id === project.id
-    );
+  const projectsWithUpdatedThreads =
+    projects?.map((project) => {
+      const updatedThreads = project.threads.map((thread: ThreadType) => ({
+        ...thread,
+        messages: thread.messages.map((msg) => ({
+          content: msg.content,
+          role: 'user' as const,
+          created_at: new Date(),
+        })),
+      }));
 
-    const updatedThreads = projectThreads.map(
-      (thread: ThreadHistoryResponse) => {
-        const existingThread = project.threads.find(
-          (pt) => pt.public_id === thread.public_id
-        );
-
-        const threadType: ThreadType = {
-          ...existingThread,
-          public_id: thread.public_id,
-          created_at: thread.created_at,
-          messages: thread.messages.map((msg: { content: string }) => ({
-            content: msg.content,
-          })),
-          project_id: project.id,
-          id: existingThread?.id || thread.public_id,
-          visitor_id: existingThread?.visitor_id || null,
-          preferred_communication_type:
-            existingThread?.preferred_communication_type ||
-            ThreadCommunicationType.TEXT,
-        };
-
-        return threadType;
-      }
-    );
-
-    return {
-      ...project,
-      threads: updatedThreads,
-    };
-  });
+      return {
+        ...project,
+        threads: updatedThreads,
+      };
+    }) || [];
 
   const handleProjectClick = async (projectPublicId: string) => {
     try {
-      const project = projectsWithUpdatedThreads?.find(
+      const project = projectsWithUpdatedThreads.find(
         (p) => p.public_id === projectPublicId
       );
       if (!project) return;
