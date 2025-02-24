@@ -1,3 +1,5 @@
+'use client';
+
 import {
   useEffect,
   useTransition,
@@ -7,6 +9,8 @@ import {
 } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { usePathname, useRouter } from '@/i18n/routing';
+import { useAppDispatch } from '@/store/hooks';
+import { addThread } from '@/store/threads/threadsSlice';
 
 import { checkVisitorVisits } from '../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
@@ -19,6 +23,7 @@ import {
   createThreadAction,
 } from '../lib/actions/threads';
 import { getVisitorIdFromBrowserCookie } from '../lib/services/cookies.browser';
+import { getProjectByPublicId } from '@/app/lib/services/project';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -53,7 +58,8 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 export const useNewThread = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [visitorId, setVisitorId] = useState('');
-  const [isPending, setTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
+  const reduxDispatch = useAppDispatch();
 
   const { isSignedIn, user } = useUser();
   const { push } = useRouter();
@@ -116,7 +122,7 @@ export const useNewThread = () => {
 
   const handleNewThread = async (
     initialMessage?: string,
-    projectId?: number
+    projectPublicId?: string
   ) => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
@@ -128,6 +134,8 @@ export const useNewThread = () => {
     handleCloseThread(false);
 
     try {
+      let projectId: number | undefined;
+
       const result = user
         ? await createThreadAction(projectId)
         : await createGuestThreadAction();
@@ -138,10 +146,20 @@ export const useNewThread = () => {
         const threadId = result.thread.public_id;
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
-        setTransition(() => {
+        // Add thread to Redux store
+        reduxDispatch(
+          addThread({
+            public_id: threadId,
+            project_id: projectId,
+            messages: [],
+            created_at: new Date(),
+          })
+        );
+
+        startTransition(() => {
           const route = user
-            ? projectId
-              ? `/projects/${projectId}/threads/${threadId}`
+            ? projectPublicId
+              ? `/projects/${projectPublicId}/threads/${threadId}`
               : `/threads/${threadId}`
             : `/guest-threads/${threadId}`;
 

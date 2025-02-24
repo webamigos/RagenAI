@@ -23,10 +23,19 @@ type ThreadAction =
 
 export const createThreadAction = async (
   projectId?: number
+  // initialMessage?: string
 ): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
     const thread = await createNewOpenAIThread(null, projectId);
+
+    // const threadRecord = await db.thread.findUnique({
+    //   where: { public_id: thread.public_id },
+    // });
+
+    // if (!threadRecord) {
+    //   throw new Error('Thread not found after creation');
+    // }
 
     return {
       success: true,

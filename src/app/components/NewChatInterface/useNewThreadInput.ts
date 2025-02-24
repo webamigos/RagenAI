@@ -16,15 +16,16 @@ type Props = {
   organizationId?: string;
   isPublicAccess?: boolean;
   widgetMode?: boolean;
+  projectPublicId?: string;
 };
 
 export const useNewThreadInput = ({
   organizationId,
   isPublicAccess,
   widgetMode,
+  projectPublicId,
 }: Props) => {
   const {
-    register,
     handleSubmit: handleFormSubmit,
     formState: { errors },
     watch,
@@ -61,10 +62,10 @@ export const useNewThreadInput = ({
     async (data: ThreadFormData) => {
       if (threadHandler.isLoading || threadHandler.isPending) return;
 
-      await threadHandler.handleNewThread(data.prompt.trim());
+      await threadHandler.handleNewThread(data.prompt.trim(), projectPublicId);
       reset();
     },
-    [threadHandler, reset]
+    [threadHandler, reset, projectPublicId]
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

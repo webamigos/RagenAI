@@ -108,3 +108,21 @@ export const fetchProjectsForUser = async (
     throw error;
   }
 };
+
+export const getProjectByPublicId = async (publicId: string) => {
+  try {
+    return await db.project.findFirst({
+      where: {
+        public_id: publicId,
+      },
+      select: {
+        id: true,
+        public_id: true,
+        title: true,
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching project by public ID');
+    throw error;
+  }
+};

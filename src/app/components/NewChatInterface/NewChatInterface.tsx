@@ -1,3 +1,5 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
 import { classMerge, Textarea } from '@ragenai/common-ui/index';
@@ -11,6 +13,7 @@ interface NewChatInterfaceProps {
   isPublicAccess?: boolean;
   widgetMode?: boolean;
   voiceId?: string;
+  projectPublicId?: string;
 }
 
 export const NewChatInterface = ({
@@ -19,6 +22,7 @@ export const NewChatInterface = ({
   organizationId,
   isPublicAccess = false,
   widgetMode = false,
+  projectPublicId,
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -35,6 +39,7 @@ export const NewChatInterface = ({
     organizationId,
     isPublicAccess,
     widgetMode,
+    projectPublicId,
   });
 
   useEffect(() => {

@@ -55,24 +55,10 @@ export const ProjectsList = ({
       );
       if (!project) return;
 
-      const result = await createThreadAction(project.id);
-      if (result.success) {
-        dispatch(
-          addThread({
-            public_id: result.thread.public_id,
-            project_id: project.id,
-            messages: [],
-            created_at: new Date(),
-          })
-        );
-
-        router.push(
-          `/projects/${project.public_id}/threads/${result.thread.public_id}`
-        );
-        closeSidebar();
-      }
+      router.push(`/projects/${project.public_id}`);
+      closeSidebar();
     } catch (error) {
-      logger.error('Error creating thread for project:', {
+      logger.error('Error navigating to project:', {
         projectPublicId,
         error,
       });
