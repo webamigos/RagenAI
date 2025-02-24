@@ -4,12 +4,8 @@ import React, { ComponentProps } from 'react';
 import * as Headless from '@headlessui/react';
 
 import { usePathname } from '@/i18n/routing';
-// import { useSidebar } from '@/app/hooks/useSidebar';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import {
-  closeSidebar,
-  openSidebar,
-} from '@/store/features/sidebar/sidebarSlice';
+import { closeSidebar, openSidebar } from '@/store/sidebar/sidebarSlice';
 
 import { classMerge } from '../utils/cn';
 import { NavbarItem } from '../Navbar';

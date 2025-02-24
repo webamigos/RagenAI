@@ -8,12 +8,11 @@ import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 
 import { useOrganization } from '@clerk/nextjs';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/app/contracts/Message';
-import { reducerActions } from './reducer';
 import { useDispatch, useSelector } from 'react-redux';
-import { setVoiceId, setRecording } from '@/store/features/voice/voiceSlice';
+import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
 import { RootState } from '@/store';
 
 type Props = {

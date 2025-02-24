@@ -4,8 +4,8 @@ import { Role, MessageContentType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 import { type UserResource } from '@clerk/types';
 import { useDispatch } from 'react-redux';
-import { setRecording } from '@/store/features/voice/voiceSlice';
-import { setMessages } from '@/store/features/assistant/assistantSlice';
+import { setRecording } from '@/store/voice/voiceSlice';
+import { setMessages } from '@/store/assistant/assistantSlice';
 import { useAppSelector } from '@/store/hooks';
 
 import { useRouter, usePathname } from '@/i18n/routing';
