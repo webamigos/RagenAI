@@ -13,6 +13,7 @@ const hasMessages = (thread: ThreadType): boolean => {
 export const ThreadsList = ({
   threads,
   projectId,
+  projectPublicId,
   activeThread,
   onClose,
 }: ThreadsListProps) => {
@@ -35,6 +36,7 @@ export const ThreadsList = ({
                   key={thread.id}
                   thread={thread}
                   projectId={projectId}
+                  projectPublicId={projectPublicId}
                   isActive={activeThread === thread.public_id}
                   onClose={onClose}
                 />

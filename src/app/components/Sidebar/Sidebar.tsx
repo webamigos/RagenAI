@@ -103,7 +103,9 @@ export const Sidebar = ({ children, membership }: Props) => {
               )}
           </div>
           <SidebarBody className="-mt-3.5">
-            {pathname === `/` || pathname.includes('threads') ? (
+            {pathname === `/` ||
+            pathname.includes('threads') ||
+            pathname.includes('projects') ? (
               error ? (
                 <div className="flex flex-col items-center text-start">
                   <Text color="red-500">{getSidebarThreadsError(error)}</Text>

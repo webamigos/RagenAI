@@ -34,6 +34,7 @@ export type ProjectsListProps = {
 export type ThreadsListProps = {
   threads: ThreadType[];
   projectId: number;
+  projectPublicId: string;
   activeThread?: string;
   onClose: () => void;
 };
@@ -41,6 +42,7 @@ export type ThreadsListProps = {
 export type ThreadItemProps = {
   thread: ThreadType;
   projectId: number;
+  projectPublicId: string;
   isActive: boolean;
   onClose: () => void;
 };
@@ -48,7 +50,6 @@ export type ThreadItemProps = {
 export type ProjectItemProps = {
   project: ProjectType;
   activeThread?: string;
-  onProjectClick: (projectId: string) => Promise<void>;
   onSidebarClose: () => void;
 };
 

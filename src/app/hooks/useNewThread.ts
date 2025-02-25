@@ -1,3 +1,5 @@
+'use client';
+
 import {
   useEffect,
   useTransition,
@@ -5,8 +7,13 @@ import {
   useCallback,
   useState,
 } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@clerk/nextjs';
 import { usePathname, useRouter } from '@/i18n/routing';
+import { ThreadHistoryResponse } from '@/app/contracts/Message';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { addThread } from '@/store/threads/threadsSlice';
+import { setProjects } from '@/store/sidebar/sidebarSlice';
+import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 
 import { checkVisitorVisits } from '../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
@@ -55,7 +62,10 @@ export const useNewThread = () => {
   const [visitorId, setVisitorId] = useState('');
   const [isPending, setTransition] = useTransition();
 
-  const { isSignedIn, user } = useUser();
+  const reduxDispatch = useAppDispatch();
+  const currentThreads = useAppSelector((state) => state.threads.userThreads);
+  const { organization } = useOrganization();
+  const { user } = useUser();
   const { push } = useRouter();
   const pathname = usePathname();
   const { handleCloseThread } = useCloseThread();
@@ -81,7 +91,7 @@ export const useNewThread = () => {
         LOCAL_STORAGE_THREAD_KEY
       );
 
-      if (!isSignedIn) {
+      if (!user) {
         const visitorMessagesResponse = await checkVisitorVisits(visitorId);
 
         if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
@@ -116,7 +126,8 @@ export const useNewThread = () => {
 
   const handleNewThread = async (
     initialMessage?: string,
-    projectId?: number
+    projectId?: number,
+    projectPublicId?: string
   ) => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
@@ -134,14 +145,47 @@ export const useNewThread = () => {
 
       if (result.success) {
         trackThreadCreated();
-
         const threadId = result.thread.public_id;
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
+        if (user) {
+          // Add thread to store immediately for logged in users
+          const newThread: ThreadHistoryResponse = {
+            public_id: threadId,
+            project_id: result.thread.project_id,
+            messages: initialMessage
+              ? [
+                  {
+                    content: initialMessage,
+                    created_at: new Date(),
+                    role: 'USER' as const,
+                    message_type: 'TEXT' as const,
+                  },
+                ]
+              : [],
+            created_at: new Date(),
+          };
+
+          // Add new thread at the beginning of the list
+          reduxDispatch(addThread(newThread));
+
+          // Always refresh projects if we have a project context
+          if (
+            organization?.id &&
+            user?.id &&
+            (projectId || result.thread.project_id)
+          ) {
+            const fetchedProjects = await getProjects(organization.id, user.id);
+            if (fetchedProjects.projects) {
+              reduxDispatch(setProjects(fetchedProjects.projects));
+            }
+          }
+        }
+
         setTransition(() => {
           const route = user
-            ? projectId
-              ? `/projects/${projectId}/threads/${threadId}`
+            ? projectPublicId
+              ? `/projects/${projectPublicId}/threads/${threadId}`
               : `/threads/${threadId}`
             : `/guest-threads/${threadId}`;
 

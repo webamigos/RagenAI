@@ -4,12 +4,12 @@ import { getThreadTitle } from '../utils/threadUtils';
 
 export const ThreadItem = ({
   thread,
-  projectId,
+  projectPublicId,
   isActive,
   onClose,
 }: ThreadItemProps) => (
   <SidebarItem
-    href={`/projects/${projectId}/threads/${thread.public_id}`}
+    href={`/projects/${projectPublicId}/threads/${thread.public_id}`}
     current={isActive}
     className={classMerge(
       'font-normal text-gray-700 rounded-lg',
