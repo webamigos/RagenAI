@@ -109,6 +109,9 @@
     "manage-knowledge:create-document": {
       "title": "Stwórz dokument | Ragen AI"
     },
+    "manage-knowledge:add-from-url": {
+      "title": "Dodaj wiedzę z URL | Ragen AI"
+    },
     "manage-knowledge:upload-document": {
       "title": "Wgraj dokument | Ragen AI"
     },
@@ -227,6 +230,23 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "add-from-url": {
+    "page-title": "Dodaj wiedzę z URL",
+    "title": "Dodaj wiedzę z URL",
+    "url-label": "Adres strony",
+    "url-placeholder": "https://przyklad.pl",
+    "mode-label": "Tryb przetwarzania",
+    "mode-scrape": "Pojedyncza strona (Pobierz tylko ten URL)",
+    "mode-crawl": "Pełne przeszukiwanie (Przetwórz wszystkie dostępne podstrony)",
+    "button-process": "Przetwórz URL",
+    "button-processing": "Przetwarzanie...",
+    "success-message": "URL przetworzony pomyślnie",
+    "error-message": "Błąd podczas przetwarzania URL",
+    "validation": {
+      "url-required": "URL jest wymagany",
+      "invalid-url": "Wprowadź poprawny URL (np. https://przyklad.pl)"
+    }
+  },
   "assistant-settings": {
     "prompt-assistant-settings": "Ustawienia asystenta",
     "model-select": {
@@ -267,7 +287,8 @@
   "manage-knowledge": {
     "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
-    "upload-files": "Dodaj pliki"
+    "upload-files": "Dodaj pliki",
+    "add-from-url": "Dodaj wiedzę z URL"
   },
   "sidebar": {
     "profile": "Profil",
