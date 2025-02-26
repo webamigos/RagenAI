@@ -40,6 +40,22 @@ type UploadResponse = {
   files: UploadedFile[];
 };
 
+export const uploadProjectFiles = async (
+  projectPublicId: string,
+  data: FormData
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    `/upload/project/${projectPublicId}`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
+};
+
 export const uploadFiles = async (
   uploaderId: string,
   data: FormData

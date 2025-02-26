@@ -37,7 +37,7 @@
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
     },
-    "or-continue-with": "Lub zaloguj się za pomocą",
+    "or-continue-with": "Lub zaloguj się za pomocą",
     "forgot-password": "Nie pamiętasz hasła?",
     "i-agree-to": "Zgadzam się z",
     "terms-of-use": "regulaminem",
@@ -60,7 +60,7 @@
     "sign-in-to-account": "Zaloguj się do konta",
     "not-a-member": "Nie masz konta?",
     "start-free-trial": "Rozpoznij 14 dniowy okres próbny",
-    "or-continue-with": "Lub zaloguj się za pomocą"
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -297,8 +297,8 @@
       "create-project": "Stwórz projekt",
       "create": "Stwórz projekt",
       "placeholder": "Wpisz nazwę projektu...",
-      "what-is-project": "Co to jest projekt?",
       "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
+      "what-is-project": "Czym jest projekt?",
       "cancel": "Anuluj",
       "success": {
         "created": "Projekt został pomyślnie utworzony."
@@ -527,6 +527,13 @@
     "what-is-project": "Czym jest projekt?",
     "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
     "cancel": "Anuluj",
+    "upload-file": "Wgraj plik do projektu",
+    "upload": {
+      "title": "Wgraj pliki do projektu",
+      "button": "Wgraj pliki",
+      "selected-files": "Wybrane pliki",
+      "remove-file": "Usuń plik"
+    },
     "create-project": "Stwórz projekt",
     "error": {
       "title-required": "Tytuł jest wymagany",

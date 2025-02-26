@@ -9,7 +9,10 @@ import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
+import {
+  fetchOrganizationDefaultProjectId,
+  getProjectByPublicId,
+} from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
@@ -20,23 +23,29 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 type Params = {
-  params: { upload: string };
+  params: { upload: string[] };
 };
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const uploaderId = params.upload[0];
+  // Sprawdzamy czy to upload do organizacji czy do konkretnego projektu
+  const uploadMode = params.upload[0];
+  const isProjectUpload = uploadMode === 'project';
 
-  const { orgId } = auth();
-  if (!orgId) {
-    throw new Error('Invalid organization');
-  }
+  let uploaderId: string | undefined;
+  let projectPublicId: string | undefined;
 
-  try {
-    setSentryServiceTag('upload');
-    const formData = await request.formData();
-    const files = formData.getAll('files') as File[];
-    const organizationId = orgId;
-    setSentryClerkOrganizationTag(organizationId);
+  if (isProjectUpload) {
+    // Format URL: /api/upload/project/{projectPublicId}
+    projectPublicId = params.upload[1];
+    if (!projectPublicId) {
+      return NextResponse.json(
+        { message: 'Project ID is missing!' },
+        { status: 400 }
+      );
+    }
+  } else {
+    // Format URL: /api/upload/{organizationId}
+    uploaderId = params.upload[0];
     if (!uploaderId) {
       logger.error('Uploader ID missing!');
       return NextResponse.json(
@@ -44,11 +53,59 @@ export async function POST(request: NextRequest, { params }: Params) {
         { status: 400 }
       );
     }
+  }
+
+  const { orgId } = auth();
+  if (!orgId) {
+    return NextResponse.json(
+      { message: 'Invalid organization' },
+      { status: 401 }
+    );
+  }
+
+  try {
+    setSentryServiceTag(isProjectUpload ? 'upload-project' : 'upload');
+    const formData = await request.formData();
+    const files = formData.getAll('files') as File[];
+    const organizationId = orgId;
+    setSentryClerkOrganizationTag(organizationId);
+
+    // Możemy również obsłużyć opcjonalny projectId w formData
+    const formDataProjectId = formData.get('projectId')?.toString();
+
     if (!files || files.length === 0) {
       return NextResponse.json(
         { message: 'No file to process' },
         { status: 400 }
       );
+    }
+
+    // Ustalenie projectId - z URL dla projektu, z formData jako opcja, lub domyślny
+    let projectId: number | null = null;
+
+    if (isProjectUpload && projectPublicId) {
+      // Jeśli upload do projektu, pobierz ID projektu z URL
+      const project = await getProjectByPublicId(projectPublicId);
+      if (!project) {
+        return NextResponse.json(
+          { message: 'Project not found' },
+          { status: 404 }
+        );
+      }
+      projectId = project.id;
+    } else if (formDataProjectId) {
+      // Jeśli przekazano projectId w formData, użyj go
+      const parsedId = parseInt(formDataProjectId, 10);
+      if (isNaN(parsedId)) {
+        return NextResponse.json(
+          { message: 'Invalid project ID' },
+          { status: 400 }
+        );
+      }
+      projectId = parsedId;
+    } else {
+      // W przeciwnym razie użyj domyślnego projektu
+      projectId = await fetchOrganizationDefaultProjectId(organizationId);
     }
 
     const processedFiles = [];
@@ -60,15 +117,13 @@ export async function POST(request: NextRequest, { params }: Params) {
         const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
-        const defaultProjectId = await fetchOrganizationDefaultProjectId(
-          organizationId
-        );
+
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: defaultProjectId,
+          projectId,
           mimeType: file.type,
         });
 
@@ -78,7 +133,8 @@ export async function POST(request: NextRequest, { params }: Params) {
             file.size,
             organizationId,
             uniqueFileId,
-            fileType
+            fileType,
+            projectId ?? undefined
           );
 
           if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
@@ -88,6 +144,7 @@ export async function POST(request: NextRequest, { params }: Params) {
               organization_id: organizationId,
               content: parsedFile.content as string,
               file_id: fileRecord.id,
+              project_id: projectId || undefined,
             });
           }
 
@@ -119,7 +176,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           fileName: parsedFile.fileName,
           fileSize: file.size,
           uniqueFileId,
-          content: parsedFile.content,
+          content: isProjectUpload ? undefined : parsedFile.content,
         });
 
         usageTracker.incUploadedFilesSize(file.size);
@@ -132,9 +189,14 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
     }
-    await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
+
+    // Aktualizuj metadane organizacji tylko dla uploadu do organizacji
+    if (!isProjectUpload && uploaderId) {
+      await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
+    }
+
     return NextResponse.json({
-      message: 'All files are successfully processed',
+      message: 'All files successfully processed',
       status: 200,
       files: processedFiles,
     });
