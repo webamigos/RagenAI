@@ -2,7 +2,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@clerk/nextjs/server';
-import { convertAndStoreDocument } from '../../../api/threads/services/saveDataInVectorTable';
+import { convertAndStoreDocument } from '@/app/api/threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryClerkOrganizationTag,

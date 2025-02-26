@@ -110,7 +110,7 @@
       "title": "Stwórz dokument | Ragen AI"
     },
     "manage-knowledge:add-from-url": {
-      "title": "Dodaj wiedzę z URL | Ragen AI"
+      "title": "Dodaj wiedzę z linku | Ragen AI"
     },
     "manage-knowledge:upload-document": {
       "title": "Wgraj dokument | Ragen AI"
@@ -231,20 +231,20 @@
     "send": "Wyślij"
   },
   "add-from-url": {
-    "page-title": "Dodaj wiedzę z URL",
-    "title": "Dodaj wiedzę z URL",
+    "page-title": "Dodaj wiedzę z linku",
+    "title": "Dodaj wiedzę z linku",
     "url-label": "Adres strony",
     "url-placeholder": "https://przyklad.pl",
     "mode-label": "Tryb przetwarzania",
-    "mode-scrape": "Pojedyncza strona (Pobierz tylko ten URL)",
-    "mode-crawl": "Pełne przeszukiwanie (Przetwórz wszystkie dostępne podstrony)",
-    "button-process": "Przetwórz URL",
-    "button-processing": "Przetwarzanie...",
-    "success-message": "URL przetworzony pomyślnie",
-    "error-message": "Błąd podczas przetwarzania URL",
+    "mode-scrape": "Pojedyncza strona (pobierz tylko stronę pod podanym adresem)",
+    "mode-crawl": "Pełne przeszukiwanie (przetwórz wszystkie dostępne podstrony)",
+    "button-process": "Załaduj wiedzę",
+    "button-processing": "Ładowanie...",
+    "success-message": "Wiedza pobrana pomyślnie",
+    "error-message": "Błąd podczas pobierania wiedzy",
     "validation": {
-      "url-required": "URL jest wymagany",
-      "invalid-url": "Wprowadź poprawny URL (np. https://przyklad.pl)"
+      "url-required": "Adres strony internetowej jest wymagany",
+      "invalid-url": "Wprowadź poprawny adres strony internetowej (np. https://przyklad.pl)"
     }
   },
   "assistant-settings": {
@@ -288,7 +288,7 @@
     "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki",
-    "add-from-url": "Dodaj wiedzę z URL"
+    "add-from-url": "Dodaj wiedzę z linku"
   },
   "sidebar": {
     "profile": "Profil",
@@ -311,7 +311,6 @@
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
     },
-
     "projects": {
       "title": "Projekty",
       "create-project": "Stwórz projekt",
