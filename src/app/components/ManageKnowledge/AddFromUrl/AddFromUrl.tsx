@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 import { useForm } from 'react-hook-form';
-
 import { Card, Button, Input } from '@ragenai/common-ui';
 import {
   Dropdown,
@@ -13,18 +12,19 @@ import {
   DropdownMenu,
 } from '@ragenai/common-ui/Dropdown';
 import { statusToast } from '@/app/lib/utils/toast';
-// import { processUrl } from '@/app/actions/url';
-
-type CrawlMode = 'scrape' | 'crawl';
-
+import { processUrl } from './actions';
+import { logger } from '@/app/lib/utils/logger';
+import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
 interface FormValues {
   url: string;
-  mode: CrawlMode;
+  mode: WebsiteLoaderMode;
 }
 
 export const AddFromUrl = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedMode, setSelectedMode] = useState<CrawlMode>('scrape');
+  const [selectedMode, setSelectedMode] = useState<WebsiteLoaderMode>(
+    WebsiteLoaderMode.SCRAPE
+  );
 
   const { organization } = useOrganization();
   const { successToast, errorToast } = statusToast();
@@ -38,7 +38,7 @@ export const AddFromUrl = () => {
   } = useForm<FormValues>({
     defaultValues: {
       url: '',
-      mode: 'scrape',
+      mode: WebsiteLoaderMode.SCRAPE,
     },
   });
 
@@ -61,7 +61,7 @@ export const AddFromUrl = () => {
     }
   };
 
-  const handleModeChange = (newMode: CrawlMode) => {
+  const handleModeChange = (newMode: WebsiteLoaderMode) => {
     setSelectedMode(newMode);
     setValue('mode', newMode);
   };
@@ -70,16 +70,15 @@ export const AddFromUrl = () => {
     setIsLoading(true);
 
     try {
-      //   const result = await processUrl(data.url, data.mode);
+      const result = await processUrl(data.url, data.mode);
 
-      //   if (!result.success) {
-      //     throw new Error(result.message || 'Failed to process URL');
-      //   }
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to process URL');
+      }
 
       successToast({ message: t('success-message') });
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error processing URL:', error);
+      logger.error({ err: error }, 'Error processing URL');
       errorToast({ message: t('error-message') });
     } finally {
       setIsLoading(false);
@@ -116,15 +115,19 @@ export const AddFromUrl = () => {
                 </label>
                 <Dropdown>
                   <DropdownButton className="w-full py-2 px-3 text-left border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-accent-dark-500 dark:text-white">
-                    {selectedMode === 'scrape'
+                    {selectedMode === WebsiteLoaderMode.SCRAPE
                       ? t('mode-scrape')
                       : t('mode-crawl')}
                   </DropdownButton>
                   <DropdownMenu>
-                    <DropdownItem onClick={() => handleModeChange('scrape')}>
+                    <DropdownItem
+                      onClick={() => handleModeChange(WebsiteLoaderMode.SCRAPE)}
+                    >
                       {t('mode-scrape')}
                     </DropdownItem>
-                    <DropdownItem onClick={() => handleModeChange('crawl')}>
+                    <DropdownItem
+                      onClick={() => handleModeChange(WebsiteLoaderMode.CRAWL)}
+                    >
                       {t('mode-crawl')}
                     </DropdownItem>
                   </DropdownMenu>
