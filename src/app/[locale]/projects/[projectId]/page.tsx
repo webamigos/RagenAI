@@ -17,6 +17,7 @@ export default async function ProjectPage({ params }: Props) {
       <NewChatInterface
         projectId={project.id}
         projectPublicId={project.public_id}
+        projectTitle={project.title}
       />
     </div>
   );

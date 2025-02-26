@@ -15,7 +15,8 @@
     "start-tour": "Start tour",
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
-    "new-thread-placeholder": "Type your message here..."
+    "new-thread-placeholder": "Type your message here...",
+    "project-context": "You are working in project: {projectTitle}"
   },
   "sign-up": {
     "create-account": "Create your account",
