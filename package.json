@@ -153,7 +153,6 @@
     "@langchain/ollama": "^0.2.0",
     "@langchain/openai": "^0.2.11",
     "@langchain/qdrant": "^0.1.1",
-    "@mendable/firecrawl-js": "^1.18.2",
     "@next/third-parties": "^15.0.3",
     "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
     "@opentelemetry/sdk-node": "^0.55.0",
