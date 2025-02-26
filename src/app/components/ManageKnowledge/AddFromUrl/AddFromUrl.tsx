@@ -35,6 +35,7 @@ export const AddFromUrl = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = useForm<FormValues>({
     defaultValues: {
       url: '',
@@ -77,6 +78,8 @@ export const AddFromUrl = () => {
       }
 
       successToast({ message: t('success-message') });
+      reset();
+      setSelectedMode(WebsiteLoaderMode.SCRAPE);
     } catch (error) {
       logger.error({ err: error }, 'Error processing URL');
       errorToast({ message: t('error-message') });
