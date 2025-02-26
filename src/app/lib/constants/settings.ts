@@ -9,14 +9,14 @@ export const defaultOrganizationSettings: RawOrganizationSettings = {
   prompt: '',
   model: 'gpt-4o',
   temperature: 0.8,
-  maxDocumentsToRetrieve: 3,
+  maxDocumentsToRetrieve: 5,
   voiceId: 'JBFqnCBsd6RMkjVDRZzb',
 } as const;
 
 export const organizationSettingsLimits: OrganizationSettingsLimits = {
   maxDocumentsToRetrieve: {
     min: 2,
-    max: 6,
+    max: 30,
     step: 1,
   },
 } as const;
