@@ -27,8 +27,8 @@ import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
-// import { WebsiteDocumentLoader } from '@/libs/document-loaders/website-loader';
-// import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { WebsiteDocumentLoader } from '@/libs/document-loaders/website-loader';
+import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -181,23 +181,23 @@ export const convertAndStoreDocument = async ({
           loader = new TextLoader(filePath);
           break;
         case 'url':
-          // const urlContent = fileContent.toString();
+          const urlContent = fileContent.toString();
+
           // convention to fulfill ConvertAndStoreDocumentParams interface
-          // const [url, mode] = urlContent.split('-');
-          // if (
-          //   mode !== WebsiteLoaderMode.CRAWL &&
-          //   mode !== WebsiteLoaderMode.SCRAPE
-          // ) {
-          //   throw new Error('Invalid crawl mode');
-          // }
-          throw new Error('Website loader not implemented');
-          // loader = new WebsiteDocumentLoader({
-          //   url,
-          //   mode,
-          //   fileName,
-          //   fileId,
-          //   organizationId,
-          // });
+          const [url, mode] = urlContent.split('-');
+          if (
+            mode !== WebsiteLoaderMode.CRAWL &&
+            mode !== WebsiteLoaderMode.SCRAPE
+          ) {
+            throw new Error('Invalid crawl mode');
+          }
+          loader = new WebsiteDocumentLoader({
+            url,
+            mode,
+            fileName,
+            fileId,
+            organizationId,
+          });
           break;
         default:
           loader = undefined;
