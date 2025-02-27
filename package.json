@@ -150,6 +150,7 @@
     "@langchain/community": "^0.3.30",
     "@langchain/core": "^0.3.17",
     "@langchain/google-genai": "^0.1.8",
+    "@langchain/langgraph": "^0.2.49",
     "@langchain/ollama": "^0.2.0",
     "@langchain/openai": "^0.2.11",
     "@langchain/qdrant": "^0.1.1",

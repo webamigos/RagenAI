@@ -1,25 +1,29 @@
+import { HumanMessage } from '@langchain/core/messages';
 import { Role, Source } from '@prisma/client';
-import {
-  getThreadMessages,
-  getThreadDetails,
-} from '../../../lib/services/thread';
+
+import { AssistantMode } from '@/app/contracts/Assistant';
+import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
+import { setSentryContext } from '@/app/lib/services/sentry';
+import { getAllSettings } from '@/app/lib/services/settings';
+import { ApiKeyError } from '@/libs/chains/errors';
+import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
+import { Runnable } from '@langchain/core/runnables';
+import { StreamEvent } from '@langchain/core/tracers/log_stream';
+import { IterableReadableStream } from '@langchain/core/utils/stream';
+import { ApiSseMessageEvent } from '../../../contracts/Events';
 import {
   createAndStoreMessage,
   createMessageInDB,
 } from '../../../lib/services/message';
-import { ApiSseMessageEvent } from '../../../contracts/Events';
+import {
+  getThreadDetails,
+  getThreadMessages,
+} from '../../../lib/services/thread';
 import { logger } from '../../../lib/utils/logger';
-import { initializeRagChain } from './initializeBasicRag';
-import { initializeConversationChain } from '../services/initializeConversationChain';
-import { getAllSettings } from '@/app/lib/services/settings';
-import { ApiKeyError } from '@/libs/chains/errors';
-import { SseExceptionFilter } from '../services/sseExceptionFilter';
-import { setSentryContext } from '@/app/lib/services/sentry';
-import { Runnable } from '@langchain/core/runnables';
-import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
-import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { SseExceptionFilter } from '../services/sseExceptionFilter';
+import { initializeRagChain } from './initializeBasicRag';
+import { initializeRetrievalAgentChain } from './initializeRetrievalAgentChain';
 
 type Config = {
   publicThreadId: string;
@@ -81,11 +85,11 @@ export async function streamEvents({
 
         let chain: Runnable | undefined = undefined;
         let finalAnswerRunName: string | undefined = undefined;
-
         // TODO: stream chain errors
         if (mode === AssistantMode.INTERNAL) {
           if (filteredMode === ChatType.CONVERSATION) {
-            const conversation = await initializeConversationChain({
+            //TODO -> make a separate function for conversation chain, now agent is used for conversation mode!!!
+            const conversation = await initializeRetrievalAgentChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
             });
             chain = conversation.chain;
@@ -125,16 +129,33 @@ export async function streamEvents({
           .join('\n');
 
         sendApiEvent(controller, 'start_lmm');
-
-        const eventStream = chain.streamEvents(
-          {
-            question: threadMessage.content,
-            chat_history: conv_history,
-          },
-          {
-            version: 'v2',
-          }
-        );
+        let eventStream: IterableReadableStream<StreamEvent>;
+        //Dirty fix for agent mode
+        if (
+          mode === AssistantMode.INTERNAL &&
+          filteredMode === ChatType.CONVERSATION
+        ) {
+          eventStream = chain.streamEvents(
+            {
+              messages: [new HumanMessage(threadMessage.content)],
+              question: threadMessage.content,
+              chat_history: conv_history,
+            },
+            {
+              version: 'v2',
+            }
+          );
+        } else {
+          eventStream = chain.streamEvents(
+            {
+              question: threadMessage.content,
+              chat_history: conv_history,
+            },
+            {
+              version: 'v2',
+            }
+          );
+        }
 
         setSentryContext('EXTRA_DATA', {
           userQuestion: threadMessage.content,
@@ -146,6 +167,8 @@ export async function streamEvents({
         let chainRunIds = [];
 
         for await (const event of eventStream) {
+          // eslint-disable-next-line no-console
+          console.log('event', event);
           // TODO: stream selected chain events
           // e. g. related to start and end of vector store  retrieval
           // sendApiEvent(controller, event.event, {
@@ -158,18 +181,26 @@ export async function streamEvents({
           }
 
           if (
-            event.event === 'on_parser_stream' &&
-            event.name === finalAnswerRunName
+            (event.event === 'on_parser_stream' &&
+              event.name === finalAnswerRunName) ||
+            (event.event === 'on_chat_model_stream' &&
+              event.metadata.langgraph_node === 'generate')
           ) {
-            const textChunk = event.data.chunk || '';
+            const textChunk =
+              event.metadata.langgraph_node === 'generate'
+                ? event.data.chunk.content || ''
+                : event.data.chunk;
             fullMessage += textChunk;
 
             sendApiEvent(controller, 'delta', {
               content: textChunk,
             });
           } else if (
-            event.event === 'on_parser_end' &&
-            event.name === finalAnswerRunName
+            (event.event === 'on_parser_end' &&
+              event.name === finalAnswerRunName) ||
+            (event.event === 'on_chain_end' &&
+              event.metadata.langgraph_node === 'generate' &&
+              event.name === 'generate')
           ) {
             sendApiEvent(controller, 'llm_completed');
 
@@ -179,7 +210,7 @@ export async function streamEvents({
               threadId: threadRecord.id,
               message: {
                 id: threadMessage.public_id,
-                content: event.data.output,
+                content: fullMessage, //TODO -> fix this
                 source: Source.UI,
               },
               role: Role.ASSISTANT,
