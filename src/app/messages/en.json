@@ -518,6 +518,10 @@
       "selected-files": "Selected files",
       "remove-file": "Remove file"
     },
+    "project-files": "Project Files",
+    "no-files": "No files in the project",
+    "file-deleted": "File has been deleted",
+    "remove-file": "Remove file",
     "success": {
       "created": "Project has been successfully created."
     },
@@ -526,7 +530,9 @@
       "loading-organization": "Error loading organization",
       "no-organization": "No organization",
       "project-exists": "Project with this name already exists",
-      "creation-failed": "Failed to create project"
+      "creation-failed": "Failed to create project",
+      "loading-files": "Failed to load project files",
+      "file-delete": "Failed to delete file"
     }
   },
   "voice-mode": {

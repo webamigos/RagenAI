@@ -3,6 +3,7 @@ import { getProjectByPublicId } from '@/app/lib/services/project';
 import { NewChatInterface } from '@/app/components/NewChatInterface';
 
 import { ProjectFileUploadTrigger } from '../../../components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFileUploadTrigger';
+import { ProjectFilesList } from '../../../components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFilesList';
 
 type Props = {
   params: {
@@ -23,12 +24,15 @@ export default async function ProjectPage({ params }: Props) {
         projectTitle={project.title}
       />
 
-      <div className="flex w-full max-w-[740px] gap-4">
+      <div className="flex w-full max-w-[740px] gap-4 flex-col">
         <div className="flex-1">
           <ProjectFileUploadTrigger
             projectId={project.id}
             projectPublicId={project.public_id}
           />
+        </div>
+        <div className="flex-1">
+          <ProjectFilesList projectId={project.id} />
         </div>
       </div>
     </div>

@@ -297,18 +297,31 @@
       "create-project": "Stwórz projekt",
       "create": "Stwórz projekt",
       "placeholder": "Wpisz nazwę projektu...",
-      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
       "what-is-project": "Czym jest projekt?",
+      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
       "cancel": "Anuluj",
+      "upload-file": "Wgraj plik do projektu",
+      "upload": {
+        "title": "Wgraj pliki do projektu",
+        "button": "Wgraj pliki",
+        "selected-files": "Wybrane pliki",
+        "remove-file": "Usuń plik"
+      },
+      "project-files": "Pliki projektu",
+      "no-files": "Brak plików w projekcie",
+      "file-deleted": "Plik został usunięty",
+      "remove-file": "Usuń plik",
       "success": {
         "created": "Projekt został pomyślnie utworzony."
       },
       "error": {
-        "title-required": "Nazwa projektu jest wymagana.",
-        "loading-organization": "Błąd podczas ładowania organizacji.",
-        "no-organization": "Brak przypisanej organizacji.",
-        "project-exists": "Projekt o tej nazwie już istnieje.",
-        "creation-failed": "Nie udało się stworzyć projektu."
+        "title-required": "Tytuł jest wymagany",
+        "loading-organization": "Błąd podczas ładowania organizacji",
+        "no-organization": "Brak organizacji",
+        "project-exists": "Projekt o tej nazwie już istnieje",
+        "creation-failed": "Nie udało się utworzyć projektu",
+        "loading-files": "Nie udało się załadować plików projektu",
+        "file-delete": "Nie udało się usunąć pliku"
       }
     },
     "errors": {
@@ -534,6 +547,8 @@
       "selected-files": "Wybrane pliki",
       "remove-file": "Usuń plik"
     },
+    "project-files": "Pliki projektu",
+    "no-files": "Brak plików w projekcie",
     "create-project": "Stwórz projekt",
     "error": {
       "title-required": "Tytuł jest wymagany",
