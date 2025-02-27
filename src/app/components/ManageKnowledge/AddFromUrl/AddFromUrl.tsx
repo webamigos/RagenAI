@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, Button, Input } from '@ragenai/common-ui';
 import {
   Dropdown,
@@ -15,10 +16,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { processUrl } from './actions';
 import { logger } from '@/app/lib/utils/logger';
 import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
-interface FormValues {
-  url: string;
-  mode: WebsiteLoaderMode;
-}
+import { getAddFromUrlSchema, AddFromUrlFormData } from './schema';
 
 export const AddFromUrl = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -29,6 +27,7 @@ export const AddFromUrl = () => {
   const { organization } = useOrganization();
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('add-from-url');
+  const schema = getAddFromUrlSchema(t);
 
   const {
     register,
@@ -36,7 +35,8 @@ export const AddFromUrl = () => {
     formState: { errors },
     setValue,
     reset,
-  } = useForm<FormValues>({
+  } = useForm<AddFromUrlFormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       url: '',
       mode: WebsiteLoaderMode.SCRAPE,
@@ -47,27 +47,12 @@ export const AddFromUrl = () => {
     return null;
   }
 
-  const validateUrl = (value: string): boolean | string => {
-    if (!value) return t('validation.url-required');
-
-    try {
-      const urlObj = new URL(value);
-      return (
-        urlObj.protocol === 'http:' ||
-        urlObj.protocol === 'https:' ||
-        t('validation.invalid-url')
-      );
-    } catch (e) {
-      return t('validation.invalid-url');
-    }
-  };
-
   const handleModeChange = (newMode: WebsiteLoaderMode) => {
     setSelectedMode(newMode);
     setValue('mode', newMode);
   };
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: AddFromUrlFormData) => {
     setIsLoading(true);
 
     try {
@@ -103,10 +88,7 @@ export const AddFromUrl = () => {
                 <Input
                   label={t('url-label')}
                   placeholder={t('url-placeholder')}
-                  {...register('url', {
-                    required: t('validation.url-required'),
-                    validate: validateUrl,
-                  })}
+                  {...register('url')}
                   error={errors.url}
                   disabled={isLoading}
                 />
