@@ -535,6 +535,7 @@
   },
   "projects": {
     "title": "Projekty",
+    "create-project": "Stwórz projekt",
     "create": "Stwórz projekt",
     "placeholder": "Nazwa projektu",
     "what-is-project": "Czym jest projekt?",
@@ -545,20 +546,28 @@
       "title": "Wgraj pliki do projektu",
       "button": "Wgraj pliki",
       "selected-files": "Wybrane pliki",
-      "remove-file": "Usuń plik"
+      "remove-file": "Usuń plik",
+      "add-files": "Dodaj pliki"
     },
     "project-files": "Pliki projektu",
     "no-files": "Brak plików w projekcie",
-    "create-project": "Stwórz projekt",
+    "file-deleted": "Plik został usunięty",
+    "remove-file": "Usuń plik",
+    "file-singular": "plik",
+    "file-plural": "pliki",
+    "manage-files": "Zarządzaj plikami",
+    "loading": "Ładowanie...",
+    "success": {
+      "created": "Projekt został pomyślnie utworzony."
+    },
     "error": {
       "title-required": "Tytuł jest wymagany",
       "loading-organization": "Błąd podczas ładowania organizacji",
       "no-organization": "Brak organizacji",
       "project-exists": "Projekt o takiej nazwie już istnieje",
-      "creation-failed": "Nie udało się stowrzyć projektu"
-    },
-    "success": {
-      "created": "Projekt został utworzony"
+      "creation-failed": "Nie udało się stowrzyć projektu",
+      "loading-files": "Nie udało się załadować plików projektu",
+      "file-delete": "Nie udało się usunąć pliku"
     }
   },
   "voice-mode": {

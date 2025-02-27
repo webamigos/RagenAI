@@ -516,12 +516,17 @@
       "title": "Upload Files to Project",
       "button": "Upload files",
       "selected-files": "Selected files",
-      "remove-file": "Remove file"
+      "remove-file": "Remove file",
+      "add-files": "Add files"
     },
     "project-files": "Project Files",
     "no-files": "No files in the project",
     "file-deleted": "File has been deleted",
     "remove-file": "Remove file",
+    "file-singular": "file",
+    "file-plural": "files",
+    "manage-files": "Manage files",
+    "loading": "Loading...",
     "success": {
       "created": "Project has been successfully created."
     },
