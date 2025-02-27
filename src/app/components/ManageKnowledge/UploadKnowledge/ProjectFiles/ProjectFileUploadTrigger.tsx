@@ -30,16 +30,7 @@ const ProjectFileUploadContent = ({
   status: FileStatus;
   t: any;
 }) => {
-  const { hasFiles, fileCount, loading } = status;
-
-  if (loading) {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="h-4 w-4 border-2 border-t-blue-500 rounded-full animate-spin"></div>
-        <Text>{t('loading')}</Text>
-      </div>
-    );
-  }
+  const { hasFiles, fileCount } = status;
 
   if (hasFiles) {
     return (
@@ -126,25 +117,23 @@ export const ProjectFileUploadTrigger = ({
     const baseClass =
       'w-full py-6 flex items-center justify-center gap-2 cursor-pointer transition-all duration-300';
 
-    const opacityClass = isReady ? 'opacity-100' : 'opacity-0';
+    const opacityClass =
+      isReady && !fileStatus.loading ? 'opacity-100' : 'opacity-0';
 
     const styleClass = fileStatus.hasFiles
       ? 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800'
       : 'bg-gray-100 hover:bg-gray-50 dark:hover:bg-accent-dark-700 text-gray-800';
 
     return `${baseClass} ${opacityClass} ${styleClass}`;
-  }, [isReady, fileStatus.hasFiles]);
+  }, [isReady, fileStatus.hasFiles, fileStatus.loading]);
 
   return (
     <>
-      <Card
-        onClick={() => isReady && setShowUploader(true)}
-        className={cardClass}
-      >
-        {isReady && <ProjectFileUploadContent status={fileStatus} t={t} />}
+      <Card onClick={() => setShowUploader(true)} className={cardClass}>
+        <ProjectFileUploadContent status={fileStatus} t={t} />
       </Card>
 
-      <Dialog open={showUploader} onClose={handleDialogClose} size="lg">
+      <Dialog open={showUploader} onClose={handleDialogClose}>
         <ProjectFileUpload
           projectId={projectId}
           projectPublicId={projectPublicId}

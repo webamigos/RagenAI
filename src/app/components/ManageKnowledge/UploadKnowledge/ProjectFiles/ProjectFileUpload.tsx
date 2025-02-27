@@ -6,8 +6,8 @@ import { useOrganization } from '@clerk/nextjs';
 import { Suspense, lazy } from 'react';
 
 import { FileUploader } from '@ragenai/common-ui/FileUploader';
+import { LoadingSkeleton } from './components/LoadingSkeleton';
 import { Button } from '@ragenai/common-ui/Button';
-import { Skeleton } from '@/app/components';
 import { UploadList } from '../UploadList';
 import {
   ErrorBoundary,
@@ -32,13 +32,6 @@ type Props = {
   projectId: number;
   projectPublicId: string;
 };
-
-const LoadingView = () => (
-  <div className="p-4">
-    <Skeleton height="h-6" width="w-48" className="mb-4" />
-    <Skeleton height="h-32" width="w-full" className="mb-4" />
-  </div>
-);
 
 const UploadView = memo(
   ({
@@ -107,19 +100,15 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
     );
   };
 
-  // Handle file upload action
   const handleSend = async () => {
     const success = await uploadFiles();
     if (success) {
-      // Force refresh project files list after upload
       setComponentState(ComponentState.HAS_FILES);
     }
   };
 
-  // Check for organization on component mount
   useEffect(() => {
     if (organization) {
-      // Initial state will be determined by ProjectFilesList callback
     }
   }, [projectId, organization]);
 
@@ -127,13 +116,10 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
     return null;
   }
 
-  // Render the appropriate view based on component state
   switch (componentState) {
     case ComponentState.INITIALIZING:
       return (
-        <div className="p-4">
-          <Skeleton height="h-6" width="w-48" className="mb-4" />
-          <Skeleton height="h-32" width="w-full" className="mb-4" />
+        <div className="min-h-32 w-full">
           <ErrorBoundary
             fallback={
               <FileErrorFallback
@@ -142,7 +128,7 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
               />
             }
           >
-            <Suspense fallback={<LoadingView />}>
+            <Suspense fallback={<LoadingSkeleton />}>
               <ProjectFilesList
                 projectId={projectId}
                 projectPublicId={projectPublicId}
@@ -165,7 +151,7 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
             />
           }
         >
-          <Suspense fallback={<LoadingView />}>
+          <Suspense fallback={<LoadingSkeleton />}>
             <ProjectFilesList
               projectId={projectId}
               projectPublicId={projectPublicId}
@@ -188,6 +174,6 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
       );
 
     default:
-      return <LoadingView />;
+      return <LoadingSkeleton />;
   }
 };
