@@ -35,17 +35,17 @@ const ProjectFileUploadContent = ({
   if (hasFiles) {
     return (
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center h-8 w-8 bg-blue-100 dark:bg-blue-800/30 rounded-full">
-          <span className="text-blue-600 dark:text-blue-300 text-sm font-medium">
+        <div className="flex items-center justify-center h-8 w-8 bg-primary-blue-400/20 dark:bg-accent-dark-300 rounded-full">
+          <span className="text-primary-blue-500 dark:text-gray-200 text-sm font-medium">
             {fileCount}
           </span>
         </div>
         <div className="flex flex-col items-start">
-          <Text className="font-medium text-blue-600 dark:text-blue-300">
+          <Text className="font-medium text-primary-blue-500 dark:text-gray-200">
             {fileCount}{' '}
             {fileCount === 1 ? t('file-singular') : t('file-plural')}
           </Text>
-          <Text className="text-sm text-blue-500 dark:text-blue-400">
+          <Text className="text-sm text-gray-600 dark:text-gray-400">
             {t('manage-files')}
           </Text>
         </div>
@@ -121,8 +121,8 @@ export const ProjectFileUploadTrigger = ({
       isReady && !fileStatus.loading ? 'opacity-100' : 'opacity-0';
 
     const styleClass = fileStatus.hasFiles
-      ? 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800'
-      : 'bg-gray-100 hover:bg-gray-50 dark:hover:bg-accent-dark-700 text-gray-800';
+      ? 'bg-gray-50 hover:bg-gray-100 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 border-gray-200 dark:border-gray-700'
+      : 'bg-gray-100 hover:bg-gray-50 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 text-gray-800';
 
     return `${baseClass} ${opacityClass} ${styleClass}`;
   }, [isReady, fileStatus.hasFiles, fileStatus.loading]);
@@ -133,7 +133,11 @@ export const ProjectFileUploadTrigger = ({
         <ProjectFileUploadContent status={fileStatus} t={t} />
       </Card>
 
-      <Dialog open={showUploader} onClose={handleDialogClose}>
+      <Dialog
+        className="max-h-[400px] overflow-y-auto"
+        open={showUploader}
+        onClose={handleDialogClose}
+      >
         <ProjectFileUpload
           projectId={projectId}
           projectPublicId={projectPublicId}

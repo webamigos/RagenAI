@@ -6,8 +6,7 @@ import { useOrganization } from '@clerk/nextjs';
 import { Suspense, lazy } from 'react';
 
 import { FileUploader } from '@ragenai/common-ui/FileUploader';
-import { LoadingSkeleton } from './components/LoadingSkeleton';
-import { Button } from '@ragenai/common-ui/Button';
+import { Button, LoadingSkeleton } from '@ragenai/common-ui';
 import { UploadList } from '../UploadList';
 import {
   ErrorBoundary,

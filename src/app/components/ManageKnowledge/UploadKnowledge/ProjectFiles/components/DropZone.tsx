@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
+
 import { Text, UploadInboxIcon } from '@ragenai/common-ui';
+
 import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 
 type DropZoneProps = {

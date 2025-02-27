@@ -3,14 +3,11 @@
 import { useEffect, useRef, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
-import { Card, Text } from '@ragenai/common-ui';
-import { Skeleton } from '@/app/components';
-import { FileUploader } from '@ragenai/common-ui/FileUploader';
+import { Card, Text, LoadingSkeleton, FileUploader } from '@ragenai/common-ui';
 
 import { FileItem } from './components/FileItem';
 import { DropZone } from './components/DropZone';
 import { useProjectFiles, FileListState } from './hooks/useProjectFiles';
-
 type Props = {
   projectId: number;
   onFilesLoaded?: (hasFiles: boolean) => void;
@@ -68,19 +65,7 @@ export const ProjectFilesList = memo(
 
     if (listState === FileListState.LOADING) {
       if (initialFileCount > 0) {
-        return (
-          <Card className="w-full p-6 min-h-[400px]">
-            <div className="flex justify-between items-center mb-4">
-              <Skeleton height="h-7" width="w-32" />
-              <Skeleton height="h-7" width="w-24" />
-            </div>
-            <div className="space-y-2">
-              {[...Array(initialFileCount)].map((_, index) => (
-                <Skeleton key={index} height="h-16" width="w-full" />
-              ))}
-            </div>
-          </Card>
-        );
+        return <LoadingSkeleton />;
       }
       return (
         <FileUploader onFilesAdded={handleUploadFiles} disabled={isUploading} />
@@ -99,10 +84,12 @@ export const ProjectFilesList = memo(
       <DropZone onFilesDropped={handleUploadFiles} t={t}>
         <div className="relative min-h-[400px]">
           <div className="flex justify-between items-center mb-4">
-            <Text className="text-lg font-medium">{t('project-files')}</Text>
+            <Text className="text-lg font-medium text-gray-700 dark:text-gray-200">
+              {t('project-files')}
+            </Text>
             <button
               onClick={handleFileSelect}
-              className="px-2 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors"
               title={t('upload.add-files')}
             >
               + {t('upload.add-files')}
@@ -118,9 +105,9 @@ export const ProjectFilesList = memo(
           </div>
 
           {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-800/80 z-10 rounded-md">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-accent-dark-500/80 z-10 rounded-md">
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-t-blue-500 rounded-full animate-spin mx-auto mb-2"></div>
+                <div className="w-12 h-12 border-4 border-t-primary-blue-500 rounded-full animate-spin mx-auto mb-2"></div>
                 <Text className="text-gray-600 dark:text-gray-300 font-medium">
                   {t('upload.uploading')}
                 </Text>

@@ -1,37 +1,21 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
-import { PageSkeleton } from '@/app/components';
+
+import { PageSkeleton } from '@ragenai/common-ui';
+
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
+
+import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { ProjectFileUploadTrigger } from '@/app/components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFileUploadTrigger';
 
 type Project = {
   id: number;
   public_id: string;
   title: string;
 };
-
-const NewChatInterface = dynamic(
-  () =>
-    import('@/app/components/NewChatInterface').then(
-      (mod) => mod.NewChatInterface
-    ),
-  { ssr: false, loading: () => <PageSkeleton /> }
-);
-
-const ProjectFileUploadPlaceholder = () => (
-  <div className="w-full h-[60px] rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse"></div>
-);
-
-const ProjectFileUploadTrigger = dynamic(
-  () =>
-    import(
-      '../../../components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFileUploadTrigger'
-    ).then((mod) => mod.ProjectFileUploadTrigger),
-  { ssr: false, loading: () => <ProjectFileUploadPlaceholder /> }
-);
 
 type Props = {
   params: {

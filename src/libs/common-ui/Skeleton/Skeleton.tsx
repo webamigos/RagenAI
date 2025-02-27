@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 import { classMerge } from '@ragenai/common-ui';
 
 type SkeletonProps = {
@@ -13,7 +13,7 @@ type SkeletonProps = {
 };
 
 /**
- * Reużywalny komponent Skeleton do pokazania podczas ładowania danych
+ * Reusable Skeleton component to display during data loading
  */
 export const Skeleton = ({
   height = 'h-24',
@@ -31,12 +31,10 @@ export const Skeleton = ({
     className
   );
 
-  // Jeśli przekazano children, to renderujemy je jako zawartość
   if (children) {
     return <div className={baseStyle}>{children}</div>;
   }
 
-  // Możliwość renderowania jako Card
   if (card) {
     return (
       <div
@@ -50,12 +48,11 @@ export const Skeleton = ({
     );
   }
 
-  // Podstawowy skeleton
   return <div className={baseStyle} />;
 };
 
 /**
- * Komponent rozszerzający Skeleton o możliwość generowania wielu elementów w liście
+ * Skeleton component that can generate multiple elements in a list
  */
 export const SkeletonList = ({
   count = 3,
@@ -80,7 +77,7 @@ export const SkeletonList = ({
 };
 
 /**
- * Komponent Skeleton Page specyficzny dla strony projektu
+ * Skeleton Page component specific to the project page
  */
 export const PageSkeleton = () => (
   <div className="flex flex-col h-screen justify-center items-center gap-4">
@@ -95,3 +92,23 @@ export const PageSkeleton = () => (
     </div>
   </div>
 );
+
+/**
+ * Loading Skeleton component for general loading states
+ */
+export const LoadingSkeleton = memo(() => {
+  return (
+    <div className="w-full p-4">
+      <div className="mb-4">
+        <Skeleton height="h-6" width="w-32" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton height="h-16" width="w-full" />
+        <Skeleton height="h-16" width="w-full" />
+        <Skeleton height="h-16" width="w-full" />
+      </div>
+    </div>
+  );
+});
+
+LoadingSkeleton.displayName = 'LoadingSkeleton';
