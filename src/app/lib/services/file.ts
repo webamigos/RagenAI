@@ -73,29 +73,6 @@ export const deleteFileFromDb = async (orgId: string, documentId: string) => {
   });
 };
 
-export const fetchProjectFiles = async (projectId: number) => {
-  const orgId = getOrgIdOrThrow();
-  return await db.userFile.findMany({
-    where: {
-      organization_id: orgId,
-      project_id: projectId,
-    },
-    select: {
-      created_at: true,
-      file_name: true,
-      file_size: true,
-      file_type: true,
-      updated_at: true,
-      metadata: true,
-      organization_id: true,
-      id: true,
-    },
-    orderBy: {
-      created_at: 'desc',
-    },
-  });
-};
-
 export const deleteProjectFile = async (fileId: string, projectId: number) => {
   const orgId = getOrgIdOrThrow();
   return await db.userFile.deleteMany({
@@ -103,6 +80,6 @@ export const deleteProjectFile = async (fileId: string, projectId: number) => {
       id: fileId,
       organization_id: orgId,
       project_id: projectId,
-    },
+    } as any,
   });
 };
