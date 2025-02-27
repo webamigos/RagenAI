@@ -1,49 +1,150 @@
-import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useEffect, useCallback } from 'react';
+import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
-
 import { usePathname } from '@/i18n/routing';
-import { useThreadsContext } from '../../hooks/useThreadsContext';
-import { useNewThread } from '@/app/hooks/useNewThread';
-import { useCloseThread } from '@/app/hooks/useCloseThreads';
-import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
-import { useSidebar } from '@/app/hooks/useSidebar';
-import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 
-type SidebarThreadsFetchError = {
-  status: number | null;
-  message: string | null;
-};
-
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+import { useNewThread } from '../../hooks/useNewThread';
+import { useCloseThread } from '../../hooks/useCloseThreads';
+import { useOnboardingContext } from '../../hooks/useOnboardingContext';
+import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
+import { getUserMessages } from '@/app/actions';
+import { statusToast } from '@/app/lib/utils/toast';
+import {
+  setActiveThread,
+  setProjects,
+  closeSidebar,
+  setCreateModalOpen,
+} from '@/store/sidebar/sidebarSlice';
+import {
+  setLoading,
+  addThreads,
+  incrementSkip,
+  setHasMore,
+  setError,
+  resetThreads,
+} from '@/store/threads/threadsSlice';
+import type { ErrorState } from '@/store/threads/threadsSlice';
+import { logger } from '@/app/lib/utils/logger';
 export const useSidebarLogic = () => {
-  const [activeThread, setActiveThread] = useState<string>('');
-  const { state, refetchThreads } = useThreadsContext();
-  const { userThreads, error, isLoading, hasMore } = state;
+  const dispatch = useAppDispatch();
+  const { isOpen, activeThread, projects, isCreateModalOpen } = useAppSelector(
+    (state) => state.sidebar
+  );
+  const { errorToast } = statusToast();
+
+  const {
+    error,
+    isLoading,
+    hasMore,
+    isThreadLoading,
+    isThreadsLoaded,
+    userThreads,
+    skip,
+  } = useAppSelector((state) => state.threads);
+
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
-  const isThreadsLoaded = state.userThreads.length > 0;
-  const { handleNewThread, isLoading: isThreadLoading } = useNewThread();
+  const { handleNewThread } = useNewThread();
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
-  const { closeSidebar } = useSidebar();
   const { openSearch } = useSearchThreads();
+  const { organization } = useOrganization();
+
+  const prefetchThreads = useCallback(
+    async (userId: string, skipCount: number, limit: number) => {
+      try {
+        await getUserMessages(userId, skipCount, limit);
+      } catch (error) {
+        logger.error({ err: error }, 'Error prefetching threads');
+        return errorToast({ message: 'Error prefetching threads' });
+      } // Silently fail prefetch attempts
+    },
+    []
+  );
+
+  const loadMoreThreads = useCallback(async () => {
+    if (isLoading || !hasMore || !user?.id) return;
+
+    // Adaptive batch size based on viewport
+    const viewportHeight = window.innerHeight;
+    const avgThreadHeight = 100; // pixels
+    const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5; // +5 for buffer
+
+    dispatch(setLoading(true));
+
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        const { status, error, threads } = await getUserMessages(
+          user.id,
+          skip,
+          limit
+        );
+
+        if (status === 200) {
+          if (threads?.length) {
+            dispatch(addThreads(threads));
+            dispatch(incrementSkip(threads.length));
+            dispatch(setHasMore(threads.length === limit));
+
+            // Prefetch next batch
+            if (threads.length === limit) {
+              prefetchThreads(user.id, skip + limit, limit);
+            }
+          } else {
+            dispatch(setHasMore(false));
+          }
+          break;
+        }
+        throw new Error(error);
+      } catch (err) {
+        retryCount++;
+        if (retryCount === maxRetries) {
+          dispatch(
+            setError({
+              status: 500,
+              message: err?.toString() || 'Unknown error',
+            })
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
+      }
+    }
+
+    dispatch(setLoading(false));
+  }, [isLoading, hasMore, user?.id, skip, dispatch, prefetchThreads]);
+
+  const refetchThreads = useCallback(async () => {
+    const cachedThreads = [...userThreads];
+    try {
+      dispatch(resetThreads());
+      await loadMoreThreads();
+    } catch {
+      // Restore cached state on failure
+      dispatch(addThreads(cachedThreads));
+    }
+  }, [dispatch, loadMoreThreads, userThreads]);
 
   const handleThread = () => {
     handleNewThread();
     handleCloseThread(false);
-    closeSidebar();
+    dispatch(closeSidebar());
   };
 
   const handleSearch = () => {
     openSearch();
-    closeSidebar();
+    dispatch(closeSidebar());
   };
 
-  function getSidebarThreadsError(error: SidebarThreadsFetchError): string {
+  function getSidebarThreadsError(error: ErrorState): string {
     switch (error.status) {
       case 400:
         if (error.message?.includes('prisma')) {
@@ -64,19 +165,61 @@ export const useSidebarLogic = () => {
   useEffect(() => {
     const parts = pathname.split('/');
     const threadIndex = parts.indexOf('threads');
+    const projectIndex = parts.indexOf('projects');
 
     if (threadIndex !== -1 && parts[threadIndex + 1]) {
       const threadId = parts[threadIndex + 1];
-      setActiveThread(threadId);
+      dispatch(setActiveThread(threadId));
+    } else if (
+      projectIndex !== -1 &&
+      parts[projectIndex + 2] === 'threads' &&
+      parts[projectIndex + 3]
+    ) {
+      const threadId = parts[projectIndex + 3];
+      dispatch(setActiveThread(threadId));
     } else {
-      setActiveThread('');
+      dispatch(setActiveThread(undefined));
     }
-  }, [pathname]);
+  }, [pathname, dispatch]);
+
+  const fetchProjects = async () => {
+    if (!organization?.id || !user?.id) {
+      return;
+    }
+    const fetchedProjects = await getProjects(organization.id, user.id);
+
+    if (fetchedProjects.projects) {
+      dispatch(setProjects(fetchedProjects.projects));
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects();
+  }, [organization?.id, user?.id]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (user?.id && mounted && !isThreadsLoaded) {
+      loadMoreThreads();
+    }
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id, loadMoreThreads, isThreadsLoaded]);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      dispatch(resetThreads());
+    }
+  }, [isSignedIn, dispatch]);
 
   return {
     error,
     locale,
     hasMore,
+    projects,
     userEmail,
     isLoading,
     userAvatar,
@@ -89,6 +232,12 @@ export const useSidebarLogic = () => {
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,
+    isCreateModalOpen,
+    handleCloseThread,
+    loadMoreThreads,
+    setIsCreateModalOpen: (value: boolean) =>
+      dispatch(setCreateModalOpen(value)),
     getSidebarThreadsError,
+    refreshProjects: fetchProjects,
   };
 };

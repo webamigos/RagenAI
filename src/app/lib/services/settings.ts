@@ -34,7 +34,7 @@ export async function saveOpenaiAPIKey(
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
   const encryptedApiKey = await redis.hget(`org:${orgId}`, 'openai');
   if (!encryptedApiKey) {
-    return null;
+    return defaultOrganizationSettings.apiKey;
   }
   return decryptApiKey(encryptedApiKey);
 }
@@ -89,6 +89,20 @@ export async function getMaxDocumentsToRetrieve(
     : defaultOrganizationSettings.maxDocumentsToRetrieve;
 }
 
+export async function saveVoiceId(
+  orgId: string,
+  voiceId: string
+): Promise<{ success: boolean; status: string }> {
+  return await redis.hsetWithStatus(`org:${orgId}`, {
+    voiceId,
+  });
+}
+
+export async function getVoiceId(orgId: string): Promise<string> {
+  const voiceId = await redis.hget(`org:${orgId}`, 'voiceId');
+  return voiceId ?? 'JBFqnCBsd6RMkjVDRZzb'; // default male voice
+}
+
 export async function getAllSettings(
   orgId: string
 ): Promise<RawOrganizationSettings> {
@@ -106,5 +120,6 @@ export async function getAllSettings(
     maxDocumentsToRetrieve:
       +result.maxDocumentsToRetrieve ||
       defaultOrganizationSettings.maxDocumentsToRetrieve,
+    voiceId: result.voiceId || 'JBFqnCBsd6RMkjVDRZzb',
   };
 }

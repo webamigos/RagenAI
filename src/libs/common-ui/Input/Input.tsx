@@ -22,13 +22,15 @@ type Props = {
   errorMessage?: string;
   containerClassName?: string;
   mandatory?: boolean;
-  type?: 'text' | 'range' | 'number' | 'email' | 'password';
+  type?: 'text' | 'range' | 'number' | 'email' | 'password' | 'file';
   min?: HTMLProps<'min'>;
   max?: HTMLProps<'max'>;
   step?: number;
   isLoading?: boolean;
   skeletonHeight?: string;
   skeletonWidth?: string;
+  iconLeft?: React.ReactNode;
+  iconRight?: React.ReactNode;
 } & ComponentPropsWithRef<'input'>;
 
 export const Input = forwardRef(
@@ -49,6 +51,8 @@ export const Input = forwardRef(
       skeletonHeight = 'h-5',
       skeletonWidth = 'w-50',
       autocomplete,
+      iconLeft,
+      iconRight,
       ...rest
     }: Props,
     ref: Ref<HTMLInputElement>
@@ -97,14 +101,15 @@ export const Input = forwardRef(
         {label && (
           <label
             htmlFor={id}
-            className="block text-sm text-gray-600 font-medium leading-6 dark:text-gray-300"
+            className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300"
           >
             {label}
             {mandatory && <span className="text-red-600">*</span>}
           </label>
         )}
         <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
-          <div className="relative">
+          <div className="relative flex items-center">
+            {iconLeft && <span className="absolute left-3">{iconLeft}</span>}
             {isLoading ? (
               <div
                 className={classMerge(
@@ -123,9 +128,9 @@ export const Input = forwardRef(
                 autoComplete={autocomplete}
                 step={step}
                 className={classMerge(
-                  'block w-full dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
+                  'block w-full py-2  dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
                   {
-                    'px-3  pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-2xl cursor-pointer':
+                    'pl-2.5 pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-md cursor-pointer':
                       type !== 'range',
                     'text-red-900 ring-red-300 placeholder:text-red-300 focus-visible:ring-red-500 focus-visible:ring-2':
                       error,
@@ -144,6 +149,11 @@ export const Input = forwardRef(
               >
                 {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
               </button>
+            )}
+            {iconRight && (
+              <span className="absolute right-3 flex items-center">
+                {iconRight}
+              </span>
             )}
           </div>
         </div>

@@ -25,9 +25,10 @@ export default function Index({
   searchParams,
 }: Props) {
   setRequestLocale(locale);
+
   return (
     <div>
-      <div className="container mx-auto h-full mt-4">
+      <div className="container mx-auto h-full">
         <PublicStart
           organizationId={organizationId}
           widgetMode={searchParams.widgetMode}

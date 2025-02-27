@@ -1,6 +1,5 @@
 'use client';
 
-import { RocketLaunchIcon } from '@heroicons/react/24/outline';
 import { useUser } from '@clerk/nextjs';
 import { Alert, Button } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
@@ -14,11 +13,12 @@ import { OnboardingSteps } from './OnboardingSteps';
 import { ValidationBoard } from './ValidationBoard';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscapeAndOutsideClick';
+import { NewChatInterface } from '../NewChatInterface';
 
 export const Start = () => {
   const { isSignedIn, isLoaded: isUserDataLoaded, user } = useUser();
   const t = useTranslations('Index');
-  const { handleNewThread, isLoading, isPending, isLimitLock } = useNewThread();
+  const { isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
   const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
   const { isSearchOpen, closeSearch } = useSearchThreads();
@@ -53,19 +53,7 @@ export const Start = () => {
                 className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
               />
             ) : (
-              <Button
-                label={t('start-new-thread')}
-                className="px-5 py-3 sm:mb-12 mb-8"
-                onClick={handleNewThread}
-                isLoading={isLoading}
-                disabled={isLoading || isLimitLock || showOnboarding}
-                iconRight={
-                  <RocketLaunchIcon
-                    className="h-5 w-5 flex-none text-white cursor-pointer"
-                    aria-hidden="true"
-                  />
-                }
-              />
+              <NewChatInterface />
             )}
             {isLimitLock && !isSignedIn && (
               <Alert title={t('limit-reached')} type="info" />

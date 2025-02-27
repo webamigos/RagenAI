@@ -4,7 +4,8 @@ import React, { ComponentProps } from 'react';
 import * as Headless from '@headlessui/react';
 
 import { usePathname } from '@/i18n/routing';
-import { useSidebar } from '@/app/hooks/useSidebar';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { closeSidebar, openSidebar } from '@/store/sidebar/sidebarSlice';
 
 import { classMerge } from '../utils/cn';
 import { NavbarItem } from '../Navbar';
@@ -48,7 +49,8 @@ function CloseMenuIcon() {
 }
 
 function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
-  const { isSidebarOpen, closeSidebar } = useSidebar();
+  const dispatch = useAppDispatch();
+  const isOpen = useAppSelector((state) => state.sidebar.isOpen);
 
   const tabClasses = [
     'absolute w-92 h-5 create-organization-tab-mobile top-[15.5rem]',
@@ -58,8 +60,8 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
 
   return (
     <Headless.Dialog
-      open={isSidebarOpen}
-      onClose={closeSidebar}
+      open={isOpen}
+      onClose={() => dispatch(closeSidebar())}
       className="lg:hidden"
     >
       <Headless.DialogBackdrop
@@ -94,7 +96,8 @@ export function SidebarLayout({
   navbar?: React.ReactNode;
   sidebar: React.ReactNode;
 }>) {
-  const { openSidebar } = useSidebar();
+  const dispatch = useAppDispatch();
+  const openSidebarFn = () => dispatch(openSidebar());
   const pathname = usePathname();
 
   const isMyProfile =
@@ -104,12 +107,12 @@ export function SidebarLayout({
     'flex flex-1 flex-col bg-primary-light dark:bg-primary-dark overflow-y-auto';
   const baseNavbarWrapperStyles = 'flex justify-end hidden lg:flex';
   const baseContentWrapperStyles =
-    'flex flex-1 h-full lg:rounded-lg lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
+    'flex flex-1 h-full lg:rounded-md lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
 
   return (
     <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-primary-dark dark:bg-primary-dark">
       {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-5 top-5 bottom-5 w-88 rounded-3xl bg-white dark:bg-secondary-dark max-lg:hidden">
+      <div className="fixed inset-y-0 w-80  bg-white dark:bg-secondary-dark max-lg:hidden">
         {sidebar}
       </div>
 
@@ -120,7 +123,7 @@ export function SidebarLayout({
       <header className="flex items-center px-4 lg:hidden bg-primary-light dark:bg-primary-dark">
         <NavbarItem
           className="relative"
-          onClick={openSidebar}
+          onClick={openSidebarFn}
           aria-label="Open navigation"
         >
           <OpenMenuIcon className="mt-4 text-secondary-dark dark:text-white" />
@@ -132,8 +135,8 @@ export function SidebarLayout({
       <main
         className={`${baseMainStyles} ${
           isMyProfile
-            ? 'pb-6 px-2.5 lg:ml-[22rem] lg:pt-2'
-            : 'relative justify-center pb-2 lg:ml-96 lg:pt-2 overflow-auto'
+            ? 'pb-6 px-2.5 lg:ml-[19rem] lg:pt-2'
+            : 'relative justify-center pb-2 lg:ml-[21rem] lg:pt-2 overflow-auto'
         }`}
       >
         <div

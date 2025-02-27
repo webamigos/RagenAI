@@ -30,7 +30,7 @@ export const ThemeSwitcher = ({ className }: Props) => {
     resolvedTheme === 'light' ? (
       <button
         onClick={() => handleClick('dark')}
-        className="rounded-full border p-2.5 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
+        className="rounded-full border p-2 dark:border-accent-dark-700 hover:bg-primary-gray-200 dark:hover:bg-accent-dark-700"
       >
         <MoonIcon
           className="h-5 w-5 flex-none cursor-pointer"

@@ -17,7 +17,7 @@ export const fetchOrganizationDefaultProject = async (
 ) => {
   return await db.project.findFirstOrThrow({
     where: {
-      organization_id: systemOrgId,
+      internal_organization_id: systemOrgId,
     },
   });
 };
@@ -36,7 +36,7 @@ export const createOrganizationWithDefaultProject = async (
     await tx.project.create({
       data: {
         title: 'Default',
-        organization_id: organization.id,
+        internal_organization_id: organization.id,
       },
     });
 
@@ -99,4 +99,10 @@ export const removeApiKeyFromDb = async (
       id: apiKey.id,
     },
   });
+};
+
+// TODO: in the future we should implement fetching the API key from the pool, now we accept the risk of using the same key for all users
+export const getApiKeyFromPool = () => {
+  const apiKey = process.env.OPENAI_API_KEY!;
+  return apiKey;
 };

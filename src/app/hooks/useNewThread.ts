@@ -1,32 +1,37 @@
-import { useEffect, useTransition, useReducer, useCallback } from 'react';
-import { useUser } from '@clerk/nextjs';
-
-import { usePathname, useRouter } from '@/i18n/routing';
 import {
-  checkVisitorVisits,
-  createThread,
-  createThreadForGuest,
-} from '../lib/services/api';
+  useEffect,
+  useTransition,
+  useReducer,
+  useCallback,
+  useState,
+} from 'react';
+import { useUser } from '@clerk/nextjs';
+import { usePathname, useRouter } from '@/i18n/routing';
+
+import { checkVisitorVisits } from '../lib/services/api';
 import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
 import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
+import { trackThreadCreated } from '../actions';
+import {
+  createGuestThreadAction,
+  createThreadAction,
+} from '../lib/actions/threads';
+import { getVisitorIdFromBrowserCookie } from '../lib/services/cookies.browser';
 
 type ActionType =
-  | { type: 'SET_VISITOR_ID'; payload: string | null }
   | { type: 'SET_IS_LOADING'; payload: boolean }
   | { type: 'SET_IS_LIMIT_LOCK'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
 
 type StateType = {
-  visitorId: string | null;
   isLoading: boolean;
   isLimitLock: boolean;
   error: string | null;
 };
 
 const initialState: StateType = {
-  visitorId: null,
   isLoading: false,
   isLimitLock: false,
   error: null,
@@ -34,8 +39,6 @@ const initialState: StateType = {
 
 const reducer = (state: StateType, action: ActionType): StateType => {
   switch (action.type) {
-    case 'SET_VISITOR_ID':
-      return { ...state, visitorId: action.payload };
     case 'SET_IS_LOADING':
       return { ...state, isLoading: action.payload };
     case 'SET_IS_LIMIT_LOCK':
@@ -49,6 +52,7 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 
 export const useNewThread = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [visitorId, setVisitorId] = useState('');
   const [isPending, setTransition] = useTransition();
 
   const { isSignedIn, user } = useUser();
@@ -58,24 +62,14 @@ export const useNewThread = () => {
   const { errorToast } = statusToast();
 
   useEffect(() => {
-    const setId = async () => {
-      try {
-        if (isSignedIn && user?.id) {
-          dispatch({
-            type: 'SET_VISITOR_ID',
-            payload: user?.id as string,
-          });
-        }
-      } catch (err) {
-        dispatch({ type: 'SET_ERROR', payload: 'Failed to set visitor ID.' });
-      }
-    };
-
-    setId();
-  }, [isSignedIn, user]);
+    const visitorCookieValue = getVisitorIdFromBrowserCookie();
+    if (visitorCookieValue) {
+      setVisitorId(visitorCookieValue);
+    }
+  }, []);
 
   const loadVisitorMessages = useCallback(async () => {
-    if (!state.visitorId) {
+    if (!visitorId) {
       return;
     }
     if (pathname.includes('/threads')) {
@@ -88,9 +82,7 @@ export const useNewThread = () => {
       );
 
       if (!isSignedIn) {
-        const visitorMessagesResponse = await checkVisitorVisits(
-          state.visitorId
-        );
+        const visitorMessagesResponse = await checkVisitorVisits(visitorId);
 
         if (visitorMessagesResponse.data.messages >= dailyMessageLimit) {
           dispatch({ type: 'SET_IS_LIMIT_LOCK', payload: true });
@@ -106,7 +98,7 @@ export const useNewThread = () => {
         payload: 'Failed to load visitor messages.',
       });
     }
-  }, [state.visitorId, pathname]);
+  }, [visitorId, pathname]);
 
   useEffect(() => {
     loadVisitorMessages();
@@ -122,7 +114,10 @@ export const useNewThread = () => {
     }
   }, [pathname]);
 
-  const handleNewThread = async () => {
+  const handleNewThread = async (
+    initialMessage?: string,
+    projectId?: number
+  ) => {
     dispatch({ type: 'SET_IS_LOADING', payload: true });
 
     if (state.isLimitLock) {
@@ -133,17 +128,34 @@ export const useNewThread = () => {
     handleCloseThread(false);
 
     try {
-      const result = user ? await createThread() : await createThreadForGuest();
+      const result = user
+        ? await createThreadAction(projectId)
+        : await createGuestThreadAction();
 
-      const threadId = result.data.public_id;
-      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+      if (result.success) {
+        trackThreadCreated();
 
-      setTransition(() => {
-        const route = user
-          ? `/threads/${threadId}`
-          : `/guest-threads/${threadId}`;
-        push(route);
-      });
+        const threadId = result.thread.public_id;
+        localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+
+        setTransition(() => {
+          const route = user
+            ? projectId
+              ? `/projects/${projectId}/threads/${threadId}`
+              : `/threads/${threadId}`
+            : `/guest-threads/${threadId}`;
+
+          // Store the initial message in localStorage to be picked up by the thread view
+          if (initialMessage) {
+            localStorage.setItem(
+              `thread_${threadId}_initial_message`,
+              initialMessage
+            );
+          }
+
+          push(route);
+        });
+      }
     } catch (err) {
       errorToast({ message: 'Failed to create new thread.' });
     } finally {

@@ -12,7 +12,10 @@
     "log-in": "log in",
     "or": "or",
     "to-still-use": "to continue using the service",
-    "start-tour": "Start tour"
+    "start-tour": "Start tour",
+    "new-thread-header": "Got a question?",
+    "new-thread-description": "Just ask me anything!",
+    "new-thread-placeholder": "Type your message here..."
   },
   "sign-up": {
     "create-account": "Create your account",
@@ -32,6 +35,15 @@
       "resend-not-available": "Resending the code is not possible. Please try the registration process again.",
       "verification-code-sent": "Verification code has been sent to the email address provided",
       "resend-failed": "Error sending code"
+    },
+    "or-continue-with": "Or continue with",
+    "forgot-password": "Forgot password?",
+    "i-agree-to": "I agree to",
+    "terms-of-use": "terms of use",
+    "validation": {
+      "terms": "You need to accept terms of use",
+      "email": "Invalid email",
+      "password": "Invalid password"
     }
   },
   "sign-in": {
@@ -41,13 +53,17 @@
     "to-continue": "to continue to Ragen Assistant",
     "Dont-have-an-account": "Dont have an account?",
     "or": "or",
-    "Forgot-password": "Forgot your password?",
+    "forgot-password": "Forgot password?",
     "invalid-email": "Email is invalid",
-    "invalid-password": "Password should have at least 8 characters"
+    "invalid-password": "Password should have at least 8 characters",
+    "sign-in-to-account": "Sign in to your account",
+    "not-a-member": "Not a member?",
+    "start-free-trial": "Start a 14 day free trial",
+    "or-continue-with": "Or continue with"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
-    "Provide-email": "Please provide your email address",
+    "Provide-email": "Your email",
     "Send-reset-code": "Send password reset code",
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
@@ -116,6 +132,15 @@
     },
     "prompt-management": {
       "title": "Assistant Management | Ragen AI"
+    },
+    "plans": {
+      "title": "Pricing and subscription plans | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generate Access Key | Ragen AI"
+    },
+    "support-page": {
+      "title": "Contact Form | Support | Ragen AI"
     }
   },
   "chat": {
@@ -134,20 +159,24 @@
     "send": "Send",
     "close-thread": "Close thread",
     "provide-at-least-10-characters": "Provide at least 10 characters",
-    "contact-with-us": "Contact with us"
+    "contact-with-us": "Contact with us",
+    "selected-mode": "Use only internal knowledge base",
+    "rag": "only knowledge base",
+    "conversation": "knowledge base and other sources"
+  },
+  "text-area": {
+    "placeholder": "Type your question..."
   },
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
-    "saved": "Saved",
-    "model-updated-successfully": "Model updated successfully"
+    "saved": "Saved"
   },
   "error-toast": {
     "no-user-id": "user id missing",
     "error-during-deleting-file": "Error deleting document",
-    "failed-to-update-temperature": "Failed to update temperature:",
-    "failed-to-fetch-settings": "Failed to fetch settings:",
-    "failed-to-update-max-documents": "Failed to update max document to retreive:"
+    "fetching-docs-error": "Error fetching documents",
+    "no-files": "No files"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin dashboard",
@@ -179,7 +208,8 @@
     "drag-n-drop": "Drag and drop files here",
     "or": "or",
     "choose-files": "Choose files",
-    "supported-formats": "Supports"
+    "supported-formats": "Supports",
+    "send-and-process": "Send and process"
   },
   "create-document": {
     "title": "Create document",
@@ -195,27 +225,72 @@
     "send-error": "Error creating document",
     "send": "Send"
   },
+  "assistant-settings": {
+    "prompt-assistant-settings": "Assistant settings",
+    "model-select": {
+      "title": "Language model",
+      "failed-to-fetch-model": "Error fetching language model",
+      "failed-to-update-model": "Error updating language model",
+      "failed-to-update-temperature": "Error updating temperature",
+      "model-updated-successfully": "Language model updated successfully"
+    },
+    "max-documents-to-retreive": {
+      "title": "Max. number of search snippets",
+      "failed-to-update-max-documents": "Error updating max. search snippets:",
+      "failed-to-fetch-settings": "Error fetching settings:"
+    },
+    "set-temperature": {
+      "title": "Response creativity level",
+      "failed-to-update-temperature": "Error updating temperature:",
+      "failed-to-fetch-settings": "Error fetching settings:"
+    },
+    "set-env": {
+      "title": "Set environment variables"
+    },
+    "editable-prompt": {
+      "title": "Assistant customization instructions",
+      "label": "Give the assistant a style or tone of response. Example: \"Respond professionally and matter-of-factly.\"",
+      "update": "Update",
+      "failed-to-update-prompt": "Error updating assistant customization instructions:",
+      "prompt-updated-successfully": "Updated",
+      "no-changes-detected": "No changes detected to assistant customization instructions"
+    },
+    "voice-mode-settings": {
+      "title": "Voice Mode Settings",
+      "voice-select": "Select Voice",
+      "voice-updated": "Voice updated successfully",
+      "voice-update-failed": "Failed to update voice"
+    }
+  },
   "manage-knowledge": {
     "create-document": "Create document",
-    "documents-list": "Documents list",
+    "documents-list": "List of documents",
     "upload-files": "Upload files"
   },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
-    "manage-organization": "Manage organization",
-    "manage-members": "Manage members",
-    "manage-knowledge": "Manage knowledge",
+    "manage-organization": "Organization",
+    "manage-members": "Members",
+    "manage-knowledge": "Knowledge",
+    "subscription-management": "Subscription management",
     "organization-list": "Organization list",
-    "assistant-management": "Assistant management",
+    "assistant-management": "Assistant settings",
     "api-keys": "API Keys",
-    "create-new-thread": "Create a new thread",
-    "search-threads": "Search threads",
+    "create-new-thread": "New thread",
+    "search-threads": "Search in threads",
+    "generate-access-key": "Public access",
+    "support-page": "Support Page",
+    "return-to-home": "Threads",
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
       "older": "Older"
+    },
+    "projects": {
+      "title": "Projects",
+      "create-project": "Create Project"
     },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",
@@ -239,7 +314,9 @@
     "file-size": "File Size",
     "created": "Created",
     "updated": "Updated",
-    "preview": "Preview"
+    "preview": "Preview",
+    "no-files": "No files",
+    "search-placeholder": "Search in files..."
   },
   "file-delete-modal": {
     "are-you-sure": "Are you sure you want to delete",
@@ -254,9 +331,6 @@
     "save-successfully": "API Key saved successfully",
     "failed-to-fetch": "Failed to fetch API Key"
   },
-  "set-temperature": {
-    "set-temperature": "Set temperature"
-  },
   "document-preview": {
     "document-not-found": "Document not found",
     "fetching-error": "An error occurred while downloading the document",
@@ -265,17 +339,6 @@
     "edit-successfully": "The document has been edited",
     "content-empty": "Document content cannot be empty",
     "title-empty": "Title cannot be empty"
-  },
-  "max-documents-to-retreive": {
-    "input-label": "Max fragments retrieved in search"
-  },
-  "model-select": {
-    "select-model": "Language model"
-  },
-  "editable-prompt": {
-    "title": "Assistant personalization instructions",
-    "label": "Set the assistant's response style or tone. Example: \"Respond professionally and concisely.\"",
-    "update": "Update"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "An account with this email already exists.",
@@ -321,7 +384,38 @@
     "period-start": "Period start",
     "canceled-at": "Canceled at",
     "trial-ends": "Trial ends",
-    "current-period-ends": "Current period ends"
+    "current-period-ends": "Current period ends",
+    "cancel-subscription": "Cancel subscription",
+    "cancel-subscription-success": "Subscription canceled",
+    "cancel-subscription-error": "Error canceling subscription",
+    "cancel-subscription-confirmation": "Your subscription has been cancelled, it will not be renewed",
+    "show-available-plans": "Show available plans",
+    "checkout": {
+      "title": "Thank you for your purchase! 🎉",
+      "description": "Your subscription has been successfully activated.",
+      "next-payment-date": "Next payment date",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Download Invoice",
+      "manage-subscription": "Subscription"
+    },
+    "confirm-cancel": "Yes, cancel subscription",
+    "keep-subscription": "No, keep subscription",
+    "activate-free-plan": "Activate free plan",
+    "confirm-activate": "Cancel current subscription",
+    "cancel-activation": "Cancel",
+    "activate-free-plan-success": "Free plan activated",
+    "activate-free-plan-error": "An error occurred while activating the free plan"
+  },
+  "plans": {
+    "title": "List of available subscription plans",
+    "checkout-error": "Unable to start checkout process. Please try again later.",
+    "subscribe": "Subscribe",
+    "per-month": "monthly",
+    "per-year": "yearly",
+    "already-active": "You already have an active subscription paid plan!",
+    "already-active-description": "To activate a new plan, please activate free plan or wait until your current plan expires.",
+    "view-subscription": "View your subscription"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",
@@ -339,9 +433,9 @@
   "onboarding": {
     "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",
     "second-step": "To use the assistant and allow others access to documents, you must belong to an 'organization'. This is the first important step.",
-    "third-step": "In the organization registration form, you’ll find three fields, with only the organization name being required.",
+    "third-step": "In the organization registration form, you'll find three fields, with only the organization name being required.",
     "fourth-step": "Once the form is completed, you can confirm the organization setup to proceed.",
-    "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let’s go to the assistant management section.",
+    "fifth-step": "After creating an organization, new tabs will appear in the application. Now, let's go to the assistant management section.",
     "sixth-step": "In this section, you have the option to customize your assistant to suit your needs. For now, fill in only the 'OpenAI API Key' field to activate the assistant.",
     "seventh-step": "The final but crucial step is to provide knowledge to the assistant. You have two options to do this.",
     "eighth-step": "If you do not have epub or markdown documents, use the editor to create a document adapted to the assistant or paste prepared content.",
@@ -360,9 +454,100 @@
     "success": "Organization has been created",
     "sync-error": "An error occurred during sync"
   },
+  "generateAccessKey": {
+    "configure-public-access": "Configure public access",
+    "chatbot-title": "Chatbot title",
+    "chatbot-subtitle": "Chatbot subtitle",
+    "generate-public-key": "Generate public access",
+    "public-access-URL": "Public access URL",
+    "embed-code": "Embed code",
+    "configure-chatbot": "Configure chatbot",
+    "generate-embed-code": "Generate embed code",
+    "embed-code-warning": "The displayed code is visible only once! Remember to save it",
+    "public-access-warning": "This URL is visible only once! Remember to save it"
+  },
   "page404": {
     "page-not-found": "Page not found",
-    "sorry-we-could-not-find": "Sorry, we couldn’t find the page you’re looking for.",
+    "sorry-we-could-not-find": "Sorry, we couldn't find the page you're looking for.",
     "go-back-home": "Go back to home"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Opening chat thread...",
+    "start-new-thread": "Start new thread"
+  },
+  "support-page": {
+    "card-title": "Share your comments with us",
+    "input-title": "Title",
+    "text-area-title": "Message",
+    "text-area-placeholder": "Your message to us",
+    "send": "Send",
+    "sending": "Sending...",
+    "call-to-action": "Your opinions are extremely valuable to us. If you encounter any difficulties, have an idea to improve our application or want to share your experiences – contact us!",
+    "submessage": "A copy of this message will also be sent to your email address.",
+    "file-label": "Attach screenshot",
+    "send-success": "Wiadomość została wysłana",
+    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "errors": {
+      "invalid-email": "Invalid email address",
+      "title-min": "Title must be at least 5 characters long",
+      "message-min": "Message must be at least 10 characters long",
+      "file-required": "You must upload at least one file",
+      "file-size": "Each file cannot exceed 5MB"
+    }
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Your browser does not support audio recording",
+    "recognition-error": "Recognition error, try again",
+    "recording-error": "Error during recording, try again",
+    "microphone-permission-denied": "No access to microphone. Check browser permissions."
+  },
+
+  "projects": {
+    "title": "Projects",
+    "create-project": "Create Project",
+    "create": "Create Project",
+    "placeholder": "Enter project name...",
+    "what-is-project": "What is a project?",
+    "project-description": "A project allows you to manage tasks and organize team work.",
+    "cancel": "Cancel",
+    "success": {
+      "created": "Project has been successfully created."
+    },
+    "error": {
+      "title-required": "Title is required",
+      "loading-organization": "Error loading organization",
+      "no-organization": "No organization",
+      "project-exists": "Project with this name already exists",
+      "creation-failed": "Failed to create project"
+    }
+  },
+  "voice-mode": {
+    "recording": "Recording...",
+    "waiting": "Waiting to start recording",
+    "generating": "Generating voice response...",
+    "playing": "Playing response...",
+    "ready-to-record": "Click to start recording",
+    "waiting-for-response": "Waiting for response...",
+    "instructions": "Speak clearly into the microphone. The message will be sent automatically after 3 seconds of silence or by clicking the stop button. The assistant's response will be played automatically.",
+    "api-error": "An error occurred while generating the voice response. Continuing in text mode.",
+    "api-error-instructions": "Voice mode is currently unavailable. You can continue the conversation, but responses will be in text form only."
+  },
+  "api-events": {
+    "init": "initialization",
+    "delta": "generating response",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "init_lmm": "asking AI",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "saving response",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "error": "An Error has occurred",
+    "close": ""
   }
 }

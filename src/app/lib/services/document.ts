@@ -1,49 +1,24 @@
+import { type UserDocument } from '@prisma/client';
+
 import db from '@ragenai/prisma-client';
+import { getOrgIdOrThrow } from './clerk';
 
-export const createDocumentDetailsInDB = async (
-  file_name: string,
-  file_size: number,
-  organization_id: string,
-  id: string
+export const getDocumentDetailsByPublicId = async (
+  documentPublicId: UserDocument['public_id']
 ) => {
-  await db.userFile.create({
-    data: {
-      id,
-      organization_id,
-      file_name,
-      file_size,
-    },
-  });
-};
-
-export const fetchUserDocumentsDetails = async (uploaderId: string) => {
-  return await db.userFile.findMany({
-    where: { organization_id: uploaderId },
-    select: {
-      created_at: true,
-      file_name: true,
-      file_size: true,
-      updated_at: true,
-      metadata: true,
-      organization_id: true,
-      id: true,
-    },
-  });
-};
-
-export const deleteDocumentFromUserFile = async (
-  orgId: string,
-  documentId: string
-) => {
-  return await db.userFile.deleteMany({
+  const orgId = getOrgIdOrThrow();
+  return await db.userDocument.findFirst({
     where: {
-      id: documentId,
       organization_id: orgId,
+      public_id: documentPublicId,
+    },
+    include: {
+      file: true,
     },
   });
 };
 
-export const deleteDocumentFromUserDocument = async (
+export const deleteDocumentFromDb = async (
   orgId: string,
   document_id: string
 ) => {
@@ -60,6 +35,7 @@ type CreateMarkdownDocumentProps = {
   title: string;
   content: string;
   organization_id: string;
+  file_id?: string;
 };
 
 export const createMarkdownDocument = async ({
@@ -67,6 +43,7 @@ export const createMarkdownDocument = async ({
   title,
   content,
   organization_id,
+  file_id,
 }: CreateMarkdownDocumentProps) => {
   return await db.userDocument.create({
     data: {
@@ -74,6 +51,7 @@ export const createMarkdownDocument = async ({
       title,
       content,
       organization_id,
+      file_id,
     },
   });
 };
@@ -121,16 +99,6 @@ export const saveEditedDocumentTitle = async ({
       updated_at: new Date(),
     },
   });
-  await db.userFile.updateMany({
-    where: {
-      organization_id: orgId,
-      id: documentId,
-    },
-    data: {
-      file_name: title,
-      updated_at: new Date(),
-    },
-  });
 };
 
 export const saveEditedDocumentContent = async ({
@@ -148,24 +116,4 @@ export const saveEditedDocumentContent = async ({
       updated_at: new Date(),
     },
   });
-  await db.userFile.updateMany({
-    where: {
-      organization_id: orgId,
-      id: documentId,
-    },
-    data: {
-      updated_at: new Date(),
-    },
-  });
-};
-
-export const getOrganizationDocumentsCount = async (
-  organizationId: string
-): Promise<number> => {
-  const count = await db.userFile.count({
-    where: {
-      organization_id: organizationId,
-    },
-  });
-  return count;
 };

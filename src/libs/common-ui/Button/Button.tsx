@@ -37,15 +37,15 @@ const ButtonComponent = forwardRef(
     ref: ForwardedRef<HTMLButtonElement>
   ) => {
     const baseClasses =
-      'font-sans cursor-pointer rounded-full px-4 py-2 text-md font-semibold text-white shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-transform duration-200';
+      'text-sm/6 text-white font-semibold cursor-pointer rounded-md px-4 py-2 font-semibold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-transform duration-200';
     const errorClasses =
-      'mt-2 p-2 bg-red-500 text-white hover:bg-red-600 shadow-lg rounded-lg';
+      'mt-2 p-2 bg-red-500 text-white hover:bg-red-600 shadow-lg rounded-md';
     const normalClasses =
-      'bg-blue-500 hover:bg-blue-600 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300';
+      'bg-blue-600 hover:bg-blue-500 dark:bg-accent-dark-500 dark:hover:bg-accent-dark-700 dark:disabled:bg-accent-dark-300';
     const disabledClasses =
       'cursor-not-allowed bg-gray-400 hover:bg-gray-400 text-gray-300 shadow-lg';
     const linkClasses =
-      'flex items-center gap-3 rounded-lg px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500';
+      'flex items-center gap-3 rounded-md px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500';
 
     return (
       <button

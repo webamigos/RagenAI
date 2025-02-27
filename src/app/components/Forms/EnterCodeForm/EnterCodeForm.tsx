@@ -1,7 +1,7 @@
 'use client';
 
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
-import { useEffect, useState, useTransition } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
@@ -37,7 +37,7 @@ export const EnterCodeForm = () => {
   } = useForm<VerificationFormData>({
     resolver: zodResolver(schema),
   });
-  const codeField = watch('email_code');
+  // const codeField = watch('email_code');
   const resendAvailable = signUp?.verifications.emailAddress.status;
 
   const onSubmit = async (data: VerificationFormData) => {
@@ -53,8 +53,14 @@ export const EnterCodeForm = () => {
       });
 
       if (completeSignUp.status === 'complete') {
+        const metadata = {
+          onboardingComplete: false,
+          viewMode: 'list',
+        };
+
         const { success } = await saveUserMetadata(
-          completeSignUp.createdUserId as string
+          completeSignUp.createdUserId as string,
+          metadata
         );
 
         if (success) {
@@ -91,14 +97,11 @@ export const EnterCodeForm = () => {
   };
 
   return (
-    <Card>
-      <div className="flex justify-center">
-        <Logo />
-      </div>
+    <div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Text>{t('verification-code-hint')}</Text>
         <Input
-          className="w-full px-3 py-2 border"
+          className="w-full px-3 py-2 border rounded-md"
           errorMessage={errors.email_code?.message}
           label={t('verification-code')}
           error={errors.email_code}
@@ -120,13 +123,13 @@ export const EnterCodeForm = () => {
           )}
         </div>
         <Button
-          className="w-full py-2.5 flex justify-center items-center"
+          className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           isLoading={isSubmitting}
           label={t('confirm')}
           type="submit"
         />
         <ClerkErrorsInterface apiErrors={apiErrors} />
       </form>
-    </Card>
+    </div>
   );
 };

@@ -19,18 +19,20 @@ model Settings {
 }
 
 model Message {
-  public_id         String   @unique @default(uuid())
-  openai_message_id String
-  openai_created_at Int
-  created_at        DateTime @default(now()) @db.Timestamptz
-  content           String
-  role              Role     @default(USER)
-  thread_id         String?
-  visitor_id        String?
-  id                String   @id @default(uuid())
-  rate              Int?     @db.SmallInt
-  run_id            String?
-  thread            Thread?  @relation(fields: [thread_id], references: [id])
+  id                     String             @id @default(uuid())
+  public_id              String             @unique @default(uuid())
+  created_at             DateTime           @default(now()) @db.Timestamptz
+  content                String
+  role                   Role               @default(USER)
+  thread_id              String?
+  visitor_id             String?
+  rate                   Int?               @db.SmallInt
+  run_id                 String?
+  message_type           MessageContentType @default(TEXT)
+  voice_duration_seconds Int?
+  voice_played           Boolean            @default(false)
+  thread                 Thread?            @relation(fields: [thread_id], references: [id])
+  source                 Source             @default(UI)
 }
 
 model FlaggedMessage {
@@ -42,12 +44,22 @@ model FlaggedMessage {
 }
 
 model Thread {
-  public_id        String    @unique @default(uuid())
-  openai_thread_id String
-  created_at       DateTime  @default(now()) @db.Timestamptz
-  id               String    @id @default(uuid())
-  visitor_id       String?
-  messages         Message[]
+  id                           String                  @id @default(uuid())
+  public_id                    String                  @unique @default(uuid())
+  title                        String? // optional value displayed in sidebar
+  visitor_id                   String? // -> owner_id
+  messages                     Message[]
+  organization_id              String?
+  user_id                      String? // api related field
+  preferred_communication_type ThreadCommunicationType @default(TEXT)
+  source                       Source                  @default(UI)
+  project                      Project?                @relation(fields: [project_id], references: [id])
+  project_id                   Int?
+  created_at                   DateTime                @default(now()) @db.Timestamptz
+
+  @@index([public_id])
+  @@index([organization_id])
+  @@index([user_id])
 }
 
 model VisitorMessages {
@@ -59,16 +71,20 @@ model VisitorMessages {
 
 // Files uploaded by user
 model UserFile {
-  id              String    @id
+  id              String         @id // TODO: we can make it numeric: BigInt    @id @default(autoincrement())
+  public_id       String?        @default(cuid())
   organization_id String
   file_name       String
   file_size       Int
-  created_at      DateTime? @default(now()) @db.Timestamptz
-  updated_at      DateTime? @db.Timestamptz
+  file_type       String         @default("unknown")
+  created_at      DateTime?      @default(now()) @db.Timestamptz
+  updated_at      DateTime?      @db.Timestamptz
   metadata        Json?
+  UserDocument    UserDocument[]
 
   @@unique([id, organization_id])
   @@index([organization_id])
+  @@index([public_id])
 }
 
 // Documents from CMS
@@ -78,8 +94,12 @@ model UserDocument {
   organization_id String
   title           String
   content         String
+  file            UserFile? @relation(fields: [file_id], references: [id])
   created_at      DateTime? @default(now()) @db.Timestamptz
   updated_at      DateTime? @db.Timestamptz
+  file_id         String?
+
+  @@index([organization_id])
 }
 
 // Organizations, Projects and ApiKeys ids will be used in Redis for store:
@@ -93,14 +113,14 @@ model UserDocument {
 // - https://github.com/prisma/prisma/issues/25060
 model Organization {
   // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
-  id              Int           @id @default(autoincrement())
-  public_id       String        @unique @default(cuid())
-  provider_id     String        @unique
-  created_at      DateTime      @default(now()) @db.Timestamptz
-  updated_at      DateTime      @updatedAt @db.Timestamptz
-  project         Project[]
-  subscription    Subscription?
-  ApiKey          ApiKey[]
+  id           Int           @id @default(autoincrement())
+  public_id    String        @unique @default(cuid())
+  provider_id  String        @unique
+  created_at   DateTime      @default(now()) @db.Timestamptz
+  updated_at   DateTime      @updatedAt @db.Timestamptz
+  project      Project[]
+  subscription Subscription?
+  ApiKey       ApiKey[]
 
   @@index([public_id])
   @@index([provider_id])
@@ -111,17 +131,17 @@ model Subscription {
   organization           Organization       @relation(fields: [organization_id], references: [id])
   organization_id        Int                @unique
   plan                   Plan               @relation(fields: [plan_id], references: [id])
-  plan_id               Int
+  plan_id                Int
   stripe_customer_id     String?
   stripe_subscription_id String?
-  status                SubscriptionStatus  @default(ACTIVE)
+  status                 SubscriptionStatus @default(ACTIVE)
   current_period_start   DateTime           @db.Timestamptz
   current_period_end     DateTime           @db.Timestamptz
-  trial_end             DateTime?           @db.Timestamptz
-  canceled_at           DateTime?           @db.Timestamptz
-  created_at            DateTime            @default(now()) @db.Timestamptz
-  updated_at            DateTime            @updatedAt @db.Timestamptz
-  usage_periods         UsagePeriod[]
+  trial_end              DateTime?          @db.Timestamptz
+  canceled_at            DateTime?          @db.Timestamptz
+  created_at             DateTime           @default(now()) @db.Timestamptz
+  updated_at             DateTime           @updatedAt @db.Timestamptz
+  usage_periods          UsagePeriod[]
 
   @@index([status])
   @@index([current_period_end])
@@ -160,17 +180,21 @@ model UsagePeriod {
 }
 
 model Project {
-  // id              Int           @id @default(dbgenerated("nextval('custom_id_seq')"))
-  id              Int           @id @default(autoincrement())
-  public_id       String        @unique @default(cuid())
-  title           String
-  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
-  created_at      DateTime      @default(now()) @db.Timestamptz
-  updated_at      DateTime      @updatedAt @db.Timestamptz
-  organization_id Int?
-  api_key         ApiKey[]
+  id                       Int           @id @default(autoincrement())
+  public_id                String        @unique @default(cuid())
+  title                    String
+  organization             Organization? @relation(fields: [internal_organization_id], references: [id], onDelete: SetNull)
+  created_at               DateTime      @default(now()) @db.Timestamptz
+  updated_at               DateTime      @updatedAt @db.Timestamptz
+  internal_organization_id Int?
+  api_key                  ApiKey[]
+  threads                  Thread[]
+  organization_id          String?
+  owner_id                 String?
 
   @@index([public_id])
+  @@index([organization_id])
+  @@index([owner_id])
 }
 
 model ApiKey {
@@ -192,6 +216,11 @@ model ApiKey {
   @@index([organization_id])
 }
 
+enum Source {
+  UI
+  API
+}
+
 enum Role {
   USER
   ASSISTANT
@@ -205,9 +234,14 @@ enum SubscriptionPlan {
 }
 
 enum SubscriptionStatus {
+  TRIALING
   ACTIVE
-  CANCELLED
-  SUSPENDED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
 }
 
 enum PlanType {
@@ -219,4 +253,14 @@ enum PlanStatus {
   ACTIVE
   ARCHIVED
   DELETED
+}
+
+enum ThreadCommunicationType {
+  TEXT
+  VOICE
+}
+
+enum MessageContentType {
+  TEXT
+  VOICE
 }

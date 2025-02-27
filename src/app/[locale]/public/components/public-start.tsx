@@ -1,52 +1,67 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { RocketLaunchIcon } from '@heroicons/react/24/outline';
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 
-import { Button } from '@ragenai/common-ui';
 import { useNewThread } from '../hooks/useNewThread';
+import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { makeVisitorCookieRequest } from '@/app/lib/services/cookies.browser';
 
-export const PublicStart = ({
-  organizationId,
-  widgetMode = false,
-}: {
-  organizationId: string;
-  widgetMode?: boolean;
-}) => {
-  const t = useTranslations('Index');
-  const { handleNewThread, isLoading } = useNewThread({
+const PublicStart = memo(
+  ({
     organizationId,
-  });
+    widgetMode = false,
+  }: {
+    organizationId: string;
+    widgetMode?: boolean;
+  }) => {
+    const t = useTranslations('Chatbot');
+    const { checkExistingThread, isLoading } = useNewThread({
+      organizationId,
+      widgetMode,
+    });
 
-  // Todo: This is a hack, please fix handling thread creation in widget mode
-  useEffect(() => {
-    if (widgetMode) {
-      handleNewThread();
-    }
-  }, [widgetMode]);
+    useEffect(() => {
+      // set visitor cookie
+      const setCookie = async () => {
+        await makeVisitorCookieRequest();
+      };
 
-  return (
-    <div className="container mx-auto h-full">
-      <div className="flex flex-col h-full items-center justify-center">
-        {!widgetMode && (
-          <Button
-            label={t('start-new-thread')}
-            className="px-5 py-3 sm:mb-12 mb-8"
-            onClick={handleNewThread}
-            isLoading={isLoading}
-            disabled={isLoading}
-            iconRight={
-              <RocketLaunchIcon
-                className="h-5 w-5 flex-none text-white cursor-pointer"
-                aria-hidden="true"
-              />
-            }
-          />
-        )}
+      setCookie();
+    }, []);
 
-        {widgetMode && isLoading && <p>Opening chat thread...</p>}
+    useEffect(() => {
+      const checkThread = async () => {
+        if (widgetMode) {
+          await checkExistingThread();
+        }
+      };
+
+      checkThread();
+    }, [widgetMode, checkExistingThread]);
+
+    return (
+      <div className="h-screen w-full flex items-center justify-center">
+        <div className="flex w-full flex-col items-center">
+          {!widgetMode && (
+            <NewChatInterface
+              organizationId={organizationId}
+              isPublicAccess={true}
+              widgetMode={widgetMode}
+            />
+          )}
+
+          {widgetMode && isLoading && (
+            <p className="text-center text-gray-600 dark:text-gray-200">
+              {t('opening-chat-thread')}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
+
+PublicStart.displayName = 'PublicStart';
+
+export { PublicStart };

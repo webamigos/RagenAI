@@ -1,48 +1,49 @@
-import { parseSrtToSegmentsUsingLLM } from '@/app/api/threads/services/parseSrtWithLLM';
+import { getFileType } from '../utils/getFileType';
+import { getFileExtension } from '../utils/getFileExtension';
 
 export type ParsedFile = {
   content: string | Buffer;
   fileName: string;
-  fileType: string;
+  fileType: SupportedFileType;
+  fileExtension?: string;
+};
+
+export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text';
+
+type FileParser = (
+  file: File,
+  organizationId?: string
+) => Promise<string | Buffer>;
+
+const fileParsers: Record<SupportedFileType, FileParser> = {
+  srt: async (file) => {
+    const buffer = await file.arrayBuffer();
+    return new TextDecoder().decode(buffer);
+  },
+  pdf: async (file) => Buffer.from(await file.arrayBuffer()),
+  epub: async (file) => Buffer.from(await file.arrayBuffer()),
+  text: async (file) => file.text(),
 };
 
 export async function parseFile(
   file: File,
-  organizationId: string
+  organizationId?: string
 ): Promise<ParsedFile> {
-  if (!file.size) {
+  if (file.size === 0) {
     throw new Error(`The file ${file.name} is empty`);
   }
 
   const fileType = getFileType(file.name);
 
-  if (fileType === 'srt') {
-    const fileText = await file.text();
-    const segments = await parseSrtToSegmentsUsingLLM(
-      organizationId,
-      fileText,
-      200,
-      300
-    );
-    return { content: segments.join('\n\n'), fileName: file.name, fileType };
+  if (!fileParsers[fileType]) {
+    throw new Error(`Unsupported file type: ${file.name}`);
   }
 
-  if (fileType === 'epub') {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    return { content: buffer, fileName: file.name, fileType };
-  }
+  const content = await fileParsers[fileType](file, organizationId);
 
-  if (fileType === 'text') {
-    const content = await file.text();
-    return { content, fileName: file.name, fileType };
-  }
+  const fileExtension = getFileExtension(file.name);
 
-  throw new Error(`Unsupported file type: ${file.name}`);
+  return { content, fileName: file.name, fileType, fileExtension };
 }
 
-function getFileType(fileName: string): string {
-  if (fileName.endsWith('.srt')) return 'srt';
-  if (fileName.endsWith('.epub')) return 'epub';
-  if (fileName.endsWith('.md') || fileName.endsWith('.txt')) return 'text';
-  return 'unknown';
-}
+export { getFileType };

@@ -1,20 +1,20 @@
 import { useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { format, subDays } from 'date-fns';
 
 import { SidebarSection, SidebarLabel, SpinnerSVG } from '@ragenai/common-ui';
 import { ThreadsSection } from './ThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
-import { useThreadsContext } from '../../../hooks/useThreadsContext';
+import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 
 type Props = {
   hasMore: boolean;
   isLoading: boolean;
   isSignedIn?: boolean;
   error: string | null;
-  activeThread: string;
+  activeThread?: string;
   userThreads: ThreadHistoryResponse[];
   isThreadsLoaded: boolean;
+  loadMoreThreads: () => void;
 };
 
 export const UserThreadsHistory = ({
@@ -23,13 +23,13 @@ export const UserThreadsHistory = ({
   isLoading,
   isSignedIn,
   userThreads,
-  activeThread,
+  activeThread = '',
   isThreadsLoaded,
+  loadMoreThreads,
 }: Props) => {
   const t = useTranslations('chat');
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastThreadElementRef = useRef<HTMLDivElement | null>(null);
-  const { loadMoreThreads } = useThreadsContext();
 
   useEffect(() => {
     if (isLoading || !hasMore) return;
@@ -58,34 +58,9 @@ export const UserThreadsHistory = ({
     };
   }, [isLoading, hasMore, isSignedIn, isThreadsLoaded, loadMoreThreads]);
 
-  const categorizeThreads = (threads: ThreadHistoryResponse[]) => {
-    const now = new Date();
-    const todayDate = format(now, 'EEE MMM dd yyyy');
-    const yesterdayDate = format(subDays(now, 1), 'EEE MMM dd yyyy');
-
-    return threads.reduce(
-      (acc, thread) => {
-        const threadDate = new Date(thread.created_at).toDateString();
-        if (threadDate === todayDate) acc.today.push(thread);
-        else if (threadDate === yesterdayDate) acc.yesterday.push(thread);
-        else acc.older.push(thread);
-        return acc;
-      },
-      {
-        today: [] as ThreadHistoryResponse[],
-        yesterday: [] as ThreadHistoryResponse[],
-        older: [] as ThreadHistoryResponse[],
-      }
-    );
-  };
-
-  const { today, yesterday, older } = categorizeThreads(userThreads);
-
-  const threadCategories = [
-    { title: t('today'), threads: today },
-    { title: t('yesterday'), threads: yesterday },
-    { title: t('older'), threads: older },
-  ];
+  // Only show threads that don't belong to any project and have messages
+  const nonProjectThreads = userThreads.filter((thread) => !thread.project_id);
+  const threadCategories = getThreadCategories(nonProjectThreads, t);
 
   return (
     <SidebarSection>

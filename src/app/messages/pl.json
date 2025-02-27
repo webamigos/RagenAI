@@ -12,7 +12,10 @@
     "log-in": "zaloguj",
     "or": "lub",
     "to-still-use": "aby korzystać dalej",
-    "start-tour": " Rozpocznij samouczek"
+    "start-tour": " Rozpocznij samouczek",
+    "new-thread-header": "Masz pytanie?",
+    "new-thread-description": "Po prostu mi je zadaj!",
+    "new-thread-placeholder": "Wpisz swoją wiadomość tutaj..."
   },
   "sign-up": {
     "create-account": "Załóż konto",
@@ -32,6 +35,15 @@
       "resend-not-available": "Ponowne wysłanie kodu niemożliwe. Proszę przejdź ponownie proces rejestracji",
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
+    },
+    "or-continue-with": "Lub zaloguj się za pomocą",
+    "forgot-password": "Nie pamiętasz hasła?",
+    "i-agree-to": "Zgadzam się z",
+    "terms-of-use": "regulaminem",
+    "validation": {
+      "terms": "Musisz zaakceptować warunki użytkowania",
+      "email": "Nieprawidłowy adres email",
+      "password": "Hasło musi mieć co najmniej 8 znaków"
     }
   },
   "sign-in": {
@@ -41,13 +53,17 @@
     "to-continue": "aby przejść do Ragen Assistant",
     "Dont-have-an-account": "Nie posiadasz konta?",
     "or": "lub",
-    "Forgot-password": "Zapomniałeś hasła?",
+    "forgot-password": "Nie pamiętasz hasła?",
     "invalid-email": "Nieprawidłowy adres email",
-    "invalid-password": "Hasło musi mieć co najmniej 8 znaków"
+    "invalid-password": "Hasło musi mieć co najmniej 8 znaków",
+    "sign-in-to-account": "Zaloguj się do konta",
+    "not-a-member": "Nie masz konta?",
+    "start-free-trial": "Rozpoznij 14 dniowy okres próbny",
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
-    "Provide-email": "Proszę wprowadź swój adres email",
+    "Provide-email": "Twój email",
     "Send-reset-code": "Wyślij kod do resetowania hasła",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
@@ -106,7 +122,7 @@
       "title": "Bezpieczeństwo profilu | Ragen AI"
     },
     "create-organization": {
-      "title": "Utwórz organizację | Ragen AI"
+      "title": "Stwórz organizację | Ragen AI"
     },
     "organization-profile": {
       "title": "Zarządzaj organizacją | Ragen AI"
@@ -116,13 +132,22 @@
     },
     "prompt-management": {
       "title": "Zarządzanie asystentem | Ragen AI"
+    },
+    "plans": {
+      "title": "Cennik i plany subskrypcji | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
+    },
+    "support-page": {
+      "title": "Formularz kontaktowy | Wsparcie | Ragen AI"
     }
   },
   "chat": {
     "USER": "Ty",
     "ASSISTANT": "Asystent",
     "loading": "Chwileczkę...",
-    "create-new-thread": "Załóż nowy wątek",
+    "create-new-thread": "Stwórz nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni"
@@ -134,20 +159,26 @@
     "send": "Wyślij",
     "close-thread": "Zamknij wątek",
     "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
-    "contact-with-us": "Skontaktuj się z nami"
+    "contact-with-us": "Skontaktuj się z nami",
+    "selected-mode": "Korzystaj wyłącznie z wewnętrznej bazy wiedzy",
+    "rag": "tylko baza wiedzy",
+    "conversation": "baza wiedzy i inne źródła"
+  },
+  "text-area": {
+    "placeholder": "Wpisz swoje pytanie..."
   },
   "success-toast": {
     "copied": "Skopiowano!",
     "deleted": "Usunięto!",
-    "saved": "Zapisano!",
-    "model-updated-successfully": "Model zaktualizowany pomyślnie"
+    "saved": "Zapisano!"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
     "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
     "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
-    "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
-    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:",
+    "fetching-docs-error": "Błąd podczas pobierania dokumentów",
+    "no-files": "Brak plików"
   },
   "my-profile-dialog": {
     "admin-dashboard": "Admin panel",
@@ -179,7 +210,8 @@
     "drag-n-drop": "Przeciągnij i upuść pliki tutaj",
     "or": "lub",
     "choose-files": "Wybierz pliki",
-    "supported-formats": "Obsługiwany format"
+    "supported-formats": "Obsługiwany format",
+    "send-and-process": "Wyślij i przekonwertuj"
   },
   "create-document": {
     "title": "Stwórz dokument",
@@ -195,8 +227,45 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "assistant-settings": {
+    "prompt-assistant-settings": "Ustawienia asystenta",
+    "model-select": {
+      "title": "Model językowy",
+      "failed-to-fetch-model": "Błąd podczas pobierania modelu językowego",
+      "failed-to-update-model": "Błąd podczas aktualizacji modelu językowego",
+      "failed-to-update-temperature": "Błąd podczas aktualizacji temperatury",
+      "model-updated-successfully": "Model językowy zaktualizowany pomyślnie"
+    },
+    "max-documents-to-retreive": {
+      "title": "Maks. liczba fragmentów wyszukiwania",
+      "failed-to-update-max-documents": "Błąd podczas uaktualniania maksymalnej liczby fragmentów wyszukiwania:",
+      "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    },
+    "set-temperature": {
+      "title": "Poziom kreatywności odpowiedzi",
+      "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
+      "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:"
+    },
+    "set-env": {
+      "title": "Ustaw zmienne środowiskowe"
+    },
+    "editable-prompt": {
+      "title": "Instrukcje personalizacji asystenta",
+      "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
+      "update": "Zaktualizuj",
+      "failed-to-update-prompt": "Błąd podczas aktualizacji instrukcji personalizacji asystenta:",
+      "prompt-updated-successfully": "Zaktualizowano",
+      "no-changes-detected": "Brak zmian w instrukcji personalizacji asystenta"
+    },
+    "voice-mode-settings": {
+      "title": "Ustawienia Trybu Głosowego",
+      "voice-select": "Wybierz Głos",
+      "voice-updated": "Głos został zaktualizowany",
+      "voice-update-failed": "Nie udało się zaktualizować głosu"
+    }
+  },
   "manage-knowledge": {
-    "create-document": "Utwórz dokument",
+    "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki"
   },
@@ -204,18 +273,42 @@
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
-    "manage-organization": "Zarządzaj organizacją",
-    "manage-members": "Zarządzaj użytkownikami",
-    "manage-knowledge": "Zarządzaj wiedzą",
+    "manage-organization": "Organizacja",
+    "manage-members": "Użytkownicy",
+    "manage-knowledge": "Baza wiedzy",
     "organization-list": "Lista organizacji",
-    "assistant-management": "Zarządzanie asystentem",
+    "assistant-management": "Ustawienia asystenta",
+    "subscription-management": "Subskrypcja",
     "api-keys": "Klucze API",
-    "create-new-thread": "Załóż nowy wątek",
-    "search-threads": "Przeszukaj wątki",
+    "create-new-thread": "Nowy wątek",
+    "search-threads": "Szukaj w wątkach",
+    "generate-access-key": "Dostęp publiczny",
+    "support-page": "Zgłoś błąd",
+    "return-to-home": "Lista wątków",
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
+    },
+
+    "projects": {
+      "title": "Projekty",
+      "create-project": "Stwórz projekt",
+      "create": "Stwórz projekt",
+      "placeholder": "Wpisz nazwę projektu...",
+      "what-is-project": "Co to jest projekt?",
+      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
+      "cancel": "Anuluj",
+      "success": {
+        "created": "Projekt został pomyślnie utworzony."
+      },
+      "error": {
+        "title-required": "Nazwa projektu jest wymagana.",
+        "loading-organization": "Błąd podczas ładowania organizacji.",
+        "no-organization": "Brak przypisanej organizacji.",
+        "project-exists": "Projekt o tej nazwie już istnieje.",
+        "creation-failed": "Nie udało się stworzyć projektu."
+      }
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
@@ -239,7 +332,9 @@
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",
     "updated": "Zaktualizowano",
-    "preview": "Podgląd"
+    "preview": "Podgląd",
+    "no-files": "Brak plików",
+    "search-placeholder": "Wyszukaj pliki"
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
@@ -254,9 +349,6 @@
     "save-successfully": "Klucz API przypisano do Twojego konta!",
     "failed-to-fetch": "Błąd podczas pobierania kluacza API"
   },
-  "set-temperature": {
-    "set-temperature": "Poziom kreatywności odpowiedzi"
-  },
   "document-preview": {
     "document-not-found": "Nie znaleziono dokumentu",
     "fetching-error": "Wystąpił błąd podczas pobierania dokumentu",
@@ -265,17 +357,6 @@
     "edit-successfully": "Dokument został zedytowany",
     "content-empty": "Treść dokumentu nie może być pusta",
     "title-empty": "Tytuł nie może być pusty"
-  },
-  "max-documents-to-retreive": {
-    "input-label": "Maks. liczba fragmentów wyszukiwania"
-  },
-  "model-select": {
-    "select-model": "Model językowy"
-  },
-  "editable-prompt": {
-    "title": "Instrukcje personalizacji asystenta",
-    "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
-    "update": "Zaktualizuj"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",
@@ -321,7 +402,38 @@
     "period-start": "Data aktywacji",
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",
-    "current-period-ends": "Data wygaśnięcia"
+    "current-period-ends": "Data wygaśnięcia",
+    "cancel-subscription": "Anuluj subskrypcję",
+    "cancel-subscription-success": "Subskrypcja anulowana",
+    "cancel-subscription-error": "Wystąpił błąd podczas anulowania subskrypcji",
+    "cancel-subscription-confirmation": "Twoja subskrypcja została anulowana, nie zostanie automatycznie odnowiona",
+    "show-available-plans": "Pokaż dostępne plany",
+    "checkout": {
+      "title": "Dziękujemy za zakup! 🎉",
+      "description": "Twoja subskrypcja została pomyślnie aktywowana.",
+      "next-payment-date": "Data kolejnej płatności",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Pobierz fakturę",
+      "manage-subscription": "Zarządzaj subskrypcją"
+    },
+    "confirm-cancel": "Tak, anuluj subskrypcję",
+    "keep-subscription": "Nie, zachowaj subskrypcję",
+    "activate-free-plan": "Aktywuj plan free",
+    "confirm-activate": "Zrezygnuj z bieżącej subskrypcji",
+    "cancel-activation": "Anuluj",
+    "activate-free-plan-success": "Plan free aktywowany",
+    "activate-free-plan-error": "Wystąpił błąd podczas aktywowania planu free"
+  },
+  "plans": {
+    "title": "Lista dostępnych planów subskrypcji",
+    "checkout-error": "Nie udało się rozpocząć procesu płatności. Spróbuj ponownie później.",
+    "subscribe": "Subskrybuj",
+    "per-month": "miesięcznie",
+    "per-year": "rocznie",
+    "already-active": "Masz już aktywny plan płatny!",
+    "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
+    "view-subscription": "Zarządzaj swoją subskrypcją"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",
@@ -360,9 +472,99 @@
     "success": "Organizacja została stworzona",
     "sync-error": "Wystąpił błąd w trakcie synchronizacji"
   },
+  "generateAccessKey": {
+    "configure-public-access": "Skonfiguruj dostęp publiczny",
+    "chatbot-title": "Tytuł czatbota",
+    "chatbot-subtitle": "Podtytuł czatbota",
+    "generate-public-key": "Wygeneruj dostęp publiczny",
+    "public-access-URL": "Publiczny URL dostępu",
+    "embed-code": "Kod do osadzenia",
+    "configure-chatbot": "Skonfiguruj czatbota",
+    "generate-embed-code": "Wygeneruj kod do osadzenia",
+    "embed-code-warning": "Wyświetlony kod widzisz tylko raz! Pamiętaj o jego zapisaniu",
+    "public-access-warning": "Ten URL widzisz tylko raz! Pamiętaj o jego zapisaniu"
+  },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
     "sorry-we-could-not-find": "Nie udało nam się znaleźć strony której szukasz.",
     "go-back-home": "Powrót do strony głównej"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Otwieranie wątku...",
+    "start-new-thread": "Rozpocznij nowy wątek"
+  },
+  "support-page": {
+    "card-title": "Zgłoś nam swoje uwagi",
+    "input-title": "Tytuł",
+    "text-area-title": "Wiadomość",
+    "text-area-placeholder": "Twoja wiadomość do nas",
+    "send": "Wyślij",
+    "sending": "Wysyłanie...",
+    "call-to-action": "Twoje opinie są dla nas niezwykle cenne. Jeśli napotkasz jakiekolwiek trudności, masz pomysł na ulepszenie naszej aplikacji lub chcesz podzielić się swoimi doświadczeniami – skontaktuj się z nami!",
+    "submessage": "Kopia tej wiadomości trafi także na Twoją skrzynkę email.",
+    "file-label": "Załącz zrzut ekranu",
+    "send-success": "Wiadomość została wysłana",
+    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "errors": {
+      "invalid-email": "Nieprawidłowy adres e-mail",
+      "title-min": "Tytuł musi zawierać co najmniej 5 znaków",
+      "message-min": "Wiadomość musi zawierać co najmniej 10 znaków",
+      "file-required": "Musisz przesłać przynajmniej jeden plik",
+      "file-size": "Każdy plik nie może przekraczać 5 MB"
+    }
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
+    "recognition-error": "Błąd rozpoznawania mowy, spróbuj ponownie",
+    "recording-error": "Błąd podczas nagrywania, spróbuj ponownie",
+    "microphone-permission-denied": "Brak dostępu do mikrofonu. Sprawdź uprawnienia przeglądarki."
+  },
+  "projects": {
+    "title": "Projekty",
+    "create": "Stwórz projekt",
+    "placeholder": "Nazwa projektu",
+    "what-is-project": "Czym jest projekt?",
+    "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
+    "cancel": "Anuluj",
+    "create-project": "Stwórz projekt",
+    "error": {
+      "title-required": "Tytuł jest wymagany",
+      "loading-organization": "Błąd podczas ładowania organizacji",
+      "no-organization": "Brak organizacji",
+      "project-exists": "Projekt o takiej nazwie już istnieje",
+      "creation-failed": "Nie udało się stowrzyć projektu"
+    },
+    "success": {
+      "created": "Projekt został utworzony"
+    }
+  },
+  "voice-mode": {
+    "recording": "Nagrywanie...",
+    "waiting": "Oczekiwanie na rozpoczęcie nagrywania",
+    "generating": "Generowanie odpowiedzi głosowej...",
+    "ready-to-record": "Kliknij, aby rozpocząć nagrywanie",
+    "playing": "Odtwarzanie odpowiedzi...",
+    "waiting-for-response": "Oczekiwanie na odpowiedź...",
+    "instructions": "Mów wyraźnie do mikrofonu. Wiadomość zostanie wysłana automatycznie po 3 sekundach ciszy lub po kliknięciu przycisku stop. Odpowiedź asystenta zostanie odtworzona automatycznie.",
+    "api-error": "Wystąpił błąd podczas generowania odpowiedzi głosowej. Kontynuujemy w trybie tekstowym.",
+    "api-error-instructions": "Tryb głosowy jest obecnie niedostępny. Możesz kontynuować rozmowę, ale odpowiedzi będą tylko w formie tekstu."
+  },
+  "api-events": {
+    "init": "inicjalizacja",
+    "delta": "generuję odpowiedź",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "init_lmm": "pytam AI",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "zapisywanie odpowiedzi",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "error": "Wystąpił błąd",
+    "close": ""
   }
 }

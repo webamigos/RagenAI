@@ -4,6 +4,7 @@ import { ChatOutput } from '@/app/components/Assistant/ChatOutput';
 
 import { usePublicAssistantLogic } from './usePublicAssistantLogic';
 import { PromptForm } from '@/app/components/Assistant/PromptForm';
+import { ChatResponseType } from '@/app/contracts/Message';
 
 type Props = {
   threadId: string;
@@ -17,6 +18,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
     isGlobalLoading,
     streamedMessage,
     messages,
+    isPublicAccess,
     onSubmit,
     isLocked,
     promptFormRef,
@@ -30,16 +32,21 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
+          widgetMode={true}
+          responseType={ChatResponseType.TEXT}
+          isPublicAccess={isPublicAccess}
         />
         <div ref={messagesEndDivRef} />
       </div>
-      <div className="flex-shrink-0 w-full">
+      <div className="flex-shrink-0 w-full mb-8">
         {!isLocked() && threadId && (
           <PromptForm
             ref={promptFormRef}
             isUserLogged={false}
+            isPublicAccess={isPublicAccess}
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
+            responseType={ChatResponseType.TEXT}
           />
         )}
       </div>

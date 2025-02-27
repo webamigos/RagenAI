@@ -8,9 +8,6 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   DATABASE_DIRECT_URL: z.string().url(),
 
-  // API
-  API_BASE_URL: z.string().url(),
-
   // Supabase for Vector store
   SUPABASE_API_URL: z.string().url(),
   SUPABASE_ANON_KEY: z.string(),
@@ -43,9 +40,27 @@ const envSchema = z.object({
   TEMPORAL_CERT: z.string(),
   TEMPORAL_KEY: z.string(),
 
+  // Qdrant
+  QDRANT_URL: z.string().url(),
+  // QDRANT_API_KEY: z.string(), // for staging and production
+
   // Resend
   RESEND_API_KEY: z.string(),
   RESEND_DEFAULT_AUDIENCE_ID: z.string(),
+
+  // OpenAI
+  OPENAI_API_KEY: z.string(),
+
+  // AWS
+  AWS_REGION: z.string(),
+  AWS_ACCESS_KEY_ID: z.string(),
+  AWS_SECRET_ACCESS_KEY: z.string(),
+  AWS_SECRET_DOCUMENTS_BUCKET: z.string(),
+
+  // Stripe
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
+  STRIPE_SECRET_KEY: z.string(),
+  STRIPE_WEBHOOK_SECRET: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

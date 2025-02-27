@@ -5,7 +5,6 @@ import { memo, useState } from 'react';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
-import { Divider } from '@ragenai/common-ui/Divider';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 
 import { logger } from '@/app/lib/utils/logger';
@@ -18,15 +17,17 @@ const SocialButton = ({
   imageUrl,
   altText,
   isLoading,
+  label,
 }: {
   onClick: () => void;
   imageUrl: string;
   altText: string;
   isLoading: boolean;
+  label: string;
 }) => (
   <button
     onClick={onClick}
-    className="w-1/2 py-2 bg-white text-gray-700 border border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
+    className="w-full py-2 dark:bg-accent-dark-500 bg-white dark:text-gray-200 text-gray-700 dark:border-gray-700 border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
     disabled={isLoading}
   >
     {isLoading ? (
@@ -34,6 +35,7 @@ const SocialButton = ({
     ) : (
       <Image src={imageUrl} alt={altText} width={15} height={15} />
     )}
+    <span className="ml-2 text-sm/6 font-semibold">{label}</span>
   </button>
 );
 
@@ -54,6 +56,11 @@ export const SocialAuthOptions = memo(
 
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
+    const metadata = {
+      onboardingComplete: false,
+      viewMode: 'list',
+    };
+
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
       if (loadingState[strategy]) return;
 
@@ -70,7 +77,7 @@ export const SocialAuthOptions = memo(
           });
           const user = await signUp?.id;
           if (user) {
-            await saveUserMetadata(user, false);
+            await saveUserMetadata(user, metadata);
           }
         } else {
           await signIn?.authenticateWithRedirect({
@@ -93,34 +100,46 @@ export const SocialAuthOptions = memo(
       oauth_google: {
         imageUrl: 'https://img.clerk.com/static/google.svg',
         altText: 'Google logo',
+        label: 'Google',
       },
       oauth_github: {
         imageUrl: 'https://img.clerk.com/static/github.svg',
         altText: 'Github logo',
+        label: 'Github',
       },
     };
 
     return (
-      <>
-        <div className="max-w-xs w-full flex gap-x-2 mb-4 ml-2">
+      <div className="mt-10">
+        <div className="relative">
+          <div
+            className="absolute inset-0 flex items-center"
+            aria-hidden="true"
+          >
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm/6 font-medium">
+            <span className="bg-[#E2E8F3] dark:bg-[#06141B] px-6 dark:text-white text-gray-900">
+              {t('or-continue-with')}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-4">
           {Object.entries(socialPlatforms).map(
-            ([strategy, { imageUrl, altText }]) => (
+            ([strategy, { imageUrl, altText, label }]) => (
               <SocialButton
                 key={strategy}
                 onClick={() => handleOAuth(strategy as SupportedOAuthStrategy)}
                 imageUrl={imageUrl}
                 altText={altText}
+                label={label}
                 isLoading={loadingState[strategy as SupportedOAuthStrategy]}
               />
             )
           )}
         </div>
-        <div className="flex items-center mb-4">
-          <Divider soft />
-          <p className="font-light text-gray-500 mx-2">{t('or')}</p>
-          <Divider soft />
-        </div>
-      </>
+      </div>
     );
   }
 );

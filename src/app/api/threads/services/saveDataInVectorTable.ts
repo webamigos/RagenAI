@@ -1,12 +1,11 @@
 import * as fs from 'node:fs';
 import path from 'path';
-
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { v4 as uuidv4 } from 'uuid';
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
+import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { Document } from 'langchain/document';
 import { MarkdownTextSplitter } from 'langchain/text_splitter';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
@@ -21,6 +20,13 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
+import { QdrantVectorStore } from '@langchain/qdrant';
+import { auth } from '@clerk/nextjs/server';
+import { getOrganizationMetadata } from '@/app/actions';
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
+import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
+import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -36,6 +42,7 @@ type ConvertAndStoreDocumentParams = {
   organizationId: string;
   fileId: string;
   projectId: number | null;
+  mimeType: string;
 };
 
 const CHUNK_SETTINGS = {
@@ -47,11 +54,22 @@ const CHUNK_SETTINGS = {
     chunkSize: 1500,
     chunkOverlap: 250,
   },
+  pdf: {
+    chunkSize: 1000,
+    chunkOverlap: 200,
+  },
+  srt: {
+    chunkSize: 1500,
+    chunkOverlap: 250,
+  },
 } as const;
 
-const saveBinaryToTempFile = async (content: string | Buffer) => {
+const saveBinaryToTempFile = async (
+  content: string | Buffer,
+  extension: string
+) => {
   const projectDir = process.cwd();
-  const filePath = path.join(projectDir, `temp-${Date.now()}.epub`);
+  const filePath = path.join(projectDir, `temp-${uuidv4()}.${extension}`);
 
   try {
     setSentryServiceTag(serviceName);
@@ -67,13 +85,10 @@ const saveBinaryToTempFile = async (content: string | Buffer) => {
     };
   } catch (error) {
     logger.error({ err: error }, 'Error saving binary to temp file');
-    if (error) {
-      return {
-        success: false,
-        message: `Failed to save file at ${filePath}: ${error}`,
-      };
-    }
-    throw error;
+    return {
+      success: false,
+      message: `Failed to save file at ${filePath}: ${error}`,
+    };
   }
 };
 
@@ -83,6 +98,7 @@ export const convertAndStoreDocument = async ({
   organizationId,
   fileId,
   projectId,
+  mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
     setSentryServiceTag(serviceName);
@@ -98,72 +114,126 @@ export const convertAndStoreDocument = async ({
 
     let rawDocs: Document[] = [];
     const apiKey = await getOpenaiAPIKey(organizationId);
+
     if (!apiKey) {
       throw new Error('OpenAI API key is required.');
     }
 
-    const embeddingModel = await createEmbeddingsInstance({ apiKey });
-
-    if (fileName.endsWith('.epub')) {
-      const { filePath, message } = await saveBinaryToTempFile(fileContent);
-      if (filePath) {
-        try {
-          await fs.promises.access(filePath, fs.constants.R_OK);
-          const load = new EPubLoader(filePath);
-          rawDocs = await load.load();
-        } catch (error) {
-          logger.error({ err: error }, 'Error loading EPub file');
-          return {
-            success: false,
-            message: `File is not accessible at: ${filePath}`,
-            error: error as Error,
-          };
-        } finally {
-          await fs.promises.unlink(filePath);
-        }
-      } else {
-        return {
-          success: false,
-          message: `Failed to save temporary file: ${message}`,
-        };
-      }
-    } else {
-      const fileContentIsString = typeof fileContent === 'string';
-      if (fileContentIsString) {
-        rawDocs = [new Document({ pageContent: fileContent })];
-      } else {
-        return {
-          success: false,
-          message: 'Invalid file type detected.',
-        };
-      }
+    if (!mimeType) {
+      return {
+        success: false,
+        message: 'Could not detect MIME type of the file.',
+      };
     }
-    const textSplitterEPub = new RecursiveCharacterTextSplitter({
-      chunkSize: CHUNK_SETTINGS.epub.chunkSize,
-      chunkOverlap: CHUNK_SETTINGS.epub.chunkOverlap,
-      keepSeparator: true,
-    });
 
-    const textSplitter = new MarkdownTextSplitter({
-      chunkSize: CHUNK_SETTINGS.markdown.chunkSize,
-      chunkOverlap: CHUNK_SETTINGS.markdown.chunkOverlap,
-      keepSeparator: true,
-    });
+    logger.info({ mimeType }, 'Detected MIME type');
 
-    const docs = fileName.endsWith('.md')
-      ? await textSplitter.splitDocuments(rawDocs)
-      : await textSplitterEPub.splitDocuments(rawDocs);
+    const embeddingModel = await createEmbeddingsInstance({ apiKey });
+    const fileExtension =
+      SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES];
+    if (!fileExtension) {
+      return {
+        success: false,
+        message: `Unsupported file type: ${mimeType}`,
+      };
+    }
+    const { filePath, message, success } = await saveBinaryToTempFile(
+      fileContent,
+      fileExtension
+    );
+    if (!success || !filePath) {
+      return {
+        success: false,
+        message: `Failed to save temporary file: ${message}`,
+      };
+    }
+
+    try {
+      await fs.promises.access(filePath, fs.constants.R_OK);
+      let loader;
+      switch (fileExtension) {
+        case 'pdf':
+          loader = new PDFOCRDocumentLoader({
+            filePath,
+            fileName,
+            fileId,
+            organizationId,
+          });
+          break;
+        case 'srt':
+          loader = new SRTLLMDocumentLoader({
+            filePath,
+            fileName,
+            fileId,
+            organizationId,
+          });
+          break;
+        case 'epub':
+          loader = new EPubLoader(filePath);
+          break;
+        case 'md':
+          loader = new TextLoader(filePath);
+          break;
+        default:
+          loader = undefined;
+      }
+
+      if (!loader) {
+        throw new Error(
+          `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`
+        );
+      }
+
+      rawDocs = await loader.load();
+    } catch (error) {
+      logger.error(
+        { err: error },
+        `Error loading ${fileExtension.toUpperCase()} file`
+      );
+      return {
+        success: false,
+        message: `File is not accessible at: ${filePath}`,
+        error: error as Error,
+      };
+    } finally {
+      await fs.promises
+        .rm(filePath, { recursive: true, force: true })
+        .catch((error) => {
+          logger.error({ err: error }, `Error removing file: ${filePath}`);
+        });
+    }
+
+    const splitterSettings =
+      CHUNK_SETTINGS[fileExtension as keyof typeof CHUNK_SETTINGS] ||
+      CHUNK_SETTINGS.epub;
+
+    const textSplitter =
+      fileExtension === 'md'
+        ? new MarkdownTextSplitter({
+            chunkSize: splitterSettings.chunkSize,
+            chunkOverlap: splitterSettings.chunkOverlap,
+            keepSeparator: true,
+          })
+        : new RecursiveCharacterTextSplitter({
+            chunkSize: splitterSettings.chunkSize,
+            chunkOverlap: splitterSettings.chunkOverlap,
+            keepSeparator: true,
+          });
+
+    const docs = await textSplitter.splitDocuments(rawDocs);
+
+    const { orgId } = auth();
+
+    if (!orgId) {
+      throw new Error('Invalid organization!');
+    }
+
+    const orgMetadata = await getOrganizationMetadata(orgId);
+    const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
 
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {
         const text = doc.pageContent;
-
-        const fileExtension = path.extname(fileName)?.slice(1) || '';
-        const isMarkdown = fileExtension === 'md';
-        const chunkSettings = isMarkdown
-          ? CHUNK_SETTINGS.markdown
-          : CHUNK_SETTINGS.epub;
-
         const metadata: VectorStoreDocumentMetadata = {
           file_name: fileName,
           page_number: index + 1,
@@ -173,39 +243,59 @@ export const convertAndStoreDocument = async ({
           file_id: fileId,
           project_id: projectId,
           source_type: fileExtension,
-          chunk_size: chunkSettings.chunkSize,
-          chunk_overlap: chunkSettings.chunkOverlap,
+          chunk_size: splitterSettings.chunkSize,
+          chunk_overlap: splitterSettings.chunkOverlap,
           total_chunks: docs.length,
           word_count: text.split(/\s+/).length,
           previous_chunk_id: index > 0 ? index - 1 : -1,
           next_chunk_id: index < docs.length - 1 ? index + 1 : -1,
           status: 'active',
-          embedding_model: embeddingModel.modelName,
+          embedding_model: embeddingModel.model,
         };
 
-        const [embedding] = await embeddingModel.embedDocuments([text]);
-
-        return {
-          pageContent: text,
-          metadata,
-          embedding,
-        };
+        if (vectorStoreType === 'qdrant') {
+          return {
+            pageContent: text,
+            metadata,
+            embedding: [],
+          };
+        } else {
+          const [embedding] = await embeddingModel.embedDocuments([text]);
+          return {
+            pageContent: text,
+            metadata,
+            embedding,
+          };
+        }
       })
     );
 
-    const vectorStore = new SupabaseVectorStore(embeddingModel, {
-      client: supabaseVectorStoreClient,
-      tableName: VECTOR_STORE_TABLE_NAME,
-      queryName: DOCUMENT_SEARCH_QUERY_NAME,
-    });
+    if (vectorStoreType === 'qdrant') {
+      const vectorStore = await QdrantVectorStore.fromExistingCollection(
+        embeddingModel,
+        {
+          url: process.env.QDRANT_URL,
+          apiKey: process.env.QDRANT_API_KEY, // staging and prod
+          collectionName: orgId,
+        }
+      );
 
-    await vectorStore.addVectors(
-      updatedDocs.map((doc) => doc.embedding),
-      updatedDocs.map((doc) => ({
-        pageContent: doc.pageContent,
-        metadata: doc.metadata,
-      }))
-    );
+      await vectorStore.addDocuments(updatedDocs);
+    } else {
+      const vectorStore = new SupabaseVectorStore(embeddingModel, {
+        client: supabaseVectorStoreClient,
+        tableName: VECTOR_STORE_TABLE_NAME,
+        queryName: DOCUMENT_SEARCH_QUERY_NAME,
+      });
+
+      await vectorStore.addVectors(
+        updatedDocs.map((doc) => doc.embedding),
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        }))
+      );
+    }
 
     return {
       success: true,

@@ -1,40 +1,44 @@
 'use server';
 
-import { StatusCodes } from 'http-status-codes';
 import { clerkClient } from '@clerk/nextjs/server';
+import { StatusCodes } from 'http-status-codes';
 
-import { submitFeedbackDirectly } from '../lib/services/feedback';
-import { logger } from '../lib/utils/logger';
+import { deleteDocumentFromVectorStore } from '../api/upload/services/TableService';
 import {
-  ThreadHistoryResponse,
   CreateMessageDto,
   MessageDto,
+  ThreadHistoryResponse,
   createMessageSchema,
 } from '../contracts/Message';
-import { sendForModeration } from '../lib/services/moderation';
-import { findOrCreateOpenAIThread } from '../lib/services/thread';
+import { deleteFromS3 } from '../lib/services/aws';
+import { deleteDocumentFromDb } from '../lib/services/document';
+import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
-  createAndStoreOpenAIThreadMessage,
+  deleteFileFromDb,
+  fetchFileDetails,
+  getFileDetails,
+  getOrganizationFilesCount,
+} from '../lib/services/file';
+import {
+  createAndStoreMessage,
   deleteMessageByPublicId,
 } from '../lib/services/message';
-import { getUserThreads } from '../lib/services/visitor';
-import {
-  deleteDocumentFromUserFile,
-  deleteDocumentFromUserDocument,
-  fetchUserDocumentsDetails,
-  getOrganizationDocumentsCount,
-} from '../lib/services/document';
-import { deleteDocument } from '../api/upload/services/TableService';
+import { sendForModeration } from '../lib/services/moderation';
 import {
   setSentryClerkOrganizationTag,
   setSentryClerkUserTag,
   setSentryContext,
+  setSentryServiceTag,
 } from '../lib/services/sentry';
-import { setSentryServiceTag } from '../lib/services/sentry';
+import { findOrCreateThread } from '../lib/services/thread';
+import { usageTracker } from '../lib/services/usage';
+import { getUserThreads } from '../lib/services/visitor';
 import {
   ClerkOrganizationMetadata,
   ClerkOrganizationPublicMetadata,
 } from '../lib/types/organizations';
+import { getFileExtension } from '../lib/utils/getFileExtension';
+import { logger } from '../lib/utils/logger';
 
 const serviceName = 'actions';
 
@@ -80,17 +84,18 @@ export const sendMessage = async (
       threadPublicId,
       visitorId,
     });
-    const { thread, threadEntity } = await findOrCreateOpenAIThread(
+    const { threadRecord } = await findOrCreateThread(
       threadPublicId,
       visitorId
     );
 
     // create user message
-    const messageResponse = await createAndStoreOpenAIThreadMessage({
+    const messageResponse = await createAndStoreMessage({
       prompt,
-      thread,
-      threadEntity,
+      threadId: threadRecord.id,
       visitorId,
+      messageType: requestData.data.messageType,
+      voiceDurationSeconds: requestData.data.voiceDurationSeconds,
     });
 
     return { message: messageResponse, status: StatusCodes.CREATED };
@@ -129,7 +134,7 @@ export const getUserDocuments = async (orgId: string) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
-    const documentDetails = await fetchUserDocumentsDetails(orgId);
+    const documentDetails = await fetchFileDetails(orgId);
     return { documentDetails };
   } catch (error) {
     return {
@@ -152,16 +157,23 @@ export const deleteDocumentAction = async (
     });
 
     //  Removal document from `UserFile`
-    const { count } = await deleteDocumentFromUserFile(
-      organizationId,
-      documentId
-    );
+    // TODO: UserFile should be in relation to UserDocument
+    const fileRecord = await getFileDetails(documentId);
+    const { count } = await deleteFileFromDb(organizationId, documentId);
+
+    if (fileRecord) {
+      const documentS3Path = `${documentId}.${getFileExtension(
+        fileRecord.file_name
+      )}`;
+
+      await deleteFromS3(documentS3Path);
+    }
 
     // Removal from `UserDocument`
-    await deleteDocumentFromUserDocument(organizationId, documentId);
+    await deleteDocumentFromDb(organizationId, documentId);
 
     // Removal vectors
-    await deleteDocument(documentId);
+    await deleteDocumentFromVectorStore(documentId);
 
     if (count === 0) {
       return {
@@ -172,7 +184,7 @@ export const deleteDocumentAction = async (
     }
 
     // Check document count in organization
-    const documentCount = await getOrganizationDocumentsCount(organizationId);
+    const documentCount = await getOrganizationFilesCount(organizationId);
 
     // If no documents left, update public metadata
     if (documentCount === 0) {
@@ -197,23 +209,30 @@ export const deleteDocumentAction = async (
 //save data to clerk user profile
 export const saveUserMetadata = async (
   clerkUserId: string,
-  onboardingComplete?: boolean
-) => {
+  metadata: Record<string, unknown>
+): Promise<{ success: boolean; error?: string }> => {
+  if (!clerkUserId || typeof clerkUserId !== 'string') {
+    return { success: false, error: 'Invalid clerkUserId' };
+  }
+
   try {
     const user = await clerkClient().users.getUser(clerkUserId);
     const currentMetadata = user.publicMetadata || {};
 
-    setSentryServiceTag(serviceName);
-    setSentryClerkUserTag(clerkUserId);
     await clerkClient().users.updateUser(clerkUserId, {
       publicMetadata: {
         ...currentMetadata,
-        onboardingComplete: onboardingComplete,
+        ...metadata,
       },
     });
+
     return { success: true };
   } catch (error) {
-    return { success: false };
+    logger.error(`${{ err: error }} Error saving user metadata:`);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 };
 
@@ -260,6 +279,32 @@ export const saveOrganizationInitialMetadata = async (
       { error },
       `Error: cannot update private metadata for organization ${organizationId}:`
     );
+  }
+};
+
+export const getOrganizationMetadata = async (
+  organizationId: string
+): Promise<ClerkOrganizationMetadata> => {
+  setSentryServiceTag('getOrganizationMetadata');
+  setSentryClerkUserTag(organizationId);
+
+  try {
+    const organization = await clerkClient.organizations.getOrganization({
+      organizationId,
+    });
+    return {
+      publicMetadata: organization.publicMetadata,
+      privateMetadata: organization.privateMetadata,
+    } as ClerkOrganizationMetadata;
+  } catch (error) {
+    logger.error(
+      { err: error },
+      `Error: cannot get private metadata for organization ${organizationId}:`
+    );
+    return {
+      publicMetadata: undefined,
+      privateMetadata: undefined,
+    };
   }
 };
 
@@ -314,3 +359,7 @@ export async function fetchThreadSuggestions(
     title: thread.messages[0]?.content.slice(0, 50) || 'No title',
   }));
 }
+
+export const trackThreadCreated = () => {
+  usageTracker.incThreadsCount();
+};

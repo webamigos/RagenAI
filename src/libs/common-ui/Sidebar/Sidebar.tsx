@@ -2,6 +2,7 @@
 
 import { type ComponentPropsWithoutRef, forwardRef, useId } from 'react';
 import { LayoutGroup, motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 import { classMerge } from '../utils/cn';
 import { AnimatedArrow } from '../icons';
@@ -146,6 +147,8 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
     },
     ref
   ) {
+    const pathname = usePathname();
+
     if (!href) {
       return null;
     }
@@ -156,6 +159,10 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
       current && 'bg-zinc-950/5 text-blue-500',
       disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
       'group',
+      {
+        // TODO: add text-blue-600  for active tab after cleanup because currently almost each tab has my-profile in pathname
+        'bg-zinc-950/5 dark:text-gray-200': pathname.includes(href),
+      },
       className
     );
 
@@ -164,7 +171,7 @@ export const SidebarItem = forwardRef<HTMLAnchorElement, SidebarItemProps>(
         {current && (
           <motion.span
             layoutId="current-indicator"
-            className="absolute inset-y-2 left-0.5 w-0.5 rounded-full bg-primary-blue-400 dark:bg-white"
+            className="absolute inset-y-2 left-0.5 w-0.5 rounded-md bg-primary-blue-400 dark:bg-white"
           />
         )}
         <Link

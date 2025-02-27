@@ -114,7 +114,7 @@ export async function POST(req: Request) {
           );
         } catch (error) {
           logger.error(
-            { error },
+            { err: error },
             `Error: cannot create organization for user ${userId}:`
           );
         }
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
             },
             privateMetadata: {
               ragen_org_id: ragenOrg.id,
-              vector_store: 'supabase',
+              vector_store: 'qdrant',
             },
           });
           logger.info(
@@ -148,7 +148,7 @@ export async function POST(req: Request) {
           );
         } catch (error) {
           logger.error(
-            { error },
+            { err: error },
             `Error: cannot sync organization with app ${clerkOrgId}:`
           );
         }

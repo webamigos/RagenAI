@@ -24,7 +24,39 @@ const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
   swcMinify: true,
   images: {
-    domains: ['img.clerk.com'],
+    domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
+  },
+
+  // TODO: cloudflare config
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: 'https://api.ragen.io',
+  //       destination: '/api',
+  //     },
+  //   ];
+  // },
+
+  async headers() {
+    return [
+      {
+        source: '/api/v1/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*', // Set your origin
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, X-API-KEY, x-api-key',
+          },
+        ],
+      },
+    ];
   },
 
   experimental: {
@@ -33,6 +65,8 @@ const nextConfig = {
       'pino-pretty',
       'pino-sentry',
       '@sentry/node',
+      '@hyzyla/pdfium',
+      '@aws-sdk',
     ],
   },
 

@@ -9,10 +9,10 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
-    title: t('manage-knowledge:create-document.title'),
+    title: t('manage-knowledge:documents-list.title'),
   };
 }
 
 export default function AdminPage() {
-  redirect('/manage-knowledge/create-document');
+  redirect('/manage-knowledge/documents-list');
 }

@@ -18,6 +18,8 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
+import { QdrantVectorStore } from '@langchain/qdrant';
+import { getOrganizationMetadata } from '@/app/actions';
 
 const serviceName = 'initializeBasicRag';
 
@@ -28,9 +30,16 @@ type InitializeRagChainParams = {
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
 const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
-export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
+export const initializeRagChain = async ({
+  settings,
+}: InitializeRagChainParams) => {
   try {
+    const { orgId } = auth();
     setSentryServiceTag(serviceName);
+
+    if (!orgId) {
+      throw new Error('Invalid organization');
+    }
 
     const {
       apiKey,
@@ -61,10 +70,17 @@ export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
       temperature: answerTemperature,
     });
 
-    const vectorStore = createVectorStore(
-      supabaseVectorStoreClient,
-      embeddingModel
-    );
+    const orgMetadata = await getOrganizationMetadata(orgId);
+    let vectorStore = undefined;
+
+    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
+      vectorStore = await createQdrantVectorStore(embeddingModel);
+    } else {
+      vectorStore = createSupabaseVectorStore(
+        supabaseVectorStoreClient,
+        embeddingModel
+      );
+    }
 
     return agenticRagChain({
       models: {
@@ -84,7 +100,31 @@ export const initializeRagChain = ({ settings }: InitializeRagChainParams) => {
   }
 };
 
-const createVectorStore = (
+const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
+  try {
+    const { orgId } = auth();
+    if (!orgId) {
+      throw new Error('Organization ID is required, could not get from clerk');
+    }
+
+    const vectorStore = await QdrantVectorStore.fromExistingCollection(
+      embeddingModel,
+      {
+        url: process.env.QDRANT_URL,
+        apiKey: process.env.QDRANT_API_KEY, // staging and prod
+        collectionName: orgId,
+      }
+    );
+
+    return vectorStore;
+  } catch (error) {
+    logger.error({ err: error }, 'Error creating Qdrant vector store');
+    throw error;
+  }
+};
+
+// TODO: refactor to use with qdrant or switch depending on organization settings?
+const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: Embeddings
 ): SupabaseVectorStore => {
@@ -111,7 +151,7 @@ const createVectorStore = (
       filter: metadataFilter,
     });
   } catch (error) {
-    logger.error({ err: error }, 'Error creating vector store');
+    logger.error({ err: error }, 'Error creating subabase vector store');
     throw error;
   }
 };

@@ -233,7 +233,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
   return (
     <>
-      <div className="fixed top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
+      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
@@ -257,7 +257,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
                   }
                 }}
                 autoFocus
-                className="py-1 max-w-96 min-w-24	 text-xl font-bold bg-transparent outline-none"
+                className="py-1 max-w-96 min-w-24	text-md md:text-xl font-bold bg-transparent outline-none"
               />
               {errorsTitle.title && (
                 <span className="text-red-500">
@@ -267,7 +267,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
             </form>
           ) : (
             <Text
-              className="truncate text-xl font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+              className="truncate text-md md:text-xl flex-wrap font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
               onClick={handleTitleDoubleClick}
             >
               {documentTitle}
@@ -296,7 +296,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
               <span className="text-red-500">{errors.content.message}</span>
             )}
           </div>
-          <div className="mt-4">
+          <div className="flex my-4 gap-2">
             <Button
               type="submit"
               disabled={
@@ -305,7 +305,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
               }
               isLoading={isSaving}
               iconRight={<CloudArrowUp />}
-              className={`mr-2 w-full md:w-auto self-center`}
+              className={`w-full md:w-auto flex justify-center self-center`}
             >
               {t('save')}
             </Button>
@@ -314,8 +314,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
               onClick={handleEditLeave}
               disabled={isSaving}
               iconRight={<XMarkIcon />}
-              className={`w-full md:w-auto self-center
-                }`}
+              className={`w-full md:w-auto flex justify-center self-center`}
             >
               {t('cancel')}
             </Button>

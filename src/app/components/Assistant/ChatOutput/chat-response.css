@@ -36,7 +36,7 @@
 
 /* CODE WRAPPER/ */
 pre.hljs {
-  background-color: #282c34;
+  background-color: #11212d;
   color: #abb2bf;
   padding: 1rem;
   border-radius: 8px;
@@ -44,11 +44,133 @@ pre.hljs {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   overflow-x: auto;
   font-size: 0.9rem;
-  margin-top: -80px;
-  margin-bottom: -80px;
 }
 
 code.hljs {
   font-family: 'Fira Code', monospace;
 }
 /* CODE WRAPPER/ */
+
+/* MATH FORMULAS */
+.katex-display {
+  margin: 1.5em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}
+
+.katex {
+  font-size: 1.1em;
+  font-family: KaTeX_Main, 'Times New Roman', serif;
+  line-height: 1.2;
+  white-space: normal;
+  text-indent: 0;
+}
+
+.katex-error {
+  color: #cc0000;
+  background-color: #ffebeb;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+/* MATH FORMULAS */
+:global(.dark) .katex {
+  color: #e4e4e7;
+}
+
+:global(.dark) .katex-error {
+  background-color: #4a0000;
+}
+
+/* LIGHT MODE TABLES */
+.chat-response table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.chat-response th,
+.chat-response td {
+  border: 1px solid #e5e7eb;
+  padding: 8px;
+  text-align: left;
+  color: #374151;
+}
+
+.chat-response th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+  color: #111827;
+}
+
+.chat-response tr:nth-child(even) {
+  background-color: #f3f4f6;
+}
+
+.chat-response tr:hover {
+  background-color: #e5e7eb;
+  cursor: pointer;
+}
+
+.chat-response table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chat-response td:first-child {
+  border-left: none;
+}
+
+.chat-response td:last-child {
+  border-right: none;
+}
+/* LIGHT MODE TABLES */
+
+/* DARK MODE TABLES */
+html.dark .chat-response table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  background-color: #2b3740;
+  border: 1px solid #20303c;
+}
+
+html.dark .chat-response th,
+html.dark .chat-response td {
+  border: 1px solid #20303c;
+  padding: 8px;
+  text-align: left;
+  color: #ffffff;
+}
+
+html.dark .chat-response th {
+  background-color: #253745;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+html.dark .chat-response tr:nth-child(even) {
+  background-color: #2b3740;
+}
+
+html.dark .chat-response tr:hover {
+  background-color: #20303c;
+  cursor: pointer;
+}
+
+.chat-response table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+html.dark .chat-response td:first-child {
+  border-left: none;
+}
+
+html.dark .chat-response td:last-child {
+  border-right: none;
+}
+/* DARK MODE TABLES */

@@ -12,6 +12,8 @@ import {
   saveModel,
   saveOpenaiAPIKey,
   saveTemperatureSetting,
+  getVoiceId,
+  saveVoiceId,
 } from '@/app/lib/services/settings';
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
@@ -20,22 +22,29 @@ import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
+import { maskApiKey } from '@/app/lib/utils/hashApiKey';
 
 const serviceName = 'ChatInstanceSettings';
 
 type SaveSettingsActionResponse = { success: boolean; message: string };
 
-type ActionResponse =
+type SettingsData = {
+  apiKey: string;
+  temperature: number;
+  model: string;
+  prompt: string;
+  maxDocumentsToRetrieve: number;
+};
+
+type ApiKeyData = {
+  apiKeyExists: boolean;
+};
+
+type ActionResponse<T> =
   | { success: false; message: string }
   | {
       success: true;
-      data: {
-        apiKey: string;
-        temperature: number;
-        model: string;
-        prompt: string;
-        maxDocumentsToRetrieve: number;
-      };
+      data: T;
     };
 
 const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
@@ -45,7 +54,20 @@ const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
 // https://www.npmjs.com/package/crypto-js
 ////
 
-export const fetchSettings = async (): Promise<ActionResponse> => {
+export const checkIfApiKeyExists = async (
+  orgId: string
+): Promise<ActionResponse<ApiKeyData>> => {
+  const apiKey = await getOpenaiAPIKey(orgId!);
+  const apiKeyExists = Boolean(apiKey);
+  return {
+    success: true,
+    data: { apiKeyExists },
+  };
+};
+
+export const fetchSettings = async (): Promise<
+  ActionResponse<SettingsData>
+> => {
   const { orgId, userId, sessionId } = auth();
 
   if (!orgId) {
@@ -59,7 +81,8 @@ export const fetchSettings = async (): Promise<ActionResponse> => {
   setSentryClerkContext({ orgId, userId, sessionId });
 
   try {
-    const apiKey = await getOpenaiAPIKey(orgId);
+    const unmaskedApiKey = await getOpenaiAPIKey(orgId);
+    const apiKey = unmaskedApiKey ? maskApiKey(unmaskedApiKey) : '';
     const temperature = await getTemperatureSetting(orgId);
     const model = (await getModel(orgId)) ?? '';
     const prompt = (await getAssistantPrompt(orgId)) ?? '';
@@ -132,3 +155,21 @@ export const saveSetting = async (
     return { success: false, message: `Failed to save ${type}` };
   }
 };
+
+export async function fetchVoiceId(organizationId: string) {
+  try {
+    const voiceId = await getVoiceId(organizationId);
+    return { success: true, data: { voiceId } };
+  } catch (error) {
+    return { success: false, error: 'Failed to fetch voice ID' };
+  }
+}
+
+export async function updateVoiceId(organizationId: string, voiceId: string) {
+  try {
+    await saveVoiceId(organizationId, voiceId);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'Failed to update voice ID' };
+  }
+}

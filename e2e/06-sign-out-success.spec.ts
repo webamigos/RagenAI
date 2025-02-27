@@ -11,9 +11,11 @@ test.beforeEach(async ({ page }) => {
 test('sign out success', async ({ page }) => {
   await login(page);
 
-  await page.getByRole('button', { name: 'Sign out' }).click();
-
   await page.waitForTimeout(2000);
+
+  await page.getByTestId('avatar-icon').last().click();
+  await page.waitForTimeout(1000);
+  await page.getByText(/sign out/i).click();
 
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
 });

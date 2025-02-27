@@ -2,7 +2,7 @@ import Redis from 'ioredis';
 import { logger } from '../utils/logger';
 import { setSentryContext, setSentryServiceTag } from './sentry';
 
-class RedisService {
+export class RedisService {
   private static instance: RedisService;
   private client: Redis;
   private serviceName = 'redis';
@@ -64,6 +64,40 @@ class RedisService {
     } catch (error) {
       logger.error({ err: error }, 'Error saving data to Redis');
       return { success: false, status: 'Failed to save data to Redis' };
+    }
+  }
+
+  async set(key: string, value: string) {
+    try {
+      setSentryContext('EXTRA_DATA', {
+        key,
+        value,
+      });
+      return await this.client.set(key, value);
+    } catch (error) {
+      logger.error({ err: error }, 'Error setting data to Redis');
+    }
+  }
+
+  async get(key: string) {
+    try {
+      setSentryContext('EXTRA_DATA', {
+        key,
+      });
+      return await this.client.get(key);
+    } catch (error) {
+      logger.error({ err: error }, 'Error removing key from Redis');
+    }
+  }
+
+  async del(key: string) {
+    try {
+      setSentryContext('EXTRA_DATA', {
+        key,
+      });
+      return await this.client.del(key);
+    } catch (error) {
+      logger.error({ err: error }, 'Error removing key from Redis');
     }
   }
 

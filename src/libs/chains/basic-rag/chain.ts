@@ -4,18 +4,16 @@ import {
 } from '@langchain/core/runnables';
 import {
   generateFinalAnswer,
-  moderateContent,
   rephraseQuestion,
   retrieveRelevantDocuments,
-  sanitizeAndValidateInput,
 } from './operations';
+import {
+  sanitizeAndValidateInput,
+  moderateContent,
+} from '../utils/common-operations';
 import { CHAIN_FINAL_ANSWER_RUN_NAME } from './config';
-import type {
-  BasicRagChainInput,
-  BasicRagChainParams,
-  BasicRagChainOutput,
-} from '../types/basic-rag';
-
+import type { BasicRagChainParams } from '../types/basic-rag';
+import type { BaseChatChainInput, BaseChatChainOutput } from '../types/common';
 /**
  * Creates a basic RAG (Retrieval-Augmented Generation) chain.
  *
@@ -27,12 +25,12 @@ import type {
  * @param {BasicRagChainConfig} params.config - Configuration for the chain.
  * @returns {BasicRagChainOutput} An object containing the chain and the final answer run name. Final answer run name can be used to filter events while stream processing.
  */
-export const basicRagChain = ({
+export const basicRagChain = async ({
   vectorStore,
   models,
   config,
-}: BasicRagChainParams): BasicRagChainOutput => {
-  const chain = RunnableSequence.from<BasicRagChainInput, string>([
+}: BasicRagChainParams): Promise<BaseChatChainOutput> => {
+  const chain = RunnableSequence.from<BaseChatChainInput, string>([
     sanitizeAndValidateInput,
 
     moderateContent(models.contentModerator),
@@ -42,7 +40,7 @@ export const basicRagChain = ({
     }),
 
     RunnablePassthrough.assign({
-      context: retrieveRelevantDocuments(
+      context: await retrieveRelevantDocuments(
         vectorStore,
         config?.maxDocumentsToRetrieve
       ),

@@ -1,4 +1,5 @@
-import { type MessageDto } from './Message';
+import { Message, Thread } from '@prisma/client';
+import { ApiMessageDto, type MessageDto } from './Message';
 import type { ChainErrorCode } from '@/libs/chains/types/errors';
 
 export type SseInitEvent = {
@@ -10,12 +11,25 @@ export type SseMessageEvent = {
   payload: MessageDto;
 };
 
+export type ApiSseMessageEvent = ApiMessageDto;
+
 export type SseMessageDelta = {
   type: 'delta';
   payload: {
     content: string;
-    runId: string;
   };
+};
+
+export type ApiSseMessageDelta = {
+  content: string;
+};
+
+export type ApiSseThreadFound = {
+  id: Thread['public_id'];
+};
+
+export type ApiSseMessageCreated = {
+  id: Message['public_id'];
 };
 
 export type SseMessageError = {
@@ -23,4 +37,8 @@ export type SseMessageError = {
   message: string;
   originalErrorMessage?: string;
   code: ChainErrorCode;
+};
+
+export type SseEndEvent = {
+  type: 'end';
 };

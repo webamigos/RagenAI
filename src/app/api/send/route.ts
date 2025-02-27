@@ -1,18 +1,67 @@
-import { sendWelcomeEmail } from '@/app/emails/services/mailer';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
+import { sendContactEmail } from '@/app/emails/services/mailer';
+import { logger } from '@/app/lib/utils/logger';
+import { currentUser } from '@clerk/nextjs/server';
+
+export async function POST(req: NextRequest) {
   try {
-    const { data, error } = await sendWelcomeEmail({
-      to: 'delivered@resend.dev',
-      name: 'Janusz',
-    });
+    const user = await currentUser();
+    if (!user) {
+      throw new Error('Invalid user');
+    }
+    const formData = await req.formData();
+    const files = formData.getAll('files') as File[];
 
-    if (error) {
-      return Response.json({ error }, { status: 500 });
+    const type = formData.get('type');
+    const email = user.emailAddresses[0].emailAddress;
+    const title = formData.get('title') as string;
+    const message = formData.get('message') as string;
+    const file = formData.get('file') as File | null;
+
+    if (type !== 'contact') {
+      return NextResponse.json(
+        { error: 'Nieznany typ wiadomości' },
+        { status: 400 }
+      );
     }
 
-    return Response.json(data);
+    if (!email || !title || !message) {
+      return NextResponse.json(
+        { error: 'Brak wymaganych pól do wysyłki kontaktowej' },
+        { status: 400 }
+      );
+    }
+
+    let attachments = [];
+
+    for (const file of files) {
+      if (file instanceof File) {
+        const arrayBuffer = await file.arrayBuffer();
+        attachments.push({
+          filename: file.name,
+          content: Buffer.from(arrayBuffer).toString('base64'),
+        });
+      }
+    }
+
+    const response = await sendContactEmail({
+      email,
+      title,
+      message,
+      files: attachments,
+    });
+
+    if (response.error) {
+      return NextResponse.json({ error: response.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data: response });
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    logger.error({ err: error }, 'Błąd podczas przetwarzania żądania');
+    return NextResponse.json(
+      { error: 'Błąd podczas przetwarzania żądania' },
+      { status: 500 }
+    );
   }
 }

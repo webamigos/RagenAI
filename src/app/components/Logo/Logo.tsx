@@ -2,19 +2,31 @@
 
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { useLocale } from 'next-intl';
 import { useTransition, useEffect, useState } from 'react';
 
 import { usePathname, useRouter } from '@/i18n/routing';
 import { clearVisitorMessagesStats } from '../../lib/services/api';
+import { useCloseThread } from '@/app/hooks/useCloseThreads';
+import { classMerge } from '@ragenai/common-ui/index';
 
-export const Logo = () => {
-  const { refresh, push } = useRouter();
+type Props = {
+  className?: string;
+  disableLink?: boolean;
+  ignoreTheme?: boolean;
+};
+
+export const Logo = ({
+  className,
+  disableLink = false,
+  ignoreTheme = false,
+}: Props) => {
+  const { refresh } = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
   const { theme, resolvedTheme } = useTheme();
   const [_isPending, setTransition] = useTransition();
   const [logoSrc, setLogoSrc] = useState('/assets/ragen-logo-on-light-bg.svg');
+
+  const { handleCloseThread } = useCloseThread();
 
   useEffect(() => {
     if (theme === 'dark' || resolvedTheme === 'dark') {
@@ -37,8 +49,15 @@ export const Logo = () => {
         <Image
           width={120}
           height={80}
-          className={`h-8 w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`}
-          onClick={() => push('/')}
+          className={classMerge(
+            `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
+            className
+          )}
+          onClick={() => {
+            if (!disableLink) {
+              handleCloseThread(true);
+            }
+          }}
           src={logoSrc}
           alt="Logo"
         />

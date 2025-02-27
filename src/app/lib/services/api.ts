@@ -1,6 +1,5 @@
 import { api } from './config';
 import { MessageDto } from '../../contracts/Message';
-import { CreateThreadDto } from '../../contracts/ThreadDto';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
@@ -12,20 +11,12 @@ export const fetchMessagesFromApi = async (
   return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
 };
 
-export const createThread = () => {
-  return api.post<CreateThreadDto>('/threads');
-};
-
 export const submitFeedback = async (
   messageId: string,
   feedback: 'up' | 'down',
   runId: string
 ) => {
   return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
-};
-
-export const createThreadForGuest = () => {
-  return api.post<CreateThreadDto>(`/guest-threads/`);
 };
 
 export const checkVisitorVisits = async (visitorId: string) => {
@@ -62,5 +53,44 @@ export const uploadFiles = async (
       },
     }
   );
+  return response.data;
+};
+
+type SupportRequestPayload = {
+  title: string;
+  message: string;
+  file?: File[];
+};
+
+type SupportResponse = {
+  message: string;
+  status: number;
+};
+
+export const sendSupportRequest = async (
+  data: SupportRequestPayload,
+  file?: File
+): Promise<SupportResponse> => {
+  const formData = new FormData();
+  formData.append('type', 'contact');
+  formData.append('title', data.title);
+  formData.append('message', data.message);
+
+  if (file) {
+    if (Array.isArray(file)) {
+      for (const f of file) {
+        formData.append('files', f);
+      }
+    } else {
+      formData.append('file', file);
+    }
+  }
+
+  const response = await api.post<SupportResponse>('/send', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
   return response.data;
 };
