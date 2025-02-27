@@ -19,14 +19,6 @@ const ProjectFileUploadTrigger = dynamic(
   { ssr: false, loading: () => <PageSkeleton /> }
 );
 
-const ProjectFilesList = dynamic(
-  () =>
-    import(
-      '../../../components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFilesList'
-    ).then((mod) => mod.ProjectFilesList),
-  { ssr: false, loading: () => <PageSkeleton /> }
-);
-
 // Dynamiczny import komponentu client-side
 const ClientOnlyLayout = dynamic(
   () => import('@/app/components').then((mod) => mod.ClientOnlyLayout),
@@ -59,9 +51,6 @@ export default async function ProjectPage({ params }: Props) {
               projectId={project.id}
               projectPublicId={project.public_id}
             />
-          </div>
-          <div className="flex-1">
-            <ProjectFilesList projectId={project.id} />
           </div>
         </div>
       </div>

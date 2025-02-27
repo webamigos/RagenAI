@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 
 import { FileUploader } from '@ragenai/common-ui/FileUploader';
 import { Button } from '@ragenai/common-ui/Button';
+import { Skeleton } from '@/app/components';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useRouter } from 'next/navigation';
 import { UploadList } from '../UploadList';
 import { uploadProjectFiles } from '@/app/lib/services/api';
+import { ProjectFilesList } from './ProjectFilesList';
 
 type Props = {
   projectId: number;
@@ -19,10 +21,26 @@ type Props = {
 export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [hasProjectFiles, setHasProjectFiles] = useState<boolean>(false);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const router = useRouter();
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('projects');
   const { organization } = useOrganization();
+
+  const handleFilesLoaded = (hasFiles: boolean) => {
+    setHasProjectFiles(hasFiles);
+    setIsInitializing(false);
+  };
+
+  // Check for existing files when component mounts
+  useEffect(() => {
+    if (organization) {
+      // Initial render - we'll use the ProjectFilesList component to check for existing files
+      // The onFilesLoaded callback will update our state
+    }
+    // We're not returning anything from this effect, just making sure it runs after organization is available
+  }, [projectId, organization]);
 
   if (!organization) {
     return null;
@@ -70,6 +88,8 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
       successToast({ message: 'Files uploaded successfully' });
       setFiles([]);
       router.refresh();
+      // Force refresh project files list after upload
+      setHasProjectFiles(true);
     } catch (error) {
       errorToast({ message: `Error sending files: ${error}` });
     } finally {
@@ -77,6 +97,33 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
     }
   };
 
+  // Show loading skeleton during initialization
+  if (isInitializing) {
+    return (
+      <div className="p-4">
+        <Skeleton height="h-6" width="w-48" className="mb-4" />
+        <Skeleton height="h-32" width="w-full" className="mb-4" />
+        <ProjectFilesList
+          projectId={projectId}
+          projectPublicId={projectPublicId}
+          onFilesLoaded={handleFilesLoaded}
+        />
+      </div>
+    );
+  }
+
+  // If project has files, only show file list
+  if (hasProjectFiles) {
+    return (
+      <ProjectFilesList
+        projectId={projectId}
+        projectPublicId={projectPublicId}
+        onFilesLoaded={handleFilesLoaded}
+      />
+    );
+  }
+
+  // Otherwise show the upload interface
   return (
     <div className="p-4">
       <h3 className="text-lg font-medium mb-4">{t('upload.title')}</h3>
