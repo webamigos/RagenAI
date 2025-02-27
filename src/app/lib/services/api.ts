@@ -1,5 +1,6 @@
 import { api } from './config';
 import { MessageDto } from '../../contracts/Message';
+import { logger } from '@/app/lib/utils/logger';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
@@ -9,6 +10,19 @@ export const fetchMessagesFromApi = async (
     return undefined;
   }
   return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
+};
+
+export const fetchProject = async (projectId: string) => {
+  try {
+    const response = await fetch(`/api/projects/${projectId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch project');
+    }
+    return await response.json();
+  } catch (error) {
+    logger.error('Error fetching project:', error);
+    throw error;
+  }
 };
 
 export const submitFeedback = async (

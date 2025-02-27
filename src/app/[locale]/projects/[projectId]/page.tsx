@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { PageSkeleton } from '@/app/components';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
+import { fetchProject } from '@/app/lib/services/api';
 
 type Project = {
   id: number;
@@ -44,23 +45,18 @@ export default function ProjectPage({ params }: Props) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // We need to create a client-side wrapper since we can't call server actions directly
-    async function fetchProject() {
+    async function loadProject() {
       try {
-        const response = await fetch(`/api/projects/${params.projectId}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch project');
-        }
-        const data = await response.json();
-        setProject(data);
+        const projectData = await fetchProject(params.projectId);
+        setProject(projectData);
       } catch (error) {
-        logger.error('Error fetching project:', error);
+        logger.error('Error loading project:', error);
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchProject();
+    loadProject();
   }, [params.projectId]);
 
   if (isLoading || !project) return <PageSkeleton />;
