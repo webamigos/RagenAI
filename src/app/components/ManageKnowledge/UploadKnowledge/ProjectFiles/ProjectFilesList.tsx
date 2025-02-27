@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 import { Card, Text } from '@ragenai/common-ui';
 import { Skeleton } from '@/app/components';
+import { FileUploader } from '@ragenai/common-ui/FileUploader';
 
 import { FileItem } from './components/FileItem';
 import { DropZone } from './components/DropZone';
@@ -14,10 +15,16 @@ type Props = {
   projectId: number;
   onFilesLoaded?: (hasFiles: boolean) => void;
   projectPublicId?: string;
+  initialFileCount?: number;
 };
 
 export const ProjectFilesList = memo(
-  ({ projectId, onFilesLoaded, projectPublicId }: Props) => {
+  ({
+    projectId,
+    onFilesLoaded,
+    projectPublicId,
+    initialFileCount = 0,
+  }: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const t = useTranslations('projects');
     const { organization } = useOrganization();
@@ -60,18 +67,23 @@ export const ProjectFilesList = memo(
     }
 
     if (listState === FileListState.LOADING) {
+      if (initialFileCount > 0) {
+        return (
+          <Card className="w-full p-6 min-h-[400px]">
+            <div className="flex justify-between items-center mb-4">
+              <Skeleton height="h-7" width="w-32" />
+              <Skeleton height="h-7" width="w-24" />
+            </div>
+            <div className="space-y-2">
+              {[...Array(initialFileCount)].map((_, index) => (
+                <Skeleton key={index} height="h-16" width="w-full" />
+              ))}
+            </div>
+          </Card>
+        );
+      }
       return (
-        <Card className="w-full p-6 min-h-[400px]">
-          <div className="flex justify-between items-center mb-4">
-            <Skeleton height="h-7" width="w-32" />
-            <Skeleton height="h-7" width="w-24" />
-          </div>
-          <div className="space-y-2">
-            {[...Array(3)].map((_, index) => (
-              <Skeleton key={index} height="h-16" width="w-full" />
-            ))}
-          </div>
-        </Card>
+        <FileUploader onFilesAdded={handleUploadFiles} disabled={isUploading} />
       );
     }
 
@@ -79,16 +91,6 @@ export const ProjectFilesList = memo(
       return (
         <Card className="w-full p-6 min-h-[400px] flex items-center justify-center">
           <Text className="text-red-500">{error}</Text>
-        </Card>
-      );
-    }
-
-    if (listState === FileListState.EMPTY) {
-      return (
-        <Card className="w-full p-6 min-h-[400px] flex items-center justify-center">
-          <Text className="text-gray-500 dark:text-gray-400">
-            {t('no-files')}
-          </Text>
         </Card>
       );
     }

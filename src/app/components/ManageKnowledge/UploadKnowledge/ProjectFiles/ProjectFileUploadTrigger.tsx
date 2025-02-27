@@ -137,6 +137,7 @@ export const ProjectFileUploadTrigger = ({
         <ProjectFileUpload
           projectId={projectId}
           projectPublicId={projectPublicId}
+          initialFileCount={fileStatus.fileCount}
         />
       </Dialog>
     </>

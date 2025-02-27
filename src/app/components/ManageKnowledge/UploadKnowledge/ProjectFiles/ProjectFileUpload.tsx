@@ -31,6 +31,7 @@ import { useFileUpload } from '@/app/hooks/useFileUpload';
 type Props = {
   projectId: number;
   projectPublicId: string;
+  initialFileCount?: number;
 };
 
 const UploadView = memo(
@@ -83,7 +84,11 @@ const UploadView = memo(
 
 UploadView.displayName = 'UploadView';
 
-export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
+export const ProjectFileUpload = ({
+  projectId,
+  projectPublicId,
+  initialFileCount,
+}: Props) => {
   const [componentState, setComponentState] = useState<ComponentState>(
     ComponentState.INITIALIZING
   );
@@ -133,6 +138,7 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
                 projectId={projectId}
                 projectPublicId={projectPublicId}
                 onFilesLoaded={handleFilesLoaded}
+                initialFileCount={initialFileCount || files.length}
               />
             </Suspense>
           </ErrorBoundary>
@@ -156,6 +162,7 @@ export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
               projectId={projectId}
               projectPublicId={projectPublicId}
               onFilesLoaded={handleFilesLoaded}
+              initialFileCount={initialFileCount || files.length}
             />
           </Suspense>
         </ErrorBoundary>
