@@ -1,156 +1,193 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
+import { Suspense, lazy } from 'react';
 
 import { FileUploader } from '@ragenai/common-ui/FileUploader';
 import { Button } from '@ragenai/common-ui/Button';
 import { Skeleton } from '@/app/components';
-import { statusToast } from '@/app/lib/utils/toast';
-import { useRouter } from 'next/navigation';
 import { UploadList } from '../UploadList';
-import { uploadProjectFiles } from '@/app/lib/services/api';
-import { ProjectFilesList } from './ProjectFilesList';
+import {
+  ErrorBoundary,
+  FileErrorFallback,
+} from '@/app/components/ErrorBoundary';
+
+const ProjectFilesList = lazy(() =>
+  import('./ProjectFilesList').then((mod) => ({
+    default: mod.ProjectFilesList,
+  }))
+);
+
+enum ComponentState {
+  INITIALIZING,
+  HAS_FILES,
+  NO_FILES,
+}
+
+import { useFileUpload } from '@/app/hooks/useFileUpload';
 
 type Props = {
   projectId: number;
   projectPublicId: string;
 };
 
+const LoadingView = () => (
+  <div className="p-4">
+    <Skeleton height="h-6" width="w-48" className="mb-4" />
+    <Skeleton height="h-32" width="w-full" className="mb-4" />
+  </div>
+);
+
+const UploadView = memo(
+  ({
+    files,
+    onFilesAdded,
+    onRemoveFile,
+    onSend,
+    uploading,
+    t,
+  }: {
+    files: File[];
+    onFilesAdded: (files: File[]) => void;
+    onRemoveFile: (index: number) => void;
+    onSend: () => Promise<void>;
+    uploading: boolean;
+    t: any;
+  }) => {
+    return (
+      <div className="p-4">
+        <h3 className="text-lg font-medium mb-4">{t('upload.title')}</h3>
+        <div className="flex gap-4 items-start">
+          <div className="flex-1">
+            <FileUploader
+              onFilesAdded={onFilesAdded}
+              disabled={uploading}
+              className="min-h-0"
+            />
+            {files.length > 0 && (
+              <UploadList
+                files={files}
+                onRemoveFile={onRemoveFile}
+                uploading={uploading}
+              />
+            )}
+          </div>
+          <Button
+            disabled={uploading || files.length < 1}
+            isLoading={uploading}
+            isSubmit={!uploading}
+            onClick={onSend}
+            label={t('upload.button')}
+            className="self-start mt-8"
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+UploadView.displayName = 'UploadView';
+
 export const ProjectFileUpload = ({ projectId, projectPublicId }: Props) => {
-  const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState<boolean>(false);
-  const [hasProjectFiles, setHasProjectFiles] = useState<boolean>(false);
-  const [isInitializing, setIsInitializing] = useState<boolean>(true);
-  const router = useRouter();
-  const { successToast, errorToast } = statusToast();
+  const [componentState, setComponentState] = useState<ComponentState>(
+    ComponentState.INITIALIZING
+  );
+
+  const { files, uploading, handleFilesAdded, handleFileRemove, uploadFiles } =
+    useFileUpload(projectId, projectPublicId);
+
   const t = useTranslations('projects');
   const { organization } = useOrganization();
 
   const handleFilesLoaded = (hasFiles: boolean) => {
-    setHasProjectFiles(hasFiles);
-    setIsInitializing(false);
+    setComponentState(
+      hasFiles ? ComponentState.HAS_FILES : ComponentState.NO_FILES
+    );
   };
 
-  // Check for existing files when component mounts
+  // Handle file upload action
+  const handleSend = async () => {
+    const success = await uploadFiles();
+    if (success) {
+      // Force refresh project files list after upload
+      setComponentState(ComponentState.HAS_FILES);
+    }
+  };
+
+  // Check for organization on component mount
   useEffect(() => {
     if (organization) {
-      // Initial render - we'll use the ProjectFilesList component to check for existing files
-      // The onFilesLoaded callback will update our state
+      // Initial state will be determined by ProjectFilesList callback
     }
-    // We're not returning anything from this effect, just making sure it runs after organization is available
   }, [projectId, organization]);
 
   if (!organization) {
     return null;
   }
 
-  const orgId = organization.id;
-
-  const handleFilesAdded = (newFiles: File[]) => {
-    const processedFiles = newFiles.map((file) => {
-      if (file.name.endsWith('.md')) {
-        return new File([file], file.name, { type: 'text/markdown' });
-      }
-      if (file.name.endsWith('.srt')) {
-        return new File([file], file.name, { type: 'application/x-subrip' });
-      }
-      return file;
-    });
-    setFiles((prevFiles) => [...prevFiles, ...processedFiles]);
-  };
-
-  const handleFileRemove = (index: number) => {
-    if (!uploading) {
-      setFiles((prevFiles) => {
-        const newFiles = [...prevFiles];
-        newFiles.splice(index, 1);
-        return newFiles;
-      });
-    }
-  };
-
-  const handleSend = async () => {
-    if (!files.length) {
-      errorToast({ message: 'No files to upload' });
-      return;
-    }
-
-    setUploading(true);
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-    formData.append('organizationId', orgId);
-    formData.append('projectId', projectId.toString());
-
-    try {
-      await uploadProjectFiles(projectPublicId, formData);
-      successToast({ message: 'Files uploaded successfully' });
-      setFiles([]);
-      router.refresh();
-      // Force refresh project files list after upload
-      setHasProjectFiles(true);
-    } catch (error) {
-      errorToast({ message: `Error sending files: ${error}` });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Show loading skeleton during initialization
-  if (isInitializing) {
-    return (
-      <div className="p-4">
-        <Skeleton height="h-6" width="w-48" className="mb-4" />
-        <Skeleton height="h-32" width="w-full" className="mb-4" />
-        <ProjectFilesList
-          projectId={projectId}
-          projectPublicId={projectPublicId}
-          onFilesLoaded={handleFilesLoaded}
-        />
-      </div>
-    );
-  }
-
-  // If project has files, only show file list
-  if (hasProjectFiles) {
-    return (
-      <ProjectFilesList
-        projectId={projectId}
-        projectPublicId={projectPublicId}
-        onFilesLoaded={handleFilesLoaded}
-      />
-    );
-  }
-
-  // Otherwise show the upload interface
-  return (
-    <div className="p-4">
-      <h3 className="text-lg font-medium mb-4">{t('upload.title')}</h3>
-      <div className="flex gap-4 items-start">
-        <div className="flex-1">
-          <FileUploader
-            onFilesAdded={handleFilesAdded}
-            disabled={uploading}
-            className="min-h-0"
-          />
-          {files.length > 0 && (
-            <UploadList
-              files={files}
-              onRemoveFile={handleFileRemove}
-              uploading={uploading}
-            />
-          )}
+  // Render the appropriate view based on component state
+  switch (componentState) {
+    case ComponentState.INITIALIZING:
+      return (
+        <div className="p-4">
+          <Skeleton height="h-6" width="w-48" className="mb-4" />
+          <Skeleton height="h-32" width="w-full" className="mb-4" />
+          <ErrorBoundary
+            fallback={
+              <FileErrorFallback
+                error={new Error('Failed to load files')}
+                resetErrorBoundary={() => {}}
+              />
+            }
+          >
+            <Suspense fallback={<LoadingView />}>
+              <ProjectFilesList
+                projectId={projectId}
+                projectPublicId={projectPublicId}
+                onFilesLoaded={handleFilesLoaded}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </div>
-        <Button
-          disabled={uploading || files.length < 1}
-          isLoading={uploading}
-          isSubmit={!uploading}
-          onClick={handleSend}
-          label={t('upload.button')}
-          className="self-start mt-8"
+      );
+
+    case ComponentState.HAS_FILES:
+      return (
+        <ErrorBoundary
+          fallback={
+            <FileErrorFallback
+              error={new Error('Failed to load files')}
+              resetErrorBoundary={() =>
+                setComponentState(ComponentState.INITIALIZING)
+              }
+            />
+          }
+        >
+          <Suspense fallback={<LoadingView />}>
+            <ProjectFilesList
+              projectId={projectId}
+              projectPublicId={projectPublicId}
+              onFilesLoaded={handleFilesLoaded}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      );
+
+    case ComponentState.NO_FILES:
+      return (
+        <UploadView
+          files={files}
+          onFilesAdded={handleFilesAdded}
+          onRemoveFile={handleFileRemove}
+          onSend={handleSend}
+          uploading={uploading}
+          t={t}
         />
-      </div>
-    </div>
-  );
+      );
+
+    default:
+      return <LoadingView />;
+  }
 };

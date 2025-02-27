@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 import { useDroppable } from '@dnd-kit/core';
+import prettyBytes from 'pretty-bytes';
 
 import { Card, Text, TrashIcon, UploadInboxIcon } from '@ragenai/common-ui';
 import { Skeleton, SkeletonList } from '@/app/components';
@@ -14,9 +15,16 @@ import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { SupportedFileType } from '@/app/lib/services/fileParser';
 import { uploadProjectFiles } from '@/app/lib/services/api';
+import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 
-// Komponent skeleton dla ładowania używający nowego reużywalnego komponentu
-const LoadingSkeleton = () => {
+enum FileListState {
+  LOADING,
+  ERROR,
+  EMPTY,
+  HAS_FILES,
+}
+
+const LoadingSkeleton = memo(() => {
   return (
     <Card className="w-full p-4">
       <div className="mb-4">
@@ -25,7 +33,9 @@ const LoadingSkeleton = () => {
       <SkeletonList count={3} height="h-16" />
     </Card>
   );
-};
+});
+
+LoadingSkeleton.displayName = 'LoadingSkeleton';
 
 type Props = {
   projectId: number;
@@ -44,13 +54,52 @@ type ProjectFile = {
   organization_id: string;
 };
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
+const FileItem = memo(
+  ({
+    file,
+    onDelete,
+    isDeleting,
+  }: {
+    file: ProjectFile & { formattedSize: string; formattedDate: string };
+    onDelete: () => void;
+    isDeleting: boolean;
+  }) => {
+    const t = useTranslations('projects');
+
+    return (
+      <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+        <div className="h-8 w-8 text-gray-400 flex items-center justify-center">
+          {getFileIcon(file.file_type as SupportedFileType)}
+        </div>
+        <div className="flex-1 min-w-0">
+          <Text className="font-medium truncate">{file.file_name}</Text>
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span>{file.formattedSize}</span>
+            <span>•</span>
+            <span>{file.formattedDate}</span>
+          </div>
+        </div>
+        <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+          {file.file_type}
+        </span>
+        <button
+          onClick={onDelete}
+          disabled={isDeleting}
+          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+          title={t('remove-file')}
+        >
+          {isDeleting ? (
+            <div className="w-4 h-4 border-t-2 border-red-500 rounded-full animate-spin"></div>
+          ) : (
+            <TrashIcon className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+    );
+  }
+);
+
+FileItem.displayName = 'FileItem';
 
 export const ProjectFilesList = ({
   projectId,
@@ -58,12 +107,16 @@ export const ProjectFilesList = ({
   projectPublicId,
 }: Props) => {
   const [files, setFiles] = useState<ProjectFile[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [listState, setListState] = useState<FileListState>(
+    FileListState.LOADING
+  );
   const [error, setError] = useState<string | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [uploadState, setUploadState] = useState({
+    isDragging: false,
+    isUploading: false,
+  });
+
   const initialLoadComplete = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,15 +130,16 @@ export const ProjectFilesList = ({
   const { isOver, setNodeRef } = useDroppable({ id: 'files-list-droppable' });
 
   useEffect(() => {
-    setIsDragging(isOver);
+    setUploadState((prev) => ({ ...prev, isDragging: isOver }));
   }, [isOver]);
 
-  const loadFiles = async () => {
-    if (!organization || !mounted) return;
+  // Funkcja ładująca pliki, zoptymalizowana przez useCallback
+  const loadFiles = useCallback(async () => {
+    if (!organization) return;
 
     try {
       if (!initialLoadComplete.current) {
-        setLoading(true);
+        setListState(FileListState.LOADING);
       }
 
       const result = await getProjectFiles(projectId);
@@ -94,164 +148,205 @@ export const ProjectFilesList = ({
         throw new Error(result.error);
       }
 
-      setFiles(result.files || []);
+      const loadedFiles = result.files || [];
+      setFiles(loadedFiles);
+      setListState(
+        loadedFiles.length > 0 ? FileListState.HAS_FILES : FileListState.EMPTY
+      );
       initialLoadComplete.current = true;
+
+      // Notify parent component
+      if (onFilesLoaded) {
+        onFilesLoaded(loadedFiles.length > 0);
+      }
     } catch (error) {
       setError(
         t('error.loading-files') || 'Nie udało się załadować plików projektu'
       );
-    } finally {
-      setLoading(false);
+      setListState(FileListState.ERROR);
+
+      // Also notify parent in case of error
+      if (onFilesLoaded) {
+        onFilesLoaded(false);
+      }
     }
-  };
+  }, [organization, projectId, t, onFilesLoaded]);
 
-  // Używamy dwóch efektów, jeden dla mounted state
+  // Efekt ładujący dane
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  // Drugi do ładowania danych
-  useEffect(() => {
-    if (mounted && organization) {
+    if (organization) {
       loadFiles();
     }
-  }, [projectId, organization, mounted]);
+  }, [organization, loadFiles]);
 
-  // Notify parent about files status when they load
-  useEffect(() => {
-    if (!loading && onFilesLoaded) {
-      onFilesLoaded(files.length > 0);
-    }
-  }, [files, loading, onFilesLoaded]);
+  // Funkcja obsługująca usuwanie pliku
+  const handleDeleteFile = useCallback(
+    async (fileId: string) => {
+      if (!organization || deletingFileId) return;
 
-  const handleDeleteFile = async (fileId: string) => {
-    if (!organization || deletingFileId) return;
+      try {
+        setDeletingFileId(fileId);
+        const result = await deleteProjectFileAction(fileId, projectId);
 
-    try {
-      setDeletingFileId(fileId);
-      const result = await deleteProjectFileAction(fileId, projectId);
+        if (result.error) {
+          throw new Error(result.error);
+        }
 
-      if (result.error) {
-        throw new Error(result.error);
+        successToast({ message: t('file-deleted') });
+        loadFiles();
+        router.refresh();
+      } catch (error) {
+        errorToast({
+          message: t('error.file-delete'),
+        });
+      } finally {
+        setDeletingFileId(null);
+      }
+    },
+    [
+      organization,
+      deletingFileId,
+      projectId,
+      t,
+      successToast,
+      errorToast,
+      loadFiles,
+      router,
+    ]
+  );
+
+  // Funkcja obsługująca upuszczenie plików
+  const handleFileDrop = useCallback(
+    async (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setUploadState((prev) => ({ ...prev, isDragging: false }));
+
+      if (!organization || !projectPublicId) return;
+
+      const droppedFiles = Array.from(event.dataTransfer.files).filter(
+        isSupportedFile
+      );
+
+      if (droppedFiles.length === 0) {
+        errorToast({
+          message: t('upload.no-supported-files'),
+        });
+        return;
       }
 
-      successToast({ message: t('file-deleted') || 'Plik został usunięty' });
-      loadFiles();
-      router.refresh();
-    } catch (error) {
-      errorToast({
-        message: t('error.file-delete') || 'Nie udało się usunąć pliku',
-      });
-    } finally {
-      setDeletingFileId(null);
-    }
-  };
+      await uploadFiles(droppedFiles);
+    },
+    [organization, projectPublicId, t, errorToast]
+  );
 
-  // File upload functions
-  const isSupportedFile = (file: File) =>
-    file.type === 'text/markdown' ||
-    file.type === 'application/epub+zip' ||
-    file.name.endsWith('.md') ||
-    file.name.endsWith('.epub') ||
-    file.name.endsWith('.pdf') ||
-    file.name.endsWith('.srt');
+  // Funkcje obsługujące przeciąganie
+  const handleDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setUploadState((prev) => ({ ...prev, isDragging: true }));
+    },
+    []
+  );
 
-  const handleFileDrop = async (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
+  const handleDragLeave = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      setUploadState((prev) => ({ ...prev, isDragging: false }));
+    },
+    []
+  );
 
-    if (!organization || !projectPublicId) return;
+  // Funkcja obsługująca wybór plików
+  const handleFileSelect = useCallback(
+    async (event: React.ChangeEvent<HTMLInputElement>) => {
+      const selectedFiles = Array.from(event.target.files || []).filter(
+        isSupportedFile
+      );
 
-    const droppedFiles = Array.from(event.dataTransfer.files).filter(
-      isSupportedFile
-    );
+      if (selectedFiles.length === 0) {
+        errorToast({
+          message: t('upload.no-supported-files'),
+        });
+        return;
+      }
 
-    if (droppedFiles.length === 0) {
-      errorToast({
-        message:
-          t('upload.no-supported-files') || 'No supported files to upload',
-      });
-      return;
-    }
+      await uploadFiles(selectedFiles);
 
-    await uploadFiles(droppedFiles);
-  };
+      // Reset input
+      if (event.target) {
+        event.target.value = '';
+      }
+    },
+    [t, errorToast]
+  );
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const selectedFiles = Array.from(event.target.files || []).filter(
-      isSupportedFile
-    );
-
-    if (selectedFiles.length === 0) {
-      errorToast({
-        message:
-          t('upload.no-supported-files') || 'No supported files to upload',
-      });
-      return;
-    }
-
-    await uploadFiles(selectedFiles);
-
-    // Reset input
-    if (event.target) {
-      event.target.value = '';
-    }
-  };
-
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const uploadFiles = async (filesToUpload: File[]) => {
-    if (!organization || !projectPublicId || isUploading) return;
+  const uploadFiles = useCallback(
+    async (filesToUpload: File[]) => {
+      if (!organization || !projectPublicId || uploadState.isUploading) return;
 
-    setIsUploading(true);
+      setUploadState((prev) => ({ ...prev, isUploading: true }));
 
-    const formData = new FormData();
-    filesToUpload.forEach((file) => formData.append('files', file));
-    formData.append('organizationId', organization.id);
-    formData.append('projectId', projectId.toString());
+      const formData = new FormData();
+      filesToUpload.forEach((file) => formData.append('files', file));
+      formData.append('organizationId', organization.id);
+      formData.append('projectId', projectId.toString());
 
-    try {
-      await uploadProjectFiles(projectPublicId, formData);
-      successToast({
-        message: t('upload.success') || 'Files uploaded successfully',
-      });
-      loadFiles();
-      router.refresh();
-    } catch (error) {
-      errorToast({
-        message: t('upload.error') || `Error sending files: ${error}`,
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
+      try {
+        await uploadProjectFiles(projectPublicId, formData);
+        successToast({
+          message: t('upload.success'),
+        });
+        loadFiles();
+        router.refresh();
+      } catch (error) {
+        errorToast({
+          message: t('upload.error'),
+        });
+      } finally {
+        setUploadState((prev) => ({ ...prev, isUploading: false }));
+      }
+    },
+    [
+      organization,
+      projectPublicId,
+      uploadState.isUploading,
+      projectId,
+      successToast,
+      t,
+      loadFiles,
+      router,
+      errorToast,
+    ]
+  );
 
-  // Dodajemy opóźnione renderowanie, aby zapobiec migotaniu
-  const renderContent = () => {
-    if (!mounted || loading) {
-      return <LoadingSkeleton />;
-    }
+  // Memoizujemy przeformatowane pliki, żeby uniknąć niepotrzebnych renderów
+  const formattedFiles = useMemo(
+    () =>
+      files.map((file) => ({
+        ...file,
+        formattedSize: prettyBytes(file.file_size),
+        formattedDate: file.created_at
+          ? new Date(file.created_at).toLocaleDateString()
+          : '-',
+      })),
+    [files]
+  );
 
+  // Renderowanie zawartości w zależności od stanu
+  const renderContent = useCallback(() => {
     if (!organization) {
       return null;
     }
 
-    if (error) {
+    if (listState === FileListState.LOADING) {
+      return <LoadingSkeleton />;
+    }
+
+    if (listState === FileListState.ERROR) {
       return (
         <Card className="w-full p-6">
           <Text className="text-red-500">{error}</Text>
@@ -259,7 +354,7 @@ export const ProjectFilesList = ({
       );
     }
 
-    if (files.length === 0) {
+    if (listState === FileListState.EMPTY) {
       return (
         <Card className="w-full p-6 flex justify-center items-center">
           <Text className="text-gray-500 dark:text-gray-400">
@@ -268,6 +363,8 @@ export const ProjectFilesList = ({
         </Card>
       );
     }
+
+    const { isDragging, isUploading } = uploadState;
 
     return (
       <div
@@ -286,7 +383,7 @@ export const ProjectFilesList = ({
             <div className="text-center">
               <UploadInboxIcon className="w-12 h-12 mx-auto text-blue-500 mb-2" />
               <Text className="text-blue-600 font-medium">
-                {t('upload.drop-to-upload') || 'Drop files to upload'}
+                {t('upload.drop-to-upload')}
               </Text>
             </div>
           </div>
@@ -297,7 +394,7 @@ export const ProjectFilesList = ({
             <div className="text-center">
               <div className="w-12 h-12 border-4 border-t-blue-500 rounded-full animate-spin mx-auto mb-2"></div>
               <Text className="text-gray-600 dark:text-gray-300 font-medium">
-                {t('upload.uploading') || 'Uploading...'}
+                {t('upload.uploading')}
               </Text>
             </div>
           </div>
@@ -308,9 +405,9 @@ export const ProjectFilesList = ({
           <button
             onClick={handleClick}
             className="px-2 py-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-            title={t('upload.add-files') || 'Add files'}
+            title={t('upload.add-files')}
           >
-            + {t('upload.add-files') || 'Add files'}
+            + {t('upload.add-files')}
           </button>
           <input
             ref={fileInputRef}
@@ -322,47 +419,33 @@ export const ProjectFilesList = ({
           />
         </div>
         <div className="space-y-2">
-          {files.map((file) => (
-            <div
+          {formattedFiles.map((file) => (
+            <FileItem
               key={file.id}
-              className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-            >
-              <div className="h-8 w-8 text-gray-400 flex items-center justify-center">
-                {getFileIcon(file.file_type as SupportedFileType)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <Text className="font-medium truncate">{file.file_name}</Text>
-                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span>{formatFileSize(file.file_size)}</span>
-                  <span>•</span>
-                  <span>
-                    {file.created_at
-                      ? new Date(file.created_at).toLocaleDateString()
-                      : '-'}
-                  </span>
-                </div>
-              </div>
-              <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                {file.file_type}
-              </span>
-              <button
-                onClick={() => handleDeleteFile(file.id)}
-                disabled={deletingFileId === file.id}
-                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
-                title={t('remove-file') || 'Usuń plik'}
-              >
-                {deletingFileId === file.id ? (
-                  <div className="w-4 h-4 border-t-2 border-red-500 rounded-full animate-spin"></div>
-                ) : (
-                  <TrashIcon className="w-4 h-4" />
-                )}
-              </button>
-            </div>
+              file={file}
+              onDelete={() => handleDeleteFile(file.id)}
+              isDeleting={deletingFileId === file.id}
+            />
           ))}
         </div>
       </div>
     );
-  };
+  }, [
+    organization,
+    listState,
+    error,
+    t,
+    uploadState,
+    formattedFiles,
+    setNodeRef,
+    handleFileDrop,
+    handleDragOver,
+    handleDragLeave,
+    handleClick,
+    handleFileSelect,
+    deletingFileId,
+    handleDeleteFile,
+  ]);
 
   return <div ref={containerRef}>{renderContent()}</div>;
 };

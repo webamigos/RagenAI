@@ -1,6 +1,16 @@
-import { getProjectByPublicId } from '@/app/lib/services/project';
+'use client';
+
 import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
 import { PageSkeleton } from '@/app/components';
+import { useClientOnly } from '@/app/hooks/useClientOnly';
+import { logger } from '@/app/lib/utils/logger';
+
+type Project = {
+  id: number;
+  public_id: string;
+  title: string;
+};
 
 const NewChatInterface = dynamic(
   () =>
@@ -10,12 +20,10 @@ const NewChatInterface = dynamic(
   { ssr: false, loading: () => <PageSkeleton /> }
 );
 
-// Create a proper placeholder that maintains layout
 const ProjectFileUploadPlaceholder = () => (
   <div className="w-full h-[60px] rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse"></div>
 );
 
-// Improve dynamic import with better loading placeholder
 const ProjectFileUploadTrigger = dynamic(
   () =>
     import(
@@ -24,40 +32,57 @@ const ProjectFileUploadTrigger = dynamic(
   { ssr: false, loading: () => <ProjectFileUploadPlaceholder /> }
 );
 
-const ClientOnlyLayout = dynamic(
-  () => import('@/app/components').then((mod) => mod.ClientOnlyLayout),
-  { ssr: false, loading: () => <PageSkeleton /> }
-);
-
 type Props = {
   params: {
     projectId: string;
   };
 };
 
-export default async function ProjectPage({ params }: Props) {
-  const project = await getProjectByPublicId(params.projectId);
+export default function ProjectPage({ params }: Props) {
+  const isReady = useClientOnly();
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!project) return null;
+  useEffect(() => {
+    // We need to create a client-side wrapper since we can't call server actions directly
+    async function fetchProject() {
+      try {
+        const response = await fetch(`/api/projects/${params.projectId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch project');
+        }
+        const data = await response.json();
+        setProject(data);
+      } catch (error) {
+        logger.error('Error fetching project:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchProject();
+  }, [params.projectId]);
+
+  if (isLoading || !project) return <PageSkeleton />;
+
+  if (!isReady) return <PageSkeleton />;
 
   return (
-    <ClientOnlyLayout fallback={<PageSkeleton />}>
-      <div className="flex flex-col h-screen justify-center items-center gap-4">
-        <NewChatInterface
-          projectId={project.id}
-          projectPublicId={project.public_id}
-          projectTitle={project.title}
-        />
+    <div className="flex flex-col h-screen justify-center items-center gap-4">
+      <NewChatInterface
+        projectId={project.id}
+        projectPublicId={project.public_id}
+        projectTitle={project.title}
+      />
 
-        <div className="flex w-full max-w-[740px] gap-4 flex-col">
-          <div className="flex-1">
-            <ProjectFileUploadTrigger
-              projectId={project.id}
-              projectPublicId={project.public_id}
-            />
-          </div>
+      <div className="flex w-full max-w-[740px] gap-4 flex-col">
+        <div className="flex-1">
+          <ProjectFileUploadTrigger
+            projectId={project.id}
+            projectPublicId={project.public_id}
+          />
         </div>
       </div>
-    </ClientOnlyLayout>
+    </div>
   );
 }

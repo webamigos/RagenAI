@@ -4,13 +4,9 @@ import { useRef, ComponentPropsWithRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 
-import {
-  UploadInboxIcon,
-  Text,
-  Tooltip,
-  InformationCircle,
-} from '@ragenai/common-ui';
+import { UploadInboxIcon, Text } from '@ragenai/common-ui';
 
+import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 interface FileUploaderProps extends ComponentPropsWithRef<'div'> {
   onFilesAdded: (files: File[]) => void;
   disabled?: boolean;
@@ -25,14 +21,6 @@ export const FileUploader = ({
   const { isOver, setNodeRef } = useDroppable({ id: 'droppable' });
   const t = useTranslations('admin-panel');
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const isSupportedFile = (file: File) =>
-    file.type === 'text/markdown' ||
-    file.type === 'application/epub+zip' ||
-    file.name.endsWith('.md') ||
-    file.name.endsWith('.epub') ||
-    file.name.endsWith('.pdf') ||
-    file.name.endsWith('.srt');
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
