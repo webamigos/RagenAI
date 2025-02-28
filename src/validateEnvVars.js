@@ -61,6 +61,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
   STRIPE_SECRET_KEY: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string(),
+
+  // Firecrawl
+  FIRECRAWL_API_KEY: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

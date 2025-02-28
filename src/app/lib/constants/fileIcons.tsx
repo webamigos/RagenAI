@@ -1,10 +1,9 @@
 import {
   PdfIcon,
   EpubIcon,
-  CsvIcon,
   MarkdownIcon,
   SrtIcon,
-  UnknownFileIcon,
+  WebsiteIcon,
 } from '@ragenai/common-ui/icons';
 import { type SupportedFileType } from '@/app/lib/services/fileParser';
 
@@ -15,6 +14,7 @@ export const FILE_ICONS: Record<SupportedFileType, JSX.Element> = {
   text: <MarkdownIcon />,
   // markdown: <MarkdownIcon />,
   srt: <SrtIcon />,
+  url: <WebsiteIcon />,
   // unknown: <UnknownFileIcon />,
 };
 

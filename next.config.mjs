@@ -67,6 +67,9 @@ const nextConfig = {
       '@sentry/node',
       '@hyzyla/pdfium',
       '@aws-sdk',
+      '@langchain/core',
+      'langchain',
+      '@langchain/community',
     ],
   },
 
