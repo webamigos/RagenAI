@@ -5,7 +5,8 @@ export type ModelProvider =
   | 'anthropic'
   | 'google'
   | 'openrouter'
-  | 'fireworks';
+  | 'fireworks'
+  | 'azure-openai';
 
 export type BaseProviderCredentials = {
   provider: ModelProvider;
@@ -50,6 +51,14 @@ export type FireworksCredentials = BaseProviderCredentials & {
   apiKey: string;
 };
 
+export type AzureOpenAICredentials = BaseProviderCredentials & {
+  provider: 'azure-openai';
+  apiKey: string;
+  instanceName: string;
+  deploymentName: string;
+  apiVersion: string;
+};
+
 export type ProviderCredentials =
   | OpenAICredentials
   | BedrockCredentials
@@ -57,4 +66,5 @@ export type ProviderCredentials =
   | AnthropicCredentials
   | GoogleCredentials
   | OpenRouterCredentials
-  | FireworksCredentials;
+  | FireworksCredentials
+  | AzureOpenAICredentials;

@@ -66,6 +66,23 @@ let customCredentials: ProviderCredentials | null = null;
 // customChatModel = 'accounts/fireworks/models/llama-v3p2-3b-instruct';
 //-----------------------------------------------------
 
+//------------Example azure openai credentials, uncomment to use------------
+//WARNING DON'T USE ENV NAMES AS BELOW, IT WILL CAUSE OPENAI EMBEDDINGS INSTANCE TO CRASH
+//   apiKey: process.env.AZURE_OPENAI_API_KEY!,
+//   instanceName: process.env.AZURE_OPENAI_INSTANCE_NAME!,
+//   deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME!,
+//   apiVersion: process.env.AZURE_OPENAI_API_VERSION!,
+// USE BELOW INSTEAD
+// customCredentials = {
+//   provider: 'azure-openai',
+//   apiKey: process.env.AZURE_OPENAI_KEY!,
+//   instanceName: process.env.AZURE_OPENAI_INSTANCE!,
+//   deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT!,
+//   apiVersion: process.env.AZURE_OPENAI_VERSION!,
+// };
+// customChatModel = 'gpt-4o';
+//-----------------------------------------------------
+
 export const createChatCompletionInstance = (
   options: ChatOpenAIFields, //todo use BaseCompletionConfig after adding provider to the settings
   streaming: boolean = true
