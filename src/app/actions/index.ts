@@ -226,6 +226,12 @@ export const deleteProjectFileAction = async (
         // Log S3 error but continue since the DB entry was deleted
         logger.error('Failed to delete file from S3', { error: s3Error });
       }
+
+      // Delete from UserDocument
+      await deleteDocumentFromDb(fileRecord.organization_id, fileId);
+
+      // Delete vectors
+      await deleteDocumentFromVectorStore(fileId);
     }
 
     return {
