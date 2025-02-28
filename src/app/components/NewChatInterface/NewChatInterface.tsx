@@ -1,7 +1,12 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
+
 import { classMerge, Textarea } from '@ragenai/common-ui/index';
+
 import { useNewThreadInput } from './useNewThreadInput';
+
 import { ChatResponseType } from '@/app/contracts/Message';
 
 interface NewChatInterfaceProps {
@@ -11,6 +16,9 @@ interface NewChatInterfaceProps {
   isPublicAccess?: boolean;
   widgetMode?: boolean;
   voiceId?: string;
+  projectId?: number;
+  projectPublicId?: string;
+  projectTitle?: string;
 }
 
 export const NewChatInterface = ({
@@ -19,10 +27,12 @@ export const NewChatInterface = ({
   organizationId,
   isPublicAccess = false,
   widgetMode = false,
+  projectId,
+  projectPublicId,
+  projectTitle,
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
   const {
     prompt,
     isLoading,
@@ -35,6 +45,8 @@ export const NewChatInterface = ({
     organizationId,
     isPublicAccess,
     widgetMode,
+    projectId,
+    projectPublicId,
   });
 
   useEffect(() => {
@@ -60,7 +72,9 @@ export const NewChatInterface = ({
           {t('new-thread-header')}
         </h1>
         <p className="text-muted-foreground mb-6">
-          {t('new-thread-description')}
+          {projectTitle
+            ? t('project-context', { projectTitle })
+            : t('new-thread-description')}
         </p>
       </div>
 

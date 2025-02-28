@@ -1,28 +1,18 @@
 import { Text, FolderIcon, classMerge } from '@ragenai/common-ui';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
-import type { ProjectItemProps, ThreadType } from '../types';
+import type { ProjectItemProps } from '../types';
 import { ThreadsList } from './ThreadsList';
-
-const hasMessages = (thread: ThreadType): boolean => {
-  return (
-    thread.messages?.length > 0 && thread.messages[0]?.content !== undefined
-  );
-};
-
-const hasThreadsWithMessages = (threads: ThreadType[] | undefined): boolean => {
-  if (!threads?.length) return false;
-  return threads.some(hasMessages);
-};
+import { useRouter } from '@/i18n/routing';
 
 export const ProjectItem = ({
   project,
   activeThread,
-  onProjectClick,
   onSidebarClose,
 }: ProjectItemProps) => {
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
-  const hasThreads = hasThreadsWithMessages(project.threads);
+  const hasThreads = project.threads.length > 0;
 
   useEffect(() => {
     if (
@@ -35,7 +25,7 @@ export const ProjectItem = ({
 
   const handleProjectClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    onProjectClick(project.public_id);
+    router.push(`/projects/${project.public_id}`);
   };
 
   const handleExpandClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -55,9 +45,6 @@ export const ProjectItem = ({
         role="button"
         tabIndex={0}
         aria-label={`Select project ${project.title}`}
-        onKeyDown={(e) =>
-          e.key === 'Enter' && onProjectClick(project.public_id)
-        }
       >
         <div className="flex items-center flex-1">
           <FolderIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
@@ -89,6 +76,7 @@ export const ProjectItem = ({
         <ThreadsList
           threads={project.threads}
           projectId={project.id}
+          projectPublicId={project.public_id}
           activeThread={activeThread}
           onClose={onSidebarClose}
         />
