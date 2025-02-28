@@ -9,6 +9,7 @@ const tabRoutes = [
   { label: 'documents-list', path: '/manage-knowledge/documents-list' },
   { label: 'upload-files', path: '/manage-knowledge/upload-files' },
   { label: 'create-document', path: '/manage-knowledge/create-document' },
+  { label: 'add-from-url', path: '/manage-knowledge/add-from-url' },
 ];
 
 export default function TabsWrapper() {

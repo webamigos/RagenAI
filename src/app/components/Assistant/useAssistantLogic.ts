@@ -109,6 +109,15 @@ export const useAssistantLogic = (threadId: string) => {
       const id = userVisitorId;
       if (id) {
         fetchData(id);
+
+        // Check for initial message
+        const initialMessage = localStorage.getItem(
+          `thread_${threadId}_initial_message`
+        );
+        if (initialMessage) {
+          localStorage.removeItem(`thread_${threadId}_initial_message`);
+          onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
+        }
       }
     }
   }, [isLoaded, userVisitorId]);

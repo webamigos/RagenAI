@@ -29,7 +29,7 @@ import type { ErrorState } from '@/store/threads/threadsSlice';
 import { logger } from '@/app/lib/utils/logger';
 export const useSidebarLogic = () => {
   const dispatch = useAppDispatch();
-  const { isOpen, activeThread, projects, isCreateModalOpen } = useAppSelector(
+  const { activeThread, projects, isCreateModalOpen } = useAppSelector(
     (state) => state.sidebar
   );
   const { errorToast } = statusToast();
@@ -214,6 +214,16 @@ export const useSidebarLogic = () => {
       dispatch(resetThreads());
     }
   }, [isSignedIn, dispatch]);
+
+  // Refresh projects when new thread is added
+  useEffect(() => {
+    const parts = pathname.split('/');
+    const isInProjectContext = parts.includes('projects');
+
+    if (organization?.id && user?.id && isInProjectContext) {
+      fetchProjects();
+    }
+  }, [organization?.id, user?.id, userThreads.length, pathname]);
 
   return {
     error,

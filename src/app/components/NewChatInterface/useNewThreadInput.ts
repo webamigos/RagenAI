@@ -16,15 +16,18 @@ type Props = {
   organizationId?: string;
   isPublicAccess?: boolean;
   widgetMode?: boolean;
+  projectId?: number;
+  projectPublicId?: string;
 };
 
 export const useNewThreadInput = ({
   organizationId,
   isPublicAccess,
   widgetMode,
+  projectId,
+  projectPublicId,
 }: Props) => {
   const {
-    register,
     handleSubmit: handleFormSubmit,
     formState: { errors },
     watch,
@@ -54,17 +57,21 @@ export const useNewThreadInput = ({
     if (threadHandler.isLoading || threadHandler.isPending) return;
 
     sessionStorage.setItem('response_type', ChatResponseType.VOICE);
-    await threadHandler.handleNewThread();
-  }, [threadHandler]);
+    await threadHandler.handleNewThread(undefined, projectId, projectPublicId);
+  }, [threadHandler, projectId, projectPublicId, prompt]);
 
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
       if (threadHandler.isLoading || threadHandler.isPending) return;
 
-      await threadHandler.handleNewThread(data.prompt.trim());
+      await threadHandler.handleNewThread(
+        data.prompt.trim(),
+        projectId,
+        projectPublicId
+      );
       reset();
     },
-    [threadHandler, reset]
+    [threadHandler, reset, projectId, projectPublicId]
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

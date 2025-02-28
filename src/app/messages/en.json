@@ -15,7 +15,8 @@
     "start-tour": "Start tour",
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
-    "new-thread-placeholder": "Type your message here..."
+    "new-thread-placeholder": "Type your message here...",
+    "project-context": "You are working in project: {projectTitle}"
   },
   "sign-up": {
     "create-account": "Create your account",
@@ -111,6 +112,9 @@
     },
     "manage-knowledge:upload-document": {
       "title": "Upload document | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Add Knowledge from URL | Ragen AI"
     },
     "manage-knowledge:document-list": {
       "title": "Documents list | Ragen AI"
@@ -225,6 +229,23 @@
     "send-error": "Error creating document",
     "send": "Send"
   },
+  "add-from-url": {
+    "page-title": "Add Knowledge from URL",
+    "title": "Add Knowledge from URL",
+    "url-label": "Website URL",
+    "url-placeholder": "https://example.com",
+    "mode-label": "Processing Mode",
+    "mode-scrape": "Single Page (Scrape only this URL)",
+    "mode-crawl": "Full Crawl (Process all accessible subpages)",
+    "button-process": "Process URL",
+    "button-processing": "Processing...",
+    "success-message": "URL processed successfully",
+    "error-message": "Error processing URL",
+    "validation": {
+      "url-required": "URL is required",
+      "invalid-url": "Please enter a valid URL (e.g., https://example.com)"
+    }
+  },
   "assistant-settings": {
     "prompt-assistant-settings": "Assistant settings",
     "model-select": {
@@ -265,7 +286,8 @@
   "manage-knowledge": {
     "create-document": "Create document",
     "documents-list": "List of documents",
-    "upload-files": "Upload files"
+    "upload-files": "Upload files",
+    "add-from-url": "Add Knowledge from URL"
   },
   "sidebar": {
     "profile": "Profile",
