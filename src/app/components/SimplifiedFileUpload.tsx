@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 import { FileUploader, Button, Text } from '@ragenai/common-ui';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { statusToast } from '@/app/lib/utils/toast';
-import { useRouter } from 'next/navigation';
+import { useFileUpload } from '@/app/hooks/useFileUpload';
 
 type Props = {
   projectId: number;
@@ -14,75 +12,14 @@ type Props = {
 };
 
 export const SimplifiedFileUpload = ({ projectId, projectPublicId }: Props) => {
-  const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState<boolean>(false);
-  const router = useRouter();
-  const { successToast, errorToast } = statusToast();
   const t = useTranslations('projects');
   const { organization } = useOrganization();
+  const { files, uploading, handleFilesAdded, handleFileRemove, uploadFiles } =
+    useFileUpload(projectId, projectPublicId);
 
   if (!organization) {
     return null;
   }
-
-  const orgId = organization.id;
-
-  const handleFilesAdded = (newFiles: File[]) => {
-    const processedFiles = newFiles.map((file) => {
-      if (file.name.endsWith('.md')) {
-        return new File([file], file.name, { type: 'text/markdown' });
-      }
-      if (file.name.endsWith('.srt')) {
-        return new File([file], file.name, { type: 'application/x-subrip' });
-      }
-      return file;
-    });
-    setFiles((prevFiles) => [...prevFiles, ...processedFiles]);
-  };
-
-  const handleFileRemove = (index: number) => {
-    if (!uploading) {
-      setFiles((prevFiles) => {
-        const newFiles = [...prevFiles];
-        newFiles.splice(index, 1);
-        return newFiles;
-      });
-    }
-  };
-
-  const handleSend = async () => {
-    if (!files.length) {
-      errorToast({ message: 'No files to upload' });
-      return;
-    }
-
-    setUploading(true);
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-    formData.append('organizationId', orgId);
-    formData.append('projectId', projectId.toString());
-
-    try {
-      const response = await fetch(`/api/upload/project/${projectPublicId}`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        successToast({ message: 'Files uploaded successfully' });
-        setFiles([]);
-        router.refresh();
-      } else {
-        errorToast({ message: `Error: ${data.message}` });
-      }
-    } catch (error) {
-      errorToast({ message: `Error sending files: ${error}` });
-    } finally {
-      setUploading(false);
-    }
-  };
 
   return (
     <div className="p-4">
@@ -124,7 +61,7 @@ export const SimplifiedFileUpload = ({ projectId, projectPublicId }: Props) => {
           disabled={uploading || files.length < 1}
           isLoading={uploading}
           isSubmit={!uploading}
-          onClick={handleSend}
+          onClick={uploadFiles}
           label={
             files.length
               ? t('upload.button-with-count', { count: files.length })
