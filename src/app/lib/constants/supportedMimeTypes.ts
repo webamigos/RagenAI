@@ -3,4 +3,5 @@ export const SUPPORTED_MIME_TYPES: Record<string, string> = {
   'application/epub+zip': 'epub',
   'text/markdown': 'md',
   'application/x-subrip': 'srt',
+  'text/url': 'url',
 };

@@ -28,6 +28,8 @@ import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
+import { WebsiteDocumentLoader } from '@/libs/document-loaders/website-loader';
+import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
 
 const serviceName = 'saveDataInVectorTable';
 
@@ -61,6 +63,10 @@ const CHUNK_SETTINGS = {
   },
   srt: {
     chunkSize: 1500,
+    chunkOverlap: 250,
+  },
+  url: {
+    chunkSize: 2500,
     chunkOverlap: 250,
   },
 } as const;
@@ -183,6 +189,25 @@ export const convertAndStoreDocument = async ({
           break;
         case 'md':
           loader = new TextLoader(filePath);
+          break;
+        case 'url':
+          const urlContent = fileContent.toString();
+
+          // convention to fulfill ConvertAndStoreDocumentParams interface
+          const [url, mode] = urlContent.split('-');
+          if (
+            mode !== WebsiteLoaderMode.CRAWL &&
+            mode !== WebsiteLoaderMode.SCRAPE
+          ) {
+            throw new Error('Invalid crawl mode');
+          }
+          loader = new WebsiteDocumentLoader({
+            url,
+            mode,
+            fileName,
+            fileId,
+            organizationId,
+          });
           break;
         default:
           loader = undefined;

@@ -58,3 +58,4 @@ export { FolderPlusIcon } from './FolderPlusIcon';
 export { FolderIcon } from './FolderIcon';
 export { PlusIcon } from './PlusIcon';
 export { DocumentIcon } from './DocumentIcon';
+export { WebsiteIcon } from './WebsiteIcon';
