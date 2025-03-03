@@ -210,7 +210,8 @@
     "or": "or",
     "choose-files": "Choose files",
     "supported-formats": "Supports",
-    "send-and-process": "Send and process"
+    "send-and-process": "Send and process",
+    "drop-to-upload": "Drop files to upload"
   },
   "create-document": {
     "title": "Create document",
@@ -517,7 +518,9 @@
       "button": "Upload files",
       "selected-files": "Selected files",
       "remove-file": "Remove file",
-      "add-files": "Add files"
+      "add-files": "Add files",
+      "drop-to-upload": "Drop files to upload",
+      "uploading": "Uploading..."
     },
     "project-files": "Project Files",
     "no-files": "No files in the project",
