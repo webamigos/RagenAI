@@ -93,7 +93,6 @@ export const ProjectFileUploadTrigger = ({
     loading: true,
   });
 
-  const isReady = useClientOnly();
   const [showUploader, setShowUploader] = useState(false);
   const t = useTranslations('projects');
   const { organization } = useOrganization();

@@ -60,21 +60,24 @@ const UploadView = memo(
               className="min-h-0"
             />
             {files.length > 0 && (
-              <UploadList
-                files={files}
-                onRemoveFile={onRemoveFile}
-                uploading={uploading}
-              />
+              <>
+                <UploadList
+                  files={files}
+                  onRemoveFile={onRemoveFile}
+                  uploading={uploading}
+                />
+
+                <Button
+                  disabled={uploading}
+                  isLoading={uploading}
+                  isSubmit={!uploading}
+                  onClick={onSend}
+                  label={t('upload.button')}
+                  className="self-start mt-4"
+                />
+              </>
             )}
           </div>
-          <Button
-            disabled={uploading || files.length < 1}
-            isLoading={uploading}
-            isSubmit={!uploading}
-            onClick={onSend}
-            label={t('upload.button')}
-            className="self-start mt-8"
-          />
         </div>
       </div>
     );
