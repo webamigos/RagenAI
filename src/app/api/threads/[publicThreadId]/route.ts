@@ -29,7 +29,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     const { publicThreadId } = params;
     const chatType = request?.nextUrl?.searchParams.get('mode');
 
-    // Change default to RAG - previously it defaulted to RAG only when explicitly specified
     const filteredMode =
       chatType === ChatType.CONVERSATION ? ChatType.CONVERSATION : ChatType.RAG;
 
