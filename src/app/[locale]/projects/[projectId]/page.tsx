@@ -56,7 +56,7 @@ export default function ProjectPage({ params }: Props) {
       />
 
       <div className="flex w-full max-w-[740px] gap-4 flex-col">
-        <div className="flex-1">
+        <div className="flex-1 mx-4 md:mx-0">
           <ProjectFileUploadTrigger
             projectId={project.id}
             projectPublicId={project.public_id}
