@@ -93,6 +93,7 @@ export async function streamEvents({
           } else {
             const basicRag = await initializeRagChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              threadId: publicThreadId,
             });
             chain = basicRag.chain;
             finalAnswerRunName = basicRag.finalAnswerRunName;

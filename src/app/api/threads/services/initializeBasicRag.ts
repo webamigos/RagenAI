@@ -20,11 +20,13 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { getOrganizationMetadata } from '@/app/actions';
+import { getThreadDetails } from '@/app/lib/services/thread';
 
 const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
+  threadId?: string;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -32,6 +34,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
 export const initializeRagChain = async ({
   settings,
+  threadId,
 }: InitializeRagChainParams) => {
   try {
     const { orgId } = auth();
@@ -74,11 +77,12 @@ export const initializeRagChain = async ({
     let vectorStore = undefined;
 
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(embeddingModel);
+      vectorStore = await createQdrantVectorStore(embeddingModel, threadId);
     } else {
-      vectorStore = createSupabaseVectorStore(
+      vectorStore = await createSupabaseVectorStore(
         supabaseVectorStoreClient,
-        embeddingModel
+        embeddingModel,
+        threadId
       );
     }
 
@@ -100,7 +104,10 @@ export const initializeRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
+const createQdrantVectorStore = async (
+  embeddingModel: Embeddings,
+  threadId?: string
+) => {
   try {
     const { orgId } = auth();
     if (!orgId) {
@@ -124,10 +131,11 @@ const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
 };
 
 // TODO: refactor to use with qdrant or switch depending on organization settings?
-const createSupabaseVectorStore = (
+const createSupabaseVectorStore = async (
   client: SupabaseClient,
-  embeddingModel: Embeddings
-): SupabaseVectorStore => {
+  embeddingModel: Embeddings,
+  threadId?: string
+): Promise<SupabaseVectorStore> => {
   try {
     const { orgId } = auth();
     if (!orgId) {
@@ -145,13 +153,29 @@ const createSupabaseVectorStore = (
       organization_id: orgId,
     };
 
+    // Add project_id to the filter if the thread belongs to a project
+    if (threadId) {
+      try {
+        const thread = await getThreadDetails(threadId);
+
+        if (thread.project_id) {
+          metadataFilter.project_id = thread.project_id;
+        }
+      } catch (error) {
+        logger.error(
+          { err: error },
+          `Error getting thread details for project filtering: ${threadId}`
+        );
+      }
+    }
+
     return new SupabaseVectorStore(embeddingModel, {
       client,
       queryName: DOCUMENT_SEARCH_QUERY_NAME,
       filter: metadataFilter,
     });
   } catch (error) {
-    logger.error({ err: error }, 'Error creating subabase vector store');
+    logger.error({ err: error }, 'Error creating supabase vector store');
     throw error;
   }
 };
