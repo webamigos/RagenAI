@@ -12,7 +12,6 @@ import {
   DocumentIcon,
 } from '@ragenai/common-ui';
 
-import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { getProjectFiles } from '@/app/actions';
 
 import { ProjectFileUpload } from './ProjectFileUpload';

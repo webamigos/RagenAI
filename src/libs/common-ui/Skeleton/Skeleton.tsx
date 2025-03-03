@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, ReactNode } from 'react';
+import { memo, ReactNode, useMemo } from 'react';
 import { classMerge } from '@ragenai/common-ui';
 
 type SkeletonProps = {
@@ -23,16 +23,27 @@ export const Skeleton = ({
   children,
   card = false,
 }: SkeletonProps) => {
-  const baseStyle = classMerge(
-    'animate-pulse bg-gray-200 dark:bg-gray-700',
-    height,
-    width,
-    borderRadius,
-    className
-  );
+  const skeletonClass = useMemo(() => {
+    // Add base animation classes
+    const animation = 'animate-pulse';
+
+    // Update background colors to match project
+    const bgColor = card
+      ? 'bg-gray-100 dark:bg-accent-dark-700'
+      : 'bg-gray-200 dark:bg-accent-dark-600';
+
+    return classMerge(
+      height,
+      width,
+      animation,
+      bgColor,
+      borderRadius,
+      className
+    );
+  }, [height, width, borderRadius, className, card]);
 
   if (children) {
-    return <div className={baseStyle}>{children}</div>;
+    return <div className={skeletonClass}>{children}</div>;
   }
 
   if (card) {
@@ -43,12 +54,12 @@ export const Skeleton = ({
           width
         )}
       >
-        <div className={baseStyle} />
+        <div className={skeletonClass} />
       </div>
     );
   }
 
-  return <div className={baseStyle} />;
+  return <div className={skeletonClass} />;
 };
 
 /**
@@ -67,8 +78,10 @@ export const SkeletonList = ({
   className?: string;
   card?: boolean;
 }) => {
+  const containerClass = classMerge('flex flex-col', gap, className);
+
   return (
-    <div className={classMerge('space-y-2', gap, className)}>
+    <div className={containerClass}>
       {Array.from({ length: count }).map((_, i) => (
         <Skeleton key={i} height={height} card={card} />
       ))}
@@ -80,14 +93,22 @@ export const SkeletonList = ({
  * Skeleton Page component specific to the project page
  */
 export const PageSkeleton = () => (
-  <div className="flex flex-col h-screen justify-center items-center gap-4">
-    <Skeleton height="h-24" />
-    <div className="flex w-full max-w-[740px] gap-4 flex-col">
-      <div className="flex-1">
-        <Skeleton height="h-12" />
+  <div className="flex flex-col h-screen justify-center items-center gap-2 px-4">
+    <div className="w-full max-w-3xl">
+      {/* Header section - mimics the NewChatInterface */}
+      <div className="flex flex-col items-center justify-center text-center">
+        <Skeleton height="h-8" width="w-64" card />
+        <Skeleton height="h-5" width="w-96" card />
       </div>
-      <div className="flex-1">
-        <Skeleton height="h-64" />
+
+      {/* Input area - mimics the textarea */}
+      <div className="w-full">
+        <Skeleton height="h-24" width="w-full" borderRadius="rounded-lg" card />
+      </div>
+
+      {/* File upload trigger card */}
+      <div className="mx-auto w-full max-w-[740px]">
+        <Skeleton height="h-16" width="w-full" borderRadius="rounded-lg" card />
       </div>
     </div>
   </div>
@@ -103,9 +124,9 @@ export const LoadingSkeleton = memo(() => {
         <Skeleton height="h-6" width="w-32" />
       </div>
       <div className="space-y-2">
-        <Skeleton height="h-16" width="w-full" />
-        <Skeleton height="h-16" width="w-full" />
-        <Skeleton height="h-16" width="w-full" />
+        <Skeleton height="h-16" width="w-full" card />
+        <Skeleton height="h-16" width="w-full" card />
+        <Skeleton height="h-16" width="w-full" card />
       </div>
     </div>
   );
