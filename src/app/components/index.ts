@@ -1,1 +1,1 @@
-export { Skeleton, SkeletonList, PageSkeleton } from './Skeleton';
+export { Skeleton, SkeletonList, PageSkeleton } from '@ragenai/common-ui';
