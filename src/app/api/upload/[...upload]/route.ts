@@ -34,6 +34,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = orgId;
+    const projectIdFromForm = formData.get('projectId')?.toString();
+
     setSentryClerkOrganizationTag(organizationId);
     if (!uploaderId) {
       logger.error('Uploader ID missing!');
@@ -58,18 +60,21 @@ export async function POST(request: NextRequest, { params }: Params) {
         const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
-        const defaultProjectId = await fetchOrganizationDefaultProjectId(
-          organizationId
-        );
-        const projectIdForDb =
-          defaultProjectId === null ? undefined : defaultProjectId;
+
+        let projectIdForDb: number | undefined = undefined;
+
+        if (projectIdFromForm) {
+          projectIdForDb = parseInt(projectIdFromForm, 10);
+        } else {
+          projectIdForDb = undefined;
+        }
 
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: defaultProjectId,
+          projectId: projectIdForDb || null,
           mimeType: file.type,
         });
 
