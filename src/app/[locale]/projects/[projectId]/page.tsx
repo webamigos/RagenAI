@@ -9,7 +9,8 @@ import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
 
 import { NewChatInterface } from '@/app/components/NewChatInterface';
-import { ProjectFileUploadTrigger } from '@/app/components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFileUploadTrigger';
+import { ProjectFileUploadTrigger } from '@/app/components/Projects/ProjectFilesManagement/components/ProjectFileUploadTrigger';
+import { ProjectInstructionTrigger } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionTrigger';
 
 type Project = {
   id: number;
@@ -55,10 +56,16 @@ export default function ProjectPage({ params }: Props) {
         projectTitle={project.title}
       />
 
-      <div className="flex w-full max-w-[740px] gap-4 flex-col">
+      <div className="w-full flex flex-col md:flex-row md:max-w-[740px] gap-4">
         <div className="flex-1 mx-4 md:mx-0">
           <ProjectFileUploadTrigger
             projectId={project.id}
+            projectPublicId={project.public_id}
+          />
+        </div>
+        <div className="flex-1 mx-4 md:mx-0">
+          <ProjectInstructionTrigger
+            projectId={String(project.id)}
             projectPublicId={project.public_id}
           />
         </div>

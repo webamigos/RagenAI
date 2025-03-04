@@ -72,7 +72,7 @@ const ProjectFileUploadContent = ({
   }
 
   return (
-    <div className="flex w-full justify-center items-center">
+    <div className="flex w-full h-12 justify-center">
       <div className="flex items-center gap-2 dark:text-gray-200">
         <Text className="font-medium text-gray-900 dark:text-gray-200">
           {t('upload-file')}
@@ -86,13 +86,13 @@ export const ProjectFileUploadTrigger = ({
   projectId,
   projectPublicId,
 }: Props) => {
+  const [showUploader, setShowUploader] = useState(false);
   const [fileStatus, setFileStatus] = useState<FileStatus>({
     hasFiles: false,
     fileCount: 0,
     loading: true,
   });
 
-  const [showUploader, setShowUploader] = useState(false);
   const t = useTranslations('projects');
   const { organization } = useOrganization();
 
@@ -134,7 +134,11 @@ export const ProjectFileUploadTrigger = ({
 
   return (
     <>
-      <Card onClick={() => setShowUploader(true)} className="cursor-pointer">
+      <Card
+        size="full"
+        onClick={() => setShowUploader(true)}
+        className="h-28 cursor-pointer"
+      >
         <ProjectFileUploadContent status={fileStatus} t={t} />
       </Card>
 
