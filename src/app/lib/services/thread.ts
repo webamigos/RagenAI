@@ -104,6 +104,11 @@ export const getThreadDetails = async (publicThreadId: string) => {
         visitor_id: true,
         preferred_communication_type: true,
         project_id: true,
+        project: {
+          select: {
+            public_id: true,
+          },
+        },
       },
     });
   } catch (error) {

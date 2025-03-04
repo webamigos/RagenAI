@@ -14,10 +14,12 @@ const serviceName = 'initializeConversationChain';
 
 type InitializeConversationChainParams = {
   settings: OrganizationSettings;
+  projectInstruction?: string | null;
 };
 
 export const initializeConversationChain = async ({
   settings,
+  projectInstruction,
 }: InitializeConversationChainParams) => {
   try {
     const { apiKey, model, temperature, prompt } = settings;
@@ -27,7 +29,14 @@ export const initializeConversationChain = async ({
       model,
       temperature,
       prompt,
+      hasProjectInstruction: !!projectInstruction,
     });
+
+    // Combine org prompt with project instruction if available
+    let finalInstructions = prompt || '';
+    if (projectInstruction) {
+      finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
+    }
 
     return await conversationChain({
       models: {
@@ -39,7 +48,7 @@ export const initializeConversationChain = async ({
         }),
       },
       config: {
-        answerInstructions: prompt,
+        answerInstructions: finalInstructions,
       },
     });
   } catch (error) {
