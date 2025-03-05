@@ -10,7 +10,7 @@ import { routing } from './i18n/routing';
 
 const handleI18nRouting = createMiddleware(routing);
 
-const publicRoutes = [
+const PUBLIC_ROUTES = [
   '/',
   '/pl',
   '/en',
@@ -20,14 +20,35 @@ const publicRoutes = [
   '/:locale/sso-callback',
 ];
 
-const isProtectedRoute = createRouteMatcher([
-  '/:locale/threads/:threadId',
-  '/admin',
-]);
+const PROTECTED_ROUTES = ['/:locale/threads/:threadId', '/admin'];
+
+const isProtectedRoute = createRouteMatcher(PROTECTED_ROUTES);
+const LOCALE_PREFIX_REGEX = /^\/(pl|en)/;
+const SIGN_IN_PATH = '/sign-in';
 
 // export const config = {
 //   matcher: ['/', '/(pl|en)/:path*'],
 // };
+
+function isPublicRoute(url: string): boolean {
+  return PUBLIC_ROUTES.some((route) =>
+    new RegExp(
+      route.replace(':locale', '(pl|en)').replace(':threadId', '[^/]+')
+    ).test(url)
+  );
+}
+
+function redirectToSignInIfNeeded(url: string, request: NextRequest) {
+  if (
+    !isPublicRoute(url) &&
+    !url.includes(SIGN_IN_PATH) &&
+    !url.includes('/sign-up') &&
+    !url.includes('/sso-callback')
+  ) {
+    return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
+  }
+  return null;
+}
 
 export const config = {
   matcher: [
@@ -51,6 +72,20 @@ export default clerkMiddleware(
   async (auth, request: NextRequest) => {
     const url = request.nextUrl.pathname;
     const localePrefixRegex = /^\/(pl|en)/;
+    const session = auth();
+
+    // Handle root routes specifically to prevent flashing
+    if (LOCALE_PREFIX_REGEX) {
+      // If not authenticated, redirect to sign-in immediately
+      if (!session.userId) {
+        // Check if we're not already on the sign-in page to prevent redirect loops
+        if (!url.includes(SIGN_IN_PATH)) {
+          return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
+        }
+      }
+      // If authenticated, let the request pass through
+      return handleI18nRouting(request);
+    }
 
     if (url.startsWith('/api')) {
       return NextResponse.next();
@@ -63,13 +98,14 @@ export default clerkMiddleware(
     const isAdminRoute = localePrefixRegex.test(url) && url.includes('/admin');
 
     if (isAdminRoute) {
-      const session = auth();
-
       if (!session.userId) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
+        // Check if we're not already on the sign-in page
+        if (!url.includes(SIGN_IN_PATH)) {
+          return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
+        }
       }
 
-      const user = await clerkClient().users.getUser(session.userId);
+      const user = await clerkClient().users.getUser(session.userId!);
 
       const orgMemberships =
         await clerkClient().users.getOrganizationMembershipList({
@@ -95,17 +131,13 @@ export default clerkMiddleware(
     if (isProtectedRoute(request)) {
       auth().protect();
     } else {
-      const isPublicRoute = publicRoutes.some((route) =>
-        new RegExp(
-          route.replace(':locale', '(pl|en)').replace(':threadId', '[^/]+')
-        ).test(url)
-      );
-
-      if (!isPublicRoute) {
-        return NextResponse.redirect(new URL('/sign-in', request.url));
+      if (isProtectedRoute(request)) {
+        auth().protect();
+      } else {
+        const redirectResponse = redirectToSignInIfNeeded(url, request);
+        if (redirectResponse) return redirectResponse;
       }
     }
-
     return handleI18nRouting(request);
   },
   { debug: false }
