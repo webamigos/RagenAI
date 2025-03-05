@@ -2,8 +2,6 @@
  * Utility functions for file validation
  */
 
-import { SupportedFileType } from '../services/fileParser';
-
 /**
  * Checks if a file is of a supported type
  */

@@ -137,7 +137,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
     await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
     return NextResponse.json({
-      message: 'All files successfully processed',
+      message: 'All files are successfully processed',
       status: 200,
       files: processedFiles,
     });
