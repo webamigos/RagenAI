@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
@@ -8,14 +8,16 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { useRouter } from '@/i18n/routing';
 import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
-import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { Button, Input, Card, Link, Text } from '@ragenai/common-ui';
-import { Logo } from '../../Logo';
+import { Button, Input } from '@ragenai/common-ui';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
 
-export const RegisterForm = () => {
+type RegisterFormProps = {
+  onTermsChange?: (accepted: boolean) => void;
+};
+
+export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
 
@@ -26,10 +28,16 @@ export const RegisterForm = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema(t)),
   });
+
+  const termsValue = watch('terms');
+  useEffect(() => {
+    onTermsChange?.(!!termsValue);
+  }, [termsValue, onTermsChange]);
 
   const onSubmit = async (data: RegistrationFormData) => {
     if (!isLoaded) return;

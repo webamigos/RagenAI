@@ -24,6 +24,7 @@
     "sign-up": "Sign up",
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
+    "TSO-required": "You need to accept terms of use to continue.",
     "sign-in": "Sign in",
     "verification-code": "Verification code",
     "confirm": "Confirm code",

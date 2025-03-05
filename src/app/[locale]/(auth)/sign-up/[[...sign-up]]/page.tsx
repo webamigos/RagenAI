@@ -3,11 +3,9 @@ import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 
-import { RegisterForm } from '@/app/components/Forms/';
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
-import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
-import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
+import { SignUpContainer } from '@/app/components/Forms/RegisterForm/SignUpContainer';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'Metadata' });
@@ -19,6 +17,7 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 
 export default function SignUpPage() {
   const t = useTranslations('sign-up');
+
   return (
     <>
       <div className="flex min-h-screen flex-1">
@@ -41,11 +40,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="mt-8">
-              <RegisterForm />
-
-              <SocialAuthOptions isSignUp={false} />
-
-              <ForgotPasswordLink label={t('forgot-password')} />
+              <SignUpContainer forgotPasswordLabel={t('forgot-password')} />
             </div>
           </div>
         </div>

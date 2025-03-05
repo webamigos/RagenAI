@@ -5,7 +5,7 @@ import { memo, useState } from 'react';
 import { useSignUp, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 
-import { SpinnerSVG } from '@ragenai/common-ui/icons';
+import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { logger } from '@/app/lib/utils/logger';
 import { saveUserMetadata } from '@/app/actions';
@@ -27,8 +27,7 @@ const SocialButton = ({
 }) => (
   <button
     onClick={onClick}
-    className="w-full py-2 dark:bg-accent-dark-500 bg-white dark:text-gray-200 text-gray-700 dark:border-gray-700 border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center"
-    disabled={isLoading}
+    className="w-full py-2 dark:bg-accent-dark-500 bg-white dark:text-gray-200 text-gray-700 dark:border-gray-700 border-gray-200 rounded hover:bg-gray-100 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
   >
     {isLoading ? (
       <SpinnerSVG size="sm" />
@@ -41,10 +40,11 @@ const SocialButton = ({
 
 type SocialAuthOptionsProps = {
   isSignUp: boolean;
+  termsAccepted?: boolean;
 };
 
 export const SocialAuthOptions = memo(
-  ({ isSignUp }: SocialAuthOptionsProps) => {
+  ({ isSignUp, termsAccepted = true }: SocialAuthOptionsProps) => {
     const { signUp, isLoaded: signUpLoaded } = useSignUp();
     const { signIn, isLoaded: signInLoaded } = useSignIn();
     const [loadingState, setLoadingState] = useState<
@@ -53,6 +53,7 @@ export const SocialAuthOptions = memo(
       oauth_google: false,
       oauth_github: false,
     });
+    const [termsError, setTermsError] = useState(false);
 
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
@@ -62,8 +63,13 @@ export const SocialAuthOptions = memo(
     };
 
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
-      if (loadingState[strategy]) return;
+      if (isSignUp && !termsAccepted) {
+        setTermsError(true);
+        return;
+      }
+      setTermsError(false);
 
+      if (loadingState[strategy]) return;
       setLoadingState((prev) => ({ ...prev, [strategy]: true }));
 
       try {
@@ -139,6 +145,11 @@ export const SocialAuthOptions = memo(
             )
           )}
         </div>
+        {termsError && (
+          <Text fontSize="sm" color="red-500" className="mt-2" role="alert">
+            {t('TSO-required')}
+          </Text>
+        )}
       </div>
     );
   }
