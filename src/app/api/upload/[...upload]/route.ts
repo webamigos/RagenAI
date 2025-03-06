@@ -49,6 +49,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
+    const formProjectId = formData.get('projectId');
+
     const processedFiles = [];
 
     for (const file of files) {
@@ -58,18 +60,20 @@ export async function POST(request: NextRequest, { params }: Params) {
         const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
-        const defaultProjectId = await fetchOrganizationDefaultProjectId(
-          organizationId
-        );
-        const projectIdForDb =
-          defaultProjectId === null ? undefined : defaultProjectId;
+        let projectId;
+        if (formProjectId) {
+          projectId = parseInt(formProjectId.toString(), 10);
+        } else {
+          projectId = await fetchOrganizationDefaultProjectId(organizationId);
+        }
+        const projectIdForDb = projectId === null ? undefined : projectId;
 
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: defaultProjectId,
+          projectId: projectId,
           mimeType: file.type,
         });
 
@@ -84,17 +88,15 @@ export async function POST(request: NextRequest, { params }: Params) {
           );
 
           // Create document for all file types
-          await createMarkdownDocument({
-            public_id: uniqueFileId,
-            title: parsedFile.fileName,
-            organization_id: organizationId,
-            content:
-              parsedFile.fileType === 'text' || parsedFile.fileType === 'srt'
-                ? (parsedFile.content as string)
-                : `Original file: ${parsedFile.fileName}`,
-            file_id: fileRecord.id,
-            project_id: projectIdForDb,
-          });
+          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
+            await createMarkdownDocument({
+              public_id: uniqueFileId,
+              title: parsedFile.fileName,
+              organization_id: organizationId,
+              content: parsedFile.content as string,
+              file_id: fileRecord.id,
+            });
+          }
 
           // upload file to S3 in the background
           uploadToS3(

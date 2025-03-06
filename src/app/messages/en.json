@@ -343,6 +343,7 @@
   },
   "file-delete-modal": {
     "are-you-sure": "Are you sure you want to delete",
+    "deleting": "Deleting",
     "yes": "Yes",
     "no": "No"
   },
@@ -593,5 +594,11 @@
     "final_response": "",
     "error": "An Error has occurred",
     "close": ""
+  },
+  "ErrorBoundary": {
+    "error": "An error occurred",
+    "try-again": "Try again",
+    "unknown-error": "Unknown application error",
+    "file-error": "An error occurred while loading files"
   }
 }

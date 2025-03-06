@@ -376,6 +376,7 @@
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
+    "deleting": "Usuwanie",
     "yes": "Tak",
     "no": "Nie"
   },
@@ -625,5 +626,11 @@
     "final_response": "",
     "error": "Wystąpił błąd",
     "close": ""
+  },
+  "ErrorBoundary": {
+    "error": "Wystąpił błąd",
+    "try-again": "Spróbuj ponownie",
+    "unknown-error": "Nieznany błąd aplikacji",
+    "file-error-fetching": "Wystąpił błąd podczas ładowania plików"
   }
 }

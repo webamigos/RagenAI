@@ -20,7 +20,7 @@ export const fetchProject = async (projectId: string) => {
     }
     return await response.json();
   } catch (error) {
-    logger.error('Error fetching project:', error);
+    logger.error({ err: error }, 'Error fetching project:');
     throw error;
   }
 };

@@ -140,7 +140,7 @@ export const fetchProjectFiles = async (projectId: number) => {
     where: {
       organization_id: orgId,
       project_id: projectId,
-    } as any, // Use type assertion to handle project_id
+    },
     select: {
       created_at: true,
       file_name: true,

@@ -31,6 +31,23 @@ export const FileItem = memo(
 
     const toggleModal = (fileId: string | null) => {
       setShowDeleteModal(fileId !== null);
+
+      // When opening the modal, ensure page scrolling is disabled
+      if (fileId !== null) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    };
+
+    // Create a handler to manage deletion and modal closing
+    const handleConfirmDelete = (
+      organizationId: string,
+      documentId: string,
+      fileName: string
+    ) => {
+      onDelete();
+      toggleModal(null);
     };
 
     return (
@@ -38,7 +55,7 @@ export const FileItem = memo(
         {showDeleteModal && (
           <DeleteFileModal
             toggleModal={toggleModal}
-            handleDelete={onDelete}
+            handleDelete={handleConfirmDelete}
             organization_id={file.organization_id}
             documentId={file.id}
             fileName={file.file_name}
