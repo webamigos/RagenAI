@@ -561,7 +561,8 @@
       "project-exists": "Project with this name already exists",
       "creation-failed": "Failed to create project",
       "loading-files": "Failed to load project files",
-      "file-delete": "Failed to delete file"
+      "file-delete": "Failed to delete file",
+      "fetching-error": "An error occurred while fetching the project's files"
     }
   },
   "voice-mode": {

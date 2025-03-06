@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { PageSkeleton } from '@ragenai/common-ui';
 
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
+import { statusToast } from '@/app/lib/utils/toast';
 
 import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectFileUploadTrigger } from '@/app/components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFileUploadTrigger';
@@ -28,13 +30,17 @@ export default function ProjectPage({ params }: Props) {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { errorToast } = statusToast();
+  const t = useTranslations('projects');
+
   useEffect(() => {
     async function loadProject() {
       try {
         const projectData = await fetchProject(params.projectId);
         setProject(projectData);
       } catch (error) {
-        logger.error('Error loading project:', error);
+        logger.error('Error loading project:', { error: error });
+        errorToast({ message: t('error.fetching-error') });
       } finally {
         setIsLoading(false);
       }
@@ -43,9 +49,9 @@ export default function ProjectPage({ params }: Props) {
     loadProject();
   }, [params.projectId]);
 
-  if (isLoading || !project) return <PageSkeleton />;
-
-  if (!isReady) return <PageSkeleton />;
+  if (isLoading || !project || !isReady) {
+    return <PageSkeleton />;
+  }
 
   return (
     <div className="flex flex-col h-screen justify-center items-center gap-4">

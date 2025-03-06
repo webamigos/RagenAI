@@ -593,7 +593,8 @@
       "project-exists": "Projekt o takiej nazwie już istnieje",
       "creation-failed": "Nie udało się stowrzyć projektu",
       "loading-files": "Nie udało się załadować plików projektu",
-      "file-delete": "Nie udało się usunąć pliku"
+      "file-delete": "Nie udało się usunąć pliku",
+      "fetching-error": "Wystąpił błąd podczas pobierania plików projektu"
     }
   },
   "voice-mode": {
