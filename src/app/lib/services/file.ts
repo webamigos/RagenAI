@@ -46,6 +46,7 @@ export const fetchFileDetails = async (uploaderId: string) => {
       metadata: true,
       organization_id: true,
       id: true,
+      project_id: true,
     },
     orderBy: {
       created_at: 'desc',
