@@ -88,19 +88,15 @@ export async function POST(request: NextRequest, { params }: Params) {
             projectIdForDb
           );
 
-          // Create document for all file types
-          await createMarkdownDocument({
-            public_id: uniqueFileId,
-            title: parsedFile.fileName,
-            organization_id: organizationId,
-            content:
-              parsedFile.fileType === 'text' || parsedFile.fileType === 'srt'
-                ? (parsedFile.content as string)
-                : `Original file: ${parsedFile.fileName}`,
-            file_id: fileRecord.id,
-            project_id: projectIdForDb,
-          });
-
+          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
+            await createMarkdownDocument({
+              public_id: uniqueFileId,
+              title: parsedFile.fileName,
+              organization_id: organizationId,
+              content: parsedFile.content as string,
+              file_id: fileRecord.id,
+            });
+          }
           // upload file to S3 in the background
           uploadToS3(
             `${fileRecord.id}.${fileExtension}`,

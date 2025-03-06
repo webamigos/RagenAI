@@ -20,13 +20,13 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { getOrganizationMetadata } from '@/app/actions';
-import { getThreadDetails } from '@/app/lib/services/thread';
+import { VectorStore } from '@langchain/core/vectorstores';
 
 const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
-  threadId?: string;
+  internalProjectId?: number;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -34,7 +34,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
 export const initializeRagChain = async ({
   settings,
-  threadId,
+  internalProjectId,
 }: InitializeRagChainParams) => {
   try {
     const { orgId } = auth();
@@ -77,12 +77,12 @@ export const initializeRagChain = async ({
     let vectorStore = undefined;
 
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(embeddingModel, threadId);
+      vectorStore = await createQdrantVectorStore(embeddingModel);
     } else {
       vectorStore = await createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
-        threadId
+        internalProjectId
       );
     }
 
@@ -104,10 +104,7 @@ export const initializeRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (
-  embeddingModel: Embeddings,
-  threadId?: string
-) => {
+const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
   try {
     const { orgId } = auth();
     if (!orgId) {
@@ -134,7 +131,7 @@ const createQdrantVectorStore = async (
 const createSupabaseVectorStore = async (
   client: SupabaseClient,
   embeddingModel: Embeddings,
-  threadId?: string
+  projectId?: number
 ): Promise<SupabaseVectorStore> => {
   try {
     const { orgId } = auth();
@@ -153,20 +150,8 @@ const createSupabaseVectorStore = async (
       organization_id: orgId,
     };
 
-    // Add project_id to the filter if the thread belongs to a project
-    if (threadId) {
-      try {
-        const thread = await getThreadDetails(threadId);
-
-        if (thread.project_id) {
-          metadataFilter.project_id = thread.project_id;
-        }
-      } catch (error) {
-        logger.error(
-          { err: error },
-          `Error getting thread details for project filtering: ${threadId}`
-        );
-      }
+    if (projectId) {
+      metadataFilter.project_id = projectId;
     }
 
     return new SupabaseVectorStore(embeddingModel, {
