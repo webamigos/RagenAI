@@ -36,7 +36,9 @@ export const createFileDetailsInDB = async (
 
 export const fetchFileDetails = async (uploaderId: string) => {
   return await db.userFile.findMany({
-    where: { organization_id: uploaderId },
+    where: {
+      organization_id: uploaderId,
+    },
     select: {
       created_at: true,
       file_name: true,
@@ -46,6 +48,13 @@ export const fetchFileDetails = async (uploaderId: string) => {
       metadata: true,
       organization_id: true,
       id: true,
+      project_id: true,
+      project: {
+        select: {
+          title: true,
+          id: true,
+        },
+      },
     },
     orderBy: {
       created_at: 'desc',

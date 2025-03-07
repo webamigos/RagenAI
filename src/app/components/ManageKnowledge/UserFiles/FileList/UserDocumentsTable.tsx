@@ -58,8 +58,15 @@ const DocumentRow = ({
 }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { created_at, updated_at, file_name, file_size, id, organization_id } =
-    document;
+  const {
+    created_at,
+    updated_at,
+    file_name,
+    file_size,
+    id,
+    organization_id,
+    project,
+  } = document;
 
   const fileIcon = getFileIcon(document.file_type);
 
@@ -128,8 +135,10 @@ export const UserDocumentsTable = ({
   const [searchValue, setSearchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
-    return documents.filter((doc) =>
-      doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
+    return documents.filter(
+      (doc) =>
+        doc.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
+        doc.project?.title === 'Default'
     ) as UserFileTypeSafe[];
   }, [documents, searchValue]);
 
