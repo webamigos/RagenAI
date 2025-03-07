@@ -16,4 +16,5 @@ export interface BasicRagChainConfig {
   maxDocumentsToRetrieve?: number;
   answerInstructions?: string | null;
   metadataFilter?: object;
+  projectInstruction?: string;
 }

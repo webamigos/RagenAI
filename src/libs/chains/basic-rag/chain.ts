@@ -50,7 +50,8 @@ export const basicRagChain = async ({
     generateFinalAnswer(
       models.answerGenerator,
       CHAIN_FINAL_ANSWER_RUN_NAME,
-      config?.answerInstructions
+      config?.answerInstructions,
+      config?.projectInstruction
     ),
   ]).withConfig({
     runName: 'Basic RAG chain',

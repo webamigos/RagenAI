@@ -61,7 +61,8 @@ export const retrieveRelevantDocuments = async (
 export const generateFinalAnswer = (
   model: BaseChatModel,
   runName: string,
-  answerInstructions?: string | null
+  answerInstructions?: string | null,
+  projectInstructions?: string
 ) => {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
@@ -77,6 +78,8 @@ export const generateFinalAnswer = (
     RunnablePassthrough.assign({
       answer_instructions: () =>
         answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
+      project_instructions: () =>
+        projectInstructions ? projectInstructions : '',
     }),
     promptTemplate,
     model,

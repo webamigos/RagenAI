@@ -62,12 +62,6 @@ export const initializeRagChain = async ({
       hasProjectInstruction: !!projectInstruction,
     });
 
-    // Combine org prompt with project instruction if available
-    let finalInstructions = answerInstructions || '';
-    if (projectInstruction) {
-      finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
-    }
-
     const embeddingModel = createEmbeddingsInstance({ apiKey });
     const contentModerator = createModerationInstance({ apiKey });
 
@@ -120,7 +114,8 @@ export const initializeRagChain = async ({
       config: {
         metadataFilter: filterOptions,
         maxDocumentsToRetrieve,
-        answerInstructions: finalInstructions,
+        answerInstructions: answerInstructions || '',
+        projectInstruction: projectInstruction || '',
       },
       vectorStore,
     });
