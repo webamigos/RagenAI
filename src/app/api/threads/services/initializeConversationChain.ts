@@ -32,12 +32,6 @@ export const initializeConversationChain = async ({
       hasProjectInstruction: !!projectInstruction,
     });
 
-    // Combine org prompt with project instruction if available
-    let finalInstructions = prompt || '';
-    if (projectInstruction) {
-      finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
-    }
-
     return await conversationChain({
       models: {
         contentModerator: createModerationInstance({ apiKey }),
@@ -48,7 +42,8 @@ export const initializeConversationChain = async ({
         }),
       },
       config: {
-        answerInstructions: finalInstructions,
+        answerInstructions: prompt || '',
+        projectInstruction: projectInstruction || '',
       },
     });
   } catch (error) {

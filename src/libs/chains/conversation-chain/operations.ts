@@ -45,7 +45,8 @@ function formatChatHistory(chatHistory: string): Message[] {
 export const generateFinalAnswer = (
   model: BaseChatModel,
   runName: string,
-  answerInstructions?: string | null
+  answerInstructions?: string | null,
+  projectInstruction?: string
 ) => {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
@@ -60,6 +61,7 @@ export const generateFinalAnswer = (
         return new AIMessage(m.content);
       }
     });
+
     return ChatPromptTemplate.fromMessages([
       ['system', systemTemplates.answerChain],
       ...messages,
@@ -68,11 +70,19 @@ export const generateFinalAnswer = (
   };
 
   return RunnableSequence.from([
-    RunnablePassthrough.assign({
-      answer_instructions: () =>
-        answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
+    (input) => ({
+      ...input,
+      answer_instructions: answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
+      project_instructions: projectInstruction ? { projectInstruction } : '',
     }),
-    (input) => getPromptTemplate(input.chat_history),
+    async (input) => {
+      const promptTemplate = getPromptTemplate(input.chat_history);
+      return { ...input, promptTemplate };
+    },
+    async (input) => {
+      const { promptTemplate, ...rest } = input;
+      return promptTemplate.invoke(rest);
+    },
     model,
     new StringOutputParser().withConfig({
       runName,

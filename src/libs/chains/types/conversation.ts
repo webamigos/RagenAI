@@ -11,4 +11,5 @@ export interface ConversationChainParams {
 
 export interface ConversationChainConfig {
   answerInstructions?: string | null;
+  projectInstruction?: string;
 }

@@ -6,6 +6,9 @@ export const DEFAULT_ANSWER_INSTRUCTIONS =
 export const systemTemplates = {
   answerChain: `
       {answer_instructions}
+
+      {project_instructions}
+
       
       Korzystając z historii czatu, odpowiedz na pytanie użytkownika najlepiej jak potrafisz, jednocześnie dokładnie przestrzegając zasad.
       
