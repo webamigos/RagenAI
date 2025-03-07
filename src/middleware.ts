@@ -76,9 +76,11 @@ export default clerkMiddleware(
 
     // Handle root routes specifically to prevent flashing
     if (LOCALE_PREFIX_REGEX) {
-      // If not authenticated, redirect to sign-in immediately
       if (!session.userId) {
-        // Check if we're not already on the sign-in page to prevent redirect loops
+        if (url.includes('/public')) {
+          return NextResponse.next();
+        }
+        // If not authenticated, redirect to sign-in immediately
         if (!url.includes(SIGN_IN_PATH)) {
           return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
         }
