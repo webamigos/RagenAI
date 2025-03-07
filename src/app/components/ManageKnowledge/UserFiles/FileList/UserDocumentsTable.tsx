@@ -58,15 +58,8 @@ const DocumentRow = ({
 }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    created_at,
-    updated_at,
-    file_name,
-    file_size,
-    id,
-    organization_id,
-    project,
-  } = document;
+  const { created_at, updated_at, file_name, file_size, id, organization_id } =
+    document;
 
   const fileIcon = getFileIcon(document.file_type);
 
