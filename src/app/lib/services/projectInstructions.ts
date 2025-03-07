@@ -1,7 +1,6 @@
 import { getRedisInstance } from './redis';
 import db from '@ragenai/prisma-client';
 import { auth } from '@clerk/nextjs/server';
-
 import { logger } from '../utils/logger';
 
 const redis = getRedisInstance();
@@ -16,16 +15,13 @@ async function getProjectInfo(projectId: string) {
     }
 
     const { orgId } = auth();
-
     if (!orgId) {
       logger.error('User not authenticated or missing organization ID');
       return null;
     }
 
     const project = await db.project.findUnique({
-      where: {
-        public_id: projectId,
-      },
+      where: { public_id: projectId },
       select: {
         id: true,
         public_id: true,
@@ -50,8 +46,11 @@ async function getProjectInfo(projectId: string) {
   }
 }
 
-function createProjectRedisKey(organizationId: string): string {
-  return `org:${organizationId}`;
+function createProjectSettingsRedisKey(
+  organizationId: string,
+  projectId: string
+): string {
+  return `org:${organizationId}:project:${projectId}:settings`;
 }
 
 export async function saveProjectInstruction(
@@ -65,7 +64,6 @@ export async function saveProjectInstruction(
     }
 
     const project = await getProjectInfo(projectId);
-
     if (!project) {
       logger.error({ projectId }, 'Project not found in database');
       return { success: false, status: 'Project not found' };
@@ -79,15 +77,21 @@ export async function saveProjectInstruction(
       };
     }
 
-    const redisKey = createProjectRedisKey(project.organization_id);
+    const redisKey = createProjectSettingsRedisKey(
+      project.organization_id,
+      project.public_id
+    );
 
     logger.info(
       { redisKey, projectPublicId: project.public_id },
-      'Attempting to save to Redis'
+      'Attempting to save to Redis with new key format'
     );
-    return await redis.hsetWithStatus(redisKey, {
-      [project.public_id]: instruction,
+
+    const result = await redis.hsetWithStatus(redisKey, {
+      instructions: instruction,
     });
+
+    return result;
   } catch (error) {
     logger.error({ err: error }, 'Error saving project instruction');
     return { success: false, status: 'Failed to save project instruction' };
@@ -106,7 +110,6 @@ export async function getProjectInstruction(
     }
 
     const project = await getProjectInfo(projectId);
-
     if (!project) {
       logger.error({ projectId }, 'Project not found in database');
       return null;
@@ -117,13 +120,18 @@ export async function getProjectInstruction(
       return null;
     }
 
-    const redisKey = createProjectRedisKey(project.organization_id);
+    const redisKey = createProjectSettingsRedisKey(
+      project.organization_id,
+      project.public_id
+    );
 
     logger.info(
       { redisKey, projectPublicId: project.public_id },
-      'Attempting to get from Redis'
+      'Attempting to get from Redis with new key format'
     );
-    return await redis.hget(redisKey, project.public_id);
+
+    const instruction = await redis.hget(redisKey, 'instructions');
+    return instruction;
   } catch (error) {
     logger.error({ err: error }, 'Error retrieving project instruction');
     return null;
