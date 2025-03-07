@@ -123,10 +123,13 @@ export async function streamEvents({
             chain = conversation.chain;
             finalAnswerRunName = conversation.finalAnswerRunName;
           } else {
+            if (!threadRecord.project?.id) {
+              throw new Error('Project ID is required');
+            }
             const basicRag = await initializeRagChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
-              threadId: publicThreadId,
               projectInstruction,
+              internalProjectId: threadRecord.project.id,
             });
             chain = basicRag.chain;
             finalAnswerRunName = basicRag.finalAnswerRunName;

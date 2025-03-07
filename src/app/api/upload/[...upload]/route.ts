@@ -61,6 +61,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         const uniqueFileId = uuidv4();
 
+        const defaultProjectId = await fetchOrganizationDefaultProjectId(
+          organizationId
+        );
+        if (!defaultProjectId) {
+          throw new Error('Default project ID is missing');
+        }
+
         let projectIdForDb: number | undefined = undefined;
 
         if (projectIdFromForm) {
@@ -74,7 +81,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: projectIdForDb || null,
+          projectId: projectIdForDb ?? defaultProjectId,
           mimeType: file.type,
         });
 
@@ -85,22 +92,18 @@ export async function POST(request: NextRequest, { params }: Params) {
             organizationId,
             uniqueFileId,
             fileType,
-            projectIdForDb
+            projectIdForDb ?? defaultProjectId
           );
 
-          // Create document for all file types
-          await createMarkdownDocument({
-            public_id: uniqueFileId,
-            title: parsedFile.fileName,
-            organization_id: organizationId,
-            content:
-              parsedFile.fileType === 'text' || parsedFile.fileType === 'srt'
-                ? (parsedFile.content as string)
-                : `Original file: ${parsedFile.fileName}`,
-            file_id: fileRecord.id,
-            project_id: projectIdForDb,
-          });
-
+          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
+            await createMarkdownDocument({
+              public_id: uniqueFileId,
+              title: parsedFile.fileName,
+              organization_id: organizationId,
+              content: parsedFile.content as string,
+              file_id: fileRecord.id,
+            });
+          }
           // upload file to S3 in the background
           uploadToS3(
             `${fileRecord.id}.${fileExtension}`,

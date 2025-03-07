@@ -42,7 +42,8 @@ export const basicRagChain = async ({
     RunnablePassthrough.assign({
       context: await retrieveRelevantDocuments(
         vectorStore,
-        config?.maxDocumentsToRetrieve
+        config?.maxDocumentsToRetrieve,
+        config?.metadataFilter
       ),
     }),
 

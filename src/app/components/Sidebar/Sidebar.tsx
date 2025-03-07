@@ -64,6 +64,7 @@ export const Sidebar = ({ children, membership }: Props) => {
           <div className="flex flex-col mb-5">
             {pathname === '/' ||
             pathname.includes('/threads') ||
+            pathname.includes('projects') ||
             pathname === `/${locale}/support` ? (
               <CreateThreadButton
                 isThreadLoading={isThreadLoading}
