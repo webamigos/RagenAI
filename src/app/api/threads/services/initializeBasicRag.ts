@@ -26,7 +26,7 @@ const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
-  internalProjectId?: number;
+  internalProjectId: number;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -86,6 +86,22 @@ export const initializeRagChain = async ({
       );
     }
 
+    //DOCUMENT FILTERING BY PROJECT_ID
+    if (!internalProjectId) {
+      throw new Error('Internal project ID is required');
+    }
+
+    const filterOptions = {
+      must: [
+        {
+          key: 'metadata.project_id',
+          match: {
+            value: internalProjectId,
+          },
+        },
+      ],
+    };
+
     return await basicRagChain({
       models: {
         contentModerator,
@@ -93,6 +109,7 @@ export const initializeRagChain = async ({
         answerGenerator,
       },
       config: {
+        metadataFilter: filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions,
       },

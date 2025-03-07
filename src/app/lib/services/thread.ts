@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
 import { logger } from '../utils/logger';
+import { fetchOrganizationDefaultProjectId } from './project';
 
 export const serviceName = 'thread';
 
@@ -40,18 +41,22 @@ export const findOrCreateThread = async (
 };
 
 export const createNewOpenAIThread = async (
-  visitorId?: string | null,
+  visitorId: string | null | undefined,
   projectId?: number
 ) => {
   try {
     setSentryServiceTag(serviceName);
 
-    const { userId } = auth();
+    const { userId, orgId } = auth();
+    if (!orgId) {
+      throw new Error('Organization ID is required');
+    }
 
-    // TODO: move creation of Open AI thread to first message
+    const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
+
     const threadRecord = await db.thread.create({
       data: {
-        project_id: projectId,
+        project_id: projectId ?? defaultProjectId,
         visitor_id: userId ? userId : visitorId,
       },
     });
@@ -104,6 +109,12 @@ export const getThreadDetails = async (publicThreadId: string) => {
         visitor_id: true,
         preferred_communication_type: true,
         project_id: true,
+        project: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
     });
   } catch (error) {

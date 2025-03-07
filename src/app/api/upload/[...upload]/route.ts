@@ -61,6 +61,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 
         const uniqueFileId = uuidv4();
 
+        const defaultProjectId = await fetchOrganizationDefaultProjectId(
+          organizationId
+        );
+        if (!defaultProjectId) {
+          throw new Error('Default project ID is missing');
+        }
+
         let projectIdForDb: number | undefined = undefined;
 
         if (projectIdFromForm) {
@@ -74,7 +81,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: projectIdForDb || null,
+          projectId: projectIdForDb ?? defaultProjectId,
           mimeType: file.type,
         });
 
@@ -85,7 +92,7 @@ export async function POST(request: NextRequest, { params }: Params) {
             organizationId,
             uniqueFileId,
             fileType,
-            projectIdForDb
+            projectIdForDb ?? defaultProjectId
           );
 
           if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
