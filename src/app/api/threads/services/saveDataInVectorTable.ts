@@ -140,11 +140,9 @@ export const convertAndStoreDocument = async ({
     let fileExtension =
       SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES];
 
-    if (!fileExtension && mimeType === 'application/octet-stream') {
-      const extension = getFileExtension(fileName);
-      if (extension === 'md' || extension === 'txt') {
-        fileExtension = 'md';
-      }
+    const extension = getFileExtension(fileName);
+    if (extension === 'md' || extension === 'txt') {
+      fileExtension = 'md';
     }
 
     if (!fileExtension) {

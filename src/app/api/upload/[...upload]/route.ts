@@ -51,6 +51,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
+    const formProjectId = formData.get('projectId');
+
     const processedFiles = [];
 
     for (const file of files) {
@@ -145,7 +147,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
     await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
     return NextResponse.json({
-      message: 'All files successfully processed',
+      message: 'All files are successfully processed',
       status: 200,
       files: processedFiles,
     });

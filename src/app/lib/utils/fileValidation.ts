@@ -2,8 +2,6 @@
  * Utility functions for file validation
  */
 
-import { SupportedFileType } from '../services/fileParser';
-
 /**
  * Checks if a file is of a supported type
  */
@@ -22,7 +20,11 @@ export const isSupportedFile = (file: File): boolean => {
  * Processes file for proper MIME type
  */
 export const processFileType = (file: File): File => {
-  if (file.name.endsWith('.md')) {
+  // Handle markdown files with either .md extension or application/octet-stream MIME type
+  if (
+    file.name.endsWith('.md') ||
+    (file.type === 'application/octet-stream' && file.name.endsWith('.md'))
+  ) {
     return new File([file], file.name, { type: 'text/markdown' });
   }
   if (file.name.endsWith('.srt')) {
