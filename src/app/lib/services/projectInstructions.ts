@@ -1,6 +1,8 @@
 import { getRedisInstance } from './redis';
-import { logger } from '../utils/logger';
 import db from '@ragenai/prisma-client';
+import { auth } from '@clerk/nextjs/server';
+
+import { logger } from '../utils/logger';
 
 const redis = getRedisInstance();
 
@@ -10,6 +12,13 @@ async function getProjectInfo(projectId: string) {
 
     if (!projectId) {
       logger.error('Project ID is empty or undefined');
+      return null;
+    }
+
+    const { orgId } = auth();
+
+    if (!orgId) {
+      logger.error('User not authenticated or missing organization ID');
       return null;
     }
 
@@ -25,6 +34,14 @@ async function getProjectInfo(projectId: string) {
     });
 
     logger.info({ projectResult: project }, 'Project search result');
+
+    if (project && project.organization_id !== orgId) {
+      logger.error(
+        { projectId, userOrgId: orgId, projectOrgId: project.organization_id },
+        'Unauthorized: Project does not belong to user organization'
+      );
+      return null;
+    }
 
     return project;
   } catch (error) {
