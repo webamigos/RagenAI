@@ -89,6 +89,6 @@ export const deleteProjectFile = async (fileId: string, projectId: number) => {
       id: fileId,
       organization_id: orgId,
       project_id: projectId,
-    } as any,
+    },
   });
 };
