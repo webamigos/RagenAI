@@ -16,7 +16,7 @@ import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscap
 import { NewChatInterface } from '../NewChatInterface';
 
 export const Start = () => {
-  const { isSignedIn, isLoaded: isUserDataLoaded, user } = useUser();
+  const { isSignedIn, user } = useUser();
   const t = useTranslations('Index');
   const { isPending, isLimitLock } = useNewThread();
   const { runJoyride, showOnboarding } = useOnboardingContext();
@@ -40,27 +40,25 @@ export const Start = () => {
         </div>
       )}
 
-      {isUserDataLoaded && (
-        <div className="container mx-auto h-full">
-          <div className="flex flex-col h-full items-center justify-center">
-            <OnboardingSteps />
-            {shouldShowValidationBoard ? (
-              <ValidationBoard />
-            ) : !isPending && showOnboarding ? (
-              <Button
-                label={t('start-tour')}
-                onClick={runJoyride}
-                className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
-              />
-            ) : (
-              <NewChatInterface />
-            )}
-            {isLimitLock && !isSignedIn && (
-              <Alert title={t('limit-reached')} type="info" />
-            )}
-          </div>
+      <div className="container mx-auto h-full">
+        <div className="flex flex-col h-full items-center justify-center">
+          <OnboardingSteps />
+          {shouldShowValidationBoard ? (
+            <ValidationBoard />
+          ) : !isPending && showOnboarding ? (
+            <Button
+              label={t('start-tour')}
+              onClick={runJoyride}
+              className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
+            />
+          ) : (
+            <NewChatInterface />
+          )}
+          {isLimitLock && !isSignedIn && (
+            <Alert title={t('limit-reached')} type="info" />
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 };

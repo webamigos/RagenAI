@@ -1,6 +1,4 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 
 import { Start } from '../../components/Start';
 
@@ -20,11 +18,6 @@ export async function generateMetadata({ params: { locale } }: Props) {
 
 export default function Index({ params: { locale } }: Props) {
   setRequestLocale(locale);
-  const { userId } = auth();
-
-  if (!userId) {
-    redirect('/sign-in');
-  }
 
   /*
    * Replace the elements below with your own.
