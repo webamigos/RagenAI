@@ -1,5 +1,23 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+
+import { PageSkeleton } from '@ragenai/common-ui';
+
+import { useClientOnly } from '@/app/hooks/useClientOnly';
+import { logger } from '@/app/lib/utils/logger';
+import { fetchProject } from '@/app/lib/services/api';
+import { statusToast } from '@/app/lib/utils/toast';
+
 import { NewChatInterface } from '@/app/components/NewChatInterface';
-import { getProjectByPublicId } from '@/app/lib/services/project';
+import { ProjectFileUploadTrigger } from '@/app/components/ManageKnowledge/UploadKnowledge/ProjectFiles/ProjectFileUploadTrigger';
+
+type Project = {
+  id: number;
+  public_id: string;
+  title: string;
+};
 
 type Props = {
   params: {
@@ -7,18 +25,50 @@ type Props = {
   };
 };
 
-export default async function ProjectPage({ params }: Props) {
-  const project = await getProjectByPublicId(params.projectId);
+export default function ProjectPage({ params }: Props) {
+  const isReady = useClientOnly();
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!project) return null;
+  const { errorToast } = statusToast();
+  const t = useTranslations('projects');
+
+  useEffect(() => {
+    async function loadProject() {
+      try {
+        const projectData = await fetchProject(params.projectId);
+        setProject(projectData);
+      } catch (error) {
+        logger.error('Error loading project:', { error: error });
+        errorToast({ message: t('error.fetching-error') });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadProject();
+  }, [params.projectId]);
+
+  if (isLoading || !project || !isReady) {
+    return <PageSkeleton />;
+  }
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex flex-col h-screen justify-center items-center gap-4">
       <NewChatInterface
         projectId={project.id}
         projectPublicId={project.public_id}
         projectTitle={project.title}
       />
+
+      <div className="flex w-full max-w-[740px] gap-4 flex-col">
+        <div className="flex-1 mx-4 md:mx-0">
+          <ProjectFileUploadTrigger
+            projectId={project.id}
+            projectPublicId={project.public_id}
+          />
+        </div>
+      </div>
     </div>
   );
 }

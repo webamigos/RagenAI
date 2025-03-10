@@ -27,6 +27,7 @@ import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
+import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { WebsiteDocumentLoader } from '@/libs/document-loaders/website-loader';
 import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
 
@@ -135,8 +136,15 @@ export const convertAndStoreDocument = async ({
     logger.info({ mimeType }, 'Detected MIME type');
 
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
-    const fileExtension =
+
+    let fileExtension =
       SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES];
+
+    const extension = getFileExtension(fileName);
+    if (extension === 'md' || extension === 'txt') {
+      fileExtension = 'md';
+    }
+
     if (!fileExtension) {
       return {
         success: false,

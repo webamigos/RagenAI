@@ -20,6 +20,10 @@ import {
   getOrganizationFilesCount,
 } from '../lib/services/file';
 import {
+  fetchProjectFiles,
+  deleteProjectFile as deleteProjectFileFromService,
+} from '../lib/services/project';
+import {
   createAndStoreMessage,
   deleteMessageByPublicId,
 } from '../lib/services/message';
@@ -139,6 +143,102 @@ export const getUserDocuments = async (orgId: string) => {
   } catch (error) {
     return {
       error: 'Fetching documents details failed',
+      status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+// Get project files
+export const getProjectFiles = async (projectId: number) => {
+  try {
+    setSentryServiceTag(serviceName);
+    const files = await fetchProjectFiles(projectId);
+    return { files };
+  } catch (error) {
+    return {
+      error: 'Fetching project files failed',
+      status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+// Get file details for download
+export const getFileDetailsForDownload = async (fileId: string) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      fileId,
+    });
+
+    const fileRecord = await getFileDetails(fileId);
+    if (!fileRecord) {
+      return {
+        error: 'File not found',
+        status: StatusCodes.NOT_FOUND,
+      };
+    }
+
+    return {
+      success: true,
+      fileDetails: fileRecord,
+    };
+  } catch (error) {
+    return {
+      error: `Error retrieving file details: ${error}`,
+      status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+// Delete project file
+export const deleteProjectFileAction = async (
+  fileId: string,
+  projectId: number
+) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('EXTRA_DATA', {
+      fileId,
+      projectId,
+    });
+
+    const fileRecord = await getFileDetails(fileId);
+    if (!fileRecord) {
+      return {
+        error: 'File not found',
+        status: StatusCodes.NOT_FOUND,
+      };
+    }
+
+    const result = await deleteProjectFileFromService(fileId, projectId);
+
+    // If the file has a stored S3 object, delete it too
+    if (fileRecord) {
+      const documentS3Path = `${fileId}.${getFileExtension(
+        fileRecord.file_name
+      )}`;
+
+      try {
+        await deleteFromS3(documentS3Path);
+      } catch (s3Error) {
+        // Log S3 error but continue since the DB entry was deleted
+        logger.error('Failed to delete file from S3', { error: s3Error });
+      }
+
+      // Delete from UserDocument
+      await deleteDocumentFromDb(fileRecord.organization_id, fileId);
+
+      // Delete vectors
+      await deleteDocumentFromVectorStore(fileId);
+    }
+
+    return {
+      success: true,
+      count: result?.count || 0,
+    };
+  } catch (error) {
+    return {
+      error: `Failed to delete project file: ${error}`,
       status: StatusCodes.BAD_REQUEST,
     };
   }

@@ -89,12 +89,16 @@ export const DocumentCreator = () => {
 
       if (response.status === 200 && response.files) {
         const document = response.files[0];
+        const projectId = document.project_id;
+
         addDocument({
           id: document.uniqueFileId,
           organization_id: organizationId,
           file_name: document.fileName,
           file_size: document.fileSize,
           file_type: 'markdown',
+          project_id: projectId,
+          project: { id: projectId, title: document.fileName },
         });
         reset();
         successToast({ message: t('created-successful') });

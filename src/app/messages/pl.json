@@ -37,7 +37,7 @@
       "verification-code-sent": "Kod weryfikacyjny został wysłany na podany adres email",
       "resend-failed": "Błąd podczas wysyłaniu kodu"
     },
-    "or-continue-with": "Lub zaloguj się za pomocą",
+    "or-continue-with": "Lub zaloguj się za pomocą",
     "forgot-password": "Nie pamiętasz hasła?",
     "i-agree-to": "Zgadzam się z",
     "terms-of-use": "regulaminem",
@@ -60,7 +60,7 @@
     "sign-in-to-account": "Zaloguj się do konta",
     "not-a-member": "Nie masz konta?",
     "start-free-trial": "Rozpoznij 14 dniowy okres próbny",
-    "or-continue-with": "Lub zaloguj się za pomocą"
+    "or-continue-with": "Lub zaloguj się za pomocą"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -215,7 +215,8 @@
     "or": "lub",
     "choose-files": "Wybierz pliki",
     "supported-formats": "Obsługiwany format",
-    "send-and-process": "Wyślij i przekonwertuj"
+    "send-and-process": "Wyślij i przekonwertuj",
+    "drop-to-upload": "Upuść pliki, aby je wgrać"
   },
   "create-document": {
     "title": "Stwórz dokument",
@@ -317,18 +318,34 @@
       "create-project": "Stwórz projekt",
       "create": "Stwórz projekt",
       "placeholder": "Wpisz nazwę projektu...",
-      "what-is-project": "Co to jest projekt?",
+      "what-is-project": "Czym jest projekt?",
       "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
       "cancel": "Anuluj",
+      "upload-file": "Wgraj plik do projektu",
+      "upload": {
+        "title": "Wgraj pliki do projektu",
+        "button": "Wgraj pliki",
+        "selected-files": "Wybrane pliki",
+        "remove-file": "Usuń plik",
+        "add-files": "Dodaj pliki",
+        "drop-to-upload": "Upuść pliki, aby je wgrać",
+        "uploading": "Przesyłanie..."
+      },
+      "project-files": "Pliki projektu",
+      "no-files": "Brak plików w projekcie",
+      "file-deleted": "Plik został usunięty",
+      "remove-file": "Usuń plik",
       "success": {
         "created": "Projekt został pomyślnie utworzony."
       },
       "error": {
-        "title-required": "Nazwa projektu jest wymagana.",
-        "loading-organization": "Błąd podczas ładowania organizacji.",
-        "no-organization": "Brak przypisanej organizacji.",
-        "project-exists": "Projekt o tej nazwie już istnieje.",
-        "creation-failed": "Nie udało się stworzyć projektu."
+        "title-required": "Tytuł jest wymagany",
+        "loading-organization": "Błąd podczas ładowania organizacji",
+        "no-organization": "Brak organizacji",
+        "project-exists": "Projekt o tej nazwie już istnieje",
+        "creation-failed": "Nie udało się utworzyć projektu",
+        "loading-files": "Nie udało się załadować plików projektu",
+        "file-delete": "Nie udało się usunąć pliku"
       }
     },
     "errors": {
@@ -359,6 +376,7 @@
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
+    "deleting": "Usuwanie",
     "yes": "Tak",
     "no": "Nie"
   },
@@ -542,21 +560,42 @@
   },
   "projects": {
     "title": "Projekty",
+    "create-project": "Stwórz projekt",
     "create": "Stwórz projekt",
     "placeholder": "Nazwa projektu",
     "what-is-project": "Czym jest projekt?",
     "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
     "cancel": "Anuluj",
-    "create-project": "Stwórz projekt",
+    "upload-file": "Wgraj plik do projektu",
+    "upload": {
+      "title": "Wgraj pliki do projektu",
+      "button": "Wgraj pliki",
+      "selected-files": "Wybrane pliki",
+      "remove-file": "Usuń plik",
+      "add-files": "Dodaj pliki",
+      "drop-to-upload": "Upuść pliki, aby je wgrać",
+      "uploading": "Przesyłanie..."
+    },
+    "project-files": "Pliki projektu",
+    "no-files": "Brak plików w projekcie",
+    "file-deleted": "Plik został usunięty",
+    "remove-file": "Usuń plik",
+    "file-singular": "plik",
+    "file-plural": "pliki",
+    "manage-files": "Zarządzaj plikami",
+    "loading": "Ładowanie...",
+    "success": {
+      "created": "Projekt został pomyślnie utworzony."
+    },
     "error": {
       "title-required": "Tytuł jest wymagany",
       "loading-organization": "Błąd podczas ładowania organizacji",
       "no-organization": "Brak organizacji",
       "project-exists": "Projekt o takiej nazwie już istnieje",
-      "creation-failed": "Nie udało się stowrzyć projektu"
-    },
-    "success": {
-      "created": "Projekt został utworzony"
+      "creation-failed": "Nie udało się stowrzyć projektu",
+      "loading-files": "Nie udało się załadować plików projektu",
+      "file-delete": "Nie udało się usunąć pliku",
+      "fetching-error": "Wystąpił błąd podczas pobierania plików projektu"
     }
   },
   "voice-mode": {
@@ -587,5 +626,11 @@
     "final_response": "",
     "error": "Wystąpił błąd",
     "close": ""
+  },
+  "ErrorBoundary": {
+    "error": "Wystąpił błąd",
+    "try-again": "Spróbuj ponownie",
+    "unknown-error": "Nieznany błąd aplikacji",
+    "file-error-fetching": "Wystąpił błąd podczas ładowania plików"
   }
 }

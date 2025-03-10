@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@clerk/nextjs/server';
-
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 import { createMarkdownDocument } from '@/app/lib/services/document';
@@ -15,7 +14,6 @@ import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
 import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
-
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -51,6 +49,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
+    const formProjectId = formData.get('projectId');
+
     const processedFiles = [];
 
     for (const file of files) {
@@ -60,15 +60,20 @@ export async function POST(request: NextRequest, { params }: Params) {
         const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
-        const defaultProjectId = await fetchOrganizationDefaultProjectId(
-          organizationId
-        );
+        let projectId;
+        if (formProjectId) {
+          projectId = parseInt(formProjectId.toString(), 10);
+        } else {
+          projectId = await fetchOrganizationDefaultProjectId(organizationId);
+        }
+        const projectIdForDb = projectId === null ? undefined : projectId;
+
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: defaultProjectId,
+          projectId: projectId,
           mimeType: file.type,
         });
 
@@ -78,9 +83,11 @@ export async function POST(request: NextRequest, { params }: Params) {
             file.size,
             organizationId,
             uniqueFileId,
-            fileType
+            fileType,
+            projectIdForDb
           );
 
+          // Create document for all file types
           if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
             await createMarkdownDocument({
               public_id: uniqueFileId,
@@ -106,7 +113,6 @@ export async function POST(request: NextRequest, { params }: Params) {
               );
             });
         }
-
         if (!success) {
           logger.error(
             { err: message },
@@ -114,7 +120,6 @@ export async function POST(request: NextRequest, { params }: Params) {
           );
           return NextResponse.json({ message }, { status: 500 });
         }
-
         processedFiles.push({
           fileName: parsedFile.fileName,
           fileSize: file.size,

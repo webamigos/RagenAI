@@ -21,3 +21,4 @@ export * from './Table';
 export * from './Tooltip';
 export * from './Tabs';
 export * from './WysywigEditor';
+export * from './Skeleton';

@@ -63,7 +63,7 @@ export const useSidebarLogic = () => {
       } catch (error) {
         logger.error({ err: error }, 'Error prefetching threads');
         return errorToast({ message: 'Error prefetching threads' });
-      } // Silently fail prefetch attempts
+      }
     },
     []
   );
@@ -71,10 +71,9 @@ export const useSidebarLogic = () => {
   const loadMoreThreads = useCallback(async () => {
     if (isLoading || !hasMore || !user?.id) return;
 
-    // Adaptive batch size based on viewport
     const viewportHeight = window.innerHeight;
-    const avgThreadHeight = 100; // pixels
-    const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5; // +5 for buffer
+    const avgThreadHeight = 100;
+    const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5;
 
     dispatch(setLoading(true));
 
@@ -95,7 +94,6 @@ export const useSidebarLogic = () => {
             dispatch(incrementSkip(threads.length));
             dispatch(setHasMore(threads.length === limit));
 
-            // Prefetch next batch
             if (threads.length === limit) {
               prefetchThreads(user.id, skip + limit, limit);
             }
@@ -128,7 +126,6 @@ export const useSidebarLogic = () => {
       dispatch(resetThreads());
       await loadMoreThreads();
     } catch {
-      // Restore cached state on failure
       dispatch(addThreads(cachedThreads));
     }
   }, [dispatch, loadMoreThreads, userThreads]);

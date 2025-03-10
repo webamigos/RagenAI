@@ -1,4 +1,10 @@
 import { UserFile } from '@prisma/client';
+import { Project } from '@prisma/client';
+
+export type ProjectType = {
+  id: Project['id'];
+  title: Project['title'];
+};
 
 export type UserFileType = {
   id: UserFile['id'];
@@ -9,4 +15,6 @@ export type UserFileType = {
   updated_at?: UserFile['updated_at'];
   metadata?: UserFile['metadata'];
   file_type: UserFile['file_type'];
+  project_id: UserFile['project_id'];
+  project: ProjectType | null;
 };

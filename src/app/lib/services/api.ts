@@ -1,5 +1,6 @@
 import { api } from './config';
 import { MessageDto } from '../../contracts/Message';
+import { logger } from '@/app/lib/utils/logger';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
@@ -9,6 +10,19 @@ export const fetchMessagesFromApi = async (
     return undefined;
   }
   return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
+};
+
+export const fetchProject = async (projectId: string) => {
+  try {
+    const response = await fetch(`/api/projects/${projectId}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch project');
+    }
+    return await response.json();
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching project:');
+    throw error;
+  }
 };
 
 export const submitFeedback = async (
@@ -32,12 +46,29 @@ type UploadedFile = {
   fileSize: number;
   uniqueFileId: string;
   content: string;
+  project_id: number;
 };
 
 type UploadResponse = {
   message: string;
   status: number;
   files: UploadedFile[];
+};
+
+export const uploadProjectFiles = async (
+  projectPublicId: string,
+  data: FormData
+): Promise<UploadResponse> => {
+  const response = await api.post<UploadResponse>(
+    `/upload/project/${projectPublicId}`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+  return response.data;
 };
 
 export const uploadFiles = async (
