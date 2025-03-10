@@ -70,19 +70,13 @@ export const generateFinalAnswer = (
   };
 
   return RunnableSequence.from([
-    (input) => ({
-      ...input,
-      answer_instructions: answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
-      project_instructions: projectInstruction ? { projectInstruction } : '',
+    RunnablePassthrough.assign({
+      answer_instructions: () =>
+        answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
+      project_instructions: () =>
+        projectInstruction ? projectInstruction : '',
     }),
-    async (input) => {
-      const promptTemplate = getPromptTemplate(input.chat_history);
-      return { ...input, promptTemplate };
-    },
-    async (input) => {
-      const { promptTemplate, ...rest } = input;
-      return promptTemplate.invoke(rest);
-    },
+    (input) => getPromptTemplate(input.chat_history),
     model,
     new StringOutputParser().withConfig({
       runName,

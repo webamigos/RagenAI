@@ -21,11 +21,15 @@ export const conversationChain = async ({
   models,
   config,
 }: ConversationChainParams): Promise<BaseChatChainOutput> => {
+  // Create a chain that follows the same pattern as basicRagChain
   const chain = RunnableSequence.from<BaseChatChainInput, string>([
-    sanitizeAndValidateInput,
+    // Step 1: Sanitize and validate the input
+    sanitizeAndValidateInput(),
 
+    // Step 2: Moderate the content
     moderateContent(models.contentModerator, false),
 
+    // Step 3: Generate the final answer
     generateFinalAnswer(
       models.answerGenerator,
       CHAIN_FINAL_ANSWER_RUN_NAME,
