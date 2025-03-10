@@ -25,6 +25,7 @@ const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
+  projectInstruction?: string | null;
   internalProjectId: number;
 };
 
@@ -33,6 +34,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
 export const initializeRagChain = async ({
   settings,
+  projectInstruction,
   internalProjectId,
 }: InitializeRagChainParams) => {
   try {
@@ -56,6 +58,7 @@ export const initializeRagChain = async ({
       answerTemperature,
       answerInstructions,
       maxDocumentsToRetrieve,
+      hasProjectInstruction: !!projectInstruction,
     });
 
     const embeddingModel = createEmbeddingsInstance({ apiKey });
@@ -112,7 +115,8 @@ export const initializeRagChain = async ({
       config: {
         metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
         maxDocumentsToRetrieve,
-        answerInstructions,
+        answerInstructions: answerInstructions || '',
+        projectInstruction: projectInstruction || '',
       },
       vectorStore,
     });

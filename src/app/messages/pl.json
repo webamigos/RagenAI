@@ -321,6 +321,7 @@
       "what-is-project": "Czym jest projekt?",
       "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
       "cancel": "Anuluj",
+      "save": "Zapisz",
       "upload-file": "Wgraj plik do projektu",
       "upload": {
         "title": "Wgraj pliki do projektu",
@@ -596,6 +597,27 @@
       "loading-files": "Nie udało się załadować plików projektu",
       "file-delete": "Nie udało się usunąć pliku",
       "fetching-error": "Wystąpił błąd podczas pobierania plików projektu"
+    },
+    "project-instructions": {
+      "title": "Instrukcje projektu",
+      "button": "Dodaj instrukcje",
+      "placeholder": "Wpisz instrukcje",
+      "description": "Instrukcje są opcjonalne. Dostosowują odpowiedzi asystenta do Twoich potrzeb.",
+      "description-min-length": "Instrukcje muszą mieć co najmniej 10 znaków",
+      "form-title": "Instrukcje projektu",
+      "title-label": "Tytuł",
+      "title-min-length": "Tytuł musi mieć co najmniej 3 znaki",
+      "description-label": "Treść instrukcji",
+      "priority-label": "Priorytet",
+      "priority-low": "Niski",
+      "priority-medium": "Średni",
+      "priority-high": "Wysoki",
+      "invalid-priority": "Wybierz poprawny priorytet",
+      "save": "Zapisz",
+      "saving": "Zapisywanie...",
+      "cancel": "Anuluj",
+      "instruction-saved": "Instrukcja została zapisana",
+      "save-error": "Wystąpił błąd podczas zapisywania instrukcji"
     }
   },
   "voice-mode": {

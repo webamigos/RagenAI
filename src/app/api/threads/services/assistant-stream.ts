@@ -20,6 +20,7 @@ import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
 import { AssistantMode } from '@/app/contracts/Assistant';
+import { getProjectInstruction } from '@/app/lib/services/projectInstructions';
 
 type Config = {
   publicThreadId: string;
@@ -79,14 +80,45 @@ export async function streamEvents({
           id: threadMessage.public_id,
         });
 
+        // Fetch project instruction if the thread is associated with a project
+        let projectInstruction: string | null = null;
+
+        try {
+          sendApiEvent(controller, 'init_lmm');
+          if (threadRecord.project_id && threadRecord.project?.public_id) {
+            projectInstruction = await getProjectInstruction(
+              threadRecord.project.public_id
+            );
+
+            logger.info(
+              {
+                internalProjectId: threadRecord.project_id,
+                publicProjectId: threadRecord.project.public_id,
+                hasInstruction: Boolean(projectInstruction),
+              },
+              'Retrieved project instruction'
+            );
+          } else if (threadRecord.project_id) {
+            logger.warn(
+              { projectId: threadRecord.project_id },
+              'Project associated with thread, but missing public_id'
+            );
+          }
+        } catch (error) {
+          logger.error({ err: error }, 'Error fetching project instruction');
+          // Continue without project instruction if there's an error
+        }
+
         let chain: Runnable | undefined = undefined;
         let finalAnswerRunName: string | undefined = undefined;
 
-        // TODO: stream chain errors
+        //TODO: stream chain errors
+        // Initialize the appropriate chain based on mode
         if (mode === AssistantMode.INTERNAL) {
           if (filteredMode === ChatType.CONVERSATION) {
             const conversation = await initializeConversationChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              projectInstruction,
             });
             chain = conversation.chain;
             finalAnswerRunName = conversation.finalAnswerRunName;
@@ -96,6 +128,7 @@ export async function streamEvents({
             }
             const basicRag = await initializeRagChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              projectInstruction,
               internalProjectId: threadRecord.project.id,
             });
             chain = basicRag.chain;
@@ -105,6 +138,7 @@ export async function streamEvents({
           const publicRag = await initializePublicRagChain({
             settings: { ...rawSettings, apiKey: rawSettings.apiKey },
             organizationId: orgId,
+            projectInstruction,
           });
           chain = publicRag.chain;
           finalAnswerRunName = publicRag.finalAnswerRunName;

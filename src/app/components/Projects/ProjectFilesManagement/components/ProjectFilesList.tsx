@@ -5,9 +5,12 @@ import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 import { Card, Text, LoadingSkeleton, FileUploader } from '@ragenai/common-ui';
 
-import { FileItem } from './components/FileItem';
-import { DropZone } from './components/DropZone';
-import { useProjectFiles, FileListState } from './hooks/useProjectFiles';
+import { FileItem } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/FileItem';
+import { DropZone } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/DropZone';
+import {
+  useProjectFiles,
+  FileListState,
+} from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/hooks/useProjectFiles';
 type Props = {
   projectId: number;
   onFilesLoaded?: (hasFiles: boolean) => void;

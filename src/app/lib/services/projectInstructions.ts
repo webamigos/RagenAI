@@ -1,0 +1,139 @@
+import { getRedisInstance } from './redis';
+import db from '@ragenai/prisma-client';
+import { auth } from '@clerk/nextjs/server';
+import { logger } from '../utils/logger';
+
+const redis = getRedisInstance();
+
+async function getProjectInfo(projectId: string) {
+  try {
+    logger.info(`Attempting to find project with public_id: ${projectId}`);
+
+    if (!projectId) {
+      logger.error('Project ID is empty or undefined');
+      return null;
+    }
+
+    const { orgId } = auth();
+    if (!orgId) {
+      logger.error('User not authenticated or missing organization ID');
+      return null;
+    }
+
+    const project = await db.project.findUnique({
+      where: { public_id: projectId },
+      select: {
+        id: true,
+        public_id: true,
+        organization_id: true,
+      },
+    });
+
+    logger.info({ projectResult: project }, 'Project search result');
+
+    if (project && project.organization_id !== orgId) {
+      logger.error(
+        { projectId, userOrgId: orgId, projectOrgId: project.organization_id },
+        'Unauthorized: Project does not belong to user organization'
+      );
+      return null;
+    }
+
+    return project;
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching project info');
+    throw new Error('Failed to fetch project info');
+  }
+}
+
+function createProjectSettingsRedisKey(
+  organizationId: string,
+  projectId: string
+): string {
+  return `org:${organizationId}:project:${projectId}:settings`;
+}
+
+export async function saveProjectInstruction(
+  projectId: string,
+  instruction: string
+): Promise<{ success: boolean; status: string }> {
+  try {
+    if (!projectId) {
+      logger.error('Project ID is missing');
+      return { success: false, status: 'Project ID is required' };
+    }
+
+    const project = await getProjectInfo(projectId);
+    if (!project) {
+      logger.error({ projectId }, 'Project not found in database');
+      return { success: false, status: 'Project not found' };
+    }
+
+    if (!project.organization_id) {
+      logger.error({ project }, 'Organization ID is missing from project');
+      return {
+        success: false,
+        status: 'Organization ID not found for this project',
+      };
+    }
+
+    const redisKey = createProjectSettingsRedisKey(
+      project.organization_id,
+      project.public_id
+    );
+
+    logger.info(
+      { redisKey, projectPublicId: project.public_id },
+      'Attempting to save to Redis with new key format'
+    );
+
+    const result = await redis.hsetWithStatus(redisKey, {
+      instructions: instruction,
+    });
+
+    return result;
+  } catch (error) {
+    logger.error({ err: error }, 'Error saving project instruction');
+    return { success: false, status: 'Failed to save project instruction' };
+  }
+}
+
+export async function getProjectInstruction(
+  projectId: string
+): Promise<string | null> {
+  try {
+    logger.info({ projectId }, 'getProjectInstruction called');
+
+    if (!projectId) {
+      logger.error('Project ID is missing');
+      return null;
+    }
+
+    const project = await getProjectInfo(projectId);
+    if (!project) {
+      logger.error({ projectId }, 'Project not found in database');
+      return null;
+    }
+
+    if (!project.organization_id) {
+      logger.error({ project }, 'Organization ID is missing from project');
+      return null;
+    }
+
+    const redisKey = createProjectSettingsRedisKey(
+      project.organization_id,
+      project.public_id
+    );
+
+    logger.info(
+      { redisKey, projectPublicId: project.public_id },
+      'Attempting to get from Redis with new key format'
+    );
+
+    const instruction = await redis.hget(redisKey, 'instructions');
+    return instruction;
+  } catch (error) {
+    logger.error({ err: error }, 'Error retrieving project instruction');
+    return null;
+  }
+}

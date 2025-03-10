@@ -111,6 +111,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
         project_id: true,
         project: {
           select: {
+            public_id: true,
             id: true,
             title: true,
           },
