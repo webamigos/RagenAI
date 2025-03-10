@@ -53,7 +53,7 @@ export const FileCard = ({
         </button>
       </div>
       <div className="flex w-full justify-center bg-white dark:bg-accent-dark-lightness rounded-md mt-2 p-2">
-        <div className="flex items-center h-28 gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center h-28 gap-2 invisible group-hover:visible justify-evenly transition-opacity duration-200">
           <ToolbarActionsMenu
             toggleModal={toggleModal}
             isLoading={isLoading}
