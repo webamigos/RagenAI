@@ -11,7 +11,6 @@ import {
   createMessageSchema,
 } from '../contracts/Message';
 import { deleteFromS3 } from '../lib/services/aws';
-import { getOrgIdOrThrow } from '../lib/services/clerk';
 import { deleteDocumentFromDb } from '../lib/services/document';
 import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
@@ -44,7 +43,6 @@ import {
 } from '../lib/types/organizations';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
-import db from '@ragenai/prisma-client';
 
 const serviceName = 'actions';
 

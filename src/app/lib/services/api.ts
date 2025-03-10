@@ -46,6 +46,7 @@ type UploadedFile = {
   fileSize: number;
   uniqueFileId: string;
   content: string;
+  project_id: number;
 };
 
 type UploadResponse = {
