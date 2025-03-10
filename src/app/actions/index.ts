@@ -11,7 +11,6 @@ import {
   createMessageSchema,
 } from '../contracts/Message';
 import { deleteFromS3 } from '../lib/services/aws';
-import { getOrgIdOrThrow } from '../lib/services/clerk';
 import { deleteDocumentFromDb } from '../lib/services/document';
 import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
@@ -44,7 +43,6 @@ import {
 } from '../lib/types/organizations';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
-import db from '@ragenai/prisma-client';
 
 const serviceName = 'actions';
 
@@ -464,27 +462,4 @@ export async function fetchThreadSuggestions(
 
 export const trackThreadCreated = () => {
   usageTracker.incThreadsCount();
-};
-
-// Helper function for validating and deleting project file
-const validateAndDeleteProjectFile = async (
-  fileId: string,
-  projectId: number
-) => {
-  const orgId = getOrgIdOrThrow();
-
-  // First, check if the file belongs to the project
-  const fileDetails = await getFileDetails(fileId);
-  if (!fileDetails) {
-    return { count: 0 };
-  }
-
-  // Use type assertion to handle project_id property
-  const fileDetailsAny = fileDetails as any;
-  if (fileDetailsAny.project_id !== projectId) {
-    return { count: 0 };
-  }
-
-  // If it does, delete it using the imported service function
-  return await deleteProjectFileFromService(fileId, projectId);
 };

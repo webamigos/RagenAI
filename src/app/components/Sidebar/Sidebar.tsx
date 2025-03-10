@@ -115,7 +115,7 @@ export const Sidebar = ({ children, membership }: Props) => {
               ) : (
                 <>
                   <ProjectsList
-                    isLoading={isThreadLoading}
+                    isLoading={isLoading}
                     projects={projects}
                     setIsCreateModalOpen={setIsCreateModalOpen}
                     activeThread={activeThread}

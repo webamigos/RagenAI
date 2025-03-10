@@ -20,7 +20,6 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { getOrganizationMetadata } from '@/app/actions';
-import { VectorStore } from '@langchain/core/vectorstores';
 
 const serviceName = 'initializeBasicRag';
 
@@ -94,6 +93,8 @@ export const initializeRagChain = async ({
       throw new Error('Internal project ID is required');
     }
 
+    const isSupabaseVectorStore = vectorStore instanceof SupabaseVectorStore;
+
     const filterOptions = {
       must: [
         {
@@ -112,7 +113,7 @@ export const initializeRagChain = async ({
         answerGenerator,
       },
       config: {
-        metadataFilter: filterOptions,
+        metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',

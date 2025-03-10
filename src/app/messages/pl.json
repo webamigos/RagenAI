@@ -377,6 +377,7 @@
   },
   "file-delete-modal": {
     "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
+    "deleting": "Usuwanie",
     "yes": "Tak",
     "no": "Nie"
   },
@@ -574,7 +575,7 @@
       "remove-file": "Usuń plik",
       "add-files": "Dodaj pliki",
       "drop-to-upload": "Upuść pliki, aby je wgrać",
-      "uploading": "Przesy"
+      "uploading": "Przesyłanie..."
     },
     "project-instructions": {
       "title": "Instrukcje projektu",
@@ -615,7 +616,8 @@
       "project-exists": "Projekt o takiej nazwie już istnieje",
       "creation-failed": "Nie udało się stowrzyć projektu",
       "loading-files": "Nie udało się załadować plików projektu",
-      "file-delete": "Nie udało się usunąć pliku"
+      "file-delete": "Nie udało się usunąć pliku",
+      "fetching-error": "Wystąpił błąd podczas pobierania plików projektu"
     }
   },
   "voice-mode": {
@@ -646,5 +648,11 @@
     "final_response": "",
     "error": "Wystąpił błąd",
     "close": ""
+  },
+  "ErrorBoundary": {
+    "error": "Wystąpił błąd",
+    "try-again": "Spróbuj ponownie",
+    "unknown-error": "Nieznany błąd aplikacji",
+    "file-error-fetching": "Wystąpił błąd podczas ładowania plików"
   }
 }

@@ -9,7 +9,7 @@ import { FileUploader } from '@ragenai/common-ui/FileUploader';
 import { Button, LoadingSkeleton } from '@ragenai/common-ui';
 import { UploadList } from '../../../ManageKnowledge/UploadKnowledge/UploadList';
 import {
-  ErrorBoundary,
+  ErrorBoundaryWithTranslations as ErrorBoundary,
   FileErrorFallback,
 } from '@/app/components/ErrorBoundary';
 

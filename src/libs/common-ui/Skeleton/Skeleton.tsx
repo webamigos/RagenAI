@@ -50,7 +50,7 @@ export const Skeleton = ({
     return (
       <div
         className={classMerge(
-          'p-4 border border-gray-200 dark:border-gray-700 rounded-md',
+          'p-4 border border-gray-200 dark:border-none  rounded-md',
           width
         )}
       >

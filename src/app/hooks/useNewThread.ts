@@ -82,7 +82,7 @@ export const useNewThread = () => {
     if (!visitorId) {
       return;
     }
-    if (pathname.includes('/threads')) {
+    if (pathname.includes('/threads') || pathname.includes('/projects')) {
       return;
     }
 
@@ -99,7 +99,11 @@ export const useNewThread = () => {
         }
       }
 
-      if (localStorageThreadId && !pathname.includes('/threads')) {
+      if (
+        localStorageThreadId &&
+        !pathname.includes('/threads') &&
+        !pathname.includes('/projects')
+      ) {
         push(`/threads/${localStorageThreadId}`);
       }
     } catch (err) {
@@ -116,7 +120,7 @@ export const useNewThread = () => {
 
   useEffect(() => {
     try {
-      if (!pathname.includes('/threads')) {
+      if (!pathname.includes('/threads') && !pathname.includes('/projects')) {
         localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
       }
     } catch (err) {
