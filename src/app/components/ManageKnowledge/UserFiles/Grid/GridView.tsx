@@ -30,6 +30,7 @@ type GridViewProps = {
     fileName: string
   ) => void;
 };
+
 export const GridView = ({
   documents,
   isLoading,
