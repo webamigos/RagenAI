@@ -28,7 +28,7 @@ export const ToolbarActions = ({
         className={`absolute -left-10 flex space-x-2 transition-all duration-300 ${
           showToolbar
             ? 'opacity-100 -translate-x-0'
-            : 'opacity-0 -translate-x-4'
+            : 'invisible -translate-x-4'
         }`}
       >
         <ToolbarActionsMenu
@@ -41,7 +41,7 @@ export const ToolbarActions = ({
 
       <div
         className={`transition-all duration-300 ${
-          showToolbar ? 'opacity-0 translate-x-4' : 'opacity-100 translate-x-0'
+          showToolbar ? 'invisible translate-x-4' : 'opacity-100 translate-x-0'
         }`}
       >
         <CommonUi.ArrowIcon className="cursor-pointer" />
