@@ -2,10 +2,10 @@ import { useEffect, useCallback } from 'react';
 import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
+import { useRouter } from 'next/navigation';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-import { useNewThread } from '../../hooks/useNewThread';
 import { useCloseThread } from '../../hooks/useCloseThreads';
 import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
@@ -33,6 +33,7 @@ export const useSidebarLogic = () => {
     (state) => state.sidebar
   );
   const { errorToast } = statusToast();
+  const router = useRouter();
 
   const {
     error,
@@ -49,7 +50,6 @@ export const useSidebarLogic = () => {
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
-  const { handleNewThread } = useNewThread();
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
@@ -134,9 +134,9 @@ export const useSidebarLogic = () => {
   }, [dispatch, loadMoreThreads, userThreads]);
 
   const handleThread = () => {
-    handleNewThread();
     handleCloseThread(false);
     dispatch(closeSidebar());
+    router.push('/');
   };
 
   const handleSearch = () => {
@@ -235,9 +235,9 @@ export const useSidebarLogic = () => {
     userAvatar,
     isSignedIn,
     userThreads,
+    handleThread,
     activeThread,
     handleSearch,
-    handleThread,
     showOnboarding,
     refetchThreads,
     isThreadLoading,
