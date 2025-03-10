@@ -25,6 +25,7 @@ const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
+  internalProjectId: number;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -32,6 +33,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
 export const initializeRagChain = async ({
   settings,
+  internalProjectId,
 }: InitializeRagChainParams) => {
   try {
     const { orgId } = auth();
@@ -76,11 +78,30 @@ export const initializeRagChain = async ({
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
       vectorStore = await createQdrantVectorStore(embeddingModel);
     } else {
-      vectorStore = createSupabaseVectorStore(
+      vectorStore = await createSupabaseVectorStore(
         supabaseVectorStoreClient,
-        embeddingModel
+        embeddingModel,
+        internalProjectId
       );
     }
+
+    //DOCUMENT FILTERING BY PROJECT_ID
+    if (!internalProjectId) {
+      throw new Error('Internal project ID is required');
+    }
+
+    const isSupabaseVectorStore = vectorStore instanceof SupabaseVectorStore;
+
+    const filterOptions = {
+      must: [
+        {
+          key: 'metadata.project_id',
+          match: {
+            value: internalProjectId,
+          },
+        },
+      ],
+    };
 
     return await basicRagChain({
       models: {
@@ -89,6 +110,7 @@ export const initializeRagChain = async ({
         answerGenerator,
       },
       config: {
+        metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions,
       },
@@ -124,10 +146,11 @@ const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
 };
 
 // TODO: refactor to use with qdrant or switch depending on organization settings?
-const createSupabaseVectorStore = (
+const createSupabaseVectorStore = async (
   client: SupabaseClient,
-  embeddingModel: Embeddings
-): SupabaseVectorStore => {
+  embeddingModel: Embeddings,
+  projectId?: number
+): Promise<SupabaseVectorStore> => {
   try {
     const { orgId } = auth();
     if (!orgId) {
@@ -145,13 +168,17 @@ const createSupabaseVectorStore = (
       organization_id: orgId,
     };
 
+    if (projectId) {
+      metadataFilter.project_id = projectId;
+    }
+
     return new SupabaseVectorStore(embeddingModel, {
       client,
       queryName: DOCUMENT_SEARCH_QUERY_NAME,
       filter: metadataFilter,
     });
   } catch (error) {
-    logger.error({ err: error }, 'Error creating subabase vector store');
+    logger.error({ err: error }, 'Error creating supabase vector store');
     throw error;
   }
 };

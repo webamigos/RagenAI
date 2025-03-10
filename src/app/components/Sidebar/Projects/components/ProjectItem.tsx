@@ -61,7 +61,7 @@ export const ProjectItem = ({
               e.key === 'Enter' && setIsExpanded((prev) => !prev)
             }
             aria-label={isExpanded ? 'Collapse threads' : 'Expand threads'}
-            className="p-1 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors"
+            className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ChevronDownIcon
               className={classMerge(

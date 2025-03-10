@@ -42,7 +42,8 @@ export const rephraseQuestion = (
 
 export const retrieveRelevantDocuments = async (
   vectorStore: VectorStore,
-  maxDocuments = 4
+  maxDocuments = 4,
+  metadataFilter?: object
 ) => {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -50,7 +51,7 @@ export const retrieveRelevantDocuments = async (
 
   return RunnableSequence.from([
     (input) => input.standalone_question,
-    vectorStore.asRetriever({ k: maxDocuments }),
+    vectorStore.asRetriever({ k: maxDocuments, filter: metadataFilter }),
     combineDocuments,
   ]).withConfig({
     runName: 'Retrieve relevant documents',

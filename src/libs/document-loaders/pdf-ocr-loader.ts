@@ -8,6 +8,7 @@ type PDFOCRDocumentLoaderProps = {
   fileName: string;
   fileId: string;
   organizationId: string;
+  projectId?: number;
 };
 
 /**
@@ -20,17 +21,20 @@ export class PDFOCRDocumentLoader implements DocumentLoader {
   private fileName: string;
   private fileId: string;
   private organizationId: string;
+  private projectId?: number;
 
   constructor({
     filePath,
     fileName,
     fileId,
     organizationId,
+    projectId,
   }: PDFOCRDocumentLoaderProps) {
     this.filePath = filePath;
     this.fileName = fileName;
     this.fileId = fileId;
     this.organizationId = organizationId;
+    this.projectId = projectId;
   }
 
   async load(): Promise<Document<Record<string, any>>[]> {
@@ -38,7 +42,8 @@ export class PDFOCRDocumentLoader implements DocumentLoader {
       this.filePath,
       this.fileName,
       this.fileId,
-      this.organizationId
+      this.organizationId,
+      this.projectId
     );
 
     if (!success) {

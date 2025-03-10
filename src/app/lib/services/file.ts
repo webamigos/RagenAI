@@ -20,7 +20,7 @@ export const createFileDetailsInDB = async (
   organization_id: string,
   id: string,
   file_type: SupportedFileType,
-  project_id?: number
+  project_id: number
 ) => {
   return await db.userFile.create({
     data: {

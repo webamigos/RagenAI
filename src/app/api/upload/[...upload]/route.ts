@@ -34,6 +34,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = orgId;
+    const projectIdFromForm = formData.get('projectId')?.toString();
+
     setSentryClerkOrganizationTag(organizationId);
     if (!uploaderId) {
       logger.error('Uploader ID missing!');
@@ -60,20 +62,32 @@ export async function POST(request: NextRequest, { params }: Params) {
         const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
-        let projectId;
-        if (formProjectId) {
-          projectId = parseInt(formProjectId.toString(), 10);
-        } else {
-          projectId = await fetchOrganizationDefaultProjectId(organizationId);
+
+        const defaultProjectId = await fetchOrganizationDefaultProjectId(
+          organizationId
+        );
+        if (!defaultProjectId) {
+          throw new Error('Default project ID is missing');
         }
-        const projectIdForDb = projectId === null ? undefined : projectId;
+
+        let projectIdForDb: number | undefined = undefined;
+
+        if (projectIdFromForm) {
+          projectIdForDb = parseInt(projectIdFromForm, 10);
+        } else {
+          projectIdForDb = undefined;
+        }
+
+        if (!projectIdForDb || !defaultProjectId) {
+          throw new Error('Project ID is missing');
+        }
 
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: projectId,
+          projectId: projectIdForDb ?? defaultProjectId,
           mimeType: file.type,
         });
 
@@ -84,10 +98,9 @@ export async function POST(request: NextRequest, { params }: Params) {
             organizationId,
             uniqueFileId,
             fileType,
-            projectIdForDb
+            projectIdForDb ?? defaultProjectId
           );
 
-          // Create document for all file types
           if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
             await createMarkdownDocument({
               public_id: uniqueFileId,
@@ -97,7 +110,6 @@ export async function POST(request: NextRequest, { params }: Params) {
               file_id: fileRecord.id,
             });
           }
-
           // upload file to S3 in the background
           uploadToS3(
             `${fileRecord.id}.${fileExtension}`,

@@ -172,6 +172,7 @@ export const convertAndStoreDocument = async ({
             fileName,
             fileId,
             organizationId,
+            projectId: projectId ?? undefined,
           });
           break;
         case 'srt':
