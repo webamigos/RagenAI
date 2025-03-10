@@ -78,6 +78,10 @@ export async function POST(request: NextRequest, { params }: Params) {
           projectIdForDb = undefined;
         }
 
+        if (!projectIdForDb || !defaultProjectId) {
+          throw new Error('Project ID is missing');
+        }
+
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
