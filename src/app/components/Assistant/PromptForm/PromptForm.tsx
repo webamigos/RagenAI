@@ -10,7 +10,7 @@ import {
   type CreateMessageDto,
   ChatResponseType,
 } from '../../../contracts/Message';
-import { useCreateMessageSchema } from '../../../contracts/Message';
+import { createMessageSchema } from '../../../contracts/Message';
 
 type Props = {
   isLoading: boolean;
@@ -37,7 +37,8 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     },
     ref
   ) => {
-    const createMessageSchema = useCreateMessageSchema();
+    const t = useTranslations('form');
+
     const {
       register,
       reset,
@@ -46,13 +47,12 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       watch,
       setValue,
     } = useForm<CreateMessageDto>({
-      resolver: zodResolver(createMessageSchema),
+      resolver: zodResolver(createMessageSchema(t)),
       reValidateMode: 'onSubmit',
       defaultValues: {
         useKnowledge: true,
       },
     });
-    const t = useTranslations('form');
 
     useImperativeHandle(ref, () => ({
       reset: (prompt) => reset({ prompt }),

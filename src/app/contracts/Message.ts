@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { Role, Message as MessageModel } from '@prisma/client';
-import { useTranslations } from 'next-intl';
 
 export enum ChatType {
   CONVERSATION = 'conversation',
@@ -12,27 +11,27 @@ export enum ChatResponseType {
   VOICE = 'VOICE',
 }
 
-export const useCreateMessageSchema = () => {
-  const t = useTranslations('form');
-
-  const createMessageSchema = z.object({
+export const createMessageSchema = (t?: (key: string) => string) =>
+  z.object({
     prompt: z
       .string()
-      .min(10, { message: t('prompt-min', { count: 10 }) })
-      .max(10000, { message: t('prompt-max', { count: 10000 }) })
-      .default(''),
+      .min(10, {
+        message: t
+          ? t('prompt-min')
+          : 'Prompt must be at least 10 characters long',
+      })
+      .max(10000, {
+        message: t
+          ? t('prompt-max')
+          : 'Prompt must be at most 10000 characters long',
+      }),
     mode: z.enum(['conversation', 'rag']).optional(),
     useKnowledge: z.boolean().optional(),
     messageType: z.enum(['TEXT', 'VOICE']).optional(),
     voiceDurationSeconds: z.number().optional(),
   });
 
-  return createMessageSchema;
-};
-
-export type CreateMessageDto = z.infer<
-  ReturnType<typeof useCreateMessageSchema>
->;
+export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;
 
 export type MessageDto = {
   role: Role;
