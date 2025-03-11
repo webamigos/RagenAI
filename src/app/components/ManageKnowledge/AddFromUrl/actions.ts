@@ -40,6 +40,13 @@ export async function processUrl(
     const uniqueFileId = uuidv4();
     const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
 
+    if (!defaultProjectId) {
+      return {
+        success: false,
+        message: 'No default project found',
+      };
+    }
+
     const fullFileName = `${url}-${mode}`;
 
     const { message, success } = await convertAndStoreDocument({

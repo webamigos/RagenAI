@@ -44,7 +44,7 @@ type ConvertAndStoreDocumentParams = {
   fileName: string;
   organizationId: string;
   fileId: string;
-  projectId: number | null;
+  projectId: number;
   mimeType: string;
 };
 
@@ -206,6 +206,7 @@ export const convertAndStoreDocument = async ({
             fileName,
             fileId,
             organizationId,
+            projectId,
           });
           break;
         default:
