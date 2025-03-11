@@ -78,7 +78,7 @@ export async function POST(request: NextRequest, { params }: Params) {
           projectIdForDb = undefined;
         }
 
-        if (!projectIdForDb || !defaultProjectId) {
+        if (!projectIdForDb && !defaultProjectId) {
           throw new Error('Project ID is missing');
         }
 

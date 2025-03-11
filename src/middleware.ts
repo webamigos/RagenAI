@@ -75,7 +75,7 @@ export default clerkMiddleware(
     const session = auth();
 
     // Handle root routes specifically to prevent flashing
-    if (LOCALE_PREFIX_REGEX) {
+    if (LOCALE_PREFIX_REGEX.test(url)) {
       if (!session.userId) {
         if (url.includes('/public')) {
           return NextResponse.next();
