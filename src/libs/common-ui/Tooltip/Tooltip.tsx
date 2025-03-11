@@ -38,6 +38,8 @@ export const Tooltip = ({
         id={id}
         place={place}
         offset={offset}
+        opacity={1}
+        style={{ zIndex: 1000 }}
         delayShow={delayShow}
         delayHide={delayHide}
         anchorSelect={`[data-tooltip-id="${id}"]`}
