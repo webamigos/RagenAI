@@ -149,7 +149,14 @@ export const useAssistantLogic = (threadId: string) => {
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
-    dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
+    dispatch({
+      type: SET_MODE,
+      payload: data.mode
+        ? data.mode === 'conversation'
+          ? ChatType.CONVERSATION
+          : ChatType.RAG
+        : ChatType.RAG,
+    });
 
     // Cast to unknown first to avoid type mismatch
     // ugly workaround to satisfied Clerk UserResourceTypes
@@ -174,7 +181,11 @@ export const useAssistantLogic = (threadId: string) => {
         errorToast,
         promptFormRef,
         data,
-        chatType: data.mode,
+        chatType: data.mode
+          ? data.mode === 'conversation'
+            ? ChatType.CONVERSATION
+            : ChatType.RAG
+          : undefined,
         user: clerkUser,
         reduxDispatch,
       });
