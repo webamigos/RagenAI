@@ -169,7 +169,7 @@ export const usePublicAssistantLogic = (
         errorToast,
         promptFormRef,
         data,
-        chatType: data.mode,
+        chatType: ChatType.RAG,
       });
     } catch {
       errorToast({ message: 'sending-error' });
