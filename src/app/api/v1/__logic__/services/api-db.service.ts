@@ -275,6 +275,8 @@ export class ApiDbService {
       prompt: payload.content,
       threadId: threadRecord.id,
       visitorId: this.context.userId,
+      messageType: payload.messageType,
+      voiceDurationSeconds: payload.voiceDurationSeconds,
     });
 
     if (controller) {
