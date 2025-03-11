@@ -15,14 +15,16 @@ export interface WebsiteDocumentLoaderParams {
   fileName: string;
   fileId: string;
   organizationId: string;
+  projectId: number;
 }
 
 export class WebsiteDocumentLoader implements DocumentLoader {
-  private url: string;
-  private mode: WebsiteLoaderMode;
-  private fileName: string;
-  private fileId: string;
-  private organizationId: string;
+  private readonly url: string;
+  private readonly mode: WebsiteLoaderMode;
+  private readonly fileName: string;
+  private readonly fileId: string;
+  private readonly organizationId: string;
+  private readonly projectId: number;
 
   constructor({
     url,
@@ -30,12 +32,14 @@ export class WebsiteDocumentLoader implements DocumentLoader {
     fileName,
     fileId,
     organizationId,
+    projectId,
   }: WebsiteDocumentLoaderParams) {
     this.url = url;
     this.fileName = fileName;
     this.mode = mode;
     this.fileId = fileId;
     this.organizationId = organizationId;
+    this.projectId = projectId;
   }
 
   async load(): Promise<Document[]> {
@@ -68,7 +72,8 @@ export class WebsiteDocumentLoader implements DocumentLoader {
         enhancedMarkdown.length,
         this.organizationId,
         this.fileId,
-        'url'
+        'url',
+        this.projectId
       );
 
       await createMarkdownDocument({
