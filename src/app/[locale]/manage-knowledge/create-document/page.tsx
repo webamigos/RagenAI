@@ -12,7 +12,7 @@ export default function CreateDocumentPage() {
   }, [t]);
 
   return (
-    <div className="h-full flex-1 flex flex-col gap-4 mb-[20px]">
+    <div className="h-full flex-1 flex flex-col gap-4 ml-4 lg:ml-0 mb-[20px]">
       <DocumentCreator />
     </div>
   );
