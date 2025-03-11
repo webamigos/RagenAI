@@ -12,13 +12,16 @@ import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
 
-const promptSchema = z.object({
-  editablePrompt: z
-    .string()
-    .min(25, 'Prompt must be at least 25 characters long'),
-});
+const promptSchema = (t: (key: string) => string) =>
+  z.object({
+    editablePrompt: z
+      .string()
+      .refine((val) => val.length === 0 || val.length >= 25, {
+        message: t('description-min-length'),
+      }),
+  });
 
-type PromptFormValues = z.infer<typeof promptSchema>;
+type PromptFormValues = z.infer<ReturnType<typeof promptSchema>>;
 
 export const EditablePrompt = () => {
   const [nonEditablePrompt, setNonEditablePrompt] = useState(
@@ -34,7 +37,7 @@ export const EditablePrompt = () => {
     reset,
     formState: { errors, isDirty },
   } = useForm<PromptFormValues>({
-    resolver: zodResolver(promptSchema),
+    resolver: zodResolver(promptSchema(t)),
   });
 
   useEffect(() => {
@@ -62,7 +65,7 @@ export const EditablePrompt = () => {
     try {
       const { editablePrompt } = data;
       if (!isDirty) {
-        errorToast({ message: 'no-changes-detected' });
+        errorToast({ message: t('no-changes-detected') });
         return;
       }
 
@@ -71,11 +74,11 @@ export const EditablePrompt = () => {
       const { success } = await saveSetting(SettingsType.prompt, fullPrompt);
 
       if (success) {
-        successToast({ message: 'prompt-updated-successfully' });
+        successToast({ message: t('prompt-updated-successfully') });
         reset({ editablePrompt });
       }
     } catch (err) {
-      errorToast({ message: 'failed-to-update-prompt' });
+      errorToast({ message: t('failed-to-update-prompt') });
     }
   };
 
@@ -85,13 +88,14 @@ export const EditablePrompt = () => {
         <div>
           <Textarea
             rows={4}
-            required
+            showArrowIcon={false}
             error={errors.editablePrompt}
             {...register('editablePrompt')}
             errorMessage={errors.editablePrompt?.message}
             label={t('label')}
             className="mt-1 block w-full dark:bg-accent-dark-500 border border-primary-blue-500 dark:border-gray-600 shadow-none focus:ring-primary-blue-500 focus:border-primary-blue-500 sm:text-sm"
             showVoiceInput={false}
+            placeholder={t('placeholder')}
           />
         </div>
         <Button
