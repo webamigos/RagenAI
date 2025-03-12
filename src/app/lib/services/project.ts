@@ -65,6 +65,7 @@ export const createProjectForOrganization = async (
   }
 };
 
+//Returns all projects except the default project
 export const fetchProjectsForUser = async (
   organizationId: string,
   userId: string
@@ -72,7 +73,7 @@ export const fetchProjectsForUser = async (
   try {
     const projects = await db.project.findMany({
       where: {
-        organization_id: organizationId,
+        organization_id: organizationId, //Default PROJECT is filtered out, organization_id column is NULL
         owner_id: userId,
       },
       select: {
