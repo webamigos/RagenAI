@@ -9,8 +9,9 @@ import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { useCloseThread } from '../../hooks/useCloseThreads';
 import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
-import { getUserMessages } from '@/app/actions';
+import { getDefaultProjectId, getUserMessages } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
+
 import {
   setActiveThread,
   setProjects,
@@ -24,6 +25,7 @@ import {
   setHasMore,
   setError,
   resetThreads,
+  setDefaultProjectId,
 } from '@/store/threads/threadsSlice';
 import type { ErrorState } from '@/store/threads/threadsSlice';
 import { logger } from '@/app/lib/utils/logger';
@@ -221,6 +223,21 @@ export const useSidebarLogic = () => {
       fetchProjects();
     }
   }, [organization?.id, user?.id, userThreads.length, pathname]);
+
+  useEffect(() => {
+    const fetchDefaultProjectId = async () => {
+      if (!organization?.id) {
+        return;
+      }
+
+      const projectId = await getDefaultProjectId();
+      if (projectId) {
+        dispatch(setDefaultProjectId(projectId));
+      }
+    };
+
+    fetchDefaultProjectId();
+  }, [organization?.id, dispatch]);
 
   return {
     error,

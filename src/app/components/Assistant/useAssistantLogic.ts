@@ -168,7 +168,6 @@ export const useAssistantLogic = (threadId: string) => {
         threadId,
         responseType: state.responseType,
         streamedMessage: state.streamedMessage,
-        threadsDispatch: reduxDispatch,
         threadsState: userThreads,
         scrollFn: scrollToBottom,
         errorToast,
