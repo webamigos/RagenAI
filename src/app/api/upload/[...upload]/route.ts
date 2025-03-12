@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@clerk/nextjs/server';
-
 import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 import { createMarkdownDocument } from '@/app/lib/services/document';
@@ -15,7 +14,6 @@ import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
 import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
-
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -36,6 +34,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = orgId;
+    const projectIdFromForm = formData.get('projectId')?.toString();
+
     setSentryClerkOrganizationTag(organizationId);
     if (!uploaderId) {
       logger.error('Uploader ID missing!');
@@ -51,6 +51,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
+    const formProjectId = formData.get('projectId');
+
     const processedFiles = [];
 
     for (const file of files) {
@@ -60,15 +62,32 @@ export async function POST(request: NextRequest, { params }: Params) {
         const fileExtension = parsedFile.fileExtension;
 
         const uniqueFileId = uuidv4();
+
         const defaultProjectId = await fetchOrganizationDefaultProjectId(
           organizationId
         );
+        if (!defaultProjectId) {
+          throw new Error('Default project ID is missing');
+        }
+
+        let projectIdForDb: number | undefined = undefined;
+
+        if (projectIdFromForm) {
+          projectIdForDb = parseInt(projectIdFromForm, 10);
+        } else {
+          projectIdForDb = undefined;
+        }
+
+        if (!projectIdForDb && !defaultProjectId) {
+          throw new Error('Project ID is missing');
+        }
+
         const { message, success } = await convertAndStoreDocument({
           fileContent: parsedFile.content,
           fileName: parsedFile.fileName,
           organizationId,
           fileId: uniqueFileId,
-          projectId: defaultProjectId,
+          projectId: projectIdForDb ?? defaultProjectId,
           mimeType: file.type,
         });
 
@@ -78,7 +97,8 @@ export async function POST(request: NextRequest, { params }: Params) {
             file.size,
             organizationId,
             uniqueFileId,
-            fileType
+            fileType,
+            projectIdForDb ?? defaultProjectId
           );
 
           if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
@@ -90,7 +110,6 @@ export async function POST(request: NextRequest, { params }: Params) {
               file_id: fileRecord.id,
             });
           }
-
           // upload file to S3 in the background
           uploadToS3(
             `${fileRecord.id}.${fileExtension}`,
@@ -106,7 +125,6 @@ export async function POST(request: NextRequest, { params }: Params) {
               );
             });
         }
-
         if (!success) {
           logger.error(
             { err: message },
@@ -114,7 +132,6 @@ export async function POST(request: NextRequest, { params }: Params) {
           );
           return NextResponse.json({ message }, { status: 500 });
         }
-
         processedFiles.push({
           fileName: parsedFile.fileName,
           fileSize: file.size,

@@ -28,6 +28,7 @@ const serviceName = 'initializeBasicRag';
 type InitializePublicRagChainParams = {
   settings: OrganizationSettings;
   organizationId: string;
+  projectInstruction?: string | null;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -36,6 +37,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 export const initializePublicRagChain = async ({
   settings,
   organizationId,
+  projectInstruction,
 }: InitializePublicRagChainParams) => {
   try {
     setSentryServiceTag(serviceName);
@@ -53,6 +55,7 @@ export const initializePublicRagChain = async ({
       answerTemperature,
       answerInstructions,
       maxDocumentsToRetrieve,
+      hasProjectInstruction: !!projectInstruction,
     });
 
     const embeddingModel = createEmbeddingsInstance({ apiKey });
@@ -92,6 +95,12 @@ export const initializePublicRagChain = async ({
       );
     }
 
+    // Combine org prompt with project instruction if available
+    let finalInstructions = answerInstructions || '';
+    if (projectInstruction) {
+      finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
+    }
+
     return await basicRagChain({
       models: {
         contentModerator,
@@ -100,7 +109,7 @@ export const initializePublicRagChain = async ({
       },
       config: {
         maxDocumentsToRetrieve,
-        answerInstructions,
+        answerInstructions: finalInstructions,
       },
       vectorStore,
     });

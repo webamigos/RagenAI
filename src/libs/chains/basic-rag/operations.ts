@@ -42,7 +42,8 @@ export const rephraseQuestion = (
 
 export const retrieveRelevantDocuments = async (
   vectorStore: VectorStore,
-  maxDocuments = 4
+  maxDocuments = 4,
+  metadataFilter?: object
 ) => {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -50,7 +51,7 @@ export const retrieveRelevantDocuments = async (
 
   return RunnableSequence.from([
     (input) => input.standalone_question,
-    vectorStore.asRetriever({ k: maxDocuments }),
+    vectorStore.asRetriever({ k: maxDocuments, filter: metadataFilter }),
     combineDocuments,
   ]).withConfig({
     runName: 'Retrieve relevant documents',
@@ -60,7 +61,8 @@ export const retrieveRelevantDocuments = async (
 export const generateFinalAnswer = (
   model: BaseChatModel,
   runName: string,
-  answerInstructions?: string | null
+  answerInstructions?: string | null,
+  projectInstructions?: string
 ) => {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
@@ -76,6 +78,8 @@ export const generateFinalAnswer = (
     RunnablePassthrough.assign({
       answer_instructions: () =>
         answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
+      project_instructions: () =>
+        projectInstructions ? projectInstructions : '',
     }),
     promptTemplate,
     model,

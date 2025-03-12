@@ -1,5 +1,6 @@
 import db from '@ragenai/prisma-client';
 import { logger } from '../utils/logger';
+import { getOrgIdOrThrow } from './clerk';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
@@ -64,6 +65,7 @@ export const createProjectForOrganization = async (
   }
 };
 
+//Returns all projects except the default project
 export const fetchProjectsForUser = async (
   organizationId: string,
   userId: string
@@ -71,7 +73,7 @@ export const fetchProjectsForUser = async (
   try {
     const projects = await db.project.findMany({
       where: {
-        organization_id: organizationId,
+        organization_id: organizationId, //Default PROJECT is filtered out, organization_id column is NULL
         owner_id: userId,
       },
       select: {
@@ -127,4 +129,45 @@ export const getProjectByPublicId = async (publicId: string) => {
     logger.error({ err: error }, 'Error fetching project by public ID');
     throw error;
   }
+};
+
+/**
+ * Fetches files associated with a specific project
+ */
+export const fetchProjectFiles = async (projectId: number) => {
+  const orgId = getOrgIdOrThrow();
+
+  return await db.userFile.findMany({
+    where: {
+      organization_id: orgId,
+      project_id: projectId,
+    },
+    select: {
+      created_at: true,
+      file_name: true,
+      file_size: true,
+      file_type: true,
+      updated_at: true,
+      metadata: true,
+      organization_id: true,
+      id: true,
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+  });
+};
+
+/**
+ * Deletes a file from a specific project
+ */
+export const deleteProjectFile = async (fileId: string, projectId: number) => {
+  const orgId = getOrgIdOrThrow();
+  return await db.userFile.deleteMany({
+    where: {
+      id: fileId,
+      organization_id: orgId,
+      project_id: projectId,
+    },
+  });
 };

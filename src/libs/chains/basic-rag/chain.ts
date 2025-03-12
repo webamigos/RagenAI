@@ -42,14 +42,16 @@ export const basicRagChain = async ({
     RunnablePassthrough.assign({
       context: await retrieveRelevantDocuments(
         vectorStore,
-        config?.maxDocumentsToRetrieve
+        config?.maxDocumentsToRetrieve,
+        config?.metadataFilter
       ),
     }),
 
     generateFinalAnswer(
       models.answerGenerator,
       CHAIN_FINAL_ANSWER_RUN_NAME,
-      config?.answerInstructions
+      config?.answerInstructions,
+      config?.projectInstruction
     ),
   ]).withConfig({
     runName: 'Basic RAG chain',

@@ -26,27 +26,28 @@ export function Dialog({
   children: React.ReactNode;
 } & Omit<Headless.DialogProps, 'as' | 'className'>) {
   // TODO: there is a problem with bg-zinc-500-25 looks like ignored
+
   return (
     <Headless.Dialog {...props} className="relative z-10">
       <Headless.DialogBackdrop
         transition
         className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-[closed]:opacity-0 data-[enter]:duration-300 data-[leave]:duration-200 data-[enter]:ease-out data-[leave]:ease-in"
       />
-
-      <div className="fixed inset-0 w-screen overflow-y-auto pt-6 sm:pt-0">
-        <div className="grid min-h-full grid-rows-[1fr_auto] justify-items-center sm:grid-rows-[1fr_auto_3fr] sm:p-4">
-          <Headless.DialogPanel
-            transition
-            className={clsx(
-              className,
-              sizes[size],
-              'row-start-2 w-full min-w-0 rounded-t-3xl bg-white p-5 shadow-lg ring-1 ring-zinc-950/10 [--gutter:theme(spacing.8)] sm:mb-auto sm:rounded-2xl dark:bg-slate-900 dark:ring-white/10 forced-colors:outline',
-              'transition duration-100 will-change-transform data-[closed]:translate-y-12 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in sm:data-[closed]:translate-y-0 sm:data-[closed]:data-[enter]:scale-95'
-            )}
-          >
-            {children}
-          </Headless.DialogPanel>
-        </div>
+      {/*
+       */}
+      <div className="fixed inset-0 w-screen overflow-y-auto flex items-center justify-center p-4">
+        <Headless.DialogPanel
+          transition
+          className={clsx(
+            className,
+            sizes[size],
+            'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-zinc-950/10 dark:bg-slate-900 dark:ring-white/10 forced-colors:outline',
+            'transition duration-100 will-change-transform',
+            'data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in'
+          )}
+        >
+          {children}
+        </Headless.DialogPanel>
       </div>
     </Headless.Dialog>
   );
@@ -77,13 +78,7 @@ export function DialogDescription({
   Headless.DescriptionProps<typeof Text>,
   'as' | 'className'
 >) {
-  return (
-    <Headless.Description
-      as={Text}
-      {...props}
-      // className={clsx(className, 'mt-2 text-pretty')}
-    />
-  );
+  return <Headless.Description as={Text} {...props} />;
 }
 
 export function DialogBody({

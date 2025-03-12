@@ -81,10 +81,13 @@ model UserFile {
   updated_at      DateTime?      @db.Timestamptz
   metadata        Json?
   UserDocument    UserDocument[]
+  project         Project?       @relation(fields: [project_id], references: [id])
+  project_id      Int?
 
   @@unique([id, organization_id])
   @@index([organization_id])
   @@index([public_id])
+  @@index([project_id])
 }
 
 // Documents from CMS
@@ -98,8 +101,11 @@ model UserDocument {
   created_at      DateTime? @default(now()) @db.Timestamptz
   updated_at      DateTime? @db.Timestamptz
   file_id         String?
+  project         Project?  @relation(fields: [project_id], references: [id])
+  project_id      Int?
 
   @@index([organization_id])
+  @@index([project_id])
 }
 
 // Organizations, Projects and ApiKeys ids will be used in Redis for store:
@@ -189,6 +195,8 @@ model Project {
   internal_organization_id Int?
   api_key                  ApiKey[]
   threads                  Thread[]
+  files                    UserFile[]
+  documents                UserDocument[]
   organization_id          String?
   owner_id                 String?
 

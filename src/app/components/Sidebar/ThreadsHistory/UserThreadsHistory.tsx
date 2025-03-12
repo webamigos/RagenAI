@@ -59,8 +59,8 @@ export const UserThreadsHistory = ({
   }, [isLoading, hasMore, isSignedIn, isThreadsLoaded, loadMoreThreads]);
 
   // Only show threads that don't belong to any project and have messages
-  const nonProjectThreads = userThreads.filter((thread) => !thread.project_id);
-  const threadCategories = getThreadCategories(nonProjectThreads, t);
+  // const nonProjectThreads = userThreads.filter((thread) => !thread.project_id);
+  const threadCategories = getThreadCategories(userThreads, t);
 
   return (
     <SidebarSection>

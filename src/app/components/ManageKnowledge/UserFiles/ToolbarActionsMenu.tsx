@@ -34,7 +34,7 @@ export const ToolbarActionsMenu = ({
 
       <div
         onClick={() => toggleModal && toggleModal(documentId)}
-        className="mt-0.5 cursor-pointer"
+        className="cursor-pointer"
       >
         {isLoading ? (
           <CommonUi.SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />

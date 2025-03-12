@@ -15,7 +15,8 @@ export async function processPDFDocument(
   filePath: string,
   fileName: string,
   fileId: string,
-  organizationId: string
+  organizationId: string,
+  projectId?: number
 ): Promise<{ rawDocs: Document[]; success: boolean; message: string }> {
   const apiKey = await getOpenaiAPIKey(organizationId);
 
@@ -57,6 +58,7 @@ export async function processPDFDocument(
       title: fileName,
       organization_id: organizationId,
       content: finalDocument,
+      project_id: projectId,
     });
 
     const pdfLoader = new PDFLoader(filePath);

@@ -24,6 +24,7 @@
     "sign-up": "Sign up",
     "password": "Password",
     "Already-have-an-account": "Already have an account?",
+    "TSO-required": "You need to accept terms of use to continue.",
     "sign-in": "Sign in",
     "verification-code": "Verification code",
     "confirm": "Confirm code",
@@ -213,7 +214,8 @@
     "or": "or",
     "choose-files": "Choose files",
     "supported-formats": "Supports",
-    "send-and-process": "Send and process"
+    "send-and-process": "Send and process",
+    "drop-to-upload": "Drop files to upload"
   },
   "create-document": {
     "title": "Create document",
@@ -274,7 +276,9 @@
       "update": "Update",
       "failed-to-update-prompt": "Error updating assistant customization instructions:",
       "prompt-updated-successfully": "Updated",
-      "no-changes-detected": "No changes detected to assistant customization instructions"
+      "no-changes-detected": "No changes detected to assistant customization instructions",
+      "placeholder": "Enter assistant customization instructions...",
+      "description-min-length": "Assistant customization instructions must contain at least 25 characters"
     },
     "voice-mode-settings": {
       "title": "Voice Mode Settings",
@@ -342,6 +346,7 @@
   },
   "file-delete-modal": {
     "are-you-sure": "Are you sure you want to delete",
+    "deleting": "Deleting",
     "yes": "Yes",
     "no": "No"
   },
@@ -532,6 +537,45 @@
     "what-is-project": "What is a project?",
     "project-description": "A project allows you to manage tasks and organize team work.",
     "cancel": "Cancel",
+    "upload-file": "Upload file to project",
+    "upload": {
+      "title": "Upload Files to Project",
+      "button": "Upload files",
+      "selected-files": "Selected files",
+      "remove-file": "Remove file",
+      "add-files": "Add files",
+      "drop-to-upload": "Drop files to upload",
+      "uploading": "Uploading..."
+    },
+    "project-instructions": {
+      "title": "Project Instructions",
+      "button": "Add instructions",
+      "placeholder": "Enter instructions",
+      "description": "Instructions are optional. They customize assistant responses to your needs.",
+      "description-min-length": "Instructions must be at least 10 characters",
+      "form-title": "Project Instructions",
+      "title-label": "Title",
+      "title-min-length": "Title must be at least 3 characters",
+      "description-label": "Instruction content",
+      "priority-label": "Priority",
+      "priority-low": "Low",
+      "priority-medium": "Medium",
+      "priority-high": "High",
+      "invalid-priority": "Please select a valid priority",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "instruction-saved": "Instruction has been saved",
+      "save-error": "An error occurred while saving the instruction"
+    },
+    "project-files": "Project Files",
+    "no-files": "No files in the project",
+    "file-deleted": "File has been deleted",
+    "remove-file": "Remove file",
+    "file-singular": "file",
+    "file-plural": "files",
+    "manage-files": "Manage files",
+    "loading": "Loading...",
     "success": {
       "created": "Project has been successfully created."
     },
@@ -540,7 +584,10 @@
       "loading-organization": "Error loading organization",
       "no-organization": "No organization",
       "project-exists": "Project with this name already exists",
-      "creation-failed": "Failed to create project"
+      "creation-failed": "Failed to create project",
+      "loading-files": "Failed to load project files",
+      "file-delete": "Failed to delete file",
+      "fetching-error": "An error occurred while fetching the project's files"
     }
   },
   "voice-mode": {
@@ -571,5 +618,11 @@
     "final_response": "",
     "error": "An Error has occurred",
     "close": ""
+  },
+  "ErrorBoundary": {
+    "error": "An error occurred",
+    "try-again": "Try again",
+    "unknown-error": "Unknown application error",
+    "file-error": "An error occurred while loading files"
   }
 }

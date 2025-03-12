@@ -63,7 +63,9 @@ export const useNewThread = () => {
   const [isPending, setTransition] = useTransition();
 
   const reduxDispatch = useAppDispatch();
-  const currentThreads = useAppSelector((state) => state.threads.userThreads);
+  const defaultProjectId = useAppSelector(
+    (state) => state.threads.defaultProjectId
+  );
   const { organization } = useOrganization();
   const { user } = useUser();
   const { push } = useRouter();
@@ -82,7 +84,7 @@ export const useNewThread = () => {
     if (!visitorId) {
       return;
     }
-    if (pathname.includes('/threads')) {
+    if (pathname.includes('/threads') || pathname.includes('/projects')) {
       return;
     }
 
@@ -99,7 +101,11 @@ export const useNewThread = () => {
         }
       }
 
-      if (localStorageThreadId && !pathname.includes('/threads')) {
+      if (
+        localStorageThreadId &&
+        !pathname.includes('/threads') &&
+        !pathname.includes('/projects')
+      ) {
         push(`/threads/${localStorageThreadId}`);
       }
     } catch (err) {
@@ -116,7 +122,7 @@ export const useNewThread = () => {
 
   useEffect(() => {
     try {
-      if (!pathname.includes('/threads')) {
+      if (!pathname.includes('/threads') && !pathname.includes('/projects')) {
         localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
       }
     } catch (err) {
@@ -166,8 +172,14 @@ export const useNewThread = () => {
             created_at: new Date(),
           };
 
-          // Add new thread at the beginning of the list
-          reduxDispatch(addThread(newThread));
+          //this hook logic is reused for global and project-scoped threads
+          //for threads connected to the default project id redux threads.userThreads state must be updated
+          //for the other projects there is a separate state cell sidebar.projects
+          const projectId = result.thread.project_id;
+          const isDefaultProject = projectId === defaultProjectId;
+          if (isDefaultProject) {
+            reduxDispatch(addThread(newThread));
+          }
 
           // Always refresh projects if we have a project context
           if (

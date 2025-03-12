@@ -2,6 +2,8 @@ import { Message } from '@prisma/client';
 import { startOfDay, setHours } from 'date-fns';
 
 import db from '@ragenai/prisma-client';
+import { auth } from '@clerk/nextjs/server';
+import { fetchOrganizationDefaultProjectId } from './project';
 
 const today = new Date();
 const midnightToday = setHours(startOfDay(today), 0);
@@ -58,10 +60,22 @@ export const getUserThreads = async (
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+  const { orgId } = auth();
+
+  if (!orgId) {
+    throw new Error('Organization id is not found');
+  }
+
+  const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
+
+  if (!defaultProjectId) {
+    throw new Error('Default project ID does not exist!');
+  }
+
   return await db.thread.findMany({
     where: {
       visitor_id: visitorId,
-      project_id: null, // Only get threads not assigned to projects
+      project_id: defaultProjectId,
       messages: query
         ? {
             some: {

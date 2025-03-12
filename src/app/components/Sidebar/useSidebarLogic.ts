@@ -2,15 +2,16 @@ import { useEffect, useCallback } from 'react';
 import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
+import { useRouter } from 'next/navigation';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-import { useNewThread } from '../../hooks/useNewThread';
 import { useCloseThread } from '../../hooks/useCloseThreads';
 import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
-import { getUserMessages } from '@/app/actions';
+import { getDefaultProjectId, getUserMessages } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
+
 import {
   setActiveThread,
   setProjects,
@@ -24,6 +25,7 @@ import {
   setHasMore,
   setError,
   resetThreads,
+  setDefaultProjectId,
 } from '@/store/threads/threadsSlice';
 import type { ErrorState } from '@/store/threads/threadsSlice';
 import { logger } from '@/app/lib/utils/logger';
@@ -33,6 +35,7 @@ export const useSidebarLogic = () => {
     (state) => state.sidebar
   );
   const { errorToast } = statusToast();
+  const router = useRouter();
 
   const {
     error,
@@ -49,7 +52,6 @@ export const useSidebarLogic = () => {
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
-  const { handleNewThread } = useNewThread();
   const { handleCloseThread } = useCloseThread();
   const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
@@ -63,7 +65,7 @@ export const useSidebarLogic = () => {
       } catch (error) {
         logger.error({ err: error }, 'Error prefetching threads');
         return errorToast({ message: 'Error prefetching threads' });
-      } // Silently fail prefetch attempts
+      }
     },
     []
   );
@@ -71,10 +73,9 @@ export const useSidebarLogic = () => {
   const loadMoreThreads = useCallback(async () => {
     if (isLoading || !hasMore || !user?.id) return;
 
-    // Adaptive batch size based on viewport
     const viewportHeight = window.innerHeight;
-    const avgThreadHeight = 100; // pixels
-    const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5; // +5 for buffer
+    const avgThreadHeight = 100;
+    const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5;
 
     dispatch(setLoading(true));
 
@@ -95,7 +96,6 @@ export const useSidebarLogic = () => {
             dispatch(incrementSkip(threads.length));
             dispatch(setHasMore(threads.length === limit));
 
-            // Prefetch next batch
             if (threads.length === limit) {
               prefetchThreads(user.id, skip + limit, limit);
             }
@@ -128,15 +128,14 @@ export const useSidebarLogic = () => {
       dispatch(resetThreads());
       await loadMoreThreads();
     } catch {
-      // Restore cached state on failure
       dispatch(addThreads(cachedThreads));
     }
   }, [dispatch, loadMoreThreads, userThreads]);
 
   const handleThread = () => {
-    handleNewThread();
     handleCloseThread(false);
     dispatch(closeSidebar());
+    router.push('/');
   };
 
   const handleSearch = () => {
@@ -225,6 +224,21 @@ export const useSidebarLogic = () => {
     }
   }, [organization?.id, user?.id, userThreads.length, pathname]);
 
+  useEffect(() => {
+    const fetchDefaultProjectId = async () => {
+      if (!organization?.id) {
+        return;
+      }
+
+      const projectId = await getDefaultProjectId();
+      if (projectId) {
+        dispatch(setDefaultProjectId(projectId));
+      }
+    };
+
+    fetchDefaultProjectId();
+  }, [organization?.id, dispatch]);
+
   return {
     error,
     locale,
@@ -235,9 +249,9 @@ export const useSidebarLogic = () => {
     userAvatar,
     isSignedIn,
     userThreads,
+    handleThread,
     activeThread,
     handleSearch,
-    handleThread,
     showOnboarding,
     refetchThreads,
     isThreadLoading,

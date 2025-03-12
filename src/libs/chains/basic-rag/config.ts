@@ -8,6 +8,8 @@ export const systemTemplates = {
   answerChain: `
       {answer_instructions}
       
+      {project_instructions}
+      
       Korzystając z poniższego kontekstu i historii czatu, odpowiedz na pytanie użytkownika najlepiej jak potrafisz, jednocześnie dokładnie przestrzegając zasad.
       
       <kontekst>

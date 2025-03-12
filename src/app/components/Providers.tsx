@@ -4,6 +4,8 @@ import { ThemeProvider, useTheme } from 'next-themes';
 import { useEffect } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
+import { Toast } from './Toast/Toast';
+import 'react-toastify/dist/ReactToastify.css';
 
 type Props = {
   readonly children: React.ReactNode;
@@ -40,6 +42,7 @@ export function Providers({ children }: Props) {
         <>
           <ThemeWatcher />
           {children}
+          <Toast />
         </>
       </ThemeProvider>
     </Provider>

@@ -28,6 +28,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     const { publicThreadId } = params;
     const chatType = request?.nextUrl?.searchParams.get('mode');
+
     const filteredMode =
       chatType === ChatType.CONVERSATION ? ChatType.CONVERSATION : ChatType.RAG;
 

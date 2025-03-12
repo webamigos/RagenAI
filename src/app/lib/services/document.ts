@@ -36,6 +36,7 @@ type CreateMarkdownDocumentProps = {
   content: string;
   organization_id: string;
   file_id?: string;
+  project_id?: number;
 };
 
 export const createMarkdownDocument = async ({
@@ -44,6 +45,7 @@ export const createMarkdownDocument = async ({
   content,
   organization_id,
   file_id,
+  project_id,
 }: CreateMarkdownDocumentProps) => {
   return await db.userDocument.create({
     data: {
@@ -52,6 +54,7 @@ export const createMarkdownDocument = async ({
       content,
       organization_id,
       file_id,
+      project_id,
     },
   });
 };
