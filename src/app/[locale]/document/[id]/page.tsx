@@ -280,7 +280,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col w-full flex-1"
         >
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto mx-3 lg:ml-0">
             <Controller
               name="content"
               control={control}
@@ -322,7 +322,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
         </form>
       ) : (
         <div
-          className="flex-1 ml-12 prose prose-lg dark:prose-invert"
+          className="flex-1 prose prose-lg dark:prose-invert max-w-none w-full"
           onDoubleClick={handleDoubleClick}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
