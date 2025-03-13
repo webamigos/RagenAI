@@ -25,9 +25,11 @@ export const ThreadsSection = ({
 }: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
 
+  const nonEmptyCategories = threadCategories.filter((c) => c.threads?.length);
+
   return (
     <div className={classMerge(className)}>
-      {threadCategories.map(
+      {nonEmptyCategories.map(
         ({ title, threads }, categoryIndex) =>
           threads.length > 0 && (
             <div key={title} className="w-11/12 mt-3">
@@ -41,7 +43,7 @@ export const ThreadsSection = ({
                     : thread.messages[0]?.content;
                 const isActive = thread.public_id === activeThread;
                 const isLastThreadInAllCategories =
-                  categoryIndex === threadCategories.length - 1 &&
+                  categoryIndex === nonEmptyCategories.length - 1 &&
                   index === threads.length - 1;
 
                 return (

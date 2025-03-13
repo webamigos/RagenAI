@@ -28,13 +28,14 @@ type Props = {
   error?: FieldError;
   containerClassName?: string;
   handleResponseType?: () => void;
-  errorMessage?: string; // for translations
+  errorMessage?: string;
   maxHeight?: number;
   onSend?: () => void;
   setValue?: (text: string) => void;
   value?: string;
   mandatory?: boolean;
   showVoiceInput?: boolean;
+  showArrowIcon?: boolean;
   disabled?: boolean;
 } & ComponentPropsWithRef<'textarea'>;
 
@@ -49,6 +50,7 @@ export const Textarea = forwardRef(
       className,
       disabled,
       showVoiceInput = true,
+      showArrowIcon = true,
       containerClassName,
       mandatory = false,
       maxHeight = 200,
@@ -113,13 +115,16 @@ export const Textarea = forwardRef(
 
     const maxHeightClass = `max-h-[${maxHeight}px]`;
 
+    /**
+     * Kontrolujemy wyświetlanie poszczególnych ikon głosowych / strzałki
+     * w zależności od showVoiceInput oraz showArrowIcon.
+     */
     let icon = null;
-    let onClick = null;
+    let onClick: (() => void) | undefined = undefined;
 
     if (showVoiceInput) {
       if (disabled && !value?.trim()) {
         icon = <SpinnerSVG className="mb-1.5" aria-hidden="true" />;
-        onClick = undefined;
       } else if (isRecording) {
         icon = (
           <StopIcon
@@ -128,7 +133,7 @@ export const Textarea = forwardRef(
           />
         );
         onClick = stopListening;
-      } else if (value?.trim()) {
+      } else if (value?.trim() && showArrowIcon) {
         icon = (
           <ArrowRightCircleIcon
             className={classMerge(
@@ -154,18 +159,23 @@ export const Textarea = forwardRef(
         onClick = handleStartListening;
       }
     } else {
-      icon = (
-        <ArrowRightCircleIcon
-          className={classMerge(
-            'h-9 w-9',
-            value?.trim()
-              ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
-              : 'text-gray-300 dark:text-gray-600'
-          )}
-          aria-hidden="true"
-        />
-      );
-      onClick = value?.trim() ? onSend : undefined;
+      if (showArrowIcon) {
+        icon = (
+          <ArrowRightCircleIcon
+            className={classMerge(
+              'h-9 w-9',
+              value?.trim()
+                ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+                : 'text-gray-300 dark:text-gray-600'
+            )}
+            aria-hidden="true"
+          />
+        );
+        onClick = value?.trim() ? onSend : undefined;
+      } else {
+        // Brak ikony jeśli nie używamy voice input i nie chcemy strzałki
+        icon = null;
+      }
     }
 
     return (
@@ -210,19 +220,15 @@ export const Textarea = forwardRef(
               placeholder={t('placeholder')}
               {...rest}
             />
-            <button
-              type="button"
-              onClick={onClick || undefined}
-              className="absolute bottom-1.5 right-3 flex items-center"
-              disabled={
-                !isRecording &&
-                !value?.trim() &&
-                icon !== null &&
-                icon.type === ArrowRightCircleIcon
-              }
-            >
-              {icon}
-            </button>
+            {icon && (
+              <button
+                type="button"
+                onClick={onClick}
+                className="absolute bottom-1.5 right-3 flex items-center"
+              >
+                {icon}
+              </button>
+            )}
           </div>
         </div>
 

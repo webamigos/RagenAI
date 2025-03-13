@@ -1,8 +1,8 @@
-import { UserFile } from '@prisma/client';
-
 import db from '@ragenai/prisma-client';
 import { getOrgIdOrThrow } from './clerk';
+
 import { SupportedFileType } from './fileParser';
+import { fetchOrganizationDefaultProjectId } from './project';
 
 export const getFileDetails = async (fileId: string) => {
   const orgId = getOrgIdOrThrow();
@@ -34,10 +34,15 @@ export const createFileDetailsInDB = async (
   });
 };
 
-export const fetchFileDetails = async (uploaderId: string) => {
+export const fetchFileDetails = async (organizationId: string) => {
+  const defaultProjectId = await fetchOrganizationDefaultProjectId(
+    organizationId
+  );
+
   return await db.userFile.findMany({
     where: {
-      organization_id: uploaderId,
+      organization_id: organizationId,
+      project_id: defaultProjectId || undefined,
     },
     select: {
       created_at: true,

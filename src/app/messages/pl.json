@@ -278,7 +278,9 @@
       "update": "Zaktualizuj",
       "failed-to-update-prompt": "Błąd podczas aktualizacji instrukcji personalizacji asystenta:",
       "prompt-updated-successfully": "Zaktualizowano",
-      "no-changes-detected": "Brak zmian w instrukcji personalizacji asystenta"
+      "no-changes-detected": "Brak zmian w instrukcji personalizacji asystenta",
+      "description-min-length": "Instrukcja personalizacji asystenta musi zawierać przynajmniej 25 znaków",
+      "placeholder": "Wpisz instrukcję personalizacji asystenta..."
     },
     "voice-mode-settings": {
       "title": "Ustawienia Trybu Głosowego",

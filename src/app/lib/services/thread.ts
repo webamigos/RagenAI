@@ -53,6 +53,11 @@ export const createNewOpenAIThread = async (
     }
 
     const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
+    const filteredProjectId = projectId ?? defaultProjectId;
+
+    if (!filteredProjectId) {
+      throw new Error('No project id');
+    }
 
     const threadRecord = await db.thread.create({
       data: {
@@ -60,9 +65,10 @@ export const createNewOpenAIThread = async (
         visitor_id: userId ? userId : visitorId,
       },
     });
+
     return {
       public_id: threadRecord.public_id,
-      project_id: projectId,
+      project_id: filteredProjectId,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create new thread');
