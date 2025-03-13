@@ -129,7 +129,7 @@ export const UserDocumentsTable = ({
 
   const filteredDocuments = useMemo(() => {
     if (!searchValue) {
-      return documents;
+      return documents as UserFileTypeSafe[];
     }
 
     return documents.filter(
