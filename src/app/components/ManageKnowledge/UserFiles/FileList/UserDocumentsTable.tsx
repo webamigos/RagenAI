@@ -128,6 +128,10 @@ export const UserDocumentsTable = ({
   const [searchValue, setSearchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
+    if (!searchValue) {
+      return documents as UserFileTypeSafe[];
+    }
+
     return documents.filter(
       (doc) =>
         doc.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
