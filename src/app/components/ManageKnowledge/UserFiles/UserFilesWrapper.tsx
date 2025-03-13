@@ -71,7 +71,7 @@ export const FileListWrapper = () => {
     setSearchValue(event.target.value.trim());
   };
 
-  const filteredDocuments = useMemo(() => {
+  const defaultProjectDocuments = useMemo(() => {
     return documents.filter((doc) =>
       doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
     );
@@ -127,7 +127,7 @@ export const FileListWrapper = () => {
           isLoading={isLoading}
           addDocument={addDocument}
           removeDocument={removeDocument}
-          documents={filteredDocuments}
+          documents={defaultProjectDocuments}
           handlePrefetch={handlePrefetch}
           showModal={showModal}
           toggleModal={toggleModal}
@@ -141,7 +141,7 @@ export const FileListWrapper = () => {
           addDocument={addDocument}
           showModal={showModal}
           removeDocument={removeDocument}
-          documents={filteredDocuments}
+          documents={defaultProjectDocuments}
           handlePrefetch={handlePrefetch}
           toggleModal={toggleModal}
           handleDelete={handleDelete}
