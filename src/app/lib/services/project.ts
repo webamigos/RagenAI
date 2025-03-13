@@ -83,6 +83,9 @@ export const fetchProjectsForUser = async (
         created_at: true,
         organization_id: true,
         threads: {
+          orderBy: {
+            created_at: 'desc',
+          },
           select: {
             id: true,
             public_id: true,
