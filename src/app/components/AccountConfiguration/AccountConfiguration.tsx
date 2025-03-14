@@ -1,43 +1,51 @@
 'use client';
 
-import { CheckError } from './CheckStages/CheckError';
-import { ReadyToRedirect } from './CheckStages/ReadyToRedirect';
-import { InProgress } from './CheckStages/InProgress';
 import { useAccountSetupStatus } from '@/app/hooks/useAccountConfigurationStatus';
 import { toast } from 'react-toastify';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@ragenai/common-ui/Button';
+import { Text } from '@ragenai/common-ui/Text';
+import { useTranslations } from 'next-intl';
+
 const REFETCH_INTERVAL = 1000;
 const SETUP_COMPLETE_REDIRECT_PATH = '/';
 
 export const AccountConfiguration = () => {
   const router = useRouter();
+  const t = useTranslations('account-configuration');
+
+  const [accountReady, setAccountReady] = useState(false);
 
   const onSuccessCallback = () => {
+    setAccountReady(true);
     router.push(SETUP_COMPLETE_REDIRECT_PATH);
   };
 
   const onErrorCallback = () => {
-    toast.error('An error occurred while setting up your account');
+    setAccountReady(false);
+    toast.error(t('error-toast'));
   };
 
-  const { handleTryAgain, isError, status } = useAccountSetupStatus({
+  const { handleTryAgain, isError } = useAccountSetupStatus({
     refetchInterval: REFETCH_INTERVAL,
     onSuccessCallback,
     onErrorCallback,
   });
 
   if (isError) {
-    return <CheckError tryAgainHandler={handleTryAgain} />;
+    return (
+      <div className="flex flex-col gap-4 items-start">
+        <Text>{t('error')}</Text>
+        <Text>{t('error-description')}</Text>
+        <Button onClick={handleTryAgain}>{t('try-again')}</Button>
+      </div>
+    );
   }
 
-  if (status?.accountSetupComplete) {
-    return <ReadyToRedirect />;
+  if (accountReady) {
+    return <Text>{t('complete')}</Text>;
   }
 
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Account setup</h1>
-      <InProgress />
-    </div>
-  );
+  return <Text>{t('in-progress')}</Text>;
 };
