@@ -56,6 +56,11 @@ export const useAssistantLogic = (threadId: string) => {
     responseType: ChatResponseType.TEXT,
   };
 
+  const modeMap: Record<string, ChatType> = {
+    conversation: ChatType.CONVERSATION,
+    rag: ChatType.RAG,
+  };
+
   const userVisitorId = user?.id;
   const id = user?.id;
 
@@ -115,9 +120,9 @@ export const useAssistantLogic = (threadId: string) => {
           `thread_${threadId}_initial_message`
         );
         if (initialMessage) {
-          localStorage.removeItem(`thread_${threadId}_initial_message`);
           onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
         }
+        localStorage.removeItem(`thread_${threadId}_initial_message`);
       }
     }
   }, [isLoaded, userVisitorId]);
@@ -149,8 +154,10 @@ export const useAssistantLogic = (threadId: string) => {
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
-    dispatch({ type: SET_MODE, payload: data.mode || ChatType.RAG });
-
+    dispatch({
+      type: SET_MODE,
+      payload: modeMap[data.mode as 'conversation' | 'rag'] ?? ChatType.RAG,
+    });
     // Cast to unknown first to avoid type mismatch
     // ugly workaround to satisfied Clerk UserResourceTypes
     const clerkUser = user as unknown as UserResource;
@@ -173,7 +180,11 @@ export const useAssistantLogic = (threadId: string) => {
         errorToast,
         promptFormRef,
         data,
-        chatType: data.mode,
+        chatType: data.mode
+          ? data.mode === 'conversation'
+            ? ChatType.CONVERSATION
+            : ChatType.RAG
+          : undefined,
         user: clerkUser,
         reduxDispatch,
       });

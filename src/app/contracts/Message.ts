@@ -11,15 +11,27 @@ export enum ChatResponseType {
   VOICE = 'VOICE',
 }
 
-export const createMessageSchema = z.object({
-  prompt: z.string().min(10, 'Provide what least 10 characters'),
-  mode: z.enum([ChatType.CONVERSATION, ChatType.RAG]).optional(),
-  useKnowledge: z.boolean().optional(),
-  messageType: z.enum(['TEXT', 'VOICE']).optional(),
-  voiceDurationSeconds: z.number().optional(),
-});
+export const createMessageSchema = (t?: (key: string) => string) =>
+  z.object({
+    prompt: z
+      .string()
+      .min(10, {
+        message: t
+          ? t('prompt-min')
+          : 'Prompt must be at least 10 characters long',
+      })
+      .max(10000, {
+        message: t
+          ? t('prompt-max')
+          : 'Prompt must be at most 10000 characters long',
+      }),
+    mode: z.enum(['conversation', 'rag']).optional(),
+    useKnowledge: z.boolean().optional(),
+    messageType: z.enum(['TEXT', 'VOICE']).optional(),
+    voiceDurationSeconds: z.number().optional(),
+  });
 
-export type CreateMessageDto = z.infer<typeof createMessageSchema>;
+export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;
 
 export type MessageDto = {
   role: Role;

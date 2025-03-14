@@ -33,7 +33,7 @@ export const Assistant = ({ threadId }: Props) => {
     isLimitLock,
     closeSearch,
     isSignedIn,
-    messages,
+    messages: localMessages,
     modalRef,
     onSubmit,
     isLocked,
@@ -43,6 +43,12 @@ export const Assistant = ({ threadId }: Props) => {
     setVoiceMessageAsPlayed,
     handleVoiceResult,
   } = useAssistantLogic(threadId);
+
+  const { messages: reduxMessages } = useSelector(
+    (state: RootState) => state.assistant
+  );
+
+  const messages = reduxMessages.length > 0 ? reduxMessages : localMessages;
 
   const { organization } = useOrganization();
   const dispatch = useDispatch();

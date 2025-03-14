@@ -79,7 +79,7 @@ export const SocialAuthOptions = memo(
           await signUp?.authenticateWithRedirect({
             strategy,
             redirectUrl: '/sso-callback',
-            redirectUrlComplete: '/',
+            redirectUrlComplete: '/account-configuration',
           });
           const user = await signUp?.id;
           if (user) {

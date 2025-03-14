@@ -8,8 +8,8 @@ import {
   CreateMessageDto,
   MessageDto,
   ThreadHistoryResponse,
-  createMessageSchema,
 } from '../contracts/Message';
+import { createMessageSchema } from '../contracts/Message';
 import { deleteFromS3 } from '../lib/services/aws';
 import { deleteDocumentFromDb } from '../lib/services/document';
 import { submitFeedbackDirectly } from '../lib/services/feedback';
@@ -44,6 +44,7 @@ import {
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
+import { getAccountSetupStatus } from '../lib/services/account-setup';
 
 const serviceName = 'actions';
 
@@ -64,7 +65,7 @@ export const sendMessage = async (
   data: CreateMessageDto,
   visitorId: string
 ): Promise<ResponseMessage> => {
-  const requestData = await createMessageSchema.safeParseAsync(data);
+  const requestData = await createMessageSchema().safeParseAsync(data);
 
   if (!requestData.success) {
     return {
@@ -476,6 +477,15 @@ export const getDefaultProjectId = async () => {
     return await fetchOrganizationDefaultProjectId(orgId);
   } catch (error) {
     logger.error({ err: error }, 'Error fetching default project ID');
+    throw error;
+  }
+};
+
+export const getAccountSetupStatusAction = async () => {
+  try {
+    return await getAccountSetupStatus();
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching account setup status');
     throw error;
   }
 };

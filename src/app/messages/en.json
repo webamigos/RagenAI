@@ -16,7 +16,11 @@
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
     "new-thread-placeholder": "Type your message here...",
-    "project-context": "You are working in project: {projectTitle}"
+    "project-context": "You are working in project: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Message cannot exceed 10,000 characters",
+      "prompt-min-length": "Message must contain at least 10 characters"
+    }
   },
   "sign-up": {
     "create-account": "Create your account",
@@ -70,6 +74,16 @@
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Reset password"
+  },
+  "account-configuration": {
+    "in-progress": "Configuring your account, please wait.",
+    "complete": "Your account has been configured, you will be redirected to the application shortly.",
+    "error": "An error occurred while configuring your account.",
+    "error-description": "If the problem persists, please contact our technical support.",
+    "try-again": "Try again",
+    "error-toast": "An error occurred while configuring your account.",
+    "misconfiguration-detected": "Your account is misconfigured, please contact our technical support.",
+    "sign-out": "Sign out"
   },
   "admin-panel-page": {
     "selected-files": "Selected files",
@@ -163,7 +177,8 @@
     "lets-chat-user": "How Can I help you?",
     "send": "Send",
     "close-thread": "Close thread",
-    "provide-at-least-10-characters": "Provide at least 10 characters",
+    "prompt-min": "Provide at least 10 characters",
+    "prompt-max": "Provide less than 10,000 characters",
     "contact-with-us": "Contact with us",
     "selected-mode": "Use only internal knowledge base",
     "rag": "only knowledge base",
@@ -528,7 +543,6 @@
     "recording-error": "Error during recording, try again",
     "microphone-permission-denied": "No access to microphone. Check browser permissions."
   },
-
   "projects": {
     "title": "Projects",
     "create-project": "Create Project",
