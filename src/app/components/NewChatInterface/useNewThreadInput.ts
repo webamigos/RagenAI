@@ -1,4 +1,5 @@
 import { useCallback, KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,11 +7,15 @@ import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 import { ChatResponseType } from '@/app/contracts/Message';
 
-const threadSchema = z.object({
-  prompt: z.string().min(10, 'Message must be at least 10 characters long'),
-});
+const threadSchema = (t: (key: string) => string) =>
+  z.object({
+    prompt: z
+      .string()
+      .min(10, t('prompt-min-length'))
+      .max(10000, t('prompt-max-length')),
+  });
 
-type ThreadFormData = z.infer<typeof threadSchema>;
+type ThreadFormData = z.infer<ReturnType<typeof threadSchema>>;
 
 type Props = {
   organizationId?: string;
@@ -27,6 +32,7 @@ export const useNewThreadInput = ({
   projectId,
   projectPublicId,
 }: Props) => {
+  const t = useTranslations('Index.warning-messages');
   const {
     handleSubmit: handleFormSubmit,
     formState: { errors },
@@ -34,7 +40,7 @@ export const useNewThreadInput = ({
     setValue,
     reset,
   } = useForm<ThreadFormData>({
-    resolver: zodResolver(threadSchema),
+    resolver: zodResolver(threadSchema(t)),
     defaultValues: {
       prompt: '',
     },

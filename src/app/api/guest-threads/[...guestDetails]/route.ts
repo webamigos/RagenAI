@@ -31,7 +31,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     setSentryClerkOrganizationTag(orgId);
 
     const body = await request.json();
-    const parsedData = createMessageSchema.parse(body);
+    const parsedData = createMessageSchema().parse(body);
 
     const visitorId = await getVisitorIdFromCookie();
 

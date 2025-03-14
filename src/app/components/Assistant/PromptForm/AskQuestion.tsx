@@ -35,7 +35,7 @@ export const AskQuestion = ({
       onSend={onSend}
       containerClassName="w-full md:w-11/12 mt-3"
       className="h-10 mt-6 lg:mt-0 lg:-mb-0.5"
-      errorMessage={t('provide-at-least-10-characters')}
+      errorMessage={error?.message}
       error={error}
       disabled={disabled}
       {...register('prompt')}

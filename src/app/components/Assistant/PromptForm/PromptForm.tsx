@@ -1,3 +1,5 @@
+import { forwardRef, useImperativeHandle } from 'react';
+import { useTranslations } from 'next-intl';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,11 +8,9 @@ import { AskQuestion } from './';
 import {
   ChatType,
   type CreateMessageDto,
-  createMessageSchema,
   ChatResponseType,
 } from '../../../contracts/Message';
-import { forwardRef, useImperativeHandle } from 'react';
-import { useTranslations } from 'next-intl';
+import { createMessageSchema } from '../../../contracts/Message';
 
 type Props = {
   isLoading: boolean;
@@ -37,6 +37,8 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     },
     ref
   ) => {
+    const t = useTranslations('form');
+
     const {
       register,
       reset,
@@ -45,13 +47,12 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       watch,
       setValue,
     } = useForm<CreateMessageDto>({
-      resolver: zodResolver(createMessageSchema),
+      resolver: zodResolver(createMessageSchema(t)),
       reValidateMode: 'onSubmit',
       defaultValues: {
         useKnowledge: true,
       },
     });
-    const t = useTranslations('form');
 
     useImperativeHandle(ref, () => ({
       reset: (prompt) => reset({ prompt }),

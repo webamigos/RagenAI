@@ -16,7 +16,11 @@
     "new-thread-header": "Masz pytanie?",
     "new-thread-description": "Po prostu mi je zadaj!",
     "new-thread-placeholder": "Wpisz swoją wiadomość tutaj...",
-    "project-context": "Pracujesz w ramach projektu: {projectTitle}"
+    "project-context": "Pracujesz w ramach projektu: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Maksymalna długość wiadomości to 10000 znaków",
+      "prompt-min-length": "Wiadomość musi zawierać przynajmniej 10 znaków"
+    }
   },
   "sign-up": {
     "create-account": "Załóż konto",
@@ -163,7 +167,8 @@
     "lets-chat-user": "Jak mogę Ci pomóc?",
     "send": "Wyślij",
     "close-thread": "Zamknij wątek",
-    "provide-at-least-10-characters": "Podaj przynajmniej 10 znaków",
+    "prompt-min": "Podaj przynajmniej 10 znaków",
+    "prompt-max": "Podaj mniej niż 10,000 znaków",
     "contact-with-us": "Skontaktuj się z nami",
     "selected-mode": "Korzystaj wyłącznie z wewnętrznej bazy wiedzy",
     "rag": "tylko baza wiedzy",
