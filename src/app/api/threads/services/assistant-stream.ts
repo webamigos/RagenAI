@@ -215,34 +215,60 @@ export async function streamEvents({
 
             sendApiEvent(controller, 'save_assistant_response');
 
-            const dbMessage = await createMessageInDB({
-              threadId: threadRecord.id,
-              message: {
-                id: threadMessage.public_id,
-                content: event.data.output,
-                source: Source.UI,
-              },
-              role: Role.ASSISTANT,
-              runId,
-              messageType: threadRecord.preferred_communication_type,
-            });
+            try {
+              const dbMessage = await createMessageInDB({
+                threadId: threadRecord.id,
+                message: {
+                  id: threadMessage.public_id,
+                  content: event.data.output,
+                  source: Source.UI,
+                },
+                role: Role.ASSISTANT,
+                runId,
+                messageType: threadRecord.preferred_communication_type,
+              });
 
-            sendApiEvent(controller, 'assistant_response_saved');
+              sendApiEvent(controller, 'assistant_response_saved');
 
-            const messageToSend: ApiSseMessageEvent = {
-              id: dbMessage.public_id,
-              role: dbMessage.role,
-              created_at: dbMessage.created_at.toISOString(),
-              content: dbMessage.content,
-              run_id: runId,
-            };
+              try {
+                // We create an object without the full content because it has already been sent in the delta events
 
-            sendApiEvent(controller, 'final_response', messageToSend);
+                const messageToSend: ApiSseMessageEvent = {
+                  id: dbMessage.public_id,
+                  role: dbMessage.role,
+                  created_at: dbMessage.created_at.toISOString(),
+                  content: '', // We clear the content – the client already has the full message from the delta events
+                  run_id: runId,
+                };
 
-            // close stream
-            sendApiEvent(controller, 'close');
+                sendApiEvent(controller, 'final_response', messageToSend);
 
-            controller.close();
+                // close stream
+                sendApiEvent(controller, 'close');
+
+                controller.close();
+              } catch (finalResponseError) {
+                logger.error(
+                  { err: finalResponseError },
+                  'Error sending final_response after assistant_response_saved'
+                );
+
+                try {
+                  sendApiEvent(controller, 'close');
+                  controller.close();
+                } catch (closeError) {
+                  logger.error(
+                    { err: closeError },
+                    'Error closing stream after final_response error'
+                  );
+                }
+              }
+            } catch (finalResponseError) {
+              logger.error(
+                { err: finalResponseError },
+                'Error sending final_response after assistant_response_saved'
+              );
+            }
           }
         }
       } catch (error) {
@@ -250,7 +276,12 @@ export async function streamEvents({
         logger.error({ err: error }, 'Error processing SSE');
         // this also sends error event which can be handled in UI
         exceptionFilter.handleError(error, controller);
-        controller.close();
+
+        try {
+          controller.close();
+        } catch (closeError) {
+          logger.error({ err: closeError }, 'Error closing controller');
+        }
       }
     },
   });

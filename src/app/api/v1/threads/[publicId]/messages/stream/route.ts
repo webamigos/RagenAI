@@ -98,28 +98,51 @@ export const POST = async (request: NextRequest, { params }: Params) => {
 
                 sendApiEvent(controller, 'assistant_response_saved');
 
-                // TODO: replace to: { messaage: {}, response: {}}
-                const messageToSend: ApiSseMessageEvent = {
-                  id: dbMessage.public_id,
-                  content: dbMessage.content,
-                  role: dbMessage.role,
-                  created_at: dbMessage.created_at.toISOString(),
-                  run_id: runId,
-                };
+                try {
+                  // TODO: replace to: { messaage: {}, response: {}}
+                  const messageToSend: ApiSseMessageEvent = {
+                    id: dbMessage.public_id,
+                    content: '', // We clear the content – the client already has the full message from the delta events
+                    role: dbMessage.role,
+                    created_at: dbMessage.created_at.toISOString(),
+                    run_id: runId,
+                  };
 
-                sendApiEvent(controller, 'final_response', messageToSend);
+                  sendApiEvent(controller, 'final_response', messageToSend);
 
-                // close stream
-                sendApiEvent(controller, 'close');
+                  // close stream
+                  sendApiEvent(controller, 'close');
 
-                controller.close();
+                  controller.close();
+                } catch (finalResponseError) {
+                  logger.error(
+                    { err: finalResponseError },
+                    'Error sending final_response after assistant_response_saved'
+                  );
+
+                  try {
+                    sendApiEvent(controller, 'close');
+                    controller.close();
+                  } catch (closeError) {
+                    logger.error(
+                      { err: closeError },
+                      'Error closing stream after final_response error'
+                    );
+                  }
+                }
               }
             }
           } catch (error) {
             const exceptionFilter = new SseExceptionFilter();
             logger.error({ err: error }, 'Error processing SSE');
+
             exceptionFilter.handleError(error, controller);
-            controller.close();
+
+            try {
+              controller.close();
+            } catch (closeError) {
+              logger.error({ err: closeError }, 'Error closing controller');
+            }
           }
         },
       }),

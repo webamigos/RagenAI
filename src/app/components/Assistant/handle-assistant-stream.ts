@@ -201,18 +201,36 @@ export const handleAssistantStream = async ({
         } else if (messageEvent === 'final_response' && messageData) {
           const data = messageData as ApiSseMessageEvent;
           runId = data.run_id;
+
+          const finalMessage = {
+            public_id: data.id, // it's public id
+            role: data.role,
+            content: accumulatingMessage,
+            created_at: new Date(), // FIXME: resolved in DEV-78
+            run_id: runId,
+            message_type: responseType,
+          };
+
+          if (reduxDispatch) {
+            reduxDispatch(
+              setMessages([...messages, userMessage, finalMessage])
+            );
+          }
+
           if (accumulatingMessage.trim()) {
             dispatch({
               type: ADD_MESSAGE,
-              payload: {
-                public_id: data.id, // it's public id
-                role: data.role,
-                content: data.content,
-                created_at: new Date(), // FIXME: resolved in DEV-78
-                run_id: runId,
-                message_type: responseType,
-              },
+              payload: finalMessage,
             });
+
+            dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
+            dispatch({ type: SET_MESSAGE_LOADING, payload: false });
+          } else {
+            dispatch({
+              type: ADD_MESSAGE,
+              payload: finalMessage,
+            });
+
             dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
             dispatch({ type: SET_MESSAGE_LOADING, payload: false });
           }
