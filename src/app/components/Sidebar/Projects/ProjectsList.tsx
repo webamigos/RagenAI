@@ -2,10 +2,15 @@
 
 import { useTranslations } from 'next-intl';
 
-import { PlusIcon, SidebarLabel } from '@ragenai/common-ui';
+import {
+  Button,
+  FolderPlusIcon,
+  PlusIcon,
+  SidebarLabel,
+  Text,
+} from '@ragenai/common-ui';
 import { useSidebar } from '@/app/hooks/useSidebar';
 
-import { EmptyProjectsState } from './components/EmptyProjectsState';
 import { ProjectItem } from './components/ProjectItem';
 import { CreateProject } from './components/CreateProject';
 
@@ -39,10 +44,15 @@ export const ProjectsList = ({
           )}
         </div>
         {!projects.length ? (
-          <EmptyProjectsState
+          <Button
+            className="relative w-11/12 h-10"
+            isLink
             isLoading={isLoading}
-            onCreateClick={() => setIsCreateModalOpen(true)}
-          />
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            <FolderPlusIcon className="w-6 h-6" />
+            <Text className="ml-1">{t('create-project')}</Text>
+          </Button>
         ) : (
           <div className="space-y-1 mt-2">
             {projects.map((project) => (
