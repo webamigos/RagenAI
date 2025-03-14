@@ -1,10 +1,16 @@
 'use client';
 
-import { AccountConfiguration } from '@/app/components/AccountConfiguration';
 import Image from 'next/image';
+import { AccountConfiguration } from '@/app/components/AccountConfiguration';
 import { Logo } from '@/app/components/Logo';
+import { useSearchParams } from 'next/navigation';
 
 export default function AccountConfigurationPage() {
+  const searchParams = useSearchParams();
+
+  const misconfigurationDetected =
+    searchParams.get('misconfigurationDetected') === 'true';
+
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -13,7 +19,9 @@ export default function AccountConfigurationPage() {
             <Logo className="h-16" disableLink />
           </div>
           <div className="mt-1 min-h-[180px]">
-            <AccountConfiguration />
+            <AccountConfiguration
+              misconfigurationDetected={misconfigurationDetected}
+            />
           </div>
         </div>
       </div>

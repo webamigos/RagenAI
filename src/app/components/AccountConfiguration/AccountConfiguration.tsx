@@ -1,51 +1,21 @@
 'use client';
 
-import { useAccountSetupStatus } from '@/app/hooks/useAccountConfigurationStatus';
-import { toast } from 'react-toastify';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@ragenai/common-ui/Button';
-import { Text } from '@ragenai/common-ui/Text';
-import { useTranslations } from 'next-intl';
+import { CheckConfiguration } from './CheckConfiguration';
+import { Misconfigured } from './Misconfigured';
 
 const REFETCH_INTERVAL = 1000;
 const SETUP_COMPLETE_REDIRECT_PATH = '/';
 
-export const AccountConfiguration = () => {
-  const router = useRouter();
-  const t = useTranslations('account-configuration');
+type Props = Readonly<{
+  misconfigurationDetected?: boolean;
+}>;
 
-  const [accountReady, setAccountReady] = useState(false);
-
-  const onSuccessCallback = () => {
-    setAccountReady(true);
-    router.push(SETUP_COMPLETE_REDIRECT_PATH);
-  };
-
-  const onErrorCallback = () => {
-    setAccountReady(false);
-    toast.error(t('error-toast'));
-  };
-
-  const { handleTryAgain, isError } = useAccountSetupStatus({
-    refetchInterval: REFETCH_INTERVAL,
-    onSuccessCallback,
-    onErrorCallback,
-  });
-
-  if (isError) {
-    return (
-      <div className="flex flex-col gap-4 items-start">
-        <Text>{t('error')}</Text>
-        <Text>{t('error-description')}</Text>
-        <Button onClick={handleTryAgain}>{t('try-again')}</Button>
-      </div>
-    );
+export const AccountConfiguration = ({
+  misconfigurationDetected = false,
+}: Props) => {
+  if (misconfigurationDetected) {
+    return <Misconfigured />;
   }
 
-  if (accountReady) {
-    return <Text>{t('complete')}</Text>;
-  }
-
-  return <Text>{t('in-progress')}</Text>;
+  return <CheckConfiguration />;
 };
