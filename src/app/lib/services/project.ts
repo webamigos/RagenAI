@@ -94,9 +94,8 @@ export const fetchProjectsForUser = async (
             preferred_communication_type: true,
             project_id: true,
             messages: {
-              take: 1,
               orderBy: {
-                created_at: 'desc',
+                created_at: 'asc',
               },
               select: {
                 content: true,
