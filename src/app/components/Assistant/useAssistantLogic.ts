@@ -115,9 +115,9 @@ export const useAssistantLogic = (threadId: string) => {
           `thread_${threadId}_initial_message`
         );
         if (initialMessage) {
-          localStorage.removeItem(`thread_${threadId}_initial_message`);
           onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
         }
+        localStorage.removeItem(`thread_${threadId}_initial_message`);
       }
     }
   }, [isLoaded, userVisitorId]);

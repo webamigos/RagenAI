@@ -195,11 +195,9 @@ export const useNewThread = () => {
         }
 
         setTransition(() => {
-          const route = user
-            ? projectPublicId
-              ? `/projects/${projectPublicId}/threads/${threadId}`
-              : `/threads/${threadId}`
-            : `/guest-threads/${threadId}`;
+          const route = projectPublicId
+            ? `/projects/${projectPublicId}/threads/${threadId}`
+            : `/threads/${threadId}`;
 
           // Store the initial message in localStorage to be picked up by the thread view
           if (initialMessage) {
