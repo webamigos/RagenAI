@@ -98,7 +98,9 @@ export const ProjectFileUploadTrigger = ({
 
   useEffect(() => {
     const checkProjectFiles = async () => {
-      if (!organization) return;
+      if (!organization) {
+        return;
+      }
 
       try {
         const result = await getProjectFiles(projectId);
