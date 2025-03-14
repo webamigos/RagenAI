@@ -95,8 +95,13 @@ const DocumentRow = ({
             content={file_name}
             id={`tooltip-${id}`}
           >
-            <CommonUi.Text>{truncatedFileName}</CommonUi.Text>
+            <CommonUi.Text className="hidden lg:flex">
+              {truncatedFileName}
+            </CommonUi.Text>
           </CommonUi.Tooltip>
+          <CommonUi.Text className="lg:hidden">
+            {truncatedFileName}
+          </CommonUi.Text>
         </CommonUi.TableCell>
         <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
         <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
@@ -128,6 +133,10 @@ export const UserDocumentsTable = ({
   const [searchValue, setSearchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
+    if (!searchValue) {
+      return documents as UserFileTypeSafe[];
+    }
+
     return documents.filter(
       (doc) =>
         doc.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
