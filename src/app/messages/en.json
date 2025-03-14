@@ -16,7 +16,11 @@
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
     "new-thread-placeholder": "Type your message here...",
-    "project-context": "You are working in project: {projectTitle}"
+    "project-context": "You are working in project: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Message cannot exceed 10,000 characters",
+      "prompt-min-length": "Message must contain at least 10 characters"
+    }
   },
   "sign-up": {
     "create-account": "Create your account",
