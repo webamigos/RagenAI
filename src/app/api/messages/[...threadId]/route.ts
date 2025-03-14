@@ -26,7 +26,7 @@ type Params = {
 export const POST = async (request: Request) => {
   try {
     setSentryServiceTag('messages');
-    const requestData = await createMessageSchema.safeParseAsync(
+    const requestData = await createMessageSchema().safeParseAsync(
       await request.json()
     );
 

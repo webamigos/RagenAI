@@ -33,7 +33,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       chatType === ChatType.CONVERSATION ? ChatType.CONVERSATION : ChatType.RAG;
 
     const body = await request.json();
-    const parsedData = createMessageSchema.parse(body);
+    const parsedData = createMessageSchema().parse(body);
 
     stream = await streamEvents({
       publicThreadId,
