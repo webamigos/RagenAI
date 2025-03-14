@@ -73,7 +73,7 @@
     "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym."
   },
   "account-configuration": {
-    "in-progress": "Trwa konfigurowanie Twojego konta, proszę czekać.",
+    "in-progress": "Trwa konfigurowanie Twojego konta, proszę czekać...",
     "complete": "Twoje konto zostało skonfigurowane, za chwilę zostaniesz przekierowany do aplikacji.",
     "error": "Wystąpił błąd podczas konfigurowania Twojego konta.",
     "error-description": "Jezeli problem będzie się powtarzał, prosimy o kontakt z naszym działem technicznym.",
