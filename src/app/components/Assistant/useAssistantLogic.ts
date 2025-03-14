@@ -56,6 +56,11 @@ export const useAssistantLogic = (threadId: string) => {
     responseType: ChatResponseType.TEXT,
   };
 
+  const modeMap: Record<string, ChatType> = {
+    conversation: ChatType.CONVERSATION,
+    rag: ChatType.RAG,
+  };
+
   const userVisitorId = user?.id;
   const id = user?.id;
 
@@ -151,13 +156,8 @@ export const useAssistantLogic = (threadId: string) => {
     };
     dispatch({
       type: SET_MODE,
-      payload: data.mode
-        ? data.mode === 'conversation'
-          ? ChatType.CONVERSATION
-          : ChatType.RAG
-        : ChatType.RAG,
+      payload: modeMap[data.mode as 'conversation' | 'rag'] ?? ChatType.RAG,
     });
-
     // Cast to unknown first to avoid type mismatch
     // ugly workaround to satisfied Clerk UserResourceTypes
     const clerkUser = user as unknown as UserResource;
