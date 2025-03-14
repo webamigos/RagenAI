@@ -80,14 +80,14 @@ export const usePublicAssistantLogic = (
           SESSION_STORAGE_TEMP_MESSAGE_KEY
         );
         if (tempMessage) {
-          sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
-
           const userMessage = {
             public_id: `user-${Date.now()}`,
             role: Role.USER,
             content: tempMessage,
             created_at: new Date(),
           };
+
+          sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
 
           await handleAssistantStream({
             mode: AssistantMode.PUBLIC,

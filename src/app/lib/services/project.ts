@@ -83,6 +83,9 @@ export const fetchProjectsForUser = async (
         created_at: true,
         organization_id: true,
         threads: {
+          orderBy: {
+            created_at: 'desc',
+          },
           select: {
             id: true,
             public_id: true,
@@ -91,9 +94,8 @@ export const fetchProjectsForUser = async (
             preferred_communication_type: true,
             project_id: true,
             messages: {
-              take: 1,
               orderBy: {
-                created_at: 'desc',
+                created_at: 'asc',
               },
               select: {
                 content: true,
