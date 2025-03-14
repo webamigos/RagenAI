@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ProjectType } from '@/app/components/Sidebar/Projects/types';
+
+import { type ProjectType } from '@/app/components/Sidebar/Projects/types';
 
 export type SidebarState = {
   isOpen: boolean;
