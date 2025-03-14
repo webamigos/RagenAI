@@ -68,6 +68,8 @@ export async function streamEvents({
           threadId: threadRecord.id,
           prompt: userMessage.prompt,
           visitorId, // only for public threads
+          messageType: userMessage.messageType,
+          voiceDurationSeconds: userMessage.voiceDurationSeconds,
         });
 
         if (!threadMessage) {

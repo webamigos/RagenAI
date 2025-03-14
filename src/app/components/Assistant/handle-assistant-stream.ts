@@ -35,7 +35,6 @@ import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';
 import { AppDispatch } from '@/store';
 import { setMessages } from '@/store/assistant/assistantSlice';
-import { addThread } from '@/store/threads/threadsSlice';
 
 const {
   ADD_MESSAGE,
@@ -75,7 +74,6 @@ type HandleAssistantStreamConfig =
       user: UserResource | undefined | null;
       organizationId?: undefined;
       threadsState: ThreadHistoryResponse[];
-      threadsDispatch: AppDispatch;
     } & CommonConfig)
   | ({
       // public
@@ -84,7 +82,6 @@ type HandleAssistantStreamConfig =
       user?: undefined;
       organizationId: string;
       threadsState?: ThreadHistoryResponse[];
-      threadsDispatch?: AppDispatch;
     } & CommonConfig);
 
 export const handleAssistantStream = async ({
@@ -99,8 +96,6 @@ export const handleAssistantStream = async ({
   tApiEvents,
   threadId,
   responseType,
-  threadsDispatch,
-  threadsState,
   data,
   scrollFn,
   streamedMessage,
@@ -132,20 +127,6 @@ export const handleAssistantStream = async ({
     // Starts chain
     // Adds assistant message to db
     // And stream progress using Server Sent Events format
-
-    const currentThread = threadsState?.find(
-      (thread) => thread.public_id === threadId
-    );
-    const newThread = {
-      public_id: threadId,
-      messages: [userMessage],
-      created_at: new Date(),
-      project_id: currentThread?.project_id,
-    };
-
-    if (threadsDispatch) {
-      threadsDispatch(addThread(newThread));
-    }
 
     let streamUrl = '';
     if (mode === AssistantMode.INTERNAL) {

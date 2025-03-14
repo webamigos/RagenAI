@@ -1,6 +1,6 @@
 'use server';
 
-import { clerkClient } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { StatusCodes } from 'http-status-codes';
 
 import { deleteDocumentFromVectorStore } from '../api/upload/services/TableService';
@@ -43,6 +43,7 @@ import {
 } from '../lib/types/organizations';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
+import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 
 const serviceName = 'actions';
 
@@ -462,4 +463,19 @@ export async function fetchThreadSuggestions(
 
 export const trackThreadCreated = () => {
   usageTracker.incThreadsCount();
+};
+
+export const getDefaultProjectId = async () => {
+  const { orgId } = auth();
+
+  if (!orgId) {
+    throw new Error('Organization ID is required');
+  }
+
+  try {
+    return await fetchOrganizationDefaultProjectId(orgId);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching default project ID');
+    throw error;
+  }
 };
