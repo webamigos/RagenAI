@@ -73,7 +73,18 @@
     "Send-reset-code": "Wyślij kod do resetowania hasła",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
-    "Reset-password": "Zresetuj hasło"
+    "Reset-password": "Zresetuj hasło",
+    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym."
+  },
+  "account-configuration": {
+    "in-progress": "Trwa konfigurowanie Twojego konta, proszę czekać...",
+    "complete": "Twoje konto zostało skonfigurowane, za chwilę zostaniesz przekierowany do aplikacji.",
+    "error": "Wystąpił błąd podczas konfigurowania Twojego konta.",
+    "error-description": "Jezeli problem będzie się powtarzał, prosimy o kontakt z naszym działem technicznym.",
+    "try-again": "Spróbuj ponownie",
+    "error-toast": "Wystąpił błąd podczas konfigurowania Twojego konta.",
+    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym.",
+    "sign-out": "Wyloguj się"
   },
   "admin-panel-page": {
     "selected-files": "Wybrane pliki",

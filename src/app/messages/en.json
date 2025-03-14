@@ -75,6 +75,16 @@
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Reset password"
   },
+  "account-configuration": {
+    "in-progress": "Configuring your account, please wait.",
+    "complete": "Your account has been configured, you will be redirected to the application shortly.",
+    "error": "An error occurred while configuring your account.",
+    "error-description": "If the problem persists, please contact our technical support.",
+    "try-again": "Try again",
+    "error-toast": "An error occurred while configuring your account.",
+    "misconfiguration-detected": "Your account is misconfigured, please contact our technical support.",
+    "sign-out": "Sign out"
+  },
   "admin-panel-page": {
     "selected-files": "Selected files",
     "add-files": "Add files",
@@ -533,7 +543,6 @@
     "recording-error": "Error during recording, try again",
     "microphone-permission-denied": "No access to microphone. Check browser permissions."
   },
-
   "projects": {
     "title": "Projects",
     "create-project": "Create Project",

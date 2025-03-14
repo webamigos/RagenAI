@@ -24,10 +24,12 @@ export const Start = () => {
   const { isSearchOpen, closeSearch } = useSearchThreads();
   const { modalRef } = useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 
-  const shouldShowValidationBoard =
-    isSignedIn &&
-    !showOnboarding &&
-    (!hasApiKey || !hasKnowledge || !belongsToOrganization);
+  // const shouldShowValidationBoard =
+  //   isSignedIn &&
+  //   !showOnboarding &&
+  //   (!hasApiKey || !hasKnowledge || !belongsToOrganization);
+
+  const shouldShowValidationBoard = false;
   const userId = user?.id;
   return (
     <>

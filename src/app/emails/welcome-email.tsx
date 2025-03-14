@@ -22,9 +22,7 @@ type Props = {
 export const WelcomeEmail = ({ name }: Props) => (
   <Html>
     <Head />
-    <Preview>
-      You&apos;re now ready to boost your productivity with Ragen!
-    </Preview>
+    <Preview>Korzystaj w bezpieczny sposób z AI w swojej firmie</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={box} align="center">
