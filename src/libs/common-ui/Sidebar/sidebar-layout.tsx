@@ -110,7 +110,7 @@ export function SidebarLayout({
     'flex flex-1 h-full lg:rounded-md lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
 
   return (
-    <div className="relative isolate flex h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-primary-dark dark:bg-primary-dark">
+    <div className="relative isolate flex h-dvh md:h-full w-full bg-white max-lg:flex-col lg:bg-primary-light lg:dark:bg-primary-dark dark:bg-primary-dark">
       {/* Sidebar on desktop */}
       <div className="fixed inset-y-0 w-80  bg-white dark:bg-secondary-dark max-lg:hidden">
         {sidebar}

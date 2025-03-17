@@ -102,7 +102,7 @@ export const Assistant = ({ threadId }: Props) => {
             voiceId={voiceId}
           />
         )}
-        <div className="flex-grow overflow-y-auto">
+        <div className="flex-grow overflow-y-auto mb-14 md:mb-0">
           <ChatOutput
             responseType={responseType}
             messages={messages}
@@ -114,7 +114,7 @@ export const Assistant = ({ threadId }: Props) => {
           />
           <div ref={messagesEndDivRef} />
         </div>
-        <div className="flex-shrink-0 w-full">
+        <div className="flex-shrink-0 w-full fixed bottom-0 left-0 right-0 md:static">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm
