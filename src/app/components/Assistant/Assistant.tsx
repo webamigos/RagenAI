@@ -102,7 +102,7 @@ export const Assistant = ({ threadId }: Props) => {
             voiceId={voiceId}
           />
         )}
-        <div className="flex-grow overflow-y-auto mb-14 md:mb-0">
+        <div className="flex-grow overflow-y-auto my-14 md:my-0">
           <ChatOutput
             responseType={responseType}
             messages={messages}
