@@ -80,10 +80,10 @@
     "in-progress": "Trwa konfigurowanie Twojego konta, proszę czekać...",
     "complete": "Twoje konto zostało skonfigurowane, za chwilę zostaniesz przekierowany do aplikacji.",
     "error": "Wystąpił błąd podczas konfigurowania Twojego konta.",
-    "error-description": "Jezeli problem będzie się powtarzał, prosimy o kontakt z naszym działem technicznym: support@ragen.ai.",
+    "error-description": "Jezeli problem będzie się powtarzał, prosimy o kontakt: support@ragen.ai.",
     "try-again": "Spróbuj ponownie",
     "error-toast": "Wystąpił błąd podczas konfigurowania Twojego konta.",
-    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym: support@ragen.ai.",
+    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt: support@ragen.ai.",
     "sign-out": "Wyloguj się"
   },
   "admin-panel-page": {
