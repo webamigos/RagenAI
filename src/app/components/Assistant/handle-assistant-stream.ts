@@ -2,8 +2,12 @@
 
 import { type Dispatch, RefObject } from 'react';
 
-import { ApiSseMessageDelta, ApiSseMessageEvent } from '@/app/contracts/Events';
-import { ErrorEvent } from '../Assistant/types';
+import {
+  ApiSseMessageDelta,
+  ApiSseMessageEvent,
+  SseMessageError,
+} from '@/app/contracts/Events';
+
 import {
   type Action as InternalAssistantReducerAction,
   sharedReducerActions,
@@ -177,7 +181,7 @@ export const handleAssistantStream = async ({
         // Process the value (which is a string)
         const message = parseSseString(msg);
         const messageEvent = message.event as ApiEvent;
-        const messageData = message.data as ApiEventData | ErrorEvent;
+        const messageData = message.data as ApiEventData | SseMessageError;
 
         dispatch({
           type: SET_LOADING_TEXT,
@@ -238,7 +242,7 @@ export const handleAssistantStream = async ({
           accumulatingMessage = '';
         } else if (messageEvent === 'error' && messageData) {
           // chain errors
-          const data = messageData as ErrorEvent;
+          const data = messageData as SseMessageError;
 
           const errorMessage = getErrorMessage(data, tChainErrors);
           const shouldIgnoreError = !errorMessage && !streamedMessage;
