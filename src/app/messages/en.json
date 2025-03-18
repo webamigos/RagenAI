@@ -76,7 +76,7 @@
     "Reset-password": "Reset password"
   },
   "account-configuration": {
-    "in-progress": "Configuring your account, please wait.",
+    "in-progress": "Configuring your account, please wait...",
     "complete": "Your account has been configured, you will be redirected to the application shortly.",
     "error": "An error occurred while configuring your account.",
     "error-description": "If the problem persists, please contact us: support@ragen.ai.",
