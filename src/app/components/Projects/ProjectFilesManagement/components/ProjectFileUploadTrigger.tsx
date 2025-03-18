@@ -10,6 +10,7 @@ import {
   ClourArrowIcon,
   Text,
   DocumentIcon,
+  Skeleton,
 } from '@ragenai/common-ui';
 
 import { getProjectFiles } from '@/app/actions';
@@ -35,7 +36,11 @@ const ProjectFileUploadContent = ({
   status: FileStatus;
   t: any;
 }) => {
-  const { hasFiles, fileCount } = status;
+  const { hasFiles, fileCount, loading } = status;
+
+  if (loading) {
+    return <Skeleton className="-mt-4" height="h-20" />;
+  }
 
   if (hasFiles) {
     return (
