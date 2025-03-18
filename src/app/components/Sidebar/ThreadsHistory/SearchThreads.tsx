@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useRef, useEffect } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
 
@@ -6,7 +6,7 @@ import { Input, Text, Card, SpinnerSVG, SidebarItem } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchThreadSuggestions } from '../../../actions';
 import { reducer, initialState } from './SearchThreadsReducer';
-
+import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 type SearchThreadsProps = {
   visitorId: string;
 };
@@ -17,9 +17,12 @@ export const SearchThreads = React.forwardRef<
 >(({ visitorId }, ref) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { query, results, suggestions, isLoading, hasSearched } = state;
+  const { closeSearch, isSearchOpen } = useSearchThreads();
 
   const { errorToast } = statusToast();
   const t = useTranslations('search-threads');
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const debouncedFetchSuggestions = useDebouncedCallback(
     async (value: string) => {
@@ -80,10 +83,18 @@ export const SearchThreads = React.forwardRef<
     }
 
     dispatch({ type: 'SET_SUGGESTIONS', payload: [] });
+    closeSearch();
   };
+
+  useEffect(() => {
+    if (isSearchOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isSearchOpen]);
 
   return (
     <Card
+      title={t('title')}
       size="lg"
       ref={ref}
       className="relative h-96 p-4 overflow-auto"
@@ -100,6 +111,7 @@ export const SearchThreads = React.forwardRef<
           onChange={handleInputChange}
           placeholder={t('placeholder')}
           className="py-2 mb-4"
+          ref={inputRef}
         />
       </form>
       {suggestions.length > 0 && (
