@@ -44,8 +44,10 @@
     },
     "or-continue-with": "Lub zaloguj się za pomocą",
     "forgot-password": "Nie pamiętasz hasła?",
-    "i-agree-to": "Zgadzam się z",
-    "terms-of-use": "regulaminem",
+    "i-agree-to": "Akceptuję postanowienia",
+    "terms-of-use": "regulaminu",
+    "and": "oraz",
+    "privacy-policy": "polityki prywatoności",
     "validation": {
       "terms": "Musisz zaakceptować warunki użytkowania",
       "email": "Nieprawidłowy adres email",

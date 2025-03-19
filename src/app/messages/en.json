@@ -46,6 +46,8 @@
     "forgot-password": "Forgot password?",
     "i-agree-to": "I agree to",
     "terms-of-use": "terms of use",
+    "and": "and",
+    "privacy-policy": "privacy policy",
     "validation": {
       "terms": "You need to accept terms of use",
       "email": "Invalid email",
