@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useSignUp } from '@clerk/nextjs';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { useRouter } from '@/i18n/routing';
@@ -20,6 +20,7 @@ type RegisterFormProps = {
 export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
+  const locale = useLocale();
 
   const { isLoaded, signUp } = useSignUp();
   const t = useTranslations('sign-up');
@@ -127,13 +128,21 @@ export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
               >
                 {t('i-agree-to')}{' '}
                 <a
-                  href="https://ragen.ai/en/terms-of-use"
+                  href={`https://ragen.ai/${locale}/terms-of-use`}
                   className="text-indigo-600"
                   target="_blank"
                 >
                   {t('terms-of-use')}
+                </a>{' '}
+                {t('and')}{' '}
+                <a
+                  href={`https://ragen.ai/${locale}/privacy-policy`}
+                  className="text-indigo-600"
+                  target="_blank"
+                >
+                  {t('privacy-policy')}
                 </a>
-              </label>{' '}
+              </label>
             </div>
           </div>
           {errors.terms && (
