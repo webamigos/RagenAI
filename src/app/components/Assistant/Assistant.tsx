@@ -37,7 +37,6 @@ export const Assistant = ({ threadId }: Props) => {
     modalRef,
     onSubmit,
     isLocked,
-    dispatch: assistantDispatch,
     promptFormRef,
     closeVoiceMode,
     setVoiceMessageAsPlayed,

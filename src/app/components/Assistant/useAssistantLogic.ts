@@ -14,7 +14,6 @@ import {
   setError,
 } from '@/store/assistant/assistantSlice';
 import { useAppSelector } from '@/store/hooks';
-
 import { useRouter, usePathname } from '@/i18n/routing';
 import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { useApi } from '../../hooks/useApi';
@@ -32,6 +31,11 @@ import { handleAssistantStream } from './handle-assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
 
 const { errorToast } = statusToast();
+
+const modeMap: Record<string, ChatType> = {
+  conversation: ChatType.CONVERSATION,
+  rag: ChatType.RAG,
+};
 
 export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
@@ -51,46 +55,38 @@ export const useAssistantLogic = (threadId: string) => {
     mode,
     responseType,
   } = useAppSelector((state) => state.assistant);
-
-  const modeMap: Record<string, ChatType> = {
-    conversation: ChatType.CONVERSATION,
-    rag: ChatType.RAG,
-  };
+  const { userThreads } = useAppSelector((state) => state.threads);
 
   const userVisitorId = user?.id;
-  const id = user?.id;
-
-  const { isLoading } = useApi(() => {
-    if (id) {
-      return fetchMessagesFromApi(threadId, id);
-    }
-    return Promise.resolve(null);
-  });
-
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
   const promptFormRef = useRef<PromptFormRef>(null);
 
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
-  const { userThreads } = useAppSelector((state) => state.threads);
+
   const isPublicAccess = pathname.includes('/public');
 
-  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
+  const { isLoading: apiLoading } = useApi(() => {
+    return userVisitorId
+      ? fetchMessagesFromApi(threadId, userVisitorId)
+      : Promise.resolve(null);
+  });
+
+  const isGlobalLoading = !isError && (isMessageLoading || apiLoading);
 
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
-  const fetchData = async (id: string | undefined) => {
-    if (!id) {
+  const fetchData = async () => {
+    if (!userVisitorId) {
       startTransition(() => router.push('/sign-in'));
       return;
     }
 
     dispatch(setInitialLoad(true));
     try {
-      const response = await fetchMessagesFromApi(threadId, id);
-
+      const response = await fetchMessagesFromApi(threadId, userVisitorId);
       if (response) {
         dispatch(setInitialLoad(false));
         dispatch(setMessages(response.data));
@@ -101,30 +97,25 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
-  useEffect(() => {
-    if (isLoaded) {
-      const id = userVisitorId;
-      if (id) {
-        fetchData(id);
+  const handleInitialMessage = () => {
+    const initialMessageKey = `thread_${threadId}_initial_message`;
+    const initialMessage = localStorage.getItem(initialMessageKey);
+    const initialMessageType = sessionStorage.getItem(
+      'initial_message_type'
+    ) as MessageContentType;
 
-        // Check for initial message
-        const initialMessage = localStorage.getItem(
-          `thread_${threadId}_initial_message`
-        );
-        if (initialMessage) {
-          onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
-        }
-        localStorage.removeItem(`thread_${threadId}_initial_message`);
-      }
-    }
-  }, [isLoaded, userVisitorId]);
+    if (initialMessage) {
+      localStorage.removeItem(initialMessageKey);
+      sessionStorage.removeItem('initial_message_type');
 
-  useEffect(() => {
-    const localStorageThreadId = localStorage.getItem(LOCAL_STORAGE_THREAD_KEY);
-    if (!localStorageThreadId) {
-      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+      onSubmit({
+        prompt: initialMessage,
+        mode: ChatType.CONVERSATION,
+        messageType: initialMessageType || MessageContentType.TEXT,
+        voiceDurationSeconds: 0,
+      });
     }
-  }, [threadId]);
+  };
 
   // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
@@ -134,7 +125,6 @@ export const useAssistantLogic = (threadId: string) => {
       startTransition(() => router.push('/sign-in'));
       return;
     }
-
     scrollToBottom();
     const userMessage = {
       public_id: `user-${Date.now()}`,
@@ -150,9 +140,8 @@ export const useAssistantLogic = (threadId: string) => {
     // ugly workaround to satisfied Clerk UserResourceTypes
 
     dispatch(
-      setMode(modeMap[data.mode as 'conversation' | 'rag'] ?? ChatType.RAG)
+      setMode(modeMap[data.mode as keyof typeof modeMap] ?? ChatType.RAG)
     );
-    const clerkUser = user as unknown as UserResource;
 
     try {
       await handleAssistantStream({
@@ -171,12 +160,9 @@ export const useAssistantLogic = (threadId: string) => {
         errorToast,
         promptFormRef,
         data,
-        chatType: data.mode
-          ? data.mode === 'conversation'
-            ? ChatType.CONVERSATION
-            : ChatType.RAG
-          : undefined,
-        user: clerkUser,
+        chatType:
+          data.mode === 'conversation' ? ChatType.CONVERSATION : ChatType.RAG,
+        user: user as unknown as UserResource,
         reduxDispatch: dispatch,
       });
     } catch {
@@ -194,19 +180,6 @@ export const useAssistantLogic = (threadId: string) => {
     dispatch(setResponseType(ChatResponseType.TEXT));
   };
 
-  const isLocked = () => {
-    if (isSignedIn) return false;
-    return isLimitLock;
-  };
-
-  const setVoiceMessageAsPlayed = async (messageId: string) => {
-    try {
-      dispatch(setMessagePlayed(messageId));
-    } catch (error) {
-      logger.error('Error marking message as played: %o', error);
-    }
-  };
-
   const handleVoiceResult = (text: string, recordingTime: number) => {
     onSubmit({
       mode,
@@ -216,24 +189,34 @@ export const useAssistantLogic = (threadId: string) => {
     });
   };
 
-  useEffect(() => {
-    const initialMessageKey = `thread_${threadId}_initial_message`;
-    const initialMessage = localStorage.getItem(initialMessageKey);
-    const initialMessageType = sessionStorage.getItem(
-      'initial_message_type'
-    ) as MessageContentType;
-
-    if (initialMessage) {
-      localStorage.removeItem(initialMessageKey);
-      sessionStorage.removeItem('initial_message_type');
-
-      onSubmit({
-        prompt: initialMessage,
-        mode: ChatType.CONVERSATION,
-        messageType: initialMessageType || MessageContentType.TEXT,
-        voiceDurationSeconds: 0,
-      });
+  const setVoiceMessageAsPlayed = async (messageId: string) => {
+    try {
+      dispatch(setMessagePlayed(messageId));
+    } catch (error) {
+      logger.error('Error marking message as played: %o', error);
     }
+  };
+  useEffect(() => {
+    if (isLoaded && userVisitorId) {
+      fetchData();
+      const initialMessage = localStorage.getItem(
+        `thread_${threadId}_initial_message`
+      );
+      if (initialMessage) {
+        onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
+      }
+      localStorage.removeItem(`thread_${threadId}_initial_message`);
+    }
+  }, [isLoaded, userVisitorId]);
+
+  useEffect(() => {
+    if (!localStorage.getItem(LOCAL_STORAGE_THREAD_KEY)) {
+      localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
+    }
+  }, [threadId]);
+
+  useEffect(() => {
+    handleInitialMessage();
   }, [threadId]);
 
   return {
@@ -252,7 +235,7 @@ export const useAssistantLogic = (threadId: string) => {
     messages,
     modalRef,
     onSubmit,
-    isLocked,
+    isLocked: () => !isSignedIn && isLimitLock,
     promptFormRef,
     closeVoiceMode,
     setVoiceMessageAsPlayed,

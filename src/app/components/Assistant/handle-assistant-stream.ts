@@ -68,6 +68,77 @@ type HandleAssistantStreamConfig = {
   threadsState?: ThreadHistoryResponse[];
 } & CommonConfig;
 
+const handleStreamError = async ({
+  lastUserMessageId,
+  userMessage,
+  messages,
+  promptFormRef,
+  errorMessage,
+  tChainErrors,
+  errorToast,
+  reduxDispatch,
+}: {
+  lastUserMessageId: string | null;
+  userMessage: MessageDto;
+  messages: MessageDto[];
+  promptFormRef: RefObject<PromptFormRef>;
+  errorMessage: string | null;
+  tChainErrors: TranslationFn;
+  errorToast: ({ message, position, autoClose }: ToastProps) => void;
+  reduxDispatch: AppDispatch;
+}) => {
+  try {
+    if (lastUserMessageId) {
+      await deleteUserMessage(lastUserMessageId);
+    }
+
+    const updatedMessages = messages.filter(
+      (message) =>
+        message.public_id !== (lastUserMessageId || userMessage.public_id)
+    );
+    reduxDispatch(setMessages(updatedMessages));
+    promptFormRef.current?.reset(userMessage.content || '');
+
+    errorToast({
+      message: errorMessage || tChainErrors('unknown-error'),
+    });
+
+    reduxDispatch(setError(null));
+    reduxDispatch(setLoading(false));
+    reduxDispatch(setMessageLoadingText(''));
+  } catch (error) {
+    logger.error('Error removing message: %o', error);
+    handleStreamError({
+      lastUserMessageId: null,
+      userMessage,
+      messages,
+      promptFormRef,
+      errorMessage,
+      tChainErrors,
+      errorToast,
+      reduxDispatch,
+    });
+  }
+};
+
+const getStreamUrl = (
+  mode: AssistantMode,
+  threadId: string,
+  chatType?: ChatType,
+  user?: UserResource,
+  organizationId?: string
+): string => {
+  if (mode === AssistantMode.INTERNAL) {
+    return user
+      ? `/api/threads/${threadId}?mode=${chatType}`
+      : `/api/guest-threads/${threadId}/`;
+  }
+  if (mode === AssistantMode.PUBLIC) {
+    return `/api/guest-threads/${threadId}/${organizationId}`;
+  }
+  throw new Error('Cannot create a stream');
+};
+
 export const handleAssistantStream = async ({
   mode,
   organizationId,
@@ -102,19 +173,13 @@ export const handleAssistantStream = async ({
   reduxDispatch(setUserMessageId(userMessageId));
 
   try {
-    let streamUrl = '';
-    if (mode === AssistantMode.INTERNAL) {
-      streamUrl = user
-        ? `/api/threads/${threadId}?mode=${chatType}`
-        : `/api/guest-threads/${threadId}/`;
-    } else if (mode === AssistantMode.PUBLIC) {
-      streamUrl = `/api/guest-threads/${threadId}/${organizationId}`;
-    }
-
-    if (!streamUrl) {
-      throw new Error('Cannot create a stream');
-    }
-
+    const streamUrl = getStreamUrl(
+      mode,
+      threadId,
+      chatType,
+      user || undefined,
+      organizationId
+    );
     const apiStream = await axios.post<ReadableStream>(streamUrl, data, {
       responseType: 'stream',
       adapter: 'fetch',
@@ -133,7 +198,7 @@ export const handleAssistantStream = async ({
 
     let buffer = ''; // Initialize a buffer to accumulate chunks
     let accumulatingMessage = '';
-    let runId: string = '';
+    let runId = '';
     let lastUserMessageId: string | null = null;
 
     while (true) {
@@ -156,113 +221,89 @@ export const handleAssistantStream = async ({
 
         reduxDispatch(setMessageLoadingText(tApiEvents(messageEvent))); // not each events should be translated e.g. delta
 
-        if (messageEvent === 'user_message_created' && messageData) {
-          const data = messageData as { id: string };
-          lastUserMessageId = data.id;
-          const updatedUserMessage = { ...userMessage, public_id: data.id };
-          reduxDispatch(setMessages([...messages, updatedUserMessage]));
-        } else if (messageEvent === 'delta') {
-          const data = messageData as ApiSseMessageDelta;
-          const textChunk = data.content;
-          accumulatingMessage += textChunk;
-
-          reduxDispatch(
-            setStreamedMessage({
-              content: accumulatingMessage,
-              runId: runId,
-              created_at: new Date().toISOString(),
-            })
-          );
-
-          if (accumulatingMessage.length % 20 === 0) {
-            // scroll each 20 characters
-            scrollFn();
-          }
-        } else if (messageEvent === 'final_response' && messageData) {
-          const data = messageData as ApiSseMessageEvent;
-          runId = data.run_id;
-
-          const finalMessage = {
-            public_id: data.id, // it's public id
-            role: data.role,
-            content: accumulatingMessage,
-            created_at: new Date(), // FIXME: resolved in DEV-78
-            run_id: runId,
-            message_type: responseType,
-          };
-
-          const effectiveUserMessage = lastUserMessageId
-            ? { ...userMessage, public_id: lastUserMessageId }
-            : userMessage;
-
-          const updatedMessages = [
-            ...messages,
-            effectiveUserMessage,
-            finalMessage,
-          ];
-          const uniqueMessages = updatedMessages.filter(
-            (message, index, self) =>
-              index === self.findIndex((m) => m.public_id === message.public_id)
-          );
-          reduxDispatch(setMessages(uniqueMessages));
-          reduxDispatch(setStreamedMessage(null));
-          reduxDispatch(setLoading(false));
-
-          accumulatingMessage = '';
-        } else if (messageEvent === 'error' && messageData) {
-          // chain errors
-          const data = messageData as SseMessageError;
-          const errorMessage = getErrorMessage(data, tChainErrors);
-          const shouldIgnoreError = !errorMessage && !streamedMessage;
-
-          if (shouldIgnoreError) {
-            return;
-          }
-
-          try {
-            if (lastUserMessageId) {
-              // move to backend after refactoring message handling
-              await deleteUserMessage(lastUserMessageId);
+        switch (messageEvent) {
+          case 'user_message_created':
+            if (messageData) {
+              const { id } = messageData as { id: string };
+              lastUserMessageId = id;
+              reduxDispatch(
+                setMessages([...messages, { ...userMessage, public_id: id }])
+              );
             }
+            break;
 
-            const updatedMessages = messages.filter(
-              (message) =>
-                message.public_id !==
-                (lastUserMessageId || userMessage.public_id)
+          case 'delta':
+            const { content: textChunk } = messageData as ApiSseMessageDelta;
+            accumulatingMessage += textChunk;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+              })
             );
-            reduxDispatch(setMessages(updatedMessages));
-            promptFormRef.current?.reset(userMessage.content || '');
+            if (accumulatingMessage.length % 20 === 0) {
+              scrollFn();
+            }
+            break;
 
-            errorToast({
-              message: errorMessage || tChainErrors('unknown-error'),
-            });
+          case 'final_response':
+            if (messageData) {
+              const { id, role, run_id } = messageData as ApiSseMessageEvent;
+              runId = run_id;
+              const finalMessage = {
+                public_id: id,
+                role,
+                content: accumulatingMessage,
+                created_at: new Date(),
+                run_id: runId,
+                message_type: responseType,
+              };
 
-            reduxDispatch(setError(null));
-            reduxDispatch(setLoading(false));
-            reduxDispatch(setMessageLoadingText(''));
+              const effectiveUserMessage = lastUserMessageId
+                ? { ...userMessage, public_id: lastUserMessageId }
+                : userMessage;
 
-            logger.error('Stream error: %o', errorMessage);
+              const uniqueMessages = [
+                ...messages,
+                effectiveUserMessage,
+                finalMessage,
+              ].filter(
+                (message, index, self) =>
+                  index ===
+                  self.findIndex((m) => m.public_id === message.public_id)
+              );
 
-            return;
-          } catch (error) {
-            logger.error('Error removing message: %o', error);
+              reduxDispatch(setMessages(uniqueMessages));
+              reduxDispatch(setStreamedMessage(null));
+              reduxDispatch(setLoading(false));
+              accumulatingMessage = '';
+            }
+            break;
 
-            const updatedMessages = messages.filter(
-              (message) =>
-                message.public_id !==
-                (lastUserMessageId || userMessage.public_id)
-            );
-            reduxDispatch(setMessages(updatedMessages));
-            promptFormRef.current?.reset(userMessage.content || '');
+          case 'error':
+            if (messageData) {
+              const errorMessage = getErrorMessage(
+                messageData as SseMessageError,
+                tChainErrors
+              );
+              if (!errorMessage && !streamedMessage) {
+                return;
+              }
 
-            errorToast({
-              message: errorMessage || tChainErrors('unknown-error'),
-            });
-
-            reduxDispatch(setLoading(false));
-            reduxDispatch(setMessageLoadingText(''));
-            return;
-          }
+              await handleStreamError({
+                lastUserMessageId,
+                userMessage,
+                messages,
+                promptFormRef,
+                errorMessage,
+                tChainErrors,
+                errorToast,
+                reduxDispatch,
+              });
+              return;
+            }
+            break;
         }
       }
     }
