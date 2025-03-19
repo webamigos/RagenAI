@@ -2,7 +2,14 @@ import React, { useReducer, useRef, useEffect } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
 
-import { Input, Text, Card, SpinnerSVG, SidebarItem } from '@ragenai/common-ui';
+import {
+  Input,
+  Text,
+  SpinnerSVG,
+  SidebarItem,
+  Dialog,
+  DialogTitle,
+} from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchThreadSuggestions } from '../../../actions';
 import { reducer, initialState } from './SearchThreadsReducer';
@@ -14,7 +21,7 @@ type SearchThreadsProps = {
 export const SearchThreads = React.forwardRef<
   HTMLDivElement,
   SearchThreadsProps
->(({ visitorId }, ref) => {
+>(({ visitorId }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { query, results, suggestions, isLoading, hasSearched } = state;
   const { closeSearch, isSearchOpen } = useSearchThreads();
@@ -93,15 +100,16 @@ export const SearchThreads = React.forwardRef<
   }, [isSearchOpen]);
 
   return (
-    <Card
-      title={t('title')}
-      size="lg"
-      ref={ref}
-      className="relative h-96 p-4 overflow-auto"
+    <Dialog
       onClick={(e) => e.stopPropagation()}
+      size="lg"
+      className="h-96 p-4 overflow-auto"
+      open={isSearchOpen}
+      onClose={closeSearch}
     >
+      <DialogTitle>{t('title')}</DialogTitle>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 z-10">
           <SpinnerSVG size="lg" />
         </div>
       )}
@@ -139,7 +147,7 @@ export const SearchThreads = React.forwardRef<
             </Text>
           ))}
       </div>
-    </Card>
+    </Dialog>
   );
 });
 

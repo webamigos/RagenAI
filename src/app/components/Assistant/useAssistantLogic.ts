@@ -40,7 +40,7 @@ export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
-  const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
+  const { isSearchOpen, closeSearch } = useSearchThreads();
 
   const initialState: State = {
     isInitialLoad: true,
@@ -265,7 +265,6 @@ export const useAssistantLogic = (threadId: string) => {
     closeSearch,
     isSignedIn,
     messages: state.messages,
-    modalRef,
     onSubmit,
     isLocked,
     dispatch,
