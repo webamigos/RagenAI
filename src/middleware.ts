@@ -26,7 +26,7 @@ const PROTECTED_ROUTES = ['/:locale/threads/:threadId', '/admin'];
 const isProtectedRoute = createRouteMatcher(PROTECTED_ROUTES);
 const LOCALE_PREFIX_REGEX = /^\/(pl|en)/;
 const SIGN_IN_PATH = '/sign-in';
-
+const MESSAGES_ENDPOINT = `/api/messages/`;
 // export const config = {
 //   matcher: ['/', '/(pl|en)/:path*'],
 // };
@@ -64,6 +64,7 @@ export const config = {
     '/api/settings/prompt',
     '/api/send',
     '/api/upload/(.*)',
+    '/api/messages/(.*)',
     '/:locale/admin/manage-knowledge',
     '/:locale/sso-callback',
     '/:locale/sign-in',
@@ -97,6 +98,12 @@ export default clerkMiddleware(
     }
 
     if (url.startsWith('/api')) {
+      // Add protection for messages endpoint
+      if (url.includes(MESSAGES_ENDPOINT)) {
+        if (!session.userId) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+      }
       return NextResponse.next();
     }
 
