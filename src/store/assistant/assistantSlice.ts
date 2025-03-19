@@ -20,6 +20,7 @@ export interface AssistantState {
   mode: ChatType;
   assistantMode: AssistantMode;
   voice: ReturnType<typeof voiceReducer>;
+  isLimitLock: boolean;
 }
 
 const initialState: AssistantState = {
@@ -34,12 +35,16 @@ const initialState: AssistantState = {
   mode: ChatType.CONVERSATION,
   assistantMode: AssistantMode.INTERNAL,
   voice: voiceReducer(undefined, { type: '@@INIT' }),
+  isLimitLock: false,
 };
 
 export const assistantSlice = createSlice({
   name: 'assistant',
   initialState,
   reducers: {
+    clearMessages: (state) => {
+      state.messages = [];
+    },
     setMessages: (state, action: PayloadAction<MessageDto[]>) => {
       state.messages = action.payload;
     },
@@ -73,6 +78,16 @@ export const assistantSlice = createSlice({
     setAssistantMode: (state, action: PayloadAction<AssistantMode>) => {
       state.assistantMode = action.payload;
     },
+    setLimitLock: (state, action: PayloadAction<boolean>) => {
+      state.isLimitLock = action.payload;
+    },
+    setMessagePlayed: (state, action: PayloadAction<string>) => {
+      state.messages = state.messages.map((message) =>
+        message.public_id === action.payload
+          ? { ...message, voice_played: true }
+          : message
+      );
+    },
   },
   extraReducers: (builder) => {
     builder.addDefaultCase((state, action) => {
@@ -94,6 +109,9 @@ export const {
   setInitialLoad,
   setMode,
   setAssistantMode,
+  setLimitLock,
+  setMessagePlayed,
+  clearMessages,
 } = assistantSlice.actions;
 
 export default assistantSlice.reducer;

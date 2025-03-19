@@ -13,6 +13,7 @@ import { ThreadHistoryResponse } from '@/app/contracts/Message';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addThread } from '@/store/threads/threadsSlice';
 import { setProjects } from '@/store/sidebar/sidebarSlice';
+import { clearMessages } from '@/store/assistant/assistantSlice';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 
 import { checkVisitorVisits } from '../lib/services/api';
@@ -135,16 +136,11 @@ export const useNewThread = () => {
     projectId?: number,
     projectPublicId?: string
   ) => {
-    dispatch({ type: 'SET_IS_LOADING', payload: true });
-
-    if (state.isLimitLock) {
-      dispatch({ type: 'SET_IS_LOADING', payload: false });
-      return;
-    }
-
-    handleCloseThread(false);
-
     try {
+      dispatch({ type: 'SET_IS_LOADING', payload: true });
+      handleCloseThread(false);
+      reduxDispatch(clearMessages());
+
       const result = user
         ? await createThreadAction(projectId)
         : await createGuestThreadAction();

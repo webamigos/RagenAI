@@ -1,6 +1,6 @@
 'use client';
 
-import { type Dispatch, RefObject } from 'react';
+import { RefObject } from 'react';
 
 import {
   ApiSseMessageDelta,
@@ -8,11 +8,7 @@ import {
   SseMessageError,
 } from '@/app/contracts/Events';
 
-import {
-  type Action as InternalAssistantReducerAction,
-  sharedReducerActions,
-} from './reducer';
-import { Role, Thread } from '@prisma/client';
+import { Thread } from '@prisma/client';
 import {
   ChatResponseType,
   ChatType,
@@ -34,22 +30,17 @@ import { ToastProps } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { StatusCodes } from 'http-status-codes';
-import { type Action as PublicAssistantReducerAction } from '@/app/[locale]/public/components/Assistant/publicAssistantReducer';
 import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';
 import { AppDispatch } from '@/store';
-import { setMessages } from '@/store/assistant/assistantSlice';
-
-const {
-  ADD_MESSAGE,
-  APPEND_TO_STREAMED_MESSAGE,
-  SET_LOADING_TEXT,
-  SET_MESSAGE_ERROR,
-  SET_MESSAGE_LOADING,
-  SET_STREAMED_MESSAGE,
-  SET_IS_ERROR,
-  REMOVE_MESSAGE,
-} = sharedReducerActions;
+import {
+  setMessages,
+  setStreamedMessage,
+  setError,
+  setLoading,
+  setMessageLoadingText,
+  setUserMessageId,
+} from '@/store/assistant/assistantSlice';
 
 type CommonConfig = {
   messages: MessageDto[];
@@ -67,31 +58,19 @@ type CommonConfig = {
   promptFormRef: RefObject<PromptFormRef>;
   organizationId?: string;
   chatType?: ChatType;
-  reduxDispatch?: AppDispatch;
+  reduxDispatch: AppDispatch;
 };
 
-type HandleAssistantStreamConfig =
-  | ({
-      // internal
-      mode: AssistantMode.INTERNAL;
-      dispatch: Dispatch<InternalAssistantReducerAction>;
-      user: UserResource | undefined | null;
-      organizationId?: undefined;
-      threadsState: ThreadHistoryResponse[];
-    } & CommonConfig)
-  | ({
-      // public
-      mode: AssistantMode.PUBLIC;
-      dispatch: Dispatch<PublicAssistantReducerAction>;
-      user?: undefined;
-      organizationId: string;
-      threadsState?: ThreadHistoryResponse[];
-    } & CommonConfig);
+type HandleAssistantStreamConfig = {
+  mode: AssistantMode;
+  user?: UserResource | undefined | null;
+  organizationId?: string;
+  threadsState?: ThreadHistoryResponse[];
+} & CommonConfig;
 
 export const handleAssistantStream = async ({
   mode,
   organizationId,
-  dispatch,
   messages,
   userMessage,
   userMessageId,
@@ -109,29 +88,20 @@ export const handleAssistantStream = async ({
   user,
   reduxDispatch,
 }: HandleAssistantStreamConfig) => {
-  dispatch({ type: ADD_MESSAGE, payload: userMessage });
-  if (reduxDispatch) {
-    reduxDispatch(setMessages([...messages, userMessage]));
-  }
-  dispatch({ type: SET_IS_ERROR, payload: false });
-  dispatch({
-    type: SET_MESSAGE_LOADING,
-    payload: true,
-  });
-  dispatch({
-    type: SET_LOADING_TEXT,
-    payload: t('status-thinking'),
-  });
+  // This flow:
+  // Creates new thread message
+  // Initializes chain
+  // Adds thread messages to chain
+  // Starts chain
+  // Adds assistant message to db
+  // And stream progress using Server Sent Events format
+  reduxDispatch(setError(null));
+  reduxDispatch(setLoading(true));
+  reduxDispatch(setMessageLoadingText(t('status-thinking')));
+  reduxDispatch(setStreamedMessage(null));
+  reduxDispatch(setUserMessageId(userMessageId));
 
   try {
-    // This flow:
-    // Creates new thread message
-    // Initializes chain
-    // Adds thread messages to chain
-    // Starts chain
-    // Adds assistant message to db
-    // And stream progress using Server Sent Events format
-
     let streamUrl = '';
     if (mode === AssistantMode.INTERNAL) {
       streamUrl = user
@@ -164,6 +134,7 @@ export const handleAssistantStream = async ({
     let buffer = ''; // Initialize a buffer to accumulate chunks
     let accumulatingMessage = '';
     let runId: string = '';
+    let lastUserMessageId: string | null = null;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -183,20 +154,25 @@ export const handleAssistantStream = async ({
         const messageEvent = message.event as ApiEvent;
         const messageData = message.data as ApiEventData | SseMessageError;
 
-        dispatch({
-          type: SET_LOADING_TEXT,
-          payload: tApiEvents(messageEvent), // not each events should be translated e.g. delta
-        });
+        reduxDispatch(setMessageLoadingText(tApiEvents(messageEvent))); // not each events should be translated e.g. delta
 
-        if (messageEvent === 'delta') {
+        if (messageEvent === 'user_message_created' && messageData) {
+          const data = messageData as { id: string };
+          lastUserMessageId = data.id;
+          const updatedUserMessage = { ...userMessage, public_id: data.id };
+          reduxDispatch(setMessages([...messages, updatedUserMessage]));
+        } else if (messageEvent === 'delta') {
           const data = messageData as ApiSseMessageDelta;
           const textChunk = data.content;
           accumulatingMessage += textChunk;
 
-          dispatch({
-            type: APPEND_TO_STREAMED_MESSAGE,
-            payload: { content: textChunk, run_id: runId },
-          });
+          reduxDispatch(
+            setStreamedMessage({
+              content: accumulatingMessage,
+              runId: runId,
+              created_at: new Date().toISOString(),
+            })
+          );
 
           if (accumulatingMessage.length % 20 === 0) {
             // scroll each 20 characters
@@ -215,67 +191,78 @@ export const handleAssistantStream = async ({
             message_type: responseType,
           };
 
-          if (reduxDispatch) {
-            reduxDispatch(
-              setMessages([...messages, userMessage, finalMessage])
-            );
-          }
+          const effectiveUserMessage = lastUserMessageId
+            ? { ...userMessage, public_id: lastUserMessageId }
+            : userMessage;
 
-          if (accumulatingMessage.trim()) {
-            dispatch({
-              type: ADD_MESSAGE,
-              payload: finalMessage,
-            });
-
-            dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-            dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-          } else {
-            dispatch({
-              type: ADD_MESSAGE,
-              payload: finalMessage,
-            });
-
-            dispatch({ type: SET_STREAMED_MESSAGE, payload: null });
-            dispatch({ type: SET_MESSAGE_LOADING, payload: false });
-          }
+          const updatedMessages = [
+            ...messages,
+            effectiveUserMessage,
+            finalMessage,
+          ];
+          const uniqueMessages = updatedMessages.filter(
+            (message, index, self) =>
+              index === self.findIndex((m) => m.public_id === message.public_id)
+          );
+          reduxDispatch(setMessages(uniqueMessages));
+          reduxDispatch(setStreamedMessage(null));
+          reduxDispatch(setLoading(false));
 
           accumulatingMessage = '';
         } else if (messageEvent === 'error' && messageData) {
           // chain errors
           const data = messageData as SseMessageError;
-
           const errorMessage = getErrorMessage(data, tChainErrors);
           const shouldIgnoreError = !errorMessage && !streamedMessage;
+
           if (shouldIgnoreError) {
             return;
           }
 
-          const lastUserMessage = messages.findLast(
-            (message) => message.role === Role.USER
-          );
-
-          if (lastUserMessage) {
-            try {
-              //Move to backend after refactoring message handling
-              await deleteUserMessage(userMessageId);
-              dispatch({
-                type: REMOVE_MESSAGE,
-                payload: lastUserMessage.public_id,
-              });
-            } catch (error) {
-              logger.error('Error removing message: %o', error);
+          try {
+            if (lastUserMessageId) {
+              // move to backend after refactoring message handling
+              await deleteUserMessage(lastUserMessageId);
             }
+
+            const updatedMessages = messages.filter(
+              (message) =>
+                message.public_id !==
+                (lastUserMessageId || userMessage.public_id)
+            );
+            reduxDispatch(setMessages(updatedMessages));
+            promptFormRef.current?.reset(userMessage.content || '');
+
+            errorToast({
+              message: errorMessage || tChainErrors('unknown-error'),
+            });
+
+            reduxDispatch(setError(null));
+            reduxDispatch(setLoading(false));
+            reduxDispatch(setMessageLoadingText(''));
+
+            logger.error('Stream error: %o', errorMessage);
+
+            return;
+          } catch (error) {
+            logger.error('Error removing message: %o', error);
+
+            const updatedMessages = messages.filter(
+              (message) =>
+                message.public_id !==
+                (lastUserMessageId || userMessage.public_id)
+            );
+            reduxDispatch(setMessages(updatedMessages));
+            promptFormRef.current?.reset(userMessage.content || '');
+
+            errorToast({
+              message: errorMessage || tChainErrors('unknown-error'),
+            });
+
+            reduxDispatch(setLoading(false));
+            reduxDispatch(setMessageLoadingText(''));
+            return;
           }
-
-          //Update user prompt input with last message data
-          dispatch({ type: SET_IS_ERROR, payload: true });
-
-          promptFormRef.current?.reset(lastUserMessage?.content || '');
-          errorToast({
-            message: errorMessage || tChainErrors('unknown-error'),
-          });
-
-          logger.error('Stream error: %o', errorMessage);
         }
       }
     }
@@ -284,7 +271,7 @@ export const handleAssistantStream = async ({
       error instanceof AxiosError &&
       error.status === StatusCodes.BAD_REQUEST
     ) {
-      dispatch({ type: SET_MESSAGE_ERROR, payload: true });
+      reduxDispatch(setError('Error submitting message'));
       errorToast({ message: 'sending-error' });
     }
     logger.error('Error submitting message: %o', error);

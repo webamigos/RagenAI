@@ -29,6 +29,7 @@ export type ApiEvent =
   | 'thread_found'
   | 'save_user_message'
   | 'user_message_saved'
+  | 'user_message_created'
   | 'init_lmm'
   | 'get_thread_messages'
   | 'add_thread_messages_to_lmm'

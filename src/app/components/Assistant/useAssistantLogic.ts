@@ -1,11 +1,18 @@
-import { useReducer, useEffect, useRef, startTransition } from 'react';
+import { useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role, MessageContentType } from '@prisma/client';
 import { useUser } from '@clerk/nextjs';
 import { type UserResource } from '@clerk/types';
 import { useDispatch } from 'react-redux';
 import { setRecording } from '@/store/voice/voiceSlice';
-import { setMessages } from '@/store/assistant/assistantSlice';
+import {
+  setMessages,
+  setInitialLoad,
+  setMode,
+  setResponseType,
+  setMessagePlayed,
+  setError,
+} from '@/store/assistant/assistantSlice';
 import { useAppSelector } from '@/store/hooks';
 
 import { useRouter, usePathname } from '@/i18n/routing';
@@ -13,12 +20,6 @@ import { LOCAL_STORAGE_THREAD_KEY } from '../config';
 import { useApi } from '../../hooks/useApi';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { fetchMessagesFromApi } from '../../lib/services/api';
-import {
-  assistantReducer,
-  reducerActions,
-  sharedReducerActions,
-  State,
-} from './reducer';
 import {
   ChatType,
   type CreateMessageDto,
@@ -30,10 +31,6 @@ import { PromptFormRef } from './PromptForm/PromptForm';
 import { handleAssistantStream } from './handle-assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
 
-const { SET_MODE, SET_MODE_VOICE, SET_MESSAGE_PLAYED } = reducerActions;
-
-const { SET_INITIAL_LOAD, SET_MESSAGES } = sharedReducerActions;
-
 const { errorToast } = statusToast();
 
 export const useAssistantLogic = (threadId: string) => {
@@ -41,20 +38,19 @@ export const useAssistantLogic = (threadId: string) => {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
   const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
+  const dispatch = useDispatch();
 
-  const initialState: State = {
-    isInitialLoad: true,
-    isMessageLoading: false,
-    userMessageId: '',
-    isLimitLock: false,
-    messageLoadingText: '',
-    isMessageError: false,
-    isError: false,
-    streamedMessage: null,
-    messages: [],
-    mode: ChatType.CONVERSATION,
-    responseType: ChatResponseType.TEXT,
-  };
+  const {
+    messages,
+    isLoading: isMessageLoading,
+    userMessageId,
+    isLimitLock,
+    messageLoadingText,
+    streamedMessage,
+    error: isError,
+    mode,
+    responseType,
+  } = useAppSelector((state) => state.assistant);
 
   const modeMap: Record<string, ChatType> = {
     conversation: ChatType.CONVERSATION,
@@ -72,6 +68,7 @@ export const useAssistantLogic = (threadId: string) => {
   });
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
+  const promptFormRef = useRef<PromptFormRef>(null);
 
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
@@ -79,12 +76,7 @@ export const useAssistantLogic = (threadId: string) => {
   const { userThreads } = useAppSelector((state) => state.threads);
   const isPublicAccess = pathname.includes('/public');
 
-  const [state, dispatch] = useReducer(assistantReducer, initialState);
-  const reduxDispatch = useDispatch();
-
-  const isGlobalLoading =
-    !state.isError && (state.isMessageLoading || isLoading);
-  const promptFormRef = useRef<PromptFormRef>(null);
+  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
 
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -95,17 +87,17 @@ export const useAssistantLogic = (threadId: string) => {
       return;
     }
 
-    dispatch({ type: SET_INITIAL_LOAD, payload: true });
+    dispatch(setInitialLoad(true));
     try {
       const response = await fetchMessagesFromApi(threadId, id);
 
       if (response) {
-        dispatch({ type: SET_INITIAL_LOAD, payload: false });
-        dispatch({ type: SET_MESSAGES, payload: response.data });
-        reduxDispatch(setMessages(response.data));
+        dispatch(setInitialLoad(false));
+        dispatch(setMessages(response.data));
       }
     } catch (error) {
       logger.error('Error fetching messages: %o', error);
+      dispatch(setError('Error fetching messages'));
     }
   };
 
@@ -154,27 +146,26 @@ export const useAssistantLogic = (threadId: string) => {
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
     };
-    dispatch({
-      type: SET_MODE,
-      payload: modeMap[data.mode as 'conversation' | 'rag'] ?? ChatType.RAG,
-    });
     // Cast to unknown first to avoid type mismatch
     // ugly workaround to satisfied Clerk UserResourceTypes
+
+    dispatch(
+      setMode(modeMap[data.mode as 'conversation' | 'rag'] ?? ChatType.RAG)
+    );
     const clerkUser = user as unknown as UserResource;
 
     try {
       await handleAssistantStream({
         mode: AssistantMode.INTERNAL,
-        dispatch,
-        messages: state.messages,
-        userMessageId: state.userMessageId,
+        messages,
+        userMessageId,
         userMessage,
         t,
         tChainErrors,
         tApiEvents,
         threadId,
-        responseType: state.responseType,
-        streamedMessage: state.streamedMessage,
+        responseType,
+        streamedMessage,
         threadsState: userThreads,
         scrollFn: scrollToBottom,
         errorToast,
@@ -186,7 +177,7 @@ export const useAssistantLogic = (threadId: string) => {
             : ChatType.RAG
           : undefined,
         user: clerkUser,
-        reduxDispatch,
+        reduxDispatch: dispatch,
       });
     } catch {
       errorToast({ message: 'sending-error' });
@@ -194,29 +185,23 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const handleResponseType = () => {
-    dispatch({
-      type: SET_MODE_VOICE,
-      payload: ChatResponseType.VOICE,
-    });
-    reduxDispatch(setRecording(true));
+    dispatch(setResponseType(ChatResponseType.VOICE));
+    dispatch(setRecording(true));
   };
 
   const closeVoiceMode = () => {
-    reduxDispatch(setRecording(false));
-    dispatch({
-      type: SET_MODE_VOICE,
-      payload: ChatResponseType.TEXT,
-    });
+    dispatch(setRecording(false));
+    dispatch(setResponseType(ChatResponseType.TEXT));
   };
 
   const isLocked = () => {
     if (isSignedIn) return false;
-    return state.isLimitLock;
+    return isLimitLock;
   };
 
   const setVoiceMessageAsPlayed = async (messageId: string) => {
     try {
-      dispatch({ type: SET_MESSAGE_PLAYED, payload: messageId });
+      dispatch(setMessagePlayed(messageId));
     } catch (error) {
       logger.error('Error marking message as played: %o', error);
     }
@@ -224,7 +209,7 @@ export const useAssistantLogic = (threadId: string) => {
 
   const handleVoiceResult = (text: string, recordingTime: number) => {
     onSubmit({
-      mode: state.mode,
+      mode,
       prompt: text,
       messageType: 'VOICE',
       voiceDurationSeconds: recordingTime,
@@ -252,23 +237,22 @@ export const useAssistantLogic = (threadId: string) => {
   }, [threadId]);
 
   return {
-    messageLoadingText: state.messageLoadingText,
+    messageLoadingText,
     handleResponseType,
     messagesEndDivRef,
     isGlobalLoading,
-    streamedMessage: state.streamedMessage,
+    streamedMessage,
     isPublicAccess,
     userVisitorId,
     isSearchOpen,
-    responseType: state.responseType,
-    isLimitLock: state.isLimitLock,
+    responseType,
+    isLimitLock,
     closeSearch,
     isSignedIn,
-    messages: state.messages,
+    messages,
     modalRef,
     onSubmit,
     isLocked,
-    dispatch,
     promptFormRef,
     closeVoiceMode,
     setVoiceMessageAsPlayed,

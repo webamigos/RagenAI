@@ -82,6 +82,11 @@ export async function streamEvents({
           id: threadMessage.public_id,
         });
 
+        // Send event with created message ID
+        sendApiEvent(controller, 'user_message_created', {
+          id: threadMessage.public_id,
+        });
+
         // Fetch project instruction if the thread is associated with a project
         let projectInstruction: string | null = null;
 

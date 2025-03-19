@@ -1,23 +1,18 @@
 'use client';
 
-import {
-  useReducer,
-  useTransition,
-  useCallback,
-  useEffect,
-  useState,
-} from 'react';
-import { usePathname, useRouter } from '@/i18n/routing';
-
+import { useReducer, useTransition, useCallback, useEffect } from 'react';
+import { useRouter, usePathname } from '@/i18n/routing';
+import { useSessionStorage } from './useSessionStorage';
+import { useCloseThread } from '@/app/hooks/useCloseThreads';
+import { createGuestThreadAction } from '@/app/lib/actions/threads';
+import { statusToast } from '@/app/lib/utils/toast';
+import { logger } from '@/app/lib/utils/logger';
+import { useDispatch } from 'react-redux';
+import { clearMessages } from '@/store/assistant/assistantSlice';
 import {
   LOCAL_STORAGE_THREAD_KEY,
   SESSION_STORAGE_TEMP_MESSAGE_KEY,
 } from '@/app/components/config';
-import { useCloseThread } from '@/app/hooks/useCloseThreads';
-import { statusToast } from '@/app/lib/utils/toast';
-import { logger } from '@/app/lib/utils/logger';
-import { useSessionStorage } from './useSessionStorage';
-import { createGuestThreadAction } from '@/app/lib/actions/threads';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -57,6 +52,7 @@ export const useNewThread = ({
   const pathname = usePathname();
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
+  const reduxDispatch = useDispatch();
 
   const {
     storedValue: threadId,
@@ -68,6 +64,7 @@ export const useNewThread = ({
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
       handleCloseThread(false);
+      reduxDispatch(clearMessages());
 
       const result = await createGuestThreadAction(undefined);
 
