@@ -379,11 +379,12 @@
     }
   },
   "search-threads": {
+    "title": "Szukaj w wątkach",
     "error-sugestions": "Błąd poczas pobierania sugestii",
     "error-threads": "Błąd podczas pobierania wątków",
     "threads-not-found": "Wątek nieodpowada",
     "no-results": "Brak wyników",
-    "placeholder": "Wyszukaj w wątkach..."
+    "placeholder": "Wpisz szukaną frazę..."
   },
   "files-table": {
     "title": "Lista plików",
