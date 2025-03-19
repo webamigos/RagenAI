@@ -34,7 +34,6 @@ export const Assistant = ({ threadId }: Props) => {
     closeSearch,
     isSignedIn,
     messages: localMessages,
-    modalRef,
     onSubmit,
     isLocked,
     promptFormRef,
@@ -86,7 +85,7 @@ export const Assistant = ({ threadId }: Props) => {
     <>
       {isSearchOpen && (
         <div onClick={closeSearch}>
-          <SearchThreads ref={modalRef} visitorId={userVisitorId!} />
+          <SearchThreads visitorId={userVisitorId!} />
         </div>
       )}
 

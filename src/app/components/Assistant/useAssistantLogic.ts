@@ -41,7 +41,7 @@ export const useAssistantLogic = (threadId: string) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
-  const { isSearchOpen, modalRef, closeSearch } = useSearchThreads();
+  const { isSearchOpen, closeSearch } = useSearchThreads();
   const dispatch = useDispatch();
 
   const {
@@ -233,7 +233,6 @@ export const useAssistantLogic = (threadId: string) => {
     closeSearch,
     isSignedIn,
     messages,
-    modalRef,
     onSubmit,
     isLocked: () => !isSignedIn && isLimitLock,
     promptFormRef,

@@ -41,7 +41,7 @@ export function Dialog({
           className={clsx(
             className,
             sizes[size],
-            'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-zinc-950/10 dark:bg-slate-900 dark:ring-white/10 forced-colors:outline',
+            'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-zinc-950/10 dark:bg-secondary-dark dark:ring-white/10 forced-colors:outline',
             'transition duration-100 will-change-transform',
             'data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in'
           )}
