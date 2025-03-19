@@ -34,7 +34,7 @@ export const DesktopNavbar = ({ userAvatar, userEmail }: Props) => {
     <>
       {userEmail && (
         <div className="lg:fixed flex justify-end content-center font-sans z-50">
-          <div className="bg-white dark:bg-secondary-dark flex items-center mt-4 lg:mt-2 gap-4 rounded-3xl shadow-md p-1">
+          <div className="bg-white dark:bg-secondary-dark flex items-center mt-4 lg:mt-2 gap-4 rounded-3xl shadow-md p-1 z-50">
             {shouldShowPencilIcon() && (
               <button
                 onClick={() => handleNewThread()}

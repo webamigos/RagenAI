@@ -76,7 +76,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     const useKnowledge = watch('useKnowledge');
 
     return (
-      <div className="mt-auto px-4 sm:px-4 md:px-2 lg:px-22">
+      <div className="mt-auto px-4 sm:px-4 md:px-2 lg:px-22 bg-primary-light dark:bg-primary-dark">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
           className="flex flex-col w-full justify-center"

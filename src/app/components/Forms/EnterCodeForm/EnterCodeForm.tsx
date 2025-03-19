@@ -65,7 +65,7 @@ export const EnterCodeForm = () => {
 
         if (success) {
           await setActive({ session: completeSignUp.createdSessionId });
-          push('/');
+          push('/account-configuration');
         }
       }
     } catch (error) {
