@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { useTranslations } from 'next-intl';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
@@ -15,7 +15,14 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default function SignUpPage() {
+type Props = {
+  params: {
+    locale: string;
+  };
+};
+
+export default function SignUpPage({ params: { locale } }: Props) {
+  setRequestLocale(locale);
   const t = useTranslations('sign-up');
 
   return (
