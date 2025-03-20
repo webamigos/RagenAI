@@ -115,7 +115,10 @@ export async function getAllSettings(
   return {
     apiKey: decryptedApiKey,
     model: result.model || defaultOrganizationSettings.model,
-    temperature: +result.temperature || defaultOrganizationSettings.temperature,
+    temperature:
+      result.temperature === undefined
+        ? defaultOrganizationSettings.temperature
+        : +result.temperature,
     prompt: result.prompt || defaultOrganizationSettings.prompt,
     maxDocumentsToRetrieve:
       +result.maxDocumentsToRetrieve ||
