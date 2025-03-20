@@ -43,7 +43,10 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
           >
             {t('Index.welcome')}
           </Text>
-          <Text fontSize="sm" className="mr-2 whitespace-nowrap py-2 px-3">
+          <Text
+            fontSize="sm"
+            className="mr-2 whitespace-nowrap py-2 px-3 truncate"
+          >
             {userEmail?.split('@')[0] || 'User'}
           </Text>
         </div>
