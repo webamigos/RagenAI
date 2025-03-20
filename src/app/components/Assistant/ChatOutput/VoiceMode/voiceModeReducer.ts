@@ -9,6 +9,7 @@ export const initialState: VoiceModeState = {
   transcriptText: '',
   localIsRecording: true,
   isWaitingForResponse: false,
+  error: null,
 };
 
 type VoiceModeAction =
@@ -21,7 +22,8 @@ type VoiceModeAction =
   | { type: 'RESET_RECORDING' }
   | { type: 'UPDATE_MESSAGE_PLAYED_STATUS'; payload: string }
   | { type: 'SET_LOCAL_RECORDING'; payload: boolean }
-  | { type: 'SET_WAITING_FOR_RESPONSE'; payload: boolean };
+  | { type: 'SET_WAITING_FOR_RESPONSE'; payload: boolean }
+  | { type: 'SET_ERROR'; payload: Error | null };
 
 export const voiceModeReducer = (
   state: VoiceModeState,
@@ -85,6 +87,13 @@ export const voiceModeReducer = (
       return {
         ...state,
         isWaitingForResponse: action.payload,
+      };
+    case 'SET_ERROR':
+      return {
+        ...initialState,
+        error: action.payload,
+        currentMessages: state.currentMessages,
+        localIsRecording: false,
       };
     default:
       return state;

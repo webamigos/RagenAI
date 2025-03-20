@@ -9,6 +9,7 @@ export const VoiceModeStatus = ({
   isPlayingAudio,
   recordingTime,
   isWaitingForResponse,
+  error,
 }: VoiceModeStatusProps) => {
   const t = useTranslations('voice-mode');
 
@@ -25,7 +26,8 @@ export const VoiceModeStatus = ({
       case !isPlayingAudio &&
         !isGeneratingAudio &&
         !isRecording &&
-        !isWaitingForResponse:
+        !isWaitingForResponse &&
+        !!error:
         return t('ready-to-record');
       default:
         return t('waiting');

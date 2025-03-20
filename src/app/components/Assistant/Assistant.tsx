@@ -42,7 +42,7 @@ export const Assistant = ({ threadId }: Props) => {
     handleVoiceResult,
   } = useAssistantLogic(threadId);
 
-  const { messages: reduxMessages } = useSelector(
+  const { messages: reduxMessages, error: assistantError } = useSelector(
     (state: RootState) => state.assistant
   );
 
@@ -98,6 +98,7 @@ export const Assistant = ({ threadId }: Props) => {
             messages={messages}
             onMessagePlayed={setVoiceMessageAsPlayed}
             voiceId={voiceId}
+            assistantError={assistantError}
           />
         )}
         <div className="flex-grow overflow-y-auto my-14 md:my-0">
