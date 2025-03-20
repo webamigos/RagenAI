@@ -26,7 +26,6 @@ const PROTECTED_ROUTES = ['/:locale/threads/:threadId', '/admin'];
 const isProtectedRoute = createRouteMatcher(PROTECTED_ROUTES);
 const LOCALE_PREFIX_REGEX = /^\/(pl|en)/;
 const SIGN_IN_PATH = '/sign-in';
-
 // export const config = {
 //   matcher: ['/', '/(pl|en)/:path*'],
 // };
@@ -62,6 +61,7 @@ export const config = {
     '/api/settings/temperature',
     '/api/settings/model',
     '/api/settings/prompt',
+    '/api/messages/(.*)',
     '/api/send',
     '/api/upload/(.*)',
     '/:locale/admin/manage-knowledge',

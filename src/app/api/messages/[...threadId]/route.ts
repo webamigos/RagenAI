@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
+import { auth } from '@clerk/nextjs/server';
 
 import { createMessageSchema } from '../../../contracts/Message';
 import { sendForModeration } from '../../../lib/services/moderation';
@@ -51,6 +52,11 @@ export const POST = async (request: Request) => {
 
 export const GET = async (_request: Request, { params }: Params) => {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      throw new Error('Invalid user id');
+    }
+
     const threadPublicId = params.threadId[0];
     const visitorId = params.threadId[1];
 
