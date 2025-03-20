@@ -25,7 +25,7 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
   const t = useTranslations();
 
   return (
-    <Popover className="relative">
+    <Popover>
       <PopoverButton
         data-testid="avatar-icon"
         className="block text-sm/6 font-semibold text-white/50 focus:outline-none data-[active]:text-white data-[hover]:text-white data-[focus]:outline-1 data-[focus]:outline-white"
@@ -35,7 +35,11 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
           src={userAvatar}
         />
       </PopoverButton>
-      <PopoverPanel className="absolute top-12 -right-1 z-50 w-44 divide-y dark:divide-white/5 divide-accent-dark-100 rounded-xl dark:bg-[#253745] bg-[#f6f6f8] text-sm/6 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+      <PopoverPanel
+        transition
+        anchor={{ to: 'bottom start', gap: '4px' }}
+        className="mt-2 divide-y dark:divide-white/5 divide-accent-dark-100 rounded-xl dark:bg-[#253745] bg-[#f6f6f8] text-sm/6 transition duration-200 ease-in-out data-[closed]:-translate-y-1 data-[closed]:opacity-0"
+      >
         <div className="p-3">
           <Text
             fontSize="sm"
