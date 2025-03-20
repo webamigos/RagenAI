@@ -61,6 +61,7 @@ export const config = {
     '/api/settings/temperature',
     '/api/settings/model',
     '/api/settings/prompt',
+    '/api/messages/(.*)',
     '/api/send',
     '/api/upload/(.*)',
     '/:locale/admin/manage-knowledge',
