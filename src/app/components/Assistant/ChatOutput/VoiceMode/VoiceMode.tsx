@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-import { useTranslations } from 'next-intl';
 import { useVoiceMode } from './hooks/useVoiceMode';
 import { VoiceModeButton } from './components/VoiceModeButton';
 import { VoiceModeHeader } from './components/VoiceModeHeader';
@@ -15,9 +14,9 @@ export const VoiceMode = ({
   messages,
   onMessagePlayed,
   voiceId,
+  assistantError,
 }: VoiceModeProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const t = useTranslations('voice-mode');
 
   const { state, handlers, voiceError } = useVoiceMode({
     audioRef,
@@ -27,6 +26,7 @@ export const VoiceMode = ({
     onResult,
     onMessagePlayed,
     voiceId,
+    assistantError,
   });
 
   const {
@@ -37,6 +37,7 @@ export const VoiceMode = ({
     transcriptText,
     localIsRecording,
     isWaitingForResponse,
+    error,
   } = state;
 
   return (
@@ -62,6 +63,7 @@ export const VoiceMode = ({
           isPlayingAudio={isPlayingAudio}
           recordingTime={recordingTime}
           isWaitingForResponse={isWaitingForResponse}
+          error={error}
         />
 
         {transcriptText && <VoiceModeTranscript text={transcriptText} />}

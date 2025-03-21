@@ -650,7 +650,7 @@
     "playing": "Odtwarzanie odpowiedzi...",
     "waiting-for-response": "Oczekiwanie na odpowiedź...",
     "instructions": "Mów wyraźnie do mikrofonu. Wiadomość zostanie wysłana automatycznie po 3 sekundach ciszy lub po kliknięciu przycisku stop. Odpowiedź asystenta zostanie odtworzona automatycznie.",
-    "api-error": "Wystąpił błąd podczas generowania odpowiedzi głosowej. Kontynuujemy w trybie tekstowym.",
+    "api-error": "Wystąpił błąd podczas generowania odpowiedzi głosowej. Możesz spróbować ponownie lub kontynuować rozmowę w trybie tekstowym.",
     "api-error-instructions": "Tryb głosowy jest obecnie niedostępny. Możesz kontynuować rozmowę, ale odpowiedzi będą tylko w formie tekstu."
   },
   "api-events": {
