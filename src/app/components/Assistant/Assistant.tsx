@@ -34,17 +34,15 @@ export const Assistant = ({ threadId }: Props) => {
     closeSearch,
     isSignedIn,
     messages: localMessages,
-    modalRef,
     onSubmit,
     isLocked,
-    dispatch: assistantDispatch,
     promptFormRef,
     closeVoiceMode,
     setVoiceMessageAsPlayed,
     handleVoiceResult,
   } = useAssistantLogic(threadId);
 
-  const { messages: reduxMessages } = useSelector(
+  const { messages: reduxMessages, error: assistantError } = useSelector(
     (state: RootState) => state.assistant
   );
 
@@ -87,7 +85,7 @@ export const Assistant = ({ threadId }: Props) => {
     <>
       {isSearchOpen && (
         <div onClick={closeSearch}>
-          <SearchThreads ref={modalRef} visitorId={userVisitorId!} />
+          <SearchThreads visitorId={userVisitorId!} />
         </div>
       )}
 
@@ -100,6 +98,7 @@ export const Assistant = ({ threadId }: Props) => {
             messages={messages}
             onMessagePlayed={setVoiceMessageAsPlayed}
             voiceId={voiceId}
+            assistantError={assistantError}
           />
         )}
         <div className="flex-grow overflow-y-auto my-14 md:my-0">

@@ -13,6 +13,7 @@ export type VoiceModeProps = {
   }>;
   onMessagePlayed?: (messageId: string) => void;
   voiceId: string;
+  assistantError: string | null;
 };
 
 export type VoiceModeState = {
@@ -24,6 +25,7 @@ export type VoiceModeState = {
   transcriptText: string;
   localIsRecording: boolean;
   isWaitingForResponse: boolean;
+  error: Error | null;
 };
 
 export type VoiceModeHandlers = {
@@ -52,6 +54,7 @@ export type VoiceModeStatusProps = {
   isPlayingAudio: boolean;
   recordingTime: number;
   isWaitingForResponse: boolean;
+  error: Error | null;
 };
 
 export type VoiceModeTranscriptProps = {

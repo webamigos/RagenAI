@@ -1,12 +1,19 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useRef, useEffect } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
 
-import { Input, Text, Card, SpinnerSVG, SidebarItem } from '@ragenai/common-ui';
+import {
+  Input,
+  Text,
+  SpinnerSVG,
+  SidebarItem,
+  Dialog,
+  DialogTitle,
+} from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchThreadSuggestions } from '../../../actions';
 import { reducer, initialState } from './SearchThreadsReducer';
-
+import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 type SearchThreadsProps = {
   visitorId: string;
 };
@@ -14,12 +21,15 @@ type SearchThreadsProps = {
 export const SearchThreads = React.forwardRef<
   HTMLDivElement,
   SearchThreadsProps
->(({ visitorId }, ref) => {
+>(({ visitorId }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { query, results, suggestions, isLoading, hasSearched } = state;
+  const { closeSearch, isSearchOpen } = useSearchThreads();
 
   const { errorToast } = statusToast();
   const t = useTranslations('search-threads');
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const debouncedFetchSuggestions = useDebouncedCallback(
     async (value: string) => {
@@ -80,17 +90,26 @@ export const SearchThreads = React.forwardRef<
     }
 
     dispatch({ type: 'SET_SUGGESTIONS', payload: [] });
+    closeSearch();
   };
 
+  useEffect(() => {
+    if (isSearchOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
   return (
-    <Card
-      size="lg"
-      ref={ref}
-      className="relative h-96 p-4 overflow-auto"
+    <Dialog
       onClick={(e) => e.stopPropagation()}
+      size="lg"
+      className="h-96 p-4 overflow-auto"
+      open={isSearchOpen}
+      onClose={closeSearch}
     >
+      <DialogTitle>{t('title')}</DialogTitle>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-50 z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 z-10">
           <SpinnerSVG size="lg" />
         </div>
       )}
@@ -100,6 +119,7 @@ export const SearchThreads = React.forwardRef<
           onChange={handleInputChange}
           placeholder={t('placeholder')}
           className="py-2 mb-4"
+          ref={inputRef}
         />
       </form>
       {suggestions.length > 0 && (
@@ -127,7 +147,7 @@ export const SearchThreads = React.forwardRef<
             </Text>
           ))}
       </div>
-    </Card>
+    </Dialog>
   );
 });
 

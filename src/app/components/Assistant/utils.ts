@@ -1,26 +1,15 @@
+import { type TranslationFn } from './types';
 import { SseMessageError } from '@/app/contracts/Events';
-import { type TranslationFn, type ErrorEvent } from './types';
 
 export function getErrorMessage(
-  event: ErrorEvent,
+  event: SseMessageError,
   t: TranslationFn
-): string | null {
-  const defaultErrorMessage = null;
-
-  if (!event.data) {
-    return defaultErrorMessage;
+): string {
+  if (!event.code) {
+    return event.message || t('unknown-error');
   }
-
-  try {
-    const { code, originalErrorMessage } = JSON.parse(
-      event.data
-    ) as SseMessageError;
-
-    if (originalErrorMessage) {
-      return t(code) + ` - ${originalErrorMessage}`;
-    }
-    return t(code);
-  } catch {
-    return defaultErrorMessage;
+  if (event.originalErrorMessage) {
+    return t(event.code) + ` - ${event.originalErrorMessage}`;
   }
+  return t(event.code);
 }

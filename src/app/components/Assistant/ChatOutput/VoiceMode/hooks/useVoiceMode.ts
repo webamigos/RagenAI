@@ -17,6 +17,7 @@ interface UseVoiceModeProps {
   onResult: (text: string, recordingTime: number) => void;
   onMessagePlayed?: (messageId: string) => void;
   voiceId: string;
+  assistantError: string | null;
 }
 
 export const useVoiceMode = ({
@@ -27,6 +28,7 @@ export const useVoiceMode = ({
   onResult,
   onMessagePlayed,
   voiceId,
+  assistantError,
 }: UseVoiceModeProps) => {
   const [state, dispatch] = useReducer(voiceModeReducer, {
     ...initialState,
@@ -91,6 +93,25 @@ export const useVoiceMode = ({
       playAssistantResponse(lastMessage);
     }
   }, [state.currentMessages]);
+  //voice mode has two types of errors
+  //1. voiceError: error from voice input
+  //2. assistantError: error from assistant
+  useEffect(() => {
+    if (voiceError) {
+      dispatch({ type: 'SET_ERROR', payload: new Error(voiceError) });
+      errorToast({
+        message: `${(t('voice-error'), voiceError)} `,
+      });
+      stopListening();
+    }
+  }, [voiceError]);
+
+  useEffect(() => {
+    if (assistantError) {
+      dispatch({ type: 'SET_ERROR', payload: new Error(assistantError) });
+      stopListening();
+    }
+  }, [assistantError]);
 
   const playAssistantResponse = async (
     message: VoiceModeProps['messages'][0]
@@ -122,11 +143,14 @@ export const useVoiceMode = ({
       }
     } catch (error) {
       logger.error({ err: error }, 'Error while generating audio:');
-      dispatch({ type: 'SET_API_ERROR', payload: true });
+      dispatch({
+        type: 'SET_ERROR',
+        payload: error instanceof Error ? error : new Error('Unknown error'),
+      });
       errorToast({
         message: t('api-error'),
       });
-      startListening();
+      stopListening();
     } finally {
       dispatch({ type: 'SET_GENERATING_AUDIO', payload: false });
     }
