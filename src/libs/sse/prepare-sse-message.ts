@@ -55,13 +55,28 @@ export const prepareApiSseMessage = (
 };
 
 export const parseSseString = (sseString: string) => {
-  const lines = sseString.split('\n');
-  const eventLine = lines[0].split(': ')[1];
-  const dataLine = lines[1].split(': ')[1];
+  const lines = sseString.split('\n').filter((line) => line.trim() !== '');
+  let event: string | undefined;
+  let data: string | undefined;
+
+  for (const line of lines) {
+    const [key, ...values] = line.split(': ');
+    const value = values.join(': ');
+
+    if (key === 'event') {
+      event = value;
+    } else if (key === 'data') {
+      data = value;
+    }
+  }
+
+  if (!event) {
+    throw new Error('No event found in SSE message');
+  }
 
   return {
-    event: eventLine as ApiEvent,
-    data: JSON.parse(dataLine) as ApiEventData | undefined,
+    event: event as ApiEvent,
+    data: data ? JSON.parse(data) : undefined,
   };
 };
 
