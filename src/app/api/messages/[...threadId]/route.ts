@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import { auth } from '@clerk/nextjs/server';
 
 import { createMessageSchema } from '../../../contracts/Message';
-import { sendForModeration } from '../../../lib/services/moderation';
 import { fetchMessagesFromDb } from '../../../lib/services/message';
 import {
   setSentryContext,
@@ -36,17 +35,16 @@ export const POST = async (request: Request) => {
     }
 
     const prompt = requestData.data.prompt;
-
-    const moderationResult = await sendForModeration(prompt);
-
-    if (moderationResult.isFlagged) {
-      return NextResponse.json(
-        { error: 'Bad message' },
-        { status: StatusCodes.BAD_REQUEST }
-      );
-    }
   } catch (e) {
     logger.error({ err: e }, 'Error sending message');
+    return NextResponse.json(
+      {
+        type: 'error',
+        message: 'Failed to process message',
+        code: 'message-processing-error',
+      },
+      { status: StatusCodes.INTERNAL_SERVER_ERROR }
+    );
   }
 };
 

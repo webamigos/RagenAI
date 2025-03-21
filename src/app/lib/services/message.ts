@@ -203,13 +203,15 @@ export const saveRateInDB = async (messagePublicId: string, rate: number) => {
   }
 };
 
-export const deleteMessageByPublicId = (publicId: string) => {
+export const deleteMessageByPublicId = async (
+  publicId: string
+): Promise<void> => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('EXTRA_DATA', {
       messageId: publicId,
     });
-    return db.message.delete({
+    await db.message.delete({
       where: { public_id: publicId },
     });
   } catch (error) {

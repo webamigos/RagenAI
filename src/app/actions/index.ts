@@ -27,7 +27,6 @@ import {
   createAndStoreMessage,
   deleteMessageByPublicId,
 } from '../lib/services/message';
-import { sendForModeration } from '../lib/services/moderation';
 import {
   setSentryClerkOrganizationTag,
   setSentryClerkUserTag,
@@ -76,12 +75,6 @@ export const sendMessage = async (
 
   const threadPublicId = threadId;
   const prompt = requestData.data.prompt;
-
-  //moderation is off right now
-  const moderationResult = await sendForModeration(prompt);
-  if (moderationResult.isFlagged) {
-    return { error: 'Bad message', status: StatusCodes.BAD_REQUEST };
-  }
 
   // get or create thread
   try {

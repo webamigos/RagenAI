@@ -1,7 +1,9 @@
-import { useReducer, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role } from '@prisma/client';
 import { usePathname } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { useAppSelector } from '@/store/hooks';
 
 import {
   checkVisitorVisits,
@@ -19,61 +21,60 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { useApi } from '@/app/hooks/useApi';
 import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
 import { handleAssistantStream } from '@/app/components/Assistant/handle-assistant-stream';
-import { publicAssistantReducer, type State } from './publicAssistantReducer';
 import { AssistantMode } from '@/app/contracts/Assistant';
-import { sharedReducerActions } from '@/app/components/Assistant/reducer';
-import { visitorCookieName } from '@/app/config';
 import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
 import { getVisitorIdFromBrowserCookie } from '@/app/lib/services/cookies.browser';
+import {
+  setMessages,
+  setInitialLoad,
+  setLimitLock,
+  setError,
+} from '@/store/assistant/assistantSlice';
 
 const { errorToast } = statusToast();
-
-const { SET_INITIAL_LOAD, SET_LIMIT_LOCK, SET_MESSAGES } = sharedReducerActions;
 
 export const usePublicAssistantLogic = (
   threadId: string,
   organizationId: string
 ) => {
-  const initialState: State = {
-    isInitialLoad: true,
-    isMessageLoading: false,
-    userMessageId: '',
-    isLimitLock: false,
-    messageLoadingText: '',
-    isMessageError: false,
-    isError: false,
-    streamedMessage: null,
-    messages: [],
-  };
   const pathname = usePathname();
   const [visitorId, setVisitorId] = useState('');
+  const dispatch = useDispatch();
+
+  const {
+    messages,
+    isLoading: isMessageLoading,
+    userMessageId,
+    isLimitLock,
+    messageLoadingText,
+    streamedMessage,
+    error: isError,
+  } = useAppSelector((state) => state.assistant);
 
   const { isLoading } = useApi(() => fetchMessagesFromApi(threadId, visitorId));
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
+  const promptFormRef = useRef<PromptFormRef>(null);
 
   const t = useTranslations('Index');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
 
-  const [state, dispatch] = useReducer(publicAssistantReducer, initialState);
-  const isGlobalLoading =
-    !state.isError && (state.isMessageLoading || isLoading);
-  const promptFormRef = useRef<PromptFormRef>(null);
+  const isGlobalLoading = !isError && (isMessageLoading || isLoading);
   const isPublicAccess = pathname.includes('/public');
 
   const scrollToBottom = () =>
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const fetchData = async () => {
-    dispatch({ type: SET_INITIAL_LOAD, payload: true });
+    dispatch(setInitialLoad(true));
 
     try {
       const response = await fetchMessagesFromApi(threadId, visitorId);
 
       if (response) {
-        dispatch({ type: SET_INITIAL_LOAD, payload: false });
-        dispatch({ type: SET_MESSAGES, payload: response.data });
+        dispatch(setInitialLoad(false));
+        dispatch(setMessages(response.data));
 
         // Check if we have a temporary message to process
         const tempMessage = sessionStorage.getItem(
@@ -92,7 +93,6 @@ export const usePublicAssistantLogic = (
           await handleAssistantStream({
             mode: AssistantMode.PUBLIC,
             organizationId,
-            dispatch,
             messages: response.data,
             userMessageId: userMessage.public_id,
             userMessage,
@@ -101,7 +101,7 @@ export const usePublicAssistantLogic = (
             tApiEvents,
             threadId,
             responseType: ChatResponseType.TEXT,
-            streamedMessage: state.streamedMessage,
+            streamedMessage,
             scrollFn: scrollToBottom,
             errorToast,
             promptFormRef,
@@ -110,11 +110,13 @@ export const usePublicAssistantLogic = (
               messageType: 'TEXT',
             },
             chatType: ChatType.RAG,
+            reduxDispatch: dispatch,
           });
         }
       }
     } catch (error) {
       logger.error('Error fetching messages: %o', error);
+      dispatch(setError('Error fetching messages'));
     }
   };
 
@@ -133,7 +135,7 @@ export const usePublicAssistantLogic = (
       if (visitorId) {
         const { data } = await checkVisitorVisits(visitorId);
         if (data.messages >= 1111) {
-          dispatch({ type: SET_LIMIT_LOCK, payload: true });
+          dispatch(setLimitLock(true));
         }
       }
     } catch (error) {
@@ -155,43 +157,42 @@ export const usePublicAssistantLogic = (
       await handleAssistantStream({
         mode: AssistantMode.PUBLIC,
         organizationId,
-        dispatch,
-        messages: state.messages,
-        userMessageId: state.userMessageId,
+        messages,
+        userMessageId,
         userMessage,
         t,
         tChainErrors,
         tApiEvents,
         threadId,
         responseType: ChatResponseType.TEXT,
-        streamedMessage: state.streamedMessage,
+        streamedMessage,
         scrollFn: scrollToBottom,
         errorToast,
         promptFormRef,
         data,
         chatType: ChatType.RAG,
+        reduxDispatch: dispatch,
       });
     } catch {
       errorToast({ message: 'sending-error' });
     }
   };
 
-  const isLocked = () => state.isLimitLock;
+  const isLocked = () => isLimitLock;
 
   return {
-    messageLoadingText: state.messageLoadingText,
+    messageLoadingText,
     messagesEndDivRef,
-    isMessageLoading: state.isMessageLoading,
+    isMessageLoading,
     isGlobalLoading,
-    streamedMessage: state.streamedMessage,
-    userMessageId: state.userMessageId,
-    isLimitLock: state.isLimitLock,
-    messages: state.messages,
+    streamedMessage,
+    userMessageId,
+    isLimitLock,
+    messages,
     isPublicAccess,
     isLocked,
-    dispatch,
     onSubmit,
-    isError: state.isError,
+    isError,
     promptFormRef,
   };
 };
