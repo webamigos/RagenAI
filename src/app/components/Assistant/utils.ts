@@ -4,11 +4,10 @@ import { SseMessageError } from '@/app/contracts/Events';
 export function getErrorMessage(
   event: SseMessageError,
   t: TranslationFn
-): string | null {
+): string {
   if (!event.code) {
-    return null;
+    return event.message || t('unknown-error');
   }
-
   if (event.originalErrorMessage) {
     return t(event.code) + ` - ${event.originalErrorMessage}`;
   }

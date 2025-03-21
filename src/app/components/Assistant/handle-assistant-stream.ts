@@ -102,7 +102,7 @@ const handleStreamError = async ({
     errorToast({
       message: errorMessage || tChainErrors('unknown-error'),
     });
-    reduxDispatch(setError(errorMessage || tChainErrors('unknown-error')));
+    reduxDispatch(setError(errorMessage));
     reduxDispatch(setLoading(false));
     reduxDispatch(setMessageLoadingText(''));
   } catch (error) {
