@@ -16,7 +16,7 @@ interface NewChatInterfaceProps {
   isPublicAccess?: boolean;
   widgetMode?: boolean;
   voiceId?: string;
-  projectId?: number;
+  projectId: number;
   projectPublicId?: string;
   projectTitle?: string;
 }
