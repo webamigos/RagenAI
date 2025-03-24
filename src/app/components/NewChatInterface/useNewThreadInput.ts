@@ -21,7 +21,7 @@ type Props = {
   organizationId?: string;
   isPublicAccess?: boolean;
   widgetMode?: boolean;
-  projectId: number;
+  projectId?: number;
   projectPublicId?: string;
 };
 
@@ -49,7 +49,7 @@ export const useNewThreadInput = ({
   const privateThread = usePrivateNewThread();
   const publicThread = usePublicNewThread({
     organizationId: organizationId || '',
-    projectId: projectId,
+    projectId: projectId!,
     widgetMode: widgetMode || false,
   });
 

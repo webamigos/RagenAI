@@ -45,7 +45,7 @@ export const createGuestThreadAction = async ({
   projectId,
   initialMessage,
 }: {
-  projectId: number;
+  projectId?: number;
   initialMessage?: string;
 }): Promise<ThreadAction> => {
   try {
