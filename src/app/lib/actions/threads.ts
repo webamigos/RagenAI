@@ -41,16 +41,23 @@ export const createThreadAction = async (
   }
 };
 
-export const createGuestThreadAction = async (
-  initialMessage?: string
-): Promise<ThreadAction> => {
+export const createGuestThreadAction = async ({
+  projectId,
+  initialMessage,
+}: {
+  projectId: number;
+  initialMessage?: string;
+}): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('guest-threads');
 
     const visitorId = await getVisitorIdFromCookie();
 
     const threadRecord = await db.thread.create({
-      data: { visitor_id: visitorId },
+      data: {
+        visitor_id: visitorId,
+        project_id: projectId,
+      },
     });
 
     if (initialMessage && visitorId) {
@@ -61,7 +68,13 @@ export const createGuestThreadAction = async (
       });
     }
 
-    return { success: true, thread: { public_id: threadRecord.public_id } };
+    return {
+      success: true,
+      thread: {
+        public_id: threadRecord.public_id,
+        project_id: projectId,
+      },
+    };
   } catch (error) {
     logger.error({ err: error }, 'Cannot create guest thread');
     return { success: false, errorMessage: 'Cannot create thread' };

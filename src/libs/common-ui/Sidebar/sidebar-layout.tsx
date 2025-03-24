@@ -104,7 +104,7 @@ export function SidebarLayout({
     pathname.startsWith(`/my-profile`) || pathname.startsWith(`/admin`);
 
   const baseMainStyles =
-    'flex flex-1 flex-col bg-primary-light dark:bg-primary-dark overflow-y-auto';
+    'flex flex-1 flex-col bg-primary-light dark:bg-primary-dark';
   const baseNavbarWrapperStyles = 'flex justify-end hidden lg:flex';
   const baseContentWrapperStyles =
     'flex flex-1 h-full lg:rounded-md lg:bg-primary-light dark:lg:bg-primary-dark lg:pb-3.5 lg:ring-zinc-950/5 dark:lg:ring-white/10';
@@ -136,7 +136,7 @@ export function SidebarLayout({
         className={`${baseMainStyles} ${
           isMyProfile
             ? 'pb-6 px-2.5 lg:ml-[19rem] lg:pt-2'
-            : 'relative justify-center pb-2 lg:ml-[21rem] lg:pt-2 overflow-auto'
+            : 'relative justify-center pb-2 lg:ml-[21rem] lg:pt-2'
         }`}
       >
         <div

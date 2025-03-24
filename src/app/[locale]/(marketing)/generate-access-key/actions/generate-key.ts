@@ -8,7 +8,7 @@ const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
 
-function getEncryptionKey(): Buffer {
+function getEncryptionKey() {
   const key = process.env.ORGANIZATION_KEY_ENCRYPTION_KEY;
   if (!key) {
     throw new Error('Encryption key not configured');
@@ -16,10 +16,12 @@ function getEncryptionKey(): Buffer {
   return Buffer.from(key, 'hex');
 }
 
-export const generateKey = async (organizationId: string) => {
-  // console.log({ organizationId });
+export const generateKey = async (
+  organizationId: string,
+  projectId: number
+) => {
   try {
-    logger.info('Generating encrypted key for organization');
+    logger.info('Generating encrypted key for organization and project');
 
     // Generate a random IV
     const iv = crypto.randomBytes(IV_LENGTH);
@@ -27,9 +29,10 @@ export const generateKey = async (organizationId: string) => {
     // Create cipher
     const cipher = crypto.createCipheriv(ALGORITHM, getEncryptionKey(), iv);
 
-    // Encrypt the organization ID
+    // Encrypt the organization ID and project ID
+    const data = `${organizationId}:${projectId}`;
     const encrypted = Buffer.concat([
-      cipher.update(organizationId, 'utf8'),
+      cipher.update(data, 'utf8'),
       cipher.final(),
     ]);
 
@@ -47,7 +50,9 @@ export const generateKey = async (organizationId: string) => {
   }
 };
 
-export const decodeKey = async (encodedKey: string): Promise<string> => {
+export const decodeKey = async (
+  encodedKey: string
+): Promise<{ organizationId: string; projectId: number }> => {
   try {
     // Convert from base64url to buffer
     const combined = Buffer.from(encodedKey, 'base64url');
@@ -70,7 +75,12 @@ export const decodeKey = async (encodedKey: string): Promise<string> => {
       decipher.final(),
     ]);
 
-    return decrypted.toString('utf8');
+    const [organizationId, projectId] = decrypted.toString('utf8').split(':');
+
+    return {
+      organizationId,
+      projectId: parseInt(projectId),
+    };
   } catch (error) {
     logger.error('Error decoding key:', error);
     throw new Error('Invalid access key');

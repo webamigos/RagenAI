@@ -13,7 +13,9 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { guestDetails: string[] };
+  params: {
+    guestDetails: string[];
+  };
 };
 
 export async function POST(request: NextRequest, { params }: Params) {
@@ -22,13 +24,15 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     const [publicThreadId, organizationAccessToken] = params.guestDetails;
 
-    const orgId = await decodeKey(organizationAccessToken);
+    const { organizationId, projectId } = await decodeKey(
+      organizationAccessToken
+    );
 
     setSentryServiceTag('threads');
-    if (!orgId) {
+    if (!organizationId) {
       throw new Error('Unauthorized');
     }
-    setSentryClerkOrganizationTag(orgId);
+    setSentryClerkOrganizationTag(organizationId);
 
     const body = await request.json();
     const parsedData = createMessageSchema().parse(body);
@@ -42,7 +46,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     stream = await streamEvents({
       publicThreadId,
       userMessage: parsedData,
-      orgId,
+      orgId: organizationId,
+      projectId,
       mode: AssistantMode.PUBLIC,
       visitorId,
     });
