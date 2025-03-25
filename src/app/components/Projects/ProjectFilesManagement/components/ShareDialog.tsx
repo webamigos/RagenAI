@@ -75,7 +75,11 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
                     className="p-2"
                     containerClassName="w-full"
                   />
-                  <CopyButton className="mt-4" textToCopy={shareUrl} />
+                  <CopyButton
+                    showToast
+                    className="mt-4"
+                    textToCopy={shareUrl}
+                  />
                 </div>
               </>
             )}
