@@ -12,6 +12,15 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default function PromptManagementPageWrapper() {
-  return <PromptManagementPage />;
+const FEATURE_FLAG_SHOW_MODEL_API_KEY =
+  !!process.env.FEATURE_FLAG_SHOW_MODEL_API_KEY;
+const FEATURE_FLAG_MODEL_SELECT = !!process.env.FEATURE_FLAG_MODEL_SELECT;
+
+export default async function PromptManagementPageWrapper() {
+  return (
+    <PromptManagementPage
+      showModelApiKey={FEATURE_FLAG_SHOW_MODEL_API_KEY}
+      showModelSelect={FEATURE_FLAG_MODEL_SELECT}
+    />
+  );
 }
