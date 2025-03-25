@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { MessageDto } from '@/app/contracts/Message';
-import { CopyButton } from '@/app/components/Common/CopyButton';
+import { CopyButton } from '@ragenai/common-ui/CopyButton/CopyButton';
 
 type CopyToClipboardButtonProps = {
   message: MessageDto;

@@ -33,7 +33,7 @@ export const ProjectFileUploadContent = ({
     return (
       <div className="flex items-center justify-between w-full">
         <div
-          className="absolute top-1 right-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 duration-200 p-1 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
+          className="absolute bg-white rounded-md p-2 -top-40 left-0 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             onRssClick?.();

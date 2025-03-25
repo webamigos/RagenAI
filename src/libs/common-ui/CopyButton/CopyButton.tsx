@@ -1,3 +1,5 @@
+'use client';
+
 import { memo, useState, ButtonHTMLAttributes } from 'react';
 import { Clipboard, ClipboardChecked } from '@ragenai/common-ui/icons';
 import { useTranslations } from 'next-intl';

@@ -23,3 +23,4 @@ export * from './Tabs';
 export * from './WysywigEditor';
 export * from './Skeleton';
 export * from './Switch';
+export * from './CopyButton';

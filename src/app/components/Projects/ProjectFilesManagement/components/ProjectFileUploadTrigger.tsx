@@ -11,7 +11,7 @@ import {
   ProjectFileUploadContent,
   FileStatus,
 } from './ProjectFileUploadContent';
-import { ShareDialog } from './ShareDialog';
+import { ShareDialog } from '../../ShareDialog/index';
 
 type Props = {
   projectId: number;
