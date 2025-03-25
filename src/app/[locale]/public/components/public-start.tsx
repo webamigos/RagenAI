@@ -10,14 +10,17 @@ import { makeVisitorCookieRequest } from '@/app/lib/services/cookies.browser';
 const PublicStart = memo(
   ({
     organizationId,
+    projectId,
     widgetMode = false,
   }: {
     organizationId: string;
+    projectId: number;
     widgetMode?: boolean;
   }) => {
     const t = useTranslations('Chatbot');
     const { checkExistingThread, isLoading } = useNewThread({
       organizationId,
+      projectId,
       widgetMode,
     });
 
@@ -46,6 +49,7 @@ const PublicStart = memo(
           {!widgetMode && (
             <NewChatInterface
               organizationId={organizationId}
+              projectId={projectId}
               isPublicAccess={true}
               widgetMode={widgetMode}
             />

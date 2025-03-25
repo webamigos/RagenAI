@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 
 import { PublicStart } from '../components/public-start';
+import { decodeKey } from '../../(marketing)/generate-access-key/actions/generate-key';
 
 type Props = {
   params: {
@@ -20,17 +21,20 @@ export async function generateMetadata({
   };
 }
 
-export default function Index({
+export default async function Index({
   params: { locale, organizationId },
   searchParams,
 }: Props) {
   setRequestLocale(locale);
+
+  const { projectId } = await decodeKey(organizationId);
 
   return (
     <div>
       <div className="container mx-auto h-full">
         <PublicStart
           organizationId={organizationId}
+          projectId={projectId}
           widgetMode={searchParams.widgetMode}
         />
       </div>

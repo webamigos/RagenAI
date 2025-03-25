@@ -41,9 +41,11 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 
 export const useNewThread = ({
   organizationId,
+  projectId,
   widgetMode = false,
 }: {
   organizationId: string;
+  projectId: number;
   widgetMode?: boolean;
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -66,7 +68,10 @@ export const useNewThread = ({
       handleCloseThread(false);
       reduxDispatch(clearMessages());
 
-      const result = await createGuestThreadAction(undefined);
+      const result = await createGuestThreadAction({
+        projectId,
+        initialMessage,
+      });
 
       if (!result.success) {
         throw new Error('Invalid response from server');

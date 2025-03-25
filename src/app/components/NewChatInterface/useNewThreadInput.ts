@@ -49,6 +49,7 @@ export const useNewThreadInput = ({
   const privateThread = usePrivateNewThread();
   const publicThread = usePublicNewThread({
     organizationId: organizationId || '',
+    projectId: projectId!,
     widgetMode: widgetMode || false,
   });
 

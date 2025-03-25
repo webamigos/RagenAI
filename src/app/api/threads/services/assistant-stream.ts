@@ -29,6 +29,7 @@ type Config = {
   mode: AssistantMode;
   filteredMode?: ChatType;
   visitorId?: string;
+  projectId?: number;
 };
 
 export async function streamEvents({
@@ -146,6 +147,7 @@ export async function streamEvents({
             settings: { ...rawSettings, apiKey: rawSettings.apiKey },
             organizationId: orgId,
             projectInstruction,
+            projectId: threadRecord.project?.id,
           });
           chain = publicRag.chain;
           finalAnswerRunName = publicRag.finalAnswerRunName;
