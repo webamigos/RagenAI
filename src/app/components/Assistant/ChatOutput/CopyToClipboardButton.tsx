@@ -1,10 +1,6 @@
-import { memo, useState } from 'react';
-
-import { Clipboard, ClipboardChecked } from '@ragenai/common-ui/icons';
+import { memo } from 'react';
 import { MessageDto } from '@/app/contracts/Message';
-import { useTranslations } from 'next-intl';
-
-import { statusToast } from '@/app/lib/utils/toast';
+import { CopyButton } from '@/app/components/Common/CopyButton';
 
 type CopyToClipboardButtonProps = {
   message: MessageDto;
@@ -13,30 +9,7 @@ type CopyToClipboardButtonProps = {
 
 export const CopyToClipboardButton = memo(
   ({ message, className }: CopyToClipboardButtonProps) => {
-    const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
-    const { successToast } = statusToast();
-    const t = useTranslations('success-toast');
-
-    const copyToClipboard = (text: string, messageId: string) => {
-      navigator.clipboard.writeText(text).then(() => {
-        setCopiedMessageId(messageId);
-        successToast({ message: t('copied') });
-        setTimeout(() => setCopiedMessageId(null), 2000);
-      });
-    };
-
-    return (
-      <button
-        onClick={() => copyToClipboard(message.content, message.public_id)}
-        className={className}
-      >
-        {copiedMessageId === message.public_id ? (
-          <ClipboardChecked />
-        ) : (
-          <Clipboard />
-        )}
-      </button>
-    );
+    return <CopyButton textToCopy={message.content} className={className} />;
   }
 );
 

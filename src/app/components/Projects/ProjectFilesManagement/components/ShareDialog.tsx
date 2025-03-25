@@ -3,6 +3,7 @@ import { useOrganization } from '@clerk/nextjs';
 import { Dialog, Text, Switch, Input } from '@ragenai/common-ui';
 import { generateKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';
 import { useState } from 'react';
+import { CopyButton } from '@/app/components/Common/CopyButton';
 
 type ShareDialogProps = {
   open: boolean;
@@ -39,7 +40,7 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
 
   return (
     <Dialog open={open} onClose={onClose} className="max-w-md">
-      <div className="p-6 space-y-4">
+      <div className="w-full p-6">
         <Text className="text-lg font-semibold">
           {t('share-knowledge.title')}
         </Text>
@@ -66,12 +67,16 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
                 <Text className="text-sm text-gray-600 dark:text-gray-400">
                   {t('share-knowledge.link-to-knowledge')}
                 </Text>
-                <Input
-                  type="text"
-                  readOnly
-                  value={shareUrl}
-                  className="w-full p-2"
-                />
+                <div className="w-full flex gap-1 items-center">
+                  <Input
+                    type="text"
+                    readOnly
+                    value={shareUrl}
+                    className="p-2"
+                    containerClassName="w-full"
+                  />
+                  <CopyButton className="mt-4" textToCopy={shareUrl} />
+                </div>
               </>
             )}
           </div>
