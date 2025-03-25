@@ -75,7 +75,7 @@ export default function ProjectPage({ params }: Props) {
             projectId={String(project.id)}
             projectPublicId={project.public_id}
           />
-          <div className="absolute cursor-pointer bg-white rounded-md -top-72 md:-top-40 right-0">
+          <div className="absolute cursor-pointer bg-white dark:bg-secondary-dark rounded-md -top-72 md:-top-40 right-0">
             <ShareDialogTrigger projectId={project.id} />
           </div>
         </div>
