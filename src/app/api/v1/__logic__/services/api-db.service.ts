@@ -123,7 +123,7 @@ export class ApiDbService {
             user_id: this.context.userId, // filled by API
           },
           {
-            visitor_id: this.context.userId, // field by UI
+            visitor_id: this.context.userId, // filled by UI
           },
         ],
       },
@@ -152,7 +152,7 @@ export class ApiDbService {
             user_id: this.context.userId, // filled by API
           },
           {
-            visitor_id: this.context.userId, // field by UI
+            visitor_id: this.context.userId, // filled by UI
           },
         ],
       },
@@ -187,7 +187,7 @@ export class ApiDbService {
             user_id: this.context.userId, // filled by API
           },
           {
-            visitor_id: this.context.userId, // field by UI
+            visitor_id: this.context.userId, // filled by UI
           },
         ],
       },
@@ -223,7 +223,7 @@ export class ApiDbService {
             user_id: this.context.userId, // filled by API
           },
           {
-            visitor_id: this.context.userId, // field by UI
+            visitor_id: this.context.userId, // filled by UI
           },
         ],
       },
@@ -264,7 +264,7 @@ export class ApiDbService {
               user_id: this.context.userId, // filled by API
             },
             {
-              visitor_id: this.context.userId, // field by UI
+              visitor_id: this.context.userId, // filed by UI
             },
           ],
         },
