@@ -69,6 +69,7 @@ export const useNewThread = ({
       reduxDispatch(clearMessages());
 
       const result = await createGuestThreadAction({
+        organizationId,
         projectId,
         initialMessage,
       });

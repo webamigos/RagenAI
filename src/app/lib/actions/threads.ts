@@ -3,7 +3,7 @@
 import db from '@ragenai/prisma-client';
 import { Thread } from '@prisma/client';
 import { setSentryServiceTag } from '../services/sentry';
-import { createNewOpenAIThread } from '../services/thread';
+import { createNewThreadInDb } from '../services/thread';
 import { logger } from '../utils/logger';
 import { createAndStoreMessage } from '../services/message';
 import { getVisitorIdFromCookie } from '../services/cookies';
@@ -26,7 +26,11 @@ export const createThreadAction = async (
 ): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
-    const thread = await createNewOpenAIThread(null, projectId);
+
+    const thread = await createNewThreadInDb({
+      visitorId: null,
+      projectId,
+    });
 
     return {
       success: true,
@@ -42,9 +46,11 @@ export const createThreadAction = async (
 };
 
 export const createGuestThreadAction = async ({
+  organizationId,
   projectId,
   initialMessage,
 }: {
+  organizationId?: string;
   projectId?: number;
   initialMessage?: string;
 }): Promise<ThreadAction> => {
@@ -55,6 +61,7 @@ export const createGuestThreadAction = async ({
 
     const threadRecord = await db.thread.create({
       data: {
+        organization_id: organizationId,
         visitor_id: visitorId,
         project_id: projectId,
       },

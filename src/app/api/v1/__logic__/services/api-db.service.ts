@@ -114,10 +114,18 @@ export class ApiDbService {
 
   // ======== THREADS ========
   async getUserThreads(): Promise<ApiThread[]> {
-    const documents = await db.thread.findMany({
+    const threads = await db.thread.findMany({
       where: {
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // field by UI
+          },
+        ],
       },
       select: {
         public_id: true,
@@ -130,7 +138,7 @@ export class ApiDbService {
       },
     });
 
-    return parseResponse(documents);
+    return parseResponse(threads);
   }
 
   async getUserThread(publicId: Thread['public_id']): Promise<ApiThread> {
@@ -138,7 +146,15 @@ export class ApiDbService {
       where: {
         public_id: publicId,
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // field by UI
+          },
+        ],
       },
       select: {
         public_id: true,
@@ -165,7 +181,15 @@ export class ApiDbService {
       where: {
         public_id: publicId,
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // field by UI
+          },
+        ],
       },
       data: {
         title: payload.title,
@@ -193,7 +217,15 @@ export class ApiDbService {
       where: {
         public_id: publicId,
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // field by UI
+          },
+        ],
       },
     });
   }
@@ -208,6 +240,7 @@ export class ApiDbService {
     const threadRecord = await db.thread.create({
       data: {
         organization_id: this.context.orgId,
+        project_id: this.context.projectId,
         user_id: this.context.userId,
         source: Source.API,
       },
@@ -225,8 +258,15 @@ export class ApiDbService {
       where: {
         thread: {
           organization_id: this.context.orgId,
-          user_id: this.context.userId,
           public_id: publicThreadId,
+          OR: [
+            {
+              user_id: this.context.userId, // filled by API
+            },
+            {
+              visitor_id: this.context.userId, // field by UI
+            },
+          ],
         },
       },
       select: {
