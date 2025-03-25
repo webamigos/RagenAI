@@ -32,15 +32,6 @@ export const ProjectFileUploadContent = ({
   if (hasFiles) {
     return (
       <div className="flex items-center justify-between w-full">
-        <div
-          className="absolute bg-white rounded-md p-2 -top-40 left-0 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRssClick?.();
-          }}
-        >
-          <RSSIcon className="w-4 h-4" />
-        </div>
         <div className="flex flex-col">
           <Text className="font-medium text-gray-900 dark:text-gray-200">
             {t('project-files')}
