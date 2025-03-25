@@ -32,15 +32,6 @@ export const ProjectFileUploadContent = ({
   if (hasFiles) {
     return (
       <div className="flex items-center justify-between w-full">
-        <div
-          className="absolute top-1 right-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 duration-200 p-1 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRssClick?.();
-          }}
-        >
-          <RSSIcon className="w-4 h-4" />
-        </div>
         <div className="flex flex-col">
           <Text className="font-medium text-gray-900 dark:text-gray-200">
             {t('project-files')}

@@ -13,6 +13,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectFileUploadTrigger } from '@/app/components/Projects/ProjectFilesManagement/components/ProjectFileUploadTrigger';
 import { ProjectInstructionTrigger } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionTrigger';
+import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
 
 type Project = {
   id: number;
@@ -69,11 +70,14 @@ export default function ProjectPage({ params }: Props) {
             projectPublicId={project.public_id}
           />
         </div>
-        <div className="flex-1 mx-4 md:mx-0">
+        <div className="relative flex-1 mx-4 md:mx-0">
           <ProjectInstructionTrigger
             projectId={String(project.id)}
             projectPublicId={project.public_id}
           />
+          <div className="absolute cursor-pointer bg-white dark:bg-secondary-dark rounded-md -top-72 md:-top-40 right-0">
+            <ShareDialogTrigger projectId={project.id} />
+          </div>
         </div>
       </div>
     </div>

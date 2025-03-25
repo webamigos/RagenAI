@@ -33,7 +33,6 @@ export const ProjectInstructionTrigger = ({
         <Text>{t('project-instructions.button')}</Text>
         <Text fontSize="xs">{t('project-instructions.description')}</Text>
       </Card>
-
       <Dialog
         className=" w-full max-w-lg max-h-[600px] overflow-y-auto"
         open={showInstructionsModal}
