@@ -1,6 +1,9 @@
+'use server';
+
 import db from '@ragenai/prisma-client';
 import { logger } from '../utils/logger';
 import { getOrgIdOrThrow } from './clerk';
+import crypto from 'crypto';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
@@ -172,4 +175,63 @@ export const deleteProjectFile = async (fileId: string, projectId: number) => {
       project_id: projectId,
     },
   });
+};
+
+export const getPublicProject = async (publicAccessTokenId: string) => {
+  try {
+    const project = await db.project.findFirst({
+      where: {
+        access_token: publicAccessTokenId,
+        is_public: true,
+      },
+      select: {
+        organization_id: true,
+        id: true,
+        title: true,
+      },
+    });
+
+    if (!project || !project.organization_id) {
+      return null;
+    }
+
+    return {
+      organizationId: project.organization_id,
+      projectId: project.id,
+      title: project.title,
+    };
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching public project');
+    throw error;
+  }
+};
+
+export const generateProjectKey = async (projectId: number) => {
+  try {
+    logger.info('Generating access token for project');
+
+    // Update project to be public
+    const project = await db.project.update({
+      where: { id: projectId },
+      data: {
+        access_token: crypto.randomUUID(),
+        is_public: true,
+        published_at: new Date(),
+      },
+      select: {
+        access_token: true,
+      },
+    });
+
+    if (!projectId) {
+      throw new Error('Failed to generate access token');
+    }
+
+    return {
+      accessToken: project.access_token,
+    };
+  } catch (error) {
+    logger.error({ err: error }, 'Error generating access token:');
+    throw new Error('Failed to generate access token');
+  }
 };
