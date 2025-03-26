@@ -29,6 +29,7 @@ type InitializePublicRagChainParams = {
   settings: OrganizationSettings;
   organizationId: string;
   projectInstruction?: string | null;
+  projectId?: number;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -38,6 +39,7 @@ export const initializePublicRagChain = async ({
   settings,
   organizationId,
   projectInstruction,
+  projectId,
 }: InitializePublicRagChainParams) => {
   try {
     setSentryServiceTag(serviceName);
@@ -100,6 +102,19 @@ export const initializePublicRagChain = async ({
     if (projectInstruction) {
       finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
     }
+    const isSupabaseVectorStore = vectorStore instanceof SupabaseVectorStore;
+
+    // Configure metadata filter for project-level access control
+    const metadataFilter = {
+      must: [
+        {
+          key: 'metadata.project_id',
+          match: {
+            value: projectId,
+          },
+        },
+      ],
+    };
 
     return await basicRagChain({
       models: {
@@ -108,6 +123,7 @@ export const initializePublicRagChain = async ({
         answerGenerator,
       },
       config: {
+        metadataFilter: isSupabaseVectorStore ? {} : metadataFilter,
         maxDocumentsToRetrieve,
         answerInstructions: finalInstructions,
       },

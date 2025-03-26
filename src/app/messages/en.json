@@ -605,6 +605,18 @@
       "loading-files": "Failed to load project files",
       "file-delete": "Failed to delete file",
       "fetching-error": "An error occurred while fetching the project's files"
+    },
+    "share-knowledge": {
+      "title": "Share Project Knowledge",
+      "share-publicly": "Share project knowledge publicly",
+      "generating-link": "Generating sharing link...",
+      "link-to-knowledge": "Share this link to give access to project knowledge:",
+      "copy": "Copy",
+      "embed-code": "Embed code",
+      "personalize-chatbot": "Personalize chatbot",
+      "enable-chatbot": "Enable chatbot",
+      "chatbot-title": "Chatbot title",
+      "chatbot-subtitle": "Chatbot subtitle"
     }
   },
   "voice-mode": {

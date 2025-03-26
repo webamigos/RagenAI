@@ -11,9 +11,10 @@ import { Warning } from './warning';
 
 type Props = {
   organizationRecord: { public_id: string };
+  projectId: number;
 };
 
-export const GenerateAccessKey = ({ organizationRecord }: Props) => {
+export const GenerateAccessKey = ({ organizationRecord, projectId }: Props) => {
   const [key, setKey] = useState('');
   const [chatbotName, setChatbotName] = useState('');
   const [chatbotTitle, setChatbotTitle] = useState('');
@@ -31,7 +32,7 @@ export const GenerateAccessKey = ({ organizationRecord }: Props) => {
 
   const handleGenerateKeyIfNeeded = async () => {
     if (!key) {
-      const newKey = await generateKey(organizationClerkId);
+      const newKey = await generateKey(organizationClerkId, projectId);
       setKey(newKey);
       return newKey;
     }

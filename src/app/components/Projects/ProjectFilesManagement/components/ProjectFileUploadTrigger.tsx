@@ -3,95 +3,27 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
-
-import {
-  Card,
-  Dialog,
-  ClourArrowIcon,
-  Text,
-  DocumentIcon,
-  Skeleton,
-} from '@ragenai/common-ui';
+import { Card, Dialog } from '@ragenai/common-ui';
 
 import { getProjectFiles } from '@/app/actions';
-
 import { ProjectFileUpload } from './ProjectFileUpload';
+import {
+  ProjectFileUploadContent,
+  FileStatus,
+} from './ProjectFileUploadContent';
+import { ShareDialog } from '../../ShareDialog/ShareDialog';
 
 type Props = {
   projectId: number;
   projectPublicId: string;
 };
 
-type FileStatus = {
-  hasFiles: boolean;
-  fileCount: number;
-  loading: boolean;
-};
-
-// Component that shows the actual content once loaded
-const ProjectFileUploadContent = ({
-  status,
-  t,
-}: {
-  status: FileStatus;
-  t: any;
-}) => {
-  const { hasFiles, fileCount, loading } = status;
-
-  if (loading) {
-    return <Skeleton className="-mt-4" height="h-20" />;
-  }
-
-  if (hasFiles) {
-    return (
-      <div className="flex items-center justify-between w-full">
-        <div className="flex flex-col">
-          <Text className="font-medium text-gray-900 dark:text-gray-200">
-            {t('project-files')}
-          </Text>
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
-            {fileCount}{' '}
-            {fileCount === 1 ? t('file-singular') : t('file-plural')}
-          </Text>
-        </div>
-        <div className="flex items-center">
-          <div className="flex items-center">
-            {Array.from({ length: Math.min(fileCount, 5) }).map((_, index) => (
-              <div
-                key={index}
-                className="h-8 w-8 bg-primary-blue-500 rounded-full flex items-center justify-center text-white shadow-md -ml-2 first:ml-0"
-                style={{ zIndex: 5 - index }}
-              >
-                <DocumentIcon />
-              </div>
-            ))}
-          </div>
-          {fileCount > 5 && (
-            <Text className="ml-1 text-sm font-medium text-gray-600 dark:text-gray-400">
-              +{fileCount - 5}
-            </Text>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex w-full h-12 justify-center">
-      <div className="flex items-center gap-2 dark:text-gray-200">
-        <Text className="font-medium text-gray-900 dark:text-gray-200">
-          {t('upload-file')}
-        </Text>
-        <ClourArrowIcon className="h-6 w-6 text-primary-blue-500" />
-      </div>
-    </div>
-  );
-};
 export const ProjectFileUploadTrigger = ({
   projectId,
   projectPublicId,
 }: Props) => {
   const [showUploader, setShowUploader] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [fileStatus, setFileStatus] = useState<FileStatus>({
     hasFiles: false,
     fileCount: 0,
@@ -135,24 +67,24 @@ export const ProjectFileUploadTrigger = ({
     checkProjectFiles();
   }, [projectId, organization, showUploader]);
 
-  const handleDialogClose = () => {
-    setShowUploader(false);
-  };
-
   return (
     <>
       <Card
         size="full"
         onClick={() => setShowUploader(true)}
-        className="h-28 cursor-pointer"
+        className="group relative h-28 cursor-pointer"
       >
-        <ProjectFileUploadContent status={fileStatus} t={t} />
+        <ProjectFileUploadContent
+          status={fileStatus}
+          t={t}
+          onRssClick={() => setShowShareDialog(true)}
+        />
       </Card>
 
       <Dialog
         className="max-h-[400px] overflow-y-auto"
         open={showUploader}
-        onClose={handleDialogClose}
+        onClose={() => setShowUploader(false)}
       >
         <ProjectFileUpload
           projectId={projectId}
@@ -160,6 +92,12 @@ export const ProjectFileUploadTrigger = ({
           initialFileCount={fileStatus.fileCount}
         />
       </Dialog>
+
+      <ShareDialog
+        open={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        projectId={projectId}
+      />
     </>
   );
 };

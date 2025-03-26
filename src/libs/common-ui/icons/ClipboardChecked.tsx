@@ -1,4 +1,8 @@
-export const ClipboardChecked = () => {
+import { ComponentProps } from 'react';
+
+import { classMerge } from '../utils/cn';
+
+export const ClipboardChecked = ({ className }: ComponentProps<'svg'>) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -6,7 +10,7 @@ export const ClipboardChecked = () => {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className="w-5 h-5"
+      className={classMerge('w-5 h-5', className)}
     >
       <path
         strokeLinecap="round"
