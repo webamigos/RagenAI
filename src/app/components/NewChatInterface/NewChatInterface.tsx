@@ -19,10 +19,12 @@ interface NewChatInterfaceProps {
   projectId?: number;
   projectPublicId?: string;
   projectTitle?: string;
+  accessToken?: string;
 }
 
 export const NewChatInterface = ({
   className,
+  accessToken,
   isEmbedded = false,
   organizationId,
   isPublicAccess = false,
@@ -47,6 +49,7 @@ export const NewChatInterface = ({
     widgetMode,
     projectId,
     projectPublicId,
+    accessToken,
   });
 
   useEffect(() => {

@@ -11,15 +11,17 @@ const PublicStart = memo(
   ({
     organizationId,
     projectId,
+    accessToken,
     widgetMode = false,
   }: {
     organizationId: string;
     projectId: number;
+    accessToken: string;
     widgetMode?: boolean;
   }) => {
     const t = useTranslations('Chatbot');
     const { checkExistingThread, isLoading } = useNewThread({
-      organizationId,
+      accessToken,
       projectId,
       widgetMode,
     });
@@ -52,6 +54,7 @@ const PublicStart = memo(
               projectId={projectId}
               isPublicAccess={true}
               widgetMode={widgetMode}
+              accessToken={accessToken}
             />
           )}
 

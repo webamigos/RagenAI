@@ -1,4 +1,4 @@
-import { ChatbotWidget } from '../../components/Chatbot/ChatbotWidget';
+import { ChatbotWidget } from '../../../components/Chatbot/ChatbotWidget';
 
 export default function WidgetPage({
   params,

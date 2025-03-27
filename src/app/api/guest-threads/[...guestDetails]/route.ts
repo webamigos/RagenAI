@@ -3,11 +3,11 @@ import { NextRequest } from 'next/server';
 import { logger } from '../../../lib/utils/logger';
 import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
-import { decodeKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';
 import { createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '../../threads/services/assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { getVisitorIdFromCookie } from '@/app/lib/services/cookies';
+import { getPublicProject } from '@/app/lib/services/project';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,9 +24,12 @@ export async function POST(request: NextRequest, { params }: Params) {
   try {
     const [publicThreadId, organizationAccessToken] = params.guestDetails;
 
-    const { organizationId, projectId } = await decodeKey(
-      organizationAccessToken
-    );
+    const projectData = await getPublicProject(organizationAccessToken);
+    if (!projectData) {
+      throw new Error('Project not found');
+    }
+
+    const { organizationId, projectId } = projectData;
 
     setSentryServiceTag('threads');
     if (!organizationId) {
