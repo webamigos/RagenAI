@@ -616,7 +616,11 @@
       "personalize-chatbot": "Personalize chatbot",
       "enable-chatbot": "Enable chatbot",
       "chatbot-title": "Chatbot title",
-      "chatbot-subtitle": "Chatbot subtitle"
+      "chatbot-subtitle": "Chatbot subtitle",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Published"
+      }
     }
   },
   "voice-mode": {

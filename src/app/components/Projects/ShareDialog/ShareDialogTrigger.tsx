@@ -5,9 +5,17 @@ import { ShareDialog } from './ShareDialog';
 
 type ShareDialogTriggerProps = {
   projectId: number;
+  isPublicProject: boolean;
+  accessToken: string;
+  publishedAt: string;
 };
 
-export const ShareDialogTrigger = ({ projectId }: ShareDialogTriggerProps) => {
+export const ShareDialogTrigger = ({
+  projectId,
+  isPublicProject,
+  accessToken,
+  publishedAt,
+}: ShareDialogTriggerProps) => {
   const [showShareDialog, setShowShareDialog] = useState(false);
 
   const handleDialogClose = () => {
@@ -27,6 +35,9 @@ export const ShareDialogTrigger = ({ projectId }: ShareDialogTriggerProps) => {
         open={showShareDialog}
         onClose={handleDialogClose}
         projectId={projectId}
+        isPublicProject={isPublicProject}
+        linkToPublicProject={accessToken}
+        publishedAt={publishedAt}
       />
     </>
   );

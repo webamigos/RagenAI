@@ -19,6 +19,9 @@ type Project = {
   id: number;
   public_id: string;
   title: string;
+  is_public: boolean;
+  access_token: string;
+  published_at: string;
 };
 
 type Props = {
@@ -76,7 +79,12 @@ export default function ProjectPage({ params }: Props) {
             projectPublicId={project.public_id}
           />
           <div className="absolute cursor-pointer bg-white dark:bg-secondary-dark rounded-md -top-72 md:-top-40 right-0">
-            <ShareDialogTrigger projectId={project.id} />
+            <ShareDialogTrigger
+              publishedAt={project.published_at}
+              accessToken={project.access_token}
+              projectId={project.id}
+              isPublicProject={project.is_public}
+            />
           </div>
         </div>
       </div>

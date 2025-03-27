@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 
@@ -15,12 +15,27 @@ type ShareDialogProps = {
   open: boolean;
   onClose: () => void;
   projectId: number;
+  isPublicProject: boolean;
+  linkToPublicProject: string;
+  publishedAt: string;
 };
 
-export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
-  const [isSharedLinkPublicly, setIsSharedLinkPublicly] = useState(false);
+const BASE_URL = `${window.location.origin}/pl/public/project/`;
+
+export const ShareDialog = ({
+  open,
+  onClose,
+  projectId,
+  isPublicProject,
+  linkToPublicProject,
+  publishedAt,
+}: ShareDialogProps) => {
+  const [isSharedLinkPublicly, setIsSharedLinkPublicly] = useState(
+    isPublicProject || false
+  );
   const [shareUrl, setShareUrl] = useState('');
   const [isGeneratingKey, setIsGeneratingKey] = useState(false);
+  const wasKeyGenerated = useRef<boolean>(false);
 
   const [isChatbotEnabled, setIsChatbotEnabled] = useState(false);
   const [isChatbotCustomized, setIsChatbotCustomized] = useState(false);
@@ -32,7 +47,10 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
   const { organization } = useOrganization();
 
   const embedScript = useMemo(() => {
-    if (!accessKey) return '';
+    if (!accessKey) {
+      return;
+    }
+
     return `<script src='${
       window.location.origin
     }/api/embed/${accessKey}?${new URLSearchParams({
@@ -44,12 +62,20 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
   const handleShareToggle = async (checked: boolean) => {
     setIsSharedLinkPublicly(checked);
     if (checked && !shareUrl) {
-      if (!organization) return;
+      if (!organization) {
+        return;
+      }
+
       try {
         setIsGeneratingKey(true);
+        wasKeyGenerated.current = true;
         const { accessToken } = await generateProjectKey(projectId);
-        const url = `${window.location.origin}/pl/public/project/${accessToken}`;
-        setShareUrl(url);
+
+        if (!accessToken) {
+          return;
+        }
+
+        setShareUrl(`${BASE_URL}/${accessToken}`);
       } catch (error) {
         setIsSharedLinkPublicly(false);
       } finally {
@@ -61,7 +87,10 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
   const handleChatbotToggle = async (checked: boolean) => {
     setIsChatbotEnabled(checked);
     if (checked && !accessKey) {
-      if (!organization) return;
+      if (!organization) {
+        return;
+      }
+
       try {
         setIsGeneratingKey(true);
         const { accessToken } = await generateProjectKey(projectId);
@@ -95,6 +124,10 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
             isSharedLinkPublicly={isSharedLinkPublicly}
             shareUrl={shareUrl}
             isGeneratingKey={isGeneratingKey}
+            wasKeyGenerated={wasKeyGenerated.current}
+            linkToPublicProject={`${BASE_URL}/${linkToPublicProject}`}
+            publishedAt={publishedAt}
+            projectId={projectId}
             onToggle={handleShareToggle}
           />
 

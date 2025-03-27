@@ -132,6 +132,9 @@ export const getProjectByPublicId = async (publicId: string) => {
         title: true,
         threads: true,
         internal_organization_id: true,
+        is_public: true,
+        access_token: true,
+        published_at: true,
       },
     });
   } catch (error) {
