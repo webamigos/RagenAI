@@ -3,6 +3,7 @@
 import db from '@ragenai/prisma-client';
 import { logger } from '../utils/logger';
 import { getOrgIdOrThrow } from './clerk';
+
 import crypto from 'crypto';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
@@ -60,6 +61,9 @@ export const createProjectForOrganization = async (
         organization_id: true,
         threads: true,
         owner_id: true,
+        is_public: true,
+        access_token: true,
+        published_at: true,
       },
     });
   } catch (error) {
