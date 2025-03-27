@@ -1,13 +1,13 @@
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { PublicAssistant } from '../../../components/Assistant/Assistant';
+import { PublicAssistant } from '@/app/[locale]/public/components/Assistant/Assistant';
 
 type Props = {
   params: {
     publicId: string;
     locale: string;
-    organizationId: string;
+    projectId: string;
   };
 };
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params: { locale } }: Props) {
 }
 
 export default function ThreadPage({
-  params: { publicId, locale, organizationId },
+  params: { publicId, locale, projectId },
 }: Props) {
   const threadPublicId = publicId;
   if (!threadPublicId) {
@@ -27,10 +27,5 @@ export default function ThreadPage({
 
   setRequestLocale(locale);
 
-  return (
-    <PublicAssistant
-      threadId={threadPublicId}
-      organizationId={organizationId}
-    />
-  );
+  return <PublicAssistant threadId={threadPublicId} accessToken={projectId} />;
 }

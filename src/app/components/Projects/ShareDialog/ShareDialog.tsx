@@ -1,11 +1,12 @@
+import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';
 
 import { Dialog, Text, Switch } from '@ragenai/common-ui';
 import { Collapse } from '@ragenai/common-ui/Collapse';
-import { generateKey } from '@/app/[locale]/(marketing)/generate-access-key/actions/generate-key';
-import { useState, useMemo } from 'react';
+import { generateProjectKey } from '@/app/lib/services/project';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+
 import { PublicLinkSection } from './components/PublicLinkSection';
 import { ChatbotConfiguration } from './components/ChatbotConfiguration';
 import { EmbedScriptSection } from './components/EmbedScriptSection';
@@ -46,8 +47,8 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
       if (!organization) return;
       try {
         setIsGeneratingKey(true);
-        const key = await generateKey(organization.id, projectId);
-        const url = `${window.location.origin}/pl/public/${key}`;
+        const { accessToken } = await generateProjectKey(projectId);
+        const url = `${window.location.origin}/pl/public/project/${accessToken}`;
         setShareUrl(url);
       } catch (error) {
         setIsSharedLinkPublicly(false);
@@ -63,8 +64,13 @@ export const ShareDialog = ({ open, onClose, projectId }: ShareDialogProps) => {
       if (!organization) return;
       try {
         setIsGeneratingKey(true);
-        const key = await generateKey(organization.id, projectId);
-        setAccessKey(key);
+        const { accessToken } = await generateProjectKey(projectId);
+
+        if (!accessToken) {
+          return;
+        }
+
+        setAccessKey(accessToken);
       } catch (error) {
         setIsChatbotEnabled(false);
       } finally {

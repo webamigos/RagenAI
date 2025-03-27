@@ -125,3 +125,11 @@ export const sendSupportRequest = async (
 
   return response.data;
 };
+
+export const fetchPublicProject = async (accessToken: string) => {
+  const response = await fetch(`/api/projects/public/${accessToken}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch public project');
+  }
+  return response.json();
+};
