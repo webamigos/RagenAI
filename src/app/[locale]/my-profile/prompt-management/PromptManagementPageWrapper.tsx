@@ -15,7 +15,15 @@ import { Fallback } from '@/app/components/Fallback';
 import { useSettings } from '@/app/hooks/useSettings';
 import { Card } from '@ragenai/common-ui/Card';
 
-export default function PromptManagementPage() {
+type Props = {
+  showModelApiKey?: boolean;
+  showModelSelect?: boolean;
+};
+
+export default function PromptManagementPage({
+  showModelApiKey,
+  showModelSelect,
+}: Props) {
   const { hasApiKey } = useSettings();
   const t = useTranslations('assistant-settings');
 
@@ -24,7 +32,7 @@ export default function PromptManagementPage() {
       <Suspense fallback={<Fallback />}>
         {hasApiKey ? (
           <Suspense fallback={<Fallback />}>
-            <SetApiKeyWrapper />
+            {showModelApiKey && <SetApiKeyWrapper />}
             <Card
               title={t('prompt-assistant-settings')}
               size="full"
@@ -32,7 +40,7 @@ export default function PromptManagementPage() {
               defaultCollapsed
             >
               <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
-                <ChatModelSelect />
+                {showModelSelect && <ChatModelSelect />}
                 <SetChatTemperature />
                 <SetMaxDocumentsToRetrieve />
               </div>
