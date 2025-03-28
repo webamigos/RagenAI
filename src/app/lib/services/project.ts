@@ -242,3 +242,36 @@ export const generateProjectKey = async (projectId: number) => {
     throw new Error('Failed to generate access token');
   }
 };
+
+export const disablePublicAccessForProject = async (projectId: number) => {
+  try {
+    const orgId = getOrgIdOrThrow();
+
+    const project = await db.project.findFirst({
+      where: {
+        id: projectId,
+        organization_id: orgId,
+      },
+    });
+
+    if (!project) {
+      logger.error({ projectId, orgId }, 'Project not found or unauthorized');
+      throw new Error('Project not found or unauthorized');
+    }
+
+    await db.project.update({
+      where: { id: projectId },
+      data: {
+        is_public: false,
+        access_token: null,
+        published_at: null,
+      },
+    });
+
+    logger.info({ projectId }, 'Public access disabled successfully');
+    return { success: true };
+  } catch (error) {
+    logger.error({ err: error }, 'Error disabling public access');
+    throw error;
+  }
+};

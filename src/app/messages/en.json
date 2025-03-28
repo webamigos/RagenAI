@@ -617,6 +617,25 @@
       "enable-chatbot": "Enable chatbot",
       "chatbot-title": "Chatbot title",
       "chatbot-subtitle": "Chatbot subtitle",
+      "chatbot-title-aria-label": "Enter chatbot title",
+      "chatbot-subtitle-aria-label": "Enter chatbot welcome message",
+      "refresh-link-title": "Refresh Public Link",
+      "refresh-link-confirmation": "Are you sure you want to refresh this link? The old link will no longer work.",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "refresh-link-aria-label": "Refresh public link",
+      "refresh-error": "An error occurred while refreshing the link",
+      "copy-link-aria-label": "Copy public link",
+      "share-url": "Sharing URL",
+      "toggle-sharing": "Toggle public sharing",
+      "embed-script-aria-label": "Chatbot embed script",
+      "copy-embed-script-aria-label": "Copy embed script",
+      "disable-title": "Disable Public Access",
+      "disable-confirmation": "Are you sure you want to disable public access? This will remove the public link and prevent access to the project knowledge.",
+      "disable": "Disable",
+      "disabling": "Disabling...",
+      "disable-success": "Public access has been successfully disabled",
+      "disable-error": "An error occurred while disabling public access",
       "project-table": {
         "name": "Link",
         "publishedAt": "Published"
@@ -657,5 +676,7 @@
     "try-again": "Try again",
     "unknown-error": "Unknown application error",
     "file-error": "An error occurred while loading files"
-  }
+  },
+  "expand": "Expand",
+  "collapse": "Collapse"
 }

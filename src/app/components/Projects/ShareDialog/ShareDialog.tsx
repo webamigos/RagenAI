@@ -4,8 +4,10 @@ import { useOrganization } from '@clerk/nextjs';
 
 import { Dialog, Text, Switch } from '@ragenai/common-ui';
 import { Collapse } from '@ragenai/common-ui/Collapse';
-import { generateProjectKey } from '@/app/lib/services/project';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { statusToast } from '@/app/lib/utils/toast';
+import { useProjectKeyGenerator } from '@/app/hooks/useProjectKeyGenerator';
+import { useDisablePublicAccess } from '@/app/hooks/useDisablePublicAccess';
 
 import { PublicLinkSection } from './components/PublicLinkSection';
 import { ChatbotConfiguration } from './components/ChatbotConfiguration';
@@ -34,17 +36,25 @@ export const ShareDialog = ({
     isPublicProject || false
   );
   const [shareUrl, setShareUrl] = useState('');
-  const [isGeneratingKey, setIsGeneratingKey] = useState(false);
   const wasKeyGenerated = useRef<boolean>(false);
+  const [currentLinkToPublicProject, setCurrentLinkToPublicProject] =
+    useState(linkToPublicProject);
+  const [currentPublishedAt, setCurrentPublishedAt] = useState(publishedAt);
 
   const [isChatbotEnabled, setIsChatbotEnabled] = useState(false);
   const [isChatbotCustomized, setIsChatbotCustomized] = useState(false);
   const [accessKey, setAccessKey] = useState('');
   const [chatbotName, setChatbotName] = useState('');
   const [chatbotTitle, setChatbotTitle] = useState('');
+  const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
 
   const t = useTranslations('projects');
   const { organization } = useOrganization();
+  const { generateKey, isGenerating: isGeneratingKey } =
+    useProjectKeyGenerator(projectId);
+  const { disablePublicAccess, isDisabling } =
+    useDisablePublicAccess(projectId);
+  const { errorToast, successToast } = statusToast();
 
   const embedScript = useMemo(() => {
     if (!accessKey) {
@@ -59,57 +69,95 @@ export const ShareDialog = ({
     }).toString()}'></script>`;
   }, [accessKey, chatbotTitle, chatbotName]);
 
-  const handleShareToggle = async (checked: boolean) => {
-    setIsSharedLinkPublicly(checked);
-    if (checked && !shareUrl) {
-      if (!organization) {
-        return;
-      }
-
-      try {
-        setIsGeneratingKey(true);
-        wasKeyGenerated.current = true;
-        const { accessToken } = await generateProjectKey(projectId);
-
-        if (!accessToken) {
-          return;
-        }
-
-        setShareUrl(`${BASE_URL}/${accessToken}`);
-      } catch (error) {
-        setIsSharedLinkPublicly(false);
-      } finally {
-        setIsGeneratingKey(false);
-      }
+  const generateTokenAndSetUrl = async () => {
+    if (!organization) {
+      return null;
     }
+
+    try {
+      wasKeyGenerated.current = true;
+      const accessToken = await generateKey();
+
+      if (!accessToken) {
+        return null;
+      }
+
+      return accessToken;
+    } catch (error) {
+      errorToast({
+        message: t('share-knowledge.refresh-error'),
+      });
+      return null;
+    }
+  };
+
+  const handleShareToggle = async (checked: boolean) => {
+    if (checked) {
+      setIsSharedLinkPublicly(true);
+      if (!shareUrl) {
+        const accessToken = await generateTokenAndSetUrl();
+        if (accessToken) {
+          setShareUrl(`${BASE_URL}/${accessToken}`);
+        } else {
+          setIsSharedLinkPublicly(false);
+        }
+      }
+    } else {
+      // When toggling off, show confirmation modal
+      setIsDisableModalOpen(true);
+    }
+  };
+
+  const handleDisableConfirm = async () => {
+    try {
+      const success = await disablePublicAccess();
+
+      if (success) {
+        setIsSharedLinkPublicly(false);
+        setShareUrl('');
+        wasKeyGenerated.current = false;
+        setCurrentLinkToPublicProject('');
+        setCurrentPublishedAt('');
+        successToast({
+          message: t('share-knowledge.disable-success'),
+        });
+      } else {
+        errorToast({
+          message: t('share-knowledge.disable-error'),
+        });
+      }
+    } catch (error) {
+      errorToast({
+        message: t('share-knowledge.disable-error'),
+      });
+    } finally {
+      setIsDisableModalOpen(false);
+    }
+  };
+
+  const handleDisableCancel = () => {
+    setIsDisableModalOpen(false);
   };
 
   const handleChatbotToggle = async (checked: boolean) => {
     setIsChatbotEnabled(checked);
     if (checked && !accessKey) {
-      if (!organization) {
-        return;
-      }
-
-      try {
-        setIsGeneratingKey(true);
-        const { accessToken } = await generateProjectKey(projectId);
-
-        if (!accessToken) {
-          return;
-        }
-
+      const accessToken = await generateTokenAndSetUrl();
+      if (accessToken) {
         setAccessKey(accessToken);
-      } catch (error) {
+      } else {
         setIsChatbotEnabled(false);
-      } finally {
-        setIsGeneratingKey(false);
       }
     }
   };
 
   const handleChatbotCustomizeToggle = () =>
     setIsChatbotCustomized((prev) => !prev);
+
+  const handleLinkRefreshed = (newLink: string) => {
+    setCurrentLinkToPublicProject(newLink);
+    setCurrentPublishedAt(new Date().toISOString());
+  };
 
   return (
     <Dialog open={open} onClose={onClose} className="max-w-xl">
@@ -125,10 +173,11 @@ export const ShareDialog = ({
             shareUrl={shareUrl}
             isGeneratingKey={isGeneratingKey}
             wasKeyGenerated={wasKeyGenerated.current}
-            linkToPublicProject={`${BASE_URL}/${linkToPublicProject}`}
-            publishedAt={publishedAt}
+            linkToPublicProject={`${BASE_URL}/${currentLinkToPublicProject}`}
+            publishedAt={currentPublishedAt}
             projectId={projectId}
             onToggle={handleShareToggle}
+            onLinkRefreshed={handleLinkRefreshed}
           />
 
           {/* CHATBOT ENABLE */}
@@ -152,6 +201,7 @@ export const ShareDialog = ({
                 <button
                   onClick={handleChatbotCustomizeToggle}
                   className="p-1 hover:bg-muted rounded-md transition"
+                  aria-label={isChatbotCustomized ? t('collapse') : t('expand')}
                 >
                   <ChevronDownIcon
                     className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
@@ -180,6 +230,39 @@ export const ShareDialog = ({
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal for Disabling Public Access */}
+      <Dialog
+        open={isDisableModalOpen}
+        onClose={handleDisableCancel}
+        className="max-w-md"
+      >
+        <div className="p-6 space-y-4">
+          <Text className="text-lg font-semibold">
+            {t('share-knowledge.disable-title')}
+          </Text>
+          <Text className="text-sm text-gray-600 dark:text-gray-400">
+            {t('share-knowledge.disable-confirmation')}
+          </Text>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              onClick={handleDisableCancel}
+              className="px-4 py-2 rounded text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              {t('cancel')}
+            </button>
+            <button
+              onClick={handleDisableConfirm}
+              disabled={isDisabling}
+              className="px-4 py-2 rounded text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDisabling
+                ? t('share-knowledge.disabling')
+                : t('share-knowledge.disable')}
+            </button>
+          </div>
+        </div>
+      </Dialog>
     </Dialog>
   );
 };
