@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { GlobalAltIcon } from '@ragenai/common-ui';
 
 import { ShareDialog } from './ShareDialog';
+import { useToggleChatbotEnabled } from '@/app/hooks/useToggleChatbotEnabled';
 
 type ShareDialogTriggerProps = {
   projectId: number;
   isPublicProject: boolean;
   accessToken: string;
   publishedAt: string;
+  isChatbotEnabled: boolean;
 };
 
 export const ShareDialogTrigger = ({
@@ -15,8 +17,10 @@ export const ShareDialogTrigger = ({
   isPublicProject,
   accessToken,
   publishedAt,
+  isChatbotEnabled,
 }: ShareDialogTriggerProps) => {
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const { toggleChatbotEnabled } = useToggleChatbotEnabled(projectId);
 
   const handleDialogClose = () => {
     setShowShareDialog(false);
@@ -38,6 +42,8 @@ export const ShareDialogTrigger = ({
         isPublicProject={isPublicProject}
         linkToPublicProject={accessToken}
         publishedAt={publishedAt}
+        isChatbotEnabled={isChatbotEnabled}
+        onChatbotEnabledChange={toggleChatbotEnabled}
       />
     </>
   );

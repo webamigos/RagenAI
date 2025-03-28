@@ -135,6 +135,7 @@ export const getProjectByPublicId = async (publicId: string) => {
         is_public: true,
         access_token: true,
         published_at: true,
+        chatbot_enabled: true,
       },
     });
   } catch (error) {
@@ -273,5 +274,39 @@ export const disablePublicAccessForProject = async (projectId: number) => {
   } catch (error) {
     logger.error({ err: error }, 'Error disabling public access');
     throw error;
+  }
+};
+
+export const toggleChatbotEnabled = async (
+  projectId: number,
+  enabled: boolean
+) => {
+  try {
+    const orgId = getOrgIdOrThrow();
+
+    const project = await db.project.findFirst({
+      where: {
+        id: projectId,
+        organization_id: orgId,
+      },
+    });
+
+    if (!project) {
+      logger.error({ projectId, orgId }, 'Project not found or unauthorized');
+      throw new Error('Project not found or unauthorized');
+    }
+
+    await db.project.update({
+      where: { id: projectId },
+      data: {
+        chatbot_enabled: enabled,
+      },
+    });
+
+    logger.info({ projectId, enabled }, 'Chatbot status updated successfully');
+    return { success: true };
+  } catch (error) {
+    logger.error({ err: error, projectId }, 'Error updating chatbot status');
+    return { success: false };
   }
 };

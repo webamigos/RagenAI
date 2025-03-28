@@ -22,6 +22,7 @@ type Project = {
   is_public: boolean;
   access_token: string;
   published_at: string;
+  chatbot_enabled: boolean;
 };
 
 type Props = {
@@ -84,6 +85,7 @@ export default function ProjectPage({ params }: Props) {
               accessToken={project.access_token}
               projectId={project.id}
               isPublicProject={project.is_public}
+              isChatbotEnabled={project.chatbot_enabled}
             />
           </div>
         </div>

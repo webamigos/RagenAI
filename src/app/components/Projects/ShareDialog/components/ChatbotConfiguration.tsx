@@ -22,17 +22,15 @@ export const ChatbotConfiguration = memo(
       <div className="px-1">
         <Input
           value={chatbotTitle}
-          label={t('share-knowledge.chatbot-title')}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Chatbot"
+          placeholder={t('share-knowledge.chatbot-title')}
           className="w-full h-10"
           aria-label={t('share-knowledge.chatbot-title-aria-label')}
         />
         <Input
           value={chatbotName}
-          label={t('share-knowledge.chatbot-subtitle')}
           onChange={(e) => onNameChange(e.target.value)}
-          placeholder="Hello, how can I help you today?"
+          placeholder={t('share-knowledge.chatbot-subtitle')}
           className="w-full h-10"
           aria-label={t('share-knowledge.chatbot-subtitle-aria-label')}
         />
