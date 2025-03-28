@@ -64,6 +64,7 @@ export const createProjectForOrganization = async (
         is_public: true,
         access_token: true,
         published_at: true,
+        chatbot_enabled: true,
       },
     });
   } catch (error) {
