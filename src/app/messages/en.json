@@ -45,14 +45,16 @@
     "or-continue-with": "Or continue with",
     "forgot-password": "Forgot password?",
     "i-agree-to": "I agree to",
-    "terms-of-use": "terms of use",
+    "terms-of-use": "Terms of Use",
     "and": "and",
-    "privacy-policy": "privacy policy",
+    "privacy-policy": "Privacy Policy",
     "validation": {
-      "terms": "You need to accept terms of use",
+      "terms": "You need to accept Terms of Use and Privacy Policy",
       "email": "Invalid email",
       "password": "Invalid password"
-    }
+    },
+    "newsletter-consent": "I consent to the processing of my personal data by Web Amigos sp. z o.o. for the purpose of sending me a newsletter via electronic means, including information about news, services, offers, recommended links, or events. I understand that I can withdraw this consent at any time. More information can be found in ",
+    "newsletter-consent-link": "Newsltetter Policy"
   },
   "sign-in": {
     "sign-in": "Sign in",

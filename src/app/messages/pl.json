@@ -45,14 +45,16 @@
     "or-continue-with": "Lub zaloguj się za pomocą",
     "forgot-password": "Nie pamiętasz hasła?",
     "i-agree-to": "Akceptuję postanowienia",
-    "terms-of-use": "regulaminu",
+    "terms-of-use": "Regulaminu",
     "and": "oraz",
-    "privacy-policy": "polityki prywatoności",
+    "privacy-policy": "Polityki prywatności",
     "validation": {
-      "terms": "Musisz zaakceptować warunki użytkowania",
+      "terms": "Musisz zaakceptować regulamin i politykę prywatności",
       "email": "Nieprawidłowy adres email",
       "password": "Hasło musi mieć co najmniej 8 znaków"
-    }
+    },
+    "newsletter-consent": "Wyrażam zgodę na przetwarzania moich danych osobowych przez Web Amigos sp. z o. o. w celu wysyłania do mnie drogą elektroniczną newslettera, czyli informacji o nowościach, usługach, ofertach, polecanych linkach, czy wydarzeniach. Wiem, że mogę tę zgodę w każdej chwili wycofać. Więcej informacji znajduje się w ",
+    "newsletter-consent-link": "Polityce newslettera"
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
