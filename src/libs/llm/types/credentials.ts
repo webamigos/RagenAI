@@ -1,12 +1,17 @@
-export type ModelProvider =
-  | 'bedrock'
-  | 'openai'
-  | 'ollama'
-  | 'anthropic'
-  | 'google'
-  | 'openrouter'
-  | 'fireworks'
-  | 'azure-openai';
+import { z } from 'zod';
+
+export const modelProvider = z.enum([
+  'bedrock',
+  'openai',
+  'ollama',
+  'anthropic',
+  'google',
+  'openrouter',
+  'fireworks',
+  'azure-openai',
+]);
+
+export type ModelProvider = z.infer<typeof modelProvider>;
 
 export type BaseProviderCredentials = {
   provider: ModelProvider;
