@@ -39,7 +39,7 @@ export const MODELS_MAP = {
 export const modelsSchema = z.discriminatedUnion('provider', [
   z.object({
     provider: z.literal('google'),
-    model: z.enum(['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25']),
+    model: z.enum(MODELS_MAP.google),
   }),
   z.object({
     provider: z.literal('openai'),
