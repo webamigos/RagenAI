@@ -15,7 +15,7 @@ export const addSubscriberToKit = async (email: string) => {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${KIT_API_KEY}`,
+          'x-kit-api-key': `Bearer ${KIT_API_KEY}`,
         },
       }
     );
