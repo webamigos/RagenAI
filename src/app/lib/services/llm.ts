@@ -2,11 +2,7 @@ import { z } from 'zod';
 import { ChatOpenAIFields } from '@langchain/openai';
 import { OpenAIModerationChain } from 'langchain/chains';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import {
-  modelProvider,
-  ChatCompletionFactory,
-  type ProviderCredentials,
-} from '@/libs/llm';
+import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
 import { usageTracker } from './usage';
@@ -14,9 +10,75 @@ import { logger } from '../utils/logger';
 
 const verbose = process.env.NODE_ENV === 'development';
 
-const DEFAULT_MODEL_PROVIDER = modelProvider.parse(
-  process.env.DEFAULT_MODEL_PROVIDER
-);
+export const MODELS_MAP = {
+  google: ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25'],
+  openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o1-mini', 'o3-mini'],
+  anthropic: [
+    'claude-3-7-sonnet-latest',
+    'claude-3-7-sonnet-2025021',
+    'claude-3-5-haiku-latest',
+    'claude-3-5-haiku-20241022',
+    'claude-3-5-sonnet-20241022',
+  ],
+  bedrock: [
+    'anthropic.claude-3-7-sonnet-20250219-v1:0',
+    'anthropic.claude-3-5-haiku-20241022-v1:0',
+    'anthropic.claude-3-5-sonnet-20241022-v2:0',
+  ],
+  ['azure-openai']: ['gpt-4o'],
+  vertex: [
+    'claude-3-7-sonnet@20250219',
+    'claude-3-5-haiku@20241022',
+    'claude-3-5-sonnet-v2@20241022',
+  ],
+  ollama: ['llama3.1'],
+  openrouter: ['meta-llama/llama-3.3-70b-instruct:free'],
+  fireworks: ['accounts/fireworks/models/llama-v3p2-3b-instruct'],
+} as const;
+
+export const modelsSchema = z.discriminatedUnion('provider', [
+  z.object({
+    provider: z.literal('google'),
+    model: z.enum(['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25']),
+  }),
+  z.object({
+    provider: z.literal('openai'),
+    model: z.enum(MODELS_MAP.openai),
+  }),
+  z.object({
+    provider: z.literal('anthropic'),
+    model: z.enum(MODELS_MAP.anthropic),
+  }),
+  z.object({
+    provider: z.literal('bedrock'),
+    model: z.enum(MODELS_MAP.bedrock),
+  }),
+  z.object({
+    provider: z.literal('vertex'),
+    model: z.enum(MODELS_MAP.vertex),
+  }),
+  z.object({
+    provider: z.literal('ollama'),
+    model: z.enum(MODELS_MAP.ollama),
+  }),
+  z.object({
+    provider: z.literal('openrouter'),
+    model: z.enum(MODELS_MAP.openrouter),
+  }),
+  z.object({
+    provider: z.literal('fireworks'),
+    model: z.enum(MODELS_MAP.fireworks),
+  }),
+  z.object({
+    provider: z.literal('azure-openai'),
+    model: z.enum(MODELS_MAP['azure-openai']),
+  }),
+]);
+
+const modelConfig = modelsSchema.parse({
+  provider: process.env.DEFAULT_MODEL_PROVIDER,
+  model: process.env.DEFAULT_MODEL,
+});
 
 // TODO: in future user will select model: Gpt4o, Gemini 2.0, Claude 3.7 etc
 
@@ -25,7 +87,7 @@ const DEFAULT_MODEL_PROVIDER = modelProvider.parse(
 let customChatModel: string | null = null;
 let customCredentials: ProviderCredentials | null = null;
 
-switch (DEFAULT_MODEL_PROVIDER) {
+switch (modelConfig.provider) {
   case 'bedrock':
     const AWS_REGION = process.env.AWS_REGION;
     const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;

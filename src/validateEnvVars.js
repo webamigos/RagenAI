@@ -4,6 +4,9 @@ const TARGET_ENV = ['local', 'test', 'e2e', 'ci', 'staging', 'production'];
 
 // TODO: use this schema instead process.env as source of truth?
 const envSchema = z.object({
+  DEFAULT_MODEL_PROVIDER: z.string(),
+  DEFAULT_MODEL: z.string(),
+
   // Supabase for the App
   DATABASE_URL: z.string().url(),
   DATABASE_DIRECT_URL: z.string().url(),

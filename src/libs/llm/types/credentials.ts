@@ -1,17 +1,8 @@
+import { modelsSchema } from '@/app/lib/services/llm';
 import { z } from 'zod';
 
-export const modelProvider = z.enum([
-  'bedrock',
-  'openai',
-  'ollama',
-  'anthropic',
-  'google',
-  'openrouter',
-  'fireworks',
-  'azure-openai',
-]);
-
-export type ModelProvider = z.infer<typeof modelProvider>;
+export type ModelConfig = z.infer<typeof modelsSchema>;
+export type ModelProvider = ModelConfig['provider'];
 
 export type BaseProviderCredentials = {
   provider: ModelProvider;
