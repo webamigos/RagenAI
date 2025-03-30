@@ -1,5 +1,6 @@
 import { ManageOrganization } from '@/app/components/MyProfile/OrganizationProfile';
 import { getTranslations } from 'next-intl/server';
+import { getSubscriptionData } from '../../subscription/actions';
 
 type Props = {
   params: {
@@ -19,6 +20,8 @@ export async function generateMetadata({ params: { locale, rest } }: Props) {
   };
 }
 
-export default function OrganizationProfilePage() {
-  return <ManageOrganization />;
+export default async function OrganizationProfilePage() {
+  const subscription = await getSubscriptionData();
+
+  return <ManageOrganization subscription={subscription} />;
 }
