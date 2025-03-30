@@ -8,17 +8,26 @@ import { SubscriptionDetails } from '@/app/[locale]/my-profile/subscription/type
 import { FREE_PLAN_NAME, TRIAL_PLAN_NAME } from '@/app/config';
 
 type Props = {
+  allowAddToOrganization: boolean;
   subscription: SubscriptionDetails | null;
 };
 
-export const ManageOrganization = ({ subscription }: Props) => {
+export const ManageOrganization = ({
+  allowAddToOrganization,
+  subscription,
+}: Props) => {
   const { resolvedTheme } = useTheme();
 
   // TODO: move to helper
   // TODO: check member limit
   const planName = subscription?.plan.name;
   let allowAddMembers = false;
-  if (planName && planName !== TRIAL_PLAN_NAME && planName !== FREE_PLAN_NAME) {
+  if (
+    allowAddToOrganization && // feature flag
+    planName && // plan name is different than free or trial
+    planName !== TRIAL_PLAN_NAME &&
+    planName !== FREE_PLAN_NAME
+  ) {
     allowAddMembers = true;
   }
 

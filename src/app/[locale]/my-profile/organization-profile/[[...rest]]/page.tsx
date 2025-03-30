@@ -20,8 +20,16 @@ export async function generateMetadata({ params: { locale, rest } }: Props) {
   };
 }
 
+const FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION =
+  !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
+
 export default async function OrganizationProfilePage() {
   const subscription = await getSubscriptionData();
 
-  return <ManageOrganization subscription={subscription} />;
+  return (
+    <ManageOrganization
+      allowAddToOrganization={FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION}
+      subscription={subscription}
+    />
+  );
 }
