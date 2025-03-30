@@ -12,6 +12,7 @@ import { Button, Input } from '@ragenai/common-ui';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { type ClerkAPIError } from '@clerk/types';
+import { addSubscriberToKit } from './actions';
 
 type RegisterFormProps = {
   onTermsChange?: (accepted: boolean) => void;
@@ -56,6 +57,10 @@ export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
         strategy: 'email_code',
       });
 
+      if (data.newsletter_consent) {
+        await addSubscriberToKit(email);
+      }
+
       push('/enter-code');
     } catch (error) {
       if (isClerkAPIResponseError(error)) {
@@ -99,32 +104,12 @@ export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
                   aria-describedby="comments-description"
                   className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
                 />
-                <svg
-                  fill="none"
-                  viewBox="0 0 14 14"
-                  className="pointer-events-none col-start-1 row-start-1 size-5.5 self-center justify-self-center stroke-white group-has-[:disabled]:stroke-gray-950/25"
-                >
-                  <path
-                    d="M3 8L6 11L11 3.5"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="opacity-0 group-has-[:checked]:opacity-100"
-                  />
-                  <path
-                    d="M3 7H11"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="opacity-0 group-has-[:indeterminate]:opacity-100"
-                  />
-                </svg>
               </div>
             </div>
             <div className="flex w-full text-sm/6">
               <label
                 htmlFor="terms"
-                className="font-normal dark:text-gray-300 text-gray-900"
+                className="font-normal  text-sm dark:text-gray-300 text-gray-600"
               >
                 {t('i-agree-to')}{' '}
                 <a
@@ -140,7 +125,7 @@ export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
                   className="text-indigo-600"
                   target="_blank"
                 >
-                  {t('privacy-policy')}
+                  {t('privacy-policy')}.
                 </a>
               </label>
             </div>
@@ -152,6 +137,40 @@ export const RegisterForm = ({ onTermsChange }: RegisterFormProps) => {
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="pt-4 ml-1">
+        <div className="space-y-5">
+          <div className="flex gap-3">
+            <div className="flex h-6 shrink-0 items-center">
+              <div className="group grid size-4 grid-cols-1">
+                <input
+                  id="newsletter-consent"
+                  {...register('newsletter_consent')}
+                  type="checkbox"
+                  aria-describedby="comments-description"
+                  className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                />
+              </div>
+            </div>
+            <div className="flex w-full text-sm/6">
+              <label
+                htmlFor="newsletter-consent"
+                className="font-sm text-sm dark:text-gray-300 text-gray-600"
+              >
+                {t('newsletter-consent')}{' '}
+                <a
+                  href={`https://ragen.ai/${locale}/newsletter-policy`}
+                  className="text-indigo-600"
+                  target="_blank"
+                >
+                  {t('newsletter-consent-link')}
+                </a>
+                .
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 

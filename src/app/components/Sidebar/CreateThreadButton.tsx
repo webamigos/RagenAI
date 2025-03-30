@@ -37,7 +37,7 @@ export const CreateThreadButton = ({
       isLink
       disabled={lockThreadClick}
       onClick={handleClick}
-      className="relative ml-4 w-10/12"
+      className="relative ml-4 w-10/12 rounded-md dark:border-slate-600 border-slate-200 border-2 flex justify-center mb-4"
     >
       <PencilSquareIcon className="w-6 h-6 dark:text-gray-200" />
       <Text
