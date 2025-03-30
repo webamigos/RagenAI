@@ -4,7 +4,7 @@ import db from '@ragenai/prisma-client';
 import Stripe from 'stripe';
 import { logger } from '../utils/logger';
 import { cancelSubscription } from '@/app/lib/services/stripe';
-import { FREE_PLAN_NAME, TRIAL_PLAN_NAME } from '@/app/config';
+import { FREE_PLAN_NAME, TRIAL_DAYS, TRIAL_PLAN_NAME } from '@/app/config';
 
 const FOREVER_DATE = new Date(new Date().setFullYear(2099, 11, 31));
 
