@@ -28,7 +28,7 @@ export const ThreadsList = ({
         ({ title, threads }) =>
           threads.length > 0 && (
             <SidebarSection key={title} className="w-11/12">
-              <SidebarLabel className="text-gray-500 dark:text-gray-400 text-xs font-medium pl-2">
+              <SidebarLabel className="text-gray-600 dark:text-gray-400 text-xs font-semibold uppercase pl-2 mt-2 ">
                 {title}
               </SidebarLabel>
               {threads.map((thread) => (

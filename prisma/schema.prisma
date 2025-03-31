@@ -202,7 +202,8 @@ model Project {
   is_public                Boolean       @default(false)
   published_at             DateTime?     @db.Timestamptz
   access_token             String?       @unique @default(cuid())
-
+  chatbot_enabled          Boolean       @default(false)
+  
   @@index([public_id])
   @@index([organization_id])
   @@index([owner_id])

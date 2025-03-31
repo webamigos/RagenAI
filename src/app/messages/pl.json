@@ -16,7 +16,7 @@
     "new-thread-header": "Masz pytanie?",
     "new-thread-description": "Po prostu mi je zadaj!",
     "new-thread-placeholder": "Wpisz swoją wiadomość tutaj...",
-    "project-context": "Pracujesz w ramach projektu: {projectTitle}",
+    "project-context": "Pracujesz w ramach asystenta: {projectTitle}",
     "warning-messages": {
       "prompt-max-length": "Maksymalna długość wiadomości to 10000 znaków",
       "prompt-min-length": "Wiadomość musi zawierać przynajmniej 10 znaków"
@@ -337,47 +337,8 @@
       "older": "Starsze niż 2 dni"
     },
     "projects": {
-      "title": "Projekty",
-      "create-project": "Stwórz projekt",
-      "create": "Stwórz projekt",
-      "placeholder": "Wpisz nazwę projektu...",
-      "what-is-project": "Czym jest projekt?",
-      "project-description": "Projekt pozwala zarządzać zadaniami i organizować pracę zespołu.",
-      "cancel": "Anuluj",
-      "save": "Zapisz",
-      "upload-file": "Wgraj plik do projektu",
-      "upload": {
-        "title": "Wgraj pliki do projektu",
-        "button": "Wgraj pliki",
-        "selected-files": "Wybrane pliki",
-        "remove-file": "Usuń plik",
-        "add-files": "Dodaj pliki",
-        "drop-to-upload": "Upuść pliki, aby je wgrać",
-        "uploading": "Przesyłanie..."
-      },
-      "project-files": "Pliki projektu",
-      "no-files": "Brak plików w projekcie",
-      "file-deleted": "Plik został usunięty",
-      "remove-file": "Usuń plik",
-      "success": {
-        "created": "Projekt został pomyślnie utworzony."
-      },
-      "error": {
-        "title-required": "Tytuł jest wymagany",
-        "loading-organization": "Błąd podczas ładowania organizacji",
-        "no-organization": "Brak organizacji",
-        "project-exists": "Projekt o tej nazwie już istnieje",
-        "creation-failed": "Nie udało się utworzyć projektu",
-        "loading-files": "Nie udało się załadować plików projektu",
-        "file-delete": "Nie udało się usunąć pliku"
-      },
-      "share-knowledge": {
-        "title": "Udostępnij wiedzę projektu",
-        "share-publicly": "Udostępnij wiedzę projektu publicznie",
-        "generating-link": "Generowanie linku do udostępnienia...",
-        "link-to-knowledge": "Udostępnij ten link, aby dać dostęp do wiedzy projektu:",
-        "copy": "Kopiuj"
-      }
+      "title": "Asystenci",
+      "create-project": ""
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
@@ -552,8 +513,8 @@
     "generate-public-key": "Generuj Klucz Publiczny",
     "embed-code": "Kod do Osadzenia",
     "public-access-URL": "URL Dostępu Publicznego",
-    "select-project": "Wybierz Projekt",
-    "select-project-placeholder": "Wybierz projekt..."
+    "select-project": "Wybierz Asystenta",
+    "select-project-placeholder": "Wybierz asystenta..."
   },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
@@ -591,16 +552,16 @@
     "microphone-permission-denied": "Brak dostępu do mikrofonu. Sprawdź uprawnienia przeglądarki."
   },
   "projects": {
-    "title": "Projekty",
-    "create-project": "Stwórz projekt",
-    "create": "Stwórz projekt",
-    "placeholder": "Nazwa projektu",
-    "what-is-project": "Czym jest projekt?",
-    "project-description": "Projekt pomaga zorganizować bazę wiedzy i konwersacje.",
+    "title": "Asystenci",
+    "create-project": "Stwórz",
+    "create": "Nowy asystent",
+    "placeholder": "Wprowadź nazwę asystenta...",
+    "what-is-project": "Czym jest asystent?",
+    "project-description": "Asystent pomaga zorganizować bazę wiedzy i konwersacje. Możesz stworzyć osobnego asystenta do różnego rodzaju zadań np. marketingu, sprzedaży czy obsługi klienta.",
     "cancel": "Anuluj",
-    "upload-file": "Wgraj plik do projektu",
+    "upload-file": "Wgraj plik",
     "upload": {
-      "title": "Wgraj pliki do projektu",
+      "title": "Wgraj pliki",
       "button": "Wgraj pliki",
       "selected-files": "Wybrane pliki",
       "remove-file": "Usuń plik",
@@ -609,19 +570,42 @@
       "uploading": "Przesyłanie..."
     },
     "share-knowledge": {
-      "title": "Udostępnij wiedzę projektu",
-      "share-publicly": "Udostępnij wiedzę projektu publicznie",
+      "title": "Udostępnij wiedzę asystenta",
+      "share-publicly": "Udostępnij wiedzę asystenta publicznie",
       "generating-link": "Generowanie linku do udostępnienia...",
-      "link-to-knowledge": "Udostępnij ten link, aby dać dostęp do wiedzy projektu:",
+      "link-to-knowledge": "Udostępnij ten link, aby dać dostęp do wiedzy asystenta:",
       "copy": "Kopiuj",
       "embed-code": "Kod do osadzenia",
       "personalize-chatbot": "Personalizuj chatbota",
       "enable-chatbot": "Włącz chatbota",
       "chatbot-title": "Tytuł chatbota",
-      "chatbot-subtitle": "Podtytuł chatbota"
+      "chatbot-subtitle": "Podtytuł chatbota",
+      "chatbot-title-aria-label": "Wprowadź tytuł chatbota",
+      "chatbot-subtitle-aria-label": "Wprowadź wiadomość powitalną chatbota",
+      "refresh-link-title": "Odśwież link publiczny",
+      "refresh-link-confirmation": "Czy na pewno chcesz odświeżyć ten link? Stary link przestanie działać.",
+      "refresh": "Odśwież",
+      "refreshing": "Odświeżanie...",
+      "refresh-link-aria-label": "Odśwież link publiczny",
+      "refresh-error": "Wystąpił błąd podczas odświeżania linku",
+      "copy-link-aria-label": "Kopiuj link publiczny",
+      "share-url": "URL udostępniania",
+      "toggle-sharing": "Przełącz udostępnianie publiczne",
+      "embed-script-aria-label": "Kod do osadzenia chatbota",
+      "copy-embed-script-aria-label": "Kopiuj kod do osadzenia",
+      "disable-title": "Wyłącz dostęp publiczny",
+      "disable-confirmation": "Czy na pewno chcesz wyłączyć dostęp publiczny? uniemożliwi to dostęp do publicznego dostępu do wiedzy asystenta.",
+      "disable": "Wyłącz",
+      "disabling": "Wyłączanie...",
+      "disable-success": "Dostęp publiczny został pomyślnie wyłączony",
+      "disable-error": "Wystąpił błąd podczas wyłączania dostępu publicznego",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Opublikowano"
+      }
     },
-    "project-files": "Pliki projektu",
-    "no-files": "Brak plików w projekcie",
+    "project-files": "Pliki asystenta",
+    "no-files": "Brak plików",
     "file-deleted": "Plik został usunięty",
     "remove-file": "Usuń plik",
     "file-singular": "plik",
@@ -629,25 +613,25 @@
     "manage-files": "Zarządzaj plikami",
     "loading": "Ładowanie...",
     "success": {
-      "created": "Projekt został pomyślnie utworzony."
+      "created": "Asystent został pomyślnie utworzony."
     },
     "error": {
       "title-required": "Tytuł jest wymagany",
       "loading-organization": "Błąd podczas ładowania organizacji",
       "no-organization": "Brak organizacji",
-      "project-exists": "Projekt o takiej nazwie już istnieje",
-      "creation-failed": "Nie udało się stowrzyć projektu",
-      "loading-files": "Nie udało się załadować plików projektu",
+      "project-exists": "Asystent o takiej nazwie już istnieje",
+      "creation-failed": "Nie udało się stowrzyć asystenta",
+      "loading-files": "Nie udało się załadować plików asystenta",
       "file-delete": "Nie udało się usunąć pliku",
-      "fetching-error": "Wystąpił błąd podczas pobierania plików projektu"
+      "fetching-error": "Wystąpił błąd podczas pobierania plików asystenta"
     },
     "project-instructions": {
-      "title": "Instrukcje projektu",
+      "title": "Instrukcje asystenta",
       "button": "Dodaj instrukcje",
       "placeholder": "Wpisz instrukcje",
       "description": "Instrukcje są opcjonalne. Dostosowują odpowiedzi asystenta do Twoich potrzeb.",
       "description-min-length": "Instrukcje muszą mieć co najmniej 10 znaków",
-      "form-title": "Instrukcje projektu",
+      "form-title": "Instrukcje asystenta",
       "title-label": "Tytuł",
       "title-min-length": "Tytuł musi mieć co najmniej 3 znaki",
       "description-label": "Treść instrukcji",
@@ -697,5 +681,7 @@
     "try-again": "Spróbuj ponownie",
     "unknown-error": "Nieznany błąd aplikacji",
     "file-error-fetching": "Wystąpił błąd podczas ładowania plików"
-  }
+  },
+  "expand": "Rozwiń",
+  "collapse": "Zwiń"
 }

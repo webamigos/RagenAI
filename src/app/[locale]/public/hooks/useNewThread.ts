@@ -89,7 +89,7 @@ export const useNewThread = ({
       }
 
       startTransition(() =>
-        push(`/public/project/${accessToken}/threads/${newThreadId}`)
+        push(`/public/assistants/${accessToken}/threads/${newThreadId}`)
       );
     } catch (err) {
       const errorMessage =
@@ -108,7 +108,7 @@ export const useNewThread = ({
 
       if (threadId) {
         startTransition(() =>
-          push(`/public/project/${accessToken}/threads/${threadId}`)
+          push(`/public/assistants/${accessToken}/threads/${threadId}`)
         );
         return;
       }

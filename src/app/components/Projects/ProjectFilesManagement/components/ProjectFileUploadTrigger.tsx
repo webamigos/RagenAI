@@ -11,7 +11,6 @@ import {
   ProjectFileUploadContent,
   FileStatus,
 } from './ProjectFileUploadContent';
-import { ShareDialog } from '../../ShareDialog/ShareDialog';
 
 type Props = {
   projectId: number;
@@ -23,7 +22,6 @@ export const ProjectFileUploadTrigger = ({
   projectPublicId,
 }: Props) => {
   const [showUploader, setShowUploader] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
   const [fileStatus, setFileStatus] = useState<FileStatus>({
     hasFiles: false,
     fileCount: 0,
@@ -74,11 +72,7 @@ export const ProjectFileUploadTrigger = ({
         onClick={() => setShowUploader(true)}
         className="group relative h-28 cursor-pointer"
       >
-        <ProjectFileUploadContent
-          status={fileStatus}
-          t={t}
-          onRssClick={() => setShowShareDialog(true)}
-        />
+        <ProjectFileUploadContent status={fileStatus} t={t} />
       </Card>
 
       <Dialog
@@ -92,12 +86,6 @@ export const ProjectFileUploadTrigger = ({
           initialFileCount={fileStatus.fileCount}
         />
       </Dialog>
-
-      <ShareDialog
-        open={showShareDialog}
-        onClose={() => setShowShareDialog(false)}
-        projectId={projectId}
-      />
     </>
   );
 };

@@ -59,12 +59,12 @@ export const Sidebar = ({ children, membership }: Props) => {
     <SidebarLayout
       navbar={<DesktopNavbar userEmail={userEmail} userAvatar={userAvatar} />}
       sidebar={
-        <div className="flex w-full flex-col h-full text-sm border-r-2 dark:border-slate-800 border-slate-200">
+        <div className="flex w-full flex-col h-full text-sm border-r-2 dark:bg-secondary-dark bg-blue-50 dark:border-slate-800 border-slate-200">
           <Header />
           <div className="flex flex-col mb-5">
             {pathname === '/' ||
             pathname.includes('/threads') ||
-            pathname.includes('projects') ||
+            pathname.includes('assistants') ||
             pathname === `/${locale}/support` ? (
               <CreateThreadButton
                 isThreadLoading={isThreadLoading}
@@ -106,7 +106,7 @@ export const Sidebar = ({ children, membership }: Props) => {
           <SidebarBody className="-mt-3.5">
             {pathname === `/` ||
             pathname.includes('threads') ||
-            pathname.includes('projects') ? (
+            pathname.includes('assistants') ? (
               error ? (
                 <div className="flex flex-col items-center text-start">
                   <Text color="red-500">{getSidebarThreadsError(error)}</Text>

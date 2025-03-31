@@ -64,6 +64,7 @@ export const createProjectForOrganization = async (
         is_public: true,
         access_token: true,
         published_at: true,
+        chatbot_enabled: true,
       },
     });
   } catch (error) {
@@ -132,6 +133,10 @@ export const getProjectByPublicId = async (publicId: string) => {
         title: true,
         threads: true,
         internal_organization_id: true,
+        is_public: true,
+        access_token: true,
+        published_at: true,
+        chatbot_enabled: true,
       },
     });
   } catch (error) {
@@ -237,5 +242,72 @@ export const generateProjectKey = async (projectId: number) => {
   } catch (error) {
     logger.error({ err: error }, 'Error generating access token:');
     throw new Error('Failed to generate access token');
+  }
+};
+
+export const disablePublicAccessForProject = async (projectId: number) => {
+  try {
+    const orgId = getOrgIdOrThrow();
+
+    const project = await db.project.findFirst({
+      where: {
+        id: projectId,
+        organization_id: orgId,
+      },
+    });
+
+    if (!project) {
+      logger.error({ projectId, orgId }, 'Project not found or unauthorized');
+      throw new Error('Project not found or unauthorized');
+    }
+
+    await db.project.update({
+      where: { id: projectId },
+      data: {
+        is_public: false,
+        access_token: null,
+        published_at: null,
+      },
+    });
+
+    logger.info({ projectId }, 'Public access disabled successfully');
+    return { success: true };
+  } catch (error) {
+    logger.error({ err: error }, 'Error disabling public access');
+    throw error;
+  }
+};
+
+export const toggleChatbotEnabled = async (
+  projectId: number,
+  enabled: boolean
+) => {
+  try {
+    const orgId = getOrgIdOrThrow();
+
+    const project = await db.project.findFirst({
+      where: {
+        id: projectId,
+        organization_id: orgId,
+      },
+    });
+
+    if (!project) {
+      logger.error({ projectId, orgId }, 'Project not found or unauthorized');
+      throw new Error('Project not found or unauthorized');
+    }
+
+    await db.project.update({
+      where: { id: projectId },
+      data: {
+        chatbot_enabled: enabled,
+      },
+    });
+
+    logger.info({ projectId, enabled }, 'Chatbot status updated successfully');
+    return { success: true };
+  } catch (error) {
+    logger.error({ err: error, projectId }, 'Error updating chatbot status');
+    return { success: false };
   }
 };

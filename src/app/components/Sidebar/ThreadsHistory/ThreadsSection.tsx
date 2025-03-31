@@ -33,7 +33,7 @@ export const ThreadsSection = ({
         ({ title, threads }, categoryIndex) =>
           threads.length > 0 && (
             <div key={title} className="w-11/12 mt-3">
-              <SidebarLabel className="text-gray-600 dark:text-gray-100 font-bold p-2">
+              <SidebarLabel className="text-gray-500 dark:text-gray-100 font-bold p-2 uppercase">
                 {title}
               </SidebarLabel>
               {threads.map((thread, index) => {
@@ -62,7 +62,7 @@ export const ThreadsSection = ({
                         'font-normal text-gray-700',
                         isActive
                           ? 'text-primary-blue-400 dark:text-gray-100'
-                          : 'hover:bg-gray-100'
+                          : 'hover:bg-gray-200'
                       )}
                       onClick={() => closeSidebar()}
                     >
