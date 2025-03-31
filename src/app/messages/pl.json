@@ -336,6 +336,9 @@
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
     },
+    "projects": {
+      "title": "Asystenci"
+    },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
       "database-connection": "Nie można połączyć się z bazą danych. Spróbuj ponownie później.",
