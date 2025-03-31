@@ -1,0 +1,35 @@
+import { useState } from 'react';
+import { disablePublicAccessForProject } from '@/app/lib/services/project';
+
+export const useDisablePublicAccess = (projectId: number) => {
+  const [isDisabling, setIsDisabling] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const handleDisablePublicAccess = async () => {
+    if (!projectId) return false;
+
+    try {
+      setIsDisabling(true);
+      setError(null);
+
+      const { success } = await disablePublicAccessForProject(projectId);
+
+      if (!success) {
+        throw new Error('Failed to disable public access');
+      }
+
+      return true;
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err
+          : new Error('Failed to disable public access')
+      );
+      return false;
+    } finally {
+      setIsDisabling(false);
+    }
+  };
+
+  return { disablePublicAccess: handleDisablePublicAccess, isDisabling, error };
+};

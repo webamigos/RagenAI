@@ -336,49 +336,6 @@
       "yesterday": "Wczoraj",
       "older": "Starsze niż 2 dni"
     },
-    "projects": {
-      "title": "Asystenci",
-      "create-project": "Nowy asystent",
-      "create": "Nowy asystent",
-      "placeholder": "Wpisz nazwę asystenta...",
-      "what-is-project": "Czym jest asystent?",
-      "project-description": "Asystent pozwala zarządzać zadaniami i organizować pracę zespołu.",
-      "cancel": "Anuluj",
-      "save": "Zapisz",
-      "upload-file": "Wgraj plik do asystenta",
-      "upload": {
-        "title": "Wgraj pliki do asystenta",
-        "button": "Wgraj pliki",
-        "selected-files": "Wybrane pliki",
-        "remove-file": "Usuń plik",
-        "add-files": "Dodaj pliki",
-        "drop-to-upload": "Upuść pliki, aby je wgrać",
-        "uploading": "Przesyłanie..."
-      },
-      "project-files": "Pliki asystenta",
-      "no-files": "Brak plików w projekcie",
-      "file-deleted": "Plik został usunięty",
-      "remove-file": "Usuń plik",
-      "success": {
-        "created": "Asystent został pomyślnie utworzony."
-      },
-      "error": {
-        "title-required": "Tytuł jest wymagany",
-        "loading-organization": "Błąd podczas ładowania organizacji",
-        "no-organization": "Brak organizacji",
-        "project-exists": "Asystent o tej nazwie już istnieje",
-        "creation-failed": "Nie udało się utworzyć asystenta",
-        "loading-files": "Nie udało się załadować plików asystenta",
-        "file-delete": "Nie udało się usunąć pliku"
-      },
-      "share-knowledge": {
-        "title": "Udostępnij wiedzę asystenta",
-        "share-publicly": "Udostępnij wiedzę asystenta publicznie",
-        "generating-link": "Generowanie linku do udostępnienia...",
-        "link-to-knowledge": "Udostępnij ten link, aby dać dostęp do wiedzy asystenta:",
-        "copy": "Kopiuj"
-      }
-    },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
       "database-connection": "Nie można połączyć się z bazą danych. Spróbuj ponownie później.",
@@ -618,10 +575,33 @@
       "personalize-chatbot": "Personalizuj chatbota",
       "enable-chatbot": "Włącz chatbota",
       "chatbot-title": "Tytuł chatbota",
-      "chatbot-subtitle": "Podtytuł chatbota"
+      "chatbot-subtitle": "Podtytuł chatbota",
+      "chatbot-title-aria-label": "Wprowadź tytuł chatbota",
+      "chatbot-subtitle-aria-label": "Wprowadź wiadomość powitalną chatbota",
+      "refresh-link-title": "Odśwież link publiczny",
+      "refresh-link-confirmation": "Czy na pewno chcesz odświeżyć ten link? Stary link przestanie działać.",
+      "refresh": "Odśwież",
+      "refreshing": "Odświeżanie...",
+      "refresh-link-aria-label": "Odśwież link publiczny",
+      "refresh-error": "Wystąpił błąd podczas odświeżania linku",
+      "copy-link-aria-label": "Kopiuj link publiczny",
+      "share-url": "URL udostępniania",
+      "toggle-sharing": "Przełącz udostępnianie publiczne",
+      "embed-script-aria-label": "Kod do osadzenia chatbota",
+      "copy-embed-script-aria-label": "Kopiuj kod do osadzenia",
+      "disable-title": "Wyłącz dostęp publiczny",
+      "disable-confirmation": "Czy na pewno chcesz wyłączyć dostęp publiczny? uniemożliwi to dostęp do publicznego dostępu do wiedzy asystenta.",
+      "disable": "Wyłącz",
+      "disabling": "Wyłączanie...",
+      "disable-success": "Dostęp publiczny został pomyślnie wyłączony",
+      "disable-error": "Wystąpił błąd podczas wyłączania dostępu publicznego",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Opublikowano"
+      }
     },
     "project-files": "Pliki asystenta",
-    "no-files": "Brak plików w projekcie",
+    "no-files": "Brak plików",
     "file-deleted": "Plik został usunięty",
     "remove-file": "Usuń plik",
     "file-singular": "plik",
@@ -697,5 +677,7 @@
     "try-again": "Spróbuj ponownie",
     "unknown-error": "Nieznany błąd aplikacji",
     "file-error-fetching": "Wystąpił błąd podczas ładowania plików"
-  }
+  },
+  "expand": "Rozwiń",
+  "collapse": "Zwiń"
 }
