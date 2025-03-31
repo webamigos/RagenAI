@@ -16,7 +16,7 @@
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
     "new-thread-placeholder": "Type your message here...",
-    "project-context": "You are working in project: {projectTitle}",
+    "project-context": "You are working in assistant: {projectTitle}",
     "warning-messages": {
       "prompt-max-length": "Message cannot exceed 10,000 characters",
       "prompt-min-length": "Message must contain at least 10 characters"
@@ -45,14 +45,16 @@
     "or-continue-with": "Or continue with",
     "forgot-password": "Forgot password?",
     "i-agree-to": "I agree to",
-    "terms-of-use": "terms of use",
+    "terms-of-use": "Terms of Use",
     "and": "and",
-    "privacy-policy": "privacy policy",
+    "privacy-policy": "Privacy Policy",
     "validation": {
-      "terms": "You need to accept terms of use",
+      "terms": "You need to accept Terms of Use and Privacy Policy",
       "email": "Invalid email",
       "password": "Invalid password"
-    }
+    },
+    "newsletter-consent": "I consent to the processing of my personal data by Web Amigos sp. z o.o. for the purpose of sending me a newsletter via electronic means, including information about news, services, offers, recommended links, or events. I understand that I can withdraw this consent at any time. More information can be found in ",
+    "newsletter-consent-link": "Newsltetter Policy"
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -332,8 +334,8 @@
       "older": "Older"
     },
     "projects": {
-      "title": "Projects",
-      "create-project": "Create Project"
+      "title": "Assistants",
+      "create-project": "Create Assistant"
     },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",
@@ -547,16 +549,16 @@
     "microphone-permission-denied": "No access to microphone. Check browser permissions."
   },
   "projects": {
-    "title": "Projects",
-    "create-project": "Create Project",
-    "create": "Create Project",
-    "placeholder": "Enter project name...",
-    "what-is-project": "What is a project?",
-    "project-description": "A project allows you to manage tasks and organize team work.",
+    "title": "Assistants",
+    "create-project": "Create Assistant",
+    "create": "Create Assistant",
+    "placeholder": "Enter assistant name...",
+    "what-is-project": "What is an assistant?",
+    "project-description": "An Assistant allows you to manage tasks and organize team work. You can create many different assistants for particular tasks like marketing, sales or customer support.",
     "cancel": "Cancel",
-    "upload-file": "Upload file to project",
+    "upload-file": "Upload file",
     "upload": {
-      "title": "Upload Files to Project",
+      "title": "Upload Files",
       "button": "Upload files",
       "selected-files": "Selected files",
       "remove-file": "Remove file",
@@ -565,12 +567,12 @@
       "uploading": "Uploading..."
     },
     "project-instructions": {
-      "title": "Project Instructions",
+      "title": "Assistant Instructions",
       "button": "Add instructions",
       "placeholder": "Enter instructions",
       "description": "Instructions are optional. They customize assistant responses to your needs.",
       "description-min-length": "Instructions must be at least 10 characters",
-      "form-title": "Project Instructions",
+      "form-title": "Assistant Instructions",
       "title-label": "Title",
       "title-min-length": "Title must be at least 3 characters",
       "description-label": "Instruction content",
@@ -585,8 +587,8 @@
       "instruction-saved": "Instruction has been saved",
       "save-error": "An error occurred while saving the instruction"
     },
-    "project-files": "Project Files",
-    "no-files": "No files in the project",
+    "project-files": "Assistant Files",
+    "no-files": "No files in the assistant",
     "file-deleted": "File has been deleted",
     "remove-file": "Remove file",
     "file-singular": "file",
@@ -594,29 +596,52 @@
     "manage-files": "Manage files",
     "loading": "Loading...",
     "success": {
-      "created": "Project has been successfully created."
+      "created": "Assistant has been successfully created."
     },
     "error": {
       "title-required": "Title is required",
       "loading-organization": "Error loading organization",
       "no-organization": "No organization",
-      "project-exists": "Project with this name already exists",
-      "creation-failed": "Failed to create project",
-      "loading-files": "Failed to load project files",
+      "project-exists": "Assistant with this name already exists",
+      "creation-failed": "Failed to create assistant",
+      "loading-files": "Failed to load assistant files",
       "file-delete": "Failed to delete file",
-      "fetching-error": "An error occurred while fetching the project's files"
+      "fetching-error": "An error occurred while fetching the assistant's files"
     },
     "share-knowledge": {
-      "title": "Share Project Knowledge",
-      "share-publicly": "Share project knowledge publicly",
+      "title": "Share Assistant Knowledge",
+      "share-publicly": "Share Assistant knowledge publicly",
       "generating-link": "Generating sharing link...",
-      "link-to-knowledge": "Share this link to give access to project knowledge:",
+      "link-to-knowledge": "Share this link to give access to assistant knowledge:",
       "copy": "Copy",
       "embed-code": "Embed code",
       "personalize-chatbot": "Personalize chatbot",
       "enable-chatbot": "Enable chatbot",
       "chatbot-title": "Chatbot title",
-      "chatbot-subtitle": "Chatbot subtitle"
+      "chatbot-subtitle": "Chatbot subtitle",
+      "chatbot-title-aria-label": "Enter chatbot title",
+      "chatbot-subtitle-aria-label": "Enter chatbot welcome message",
+      "refresh-link-title": "Refresh Public Link",
+      "refresh-link-confirmation": "Are you sure you want to refresh this link? The old link will no longer work.",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "refresh-link-aria-label": "Refresh public link",
+      "refresh-error": "An error occurred while refreshing the link",
+      "copy-link-aria-label": "Copy public link",
+      "share-url": "Sharing URL",
+      "toggle-sharing": "Toggle public sharing",
+      "embed-script-aria-label": "Chatbot embed script",
+      "copy-embed-script-aria-label": "Copy embed script",
+      "disable-title": "Disable Public Access",
+      "disable-confirmation": "Are you sure you want to disable public access? This will remove the public link and prevent access to the project knowledge.",
+      "disable": "Disable",
+      "disabling": "Disabling...",
+      "disable-success": "Public access has been successfully disabled",
+      "disable-error": "An error occurred while disabling public access",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Published"
+      }
     }
   },
   "voice-mode": {
@@ -653,5 +678,7 @@
     "try-again": "Try again",
     "unknown-error": "Unknown application error",
     "file-error": "An error occurred while loading files"
-  }
+  },
+  "expand": "Expand",
+  "collapse": "Collapse"
 }

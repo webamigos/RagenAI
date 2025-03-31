@@ -1,12 +1,8 @@
-export type ModelProvider =
-  | 'bedrock'
-  | 'openai'
-  | 'ollama'
-  | 'anthropic'
-  | 'google'
-  | 'openrouter'
-  | 'fireworks'
-  | 'azure-openai';
+import { modelsSchema } from '@/app/lib/services/llm';
+import { z } from 'zod';
+
+export type ModelConfig = z.infer<typeof modelsSchema>;
+export type ModelProvider = ModelConfig['provider'];
 
 export type BaseProviderCredentials = {
   provider: ModelProvider;

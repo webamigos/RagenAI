@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
@@ -31,6 +31,7 @@ export function CreateProject({
   const router = useRouter();
   const { organization, isLoaded } = useOrganization();
   const { user } = useUser();
+  const [isPending, startTransition] = useTransition();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -85,10 +86,12 @@ export function CreateProject({
       }
 
       successToast({ message: t('projects.success.created') });
-      router.refresh();
-      await refreshProjects();
-      onClose();
-      reset();
+      startTransition(async () => {
+        await refreshProjects();
+        router.push(`/assistants/${project.public_id}`);
+        onClose();
+        reset();
+      });
     } catch (error) {
       logger.error({ err: error }, 'Project creation failed');
       errorToast({ message: t('projects.error.creation-failed') });
@@ -109,20 +112,27 @@ export function CreateProject({
               inputRef.current = e;
             }}
             disabled={isSubmitting}
-            className="py-1"
+            className="py-2"
             error={errors.title}
             errorMessage={errors.title?.message}
           />
           <div className="text-sm text-muted-foreground">
-            <h4 className="font-medium">{t('projects.what-is-project')}</h4>
+            <h4 className="font-medium mt-4">
+              {t('projects.what-is-project')}
+            </h4>
             <p>{t('projects.project-description')}</p>
           </div>
         </div>
         <div className="flex justify-end space-x-2">
-          <Button type="button" onClick={onClose} disabled={isSubmitting}>
+          <Button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            disabled={isSubmitting || isPending}
+          >
             {t('projects.cancel')}
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || isPending}>
             {t('projects.create-project')}
           </Button>
         </div>

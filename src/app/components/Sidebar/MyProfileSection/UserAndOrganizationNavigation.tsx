@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@clerk/nextjs';
-import Link from 'next/link';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSyncActiveOrganization } from '@/app/hooks/useSyncActiveOrganization';
@@ -15,7 +14,6 @@ import {
   SettingsIcon,
   SidebarItem,
   CreditCardIcon,
-  RSSIcon,
   KeyIcon,
 } from '@ragenai/common-ui';
 
@@ -70,11 +68,6 @@ export const UserAndOrganizationNavigation = ({ membership }: Props) => {
       icon: CreditCardIcon,
       label: t('subscription-management'),
       path: '/my-profile/subscription',
-    },
-    {
-      icon: RSSIcon,
-      label: t('generate-access-key'),
-      path: '/generate-access-key',
     },
     {
       icon: KeyIcon,

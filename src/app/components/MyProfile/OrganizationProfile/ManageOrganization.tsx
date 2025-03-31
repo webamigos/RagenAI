@@ -4,9 +4,32 @@ import { useTheme } from 'next-themes';
 import { dark, experimental__simple } from '@clerk/themes';
 import { OrganizationProfile } from '@clerk/nextjs';
 import { Card } from '@ragenai/common-ui/Card';
+import { SubscriptionDetails } from '@/app/[locale]/my-profile/subscription/types';
+import { FREE_PLAN_NAME, TRIAL_PLAN_NAME } from '@/app/config';
 
-export const ManageOrganization = () => {
+type Props = {
+  allowAddToOrganization: boolean;
+  subscription: SubscriptionDetails | null;
+};
+
+export const ManageOrganization = ({
+  allowAddToOrganization,
+  subscription,
+}: Props) => {
   const { resolvedTheme } = useTheme();
+
+  // TODO: move to helper
+  // TODO: check member limit
+  const planName = subscription?.plan.name;
+  let allowAddMembers = false;
+  if (
+    allowAddToOrganization && // feature flag
+    planName && // plan name is different than free or trial
+    planName !== TRIAL_PLAN_NAME &&
+    planName !== FREE_PLAN_NAME
+  ) {
+    allowAddMembers = true;
+  }
 
   return (
     <Card className="w-full p-0" size="full">
@@ -33,6 +56,9 @@ export const ManageOrganization = () => {
               navbarMobileMenuRow: 'hidden',
               table: 'w-full !important!',
               profileSection__organizationDanger: 'hidden',
+              membersPageInviteButton: allowAddMembers
+                ? 'inline-flex'
+                : 'hidden',
             },
           }}
         />

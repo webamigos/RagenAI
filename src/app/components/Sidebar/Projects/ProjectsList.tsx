@@ -29,7 +29,7 @@ export const ProjectsList = ({
 
   return (
     <>
-      <div className="mb-4">
+      <div className="mb-4 mt-6">
         <div className="w-full flex items-center justify-between">
           <SidebarLabel className="p-2 text-gray-600 dark:text-gray-100 font-bold">
             {t('title')}

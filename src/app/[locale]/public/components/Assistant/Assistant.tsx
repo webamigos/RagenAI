@@ -8,10 +8,10 @@ import { ChatResponseType } from '@/app/contracts/Message';
 
 type Props = {
   threadId: string;
-  organizationId: string;
+  accessToken: string;
 };
 
-export const PublicAssistant = ({ threadId, organizationId }: Props) => {
+export const PublicAssistant = ({ threadId, accessToken }: Props) => {
   const {
     messageLoadingText,
     messagesEndDivRef,
@@ -22,7 +22,7 @@ export const PublicAssistant = ({ threadId, organizationId }: Props) => {
     onSubmit,
     isLocked,
     promptFormRef,
-  } = usePublicAssistantLogic(threadId, organizationId);
+  } = usePublicAssistantLogic(threadId, accessToken);
 
   return (
     <div className="h-full flex flex-col font-sans">

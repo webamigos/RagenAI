@@ -37,6 +37,9 @@ env:
   STRIPE_SECRET_KEY: 'dummy'
   STRIPE_WEBHOOK_SECRET: 'dummy'
   FIRECRAWL_API_KEY: 'dummy'
+  DEFAULT_MODEL_PROVIDER: 'google'
+  DEFAULT_MODEL: 'gemini-2.0-flash'
+  GOOGLE_API_KEY: 'dummy'
 
 on:
   push:

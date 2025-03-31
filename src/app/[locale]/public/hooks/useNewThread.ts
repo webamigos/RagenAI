@@ -40,11 +40,11 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 };
 
 export const useNewThread = ({
-  organizationId,
+  accessToken,
   projectId,
   widgetMode = false,
 }: {
-  organizationId: string;
+  accessToken: string;
   projectId: number;
   widgetMode?: boolean;
 }) => {
@@ -90,7 +90,7 @@ export const useNewThread = ({
       }
 
       startTransition(() =>
-        push(`/public/${organizationId}/threads/${newThreadId}`)
+        push(`/public/assistants/${accessToken}/threads/${newThreadId}`)
       );
     } catch (err) {
       const errorMessage =
@@ -109,7 +109,7 @@ export const useNewThread = ({
 
       if (threadId) {
         startTransition(() =>
-          push(`/public/${organizationId}/threads/${threadId}`)
+          push(`/public/assistants/${accessToken}/threads/${threadId}`)
         );
         return;
       }
@@ -122,7 +122,7 @@ export const useNewThread = ({
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  }, [organizationId, threadId]);
+  }, [accessToken, threadId]);
 
   useEffect(() => {
     if (!widgetMode && !pathname.includes('/threads')) {

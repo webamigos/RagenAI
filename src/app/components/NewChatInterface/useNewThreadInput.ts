@@ -23,6 +23,7 @@ type Props = {
   widgetMode?: boolean;
   projectId?: number;
   projectPublicId?: string;
+  accessToken?: string;
 };
 
 export const useNewThreadInput = ({
@@ -31,6 +32,7 @@ export const useNewThreadInput = ({
   widgetMode,
   projectId,
   projectPublicId,
+  accessToken,
 }: Props) => {
   const t = useTranslations('Index.warning-messages');
   const {
@@ -48,7 +50,7 @@ export const useNewThreadInput = ({
 
   const privateThread = usePrivateNewThread();
   const publicThread = usePublicNewThread({
-    organizationId: organizationId || '',
+    accessToken: accessToken!,
     projectId: projectId!,
     widgetMode: widgetMode || false,
   });

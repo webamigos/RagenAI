@@ -14,7 +14,7 @@ import {
   fetchProjectsForUser,
 } from '@/app/lib/services/project';
 
-const serviceName = 'projects/actions';
+const serviceName = 'assistants/actions';
 
 type CreateProjectResponse = {
   status: StatusCodes;
@@ -97,10 +97,10 @@ export const getProjects = async (organizationId: string, userId: string) => {
   } catch (error) {
     logger.error(
       { err: error, organizationId, userId },
-      'Error fetching projects'
+      'Error fetching assistants'
     );
     return {
-      error: 'Failed to fetch projects',
+      error: 'Failed to fetch assistant',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
   }
