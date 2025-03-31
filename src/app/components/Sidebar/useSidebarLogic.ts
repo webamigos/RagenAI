@@ -164,7 +164,7 @@ export const useSidebarLogic = () => {
   useEffect(() => {
     const parts = pathname.split('/');
     const threadIndex = parts.indexOf('threads');
-    const projectIndex = parts.indexOf('projects');
+    const projectIndex = parts.indexOf('assistants');
 
     if (threadIndex !== -1 && parts[threadIndex + 1]) {
       const threadId = parts[threadIndex + 1];

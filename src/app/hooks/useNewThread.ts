@@ -85,7 +85,7 @@ export const useNewThread = () => {
     if (!visitorId) {
       return;
     }
-    if (pathname.includes('/threads') || pathname.includes('/projects')) {
+    if (pathname.includes('/threads') || pathname.includes('/assistants')) {
       return;
     }
 
@@ -105,7 +105,7 @@ export const useNewThread = () => {
       if (
         localStorageThreadId &&
         !pathname.includes('/threads') &&
-        !pathname.includes('/projects')
+        !pathname.includes('/assistants')
       ) {
         push(`/threads/${localStorageThreadId}`);
       }
@@ -123,7 +123,7 @@ export const useNewThread = () => {
 
   useEffect(() => {
     try {
-      if (!pathname.includes('/threads') && !pathname.includes('/projects')) {
+      if (!pathname.includes('/threads') && !pathname.includes('/assistants')) {
         localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
       }
     } catch (err) {
@@ -192,7 +192,7 @@ export const useNewThread = () => {
 
         setTransition(() => {
           const route = projectPublicId
-            ? `/projects/${projectPublicId}/threads/${threadId}`
+            ? `/assistants/${projectPublicId}/threads/${threadId}`
             : `/threads/${threadId}`;
 
           // Store the initial message in localStorage to be picked up by the thread view

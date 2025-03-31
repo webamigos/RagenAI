@@ -9,7 +9,7 @@ export const ThreadItem = ({
   onClose,
 }: ThreadItemProps) => (
   <SidebarItem
-    href={`/projects/${projectPublicId}/threads/${thread.public_id}`}
+    href={`/assistants/${projectPublicId}/threads/${thread.public_id}`}
     current={isActive}
     className={classMerge(
       'font-normal text-gray-700 rounded-lg',

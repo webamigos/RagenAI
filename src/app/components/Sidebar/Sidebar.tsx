@@ -64,7 +64,7 @@ export const Sidebar = ({ children, membership }: Props) => {
           <div className="flex flex-col mb-5">
             {pathname === '/' ||
             pathname.includes('/threads') ||
-            pathname.includes('projects') ||
+            pathname.includes('assistants') ||
             pathname === `/${locale}/support` ? (
               <CreateThreadButton
                 isThreadLoading={isThreadLoading}
@@ -106,7 +106,7 @@ export const Sidebar = ({ children, membership }: Props) => {
           <SidebarBody className="-mt-3.5">
             {pathname === `/` ||
             pathname.includes('threads') ||
-            pathname.includes('projects') ? (
+            pathname.includes('assistants') ? (
               error ? (
                 <div className="flex flex-col items-center text-start">
                   <Text color="red-500">{getSidebarThreadsError(error)}</Text>

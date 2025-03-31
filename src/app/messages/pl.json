@@ -337,7 +337,8 @@
       "older": "Starsze niż 2 dni"
     },
     "projects": {
-      "title": "Asystenci"
+      "title": "Asystenci",
+      "create-project": ""
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",

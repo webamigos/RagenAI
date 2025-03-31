@@ -25,7 +25,7 @@ export const ProjectItem = ({
 
   const handleProjectClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    router.push(`/projects/${project.public_id}`);
+    router.push(`/assistants/${project.public_id}`);
   };
 
   const handleExpandClick = (e: React.MouseEvent<HTMLDivElement>) => {

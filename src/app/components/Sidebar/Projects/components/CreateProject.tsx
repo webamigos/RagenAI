@@ -88,9 +88,9 @@ export function CreateProject({
       successToast({ message: t('projects.success.created') });
       startTransition(async () => {
         await refreshProjects();
+        router.push(`/assistants/${project.public_id}`);
         onClose();
         reset();
-        router.push(`/projects/${project.public_id}`);
       });
     } catch (error) {
       logger.error({ err: error }, 'Project creation failed');
