@@ -15,7 +15,7 @@ export const ThreadItem = ({
       'font-normal text-gray-700 rounded-lg',
       isActive
         ? 'text-primary-blue-400 dark:text-gray-100'
-        : 'hover:bg-gray-100 dark:hover:bg-accent-dark-500'
+        : 'hover:bg-gray-200 dark:hover:bg-accent-dark-500'
     )}
     onClick={onClose}
     hasIcon
