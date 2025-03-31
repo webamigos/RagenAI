@@ -24,7 +24,7 @@ type ShareDialogProps = {
   onChatbotEnabledChange?: (enabled: boolean) => Promise<boolean>;
 };
 
-const BASE_URL = `${window.location.origin}/pl/public/project/`;
+const BASE_URL = `${window.location.origin}/pl/public/project`;
 
 export const ShareDialog = ({
   open,
