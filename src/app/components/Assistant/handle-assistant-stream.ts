@@ -241,7 +241,7 @@ export const handleAssistantStream = async ({
                 created_at: new Date().toISOString(),
               })
             );
-            if (accumulatingMessage.length % 20 === 0) {
+            if (accumulatingMessage.length % 100 === 0) {
               scrollFn();
             }
             break;
@@ -276,6 +276,7 @@ export const handleAssistantStream = async ({
               reduxDispatch(setMessages(uniqueMessages));
               reduxDispatch(setStreamedMessage(null));
               reduxDispatch(setLoading(false));
+              scrollFn();
               accumulatingMessage = '';
             }
             break;
