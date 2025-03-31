@@ -1,7 +1,6 @@
 import {
   Text,
   Skeleton,
-  RSSIcon,
   DocumentIcon,
   ClourArrowIcon,
 } from '@ragenai/common-ui';
@@ -15,13 +14,11 @@ export type FileStatus = {
 type ProjectFileUploadContentProps = {
   status: FileStatus;
   t: (value: string) => string;
-  onRssClick?: () => void;
 };
 
 export const ProjectFileUploadContent = ({
   status,
   t,
-  onRssClick,
 }: ProjectFileUploadContentProps) => {
   const { hasFiles, fileCount, loading } = status;
 
