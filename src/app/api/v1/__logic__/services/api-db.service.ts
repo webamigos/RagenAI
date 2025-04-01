@@ -5,6 +5,7 @@ import {
   UserDocument,
   Source,
   Message,
+  Project,
 } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
@@ -29,6 +30,7 @@ import {
   prepareApiSseMessage,
   sendApiEvent,
 } from '@/libs/sse/prepare-sse-message';
+import { UpdateProjectDto } from '../dtos/project.dto';
 
 type ApiCollection<T extends { id: string | number | bigint }> = Omit<
   T,
@@ -39,6 +41,7 @@ type ApiCollection<T extends { id: string | number | bigint }> = Omit<
 type ApiUserDocument = ApiCollection<UserDocument>;
 type ApiThread = ApiCollection<Thread>;
 type ApiMessage = ApiCollection<Message>;
+type ApiProject = ApiCollection<Project>;
 
 export class ApiDbService {
   private db: PrismaClient;
@@ -114,10 +117,18 @@ export class ApiDbService {
 
   // ======== THREADS ========
   async getUserThreads(): Promise<ApiThread[]> {
-    const documents = await db.thread.findMany({
+    const threads = await db.thread.findMany({
       where: {
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // filled by UI
+          },
+        ],
       },
       select: {
         public_id: true,
@@ -130,7 +141,7 @@ export class ApiDbService {
       },
     });
 
-    return parseResponse(documents);
+    return parseResponse(threads);
   }
 
   async getUserThread(publicId: Thread['public_id']): Promise<ApiThread> {
@@ -138,7 +149,15 @@ export class ApiDbService {
       where: {
         public_id: publicId,
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // filled by UI
+          },
+        ],
       },
       select: {
         public_id: true,
@@ -165,7 +184,15 @@ export class ApiDbService {
       where: {
         public_id: publicId,
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // filled by UI
+          },
+        ],
       },
       data: {
         title: payload.title,
@@ -193,7 +220,15 @@ export class ApiDbService {
       where: {
         public_id: publicId,
         organization_id: this.context.orgId,
-        user_id: this.context.userId,
+        project_id: this.context.projectId,
+        OR: [
+          {
+            user_id: this.context.userId, // filled by API
+          },
+          {
+            visitor_id: this.context.userId, // filled by UI
+          },
+        ],
       },
     });
   }
@@ -208,6 +243,7 @@ export class ApiDbService {
     const threadRecord = await db.thread.create({
       data: {
         organization_id: this.context.orgId,
+        project_id: this.context.projectId,
         user_id: this.context.userId,
         source: Source.API,
       },
@@ -225,8 +261,15 @@ export class ApiDbService {
       where: {
         thread: {
           organization_id: this.context.orgId,
-          user_id: this.context.userId,
           public_id: publicThreadId,
+          OR: [
+            {
+              user_id: this.context.userId, // filled by API
+            },
+            {
+              visitor_id: this.context.userId, // filed by UI
+            },
+          ],
         },
       },
       select: {
@@ -290,7 +333,7 @@ export class ApiDbService {
     const basicRag = await initializePublicRagChain({
       settings: { ...rawSettings, apiKey: rawSettings.apiKey },
       organizationId: this.context.orgId,
-      // projectId: this.context.projectId,
+      projectId: this.context.projectId,
     });
     const chain = basicRag.chain;
     const finalAnswerRunName = basicRag.finalAnswerRunName;
@@ -403,5 +446,94 @@ export class ApiDbService {
     });
 
     return result;
+  }
+
+  // ======== PROJECTS / ASSISTANTS ========
+  async getUserProject(publicId: Project['public_id']): Promise<ApiProject> {
+    const project = await db.project.findFirst({
+      where: {
+        public_id: publicId,
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        source: true,
+        created_at: true,
+      },
+    });
+
+    return parseResponse(project);
+  }
+
+  async getUserProjects(): Promise<ApiProject[]> {
+    const projects = await db.project.findMany({
+      where: {
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        created_at: true,
+        updated_at: true,
+        is_public: true,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    return parseResponse(projects);
+  }
+
+  async createUserProject({ title }: { title: Project['title'] }): Promise<{
+    id: Project['public_id'];
+    title: Project['title'];
+  }> {
+    const projectRecord = await db.project.create({
+      data: {
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+        title,
+        source: Source.API,
+      },
+    });
+
+    return {
+      id: projectRecord.public_id,
+      title: projectRecord.title,
+    };
+  }
+
+  async updateUserProject(
+    publicId: Project['public_id'],
+    payload: UpdateProjectDto
+  ): Promise<ApiProject> {
+    const record = this.getUserProject(publicId);
+
+    if (!record) {
+      throw new NotFoundException();
+    }
+    // TODO: what about public threads which doesn't have organization_id or user_id?
+    const updatedProject = await this.db.project.update({
+      where: {
+        public_id: publicId,
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+      },
+      data: {
+        title: payload.title,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        source: true,
+        created_at: true,
+      },
+    });
+
+    return parseResponse(updatedProject);
   }
 }

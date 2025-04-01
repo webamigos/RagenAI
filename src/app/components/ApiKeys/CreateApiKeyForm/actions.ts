@@ -23,6 +23,8 @@ import {
   ProjectId,
   KeyId,
 } from '@/app/api/v1/__logic__/types/brand';
+import { fetchProject } from '@/app/lib/services/api';
+import { getProjectByPublicId } from '@/app/lib/services/project';
 
 type SuccessResponse = {
   payload: {
@@ -60,18 +62,18 @@ export const createApiKey = async (
     setSentryServiceTag(serviceName);
     setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
-    const organization = await fetchOrganizationByProviderId(orgId);
+    const userProject = await getProjectByPublicId(data.project_id);
+    if (!userProject || userProject.owner_id !== userId) {
+      throw new Error('Not allowed!');
+    }
 
-    // by now organization have only one default project
-    const defaultProject = await fetchOrganizationDefaultProject(
-      organization.id
-    );
+    const organization = await fetchOrganizationByProviderId(orgId);
 
     const keyRecord = await db.apiKey.create({
       data: {
         name: data.name,
         masked_value: 'pending_*********',
-        project_id: defaultProject.id,
+        project_id: userProject.id,
         organization_id: organization.id,
       },
     });
@@ -82,7 +84,7 @@ export const createApiKey = async (
     const keyPayload = {
       orgId: orgId as OrgId,
       userId: userId as UserId,
-      projectId: defaultProject.id as ProjectId,
+      projectId: userProject.id as ProjectId,
       keyId: keyRecord.id as KeyId,
     };
 
