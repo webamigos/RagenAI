@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 import { getOrgIdOrThrow } from './clerk';
 
 import crypto from 'crypto';
+import { Source } from '@prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
@@ -50,6 +51,7 @@ export const createProjectForOrganization = async (
         internal_organization_id: organizationInternalId,
         organization_id: organizationId,
         owner_id: userId,
+        source: Source.UI,
       },
       select: {
         id: true,
@@ -65,6 +67,7 @@ export const createProjectForOrganization = async (
         access_token: true,
         published_at: true,
         chatbot_enabled: true,
+        source: true,
       },
     });
   } catch (error) {
@@ -83,6 +86,9 @@ export const fetchProjectsForUser = async (
       where: {
         organization_id: organizationId, //Default PROJECT is filtered out, organization_id column is NULL
         owner_id: userId,
+      },
+      orderBy: {
+        created_at: 'desc',
       },
       select: {
         id: true,
@@ -137,6 +143,7 @@ export const getProjectByPublicId = async (publicId: string) => {
         access_token: true,
         published_at: true,
         chatbot_enabled: true,
+        owner_id: true,
       },
     });
   } catch (error) {
