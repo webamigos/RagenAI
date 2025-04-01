@@ -19,6 +19,18 @@ const withNextIntl = createNextIntlPlugin();
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
 const isStagingTargetEnv = process.env.TARGET_ENV === 'staging';
 
+const rewrites = [];
+const IS_API_MODE = process.env.IS_API_MODE === '1';
+
+if (IS_API_MODE) {
+  // API instance - rewrites paths to /api
+  // eg. https://api.ragen.io/api/v1 -> https://api.ragen.io/v1
+  rewrites.push({
+    source: '/:path*',
+    destination: '/api/:path*',
+  });
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
@@ -27,20 +39,16 @@ const nextConfig = {
     domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
   },
 
-  // TODO: cloudflare config
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: 'https://api.ragen.io',
-  //       destination: '/api',
-  //     },
-  //   ];
-  // },
+  async rewrites() {
+    return {
+      beforeFiles: rewrites,
+    };
+  },
 
   async headers() {
     return [
       {
-        source: '/api/v1/:path*',
+        source: '/v1/:path*',
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
