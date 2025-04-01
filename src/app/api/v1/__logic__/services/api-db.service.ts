@@ -330,7 +330,7 @@ export class ApiDbService {
     const basicRag = await initializePublicRagChain({
       settings: { ...rawSettings, apiKey: rawSettings.apiKey },
       organizationId: this.context.orgId,
-      // projectId: this.context.projectId,
+      projectId: this.context.projectId,
     });
     const chain = basicRag.chain;
     const finalAnswerRunName = basicRag.finalAnswerRunName;

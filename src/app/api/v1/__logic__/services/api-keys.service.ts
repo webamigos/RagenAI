@@ -61,7 +61,7 @@ export class ApiKeysService {
   }
 
   extractDataFromApiKey(apiKey: ApiKey): GenerateApiKeyDto {
-    // sk-YTdlNDlkIDU1NSA2NiA3Nw
+    // key format: sk-YTdlNDlkIDU1NSA2NiA3Nw
     const plainKey = apiKey.replace(this.keyPrefix, '');
     // eslint-disable-next-line
     const [
