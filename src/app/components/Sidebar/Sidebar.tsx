@@ -95,7 +95,7 @@ export const Sidebar = ({ children, membership }: Props) => {
               !pathname.includes('/support') && (
                 <Button
                   onClick={handleSearch}
-                  className="relative ml-4 w-10/12 flex justify-center"
+                  className="relative ml-4 w-10/12 flex justify-center hover:bg-gray-200"
                   isLink
                 >
                   <SearchIcon className="w-6 h-6 dark:text-gray-200" />
