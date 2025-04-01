@@ -84,6 +84,9 @@ export const fetchProjectsForUser = async (
         organization_id: organizationId, //Default PROJECT is filtered out, organization_id column is NULL
         owner_id: userId,
       },
+      orderBy: {
+        created_at: 'desc',
+      },
       select: {
         id: true,
         public_id: true,
@@ -137,6 +140,7 @@ export const getProjectByPublicId = async (publicId: string) => {
         access_token: true,
         published_at: true,
         chatbot_enabled: true,
+        owner_id: true,
       },
     });
   } catch (error) {

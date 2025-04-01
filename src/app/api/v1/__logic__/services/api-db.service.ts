@@ -5,6 +5,7 @@ import {
   UserDocument,
   Source,
   Message,
+  Project,
 } from '@prisma/client';
 
 import db from '@ragenai/prisma-client';
@@ -29,6 +30,7 @@ import {
   prepareApiSseMessage,
   sendApiEvent,
 } from '@/libs/sse/prepare-sse-message';
+import { UpdateProjectDto } from '../dtos/project.dto';
 
 type ApiCollection<T extends { id: string | number | bigint }> = Omit<
   T,
@@ -39,6 +41,7 @@ type ApiCollection<T extends { id: string | number | bigint }> = Omit<
 type ApiUserDocument = ApiCollection<UserDocument>;
 type ApiThread = ApiCollection<Thread>;
 type ApiMessage = ApiCollection<Message>;
+type ApiProject = ApiCollection<Project>;
 
 export class ApiDbService {
   private db: PrismaClient;
@@ -443,5 +446,94 @@ export class ApiDbService {
     });
 
     return result;
+  }
+
+  // ======== PROJECTS / ASSISTANTS ========
+  async getUserProject(publicId: Project['public_id']): Promise<ApiProject> {
+    const project = await db.project.findFirst({
+      where: {
+        public_id: publicId,
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        source: true,
+        created_at: true,
+      },
+    });
+
+    return parseResponse(project);
+  }
+
+  async getUserProjects(): Promise<ApiProject[]> {
+    const projects = await db.project.findMany({
+      where: {
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        created_at: true,
+        updated_at: true,
+        is_public: true,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+
+    return parseResponse(projects);
+  }
+
+  async createUserProject({ title }: { title: Project['title'] }): Promise<{
+    id: Project['public_id'];
+    title: Project['title'];
+  }> {
+    const projectRecord = await db.project.create({
+      data: {
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+        title,
+        source: Source.API,
+      },
+    });
+
+    return {
+      id: projectRecord.public_id,
+      title: projectRecord.title,
+    };
+  }
+
+  async updateUserProject(
+    publicId: Project['public_id'],
+    payload: UpdateProjectDto
+  ): Promise<ApiProject> {
+    const record = this.getUserProject(publicId);
+
+    if (!record) {
+      throw new NotFoundException();
+    }
+    // TODO: what about public threads which doesn't have organization_id or user_id?
+    const updatedProject = await this.db.project.update({
+      where: {
+        public_id: publicId,
+        organization_id: this.context.orgId,
+        owner_id: this.context.userId,
+      },
+      data: {
+        title: payload.title,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        source: true,
+        created_at: true,
+      },
+    });
+
+    return parseResponse(updatedProject);
   }
 }

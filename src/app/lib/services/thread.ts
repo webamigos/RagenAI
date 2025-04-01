@@ -65,6 +65,7 @@ export const createNewThreadInDb = async ({
     const threadRecord = await db.thread.create({
       data: {
         organization_id: orgId,
+        user_id: userId,
         project_id: projectId ?? defaultProjectId,
         visitor_id: userId ? userId : visitorId,
       },
