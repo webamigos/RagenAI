@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { routing } from './i18n/routing';
 
+const IS_API_MODE = process.env.IS_API_MODE === '1';
+
 const handleI18nRouting = createMiddleware(routing);
 
 const PUBLIC_ROUTES = [
@@ -72,6 +74,11 @@ export const config = {
 
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
+    // ignore all below setup for API instance
+    if (IS_API_MODE) {
+      return NextResponse.next();
+    }
+
     const url = request.nextUrl.pathname;
     const localePrefixRegex = /^\/(pl|en)/;
     const session = auth();
