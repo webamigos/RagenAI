@@ -9,6 +9,7 @@ import { SpinnerSVG, Text } from '@ragenai/common-ui';
 
 import { logger } from '@/app/lib/utils/logger';
 import { saveUserMetadata } from '@/app/actions';
+import { UseFormSetError } from 'react-hook-form';
 
 type SupportedOAuthStrategy = 'oauth_google' | 'oauth_github';
 
@@ -41,10 +42,15 @@ const SocialButton = ({
 type SocialAuthOptionsProps = {
   isSignUp: boolean;
   termsAccepted?: boolean;
+  setError?: UseFormSetError<{ terms: boolean }>;
 };
 
 export const SocialAuthOptions = memo(
-  ({ isSignUp, termsAccepted = true }: SocialAuthOptionsProps) => {
+  ({
+    isSignUp,
+    termsAccepted = true,
+    setError = undefined,
+  }: SocialAuthOptionsProps) => {
     const { signUp, isLoaded: signUpLoaded } = useSignUp();
     const { signIn, isLoaded: signInLoaded } = useSignIn();
     const [loadingState, setLoadingState] = useState<
@@ -53,7 +59,6 @@ export const SocialAuthOptions = memo(
       oauth_google: false,
       oauth_github: false,
     });
-    const [termsError, setTermsError] = useState(false);
 
     const t = useTranslations(isSignUp ? 'sign-up' : 'sign-in');
 
@@ -64,10 +69,11 @@ export const SocialAuthOptions = memo(
 
     const handleOAuth = async (strategy: SupportedOAuthStrategy) => {
       if (isSignUp && !termsAccepted) {
-        setTermsError(true);
-        return;
+        if (setError) {
+          setError('terms', { type: 'required' });
+          return;
+        }
       }
-      setTermsError(false);
 
       if (loadingState[strategy]) return;
       setLoadingState((prev) => ({ ...prev, [strategy]: true }));
@@ -116,7 +122,7 @@ export const SocialAuthOptions = memo(
     };
 
     return (
-      <div className="mt-10">
+      <div className="mt-6">
         <div className="relative">
           <div
             className="absolute inset-0 flex items-center"
@@ -145,11 +151,11 @@ export const SocialAuthOptions = memo(
             )
           )}
         </div>
-        {termsError && (
+        {/* {termsError && (
           <Text fontSize="sm" color="red-500" className="mt-2" role="alert">
             {t('TSO-required')}
           </Text>
-        )}
+        )} */}
       </div>
     );
   }

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
-import { ApiKey } from '@prisma/client';
+import { ApiKey, Project } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
 import { useRouter } from '@/i18n/routing';
@@ -23,17 +23,29 @@ import { removeApiKey } from './RemoveApiKey/actions';
 import { Link } from '@/i18n/routing';
 
 type Props = {
-  data: ApiKey[];
+  data: {
+    public_id: ApiKey['public_id'];
+    name: ApiKey['name'];
+    masked_value: ApiKey['masked_value'];
+    created_at: ApiKey['created_at'];
+    project: {
+      public_id: Project['public_id'];
+      title: Project['title'];
+    } | null;
+  }[];
+  defaultPublicProjectId: Project['public_id'] | null;
 };
 
-export const ApiKeysList = ({ data }: Props) => {
+export const ApiKeysList = ({ data, defaultPublicProjectId }: Props) => {
   const t = useTranslations('api-keys');
-  const [selectedKey, setSelectedKey] = useState<ApiKey['id'] | null>(null);
+  const [selectedKey, setSelectedKey] = useState<ApiKey['public_id'] | null>(
+    null
+  );
   const [isDialogOpened, setIsDialogOpened] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
-  const selectKey = (keyId: ApiKey['id']) => () => {
+  const selectKey = (keyId: ApiKey['public_id']) => () => {
     setSelectedKey(keyId);
     setIsDialogOpened(true);
   };
@@ -62,7 +74,12 @@ export const ApiKeysList = ({ data }: Props) => {
   return (
     <div className="flex w-full flex-col">
       <div className="flex justify-end">
-        <Link href="/my-profile/api-keys/create">{t('create-key')}</Link>
+        <Link
+          href="/my-profile/api-keys/create"
+          className="ring-1 ring-primary-dark rounded-md bg-blue-500 text-white px-2 py-2"
+        >
+          {t('create-key')}
+        </Link>
       </div>
       <div className="mt-4">
         <Table>
@@ -70,6 +87,7 @@ export const ApiKeysList = ({ data }: Props) => {
             <TableRow className="text-base">
               <TableHeader>{t('name')}</TableHeader>
               <TableHeader>{t('secret-key')}</TableHeader>
+              <TableHeader>{t('knowledge-source')}</TableHeader>
               <TableHeader>{t('created')}</TableHeader>
               {/* <CommonUi.TableHeader>
                       {t('created-by')}
@@ -85,7 +103,17 @@ export const ApiKeysList = ({ data }: Props) => {
                 <TableCell>{apiKey.name}</TableCell>
                 <TableCell>{apiKey.masked_value}</TableCell>
                 <TableCell>
-                  {format(apiKey.created_at, 'dd.mm.yyyy HH:mm:ss')}
+                  {apiKey.project &&
+                  defaultPublicProjectId === apiKey.project.public_id ? (
+                    <span className="font-semibold">
+                      {t('main-knowledge-base').toUpperCase()}
+                    </span>
+                  ) : (
+                    apiKey.project?.title
+                  )}
+                </TableCell>
+                <TableCell>
+                  {format(apiKey.created_at, 'dd.MM.yyyy HH:mm:ss')}
                 </TableCell>
                 {/* <CommonUi.TableCell>
                         {apiKey.created_by}
@@ -95,7 +123,7 @@ export const ApiKeysList = ({ data }: Props) => {
                     <Tooltip id="delete doc" place="top" content={'delete'}>
                       <TrashIcon
                         className="cursor-pointer"
-                        onClick={selectKey(apiKey.id)}
+                        onClick={selectKey(apiKey.public_id)}
                       />
                     </Tooltip>
                   </div>

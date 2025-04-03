@@ -86,7 +86,7 @@
     "error-description": "If the problem persists, please contact us: support@ragen.ai.",
     "try-again": "Try again",
     "error-toast": "An error occurred while configuring your account.",
-    "misconfiguration-detected": "Your account is misconfigured, please contact us: support@ragen.",
+    "misconfiguration-detected": "Your account is misconfigured, please contact us: support@ragen",
     "sign-out": "Sign out"
   },
   "admin-panel-page": {
@@ -343,6 +343,14 @@
       "fetch-failed": "Failed to fetch data. Check your internet connection and try again.",
       "missing-permissions": "You do not have the required permissions to perform this action.",
       "unknown": "An unknown error occurred. Please contact support."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Welcome to Ragen 🎉",
+      "welcome-message": "We are glad you are with us! To unlock the full potential of Ragen you need to go through one of below steps:",
+      "two-ways": "You have two ways to do this:",
+      "add-files": "Add files to knowledge base",
+      "create-new-project": "Create new assistant",
+      "or": "or"
     }
   },
   "search-threads": {
@@ -423,7 +431,9 @@
         "title": "Save your API key",
         "description": "Please save this secret key somewhere safe and accessible. For security reasons, you won't be able to view it again. If you lose this secret key, you'll need to generate a new one."
       }
-    }
+    },
+    "knowledge-source": "Knowledge source",
+    "main-knowledge-base": "Main knowledge base"
   },
   "subscription": {
     "title": "Subscription details",

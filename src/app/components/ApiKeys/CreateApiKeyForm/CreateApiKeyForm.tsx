@@ -19,9 +19,13 @@ type ClientProject = Awaited<ReturnType<typeof fetchProjectsForUser>>;
 
 type Props = {
   projects: ClientProject;
+  defaultPublicProjectId: string | null;
 };
 
-export const CreateApiKeyForm = ({ projects }: Props) => {
+export const CreateApiKeyForm = ({
+  projects,
+  defaultPublicProjectId,
+}: Props) => {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const t = useTranslations('api-keys');
@@ -62,7 +66,7 @@ export const CreateApiKeyForm = ({ projects }: Props) => {
         >
           <div className="relative">
             <label className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300">
-              {t('assistant')}
+              {t('knowledge-source')}
               <span className="text-red-600">*</span>
             </label>
             <Controller
@@ -85,7 +89,9 @@ export const CreateApiKeyForm = ({ projects }: Props) => {
                   <option value="0"></option>
                   {projects.map((project) => (
                     <option key={project.public_id} value={project.public_id}>
-                      {project.title}
+                      {project.public_id === defaultPublicProjectId
+                        ? t('main-knowledge-base').toUpperCase()
+                        : project.title}
                     </option>
                   ))}
                 </Select>

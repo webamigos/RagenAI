@@ -1,4 +1,7 @@
-import { getAccountSetupStatusAction } from '@/app/actions';
+import {
+  getAccountSetupStatusAction,
+  getDefaultProjectPublicId,
+} from '@/app/actions';
 import { Sidebar } from '../../components/Sidebar';
 import { Toast } from '../../components/Toast';
 import { redirect } from 'next/navigation';
@@ -13,12 +16,15 @@ export default async function MarketingLayout({ children }: Props) {
     logger.error({ status }, 'Account misconfiguration detected');
     redirect('/account-configuration?misconfigurationDetected=true');
   }
+  const defaultPublicProjectId = await getDefaultProjectPublicId();
 
   return (
     <>
       <Toast />
       <div className="h-screen flex flex-col">
-        <Sidebar>{children}</Sidebar>
+        <Sidebar defaultPublicProjectId={defaultPublicProjectId}>
+          {children}
+        </Sidebar>
       </div>
     </>
   );

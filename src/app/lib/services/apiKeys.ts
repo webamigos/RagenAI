@@ -23,7 +23,8 @@ export const fetchOrganizationDefaultProject = async (
 };
 
 export const createOrganizationWithDefaultProject = async (
-  organizationProviderId: Organization['provider_id']
+  organizationProviderId: Organization['provider_id'],
+  userId: string
 ) => {
   const organization = await db.$transaction(async (tx) => {
     const organization = await tx.organization.create({
@@ -37,6 +38,8 @@ export const createOrganizationWithDefaultProject = async (
       data: {
         title: 'Default',
         internal_organization_id: organization.id,
+        organization_id: organizationProviderId,
+        owner_id: userId,
       },
     });
 
@@ -65,6 +68,18 @@ export const fetchApiKeysFromDb = async (
     where: {
       organization_id: organization.id,
     },
+    select: {
+      public_id: true,
+      name: true,
+      masked_value: true,
+      created_at: true,
+      project: {
+        select: {
+          public_id: true,
+          title: true,
+        },
+      },
+    },
     orderBy: {
       created_at: 'desc',
     },
@@ -80,7 +95,7 @@ export const fetchApiKeysFromDb = async (
  */
 export const removeApiKeyFromDb = async (
   organizationProviderId: Organization['provider_id'],
-  apiKeyId: ApiKey['id']
+  publicApiKeyId: ApiKey['public_id']
 ) => {
   const organization = await fetchOrganizationByProviderId(
     organizationProviderId
@@ -89,7 +104,7 @@ export const removeApiKeyFromDb = async (
   // check if combination of organization and key id exists
   const apiKey = await db.apiKey.findUniqueOrThrow({
     where: {
-      id: apiKeyId,
+      public_id: publicApiKeyId,
       organization_id: organization.id,
     },
   });

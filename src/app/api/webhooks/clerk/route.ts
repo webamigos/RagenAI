@@ -122,13 +122,15 @@ export async function POST(req: Request) {
 
       case 'organization.created':
         const clerkOrgId = evt.data.id;
+        const clerkUserId = evt.data.created_by;
 
         setSentryServiceTag('webhook:organization.created');
         setSentryClerkOrganizationTag(clerkOrgId);
 
         try {
           const ragenOrg = await createOrganizationWithDefaultProject(
-            clerkOrgId
+            clerkOrgId,
+            clerkUserId
           );
 
           await createTrialSubscription(clerkOrgId);

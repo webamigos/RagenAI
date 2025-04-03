@@ -39,7 +39,10 @@ export const syncOrganizationAndProject = async () => {
     Sentry.captureException(error);
 
     // organization doesn't exists - create one using transaction
-    const { publicId } = await createOrganizationWithDefaultProject(orgId);
+    const { publicId } = await createOrganizationWithDefaultProject(
+      orgId,
+      userId
+    );
 
     if (publicId) {
       success = true;

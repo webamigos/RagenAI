@@ -21,13 +21,21 @@ import { OrganizationRoles } from '@/app/contracts/User';
 import { DesktopNavbar } from './DesktopNavbar';
 import { CreateThreadButton } from './CreateThreadButton';
 import { ProjectsList } from './Projects/ProjectsList';
+import { ManageKnowledgeButton } from './ManageKnowledgeButton';
+import { OnboardingCard } from './OnboardingCard';
+import { useSettings } from '@/app/hooks/useSettings';
 
 type Props = {
   children: React.ReactNode;
   membership?: OrganizationRoles;
+  defaultPublicProjectId: string | null;
 };
 
-export const Sidebar = ({ children, membership }: Props) => {
+export const Sidebar = ({
+  children,
+  membership,
+  defaultPublicProjectId,
+}: Props) => {
   const {
     error,
     locale,
@@ -54,6 +62,13 @@ export const Sidebar = ({ children, membership }: Props) => {
   const pathname = usePathname();
   const isError = error ? true : false;
   const t = useTranslations('sidebar');
+  const { hasKnowledge } = useSettings();
+
+  const projectsWithoutDefault = projects.filter(
+    (project) => project.public_id !== defaultPublicProjectId
+  );
+  const onboardingInProgress =
+    !hasKnowledge && projectsWithoutDefault.length === 0;
 
   return (
     <SidebarLayout
@@ -66,10 +81,18 @@ export const Sidebar = ({ children, membership }: Props) => {
             pathname.includes('/threads') ||
             pathname.includes('assistants') ||
             pathname === `/${locale}/support` ? (
-              <CreateThreadButton
-                isThreadLoading={isThreadLoading}
-                handleThread={handleThread}
-              />
+              <>
+                {onboardingInProgress && (
+                  <OnboardingCard setIsCreateModalOpen={setIsCreateModalOpen} />
+                )}
+                {!onboardingInProgress && (
+                  <CreateThreadButton
+                    isThreadLoading={isThreadLoading}
+                    handleThread={handleThread}
+                  />
+                )}
+                {!onboardingInProgress && <ManageKnowledgeButton />}
+              </>
             ) : (
               <Link href={'/'}>
                 <Button
@@ -92,13 +115,14 @@ export const Sidebar = ({ children, membership }: Props) => {
               !pathname.includes('/my-profile') &&
               !pathname.includes('/manage-knowledge') &&
               !pathname.includes('generate-access-key') &&
-              !pathname.includes('/support') && (
+              !pathname.includes('/support') &&
+              !onboardingInProgress && (
                 <Button
                   onClick={handleSearch}
-                  className="relative ml-4 w-10/12 flex justify-center hover:bg-gray-200"
+                  className="relative ml-4 w-10/12 flex hover:bg-gray-200"
                   isLink
                 >
-                  <SearchIcon className="w-6 h-6 dark:text-gray-200" />
+                  <SearchIcon className="w-5 h-5 dark:text-gray-200" />
                   <Text className="ml-1">{t('search-threads')}</Text>
                 </Button>
               )}
@@ -116,22 +140,25 @@ export const Sidebar = ({ children, membership }: Props) => {
                 <>
                   <ProjectsList
                     isLoading={isLoading}
-                    projects={projects}
+                    projects={projectsWithoutDefault}
                     setIsCreateModalOpen={setIsCreateModalOpen}
                     activeThread={activeThread}
                     isCreateModalOpen={isCreateModalOpen}
                     refreshProjects={refreshProjects}
                   />
-                  <UserThreadsHistory
-                    error={error}
-                    hasMore={hasMore}
-                    isLoading={isLoading}
-                    isSignedIn={isSignedIn}
-                    userThreads={userThreads}
-                    activeThread={activeThread}
-                    isThreadsLoaded={isThreadsLoaded}
-                    loadMoreThreads={loadMoreThreads}
-                  />
+
+                  {!onboardingInProgress && (
+                    <UserThreadsHistory
+                      error={error}
+                      hasMore={hasMore}
+                      isLoading={isLoading}
+                      isSignedIn={isSignedIn}
+                      userThreads={userThreads}
+                      activeThread={activeThread}
+                      isThreadsLoaded={isThreadsLoaded}
+                      loadMoreThreads={loadMoreThreads}
+                    />
+                  )}
                 </>
               )
             ) : (
