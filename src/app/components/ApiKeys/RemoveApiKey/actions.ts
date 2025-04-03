@@ -11,7 +11,7 @@ import { ApiKey } from '@prisma/client';
 
 const serviceName = 'removeApiKey';
 
-export const removeApiKey = async (keyId: ApiKey['id']) => {
+export const removeApiKey = async (publicKeyId: ApiKey['public_id']) => {
   const { orgId, userId, sessionId } = auth();
 
   if (!orgId) {
@@ -19,7 +19,7 @@ export const removeApiKey = async (keyId: ApiKey['id']) => {
       success: false,
       message: 'Organization not found',
     };
-  } else if (!keyId) {
+  } else if (!publicKeyId) {
     return {
       success: false,
       message: 'Key not found',
@@ -30,7 +30,7 @@ export const removeApiKey = async (keyId: ApiKey['id']) => {
     setSentryServiceTag(serviceName);
     setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
 
-    await removeApiKeyFromDb(orgId, keyId);
+    await removeApiKeyFromDb(orgId, publicKeyId);
 
     return {
       success: true,

@@ -29,13 +29,13 @@ export default async function CreateApiKeyPage({
     throw new Error('Organization not found!');
   }
   const userProjects = await fetchProjectsForUser(orgId, userId);
-  const defaultProjectId = await getDefaultProjectPublicId();
+  const defaultPublicProjectId = await getDefaultProjectPublicId();
   const t = await getTranslations('api-keys');
 
   return (
     <Card title={t('title-create')} size="full" className="mb-5">
       <CreateApiKeyForm
-        defaultProjectId={defaultProjectId}
+        defaultPublicProjectId={defaultPublicProjectId}
         projects={userProjects}
       />
     </Card>
