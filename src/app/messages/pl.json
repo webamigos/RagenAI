@@ -87,7 +87,7 @@
     "error-description": "Jezeli problem będzie się powtarzał, prosimy o kontakt: support@ragen.ai.",
     "try-again": "Spróbuj ponownie",
     "error-toast": "Wystąpił błąd podczas konfigurowania Twojego konta.",
-    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt: support@ragen.ai.",
+    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt: support@ragen.ai",
     "sign-out": "Wyloguj się"
   },
   "admin-panel-page": {
@@ -346,6 +346,13 @@
       "fetch-failed": "Nie udało się pobrać danych. Sprawdź swoje połączenie internetowe i spróbuj ponownie.",
       "missing-permissions": "Brak wymaganych uprawnień do wykonania tej operacji.",
       "unknown": "Nieznany błąd. Skontaktuj się z administratorem."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Witaj w Ragen AI 🎉",
+      "welcome-message": "Cieszymy się, że jesteś z nami! Aby odkryć pełen potencjał Ragena, wykonaj jeden z poniższych kroków:",
+      "add-files": "Dodaj pliki do bazy wiedzy",
+      "create-new-project": "Stwórz nowego asystenta",
+      "or": "lub"
     }
   },
   "search-threads": {
@@ -426,7 +433,9 @@
         "title": "Zapisz swój klucz API",
         "description": "Zapisz ten klucz w bezpiecznym miejscu. Ze względów bezpieczeństwa nie będziesz mógł go ponownie wyświetlić. Jeśli zgubisz ten klucz, będziesz musiał wygenerować nowy."
       }
-    }
+    },
+    "knowledge-source": "Źródło wiedzy",
+    "main-knowledge-base": "Główna baza wiedzy"
   },
   "subscription": {
     "title": "Szczegóły subskrypcji",

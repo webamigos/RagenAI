@@ -22,6 +22,7 @@ import {
 import {
   fetchProjectFiles,
   deleteProjectFile as deleteProjectFileFromService,
+  fetchOrganizationDefaultProjectPublicId,
 } from '../lib/services/project';
 import {
   createAndStoreMessage,
@@ -468,6 +469,21 @@ export const getDefaultProjectId = async () => {
 
   try {
     return await fetchOrganizationDefaultProjectId(orgId);
+  } catch (error) {
+    logger.error({ err: error }, 'Error fetching default project ID');
+    throw error;
+  }
+};
+
+export const getDefaultProjectPublicId = async () => {
+  const { orgId } = auth();
+
+  if (!orgId) {
+    throw new Error('Organization ID is required');
+  }
+
+  try {
+    return await fetchOrganizationDefaultProjectPublicId(orgId);
   } catch (error) {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;

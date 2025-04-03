@@ -8,6 +8,7 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 import { Fallback } from '@/app/components/Fallback';
 import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
 import { ApiKeysList } from '@/app/components/ApiKeys/ApiKeysList';
+import { getDefaultProjectPublicId } from '@/app/actions';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'api-keys' });
@@ -23,6 +24,7 @@ export default async function ApiKeysPage({
   setRequestLocale(locale);
   const t = await getTranslations('api-keys');
   const result = await fetchApiKeys();
+  const defaultPublicProjectId = await getDefaultProjectPublicId();
 
   if (!result.success) {
     return t('failed-to-load');
@@ -31,7 +33,12 @@ export default async function ApiKeysPage({
   return (
     <Card title={t('title')} size="full" className="mb-5">
       <Suspense fallback={<Fallback />}>
-        {result.payload && <ApiKeysList data={result.payload} />}
+        {result.payload && (
+          <ApiKeysList
+            data={result.payload}
+            defaultPublicProjectId={defaultPublicProjectId}
+          />
+        )}
       </Suspense>
     </Card>
   );

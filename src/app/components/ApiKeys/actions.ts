@@ -36,7 +36,7 @@ export const fetchApiKeys = async () => {
   } catch (error) {
     Sentry.captureException(error);
 
-    await createOrganizationWithDefaultProject(orgId);
+    await createOrganizationWithDefaultProject(orgId, userId);
 
     return {
       success: true,

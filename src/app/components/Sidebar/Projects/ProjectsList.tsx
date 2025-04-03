@@ -34,37 +34,29 @@ export const ProjectsList = ({
           <SidebarLabel className="p-2 text-gray-600 dark:text-gray-100 font-bold">
             {t('title')}
           </SidebarLabel>
-          {projects.length > 0 && (
-            <div
-              onClick={() => setIsCreateModalOpen(true)}
-              className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
-            >
-              <PlusIcon className="w-4 h-4" />
-            </div>
-          )}
-        </div>
-        {!projects.length ? (
-          <Button
-            className="relative w-11/12 h-10"
-            isLink
-            isLoading={isLoading}
+
+          <div
             onClick={() => setIsCreateModalOpen(true)}
+            className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
           >
-            <FolderPlusIcon className="w-6 h-6" />
-            <Text className="ml-1">{t('create-project')}</Text>
-          </Button>
-        ) : (
-          <div className="space-y-1 mt-2">
-            {projects.map((project) => (
-              <ProjectItem
-                key={project.public_id}
-                project={project}
-                activeThread={activeThread}
-                onSidebarClose={closeSidebar}
-              />
-            ))}
+            {projects.length > 0 ? (
+              <PlusIcon className="w-4 h-4" />
+            ) : (
+              <FolderPlusIcon className="w-6 h-6" />
+            )}
           </div>
-        )}
+        </div>
+
+        <div className="space-y-1 mt-2">
+          {projects.map((project) => (
+            <ProjectItem
+              key={project.public_id}
+              project={project}
+              activeThread={activeThread}
+              onSidebarClose={closeSidebar}
+            />
+          ))}
+        </div>
       </div>
       {isCreateModalOpen && (
         <CreateProject
