@@ -82,42 +82,43 @@ export const useSidebarLogic = () => {
     let retryCount = 0;
     const maxRetries = 3;
 
-    while (retryCount < maxRetries) {
-      try {
-        const { status, error, threads } = await getUserMessages(
-          user.id,
-          skip,
-          limit
-        );
+    // FIXME: temporary fix for production
+    // while (retryCount < maxRetries) {
+    try {
+      const { status, error, threads } = await getUserMessages(
+        user.id,
+        skip,
+        limit
+      );
 
-        if (status === 200) {
-          if (threads?.length) {
-            dispatch(addThreads(threads));
-            dispatch(incrementSkip(threads.length));
-            dispatch(setHasMore(threads.length === limit));
+      if (status === 200) {
+        if (threads?.length) {
+          dispatch(addThreads(threads));
+          dispatch(incrementSkip(threads.length));
+          dispatch(setHasMore(threads.length === limit));
 
-            if (threads.length === limit) {
-              prefetchThreads(user.id, skip + limit, limit);
-            }
-          } else {
-            dispatch(setHasMore(false));
+          if (threads.length === limit) {
+            prefetchThreads(user.id, skip + limit, limit);
           }
-          break;
+        } else {
+          dispatch(setHasMore(false));
         }
-        throw new Error(error);
-      } catch (err) {
-        retryCount++;
-        if (retryCount === maxRetries) {
-          dispatch(
-            setError({
-              status: 500,
-              message: err?.toString() || 'Unknown error',
-            })
-          );
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
+        // break;
       }
+      throw new Error(error);
+    } catch (err) {
+      retryCount++;
+      if (retryCount === maxRetries) {
+        dispatch(
+          setError({
+            status: 500,
+            message: err?.toString() || 'Unknown error',
+          })
+        );
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
     }
+    // }
 
     dispatch(setLoading(false));
   }, [isLoading, hasMore, user?.id, skip, dispatch, prefetchThreads]);
