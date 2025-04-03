@@ -28,9 +28,14 @@ import { useSettings } from '@/app/hooks/useSettings';
 type Props = {
   children: React.ReactNode;
   membership?: OrganizationRoles;
+  defaultPublicProjectId: string | null;
 };
 
-export const Sidebar = ({ children, membership }: Props) => {
+export const Sidebar = ({
+  children,
+  membership,
+  defaultPublicProjectId,
+}: Props) => {
   const {
     error,
     locale,
@@ -59,7 +64,11 @@ export const Sidebar = ({ children, membership }: Props) => {
   const t = useTranslations('sidebar');
   const { hasKnowledge } = useSettings();
 
-  const onboardingInProgress = !hasKnowledge && projects.length === 0;
+  const projectsWithoutDefault = projects.filter(
+    (project) => project.public_id !== defaultPublicProjectId
+  );
+  const onboardingInProgress =
+    !hasKnowledge && projectsWithoutDefault.length === 0;
 
   return (
     <SidebarLayout
@@ -131,7 +140,7 @@ export const Sidebar = ({ children, membership }: Props) => {
                 <>
                   <ProjectsList
                     isLoading={isLoading}
-                    projects={projects}
+                    projects={projectsWithoutDefault}
                     setIsCreateModalOpen={setIsCreateModalOpen}
                     activeThread={activeThread}
                     isCreateModalOpen={isCreateModalOpen}
