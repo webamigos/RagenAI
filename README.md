@@ -1,4 +1,4 @@
-# smartRAG
+# Ragen AI
 
 Retrieval Augmented Generation (RAG)
 
@@ -17,6 +17,17 @@ DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 
 ```
 
+## API mode
+
+To run Ragen in API mode set env variable:
+
+`IS_API_MODE=1`
+
+Then all url's will be rewrited to /api
+
+Example: `http://localhost:3000/api/v1/healthcheck` -> `http://localhost:3000/v1/healthcheck`
+
+The purpose is to decouple API to new instance and use URLs: `https://api.ragen.io/v1/healthcheck`
 
 ## Working with Temporal
 
