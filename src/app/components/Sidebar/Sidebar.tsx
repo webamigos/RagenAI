@@ -22,6 +22,8 @@ import { DesktopNavbar } from './DesktopNavbar';
 import { CreateThreadButton } from './CreateThreadButton';
 import { ProjectsList } from './Projects/ProjectsList';
 import { ManageKnowledgeButton } from './ManageKnowledgeButton';
+import { OnboardingCard } from './OnboardingCard';
+import { useSettings } from '@/app/hooks/useSettings';
 
 type Props = {
   children: React.ReactNode;
@@ -55,6 +57,9 @@ export const Sidebar = ({ children, membership }: Props) => {
   const pathname = usePathname();
   const isError = error ? true : false;
   const t = useTranslations('sidebar');
+  const { hasKnowledge } = useSettings();
+
+  const onboardingInProgress = !hasKnowledge && projects.length === 0;
 
   return (
     <SidebarLayout
@@ -68,11 +73,16 @@ export const Sidebar = ({ children, membership }: Props) => {
             pathname.includes('assistants') ||
             pathname === `/${locale}/support` ? (
               <>
-                <CreateThreadButton
-                  isThreadLoading={isThreadLoading}
-                  handleThread={handleThread}
-                />
-                <ManageKnowledgeButton />
+                {onboardingInProgress && (
+                  <OnboardingCard setIsCreateModalOpen={setIsCreateModalOpen} />
+                )}
+                {!onboardingInProgress && (
+                  <CreateThreadButton
+                    isThreadLoading={isThreadLoading}
+                    handleThread={handleThread}
+                  />
+                )}
+                {!onboardingInProgress && <ManageKnowledgeButton />}
               </>
             ) : (
               <Link href={'/'}>
@@ -96,7 +106,8 @@ export const Sidebar = ({ children, membership }: Props) => {
               !pathname.includes('/my-profile') &&
               !pathname.includes('/manage-knowledge') &&
               !pathname.includes('generate-access-key') &&
-              !pathname.includes('/support') && (
+              !pathname.includes('/support') &&
+              !onboardingInProgress && (
                 <Button
                   onClick={handleSearch}
                   className="relative ml-4 w-10/12 flex hover:bg-gray-200"
@@ -126,16 +137,19 @@ export const Sidebar = ({ children, membership }: Props) => {
                     isCreateModalOpen={isCreateModalOpen}
                     refreshProjects={refreshProjects}
                   />
-                  <UserThreadsHistory
-                    error={error}
-                    hasMore={hasMore}
-                    isLoading={isLoading}
-                    isSignedIn={isSignedIn}
-                    userThreads={userThreads}
-                    activeThread={activeThread}
-                    isThreadsLoaded={isThreadsLoaded}
-                    loadMoreThreads={loadMoreThreads}
-                  />
+
+                  {!onboardingInProgress && (
+                    <UserThreadsHistory
+                      error={error}
+                      hasMore={hasMore}
+                      isLoading={isLoading}
+                      isSignedIn={isSignedIn}
+                      userThreads={userThreads}
+                      activeThread={activeThread}
+                      isThreadsLoaded={isThreadsLoaded}
+                      loadMoreThreads={loadMoreThreads}
+                    />
+                  )}
                 </>
               )
             ) : (
