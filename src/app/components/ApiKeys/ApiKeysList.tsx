@@ -113,7 +113,7 @@ export const ApiKeysList = ({ data, defaultPublicProjectId }: Props) => {
                   )}
                 </TableCell>
                 <TableCell>
-                  {format(apiKey.created_at, 'dd.mm.yyyy HH:mm:ss')}
+                  {format(apiKey.created_at, 'dd.MM.yyyy HH:mm:ss')}
                 </TableCell>
                 {/* <CommonUi.TableCell>
                         {apiKey.created_by}
