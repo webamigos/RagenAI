@@ -433,7 +433,9 @@
         "title": "Zapisz swój klucz API",
         "description": "Zapisz ten klucz w bezpiecznym miejscu. Ze względów bezpieczeństwa nie będziesz mógł go ponownie wyświetlić. Jeśli zgubisz ten klucz, będziesz musiał wygenerować nowy."
       }
-    }
+    },
+    "knowledge-source": "Źródło wiedzy",
+    "main-knowledge-base": "Główna baza wiedzy"
   },
   "subscription": {
     "title": "Szczegóły subskrypcji",

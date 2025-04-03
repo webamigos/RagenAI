@@ -23,7 +23,8 @@ export const fetchOrganizationDefaultProject = async (
 };
 
 export const createOrganizationWithDefaultProject = async (
-  organizationProviderId: Organization['provider_id']
+  organizationProviderId: Organization['provider_id'],
+  userId: string
 ) => {
   const organization = await db.$transaction(async (tx) => {
     const organization = await tx.organization.create({
@@ -37,6 +38,8 @@ export const createOrganizationWithDefaultProject = async (
       data: {
         title: 'Default',
         internal_organization_id: organization.id,
+        organization_id: organizationProviderId,
+        owner_id: userId,
       },
     });
 

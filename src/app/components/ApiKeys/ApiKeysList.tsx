@@ -62,7 +62,12 @@ export const ApiKeysList = ({ data }: Props) => {
   return (
     <div className="flex w-full flex-col">
       <div className="flex justify-end">
-        <Link href="/my-profile/api-keys/create">{t('create-key')}</Link>
+        <Link
+          href="/my-profile/api-keys/create"
+          className="ring-1 ring-primary-dark rounded-md bg-blue-500 text-white px-2 py-2"
+        >
+          {t('create-key')}
+        </Link>
       </div>
       <div className="mt-4">
         <Table>

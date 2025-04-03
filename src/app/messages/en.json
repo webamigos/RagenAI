@@ -431,7 +431,9 @@
         "title": "Save your API key",
         "description": "Please save this secret key somewhere safe and accessible. For security reasons, you won't be able to view it again. If you lose this secret key, you'll need to generate a new one."
       }
-    }
+    },
+    "knowledge-source": "Knowledge source",
+    "main-knowledge-base": "Main knowledge base"
   },
   "subscription": {
     "title": "Subscription details",
