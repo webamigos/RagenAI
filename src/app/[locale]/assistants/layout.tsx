@@ -1,13 +1,18 @@
+import { getDefaultProjectPublicId } from '@/app/actions';
 import { Sidebar } from '@/app/components/Sidebar/Sidebar';
 
-export default function ProjectThreadLayout({
+export default async function ProjectThreadLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const defaultPublicProjectId = await getDefaultProjectPublicId();
+
   return (
     <div className="flex h-screen">
-      <Sidebar>{children}</Sidebar>
+      <Sidebar defaultPublicProjectId={defaultPublicProjectId}>
+        {children}
+      </Sidebar>
     </div>
   );
 }
