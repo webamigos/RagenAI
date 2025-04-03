@@ -39,7 +39,11 @@ export const ProjectsList = ({
             onClick={() => setIsCreateModalOpen(true)}
             className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
           >
-            <PlusIcon className="w-4 h-4" />
+            {projects.length > 0 ? (
+              <PlusIcon className="w-4 h-4" />
+            ) : (
+              <FolderPlusIcon className="w-6 h-6" />
+            )}
           </div>
         </div>
 
