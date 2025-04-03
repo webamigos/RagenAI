@@ -12,12 +12,9 @@ type SignUpContainerProps = {
 export const SignUpContainer = ({
   forgotPasswordLabel,
 }: SignUpContainerProps) => {
-  const [termsAccepted, setTermsAccepted] = useState(false);
-
   return (
     <>
-      <RegisterForm onTermsChange={setTermsAccepted} />
-      <SocialAuthOptions isSignUp={true} termsAccepted={termsAccepted} />
+      <RegisterForm />
       <ForgotPasswordLink label={forgotPasswordLabel} />
     </>
   );

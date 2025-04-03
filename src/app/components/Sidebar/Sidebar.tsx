@@ -21,6 +21,7 @@ import { OrganizationRoles } from '@/app/contracts/User';
 import { DesktopNavbar } from './DesktopNavbar';
 import { CreateThreadButton } from './CreateThreadButton';
 import { ProjectsList } from './Projects/ProjectsList';
+import { ManageKnowledgeButton } from './ManageKnowledgeButton';
 
 type Props = {
   children: React.ReactNode;
@@ -66,10 +67,13 @@ export const Sidebar = ({ children, membership }: Props) => {
             pathname.includes('/threads') ||
             pathname.includes('assistants') ||
             pathname === `/${locale}/support` ? (
-              <CreateThreadButton
-                isThreadLoading={isThreadLoading}
-                handleThread={handleThread}
-              />
+              <>
+                <CreateThreadButton
+                  isThreadLoading={isThreadLoading}
+                  handleThread={handleThread}
+                />
+                <ManageKnowledgeButton />
+              </>
             ) : (
               <Link href={'/'}>
                 <Button
@@ -95,10 +99,10 @@ export const Sidebar = ({ children, membership }: Props) => {
               !pathname.includes('/support') && (
                 <Button
                   onClick={handleSearch}
-                  className="relative ml-4 w-10/12 flex justify-center hover:bg-gray-200"
+                  className="relative ml-4 w-10/12 flex hover:bg-gray-200"
                   isLink
                 >
-                  <SearchIcon className="w-6 h-6 dark:text-gray-200" />
+                  <SearchIcon className="w-5 h-5 dark:text-gray-200" />
                   <Text className="ml-1">{t('search-threads')}</Text>
                 </Button>
               )}
