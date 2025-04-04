@@ -7,6 +7,7 @@ import {
   ComponentPropsWithRef,
   useEffect,
   useRef,
+  MouseEventHandler,
 } from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -37,6 +38,7 @@ type Props = {
   showVoiceInput?: boolean;
   showArrowIcon?: boolean;
   disabled?: boolean;
+  handleSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -57,6 +59,7 @@ export const Textarea = forwardRef(
       onSend,
       setValue,
       value,
+      handleSubmit,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>
@@ -109,6 +112,14 @@ export const Textarea = forwardRef(
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
+        onSend?.();
+      }
+    };
+
+    const handleIconClick: MouseEventHandler<HTMLButtonElement> = () => {
+      if (handleSubmit) {
+        handleSubmit();
+      } else {
         onSend?.();
       }
     };
@@ -223,7 +234,7 @@ export const Textarea = forwardRef(
             {icon && (
               <button
                 type="button"
-                onClick={onClick}
+                onClick={handleIconClick}
                 className="absolute bottom-1.5 right-3 flex items-center"
               >
                 {icon}

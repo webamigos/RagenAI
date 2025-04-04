@@ -42,6 +42,7 @@ export const NewChatInterface = ({
     handleInputChange,
     handleKeyDown,
     createVoiceThread,
+    handleSubmit,
     errors,
   } = useNewThreadInput({
     organizationId,
@@ -87,6 +88,7 @@ export const NewChatInterface = ({
           value={prompt}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
+          handleSubmit={handleSubmit}
           placeholder={t('new-thread-placeholder')}
           className="w-full min-h-[100px]"
           disabled={isLoading || isPending}
