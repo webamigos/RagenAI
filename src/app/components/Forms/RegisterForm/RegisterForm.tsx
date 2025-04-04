@@ -58,9 +58,9 @@ export const RegisterForm = () => {
 
       if (data.newsletter_consent) {
         await addSubscriberToKit(email);
-      }
 
-      push('/enter-code');
+        push('/enter-code');
+      }
     } catch (error) {
       if (isClerkAPIResponseError(error)) {
         setApiErrors(error.errors);
