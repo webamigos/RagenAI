@@ -23,3 +23,15 @@ export const pushNotification = ({
 }) => {
   pusher.trigger(NOTIFICATIONS_DEFAULT_CHANNEL, event, message);
 };
+
+export const successNotification = (message: string) => {
+  pushNotification({ event: NotificationEvent.SUCCESS_EVENT, message });
+};
+
+export const infoNotification = (message: string) => {
+  pushNotification({ event: NotificationEvent.INFO_EVENT, message });
+};
+
+export const errorNotification = (message: string) => {
+  pushNotification({ event: NotificationEvent.ERROR_EVENT, message });
+};
