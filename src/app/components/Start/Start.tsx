@@ -43,7 +43,7 @@ export const Start = () => {
       )}
 
       <div className="container mx-auto h-full">
-        <div className="flex flex-col h-full items-center justify-center">
+        <div className="flex flex-col h-full items-center justify-center pb-10">
           <OnboardingSteps />
           {shouldShowValidationBoard ? (
             <ValidationBoard />

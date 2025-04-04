@@ -37,6 +37,7 @@ type Props = {
   showVoiceInput?: boolean;
   showArrowIcon?: boolean;
   disabled?: boolean;
+  handleSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -57,6 +58,7 @@ export const Textarea = forwardRef(
       onSend,
       setValue,
       value,
+      handleSubmit,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>
@@ -223,7 +225,7 @@ export const Textarea = forwardRef(
             {icon && (
               <button
                 type="button"
-                onClick={onClick}
+                onClick={handleSubmit}
                 className="absolute bottom-1.5 right-3 flex items-center"
               >
                 {icon}
