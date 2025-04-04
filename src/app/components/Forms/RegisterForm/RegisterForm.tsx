@@ -56,11 +56,12 @@ export const RegisterForm = () => {
         strategy: 'email_code',
       });
 
+      // TODO: works for non SSO login
       if (data.newsletter_consent) {
         await addSubscriberToKit(email);
-
-        push('/enter-code');
       }
+
+      push('/enter-code');
     } catch (error) {
       if (isClerkAPIResponseError(error)) {
         setApiErrors(error.errors);
