@@ -100,7 +100,7 @@ const Tab = ({
     className={classMerge(
       'flex cursor-pointer px-2 mx-2 py-2 text-sm font-medium transition',
       isActive
-        ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-blue-600 dark:text-gray-200'
+        ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-blue-600 dark:text-gray-100'
         : 'text-gray-600',
       className
     )}

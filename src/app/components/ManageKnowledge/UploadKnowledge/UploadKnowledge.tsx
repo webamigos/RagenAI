@@ -105,7 +105,7 @@ export const UploadKnowledge = () => {
           isLoading={uploading}
           isSubmit={!uploading}
           onClick={handleSend}
-          label={t('send-and-process')}
+          label={t('send')}
         />
       </div>
     </Card>

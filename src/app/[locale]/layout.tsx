@@ -15,6 +15,7 @@ import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
+import { Notifications } from '@ragenai/common-ui';
 
 const JoyrideProvider = dynamic<JoyrideProviderProps>(
   () =>

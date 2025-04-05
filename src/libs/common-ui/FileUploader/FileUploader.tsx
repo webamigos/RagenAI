@@ -4,7 +4,7 @@ import { useRef, ComponentPropsWithRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 
-import { UploadInboxIcon, Text } from '@ragenai/common-ui';
+import { UploadInboxIcon, Text, classMerge } from '@ragenai/common-ui';
 
 import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 interface FileUploaderProps extends ComponentPropsWithRef<'div'> {
@@ -55,7 +55,12 @@ export const FileUploader = ({
         ref={setNodeRef}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        className={`mb-5 p-5 text-center border-2 border-dashed dark:border-gray-600 rounded-md ${className}`}
+        onClick={handleClick}
+        className={classMerge(
+          'mb-5 p-5 text-center border-2 border-dashed dark:border-gray-600 rounded-md',
+          { 'bg-gray-100 dark:bg-gray-800': true }, // TODO: change after file is over this box
+          className
+        )}
         {...props}
       >
         <div className="flex justify-center items-center cursor-pointer">
@@ -74,9 +79,7 @@ export const FileUploader = ({
         <Text
           fontSize="sm"
           fontWeight="medium"
-          color="blue-600"
-          className="cursor-pointer"
-          onClick={handleClick}
+          className="cursor-pointer text-blue-600"
         >
           {t('choose-files')}
         </Text>
