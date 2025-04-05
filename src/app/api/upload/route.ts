@@ -18,6 +18,7 @@ import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
 import { isPlainText } from '@/app/lib/utils/isPlainText';
 import db from '@ragenai/prisma-client';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
+import { EmbeddingStatus } from '@prisma/client';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -116,9 +117,11 @@ export async function POST(request: NextRequest) {
           usageTracker.incUploadedFilesCount();
           logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
-          // Step 3: run workflow
+          // =================
+          // UI flow ends here
+          // =================
 
-          // UI flow ends
+          // Step 3: run workflow
 
           // TODO: move to workflow
           // file_id, organization_id, public_project_id are params
@@ -168,6 +171,18 @@ export async function POST(request: NextRequest) {
           //   awsContent: fileBuffer,
           // });
 
+          // set info about started embedding
+          await db.userFile.update({
+            where: {
+              id: fileRecordInWorkflow.id,
+              organization_id: orgId,
+            },
+            data: {
+              embedding_status: EmbeddingStatus.STARTED,
+              embedding_started_at: new Date(),
+            },
+          });
+
           const { message, success } = await convertAndStoreDocument({
             // fileContent: parsedFile.content,
             fileContent: processedContent,
@@ -193,14 +208,27 @@ export async function POST(request: NextRequest) {
               });
             }
 
+            // set info about successful embedding
             await db.userFile.update({
               where: {
                 id: fileRecordInWorkflow.id,
                 organization_id: orgId,
               },
               data: {
-                is_embedded: true,
-                embedded_at: new Date(),
+                embedding_status: EmbeddingStatus.COMPLETED,
+                embedding_completed_at: new Date(),
+              },
+            });
+          } else {
+            // set info about failed embedding
+            await db.userFile.update({
+              where: {
+                id: fileRecordInWorkflow.id,
+                organization_id: orgId,
+              },
+              data: {
+                embedding_status: EmbeddingStatus.FAILED,
+                embedding_failed_at: new Date(),
               },
             });
           }

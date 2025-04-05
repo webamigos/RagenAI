@@ -71,23 +71,25 @@ model VisitorMessages {
 
 // Files uploaded by user
 model UserFile {
-  id              String         @id @default(uuid())
-  public_id       String         @default(cuid())
-  organization_id String
-  file_name       String
-  file_size       Int
-  file_type       String         @default("unknown")
-  created_at      DateTime?      @default(now()) @db.Timestamptz
-  updated_at      DateTime?      @db.Timestamptz
-  metadata        Json?
-  UserDocument    UserDocument[]
-  project         Project?       @relation(fields: [project_id], references: [id])
-  project_id      Int?
-  is_uploaded     Boolean        @default(false) // if file is uploaded - in case upload fails
-  uploaded_at     DateTime?      @db.Timestamptz // date of successful upload
-  is_embedded     Boolean        @default(false) // embedding process was successful
-  embedded_at     DateTime?      @db.Timestamptz // date of successful embedding
-  is_binary_file  Boolean        @default(true) // is content of file is binary or plain text
+  id                     String          @id @default(uuid())
+  public_id              String          @default(cuid())
+  organization_id        String
+  file_name              String
+  file_size              Int
+  file_type              String          @default("unknown")
+  created_at             DateTime?       @default(now()) @db.Timestamptz
+  updated_at             DateTime?       @db.Timestamptz
+  metadata               Json?
+  UserDocument           UserDocument[]
+  project                Project?        @relation(fields: [project_id], references: [id])
+  project_id             Int?
+  is_uploaded            Boolean         @default(false) // if file is uploaded - in case upload fails
+  uploaded_at            DateTime?       @db.Timestamptz // date of successful upload
+  embedding_status       EmbeddingStatus @default(NOT_STARTED)
+  embedding_started_at   DateTime?       @db.Timestamptz
+  embedding_completed_at DateTime?       @db.Timestamptz
+  embedding_failed_at    DateTime?       @db.Timestamptz
+  is_binary_file         Boolean         @default(true) // is content of file is binary or plain text
 
   @@unique([id, organization_id])
   @@index([organization_id])
@@ -244,6 +246,13 @@ enum Source {
 enum Role {
   USER
   ASSISTANT
+}
+
+enum EmbeddingStatus {
+  NOT_STARTED
+  STARTED
+  COMPLETED
+  FAILED
 }
 
 enum SubscriptionPlan {
