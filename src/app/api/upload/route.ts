@@ -135,6 +135,12 @@ export async function POST(request: NextRequest) {
             logger.info(`File is binary: ${parsedFile.fileName}`);
           }
 
+          // console.log({
+          //   processedContent,
+          //   parsedFileContent: parsedFile.content,
+          //   awsContent: fileBuffer,
+          // });
+
           // Remove console.log and use the processed content
           // console.log({ textContent, base64Content });
 

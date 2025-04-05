@@ -3,10 +3,12 @@ import React, {
   type ReactElement,
   type ComponentProps,
   type ComponentPropsWithRef,
+  ComponentPropsWithoutRef,
 } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { classMerge } from '../utils/cn';
+import { Link } from '@/i18n/routing';
 type TabListProps = {
   children: ReactNode[] | ReactNode;
   activeTab: number;
@@ -16,6 +18,7 @@ type TabListProps = {
 interface TabPropsInterface {
   children: ReactNode;
   isActive?: boolean;
+  href: string;
   onClick?: () => void;
 }
 
@@ -88,13 +91,14 @@ const Tab = ({
   className,
   children,
   isActive,
+  href,
   onClick,
   ...props
-}: TabPropsInterface & ComponentPropsWithRef<'button'>) => (
-  <button
-    type="button"
+}: TabPropsInterface & ComponentPropsWithoutRef<'a'>) => (
+  <Link
+    href={href}
     className={classMerge(
-      'flex px-2 mx-2 py-2 text-sm font-medium transition',
+      'flex cursor-pointer px-2 mx-2 py-2 text-sm font-medium transition',
       isActive
         ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-blue-600 dark:text-gray-200'
         : 'text-gray-600',
@@ -104,7 +108,7 @@ const Tab = ({
     {...props}
   >
     {children}
-  </button>
+  </Link>
 );
 
 const TabPanel = ({
