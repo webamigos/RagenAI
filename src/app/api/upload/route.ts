@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { auth } from '@clerk/nextjs/server';
-import { convertAndStoreDocument } from '../../threads/services/saveDataInVectorTable';
+import { convertAndStoreDocument } from '../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 import { createMarkdownDocument } from '@/app/lib/services/document';
 import {
@@ -17,13 +17,9 @@ import { createFileDetailsInDB } from '@/app/lib/services/file';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-type Params = {
-  params: { upload: string };
-};
-
-export async function POST(request: NextRequest, { params }: Params) {
-  const uploaderId = params.upload[0];
-
+// I've removed uploader/organization id from request
+// it was security breach - everyone could set any organization during files transfer
+export async function POST(request: NextRequest) {
   const { orgId } = auth();
   if (!orgId) {
     throw new Error('Invalid organization');
@@ -37,13 +33,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     const projectIdFromForm = formData.get('projectId')?.toString();
 
     setSentryClerkOrganizationTag(organizationId);
-    if (!uploaderId) {
-      logger.error('Uploader ID missing!');
-      return NextResponse.json(
-        { message: 'Uploader ID is missing!' },
-        { status: 400 }
-      );
-    }
+
     if (!files || files.length === 0) {
       return NextResponse.json(
         { message: 'No file to process' },
@@ -149,7 +139,9 @@ export async function POST(request: NextRequest, { params }: Params) {
         );
       }
     }
-    await saveOrganizationPublicMetadata(uploaderId, { hasKnowledge: true });
+    await saveOrganizationPublicMetadata(organizationId, {
+      hasKnowledge: true,
+    });
     return NextResponse.json({
       message: 'All files are successfully processed',
       status: 200,

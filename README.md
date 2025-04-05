@@ -117,6 +117,8 @@ export const dynamic = 'force-dynamic';
 
 ### Running locally
 
+#### Using Temporal Cloud
+
 Local development is setup to use with Temporal Cloud. You need to provide env vars:
 
 ```
@@ -131,7 +133,9 @@ And run one of commands:
 * All in one: `npm run dev:all`
 * Run separately: `npm run dev`, `npm run dev:start:worker`
 
-### [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
+#### Using Dev server
+
+[Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
 
 Command to start temporal dev server:
 
@@ -143,7 +147,7 @@ In production, we will probably use Temporal Cloud.
 
 There is a new temporal directory and a couple of scripts
 
-### Using docker
+####**** Using docker
 
 There is an example repo https://github.com/temporalio/docker-compose from which we can use docker compose files.
 
@@ -156,10 +160,10 @@ docker compose up
 
 to launch local dev server.
 
-You alo need to run worker:
+You alo need to run worker with tsc build in watch mode:
 
 ```bash
-npm run dev:start:worker
+npm run dev:temporal
 ```
 
 ### Debugging using VSCode

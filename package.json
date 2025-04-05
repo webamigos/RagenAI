@@ -7,10 +7,10 @@
   },
   "scripts": {
     "dev": "next dev",
-    "dev:all": "npm-run-all -l build:temporal --parallel dev:temporal dev start:worker",
+    "dev:temporal": "npm-run-all --parallel dev:temporal:watch dev:start:worker",
     "clear:temporal-lib": "del-cli temporal/lib",
     "predev:temporal": "npm run clear:temporal-lib",
-    "dev:temporal": "tsc --build --watch ./temporal/tsconfig.json",
+    "dev:temporal:watch": "tsc --build --watch ./temporal/tsconfig.json",
     "build": "next build",
     "prebuild:temporal": "npm run clear:temporal-lib",
     "build:temporal": "tsc --build ./temporal/tsconfig.json",

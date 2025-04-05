@@ -14,26 +14,29 @@ const workflowOption = () =>
     : { workflowsPath: require.resolve('./workflows') };
 
 async function run() {
-  const cert = process.env.TEMPORAL_CERT; // pem
-  const key = process.env.TEMPORAL_KEY; // key
+  // TODO: below lines are needed for Temporal Cloud
+  // const cert = process.env.TEMPORAL_CERT; // pem
+  // const key = process.env.TEMPORAL_KEY; // key
 
-  if (!cert || !key) {
-    throw new Error('Missing required Temporal certificates');
-  }
+  // if (!cert || !key) {
+  //   throw new Error('Missing required Temporal certificates');
+  // }
 
   const connection = await NativeConnection.connect({
     address: TEMPORAL_SERVER_ADDRESS,
-    tls: {
-      clientCertPair: {
-        crt: Buffer.from(cert, 'base64'),
-        key: Buffer.from(key, 'base64'),
-      },
-    },
+    // TODO: below lines are needed for Temporal Cloud
+    // tls: {
+    //   clientCertPair: {
+    //     crt: Buffer.from(cert, 'base64'),
+    //     key: Buffer.from(key, 'base64'),
+    //   },
+    // },
   });
 
   const worker = await Worker.create({
     connection,
-    namespace: TEMPORAL_NAMESPACE,
+    // TODO: below line is needed for Temporal Cloud
+    // namespace: TEMPORAL_NAMESPACE,
     workflowsPath: require.resolve('./workflows'),
     activities,
     taskQueue: TASK_QUEUE_NAME,

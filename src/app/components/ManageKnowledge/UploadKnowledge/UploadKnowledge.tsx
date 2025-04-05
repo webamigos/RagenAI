@@ -29,8 +29,6 @@ export const UploadKnowledge = () => {
     return;
   }
 
-  const orgId = organization.id;
-
   const handleFilesAdded = (newFiles: File[]) => {
     //To refactor
     const processedFiles = newFiles.map((file) => {
@@ -66,10 +64,11 @@ export const UploadKnowledge = () => {
     setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    formData.append('organizationId', organization.id);
+    // FIXME: security breach - everyone can set any organization
+    // formData.append('organizationId', organization.id);
 
     try {
-      const response = await uploadFiles(orgId, formData);
+      const response = await uploadFiles(formData);
       if (response.status === 200) {
         successToast({ message: t('success') });
         setFiles([]);
