@@ -44,6 +44,7 @@ type ConvertAndStoreDocumentParams = {
   fileName: string;
   organizationId: string;
   fileId: string;
+  filePublicId: string;
   projectId: number;
   mimeType: string;
 };
@@ -104,6 +105,7 @@ export const convertAndStoreDocument = async ({
   fileName,
   organizationId,
   fileId,
+  filePublicId,
   projectId,
   mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
@@ -276,6 +278,7 @@ export const convertAndStoreDocument = async ({
           id: index,
           organization_id: organizationId,
           file_id: fileId,
+          file_public_id: filePublicId,
           project_id: projectId,
           source_type: fileExtension,
           chunk_size: splitterSettings.chunkSize,

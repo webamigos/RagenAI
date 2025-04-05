@@ -15,6 +15,8 @@ import { usageTracker } from '@/app/lib/services/usage';
 import { getFileFromS3, uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
+import { isPlainText } from '@/app/lib/utils/isPlainText';
+import db from '@ragenai/prisma-client';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -92,6 +94,26 @@ export async function POST(request: NextRequest) {
           );
           logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
+          // TODO: move to workflow
+          const fileBuffer = await getFileFromS3(
+            `${fileRecord.public_id}.${fileExtension}`
+          );
+
+          // Determine if the file is plain text or binary
+          const isTextFile = await isPlainText(fileBuffer);
+
+          await db.userFile.update({
+            where: {
+              id: fileRecord.id,
+              organization_id: orgId,
+            },
+            data: {
+              is_binary_file: !isTextFile,
+              is_uploaded: true,
+              uploaded_at: new Date(),
+            },
+          });
+
           processedFiles.push({
             fileName: parsedFile.fileName,
             fileSize: file.size,
@@ -101,19 +123,42 @@ export async function POST(request: NextRequest) {
 
           // TODO: move to workflow
           // get file content
-          const fileBuffer = await getFileFromS3(
-            `${fileRecord.public_id}.${fileExtension}`
-          );
 
-          // For text files (like .txt, .md, .json, etc.)
-          const textContent = fileBuffer.toString();
-          // const textContent = fileBuffer.toString('utf-8');
+          let processedContent;
+          if (isTextFile) {
+            // For text files (like .txt, .md, .json, etc.)
+            processedContent = fileBuffer.toString('utf-8');
+            logger.info(`File is plain text: ${parsedFile.fileName}`);
+          } else {
+            // For binary files
+            processedContent = fileBuffer.toString('base64');
+            logger.info(`File is binary: ${parsedFile.fileName}`);
+          }
 
-          // binary files
-          const base64Content = fileBuffer.toString();
-          // const base64Content = fileBuffer.toString('base64');
+          // Remove console.log and use the processed content
+          // console.log({ textContent, base64Content });
 
-          // console.log({ textContent });
+          // const { message, success } = await convertAndStoreDocument({
+          //   fileContent: parsedFile.content,
+          //   fileName: parsedFile.fileName,
+          //   organizationId,
+          //   fileId: fileRecord.id,
+          //   filePublicId: fileRecord.public_id,
+          //   projectId: projectIdForDb ?? defaultProjectId,
+          //   mimeType: file.type,
+          // });
+
+          // if (success) {
+          //   if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
+          //     await createMarkdownDocument({
+          //       public_id: uniqueFileId,
+          //       title: parsedFile.fileName,
+          //       organization_id: organizationId,
+          //       content: parsedFile.content as string,
+          //       file_id: fileRecord.id,
+          //     });
+          //   }
+          // }
 
           usageTracker.incUploadedFilesSize(file.size);
           usageTracker.incUploadedFilesCount();
@@ -125,29 +170,6 @@ export async function POST(request: NextRequest) {
           // TODO: can one file interrupt upload of others?
           return NextResponse.json({ status: 'Upload error' }, { status: 500 });
         }
-
-        // Step3: run workflow
-        // TODO: move to workflow
-        // const { message, success } = await convertAndStoreDocument({
-        //   fileContent: parsedFile.content,
-        //   fileName: parsedFile.fileName,
-        //   organizationId,
-        //   fileId: uniqueFileId,
-        //   projectId: projectIdForDb ?? defaultProjectId,
-        //   mimeType: file.type,
-        // });
-
-        // if (success) {
-        //   if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
-        //     await createMarkdownDocument({
-        //       public_id: uniqueFileId,
-        //       title: parsedFile.fileName,
-        //       organization_id: organizationId,
-        //       content: parsedFile.content as string,
-        //       file_id: fileRecord.id,
-        //     });
-        //   }
-        // }
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(

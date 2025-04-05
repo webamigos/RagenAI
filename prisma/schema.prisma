@@ -83,6 +83,11 @@ model UserFile {
   UserDocument    UserDocument[]
   project         Project?       @relation(fields: [project_id], references: [id])
   project_id      Int?
+  is_uploaded     Boolean        @default(false) // if file is uploaded - in case upload fails
+  uploaded_at     DateTime?      @db.Timestamptz // date of successful upload
+  is_embedded     Boolean        @default(false) // embedding process was successful
+  embedded_at     DateTime?      @db.Timestamptz // date of successful embedding
+  is_binary_file  Boolean        @default(true) // is content of file is binary or plain text
 
   @@unique([id, organization_id])
   @@index([organization_id])
