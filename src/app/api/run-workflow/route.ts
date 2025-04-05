@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
-import { getTemporalClient } from '@/temporal/client';
-import { TASK_QUEUE_NAME } from '@/temporal/shared';
-
-// DO NOT import workflows in Next.js app!
-// import { EmbeddingWorkflow } from '@/temporal/src/workflows';
-
 import { logger } from '@/app/lib/utils/logger';
-import { newEstimateAgeWorkflow } from '@/temporal/workflows';
+import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 
 export const dynamic = 'force-dynamic';
 
