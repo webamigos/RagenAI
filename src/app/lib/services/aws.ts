@@ -1,4 +1,8 @@
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  DeleteObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getOrgIdOrThrow } from './clerk';
 
@@ -36,4 +40,32 @@ export async function deleteFromS3(fileName: string) {
       Key: `${orgId}/${fileName}`,
     })
   );
+}
+
+/**
+ * Retrieves file content from S3
+ * @param fileName - The name of the file to retrieve
+ * @returns A promise that resolves to the file content as a Buffer
+ */
+export async function getFileFromS3(fileName: string): Promise<Buffer> {
+  const orgId = getOrgIdOrThrow();
+
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET,
+    Key: `${orgId}/${fileName}`,
+  });
+
+  const response = await getAwsClient().send(command);
+
+  if (!response.Body) {
+    throw new Error(`No content found for file: ${fileName}`);
+  }
+
+  // Convert the readable stream to a buffer
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of response.Body as any) {
+    chunks.push(chunk);
+  }
+
+  return Buffer.concat(chunks);
 }

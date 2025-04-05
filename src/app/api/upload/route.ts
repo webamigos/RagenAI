@@ -12,7 +12,7 @@ import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
-import { uploadToS3 } from '@/app/lib/services/aws';
+import { getFileFromS3, uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
 export const dynamic = 'force-dynamic';
@@ -98,6 +98,22 @@ export async function POST(request: NextRequest) {
             uniqueFileId,
             content: parsedFile.content,
           });
+
+          // TODO: move to workflow
+          // get file content
+          const fileBuffer = await getFileFromS3(
+            `${fileRecord.public_id}.${fileExtension}`
+          );
+
+          // For text files (like .txt, .md, .json, etc.)
+          const textContent = fileBuffer.toString();
+          // const textContent = fileBuffer.toString('utf-8');
+
+          // binary files
+          const base64Content = fileBuffer.toString();
+          // const base64Content = fileBuffer.toString('base64');
+
+          // console.log({ textContent });
 
           usageTracker.incUploadedFilesSize(file.size);
           usageTracker.incUploadedFilesCount();
