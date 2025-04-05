@@ -72,7 +72,7 @@ model VisitorMessages {
 // Files uploaded by user
 model UserFile {
   id              String         @id @default(uuid())
-  public_id       String?        @default(cuid())
+  public_id       String         @default(cuid())
   organization_id String
   file_name       String
   file_size       Int

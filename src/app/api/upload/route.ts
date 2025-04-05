@@ -17,6 +17,7 @@ import { createFileDetailsInDB } from '@/app/lib/services/file';
 import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
 import { isPlainText } from '@/app/lib/utils/isPlainText';
 import db from '@ragenai/prisma-client';
+import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
           throw new Error('Project ID is missing');
         }
 
-        // Step1: create file details in db
+        // Step 1: create file details in db
         const fileRecord = await createFileDetailsInDB(
           parsedFile.fileName,
           file.size,
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
           projectIdForDb ?? defaultProjectId
         );
 
-        // Step2: upload to S3
+        // Step 2: upload to S3
         try {
           // this may be breaking change - files before had uuid as name
           // but there wasn't a logic which used files, so it should still work
@@ -92,15 +93,6 @@ export async function POST(request: NextRequest) {
             `${fileRecord.public_id}.${fileExtension}`,
             parsedFile.content as Buffer
           );
-          logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
-
-          // TODO: move to workflow
-          const fileBuffer = await getFileFromS3(
-            `${fileRecord.public_id}.${fileExtension}`
-          );
-
-          // Determine if the file is plain text or binary
-          const isTextFile = await isPlainText(fileBuffer);
 
           await db.userFile.update({
             where: {
@@ -108,7 +100,6 @@ export async function POST(request: NextRequest) {
               organization_id: orgId,
             },
             data: {
-              is_binary_file: !isTextFile,
               is_uploaded: true,
               uploaded_at: new Date(),
             },
@@ -121,8 +112,43 @@ export async function POST(request: NextRequest) {
             content: parsedFile.content,
           });
 
+          usageTracker.incUploadedFilesSize(file.size);
+          usageTracker.incUploadedFilesCount();
+          logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
+
+          // Step 3: run workflow
+
+          // UI flow ends
+
           // TODO: move to workflow
-          // get file content
+          // file_id, organization_id, public_project_id are params
+          const workflowFileId = fileRecord.id;
+
+          const fileRecordInWorkflow = await db.userFile.findUniqueOrThrow({
+            where: {
+              id: workflowFileId,
+            },
+          });
+
+          const workflowFileExtension = getFileExtension(
+            fileRecordInWorkflow.file_name
+          );
+          const fileBuffer = await getFileFromS3(
+            `${fileRecordInWorkflow.public_id}.${workflowFileExtension}`
+          );
+
+          // Determine if the file is plain text or binary
+          const isTextFile = await isPlainText(fileBuffer);
+
+          await db.userFile.update({
+            where: {
+              id: fileRecord.id,
+              organization_id: orgId,
+            },
+            data: {
+              is_binary_file: !isTextFile,
+            },
+          });
 
           let processedContent;
           if (isTextFile) {
@@ -131,7 +157,8 @@ export async function POST(request: NextRequest) {
             logger.info(`File is plain text: ${parsedFile.fileName}`);
           } else {
             // For binary files
-            processedContent = fileBuffer.toString('base64');
+            // processedContent = fileBuffer.toString('base64');
+            processedContent = fileBuffer;
             logger.info(`File is binary: ${parsedFile.fileName}`);
           }
 
@@ -141,33 +168,42 @@ export async function POST(request: NextRequest) {
           //   awsContent: fileBuffer,
           // });
 
-          // Remove console.log and use the processed content
-          // console.log({ textContent, base64Content });
+          const { message, success } = await convertAndStoreDocument({
+            // fileContent: parsedFile.content,
+            fileContent: processedContent,
+            fileName: fileRecordInWorkflow.file_name,
+            organizationId,
+            fileId: fileRecordInWorkflow.id,
+            filePublicId: fileRecordInWorkflow.public_id,
+            projectId: projectIdForDb ?? defaultProjectId,
+            mimeType: file.type,
+          });
 
-          // const { message, success } = await convertAndStoreDocument({
-          //   fileContent: parsedFile.content,
-          //   fileName: parsedFile.fileName,
-          //   organizationId,
-          //   fileId: fileRecord.id,
-          //   filePublicId: fileRecord.public_id,
-          //   projectId: projectIdForDb ?? defaultProjectId,
-          //   mimeType: file.type,
-          // });
+          if (success) {
+            if (
+              parsedFile.fileType === 'text' ||
+              parsedFile.fileType === 'srt'
+            ) {
+              await createMarkdownDocument({
+                public_id: uniqueFileId,
+                title: parsedFile.fileName,
+                organization_id: organizationId,
+                content: processedContent as string,
+                file_id: fileRecordInWorkflow.id,
+              });
+            }
 
-          // if (success) {
-          //   if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
-          //     await createMarkdownDocument({
-          //       public_id: uniqueFileId,
-          //       title: parsedFile.fileName,
-          //       organization_id: organizationId,
-          //       content: parsedFile.content as string,
-          //       file_id: fileRecord.id,
-          //     });
-          //   }
-          // }
-
-          usageTracker.incUploadedFilesSize(file.size);
-          usageTracker.incUploadedFilesCount();
+            await db.userFile.update({
+              where: {
+                id: fileRecordInWorkflow.id,
+                organization_id: orgId,
+              },
+              data: {
+                is_embedded: true,
+                embedded_at: new Date(),
+              },
+            });
+          }
         } catch (err) {
           logger.error(
             { err },
