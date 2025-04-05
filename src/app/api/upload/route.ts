@@ -14,6 +14,7 @@ import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
 import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
+import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
-    const organizationId = orgId;
+    const organizationId = getOrgIdOrThrow();
     const projectIdFromForm = formData.get('projectId')?.toString();
 
     setSentryClerkOrganizationTag(organizationId);
@@ -72,65 +73,65 @@ export async function POST(request: NextRequest) {
           throw new Error('Project ID is missing');
         }
 
-        const { message, success } = await convertAndStoreDocument({
-          fileContent: parsedFile.content,
-          fileName: parsedFile.fileName,
+        // Step1: create file details in db
+        const fileRecord = await createFileDetailsInDB(
+          parsedFile.fileName,
+          file.size,
           organizationId,
-          fileId: uniqueFileId,
-          projectId: projectIdForDb ?? defaultProjectId,
-          mimeType: file.type,
-        });
+          fileType,
+          projectIdForDb ?? defaultProjectId
+        );
 
-        if (success) {
-          const fileRecord = await createFileDetailsInDB(
-            parsedFile.fileName,
-            file.size,
-            organizationId,
-            uniqueFileId,
-            fileType,
-            projectIdForDb ?? defaultProjectId
-          );
-
-          if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
-            await createMarkdownDocument({
-              public_id: uniqueFileId,
-              title: parsedFile.fileName,
-              organization_id: organizationId,
-              content: parsedFile.content as string,
-              file_id: fileRecord.id,
-            });
-          }
-          // upload file to S3 in the background
-          uploadToS3(
-            `${fileRecord.id}.${fileExtension}`,
+        // Step2: upload to S3
+        try {
+          // this may be breaking change - files before had uuid as name
+          // but there wasn't a logic which used files, so it should still work
+          const uploadResult = await uploadToS3(
+            `${fileRecord.public_id}.${fileExtension}`,
             parsedFile.content as Buffer
-          )
-            .then(() => {
-              logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
-            })
-            .catch((error) => {
-              logger.error(
-                { err: error },
-                `Error uploading file to S3: ${parsedFile.fileName}`
-              );
-            });
-        }
-        if (!success) {
-          logger.error(
-            { err: message },
-            `Błąd podczas przetwarzania pliku ${file.name}`
           );
-          return NextResponse.json({ message }, { status: 500 });
-        }
-        processedFiles.push({
-          fileName: parsedFile.fileName,
-          fileSize: file.size,
-          uniqueFileId,
-          content: parsedFile.content,
-        });
+          logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
-        usageTracker.incUploadedFilesSize(file.size);
-        usageTracker.incUploadedFilesCount();
+          processedFiles.push({
+            fileName: parsedFile.fileName,
+            fileSize: file.size,
+            uniqueFileId,
+            content: parsedFile.content,
+          });
+
+          usageTracker.incUploadedFilesSize(file.size);
+          usageTracker.incUploadedFilesCount();
+        } catch (err) {
+          logger.error(
+            { err },
+            `Error uploading file to S3: ${parsedFile.fileName}`
+          );
+          // TODO: can one file interrupt upload of others?
+          return NextResponse.json({ status: 'Upload error' }, { status: 500 });
+        }
+
+        // Step3: run workflow
+        // TODO: move to workflow
+        // const { message, success } = await convertAndStoreDocument({
+        //   fileContent: parsedFile.content,
+        //   fileName: parsedFile.fileName,
+        //   organizationId,
+        //   fileId: uniqueFileId,
+        //   projectId: projectIdForDb ?? defaultProjectId,
+        //   mimeType: file.type,
+        // });
+
+        // if (success) {
+        //   if (parsedFile.fileType === 'text' || parsedFile.fileType === 'srt') {
+        //     await createMarkdownDocument({
+        //       public_id: uniqueFileId,
+        //       title: parsedFile.fileName,
+        //       organization_id: organizationId,
+        //       content: parsedFile.content as string,
+        //       file_id: fileRecord.id,
+        //     });
+        //   }
+        // }
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         return NextResponse.json(

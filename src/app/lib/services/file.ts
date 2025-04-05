@@ -18,13 +18,11 @@ export const createFileDetailsInDB = async (
   file_name: string,
   file_size: number,
   organization_id: string,
-  id: string,
   file_type: SupportedFileType,
   project_id: number
 ) => {
   return await db.userFile.create({
     data: {
-      id,
       organization_id,
       file_name,
       file_size,

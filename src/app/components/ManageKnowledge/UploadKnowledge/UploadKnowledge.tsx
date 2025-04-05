@@ -64,7 +64,8 @@ export const UploadKnowledge = () => {
     setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    // FIXME: security breach - everyone can set any organization
+    // security breach - everyone can set any organization
+    // do not use this kind of credentials in requests
     // formData.append('organizationId', organization.id);
 
     try {

@@ -25,7 +25,7 @@ export async function uploadToS3(fileName: string, fileContent: Buffer) {
     },
   });
 
-  await parallelUploads3.done();
+  return await parallelUploads3.done();
 }
 
 export async function deleteFromS3(fileName: string) {
