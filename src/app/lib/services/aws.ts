@@ -23,7 +23,7 @@ export async function uploadToS3(fileName: string, fileContent: Buffer) {
   const parallelUploads3 = new Upload({
     client: getAwsClient(),
     params: {
-      Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET,
+      Bucket: process.env.AWS_DOCUMENTS_BUCKET,
       Key: `${orgId}/${fileName}`,
       Body: fileContent,
     },
@@ -36,7 +36,7 @@ export async function deleteFromS3(fileName: string) {
   const orgId = getOrgIdOrThrow();
   await getAwsClient().send(
     new DeleteObjectCommand({
-      Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET,
+      Bucket: process.env.AWS_DOCUMENTS_BUCKET,
       Key: `${orgId}/${fileName}`,
     })
   );
@@ -51,7 +51,7 @@ export async function getFileFromS3(fileName: string): Promise<Buffer> {
   const orgId = getOrgIdOrThrow();
 
   const command = new GetObjectCommand({
-    Bucket: process.env.AWS_SECRET_DOCUMENTS_BUCKET,
+    Bucket: process.env.AWS_DOCUMENTS_BUCKET,
     Key: `${orgId}/${fileName}`,
   });
 

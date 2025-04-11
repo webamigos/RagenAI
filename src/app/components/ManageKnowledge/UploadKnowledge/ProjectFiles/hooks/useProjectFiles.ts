@@ -4,6 +4,7 @@ import { useOrganization } from '@clerk/nextjs';
 import { statusToast } from '@/app/lib/utils/toast';
 import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
 import { uploadProjectFiles } from '@/app/lib/services/api';
+import { FileType } from '@prisma/client';
 
 export enum FileListState {
   LOADING,
@@ -16,7 +17,7 @@ type ProjectFile = {
   id: string;
   file_name: string;
   file_size: number;
-  file_type: string;
+  file_type: FileType;
   created_at: Date | null;
   updated_at?: Date | null;
   metadata?: any;

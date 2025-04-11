@@ -1,8 +1,8 @@
 import db from '@ragenai/prisma-client';
 import { getOrgIdOrThrow } from './clerk';
 
-import { SupportedFileType } from './fileParser';
 import { fetchOrganizationDefaultProjectId } from './project';
+import { FileType } from '@prisma/client';
 
 export const getFileDetails = async (fileId: string) => {
   const orgId = getOrgIdOrThrow();
@@ -18,7 +18,7 @@ export const createFileDetailsInDB = async (
   file_name: string,
   file_size: number,
   organization_id: string,
-  file_type: SupportedFileType,
+  file_type: FileType,
   project_id: number
 ) => {
   return await db.userFile.create({

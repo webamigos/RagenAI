@@ -58,7 +58,7 @@ const envSchema = z.object({
   AWS_REGION: z.string(),
   AWS_ACCESS_KEY_ID: z.string(),
   AWS_SECRET_ACCESS_KEY: z.string(),
-  AWS_SECRET_DOCUMENTS_BUCKET: z.string(),
+  AWS_DOCUMENTS_BUCKET: z.string(),
 
   // Stripe
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),

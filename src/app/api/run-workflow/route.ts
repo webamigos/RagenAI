@@ -14,6 +14,7 @@ export const dynamic = 'force-dynamic';
 export const GET = async (request: NextRequest) => {
   const personWorkflowId = `person-${nanoid()}`;
   const documentWorkflowId = `doc-${nanoid()}`;
+  const embeddingWorkflowId = `embd-${nanoid()}`;
   const itemId = `654321`; // TODO: in real implementation replace with real id
 
   try {
@@ -25,28 +26,32 @@ export const GET = async (request: NextRequest) => {
     // moreover if we wat to use temporal worker from another services like Nest API, then we definitely should use string names of workflow
     // TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
     // ✅ OK: string name for the workflow
-    const personHandle = await client.workflow.start('newEstimateAgeWorkflow', {
+    const embeddingsHandle = await client.workflow.start('runFileEmbeddings', {
       taskQueue: TASK_QUEUE_NAME,
-      workflowId: personWorkflowId,
-      args: [{ name: 'Janina4' }],
+      workflowId: embeddingWorkflowId,
+      args: [
+        {
+          fileId: 'f5b5f1a5-99f9-4024-b529-48c33919d198',
+          orgId: 'org_2uVtRWLWKbIuPcuRdMKKnrQqLax',
+          projectId: '789',
+        },
+      ],
     });
 
-    logger.info('personHandle: %j', personHandle, 2);
+    logger.info('embeddingsHandle: %j', embeddingsHandle, 2);
 
     // const documentHandle = await client.workflow.start(EmbeddingWorkflow, {
-    const documentHandle = await client.workflow.start('EmbeddingWorkflow', {
-      taskQueue: TASK_QUEUE_NAME,
-      workflowId: documentWorkflowId,
-      args: [{ documentId: itemId }],
-    });
+    // const documentHandle = await client.workflow.start('EmbeddingWorkflow', {
+    //   taskQueue: TASK_QUEUE_NAME,
+    //   workflowId: documentWorkflowId,
+    //   args: [{ documentId: itemId }],
+    // });
 
-    logger.info('documentHandle: %j', documentHandle, 2);
+    // logger.info('documentHandle: %j', documentHandle, 2);
 
     return NextResponse.json({
-      personWorkflowId,
-      personWorkflowResultUrl: `${request.nextUrl}/people/${personWorkflowId}`,
-      documentWorkflowId,
-      documentWorkflowResultUrl: `${request.nextUrl}/documents/${documentWorkflowId}`,
+      embeddingWorkflowId,
+      embeddingResultUrl: `${request.nextUrl}/embd/${embeddingWorkflowId}`,
     });
   } catch (error) {
     logger.error({ err: error }, 'Fail to start Workflow');

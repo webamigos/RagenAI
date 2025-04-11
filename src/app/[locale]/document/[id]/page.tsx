@@ -133,7 +133,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     formData.append('organizationId', organization!.id);
 
     await deleteDocumentAction(orgId, id);
-    await uploadFiles(orgId, formData);
+    await uploadFiles(formData);
 
     if (response.success) {
       dispatch({ type: 'SET_DOCUMENT_CONTENT', payload: markdownContent });

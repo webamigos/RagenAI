@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Text } from '@ragenai/common-ui/Text';
+import { FileType } from '@prisma/client';
 
 import { FileCard } from './FileCard';
 import { DeleteFileModal } from '../DeleteFileModal';
@@ -12,7 +13,6 @@ import {
   type UserFileTypeSafe,
 } from '../FileList/UserDocumentsTable';
 import { type UserFileType } from '@/app/contracts/Documents';
-import { SupportedFileType } from '@/app/lib/services/fileParser';
 
 type GridViewProps = {
   documents: UserFileType[];
@@ -68,7 +68,7 @@ export const GridView = ({
       {documents.map((doc) => {
         const safeDoc: UserFileTypeSafe = {
           ...doc,
-          file_type: doc.file_type as SupportedFileType,
+          file_type: doc.file_type as FileType,
         };
 
         return (

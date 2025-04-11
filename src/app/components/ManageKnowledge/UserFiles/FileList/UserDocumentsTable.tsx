@@ -2,6 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
+import { FileType } from '@prisma/client';
 import * as CommonUi from '@ragenai/common-ui';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';
@@ -9,7 +10,6 @@ import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
-import { type SupportedFileType } from '@/app/lib/services/fileParser';
 import { ToolbarActions } from './ToolbarActions';
 
 type Props = {
@@ -27,7 +27,7 @@ type Props = {
   ) => void;
 };
 
-export type UserFileTypeSafe = UserFileType & { file_type: SupportedFileType };
+export type UserFileTypeSafe = UserFileType & { file_type: FileType };
 
 type DocumentRowProps = {
   document: UserFileTypeSafe;

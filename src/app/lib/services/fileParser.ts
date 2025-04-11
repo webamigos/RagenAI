@@ -1,29 +1,30 @@
 import { getFileType } from '../utils/getFileType';
 import { getFileExtension } from '../utils/getFileExtension';
+import { FileType } from '@prisma/client';
 
 export type ParsedFile = {
   content: string | Buffer;
   fileName: string;
-  fileType: SupportedFileType;
+  fileType: FileType;
   fileExtension?: string;
 };
-
-export type SupportedFileType = 'srt' | 'pdf' | 'epub' | 'text' | 'url';
 
 type FileParser = (
   file: File,
   organizationId?: string
 ) => Promise<string | Buffer>;
 
-const fileParsers: Record<SupportedFileType, FileParser> = {
-  srt: async (file) => {
+const fileParsers: Record<FileType, FileParser> = {
+  SRT: async (file) => {
     const buffer = await file.arrayBuffer();
     return new TextDecoder().decode(buffer);
   },
-  pdf: async (file) => Buffer.from(await file.arrayBuffer()),
-  epub: async (file) => Buffer.from(await file.arrayBuffer()),
-  text: async (file) => file.text(),
-  url: async (file) => file.text(),
+  PDF: async (file) => Buffer.from(await file.arrayBuffer()),
+  EPUB: async (file) => Buffer.from(await file.arrayBuffer()),
+  TEXT: async (file) => file.text(),
+  MARKDOWN: async (file) => file.text(),
+  URL: async (file) => file.text(),
+  UNKNOWN: async (file) => file.text(),
 };
 
 export async function parseFile(

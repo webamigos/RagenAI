@@ -76,7 +76,7 @@ model UserFile {
   organization_id        String
   file_name              String
   file_size              Int
-  file_type              String          @default("unknown")
+  file_type              FileType        @default(UNKNOWN)
   created_at             DateTime?       @default(now()) @db.Timestamptz
   updated_at             DateTime?       @db.Timestamptz
   metadata               Json?
@@ -85,11 +85,17 @@ model UserFile {
   project_id             Int?
   is_uploaded            Boolean         @default(false) // if file is uploaded - in case upload fails
   uploaded_at            DateTime?       @db.Timestamptz // date of successful upload
+  parsing_status         ParsingStatus   @default(NOT_STARTED)
+  parsing_started_at     DateTime?       @db.Timestamptz
+  parsing_completed_at   DateTime?       @db.Timestamptz
+  parsing_failed_at      DateTime?       @db.Timestamptz
   embedding_status       EmbeddingStatus @default(NOT_STARTED)
   embedding_started_at   DateTime?       @db.Timestamptz
   embedding_completed_at DateTime?       @db.Timestamptz
   embedding_failed_at    DateTime?       @db.Timestamptz
   is_binary_file         Boolean         @default(true) // is content of file is binary or plain text
+  file_extension         String? // this is detected by file-type library in temporal worker
+  file_mime_type         String? // this is detected by file-type library in temporal worker
 
   @@unique([id, organization_id])
   @@index([organization_id])
@@ -248,7 +254,24 @@ enum Role {
   ASSISTANT
 }
 
+enum FileType {
+  UNKNOWN
+  TEXT
+  MARKDOWN
+  EPUB
+  PDF
+  SRT
+  URL
+}
+
 enum EmbeddingStatus {
+  NOT_STARTED
+  STARTED
+  COMPLETED
+  FAILED
+}
+
+enum ParsingStatus {
   NOT_STARTED
   STARTED
   COMPLETED

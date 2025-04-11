@@ -18,7 +18,7 @@ type TabListProps = {
 interface TabPropsInterface {
   children: ReactNode;
   isActive?: boolean;
-  href: string;
+  href?: string;
   onClick?: () => void;
 }
 
@@ -96,7 +96,7 @@ const Tab = ({
   ...props
 }: TabPropsInterface & ComponentPropsWithoutRef<'a'>) => (
   <Link
-    href={href}
+    href={href ? href : '#'}
     className={classMerge(
       'flex cursor-pointer px-2 mx-2 py-2 text-sm font-medium transition',
       isActive

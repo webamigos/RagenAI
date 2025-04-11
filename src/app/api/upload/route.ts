@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import { auth } from '@clerk/nextjs/server';
 import { convertAndStoreDocument } from '../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
@@ -19,6 +20,7 @@ import { isPlainText } from '@/app/lib/utils/isPlainText';
 import db from '@ragenai/prisma-client';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { EmbeddingStatus } from '@prisma/client';
+import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -117,6 +119,24 @@ export async function POST(request: NextRequest) {
           usageTracker.incUploadedFilesCount();
           logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
+          logger.info(`Started temporal workflow`);
+          const embeddingWorkflowId = `doc-${nanoid()}`;
+          const client = getTemporalClient();
+          const embeddingsHandle = await client.workflow.start(
+            'runFileEmbeddings',
+            {
+              taskQueue: TASK_QUEUE_NAME,
+              workflowId: embeddingWorkflowId,
+              args: [
+                {
+                  ...fileRecord,
+                },
+              ],
+            }
+          );
+
+          logger.info('embeddingsHandle: %j', embeddingsHandle, 2);
+
           // =================
           // UI flow ends here
           // =================
@@ -125,113 +145,113 @@ export async function POST(request: NextRequest) {
 
           // TODO: move to workflow
           // file_id, organization_id, public_project_id are params
-          const workflowFileId = fileRecord.id;
+          // const workflowFileId = fileRecord.id;
 
-          const fileRecordInWorkflow = await db.userFile.findUniqueOrThrow({
-            where: {
-              id: workflowFileId,
-            },
-          });
-
-          const workflowFileExtension = getFileExtension(
-            fileRecordInWorkflow.file_name
-          );
-          const fileBuffer = await getFileFromS3(
-            `${fileRecordInWorkflow.public_id}.${workflowFileExtension}`
-          );
-
-          // Determine if the file is plain text or binary
-          const isTextFile = await isPlainText(fileBuffer);
-
-          await db.userFile.update({
-            where: {
-              id: fileRecord.id,
-              organization_id: orgId,
-            },
-            data: {
-              is_binary_file: !isTextFile,
-            },
-          });
-
-          let processedContent;
-          if (isTextFile) {
-            // For text files (like .txt, .md, .json, etc.)
-            processedContent = fileBuffer.toString('utf-8');
-            logger.info(`File is plain text: ${parsedFile.fileName}`);
-          } else {
-            // For binary files
-            // processedContent = fileBuffer.toString('base64');
-            processedContent = fileBuffer;
-            logger.info(`File is binary: ${parsedFile.fileName}`);
-          }
-
-          // console.log({
-          //   processedContent,
-          //   parsedFileContent: parsedFile.content,
-          //   awsContent: fileBuffer,
+          // const fileRecordInWorkflow = await db.userFile.findUniqueOrThrow({
+          //   where: {
+          //     id: workflowFileId,
+          //   },
           // });
 
-          // set info about started embedding
-          await db.userFile.update({
-            where: {
-              id: fileRecordInWorkflow.id,
-              organization_id: orgId,
-            },
-            data: {
-              embedding_status: EmbeddingStatus.STARTED,
-              embedding_started_at: new Date(),
-            },
-          });
+          // const workflowFileExtension = getFileExtension(
+          //   fileRecordInWorkflow.file_name
+          // );
+          // const fileBuffer = await getFileFromS3(
+          //   `${fileRecordInWorkflow.public_id}.${workflowFileExtension}`
+          // );
 
-          const { message, success } = await convertAndStoreDocument({
-            // fileContent: parsedFile.content,
-            fileContent: processedContent,
-            fileName: fileRecordInWorkflow.file_name,
-            organizationId,
-            fileId: fileRecordInWorkflow.id,
-            filePublicId: fileRecordInWorkflow.public_id,
-            projectId: projectIdForDb ?? defaultProjectId,
-            mimeType: file.type,
-          });
+          // // Determine if the file is plain text or binary
+          // const isTextFile = await isPlainText(fileBuffer);
 
-          if (success) {
-            if (
-              parsedFile.fileType === 'text' ||
-              parsedFile.fileType === 'srt'
-            ) {
-              await createMarkdownDocument({
-                public_id: uniqueFileId,
-                title: parsedFile.fileName,
-                organization_id: organizationId,
-                content: processedContent as string,
-                file_id: fileRecordInWorkflow.id,
-              });
-            }
+          // await db.userFile.update({
+          //   where: {
+          //     id: fileRecord.id,
+          //     organization_id: orgId,
+          //   },
+          //   data: {
+          //     is_binary_file: !isTextFile,
+          //   },
+          // });
 
-            // set info about successful embedding
-            await db.userFile.update({
-              where: {
-                id: fileRecordInWorkflow.id,
-                organization_id: orgId,
-              },
-              data: {
-                embedding_status: EmbeddingStatus.COMPLETED,
-                embedding_completed_at: new Date(),
-              },
-            });
-          } else {
-            // set info about failed embedding
-            await db.userFile.update({
-              where: {
-                id: fileRecordInWorkflow.id,
-                organization_id: orgId,
-              },
-              data: {
-                embedding_status: EmbeddingStatus.FAILED,
-                embedding_failed_at: new Date(),
-              },
-            });
-          }
+          // let processedContent;
+          // if (isTextFile) {
+          //   // For text files (like .txt, .md, .json, etc.)
+          //   processedContent = fileBuffer.toString('utf-8');
+          //   logger.info(`File is plain text: ${parsedFile.fileName}`);
+          // } else {
+          //   // For binary files
+          //   // processedContent = fileBuffer.toString('base64');
+          //   processedContent = fileBuffer;
+          //   logger.info(`File is binary: ${parsedFile.fileName}`);
+          // }
+
+          // // console.log({
+          // //   processedContent,
+          // //   parsedFileContent: parsedFile.content,
+          // //   awsContent: fileBuffer,
+          // // });
+
+          // // set info about started embedding
+          // await db.userFile.update({
+          //   where: {
+          //     id: fileRecordInWorkflow.id,
+          //     organization_id: orgId,
+          //   },
+          //   data: {
+          //     embedding_status: EmbeddingStatus.STARTED,
+          //     embedding_started_at: new Date(),
+          //   },
+          // });
+
+          // const { message, success } = await convertAndStoreDocument({
+          //   // fileContent: parsedFile.content,
+          //   fileContent: processedContent,
+          //   fileName: fileRecordInWorkflow.file_name,
+          //   organizationId,
+          //   fileId: fileRecordInWorkflow.id,
+          //   filePublicId: fileRecordInWorkflow.public_id,
+          //   projectId: projectIdForDb ?? defaultProjectId,
+          //   mimeType: file.type,
+          // });
+
+          // if (success) {
+          //   if (
+          //     parsedFile.fileType === 'text' ||
+          //     parsedFile.fileType === 'srt'
+          //   ) {
+          //     await createMarkdownDocument({
+          //       public_id: uniqueFileId,
+          //       title: parsedFile.fileName,
+          //       organization_id: organizationId,
+          //       content: processedContent as string,
+          //       file_id: fileRecordInWorkflow.id,
+          //     });
+          //   }
+
+          //   // set info about successful embedding
+          //   await db.userFile.update({
+          //     where: {
+          //       id: fileRecordInWorkflow.id,
+          //       organization_id: orgId,
+          //     },
+          //     data: {
+          //       embedding_status: EmbeddingStatus.COMPLETED,
+          //       embedding_completed_at: new Date(),
+          //     },
+          //   });
+          // } else {
+          //   // set info about failed embedding
+          //   await db.userFile.update({
+          //     where: {
+          //       id: fileRecordInWorkflow.id,
+          //       organization_id: orgId,
+          //     },
+          //     data: {
+          //       embedding_status: EmbeddingStatus.FAILED,
+          //       embedding_failed_at: new Date(),
+          //     },
+          //   });
+          // }
         } catch (err) {
           logger.error(
             { err },

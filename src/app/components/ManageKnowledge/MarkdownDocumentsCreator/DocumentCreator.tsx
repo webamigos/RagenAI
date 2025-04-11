@@ -26,6 +26,7 @@ import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
 import { logger } from '@/app/lib/utils/logger';
+import { FileType } from '@prisma/client';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -87,7 +88,7 @@ export const DocumentCreator = () => {
       );
       formData.append('organizationId', organization.id);
 
-      const response = await uploadFiles(organizationId, formData);
+      const response = await uploadFiles(formData);
 
       if (response.status === 200 && response.files) {
         const document = response.files[0];
@@ -98,7 +99,7 @@ export const DocumentCreator = () => {
           organization_id: organizationId,
           file_name: document.fileName,
           file_size: document.fileSize,
-          file_type: 'markdown',
+          file_type: FileType.MARKDOWN,
           project_id: projectId,
           project: { id: projectId, title: document.fileName },
         });
