@@ -7,5 +7,9 @@ export enum NotificationEvent {
 export type NotificationMessage = {
   content: string;
   intlKey: string;
-  meta?: object;
+  meta?: {
+    forceRefresh?: boolean;
+    redirectUrl?: string;
+    messageLink?: string;
+  };
 };
