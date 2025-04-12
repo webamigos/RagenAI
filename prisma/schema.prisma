@@ -107,7 +107,7 @@ model UserFile {
 // Documents from CMS
 model UserDocument {
   id              String    @id @default(uuid())
-  public_id       String    @default(uuid())
+  public_id       String    @default(cuid())
   organization_id String
   title           String
   content         String
