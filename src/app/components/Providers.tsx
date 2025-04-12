@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/store';
 import { Toast } from './Toast/Toast';
 import 'react-toastify/dist/ReactToastify.css';
+import { Notifications } from '@ragenai/common-ui/Notifications';
 
 type Props = {
   readonly children: React.ReactNode;
@@ -43,6 +44,7 @@ export function Providers({ children }: Props) {
           <ThemeWatcher />
           {children}
           <Toast />
+          <Notifications />
         </>
       </ThemeProvider>
     </Provider>

@@ -67,6 +67,12 @@ const envSchema = z.object({
 
   // Firecrawl
   FIRECRAWL_API_KEY: z.string(),
+
+  // Pusher
+  PUSHER_APP_ID: z.string(),
+  PUSHER_KEY: z.string(),
+  PUSHER_SECRET: z.string(),
+  NEXT_PUBLIC_PUSHER_KEY: z.string(),
 });
 
 const validateEnvs = () => envSchema.safeParse(process.env);

@@ -43,6 +43,13 @@ env:
   FIRECRAWL_API_KEY: 'dummy'
   FEATURE_FLAG_SHOW_MODEL_API_KEY: 1
   FEATURE_FLAG_MODEL_SELECT: 1
+  DEFAULT_MODEL_PROVIDER: 'google'
+  DEFAULT_MODEL: 'gemini-2.0-flash'
+  GOOGLE_API_KEY: 'dummy'
+  PUSHER_APP_ID: 'dummy'
+  PUSHER_KEY: 'dummy'
+  PUSHER_SECRET: 'dummy'
+  NEXT_PUBLIC_PUSHER_KEY: 'dummy'
 
 on:
   push:
