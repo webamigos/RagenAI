@@ -39,7 +39,7 @@ type DocumentRowProps = {
     fileName: string
   ) => void;
   toggleModal: (fileId: string | null) => void;
-  onRemoveDocument: (documentId: string) => void;
+  onRemoveDocument: (documentPublicId: string) => void;
   handlePrefetch: (path: string) => void;
 };
 
@@ -58,8 +58,14 @@ const DocumentRow = ({
 }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { created_at, updated_at, file_name, file_size, id, organization_id } =
-    document;
+  const {
+    created_at,
+    updated_at,
+    file_name,
+    file_size,
+    public_id,
+    organization_id,
+  } = document;
 
   const fileIcon = getFileIcon(document.file_type);
 
@@ -93,7 +99,7 @@ const DocumentRow = ({
             delayShow={1000}
             place="top"
             content={file_name}
-            id={`tooltip-${id}`}
+            id={`tooltip-${public_id}`}
           >
             <CommonUi.Text className="hidden lg:flex">
               {truncatedFileName}
@@ -108,7 +114,7 @@ const DocumentRow = ({
         <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
         <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
           <ToolbarActions
-            documentId={id}
+            documentPublicId={public_id}
             fileName={file_name}
             onPrefetch={handlePrefetch}
             toggleModal={toggleModal}
@@ -163,7 +169,7 @@ export const UserDocumentsTable = ({
             filteredDocuments.map((document) => (
               <DocumentRow
                 deleteLoading={deleteLoading}
-                key={document.id}
+                key={document.public_id}
                 document={document}
                 showModal={showModal}
                 toggleModal={toggleModal}

@@ -7,9 +7,9 @@ type Props = {
   className?: string;
   isLoading?: boolean;
   fileName: string;
+  documentPublicId: string;
   organization_id: string;
-  documentId: string;
-  toggleModal: (fileId: string | null) => void;
+  toggleModal: (filePublicId: string | null) => void;
   handleDelete: (
     organizationId: string,
     documentId: string,
@@ -21,7 +21,7 @@ export const DeleteFileModal = ({
   className,
   fileName,
   isLoading,
-  documentId,
+  documentPublicId,
   organization_id,
   toggleModal,
   handleDelete,
@@ -67,7 +67,9 @@ export const DeleteFileModal = ({
         <div className="flex justify-center mt-4 gap-2">
           <Button
             className="bg-red-500 hover:bg-red-400 dark:bg-red-500 dark:hover:bg-red-400"
-            onClick={() => handleDelete(organization_id, documentId, fileName)}
+            onClick={() =>
+              handleDelete(organization_id, documentPublicId, fileName)
+            }
             disabled={isLoading}
           >
             {isLoading ? t('deleting') : t('yes')}

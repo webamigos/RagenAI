@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
 
 type ToolbarActionsProps = {
-  documentId: string;
+  documentPublicId: string;
   fileName: string;
   onPrefetch: (path: string) => void;
   toggleModal: (fileId: string | null) => void;
@@ -11,7 +11,7 @@ type ToolbarActionsProps = {
 };
 
 export const ToolbarActions = ({
-  documentId,
+  documentPublicId,
   onPrefetch,
   toggleModal,
   isLoading,
@@ -32,7 +32,7 @@ export const ToolbarActions = ({
         }`}
       >
         <ToolbarActionsMenu
-          documentId={documentId}
+          documentPublicId={documentPublicId}
           onPrefetch={onPrefetch}
           toggleModal={toggleModal}
           isLoading={isLoading}

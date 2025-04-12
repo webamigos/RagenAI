@@ -78,13 +78,13 @@ export const GridView = ({
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
                 fileName={safeDoc.file_name}
-                documentId={safeDoc.id}
+                documentPublicId={safeDoc.public_id}
                 organization_id={safeDoc.organization_id}
                 isLoading={deleteLoading}
               />
             )}
             <FileCard
-              key={safeDoc.id}
+              key={safeDoc.public_id}
               document={safeDoc}
               isLoading={isLoading}
               toggleModal={toggleModal}

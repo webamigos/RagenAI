@@ -8,6 +8,7 @@ export type ProjectType = {
 
 export type UserFileType = {
   id: UserFile['id'];
+  public_id: UserFile['public_id'];
   organization_id: UserFile['organization_id'];
   file_name: UserFile['file_name'];
   file_size: UserFile['file_size'];

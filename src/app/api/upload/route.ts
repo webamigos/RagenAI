@@ -227,31 +227,6 @@ export async function POST(request: NextRequest) {
           //       file_id: fileRecordInWorkflow.id,
           //     });
           //   }
-
-          //   // set info about successful embedding
-          //   await db.userFile.update({
-          //     where: {
-          //       id: fileRecordInWorkflow.id,
-          //       organization_id: orgId,
-          //     },
-          //     data: {
-          //       embedding_status: EmbeddingStatus.COMPLETED,
-          //       embedding_completed_at: new Date(),
-          //     },
-          //   });
-          // } else {
-          //   // set info about failed embedding
-          //   await db.userFile.update({
-          //     where: {
-          //       id: fileRecordInWorkflow.id,
-          //       organization_id: orgId,
-          //     },
-          //     data: {
-          //       embedding_status: EmbeddingStatus.FAILED,
-          //       embedding_failed_at: new Date(),
-          //     },
-          //   });
-          // }
         } catch (err) {
           logger.error(
             { err },

@@ -72,16 +72,16 @@ type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
 
 export async function fetchDocumentByOrganization(
   organizationId: string,
-  documentId: string
+  documentPublicId: string
 ): Promise<DocumentResponse> {
   try {
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(organizationId);
-    setSentryContext('EXTRA_DATA', { documentId });
+    setSentryContext('EXTRA_DATA', { documentPublicId });
     const response: { content: string; title: string }[] =
       await getDocumentPreview({
         orgId: organizationId,
-        documentId,
+        documentPublicId,
       });
 
     return {

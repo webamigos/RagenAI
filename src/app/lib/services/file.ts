@@ -50,7 +50,7 @@ export const fetchFileDetails = async (organizationId: string) => {
       updated_at: true,
       metadata: true,
       organization_id: true,
-      id: true,
+      public_id: true,
       project_id: true,
       project: {
         select: {
