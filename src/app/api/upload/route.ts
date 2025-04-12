@@ -122,6 +122,7 @@ export async function POST(request: NextRequest) {
           logger.info(`Started temporal workflow`);
           const embeddingWorkflowId = `doc-${nanoid()}`;
           const client = getTemporalClient();
+
           const embeddingsHandle = await client.workflow.start(
             'runFileEmbeddings',
             {

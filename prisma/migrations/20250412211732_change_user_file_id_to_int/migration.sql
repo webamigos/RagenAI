@@ -11,12 +11,12 @@ ALTER TABLE "UserDocument" DROP CONSTRAINT "UserDocument_file_id_fkey";
 
 -- AlterTable
 ALTER TABLE "UserDocument" DROP COLUMN "file_id",
-ADD COLUMN     "file_id" BIGINT;
+ADD COLUMN     "file_id" INTEGER;
 
 -- AlterTable
 ALTER TABLE "UserFile" DROP CONSTRAINT "UserFile_pkey",
 DROP COLUMN "id",
-ADD COLUMN     "id" BIGSERIAL NOT NULL,
+ADD COLUMN     "id" SERIAL NOT NULL,
 ADD CONSTRAINT "UserFile_pkey" PRIMARY KEY ("id");
 
 -- CreateIndex
