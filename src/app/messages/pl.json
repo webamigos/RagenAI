@@ -694,5 +694,10 @@
     "file-error-fetching": "Wystąpił błąd podczas ładowania plików"
   },
   "expand": "Rozwiń",
-  "collapse": "Zwiń"
+  "collapse": "Zwiń",
+  "notifications": {
+    "success": "Sukces",
+    "info": "Info",
+    "error": "Błąd"
+  }
 }

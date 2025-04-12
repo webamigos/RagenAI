@@ -692,5 +692,10 @@
     "file-error": "An error occurred while loading files"
   },
   "expand": "Expand",
-  "collapse": "Collapse"
+  "collapse": "Collapse",
+  "notifications": {
+    "success": "Success",
+    "info": "Info",
+    "error": "Error"
+  }
 }

@@ -1,6 +1,6 @@
 import Pusher from 'pusher';
 import { NOTIFICATIONS_DEFAULT_CHANNEL } from './config';
-import { NotificationEvent } from './types';
+import { NotificationEvent, NotificationMessage } from './types';
 
 const PUSHER_APP_ID = process.env.PUSHER_APP_ID!;
 const PUSHER_KEY = process.env.PUSHER_KEY!;
@@ -19,19 +19,19 @@ export const pushNotification = ({
   message,
 }: {
   event: NotificationEvent;
-  message: string;
+  message: NotificationMessage;
 }) => {
   pusher.trigger(NOTIFICATIONS_DEFAULT_CHANNEL, event, message);
 };
 
-export const successNotification = (message: string) => {
+export const sendSuccessNotification = (message: NotificationMessage) => {
   pushNotification({ event: NotificationEvent.SUCCESS_EVENT, message });
 };
 
-export const infoNotification = (message: string) => {
+export const sendInfoNotification = (message: NotificationMessage) => {
   pushNotification({ event: NotificationEvent.INFO_EVENT, message });
 };
 
-export const errorNotification = (message: string) => {
+export const sendErrorNotification = (message: NotificationMessage) => {
   pushNotification({ event: NotificationEvent.ERROR_EVENT, message });
 };
