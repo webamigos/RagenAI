@@ -74,7 +74,6 @@ export const createProjectForOrganization = async (
         source: Source.UI,
       },
       select: {
-        id: true,
         public_id: true,
         title: true,
         created_at: true,
@@ -111,7 +110,6 @@ export const fetchProjectsForUser = async (
         created_at: 'desc',
       },
       select: {
-        id: true,
         public_id: true,
         title: true,
         created_at: true,
@@ -121,7 +119,6 @@ export const fetchProjectsForUser = async (
             created_at: 'desc',
           },
           select: {
-            id: true,
             public_id: true,
             created_at: true,
             visitor_id: true,
@@ -191,7 +188,7 @@ export const fetchProjectFiles = async (projectId: number) => {
       updated_at: true,
       metadata: true,
       organization_id: true,
-      id: true,
+      public_id: true,
     },
     orderBy: {
       created_at: 'desc',
@@ -202,17 +199,21 @@ export const fetchProjectFiles = async (projectId: number) => {
 /**
  * Deletes a file from a specific project
  */
-export const deleteProjectFile = async (fileId: string, projectId: number) => {
+export const deleteProjectFile = async (
+  publicFileId: string,
+  projectId: number
+) => {
   const orgId = getOrgIdOrThrow();
   return await db.userFile.deleteMany({
     where: {
-      id: fileId,
+      public_id: publicFileId,
       organization_id: orgId,
       project_id: projectId,
     },
   });
 };
 
+// TODO: refactor to use public_id
 export const getPublicProject = async (publicAccessTokenId: string) => {
   try {
     const project = await db.project.findFirst({
@@ -242,6 +243,7 @@ export const getPublicProject = async (publicAccessTokenId: string) => {
   }
 };
 
+// TODO: refactor to use public id
 export const generateProjectKey = async (projectId: number) => {
   try {
     logger.info('Generating access token for project');
@@ -272,6 +274,7 @@ export const generateProjectKey = async (projectId: number) => {
   }
 };
 
+// TODO: refactor to use public id
 export const disablePublicAccessForProject = async (projectId: number) => {
   try {
     const orgId = getOrgIdOrThrow();
@@ -305,6 +308,7 @@ export const disablePublicAccessForProject = async (projectId: number) => {
   }
 };
 
+// TODO: refactor to use public id
 export const toggleChatbotEnabled = async (
   projectId: number,
   enabled: boolean

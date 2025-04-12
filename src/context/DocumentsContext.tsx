@@ -90,8 +90,10 @@ export const DocumentsProvider = ({ children }: Props) => {
     }
   }, [orgId]);
 
-  const addDocument = (newDocument: UserFileType) => {
-    dispatch({ type: 'ADD_DOCUMENT', payload: newDocument });
+  const addDocument = (
+    newDocument: Omit<UserFileType, 'public_id' | 'document'>
+  ) => {
+    dispatch({ type: 'ADD_DOCUMENT', payload: newDocument as UserFileType }); // TODO: quick fix it will be refactored
   };
 
   const removeDocument = (documentId: string) => {

@@ -15,7 +15,7 @@ import {
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type GridViewProps = {
-  documents: UserFileType[];
+  files: UserFileType[];
   isLoading: boolean;
   isError: boolean;
   showModal: ModalStateProps;
@@ -32,7 +32,7 @@ type GridViewProps = {
 };
 
 export const GridView = ({
-  documents,
+  files,
   isLoading,
   deleteLoading,
   isError,
@@ -53,7 +53,7 @@ export const GridView = ({
     return null;
   }
 
-  if (documents.length === 0) {
+  if (files.length === 0) {
     return (
       <div className="flex justify-center mt-[3.8rem]">
         <Text fontSize="sm" className="text-gray-500">
@@ -65,27 +65,27 @@ export const GridView = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
-      {documents.map((doc) => {
-        const safeDoc: UserFileTypeSafe = {
-          ...doc,
-          file_type: doc.file_type as FileType,
+      {files.map((file) => {
+        const safeFile: UserFileTypeSafe = {
+          ...file,
+          file_type: file.file_type as FileType,
         };
 
         return (
           <>
-            {showModal.isOpen && showModal.fileId === safeDoc.id && (
+            {showModal.isOpen && showModal.fileId === safeFile.public_id && (
               <DeleteFileModal
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
-                fileName={safeDoc.file_name}
-                documentPublicId={safeDoc.public_id}
-                organization_id={safeDoc.organization_id}
+                fileName={safeFile.file_name}
+                filePublicId={safeFile.public_id} // ist's UserFile not UserDocument
+                organization_id={safeFile.organization_id}
                 isLoading={deleteLoading}
               />
             )}
             <FileCard
-              key={safeDoc.public_id}
-              document={safeDoc}
+              key={safeFile.public_id}
+              file={safeFile}
               isLoading={isLoading}
               toggleModal={toggleModal}
               handlePrefetch={handlePrefetch}

@@ -12,7 +12,6 @@ const hasMessages = (thread: ThreadType): boolean => {
 
 export const ThreadsList = ({
   threads,
-  projectId,
   projectPublicId,
   activeThread,
   onClose,
@@ -33,9 +32,8 @@ export const ThreadsList = ({
               </SidebarLabel>
               {threads.map((thread) => (
                 <ThreadItem
-                  key={thread.id}
+                  key={thread.public_id}
                   thread={thread}
-                  projectId={projectId}
                   projectPublicId={projectPublicId}
                   isActive={activeThread === thread.public_id}
                   onClose={onClose}

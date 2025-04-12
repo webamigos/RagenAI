@@ -13,7 +13,7 @@ import { type UserFileType } from '@/app/contracts/Documents';
 import { ToolbarActions } from './ToolbarActions';
 
 type Props = {
-  documents: UserFileType[];
+  files: UserFileType[];
   showModal: ModalStateProps;
   deleteLoading: boolean;
   toggleModal: (fileId: string | null) => void;
@@ -82,12 +82,13 @@ const DocumentRow = ({
 
   return (
     <>
+      {/* this is UserFile not UserDocument ! */}
       {showModal.isOpen && showModal.fileId === document.public_id && (
         <DeleteFileModal
           toggleModal={toggleModal}
           handleDelete={handleDelete}
           organization_id={organization_id}
-          documentPublicId={document.public_id}
+          filePublicId={document.public_id}
           fileName={document.file_name}
           isLoading={deleteLoading}
         />
@@ -114,7 +115,7 @@ const DocumentRow = ({
         <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
         <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
           <ToolbarActions
-            filePublicId={public_id}
+            filePublicId={public_id!}
             documentPublicId={document.document?.public_id}
             fileName={file_name}
             onPrefetch={handlePrefetch}
@@ -128,7 +129,7 @@ const DocumentRow = ({
 };
 
 export const UserDocumentsTable = ({
-  documents,
+  files,
   showModal,
   deleteLoading,
   toggleModal,
@@ -141,15 +142,15 @@ export const UserDocumentsTable = ({
 
   const filteredDocuments = useMemo(() => {
     if (!searchValue) {
-      return documents as UserFileTypeSafe[];
+      return files as UserFileTypeSafe[];
     }
 
-    return documents.filter(
-      (doc) =>
-        doc.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
-        doc.project?.title === 'Default'
+    return files.filter(
+      (file) =>
+        file.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
+        file.project?.title === 'Default'
     ) as UserFileTypeSafe[];
-  }, [documents, searchValue]);
+  }, [files, searchValue]);
 
   return (
     <div className="relative mt-6">

@@ -66,6 +66,7 @@ export const FileListWrapper = () => {
 
   const { prefetch } = useRouter();
 
+  // TODO: refactor to files
   const { documents, isLoading, isError, addDocument, removeDocument } =
     useUserDocumentsContext();
 
@@ -73,7 +74,7 @@ export const FileListWrapper = () => {
     setSearchValue(event.target.value.trim());
   };
 
-  const defaultProjectDocuments = useMemo(() => {
+  const defaultProjectFiles = useMemo(() => {
     return documents.filter((doc) =>
       doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
     );
@@ -129,7 +130,7 @@ export const FileListWrapper = () => {
           isLoading={isLoading}
           addDocument={addDocument}
           removeDocument={removeDocument}
-          documents={defaultProjectDocuments}
+          files={defaultProjectFiles}
           handlePrefetch={handlePrefetch}
           showModal={showModal}
           toggleModal={toggleModal}
@@ -143,7 +144,7 @@ export const FileListWrapper = () => {
           addDocument={addDocument}
           showModal={showModal}
           removeDocument={removeDocument}
-          documents={defaultProjectDocuments}
+          files={defaultProjectFiles}
           handlePrefetch={handlePrefetch}
           toggleModal={toggleModal}
           handleDelete={handleDelete}

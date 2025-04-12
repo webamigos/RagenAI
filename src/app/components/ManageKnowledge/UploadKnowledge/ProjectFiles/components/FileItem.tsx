@@ -9,7 +9,7 @@ import { FileType } from '@prisma/client';
 
 type FileItemProps = {
   file: {
-    id: string;
+    public_id: string;
     file_name: string;
     file_size: number;
     file_type: FileType;
@@ -57,7 +57,7 @@ export const FileItem = memo(
             toggleModal={toggleModal}
             handleDelete={handleConfirmDelete}
             organization_id={file.organization_id}
-            documentId={file.id}
+            filePublicId={file.public_id}
             fileName={file.file_name}
             isLoading={isDeleting}
           />
@@ -80,7 +80,7 @@ export const FileItem = memo(
             {file.file_type}
           </span>
           <button
-            onClick={() => toggleModal(file.id)}
+            onClick={() => toggleModal(file.public_id)}
             disabled={isDeleting}
             className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-full transition-colors"
             title={t('remove-file')}

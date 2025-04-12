@@ -17,7 +17,7 @@ export type UserFileType = {
   file_type: UserFile['file_type'];
   project_id: UserFile['project_id'];
   project: ProjectType | null;
-  document: {
+  document?: {
     public_id: UserDocument['public_id'];
   } | null;
 };

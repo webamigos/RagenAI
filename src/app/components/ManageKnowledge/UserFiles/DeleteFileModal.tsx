@@ -7,12 +7,12 @@ type Props = {
   className?: string;
   isLoading?: boolean;
   fileName: string;
-  documentPublicId: string;
+  filePublicId: string;
   organization_id: string;
   toggleModal: (filePublicId: string | null) => void;
   handleDelete: (
     organizationId: string,
-    documentId: string,
+    filePublicId: string,
     fileName: string
   ) => void;
 };
@@ -21,7 +21,7 @@ export const DeleteFileModal = ({
   className,
   fileName,
   isLoading,
-  documentPublicId,
+  filePublicId,
   organization_id,
   toggleModal,
   handleDelete,
@@ -68,7 +68,7 @@ export const DeleteFileModal = ({
           <Button
             className="bg-red-500 hover:bg-red-400 dark:bg-red-500 dark:hover:bg-red-400"
             onClick={() =>
-              handleDelete(organization_id, documentPublicId, fileName)
+              handleDelete(organization_id, filePublicId, fileName)
             }
             disabled={isLoading}
           >

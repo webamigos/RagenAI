@@ -10,14 +10,14 @@ import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscap
 import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
 
 type Props = {
-  document: UserFileTypeSafe;
+  file: UserFileTypeSafe;
   isLoading: boolean;
   toggleModal: (fileId: string | null) => void;
   handlePrefetch: (path: string) => void;
 };
 
 export const FileCard = ({
-  document,
+  file,
   isLoading,
   toggleModal,
   handlePrefetch,
@@ -25,8 +25,15 @@ export const FileCard = ({
   const { isOpen, openModal, modalRef } =
     useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 
-  const { file_name, file_size, file_type, id, created_at, updated_at } =
-    document;
+  const {
+    file_name,
+    file_size,
+    file_type,
+    public_id,
+    created_at,
+    updated_at,
+    document,
+  } = file;
 
   const fileIcon = getFileIcon(file_type);
   const formattedCreatedAt = created_at
@@ -44,7 +51,7 @@ export const FileCard = ({
           delayShow={1000}
           place="top"
           content={file_name}
-          id={`tooltip-${id}`}
+          id={`tooltip-${public_id}`}
         >
           <Text fontSize="xs">{truncateFileName(file_name, 20)}</Text>
         </Tooltip>
@@ -57,7 +64,8 @@ export const FileCard = ({
           <ToolbarActionsMenu
             toggleModal={toggleModal}
             isLoading={isLoading}
-            documentId={id}
+            filePublicId={public_id}
+            documentPublicId={document?.public_id}
             onPrefetch={handlePrefetch}
           />
         </div>

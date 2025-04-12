@@ -27,6 +27,7 @@ import { uploadFiles } from '@/app/lib/services/api';
 const turndownService = new TurndownService();
 import { logger } from '@/app/lib/utils/logger';
 import { FileType } from '@prisma/client';
+import { UserFileType } from '@/app/contracts/Documents';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -95,14 +96,13 @@ export const DocumentCreator = () => {
         const projectId = document.project_id;
 
         addDocument({
-          id: document.uniqueFileId,
           organization_id: organizationId,
           file_name: document.fileName,
           file_size: document.fileSize,
           file_type: FileType.MARKDOWN,
           project_id: projectId,
           project: { id: projectId, title: document.fileName },
-        });
+        } as UserFileType); // TODO: temporary, will be refactored
         reset();
         successToast({ message: t('created-successful') });
       } else if (response.message) {

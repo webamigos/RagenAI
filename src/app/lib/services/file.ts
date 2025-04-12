@@ -4,12 +4,12 @@ import { getOrgIdOrThrow } from './clerk';
 import { fetchOrganizationDefaultProjectId } from './project';
 import { FileType } from '@prisma/client';
 
-export const getFileDetails = async (fileId: string) => {
+export const getFileDetails = async (publicFileId: string) => {
   const orgId = getOrgIdOrThrow();
   return await db.userFile.findFirst({
     where: {
       organization_id: orgId,
-      id: fileId,
+      public_id: publicFileId,
     },
   });
 };
@@ -81,20 +81,23 @@ export const getOrganizationFilesCount = async (
   return count;
 };
 
-export const deleteFileFromDb = async (orgId: string, documentId: string) => {
+export const deleteFileFromDb = async (orgId: string, filePublicId: string) => {
   return await db.userFile.deleteMany({
     where: {
-      id: documentId,
+      public_id: filePublicId,
       organization_id: orgId,
     },
   });
 };
 
-export const deleteProjectFile = async (fileId: string, projectId: number) => {
+export const deleteProjectFile = async (
+  publicFileId: string,
+  projectId: number
+) => {
   const orgId = getOrgIdOrThrow();
   return await db.userFile.deleteMany({
     where: {
-      id: fileId,
+      public_id: publicFileId,
       organization_id: orgId,
       project_id: projectId,
     },

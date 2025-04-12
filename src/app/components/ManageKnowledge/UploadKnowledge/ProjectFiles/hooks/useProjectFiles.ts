@@ -14,7 +14,7 @@ export enum FileListState {
 }
 
 type ProjectFile = {
-  id: string;
+  public_id: string;
   file_name: string;
   file_size: number;
   file_type: FileType;

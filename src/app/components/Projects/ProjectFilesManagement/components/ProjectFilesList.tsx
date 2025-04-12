@@ -121,10 +121,10 @@ export const ProjectFilesList = memo(
           <div className="space-y-2">
             {files.map((file) => (
               <FileItem
-                key={file.id}
+                key={file.public_id}
                 file={file}
-                onDelete={() => handleDeleteFile(file.id)}
-                isDeleting={deletingFileId === file.id}
+                onDelete={() => handleDeleteFile(file.public_id)}
+                isDeleting={deletingFileId === file.public_id}
                 t={t}
               />
             ))}

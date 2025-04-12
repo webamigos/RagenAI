@@ -7,7 +7,7 @@ import { ModalStateProps, UserDocumentsTable } from './UserDocumentsTable';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type FileListViewProps = {
-  documents: UserFileType[];
+  files: UserFileType[];
   isLoading: boolean;
   deleteLoading: boolean;
   isError: boolean;
@@ -24,7 +24,7 @@ type FileListViewProps = {
 };
 
 export const FileListView = ({
-  documents,
+  files,
   isLoading,
   deleteLoading,
   isError,
@@ -50,7 +50,7 @@ export const FileListView = ({
     <UserDocumentsTable
       deleteLoading={deleteLoading}
       className="font-sans"
-      documents={documents}
+      files={files}
       toggleModal={toggleModal}
       onAddDocument={addDocument}
       onRemoveDocument={removeDocument}
