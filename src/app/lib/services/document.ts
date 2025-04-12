@@ -35,7 +35,7 @@ type CreateMarkdownDocumentProps = {
   title: string;
   content: string;
   organization_id: string;
-  file_id?: bigint;
+  file_id?: string;
   project_id?: number;
 };
 
