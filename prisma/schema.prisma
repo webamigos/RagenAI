@@ -80,7 +80,8 @@ model UserFile {
   created_at             DateTime?       @default(now()) @db.Timestamptz
   updated_at             DateTime?       @db.Timestamptz
   metadata               Json?
-  UserDocument           UserDocument[]
+  document               UserDocument?
+  document_id            BigInt?
   project                Project?        @relation(fields: [project_id], references: [id])
   project_id             Int?
   is_uploaded            Boolean         @default(false) // if file is uploaded - in case upload fails
@@ -111,9 +112,9 @@ model UserDocument {
   title           String
   content         String
   file            UserFile? @relation(fields: [file_id], references: [id])
+  file_id         String?   @unique
   created_at      DateTime? @default(now()) @db.Timestamptz
   updated_at      DateTime? @db.Timestamptz
-  file_id         String?
   project         Project?  @relation(fields: [project_id], references: [id])
   project_id      Int?
 

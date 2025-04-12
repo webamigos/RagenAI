@@ -1,6 +1,6 @@
 import { createContext, useReducer, useEffect } from 'react';
 import { useOrganization } from '@clerk/nextjs';
-import { getUserDocuments } from '@/app/actions';
+import { getUserFiles } from '@/app/actions';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type State = {
@@ -40,7 +40,9 @@ function documentsReducer(state: State, action: Action): State {
     case 'REMOVE_DOCUMENT':
       return {
         ...state,
-        documents: state.documents.filter((doc) => doc.id !== action.payload),
+        documents: state.documents.filter(
+          (doc) => doc.public_id !== action.payload
+        ),
       };
     default:
       return state;
@@ -75,7 +77,7 @@ export const DocumentsProvider = ({ children }: Props) => {
 
     dispatch({ type: 'LOAD_START' });
     try {
-      const { documentDetails } = await getUserDocuments(orgId);
+      const { documentDetails } = await getUserFiles(orgId);
       dispatch({ type: 'LOAD_SUCCESS', payload: documentDetails ?? [] });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });

@@ -1,4 +1,4 @@
-import { UserFile } from '@prisma/client';
+import { UserDocument, UserFile } from '@prisma/client';
 import { Project } from '@prisma/client';
 
 export type ProjectType = {
@@ -7,7 +7,6 @@ export type ProjectType = {
 };
 
 export type UserFileType = {
-  id: UserFile['id'];
   public_id: UserFile['public_id'];
   organization_id: UserFile['organization_id'];
   file_name: UserFile['file_name'];
@@ -18,4 +17,7 @@ export type UserFileType = {
   file_type: UserFile['file_type'];
   project_id: UserFile['project_id'];
   project: ProjectType | null;
+  document: {
+    public_id: UserDocument['public_id'];
+  } | null;
 };

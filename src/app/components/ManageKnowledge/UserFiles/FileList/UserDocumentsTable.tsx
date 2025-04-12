@@ -82,12 +82,12 @@ const DocumentRow = ({
 
   return (
     <>
-      {showModal.isOpen && showModal.fileId === document.id && (
+      {showModal.isOpen && showModal.fileId === document.public_id && (
         <DeleteFileModal
           toggleModal={toggleModal}
           handleDelete={handleDelete}
           organization_id={organization_id}
-          documentId={document.id}
+          documentPublicId={document.public_id}
           fileName={document.file_name}
           isLoading={deleteLoading}
         />
@@ -114,7 +114,8 @@ const DocumentRow = ({
         <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
         <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
           <ToolbarActions
-            documentPublicId={public_id}
+            filePublicId={public_id}
+            documentPublicId={document.document?.public_id}
             fileName={file_name}
             onPrefetch={handlePrefetch}
             toggleModal={toggleModal}
@@ -166,11 +167,11 @@ export const UserDocumentsTable = ({
         </CommonUi.TableHead>
         <CommonUi.TableBody>
           {filteredDocuments.length > 0 ? (
-            filteredDocuments.map((document) => (
+            filteredDocuments.map((file) => (
               <DocumentRow
                 deleteLoading={deleteLoading}
-                key={document.public_id}
-                document={document}
+                key={file.public_id}
+                document={file}
                 showModal={showModal}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}

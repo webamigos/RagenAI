@@ -15,7 +15,7 @@ import { deleteDocumentFromDb } from '../lib/services/document';
 import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
   deleteFileFromDb,
-  fetchFileDetails,
+  fetchFilesDetails,
   getFileDetails,
   getOrganizationFilesCount,
 } from '../lib/services/file';
@@ -130,11 +130,11 @@ export const getUserMessages = async (
 };
 
 //get user documents
-export const getUserDocuments = async (orgId: string) => {
+export const getUserFiles = async (orgId: string) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
-    const documentDetails = await fetchFileDetails(orgId);
+    const documentDetails = await fetchFilesDetails(orgId);
     return { documentDetails };
   } catch (error) {
     return {

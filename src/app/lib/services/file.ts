@@ -32,7 +32,7 @@ export const createFileDetailsInDB = async (
   });
 };
 
-export const fetchFileDetails = async (organizationId: string) => {
+export const fetchFilesDetails = async (organizationId: string) => {
   const defaultProjectId = await fetchOrganizationDefaultProjectId(
     organizationId
   );
@@ -40,7 +40,7 @@ export const fetchFileDetails = async (organizationId: string) => {
   return await db.userFile.findMany({
     where: {
       organization_id: organizationId,
-      project_id: defaultProjectId || undefined,
+      project_id: defaultProjectId,
     },
     select: {
       created_at: true,
@@ -52,6 +52,11 @@ export const fetchFileDetails = async (organizationId: string) => {
       organization_id: true,
       public_id: true,
       project_id: true,
+      document: {
+        select: {
+          public_id: true,
+        },
+      },
       project: {
         select: {
           title: true,

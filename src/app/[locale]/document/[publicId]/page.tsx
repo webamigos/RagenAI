@@ -37,7 +37,7 @@ const mdParser = new MarkdownIt();
 type DocumentPageProps = {
   params: {
     locale: string;
-    id: string;
+    publicId: string;
   };
 };
 
@@ -52,7 +52,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     isLoading,
     isSaving,
   } = state;
-  const { id } = params;
+  const { publicId } = params;
   const { organization } = useOrganization();
   const { push } = useRouter();
   const t = useTranslations('document-preview');
@@ -100,7 +100,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     reset({
       content: mdParser.render(documentContent || ''),
     });
-    push(`/document/${id}?edit=true`);
+    push(`/document/${publicId}?edit=true`);
   };
 
   const handleTitleDoubleClick = () => {
@@ -118,7 +118,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
     const response = await updateDocument({
       orgId,
-      documentId: id,
+      documentId: publicId,
       content: markdownContent,
       title: documentTitle,
     });
@@ -132,7 +132,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     );
     formData.append('organizationId', organization!.id);
 
-    await deleteDocumentAction(orgId, id);
+    await deleteDocumentAction(orgId, publicId);
     await uploadFiles(formData);
 
     if (response.success) {
@@ -151,7 +151,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
     const response = await updateDocument({
       orgId,
-      documentId: id,
+      documentId: publicId,
       title: data.title,
     });
 
@@ -174,12 +174,12 @@ export default function DocumentPage({ params }: DocumentPageProps) {
   };
 
   useEffect(() => {
-    if (id && orgId) {
+    if (publicId && orgId) {
       const loadDocument = async () => {
         dispatch({ type: 'SET_IS_LOADING', payload: true });
 
         try {
-          const content = await fetchDocumentByOrganization(orgId, id);
+          const content = await fetchDocumentByOrganization(orgId, publicId);
           if (content.success) {
             const documentText = content.documents
               .map((doc) => doc.content)
@@ -214,7 +214,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
 
       loadDocument();
     }
-  }, [id, orgId, isEditMode]);
+  }, [publicId, orgId, isEditMode]);
 
   if (isLoading) {
     return (
