@@ -216,6 +216,8 @@
     "pino-pretty": "^11.2.2",
     "pino-sentry": "^0.15.0",
     "pretty-bytes": "^6.1.1",
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0",
     "quill": "^2.0.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
