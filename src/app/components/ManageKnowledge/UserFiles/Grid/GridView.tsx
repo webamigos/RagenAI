@@ -23,7 +23,6 @@ type GridViewProps = {
   toggleModal: (fileId: string | null) => void;
   addDocument: (newDocument: UserFileType) => void;
   removeDocument: (documentId: string) => void;
-  handlePrefetch: (path: string) => void;
   handleDelete: (
     organization_id: string,
     documentId: string,
@@ -39,7 +38,6 @@ export const GridView = ({
   showModal,
   handleDelete,
   toggleModal,
-  handlePrefetch,
 }: GridViewProps) => {
   const t = useTranslations('error-toast');
   const { errorToast } = statusToast();
@@ -88,7 +86,6 @@ export const GridView = ({
               file={safeFile}
               isLoading={isLoading}
               toggleModal={toggleModal}
-              handlePrefetch={handlePrefetch}
             />
           </>
         );

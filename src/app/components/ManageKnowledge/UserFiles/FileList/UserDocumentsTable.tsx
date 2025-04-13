@@ -19,7 +19,6 @@ type Props = {
   toggleModal: (fileId: string | null) => void;
   onAddDocument: (newDocument: UserFileType) => void;
   onRemoveDocument: (documentId: string) => void;
-  handlePrefetch: (path: string) => void;
   handleDelete: (
     organization_id: string,
     documentId: string,
@@ -40,7 +39,6 @@ type DocumentRowProps = {
   ) => void;
   toggleModal: (fileId: string | null) => void;
   onRemoveDocument: (documentPublicId: string) => void;
-  handlePrefetch: (path: string) => void;
 };
 
 export type ModalStateProps = {
@@ -53,7 +51,6 @@ const DocumentRow = ({
   showModal,
   deleteLoading,
   toggleModal,
-  handlePrefetch,
   handleDelete,
 }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -118,7 +115,6 @@ const DocumentRow = ({
             filePublicId={public_id!}
             documentPublicId={document.document?.public_id}
             fileName={file_name}
-            onPrefetch={handlePrefetch}
             toggleModal={toggleModal}
             isLoading={isLoading}
           />
@@ -135,7 +131,6 @@ export const UserDocumentsTable = ({
   toggleModal,
   handleDelete,
   onRemoveDocument,
-  handlePrefetch,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const [searchValue, setSearchValue] = useState('');
@@ -177,7 +172,6 @@ export const UserDocumentsTable = ({
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
                 onRemoveDocument={onRemoveDocument}
-                handlePrefetch={handlePrefetch}
               />
             ))
           ) : (

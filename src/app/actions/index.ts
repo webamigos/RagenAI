@@ -45,6 +45,7 @@ import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
+import { getOrgIdOrThrow } from '../lib/services/clerk';
 
 const serviceName = 'actions';
 
@@ -130,8 +131,9 @@ export const getUserMessages = async (
 };
 
 //get user documents
-export const getUserFiles = async (orgId: string) => {
+export const getUserFiles = async () => {
   try {
+    const orgId = getOrgIdOrThrow();
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
     const documentDetails = await fetchFilesDetails(orgId);

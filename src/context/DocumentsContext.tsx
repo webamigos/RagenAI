@@ -67,17 +67,17 @@ export const DocumentsContext = createContext<DocumentsContextType | undefined>(
 );
 
 export const DocumentsProvider = ({ children }: Props) => {
-  const { organization } = useOrganization();
-  const orgId = organization?.id;
+  // const { organization } = useOrganization();
+  // const orgId = organization?.id;
 
   const [state, dispatch] = useReducer(documentsReducer, initialState);
 
   const refreshDocuments = async () => {
-    if (!orgId) return;
+    // if (!orgId) return;
 
     dispatch({ type: 'LOAD_START' });
     try {
-      const { documentDetails } = await getUserFiles(orgId);
+      const { documentDetails } = await getUserFiles();
       dispatch({ type: 'LOAD_SUCCESS', payload: documentDetails ?? [] });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });
@@ -85,10 +85,8 @@ export const DocumentsProvider = ({ children }: Props) => {
   };
 
   useEffect(() => {
-    if (orgId) {
-      refreshDocuments();
-    }
-  }, [orgId]);
+    refreshDocuments();
+  }, []);
 
   const addDocument = (
     newDocument: Omit<UserFileType, 'public_id' | 'document'>

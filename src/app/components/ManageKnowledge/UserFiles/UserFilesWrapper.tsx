@@ -64,8 +64,6 @@ export const FileListWrapper = () => {
     }));
   };
 
-  const { prefetch } = useRouter();
-
   // TODO: refactor to files
   const { documents, isLoading, isError, addDocument, removeDocument } =
     useUserDocumentsContext();
@@ -79,10 +77,6 @@ export const FileListWrapper = () => {
       doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [documents, searchValue]);
-
-  const handlePrefetch = (path: string) => {
-    prefetch(path);
-  };
 
   const handleDelete = async (
     organization_id: string,
@@ -131,7 +125,6 @@ export const FileListWrapper = () => {
           addDocument={addDocument}
           removeDocument={removeDocument}
           files={defaultProjectFiles}
-          handlePrefetch={handlePrefetch}
           showModal={showModal}
           toggleModal={toggleModal}
           handleDelete={handleDelete}
@@ -145,7 +138,6 @@ export const FileListWrapper = () => {
           showModal={showModal}
           removeDocument={removeDocument}
           files={defaultProjectFiles}
-          handlePrefetch={handlePrefetch}
           toggleModal={toggleModal}
           handleDelete={handleDelete}
         />

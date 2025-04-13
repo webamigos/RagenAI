@@ -4,7 +4,6 @@ import * as CommonUi from '@ragenai/common-ui';
 type ToolbarIconsProps = {
   filePublicId: string;
   documentPublicId?: string;
-  onPrefetch: (path: string) => void;
   toggleModal: (fileId: string | null) => void;
   isLoading: boolean;
 };
@@ -12,7 +11,6 @@ type ToolbarIconsProps = {
 export const ToolbarActionsMenu = ({
   filePublicId,
   documentPublicId,
-  onPrefetch,
   toggleModal,
   isLoading,
 }: ToolbarIconsProps) => {
@@ -22,9 +20,6 @@ export const ToolbarActionsMenu = ({
         <Link
           className="text-black dark:text-white"
           href={`/document/${documentPublicId}?edit=true`}
-          onMouseEnter={() =>
-            onPrefetch(`/document/${documentPublicId}?edit=true`)
-          }
         >
           <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
         </Link>
@@ -34,7 +29,6 @@ export const ToolbarActionsMenu = ({
         <Link
           className="text-black dark:text-white"
           href={`/document/${documentPublicId}`}
-          onMouseEnter={() => onPrefetch(`/document/${documentPublicId}`)}
         >
           <CommonUi.OpenEyeIcon className="cursor-pointer" />
         </Link>

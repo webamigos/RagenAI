@@ -15,7 +15,6 @@ type FileListViewProps = {
   toggleModal: (fileId: string | null) => void;
   addDocument: (newDocument: UserFileType) => void;
   removeDocument: (documentId: string) => void;
-  handlePrefetch: (path: string) => void;
   handleDelete: (
     organization_id: string,
     documentId: string,
@@ -32,7 +31,6 @@ export const FileListView = ({
   toggleModal,
   addDocument,
   removeDocument,
-  handlePrefetch,
   handleDelete,
 }: FileListViewProps) => {
   const { errorToast } = statusToast();
@@ -55,7 +53,6 @@ export const FileListView = ({
       onAddDocument={addDocument}
       onRemoveDocument={removeDocument}
       handleDelete={handleDelete}
-      handlePrefetch={handlePrefetch}
       showModal={showModal}
     />
   );

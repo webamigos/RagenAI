@@ -13,15 +13,9 @@ type Props = {
   file: UserFileTypeSafe;
   isLoading: boolean;
   toggleModal: (fileId: string | null) => void;
-  handlePrefetch: (path: string) => void;
 };
 
-export const FileCard = ({
-  file,
-  isLoading,
-  toggleModal,
-  handlePrefetch,
-}: Props) => {
+export const FileCard = ({ file, isLoading, toggleModal }: Props) => {
   const { isOpen, openModal, modalRef } =
     useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 
@@ -66,7 +60,6 @@ export const FileCard = ({
             isLoading={isLoading}
             filePublicId={public_id}
             documentPublicId={document?.public_id}
-            onPrefetch={handlePrefetch}
           />
         </div>
       </div>

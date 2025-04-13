@@ -6,7 +6,6 @@ type ToolbarActionsProps = {
   filePublicId: string;
   documentPublicId?: string;
   fileName: string;
-  onPrefetch: (path: string) => void;
   toggleModal: (fileId: string | null) => void;
   isLoading: boolean;
 };
@@ -14,7 +13,6 @@ type ToolbarActionsProps = {
 export const ToolbarActions = ({
   filePublicId,
   documentPublicId,
-  onPrefetch,
   toggleModal,
   isLoading,
 }: ToolbarActionsProps) => {
@@ -36,7 +34,6 @@ export const ToolbarActions = ({
         <ToolbarActionsMenu
           filePublicId={filePublicId}
           documentPublicId={documentPublicId}
-          onPrefetch={onPrefetch}
           toggleModal={toggleModal}
           isLoading={isLoading}
         />
