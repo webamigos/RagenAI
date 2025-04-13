@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useOrganization } from '@clerk/nextjs';
 import TurndownService from 'turndown';
+import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -49,6 +50,7 @@ export const DocumentCreator = () => {
   const { successToast, errorToast } = statusToast();
   const { organization } = useOrganization();
   const { addDocument } = useUserDocumentsContext();
+  const router = useRouter();
 
   const {
     handleSubmit,
@@ -77,7 +79,7 @@ export const DocumentCreator = () => {
     setIsLoading(true);
 
     try {
-      const organizationId = organization.id;
+      // const organizationId = organization.id;
       const markdownContent = turndownService.turndown(editorContent);
 
       const formData = new FormData();
@@ -92,18 +94,21 @@ export const DocumentCreator = () => {
       const response = await uploadFiles(formData);
 
       if (response.status === 200 && response.files) {
-        const document = response.files[0];
-        const projectId = document.project_id;
+        // const document = response.files[0];
+        // const projectId = document.project_id;
 
-        addDocument({
-          organization_id: organizationId,
-          file_name: document.fileName,
-          file_size: document.fileSize,
-          file_type: FileType.MARKDOWN,
-          project_id: projectId,
-          project: { id: projectId, title: document.fileName },
-        } as UserFileType); // TODO: temporary, will be refactored
+        // MOVED TO WORKER
+        // addDocument({
+        //   organization_id: organizationId,
+        //   file_name: document.fileName,
+        //   file_size: document.fileSize,
+        //   file_type: FileType.MARKDOWN,
+        //   project_id: projectId,
+        //   project: { id: projectId, title: document.fileName },
+        // } as UserFileType); // TODO: temporary, will be refactored
         reset();
+        router.push('/manage-knowledge/documents-list');
+
         successToast({ message: t('created-successful') });
       } else if (response.message) {
         errorToast({ message: response.message });
