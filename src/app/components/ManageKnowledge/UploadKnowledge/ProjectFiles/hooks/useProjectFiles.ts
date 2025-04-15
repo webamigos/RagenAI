@@ -25,8 +25,7 @@ type ProjectFile = {
 };
 
 export const useProjectFiles = (
-  projectId: number,
-  projectPublicId: string | undefined,
+  projectPublicId: string,
   onFilesLoaded?: (hasFiles: boolean) => void
 ) => {
   const [files, setFiles] = useState<ProjectFile[]>([]);
@@ -50,21 +49,23 @@ export const useProjectFiles = (
         setListState(FileListState.LOADING);
       }
 
-      const result = await getProjectFiles(projectId);
+      if (projectPublicId) {
+        const result = await getProjectFiles(projectPublicId);
 
-      if (result.error) {
-        throw new Error(result.error);
-      }
+        if (result.error) {
+          throw new Error(result.error);
+        }
 
-      const loadedFiles = result.files || [];
-      setFiles(loadedFiles);
-      setListState(
-        loadedFiles.length > 0 ? FileListState.HAS_FILES : FileListState.EMPTY
-      );
-      initialLoadComplete.current = true;
+        const loadedFiles = result.files || [];
+        setFiles(loadedFiles);
+        setListState(
+          loadedFiles.length > 0 ? FileListState.HAS_FILES : FileListState.EMPTY
+        );
+        initialLoadComplete.current = true;
 
-      if (onFilesLoaded) {
-        onFilesLoaded(loadedFiles.length > 0);
+        if (onFilesLoaded) {
+          onFilesLoaded(loadedFiles.length > 0);
+        }
       }
     } catch (error) {
       setError('Failed to load project files');
@@ -73,7 +74,7 @@ export const useProjectFiles = (
         onFilesLoaded(false);
       }
     }
-  }, [organization, projectId, onFilesLoaded]);
+  }, [organization, projectPublicId, onFilesLoaded]);
 
   const handleDeleteFile = useCallback(
     async (fileId: string) => {
@@ -81,7 +82,7 @@ export const useProjectFiles = (
 
       try {
         setDeletingFileId(fileId);
-        const result = await deleteProjectFileAction(fileId, projectId);
+        const result = await deleteProjectFileAction(fileId, projectPublicId);
 
         if (result.error) {
           throw new Error(result.error);
@@ -96,15 +97,7 @@ export const useProjectFiles = (
         setDeletingFileId(null);
       }
     },
-    [
-      organization,
-      deletingFileId,
-      projectId,
-      successToast,
-      errorToast,
-      loadFiles,
-      router,
-    ]
+    [organization, deletingFileId, successToast, errorToast, loadFiles, router]
   );
 
   const handleUploadFiles = useCallback(
@@ -116,7 +109,7 @@ export const useProjectFiles = (
       const formData = new FormData();
       filesToUpload.forEach((file) => formData.append('files', file));
       formData.append('organizationId', organization.id);
-      formData.append('projectId', projectId.toString());
+      formData.append('projectId', projectPublicId);
 
       try {
         await uploadProjectFiles(projectPublicId, formData);
@@ -133,7 +126,6 @@ export const useProjectFiles = (
       organization,
       projectPublicId,
       isUploading,
-      projectId,
       successToast,
       loadFiles,
       router,

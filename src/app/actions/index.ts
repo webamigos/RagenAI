@@ -147,10 +147,10 @@ export const getUserFiles = async () => {
 };
 
 // Get project files
-export const getProjectFiles = async (projectId: number) => {
+export const getProjectFiles = async (projectPublicId: string) => {
   try {
     setSentryServiceTag(serviceName);
-    const files = await fetchProjectFiles(projectId);
+    const files = await fetchProjectFiles(projectPublicId);
     return { files };
   } catch (error) {
     return {
@@ -191,13 +191,13 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 // Delete project file
 export const deleteProjectFileAction = async (
   fileId: string,
-  projectId: number
+  projectPublicId: string
 ) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('EXTRA_DATA', {
       fileId,
-      projectId,
+      projectPublicId,
     });
 
     const fileRecord = await getFileDetails(fileId);
@@ -208,7 +208,7 @@ export const deleteProjectFileAction = async (
       };
     }
 
-    const result = await deleteProjectFileFromService(fileId, projectId);
+    const result = await deleteProjectFileFromService(fileId, projectPublicId);
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {

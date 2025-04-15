@@ -9,7 +9,7 @@ import { processFileType } from '../lib/utils/fileValidation';
 /**
  * Custom hook for managing file uploads
  */
-export function useFileUpload(projectId: number, projectPublicId: string) {
+export function useFileUpload(projectPublicId: string) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
   const { organization } = useOrganization();
@@ -52,8 +52,7 @@ export function useFileUpload(projectId: number, projectPublicId: string) {
     setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    formData.append('organizationId', organization.id);
-    formData.append('projectId', projectId.toString());
+    formData.append('projectId', projectPublicId);
 
     try {
       await uploadProjectFiles(projectPublicId, formData);
@@ -67,15 +66,7 @@ export function useFileUpload(projectId: number, projectPublicId: string) {
     } finally {
       setUploading(false);
     }
-  }, [
-    files,
-    organization,
-    projectId,
-    projectPublicId,
-    errorToast,
-    successToast,
-    router,
-  ]);
+  }, [files, organization, projectPublicId, errorToast, successToast, router]);
 
   return {
     files,

@@ -172,13 +172,13 @@ export const getProjectByPublicId = async (publicId: string) => {
 /**
  * Fetches files associated with a specific project
  */
-export const fetchProjectFiles = async (projectId: number) => {
+export const fetchProjectFiles = async (projectPublicId: string) => {
   const orgId = getOrgIdOrThrow();
 
   return await db.userFile.findMany({
     where: {
       organization_id: orgId,
-      project_id: projectId,
+      public_id: projectPublicId,
     },
     select: {
       created_at: true,
@@ -201,14 +201,21 @@ export const fetchProjectFiles = async (projectId: number) => {
  */
 export const deleteProjectFile = async (
   publicFileId: string,
-  projectId: number
+  projectPublicId: string
 ) => {
   const orgId = getOrgIdOrThrow();
+
+  const projectRecord = await getProjectByPublicId(projectPublicId);
+
+  if (!projectRecord) {
+    throw new Error('Project not found!');
+  }
+
   return await db.userFile.deleteMany({
     where: {
       public_id: publicFileId,
       organization_id: orgId,
-      project_id: projectId,
+      project_id: projectRecord.id,
     },
   });
 };

@@ -7,7 +7,10 @@ import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
-import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
+import {
+  fetchOrganizationDefaultProjectId,
+  getProjectByPublicId,
+} from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
@@ -33,7 +36,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const organizationId = getOrgIdOrThrow();
-    const projectIdFromForm = formData.get('projectId')?.toString();
+    const formProjectId = formData.get('projectId')?.toString();
 
     setSentryClerkOrganizationTag(organizationId);
 
@@ -44,7 +47,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const formProjectId = formData.get('projectId');
+    const defaultProjectId = await fetchOrganizationDefaultProjectId(
+      organizationId
+    );
+
+    if (!defaultProjectId) {
+      throw new Error('Default project ID is missing');
+    }
+
+    let projectRecord = undefined;
+    if (formProjectId) {
+      projectRecord = await getProjectByPublicId(formProjectId);
+    }
+
+    if (!projectRecord && !defaultProjectId) {
+      throw new Error('Project ID is missing');
+    }
 
     const processedFiles = [];
 
@@ -56,32 +74,13 @@ export async function POST(request: NextRequest) {
 
         const uniqueFileId = uuidv4();
 
-        const defaultProjectId = await fetchOrganizationDefaultProjectId(
-          organizationId
-        );
-        if (!defaultProjectId) {
-          throw new Error('Default project ID is missing');
-        }
-
-        let projectIdForDb: number | undefined = undefined;
-
-        if (projectIdFromForm) {
-          projectIdForDb = parseInt(projectIdFromForm, 10);
-        } else {
-          projectIdForDb = undefined;
-        }
-
-        if (!projectIdForDb && !defaultProjectId) {
-          throw new Error('Project ID is missing');
-        }
-
         // Step 1: create file details in db
         const fileRecord = await createFileDetailsInDB(
           parsedFile.fileName,
           file.size,
           organizationId,
           fileType,
-          projectIdForDb ?? defaultProjectId
+          projectRecord?.id ?? defaultProjectId
         );
 
         // Step 2: upload to S3
@@ -116,7 +115,7 @@ export async function POST(request: NextRequest) {
           logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
           logger.info(`Started temporal workflow`);
-          const embeddingWorkflowId = `file-${nanoid()}`;
+          const embeddingWorkflowId = `doc-${nanoid()}`;
           const client = getTemporalClient();
 
           const embeddingsHandle = await client.workflow.start(

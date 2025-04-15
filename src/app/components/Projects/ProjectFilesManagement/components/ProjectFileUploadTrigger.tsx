@@ -13,14 +13,10 @@ import {
 } from './ProjectFileUploadContent';
 
 type Props = {
-  projectId: number;
   projectPublicId: string;
 };
 
-export const ProjectFileUploadTrigger = ({
-  projectId,
-  projectPublicId,
-}: Props) => {
+export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
   const [showUploader, setShowUploader] = useState(false);
   const [fileStatus, setFileStatus] = useState<FileStatus>({
     hasFiles: false,
@@ -38,7 +34,7 @@ export const ProjectFileUploadTrigger = ({
       }
 
       try {
-        const result = await getProjectFiles(projectId);
+        const result = await getProjectFiles(projectPublicId);
 
         if (!result.error && result.files) {
           setFileStatus({
@@ -63,7 +59,7 @@ export const ProjectFileUploadTrigger = ({
     };
 
     checkProjectFiles();
-  }, [projectId, organization, showUploader]);
+  }, [projectPublicId, organization, showUploader]);
 
   return (
     <>
@@ -81,7 +77,6 @@ export const ProjectFileUploadTrigger = ({
         onClose={() => setShowUploader(false)}
       >
         <ProjectFileUpload
-          projectId={projectId}
           projectPublicId={projectPublicId}
           initialFileCount={fileStatus.fileCount}
         />
