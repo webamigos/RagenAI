@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
           logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
           logger.info(`Started temporal workflow`);
-          const embeddingWorkflowId = `doc-${nanoid()}`;
+          const embeddingWorkflowId = `file-${nanoid()}`;
           const client = getTemporalClient();
 
           const embeddingsHandle = await client.workflow.start(
