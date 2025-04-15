@@ -12,19 +12,13 @@ import {
   FileListState,
 } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/hooks/useProjectFiles';
 type Props = {
-  projectId: number;
   onFilesLoaded?: (hasFiles: boolean) => void;
-  projectPublicId?: string;
+  projectPublicId: string;
   initialFileCount?: number;
 };
 
 export const ProjectFilesList = memo(
-  ({
-    projectId,
-    onFilesLoaded,
-    projectPublicId,
-    initialFileCount = 0,
-  }: Props) => {
+  ({ onFilesLoaded, projectPublicId, initialFileCount = 0 }: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const t = useTranslations('projects');
     const { organization } = useOrganization();
@@ -38,7 +32,7 @@ export const ProjectFilesList = memo(
       loadFiles,
       handleDeleteFile,
       handleUploadFiles,
-    } = useProjectFiles(projectId, projectPublicId, onFilesLoaded);
+    } = useProjectFiles(projectPublicId, onFilesLoaded);
 
     useEffect(() => {
       if (organization) {
@@ -121,10 +115,10 @@ export const ProjectFilesList = memo(
           <div className="space-y-2">
             {files.map((file) => (
               <FileItem
-                key={file.id}
+                key={file.public_id}
                 file={file}
-                onDelete={() => handleDeleteFile(file.id)}
-                isDeleting={deletingFileId === file.id}
+                onDelete={() => handleDeleteFile(file.public_id)}
+                isDeleting={deletingFileId === file.public_id}
                 t={t}
               />
             ))}

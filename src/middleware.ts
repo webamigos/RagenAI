@@ -65,7 +65,7 @@ export const config = {
     '/api/settings/prompt',
     '/api/messages/(.*)',
     '/api/send',
-    '/api/upload/(.*)',
+    '/api/upload',
     '/:locale/admin/manage-knowledge',
     '/:locale/sso-callback',
     '/:locale/sign-in',

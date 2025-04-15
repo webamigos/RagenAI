@@ -2,6 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
+import { FileType } from '@prisma/client';
 import * as CommonUi from '@ragenai/common-ui';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';
@@ -9,17 +10,15 @@ import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
 import { type UserFileType } from '@/app/contracts/Documents';
-import { type SupportedFileType } from '@/app/lib/services/fileParser';
 import { ToolbarActions } from './ToolbarActions';
 
 type Props = {
-  documents: UserFileType[];
+  files: UserFileType[];
   showModal: ModalStateProps;
   deleteLoading: boolean;
   toggleModal: (fileId: string | null) => void;
   onAddDocument: (newDocument: UserFileType) => void;
   onRemoveDocument: (documentId: string) => void;
-  handlePrefetch: (path: string) => void;
   handleDelete: (
     organization_id: string,
     documentId: string,
@@ -27,7 +26,7 @@ type Props = {
   ) => void;
 };
 
-export type UserFileTypeSafe = UserFileType & { file_type: SupportedFileType };
+export type UserFileTypeSafe = UserFileType & { file_type: FileType };
 
 type DocumentRowProps = {
   document: UserFileTypeSafe;
@@ -39,8 +38,7 @@ type DocumentRowProps = {
     fileName: string
   ) => void;
   toggleModal: (fileId: string | null) => void;
-  onRemoveDocument: (documentId: string) => void;
-  handlePrefetch: (path: string) => void;
+  onRemoveDocument: (documentPublicId: string) => void;
 };
 
 export type ModalStateProps = {
@@ -53,13 +51,18 @@ const DocumentRow = ({
   showModal,
   deleteLoading,
   toggleModal,
-  handlePrefetch,
   handleDelete,
 }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const { created_at, updated_at, file_name, file_size, id, organization_id } =
-    document;
+  const {
+    created_at,
+    updated_at,
+    file_name,
+    file_size,
+    public_id,
+    organization_id,
+  } = document;
 
   const fileIcon = getFileIcon(document.file_type);
 
@@ -76,12 +79,13 @@ const DocumentRow = ({
 
   return (
     <>
-      {showModal.isOpen && showModal.fileId === document.id && (
+      {/* this is UserFile not UserDocument ! */}
+      {showModal.isOpen && showModal.fileId === document.public_id && (
         <DeleteFileModal
           toggleModal={toggleModal}
           handleDelete={handleDelete}
           organization_id={organization_id}
-          documentId={document.id}
+          filePublicId={document.public_id}
           fileName={document.file_name}
           isLoading={deleteLoading}
         />
@@ -93,7 +97,7 @@ const DocumentRow = ({
             delayShow={1000}
             place="top"
             content={file_name}
-            id={`tooltip-${id}`}
+            id={`tooltip-${public_id}`}
           >
             <CommonUi.Text className="hidden lg:flex">
               {truncatedFileName}
@@ -108,9 +112,9 @@ const DocumentRow = ({
         <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
         <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
           <ToolbarActions
-            documentId={id}
+            filePublicId={public_id!}
+            documentPublicId={document.document?.public_id}
             fileName={file_name}
-            onPrefetch={handlePrefetch}
             toggleModal={toggleModal}
             isLoading={isLoading}
           />
@@ -121,28 +125,27 @@ const DocumentRow = ({
 };
 
 export const UserDocumentsTable = ({
-  documents,
+  files,
   showModal,
   deleteLoading,
   toggleModal,
   handleDelete,
   onRemoveDocument,
-  handlePrefetch,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const [searchValue, setSearchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
     if (!searchValue) {
-      return documents as UserFileTypeSafe[];
+      return files as UserFileTypeSafe[];
     }
 
-    return documents.filter(
-      (doc) =>
-        doc.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
-        doc.project?.title === 'Default'
+    return files.filter(
+      (file) =>
+        file.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
+        file.project?.title === 'Default'
     ) as UserFileTypeSafe[];
-  }, [documents, searchValue]);
+  }, [files, searchValue]);
 
   return (
     <div className="relative mt-6">
@@ -160,16 +163,15 @@ export const UserDocumentsTable = ({
         </CommonUi.TableHead>
         <CommonUi.TableBody>
           {filteredDocuments.length > 0 ? (
-            filteredDocuments.map((document) => (
+            filteredDocuments.map((file) => (
               <DocumentRow
                 deleteLoading={deleteLoading}
-                key={document.id}
-                document={document}
+                key={file.public_id}
+                document={file}
                 showModal={showModal}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
                 onRemoveDocument={onRemoveDocument}
-                handlePrefetch={handlePrefetch}
               />
             ))
           ) : (

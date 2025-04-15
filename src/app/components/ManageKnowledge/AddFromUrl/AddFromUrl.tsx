@@ -94,8 +94,9 @@ export const AddFromUrl = () => {
                 />
               </div>
 
+              {/* TODO: enable as a feature */}
               <div className="flex flex-col gap-1">
-                <label className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300">
+                {/* <label className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300">
                   {t('mode-label')}
                 </label>
                 <Dropdown>
@@ -104,6 +105,7 @@ export const AddFromUrl = () => {
                       ? t('mode-scrape')
                       : t('mode-crawl')}
                   </DropdownButton>
+
                   <DropdownMenu>
                     <DropdownItem
                       onClick={() => handleModeChange(WebsiteLoaderMode.SCRAPE)}
@@ -116,7 +118,7 @@ export const AddFromUrl = () => {
                       {t('mode-crawl')}
                     </DropdownItem>
                   </DropdownMenu>
-                </Dropdown>
+                </Dropdown> */}
                 <input type="hidden" {...register('mode')} />
               </div>
 

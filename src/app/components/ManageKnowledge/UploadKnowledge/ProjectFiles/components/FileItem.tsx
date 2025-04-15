@@ -5,14 +5,14 @@ import { Text, TrashIcon } from '@ragenai/common-ui';
 import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
-import { SupportedFileType } from '@/app/lib/services/fileParser';
+import { FileType } from '@prisma/client';
 
 type FileItemProps = {
   file: {
-    id: string;
+    public_id: string;
     file_name: string;
     file_size: number;
-    file_type: string;
+    file_type: FileType;
     created_at: Date | null;
     organization_id: string;
   };
@@ -57,14 +57,14 @@ export const FileItem = memo(
             toggleModal={toggleModal}
             handleDelete={handleConfirmDelete}
             organization_id={file.organization_id}
-            documentId={file.id}
+            filePublicId={file.public_id}
             fileName={file.file_name}
             isLoading={isDeleting}
           />
         )}
         <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-accent-dark-700 transition-colors">
           <div className="h-8 w-8 text-gray-600 dark:text-gray-400 flex items-center justify-center">
-            {getFileIcon(file.file_type as SupportedFileType)}
+            {getFileIcon(file.file_type as FileType)}
           </div>
           <div className="flex-1 min-w-0">
             <Text className="font-medium text-gray-700 dark:text-gray-200 truncate">
@@ -80,7 +80,7 @@ export const FileItem = memo(
             {file.file_type}
           </span>
           <button
-            onClick={() => toggleModal(file.id)}
+            onClick={() => toggleModal(file.public_id)}
             disabled={isDeleting}
             className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-full transition-colors"
             title={t('remove-file')}

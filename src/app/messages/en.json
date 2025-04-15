@@ -231,7 +231,7 @@
     "Add-files": "Add files",
     "drag-n-drop": "Drag and drop files here",
     "or": "or",
-    "choose-files": "Choose files",
+    "choose-files": "Choose files from disk",
     "supported-formats": "Supports",
     "send-and-process": "Send and process",
     "drop-to-upload": "Drop files to upload"
@@ -692,5 +692,10 @@
     "file-error": "An error occurred while loading files"
   },
   "expand": "Expand",
-  "collapse": "Collapse"
+  "collapse": "Collapse",
+  "notifications": {
+    "success": "Success",
+    "info": "Info",
+    "error": "Error"
+  }
 }

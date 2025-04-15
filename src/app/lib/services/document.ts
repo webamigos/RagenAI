@@ -61,17 +61,17 @@ export const createMarkdownDocument = async ({
 
 type getDocumentPreviewProps = {
   orgId: string;
-  documentId: string;
+  documentPublicId: string;
 };
 
 export const getDocumentPreview = async ({
   orgId,
-  documentId,
+  documentPublicId,
 }: getDocumentPreviewProps) => {
   return await db.userDocument.findMany({
     where: {
       organization_id: orgId,
-      public_id: documentId,
+      public_id: documentPublicId,
     },
     select: {
       content: true,

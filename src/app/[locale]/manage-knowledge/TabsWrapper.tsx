@@ -37,7 +37,12 @@ export default function TabsWrapper() {
         setActiveTab={(index) => router.push(tabRoutes[index].path)}
       >
         {tabRoutes.map((tab, index) => (
-          <Tab key={index} onMouseEnter={() => prefetchTab(tab.path)}>
+          <Tab
+            key={index}
+            href={tab.path}
+            // because Link component is used in Tab, now there is no need to prefetch
+            // onMouseEnter={() => prefetchTab(tab.path)}
+          >
             {t(`${tab.label}`)}
           </Tab>
         ))}

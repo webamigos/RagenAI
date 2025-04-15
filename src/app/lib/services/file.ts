@@ -1,15 +1,15 @@
 import db from '@ragenai/prisma-client';
 import { getOrgIdOrThrow } from './clerk';
 
-import { SupportedFileType } from './fileParser';
 import { fetchOrganizationDefaultProjectId } from './project';
+import { FileType } from '@prisma/client';
 
-export const getFileDetails = async (fileId: string) => {
+export const getFileDetails = async (publicFileId: string) => {
   const orgId = getOrgIdOrThrow();
   return await db.userFile.findFirst({
     where: {
       organization_id: orgId,
-      id: fileId,
+      public_id: publicFileId,
     },
   });
 };
@@ -18,13 +18,11 @@ export const createFileDetailsInDB = async (
   file_name: string,
   file_size: number,
   organization_id: string,
-  id: string,
-  file_type: SupportedFileType,
+  file_type: FileType,
   project_id: number
 ) => {
   return await db.userFile.create({
     data: {
-      id,
       organization_id,
       file_name,
       file_size,
@@ -34,7 +32,7 @@ export const createFileDetailsInDB = async (
   });
 };
 
-export const fetchFileDetails = async (organizationId: string) => {
+export const fetchFilesDetails = async (organizationId: string) => {
   const defaultProjectId = await fetchOrganizationDefaultProjectId(
     organizationId
   );
@@ -42,7 +40,7 @@ export const fetchFileDetails = async (organizationId: string) => {
   return await db.userFile.findMany({
     where: {
       organization_id: organizationId,
-      project_id: defaultProjectId || undefined,
+      project_id: defaultProjectId,
     },
     select: {
       created_at: true,
@@ -52,8 +50,13 @@ export const fetchFileDetails = async (organizationId: string) => {
       updated_at: true,
       metadata: true,
       organization_id: true,
-      id: true,
+      public_id: true,
       project_id: true,
+      document: {
+        select: {
+          public_id: true,
+        },
+      },
       project: {
         select: {
           title: true,
@@ -78,20 +81,23 @@ export const getOrganizationFilesCount = async (
   return count;
 };
 
-export const deleteFileFromDb = async (orgId: string, documentId: string) => {
+export const deleteFileFromDb = async (orgId: string, filePublicId: string) => {
   return await db.userFile.deleteMany({
     where: {
-      id: documentId,
+      public_id: filePublicId,
       organization_id: orgId,
     },
   });
 };
 
-export const deleteProjectFile = async (fileId: string, projectId: number) => {
+export const deleteProjectFile = async (
+  publicFileId: string,
+  projectId: number
+) => {
   const orgId = getOrgIdOrThrow();
   return await db.userFile.deleteMany({
     where: {
-      id: fileId,
+      public_id: publicFileId,
       organization_id: orgId,
       project_id: projectId,
     },
