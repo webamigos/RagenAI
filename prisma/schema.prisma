@@ -20,7 +20,7 @@ model Settings {
 
 model Message {
   id                     String             @id @default(uuid())
-  public_id              String             @unique @default(uuid())
+  public_id              String             @unique @default(cuid())
   created_at             DateTime           @default(now()) @db.Timestamptz
   content                String
   role                   Role               @default(USER)
@@ -36,7 +36,7 @@ model Message {
 }
 
 model FlaggedMessage {
-  public_id  String   @unique @default(uuid())
+  public_id  String   @unique @default(cuid())
   created_at DateTime @default(now()) @db.Timestamptz
   content    String
   role       Role     @default(USER)
@@ -45,7 +45,7 @@ model FlaggedMessage {
 
 model Thread {
   id                           String                  @id @default(uuid())
-  public_id                    String                  @unique @default(uuid())
+  public_id                    String                  @unique @default(cuid())
   title                        String? // optional value displayed in sidebar
   visitor_id                   String? // -> owner_id
   messages                     Message[]
@@ -72,7 +72,7 @@ model VisitorMessages {
 // Files uploaded by user
 model UserFile {
   id                     String          @id @default(uuid())
-  public_id              String          @default(cuid())
+  public_id              String          @unique @default(cuid())
   organization_id        String
   file_name              String
   file_size              Int
@@ -107,7 +107,7 @@ model UserFile {
 // Documents from CMS
 model UserDocument {
   id              String    @id @default(uuid())
-  public_id       String    @default(cuid())
+  public_id       String    @unique @default(cuid())
   organization_id String
   title           String
   content         String
