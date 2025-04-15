@@ -9,7 +9,7 @@ import {
 } from '@/app/lib/services/sentry';
 import {
   fetchOrganizationDefaultProjectId,
-  getProjectByPublicId,
+  getProjectByPublicIdOrThrow,
 } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     let projectRecord = undefined;
     if (formProjectId) {
-      projectRecord = await getProjectByPublicId(formProjectId);
+      projectRecord = await getProjectByPublicIdOrThrow(formProjectId);
     }
 
     if (!projectRecord && !defaultProjectId) {

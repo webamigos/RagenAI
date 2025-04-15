@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import { getOrgIdOrThrow } from './clerk';
 
 import crypto from 'crypto';
-import { Source } from '@prisma/client';
+import { Project, Source } from '@prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
@@ -144,29 +144,35 @@ export const fetchProjectsForUser = async (
   }
 };
 
-export const getProjectByPublicId = async (publicId: string) => {
+export const getProjectByPublicId = async (publicId: Project['public_id']) => {
   try {
-    return await db.project.findFirst({
-      where: {
-        public_id: publicId,
-      },
-      select: {
-        id: true,
-        public_id: true,
-        title: true,
-        threads: true,
-        internal_organization_id: true,
-        is_public: true,
-        access_token: true,
-        published_at: true,
-        chatbot_enabled: true,
-        owner_id: true,
-      },
-    });
+    return await getProjectByPublicIdOrThrow(publicId);
   } catch (error) {
     logger.error({ err: error }, 'Error fetching project by public ID');
     throw error;
   }
+};
+
+export const getProjectByPublicIdOrThrow = async (
+  publicId: Project['public_id']
+) => {
+  return await db.project.findUniqueOrThrow({
+    where: {
+      public_id: publicId,
+    },
+    select: {
+      id: true,
+      public_id: true,
+      title: true,
+      threads: true,
+      internal_organization_id: true,
+      is_public: true,
+      access_token: true,
+      published_at: true,
+      chatbot_enabled: true,
+      owner_id: true,
+    },
+  });
 };
 
 /**
@@ -174,11 +180,12 @@ export const getProjectByPublicId = async (publicId: string) => {
  */
 export const fetchProjectFiles = async (projectPublicId: string) => {
   const orgId = getOrgIdOrThrow();
+  const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
   return await db.userFile.findMany({
     where: {
       organization_id: orgId,
-      public_id: projectPublicId,
+      project_id: project.id,
     },
     select: {
       created_at: true,
