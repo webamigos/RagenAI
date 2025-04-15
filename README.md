@@ -23,7 +23,7 @@ To run Ragen in API mode set env variable:
 
 `IS_API_MODE=1`
 
-Then all url's will be rewrited to /api
+Then all url's will be rewritten to /api
 
 Example: `http://localhost:3000/api/v1/healthcheck` -> `http://localhost:3000/v1/healthcheck`
 
@@ -41,47 +41,11 @@ We can use it for:
 * End free trial after 14 days
 * Exchange events between backend events (separate project/repo)
 
-In the App, we can use Signals and Queries from workflows. Signals and Queries need to be defined in `temporal/src/workflows.ts`
+Ragen is using Temporal and Workflow from this repository: https://github.com/WebAmigos/ragen-worker
 
-```ts
-// signal - run action
-export const cancelEmbeddingSignal = wf.defineSignal('cancelEmbedding');
-
-// query - fetch info
-export const embeddingStateQuery =
-  wf.defineQuery<EmbeddingState>('embeddingState');
-```
-
-Usage in the App:
-
-```ts
-import { getTemporalClient } from '@/temporal/src/client';
-
-
-const workflow = await getTemporalClient().workflow.getHandle(EXAMPLE_ID);
-
-try {
-  // send signal to cancel embedding
-  await workflow.signal('cancelEmbedding');
-} catch (e) {
-  // ...
-}
-
-try {
-  // get embedding state
-  const embeddingState = await workflow.query('embeddingState');
-} catch (e) {
-  // ...
-}
-```
+You can find there instructions how to run temporal locally and how to run worker.
 
 ### Important notes for launching workflows:
-
-It's possible to pass workflow as a function, it will work on dev but not on **prod**!!! because there are completely different artifacts from next.js and temporal - it's really hard to match them (if even possible).
-
-Moreover if we want to use temporal worker from another services like Nest API, then we definitely should use string names of workflows.
-
-TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
 
 ✅ OK: string name for the workflow
 
@@ -93,7 +57,7 @@ const personHandle = await client.workflow.start('estimateAgeWorkflow', {
 });
 ```
 
-❌ WRONG
+❌ WRONG - do not create workflows in Ragen app
 
 ```ts
 import { estimateAgeWorkflow } from '@/temporal/src/workflows';
@@ -117,52 +81,4 @@ export const dynamic = 'force-dynamic';
 
 ### Running locally
 
-Local development is setup to use with Temporal Cloud. You need to provide env vars:
-
-```
-TEMPORAL_SERVER_ADDRESS=
-TEMPORAL_NAMESPACE=
-TEMPORAL_CERT=
-TEMPORAL_KEY=
-```
-
-And run one of commands:
-
-* All in one: `npm run dev:all`
-* Run separately: `npm run dev`, `npm run dev:start:worker`
-
-### [Setup Temporal dev server locally](https://learn.temporal.io/getting_started/typescript/dev_environment/#set-up-a-local-temporal-service-for-development-with-temporal-cli)
-
-Command to start temporal dev server:
-
-```bash
-temporal server start-dev
-```
-
-In production, we will probably use Temporal Cloud.
-
-There is a new temporal directory and a couple of scripts
-
-### Using docker
-
-There is an example repo https://github.com/temporalio/docker-compose from which we can use docker compose files.
-
-You can run (or use Temporal Cloud configuration)
-
-```bash
-cd temporal-server
-docker compose up
-```
-
-to launch local dev server.
-
-You alo need to run worker:
-
-```bash
-npm run dev:start:worker
-```
-
-### Debugging using VSCode
-
-You can use VSCode extension: https://www.youtube.com/watch?v=3IjQde9HMNY
-
+See: https://github.com/WebAmigos/ragen-worker

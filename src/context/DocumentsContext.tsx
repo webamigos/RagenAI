@@ -1,6 +1,6 @@
 import { createContext, useReducer, useEffect } from 'react';
 import { useOrganization } from '@clerk/nextjs';
-import { getUserDocuments } from '@/app/actions';
+import { getUserFiles } from '@/app/actions';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type State = {
@@ -40,7 +40,9 @@ function documentsReducer(state: State, action: Action): State {
     case 'REMOVE_DOCUMENT':
       return {
         ...state,
-        documents: state.documents.filter((doc) => doc.id !== action.payload),
+        documents: state.documents.filter(
+          (doc) => doc.public_id !== action.payload
+        ),
       };
     default:
       return state;
@@ -65,17 +67,17 @@ export const DocumentsContext = createContext<DocumentsContextType | undefined>(
 );
 
 export const DocumentsProvider = ({ children }: Props) => {
-  const { organization } = useOrganization();
-  const orgId = organization?.id;
+  // const { organization } = useOrganization();
+  // const orgId = organization?.id;
 
   const [state, dispatch] = useReducer(documentsReducer, initialState);
 
   const refreshDocuments = async () => {
-    if (!orgId) return;
+    // if (!orgId) return;
 
     dispatch({ type: 'LOAD_START' });
     try {
-      const { documentDetails } = await getUserDocuments(orgId);
+      const { documentDetails } = await getUserFiles();
       dispatch({ type: 'LOAD_SUCCESS', payload: documentDetails ?? [] });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });
@@ -83,13 +85,13 @@ export const DocumentsProvider = ({ children }: Props) => {
   };
 
   useEffect(() => {
-    if (orgId) {
-      refreshDocuments();
-    }
-  }, [orgId]);
+    refreshDocuments();
+  }, []);
 
-  const addDocument = (newDocument: UserFileType) => {
-    dispatch({ type: 'ADD_DOCUMENT', payload: newDocument });
+  const addDocument = (
+    newDocument: Omit<UserFileType, 'public_id' | 'document'>
+  ) => {
+    dispatch({ type: 'ADD_DOCUMENT', payload: newDocument as UserFileType }); // TODO: quick fix it will be refactored
   };
 
   const removeDocument = (documentId: string) => {

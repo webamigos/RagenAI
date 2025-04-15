@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import { getOrgIdOrThrow } from './clerk';
 
 import crypto from 'crypto';
-import { Source } from '@prisma/client';
+import { Project, Source } from '@prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
@@ -74,7 +74,6 @@ export const createProjectForOrganization = async (
         source: Source.UI,
       },
       select: {
-        id: true,
         public_id: true,
         title: true,
         created_at: true,
@@ -111,7 +110,6 @@ export const fetchProjectsForUser = async (
         created_at: 'desc',
       },
       select: {
-        id: true,
         public_id: true,
         title: true,
         created_at: true,
@@ -121,7 +119,6 @@ export const fetchProjectsForUser = async (
             created_at: 'desc',
           },
           select: {
-            id: true,
             public_id: true,
             created_at: true,
             visitor_id: true,
@@ -147,41 +144,48 @@ export const fetchProjectsForUser = async (
   }
 };
 
-export const getProjectByPublicId = async (publicId: string) => {
+export const getProjectByPublicId = async (publicId: Project['public_id']) => {
   try {
-    return await db.project.findFirst({
-      where: {
-        public_id: publicId,
-      },
-      select: {
-        id: true,
-        public_id: true,
-        title: true,
-        threads: true,
-        internal_organization_id: true,
-        is_public: true,
-        access_token: true,
-        published_at: true,
-        chatbot_enabled: true,
-        owner_id: true,
-      },
-    });
+    return await getProjectByPublicIdOrThrow(publicId);
   } catch (error) {
     logger.error({ err: error }, 'Error fetching project by public ID');
     throw error;
   }
 };
 
+export const getProjectByPublicIdOrThrow = async (
+  publicId: Project['public_id']
+) => {
+  return await db.project.findUniqueOrThrow({
+    where: {
+      public_id: publicId,
+    },
+    select: {
+      id: true,
+      public_id: true,
+      title: true,
+      threads: true,
+      internal_organization_id: true,
+      is_public: true,
+      access_token: true,
+      published_at: true,
+      chatbot_enabled: true,
+      owner_id: true,
+    },
+  });
+};
+
 /**
  * Fetches files associated with a specific project
  */
-export const fetchProjectFiles = async (projectId: number) => {
+export const fetchProjectFiles = async (projectPublicId: string) => {
   const orgId = getOrgIdOrThrow();
+  const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
   return await db.userFile.findMany({
     where: {
       organization_id: orgId,
-      project_id: projectId,
+      project_id: project.id,
     },
     select: {
       created_at: true,
@@ -191,7 +195,7 @@ export const fetchProjectFiles = async (projectId: number) => {
       updated_at: true,
       metadata: true,
       organization_id: true,
-      id: true,
+      public_id: true,
     },
     orderBy: {
       created_at: 'desc',
@@ -202,17 +206,28 @@ export const fetchProjectFiles = async (projectId: number) => {
 /**
  * Deletes a file from a specific project
  */
-export const deleteProjectFile = async (fileId: string, projectId: number) => {
+export const deleteProjectFile = async (
+  publicFileId: string,
+  projectPublicId: string
+) => {
   const orgId = getOrgIdOrThrow();
+
+  const projectRecord = await getProjectByPublicId(projectPublicId);
+
+  if (!projectRecord) {
+    throw new Error('Project not found!');
+  }
+
   return await db.userFile.deleteMany({
     where: {
-      id: fileId,
+      public_id: publicFileId,
       organization_id: orgId,
-      project_id: projectId,
+      project_id: projectRecord.id,
     },
   });
 };
 
+// TODO: refactor to use public_id
 export const getPublicProject = async (publicAccessTokenId: string) => {
   try {
     const project = await db.project.findFirst({
@@ -242,6 +257,7 @@ export const getPublicProject = async (publicAccessTokenId: string) => {
   }
 };
 
+// TODO: refactor to use public id
 export const generateProjectKey = async (projectId: number) => {
   try {
     logger.info('Generating access token for project');
@@ -272,6 +288,7 @@ export const generateProjectKey = async (projectId: number) => {
   }
 };
 
+// TODO: refactor to use public id
 export const disablePublicAccessForProject = async (projectId: number) => {
   try {
     const orgId = getOrgIdOrThrow();
@@ -305,6 +322,7 @@ export const disablePublicAccessForProject = async (projectId: number) => {
   }
 };
 
+// TODO: refactor to use public id
 export const toggleChatbotEnabled = async (
   projectId: number,
   enabled: boolean

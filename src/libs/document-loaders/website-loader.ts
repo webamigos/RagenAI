@@ -8,6 +8,7 @@ import { type Document } from '@langchain/core/documents';
 import { type TextSplitter } from 'langchain/text_splitter';
 import { type DocumentLoader } from '@langchain/core/document_loaders/base';
 import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { FileType } from '@prisma/client';
 
 export interface WebsiteDocumentLoaderParams {
   url: string;
@@ -71,8 +72,8 @@ export class WebsiteDocumentLoader implements DocumentLoader {
         `${this.url} | ${this.mode}`,
         enhancedMarkdown.length,
         this.organizationId,
-        this.fileId,
-        'url',
+        FileType.URL,
+        //this.fileId,
         this.projectId
       );
 

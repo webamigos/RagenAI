@@ -1,3 +1,5 @@
+'use client';
+
 import parse from 'html-react-parser';
 import DOMPurify from 'dompurify';
 import React, { useState } from 'react';
@@ -6,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { useOrganization } from '@clerk/nextjs';
 import TurndownService from 'turndown';
+import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -24,6 +27,8 @@ import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
 import { logger } from '@/app/lib/utils/logger';
+import { FileType } from '@prisma/client';
+import { UserFileType } from '@/app/contracts/Documents';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -45,6 +50,7 @@ export const DocumentCreator = () => {
   const { successToast, errorToast } = statusToast();
   const { organization } = useOrganization();
   const { addDocument } = useUserDocumentsContext();
+  const router = useRouter();
 
   const {
     handleSubmit,
@@ -73,7 +79,7 @@ export const DocumentCreator = () => {
     setIsLoading(true);
 
     try {
-      const organizationId = organization.id;
+      // const organizationId = organization.id;
       const markdownContent = turndownService.turndown(editorContent);
 
       const formData = new FormData();
@@ -85,22 +91,24 @@ export const DocumentCreator = () => {
       );
       formData.append('organizationId', organization.id);
 
-      const response = await uploadFiles(organizationId, formData);
+      const response = await uploadFiles(formData);
 
       if (response.status === 200 && response.files) {
-        const document = response.files[0];
-        const projectId = document.project_id;
+        // const document = response.files[0];
+        // const projectId = document.project_id;
 
-        addDocument({
-          id: document.uniqueFileId,
-          organization_id: organizationId,
-          file_name: document.fileName,
-          file_size: document.fileSize,
-          file_type: 'markdown',
-          project_id: projectId,
-          project: { id: projectId, title: document.fileName },
-        });
+        // MOVED TO WORKER
+        // addDocument({
+        //   organization_id: organizationId,
+        //   file_name: document.fileName,
+        //   file_size: document.fileSize,
+        //   file_type: FileType.MARKDOWN,
+        //   project_id: projectId,
+        //   project: { id: projectId, title: document.fileName },
+        // } as UserFileType); // TODO: temporary, will be refactored
         reset();
+        router.push('/manage-knowledge/documents-list');
+
         successToast({ message: t('created-successful') });
       } else if (response.message) {
         errorToast({ message: response.message });

@@ -1,3 +1,5 @@
+'use client';
+
 import { useTranslations } from 'next-intl';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -62,8 +64,7 @@ export const FileListWrapper = () => {
     }));
   };
 
-  const { prefetch } = useRouter();
-
+  // TODO: refactor to files
   const { documents, isLoading, isError, addDocument, removeDocument } =
     useUserDocumentsContext();
 
@@ -71,15 +72,11 @@ export const FileListWrapper = () => {
     setSearchValue(event.target.value.trim());
   };
 
-  const defaultProjectDocuments = useMemo(() => {
+  const defaultProjectFiles = useMemo(() => {
     return documents.filter((doc) =>
       doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
     );
   }, [documents, searchValue]);
-
-  const handlePrefetch = (path: string) => {
-    prefetch(path);
-  };
 
   const handleDelete = async (
     organization_id: string,
@@ -127,8 +124,7 @@ export const FileListWrapper = () => {
           isLoading={isLoading}
           addDocument={addDocument}
           removeDocument={removeDocument}
-          documents={defaultProjectDocuments}
-          handlePrefetch={handlePrefetch}
+          files={defaultProjectFiles}
           showModal={showModal}
           toggleModal={toggleModal}
           handleDelete={handleDelete}
@@ -141,8 +137,7 @@ export const FileListWrapper = () => {
           addDocument={addDocument}
           showModal={showModal}
           removeDocument={removeDocument}
-          documents={defaultProjectDocuments}
-          handlePrefetch={handlePrefetch}
+          files={defaultProjectFiles}
           toggleModal={toggleModal}
           handleDelete={handleDelete}
         />

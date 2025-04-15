@@ -75,7 +75,6 @@ export const ProjectItem = ({
       {hasThreads && isExpanded && (
         <ThreadsList
           threads={project.threads}
-          projectId={project.id}
           projectPublicId={project.public_id}
           activeThread={activeThread}
           onClose={onSidebarClose}

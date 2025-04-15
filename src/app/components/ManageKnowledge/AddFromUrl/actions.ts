@@ -1,8 +1,8 @@
 'use server';
 
 import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import { auth } from '@clerk/nextjs/server';
-import { convertAndStoreDocument } from '@/app/api/threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryClerkOrganizationTag,
@@ -12,6 +12,11 @@ import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { usageTracker } from '@/app/lib/services/usage';
 import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import {
+  ScrapeWebsiteWorkflowPayload,
+  Workflow,
+} from '@/app/contracts/Workflows';
 
 export type ProcessUrlResult = {
   success: boolean;
@@ -49,22 +54,46 @@ export async function processUrl(
 
     const fullFileName = `${url}-${mode}`;
 
-    const { message, success } = await convertAndStoreDocument({
-      fileContent: fullFileName,
-      fileName: fullFileName,
-      organizationId: orgId,
-      fileId: uniqueFileId,
-      projectId: defaultProjectId,
-      mimeType: 'text/url',
-    });
+    const websiteWorkflowId = `web-${nanoid()}`;
+    const client = getTemporalClient();
 
-    if (!success) {
-      logger.error({ err: message }, `Error processing URL: ${url}`);
-      return {
-        success: false,
-        message,
-      };
-    }
+    const websiteWorkflowPayload: ScrapeWebsiteWorkflowPayload = {
+      url,
+      mode,
+      orgId,
+      projectId: defaultProjectId,
+    };
+
+    const embeddingsHandle = await client.workflow.start(
+      Workflow.SCRAPE_WEBSITE,
+      {
+        taskQueue: TASK_QUEUE_NAME,
+        workflowId: websiteWorkflowId,
+        args: [websiteWorkflowPayload],
+      }
+    );
+
+    logger.info('embeddingsHandle: %j', embeddingsHandle, 2);
+
+    // ==== LEGACY CODE BELOW
+    // const fullFileName = `${url}-${mode}`;
+
+    // const { message, success } = await convertAndStoreDocument({
+    //   fileContent: fullFileName,
+    //   fileName: fullFileName,
+    //   organizationId: orgId,
+    //   fileId: uniqueFileId,
+    //   projectId: defaultProjectId,
+    //   mimeType: 'text/url',
+    // });
+
+    // if (!success) {
+    //   logger.error({ err: message }, `Error processing URL: ${url}`);
+    //   return {
+    //     success: false,
+    //     message,
+    //   };
+    // }
 
     usageTracker.incUploadedFilesCount();
     await saveOrganizationPublicMetadata(orgId, { hasKnowledge: true });

@@ -1,17 +1,23 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { UploadKnowledge } from '@/app/components/ManageKnowledge/UploadKnowledge';
 
+type Props = {
+  params: {
+    locale: string;
+  };
+};
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
+
+  return {
+    title: t('manage-knowledge:upload-document.title'),
+  };
+}
+
 const AddFilesPage = () => {
-  const t = useTranslations('Metadata');
-
-  useEffect(() => {
-    document.title = t('manage-knowledge:upload-document.title');
-  }, [t]);
-
   return (
     <div className="h-full flex-1 flex flex-col ml-4 lg:ml-0 gap-4">
       <UploadKnowledge />

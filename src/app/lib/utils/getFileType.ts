@@ -1,10 +1,10 @@
-import { SupportedFileType } from '../services/fileParser';
+import { FileType } from '@prisma/client';
 
-export const getFileType = (fileName: string): SupportedFileType => {
-  if (fileName.endsWith('.srt')) return 'srt';
-  if (fileName.endsWith('.epub')) return 'epub';
-  if (fileName.endsWith('.pdf')) return 'pdf';
-  if (fileName.endsWith('.md') || fileName.endsWith('.txt')) return 'text';
+export const getFileType = (fileName: string): FileType => {
+  if (fileName.endsWith('.srt')) return 'SRT';
+  if (fileName.endsWith('.epub')) return 'EPUB';
+  if (fileName.endsWith('.pdf')) return 'PDF';
+  if (fileName.endsWith('.md') || fileName.endsWith('.txt')) return 'TEXT';
 
   throw new Error(`Unknown file type: ${fileName}`);
 };

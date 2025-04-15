@@ -28,7 +28,6 @@ enum ComponentState {
 import { useFileUpload } from '@/app/hooks/useFileUpload';
 
 type Props = {
-  projectId: number;
   projectPublicId: string;
   initialFileCount?: number;
 };
@@ -87,7 +86,6 @@ const UploadView = memo(
 UploadView.displayName = 'UploadView';
 
 export const ProjectFileUpload = ({
-  projectId,
   projectPublicId,
   initialFileCount,
 }: Props) => {
@@ -96,7 +94,7 @@ export const ProjectFileUpload = ({
   );
 
   const { files, uploading, handleFilesAdded, handleFileRemove, uploadFiles } =
-    useFileUpload(projectId, projectPublicId);
+    useFileUpload(projectPublicId);
 
   const t = useTranslations('projects');
   const { organization } = useOrganization();
@@ -117,7 +115,7 @@ export const ProjectFileUpload = ({
   useEffect(() => {
     if (organization) {
     }
-  }, [projectId, organization]);
+  }, [projectPublicId, organization]);
 
   if (!organization) {
     return null;
@@ -137,7 +135,6 @@ export const ProjectFileUpload = ({
           >
             <Suspense fallback={<LoadingSkeleton />}>
               <ProjectFilesList
-                projectId={projectId}
                 projectPublicId={projectPublicId}
                 onFilesLoaded={handleFilesLoaded}
                 initialFileCount={initialFileCount || files.length}
@@ -161,7 +158,6 @@ export const ProjectFileUpload = ({
         >
           <Suspense fallback={<LoadingSkeleton />}>
             <ProjectFilesList
-              projectId={projectId}
               projectPublicId={projectPublicId}
               onFilesLoaded={handleFilesLoaded}
               initialFileCount={initialFileCount || files.length}

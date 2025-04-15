@@ -18,7 +18,7 @@ const serviceName = 'assistants/actions';
 
 type CreateProjectResponse = {
   status: StatusCodes;
-  project?: Project;
+  project?: Omit<Project, 'id'>;
   error?: string;
 };
 
@@ -55,7 +55,10 @@ export const createProject = async (
       userId
     );
 
-    logger.info({ projectId: project.id }, 'Project created successfully');
+    logger.info(
+      { projectPublicId: project.public_id },
+      'Project created successfully'
+    );
 
     return {
       project,

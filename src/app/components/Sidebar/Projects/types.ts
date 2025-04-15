@@ -5,7 +5,6 @@ import { ThreadCommunicationType } from '@prisma/client';
 export type ThreadType = {
   created_at: Date;
   public_id: string;
-  id: string;
   visitor_id: string | null;
   preferred_communication_type: ThreadCommunicationType;
   project_id: number | null;
@@ -18,7 +17,6 @@ export type ProjectType = {
   created_at: Date;
   public_id: string;
   title: string;
-  id: number;
   threads: ThreadType[];
 };
 
@@ -33,7 +31,6 @@ export type ProjectsListProps = {
 
 export type ThreadsListProps = {
   threads: ThreadType[];
-  projectId: number;
   projectPublicId: string;
   activeThread?: string;
   onClose: () => void;
@@ -41,7 +38,6 @@ export type ThreadsListProps = {
 
 export type ThreadItemProps = {
   thread: ThreadType;
-  projectId: number;
   projectPublicId: string;
   isActive: boolean;
   onClose: () => void;

@@ -15,7 +15,7 @@ import { deleteDocumentFromDb } from '../lib/services/document';
 import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
   deleteFileFromDb,
-  fetchFileDetails,
+  fetchFilesDetails,
   getFileDetails,
   getOrganizationFilesCount,
 } from '../lib/services/file';
@@ -45,6 +45,7 @@ import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
+import { getOrgIdOrThrow } from '../lib/services/clerk';
 
 const serviceName = 'actions';
 
@@ -130,11 +131,12 @@ export const getUserMessages = async (
 };
 
 //get user documents
-export const getUserDocuments = async (orgId: string) => {
+export const getUserFiles = async () => {
   try {
+    const orgId = getOrgIdOrThrow();
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
-    const documentDetails = await fetchFileDetails(orgId);
+    const documentDetails = await fetchFilesDetails(orgId);
     return { documentDetails };
   } catch (error) {
     return {
@@ -145,10 +147,10 @@ export const getUserDocuments = async (orgId: string) => {
 };
 
 // Get project files
-export const getProjectFiles = async (projectId: number) => {
+export const getProjectFiles = async (projectPublicId: string) => {
   try {
     setSentryServiceTag(serviceName);
-    const files = await fetchProjectFiles(projectId);
+    const files = await fetchProjectFiles(projectPublicId);
     return { files };
   } catch (error) {
     return {
@@ -189,13 +191,13 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 // Delete project file
 export const deleteProjectFileAction = async (
   fileId: string,
-  projectId: number
+  projectPublicId: string
 ) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('EXTRA_DATA', {
       fileId,
-      projectId,
+      projectPublicId,
     });
 
     const fileRecord = await getFileDetails(fileId);
@@ -206,7 +208,7 @@ export const deleteProjectFileAction = async (
       };
     }
 
-    const result = await deleteProjectFileFromService(fileId, projectId);
+    const result = await deleteProjectFileFromService(fileId, projectPublicId);
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
