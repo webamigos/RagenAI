@@ -23,7 +23,7 @@ To run Ragen in API mode set env variable:
 
 `IS_API_MODE=1`
 
-Then all url's will be rewrited to /api
+Then all url's will be rewritten to /api
 
 Example: `http://localhost:3000/api/v1/healthcheck` -> `http://localhost:3000/v1/healthcheck`
 

@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 
 import { logger } from '@/app/lib/utils/logger';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { Workflow } from '@/app/contracts/Workflows';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,17 +27,20 @@ export const GET = async (request: NextRequest) => {
     // moreover if we wat to use temporal worker from another services like Nest API, then we definitely should use string names of workflow
     // TIP: passing function instead of string it may be helpful for dev because we have tape-safety then and editor suggests possible worker input params
     // ✅ OK: string name for the workflow
-    const embeddingsHandle = await client.workflow.start('runFileEmbeddings', {
-      taskQueue: TASK_QUEUE_NAME,
-      workflowId: embeddingWorkflowId,
-      args: [
-        {
-          fileId: 'f5b5f1a5-99f9-4024-b529-48c33919d198',
-          orgId: 'org_2uVtRWLWKbIuPcuRdMKKnrQqLax',
-          projectId: '789',
-        },
-      ],
-    });
+    const embeddingsHandle = await client.workflow.start(
+      Workflow.RUN_FILE_EMBEDDINGS,
+      {
+        taskQueue: TASK_QUEUE_NAME,
+        workflowId: embeddingWorkflowId,
+        args: [
+          {
+            fileId: 'f5b5f1a5-99f9-4024-b529-48c33919d198',
+            orgId: 'org_2uVtRWLWKbIuPcuRdMKKnrQqLax',
+            projectId: '789',
+          },
+        ],
+      }
+    );
 
     logger.info('embeddingsHandle: %j', embeddingsHandle, 2);
 

@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
 import { auth } from '@clerk/nextjs/server';
-import { convertAndStoreDocument } from '../threads/services/saveDataInVectorTable';
 import { logger } from '@/app/lib/utils/logger';
-import { createMarkdownDocument } from '@/app/lib/services/document';
 import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
@@ -13,14 +11,12 @@ import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
-import { getFileFromS3, uploadToS3 } from '@/app/lib/services/aws';
+import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
-import { isPlainText } from '@/app/lib/utils/isPlainText';
 import db from '@ragenai/prisma-client';
-import { getFileExtension } from '@/app/lib/utils/getFileExtension';
-import { EmbeddingStatus } from '@prisma/client';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { Workflow } from '@/app/contracts/Workflows';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -124,7 +120,7 @@ export async function POST(request: NextRequest) {
           const client = getTemporalClient();
 
           const embeddingsHandle = await client.workflow.start(
-            'runFileEmbeddings',
+            Workflow.RUN_FILE_EMBEDDINGS,
             {
               taskQueue: TASK_QUEUE_NAME,
               workflowId: embeddingWorkflowId,
