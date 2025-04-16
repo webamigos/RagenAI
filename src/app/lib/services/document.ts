@@ -3,7 +3,17 @@ import { type UserDocument } from '@prisma/client';
 import db from '@ragenai/prisma-client';
 import { getOrgIdOrThrow } from './clerk';
 
-export const getDocumentDetailsByPublicId = async (
+export const getDocumentById = async (documentId: UserDocument['id']) => {
+  const orgId = getOrgIdOrThrow();
+  return await db.userDocument.findFirst({
+    where: {
+      organization_id: orgId,
+      id: documentId,
+    },
+  });
+};
+
+export const getDocumentByPublicId = async (
   documentPublicId: UserDocument['public_id']
 ) => {
   const orgId = getOrgIdOrThrow();
@@ -18,13 +28,11 @@ export const getDocumentDetailsByPublicId = async (
   });
 };
 
-export const deleteDocumentFromDb = async (
-  orgId: string,
-  document_id: string
-) => {
+export const deleteDocumentFromDb = async (documentId: UserDocument['id']) => {
+  const orgId = await getOrgIdOrThrow();
   return await db.userDocument.deleteMany({
     where: {
-      public_id: document_id,
+      id: documentId,
       organization_id: orgId,
     },
   });

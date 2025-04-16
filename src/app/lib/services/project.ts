@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import { getOrgIdOrThrow } from './clerk';
 
 import crypto from 'crypto';
-import { Project, Source } from '@prisma/client';
+import { Project, Source, UserFile } from '@prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.organization.findFirst({
@@ -178,7 +178,9 @@ export const getProjectByPublicIdOrThrow = async (
 /**
  * Fetches files associated with a specific project
  */
-export const fetchProjectFiles = async (projectPublicId: string) => {
+export const fetchProjectFiles = async (
+  projectPublicId: Project['public_id']
+) => {
   const orgId = getOrgIdOrThrow();
   const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
@@ -207,11 +209,10 @@ export const fetchProjectFiles = async (projectPublicId: string) => {
  * Deletes a file from a specific project
  */
 export const deleteProjectFile = async (
-  publicFileId: string,
-  projectPublicId: string
+  publicFileId: UserFile['public_id'],
+  projectPublicId: Project['public_id']
 ) => {
   const orgId = getOrgIdOrThrow();
-
   const projectRecord = await getProjectByPublicId(projectPublicId);
 
   if (!projectRecord) {

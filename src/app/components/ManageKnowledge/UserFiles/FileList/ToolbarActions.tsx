@@ -25,7 +25,7 @@ export const ToolbarActions = ({
       className="relative flex items-center space-x-2 z-50"
     >
       <div
-        className={`absolute -left-10 flex space-x-2 transition-all duration-300 ${
+        className={`absolute -left-14 flex space-x-2 transition-all duration-300 ${
           showToolbar
             ? 'opacity-100 -translate-x-0'
             : 'invisible -translate-x-4'

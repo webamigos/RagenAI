@@ -34,9 +34,9 @@ export const ToolbarActionsMenu = ({
         </Link>
       )}
 
-      {documentPublicId && (
+      {filePublicId && (
         <div
-          onClick={() => toggleModal && toggleModal(documentPublicId)}
+          onClick={() => toggleModal && toggleModal(filePublicId)}
           className="cursor-pointer"
         >
           {isLoading ? (

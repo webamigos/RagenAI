@@ -193,9 +193,9 @@
     "placeholder": "Wpisz swoje pytanie..."
   },
   "success-toast": {
-    "copied": "Skopiowano!",
-    "deleted": "Usunięto!",
-    "saved": "Zapisano!"
+    "copied": "Skopiowano ",
+    "deleted": "Usunięto ",
+    "saved": "Zapisano "
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
@@ -226,7 +226,7 @@
   },
   "admin-panel": {
     "no-files": "Nie wybrano żadnych plików do wysłania",
-    "success": "Wszystkie pliki zostały pomyślnie przetworzone",
+    "success": "Pliki zostały wgrane - trwa ich przetwarzanie",
     "error": "Wystąpił błąd",
     "sending-files-error": "Wystąpił błąd podczas wysyłania plików",
     "sending": "Wysyłanie",
@@ -249,7 +249,7 @@
     "preview": "Podgląd",
     "title-error": "Tytuł jest wymagany",
     "content-error": "Treść jest wymagana",
-    "created-successful": "Stworzono dokument",
+    "created-successful": "Stworzono dokument - trwa jego przetwarzanie",
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
@@ -370,6 +370,7 @@
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",
     "updated": "Zaktualizowano",
+    "processed": "Przetworzono",
     "preview": "Podgląd",
     "no-files": "Brak plików",
     "search-placeholder": "Wyszukaj pliki"
@@ -618,6 +619,9 @@
     "project-files": "Pliki asystenta",
     "no-files": "Brak plików",
     "file-deleted": "Plik został usunięty",
+    "file-delete-fail": "Błąd w trakcie usuwania plików",
+    "file-uploaded": "Plik został wgrany - trwa przetwarzanie",
+    "file-upload-fail": "Błąd w trakcie wgrywania plików",
     "remove-file": "Usuń plik",
     "file-singular": "plik",
     "file-plural": "pliki",
@@ -698,6 +702,7 @@
   "notifications": {
     "success": "Sukces",
     "info": "Info",
-    "error": "Błąd"
+    "error": "Błąd",
+    "document-parsed-and-embedded": "Plik został przetworzony"
   }
 }

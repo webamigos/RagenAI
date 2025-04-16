@@ -26,7 +26,7 @@ import {
   fetchDocumentByOrganization,
   updateDocument,
 } from '@/app/components/ManageKnowledge/MarkdownDocumentsCreator/action';
-import { deleteDocumentAction } from '@/app/actions';
+import { deleteFileAction } from '@/app/actions';
 import { uploadFiles } from '@/app/lib/services/api';
 import { ArrowLeftCircleIcon } from '@heroicons/react/24/outline';
 import { initialState, reducer } from './documentReducer';
@@ -132,7 +132,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
     );
     formData.append('organizationId', organization!.id);
 
-    await deleteDocumentAction(orgId, publicId);
+    await deleteFileAction(publicId);
     await uploadFiles(formData);
 
     if (response.success) {
