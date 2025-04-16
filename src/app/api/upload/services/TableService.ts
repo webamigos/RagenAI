@@ -8,12 +8,13 @@ import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { auth } from '@clerk/nextjs/server';
 import { getOrganizationMetadata } from '@/app/actions';
 import { QdrantClient } from '@qdrant/js-client-rest';
+import { UserFile } from '@prisma/client';
 
-export async function deleteDocumentFromVectorStore(file_id: string) {
+export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
   try {
     setSentryServiceTag('deleteDocument');
     setSentryContext('EXTRA_DATA', {
-      file_id,
+      fileId,
     });
 
     const { orgId } = auth();
@@ -41,7 +42,7 @@ export async function deleteDocumentFromVectorStore(file_id: string) {
           must: [
             {
               key: 'metadata.file_id',
-              match: { value: file_id },
+              match: { value: fileId },
             },
           ],
         },
@@ -50,7 +51,7 @@ export async function deleteDocumentFromVectorStore(file_id: string) {
       await supabaseVectorStoreClient
         .from(VECTOR_STORE_TABLE_NAME)
         .delete()
-        .eq('metadata->>file_id', file_id);
+        .eq('metadata->>file_id', fileId);
     }
   } catch (error) {
     logger.error({ err: error }, 'Error in deleteDocument function');

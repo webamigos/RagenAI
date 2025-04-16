@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { Card } from '@ragenai/common-ui/Card';
 import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
-import { deleteDocumentAction } from '@/app/actions';
+import { deleteFileAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useSettings } from '@/app/hooks/useSettings';
 import { useUser } from '@clerk/nextjs';
@@ -15,6 +15,7 @@ import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
 import { LayoutToggle } from './LayoutToggle';
+import { UserFile } from '@prisma/client';
 
 export type ModalStateProps = {
   isOpen: boolean;
@@ -79,16 +80,12 @@ export const FileListWrapper = () => {
   }, [documents, searchValue]);
 
   const handleDelete = async (
-    organization_id: string,
-    documentId: string,
-    fileName: string
+    filePublicId: UserFile['public_id'],
+    fileName: UserFile['file_name']
   ) => {
     try {
       setDeleteLoading(true);
-      const { status } = await deleteDocumentAction(
-        organization_id,
-        documentId
-      );
+      const { status } = await deleteFileAction(filePublicId);
 
       if (status === 200) {
         removeDocument(documentId);

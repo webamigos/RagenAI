@@ -2,7 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
-import { FileType } from '@prisma/client';
+import { FileType, UserFile } from '@prisma/client';
 import * as CommonUi from '@ragenai/common-ui';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';
@@ -16,13 +16,12 @@ type Props = {
   files: UserFileType[];
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  toggleModal: (fileId: string | null) => void;
-  onAddDocument: (newDocument: UserFileType) => void;
-  onRemoveDocument: (documentId: string) => void;
+  toggleModal: (filePublicId: string | null) => void;
+  onAddFile: (newFile: UserFileType) => void;
+  onRemoveFile: (filePublicId: UserFile['public_id']) => void;
   handleDelete: (
-    organization_id: string,
-    documentId: string,
-    fileName: string
+    filePublicId: UserFile['public_id'],
+    fileName: UserFile['file_name']
   ) => void;
 };
 
@@ -32,18 +31,14 @@ type DocumentRowProps = {
   document: UserFileTypeSafe;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  handleDelete: (
-    organization_id: string,
-    documentId: string,
-    fileName: string
-  ) => void;
-  toggleModal: (fileId: string | null) => void;
-  onRemoveDocument: (documentPublicId: string) => void;
+  handleDelete: (filePublicId: UserFile['public_id'], fileName: string) => void;
+  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
+  onRemoveFile: (filePublicId: UserFile['public_id']) => void;
 };
 
 export type ModalStateProps = {
   isOpen: boolean;
-  fileId: string | null;
+  filePublicId: string | null;
 };
 
 const DocumentRow = ({
@@ -55,14 +50,7 @@ const DocumentRow = ({
 }: DocumentRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    created_at,
-    updated_at,
-    file_name,
-    file_size,
-    public_id,
-    organization_id,
-  } = document;
+  const { created_at, updated_at, file_name, file_size, public_id } = document;
 
   const fileIcon = getFileIcon(document.file_type);
 
@@ -80,11 +68,10 @@ const DocumentRow = ({
   return (
     <>
       {/* this is UserFile not UserDocument ! */}
-      {showModal.isOpen && showModal.fileId === document.public_id && (
+      {showModal.isOpen && showModal.filePublicId === document.public_id && (
         <DeleteFileModal
           toggleModal={toggleModal}
           handleDelete={handleDelete}
-          organization_id={organization_id}
           filePublicId={document.public_id}
           fileName={document.file_name}
           isLoading={deleteLoading}
@@ -130,7 +117,7 @@ export const UserDocumentsTable = ({
   deleteLoading,
   toggleModal,
   handleDelete,
-  onRemoveDocument,
+  onRemoveFile,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const [searchValue, setSearchValue] = useState('');
@@ -171,7 +158,7 @@ export const UserDocumentsTable = ({
                 showModal={showModal}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
-                onRemoveDocument={onRemoveDocument}
+                onRemoveFile={onRemoveFile}
               />
             ))
           ) : (

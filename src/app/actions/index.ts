@@ -3,7 +3,7 @@
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { StatusCodes } from 'http-status-codes';
 
-import { deleteDocumentFromVectorStore } from '../api/upload/services/TableService';
+import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
   CreateMessageDto,
   MessageDto,
@@ -11,12 +11,15 @@ import {
 } from '../contracts/Message';
 import { createMessageSchema } from '../contracts/Message';
 import { deleteFromS3 } from '../lib/services/aws';
-import { deleteDocumentFromDb } from '../lib/services/document';
+import {
+  deleteDocumentFromDb,
+  getDocumentByPublicId,
+} from '../lib/services/document';
 import { submitFeedbackDirectly } from '../lib/services/feedback';
 import {
   deleteFileFromDb,
   fetchFilesDetails,
-  getFileDetails,
+  getFileDetailsByPublicId,
   getOrganizationFilesCount,
 } from '../lib/services/file';
 import {
@@ -46,6 +49,7 @@ import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
 import { getOrgIdOrThrow } from '../lib/services/clerk';
+import { UserFile } from '@prisma/client';
 
 const serviceName = 'actions';
 
@@ -168,7 +172,7 @@ export const getFileDetailsForDownload = async (fileId: string) => {
       fileId,
     });
 
-    const fileRecord = await getFileDetails(fileId);
+    const fileRecord = await getFileDetailsByPublicId(fileId);
     if (!fileRecord) {
       return {
         error: 'File not found',
@@ -190,17 +194,17 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 
 // Delete project file
 export const deleteProjectFileAction = async (
-  fileId: string,
+  filePublicId: string,
   projectPublicId: string
 ) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('EXTRA_DATA', {
-      fileId,
+      filePublicId,
       projectPublicId,
     });
 
-    const fileRecord = await getFileDetails(fileId);
+    const fileRecord = await getFileDetailsByPublicId(filePublicId);
     if (!fileRecord) {
       return {
         error: 'File not found',
@@ -208,11 +212,13 @@ export const deleteProjectFileAction = async (
       };
     }
 
+    const fileId = fileRecord.id;
+
     const result = await deleteProjectFileFromService(fileId, projectPublicId);
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
-      const documentS3Path = `${fileId}.${getFileExtension(
+      const documentS3Path = `${fileRecord.public_id}.${getFileExtension(
         fileRecord.file_name
       )}`;
 
@@ -224,10 +230,16 @@ export const deleteProjectFileAction = async (
       }
 
       // Delete from UserDocument
-      await deleteDocumentFromDb(fileRecord.organization_id, fileId);
+      const documentId = fileRecord.document_id;
+      if (documentId) {
+        const userDocument = await getDocumentByPublicId(documentId);
+        if (userDocument) {
+          await deleteDocumentFromDb(userDocument.id);
+        }
+      }
 
       // Delete vectors
-      await deleteDocumentFromVectorStore(fileId);
+      await deleteFileFromVectorStore(fileId);
     }
 
     return {
@@ -242,59 +254,60 @@ export const deleteProjectFileAction = async (
   }
 };
 
-//remove user document
-export const deleteDocumentAction = async (
-  organizationId: string,
-  documentId: string
-) => {
+//remove user file
+export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
   try {
+    const orgId = await getOrgIdOrThrow();
     setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
+    setSentryClerkOrganizationTag(orgId);
     setSentryContext('EXTRA_DATA', {
-      documentId,
+      filePublicId,
     });
 
     //  Removal document from `UserFile`
     // TODO: UserFile should be in relation to UserDocument
-    const fileRecord = await getFileDetails(documentId);
-    const { count } = await deleteFileFromDb(organizationId, documentId);
+    const fileRecord = await getFileDetailsByPublicId(filePublicId);
+    const { count } = await deleteFileFromDb(filePublicId);
 
     if (fileRecord) {
-      const documentS3Path = `${documentId}.${getFileExtension(
+      const documentS3Path = `${filePublicId}.${getFileExtension(
         fileRecord.file_name
       )}`;
 
       await deleteFromS3(documentS3Path);
-    }
 
-    // Removal from `UserDocument`
-    await deleteDocumentFromDb(organizationId, documentId);
+      // Removal from `UserDocument`
+      const documentId = fileRecord?.document_id;
+      if (documentId) {
+        await deleteDocumentFromDb(documentId);
+      }
 
-    // Removal vectors
-    await deleteDocumentFromVectorStore(documentId);
+      // Removal vectors
+      await deleteFileFromVectorStore(fileRecord.id);
 
-    if (count === 0) {
+      if (count === 0) {
+        return {
+          error:
+            'Document not found or user does not have permission to delete it',
+          status: StatusCodes.NOT_FOUND,
+        };
+      }
+
+      // Check document count in organization
+      const documentCount = await getOrganizationFilesCount(orgId);
+
+      // If no documents left, update public metadata
+      if (documentCount === 0) {
+        await saveOrganizationPublicMetadata(orgId, {
+          hasKnowledge: false,
+        });
+      }
+
       return {
-        error:
-          'Document not found or user does not have permission to delete it',
-        status: StatusCodes.NOT_FOUND,
+        message: 'Document deleted successfully',
+        status: StatusCodes.OK,
       };
     }
-
-    // Check document count in organization
-    const documentCount = await getOrganizationFilesCount(organizationId);
-
-    // If no documents left, update public metadata
-    if (documentCount === 0) {
-      await saveOrganizationPublicMetadata(organizationId, {
-        hasKnowledge: false,
-      });
-    }
-
-    return {
-      message: 'Document deleted successfully',
-      status: StatusCodes.OK,
-    };
   } catch (error) {
     logger.error({ err: error }, 'Error deleting document');
     return {
