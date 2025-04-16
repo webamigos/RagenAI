@@ -54,6 +54,10 @@ export const fetchFilesDetails = async (organizationId: string) => {
       organization_id: true,
       public_id: true,
       project_id: true,
+      embedding_status: true,
+      embedding_completed_at: true,
+      embedding_failed_at: true,
+      embedding_started_at: true,
       document: {
         select: {
           public_id: true,

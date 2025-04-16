@@ -11,7 +11,7 @@ import { DeleteFileModal } from '../DeleteFileModal';
 import {
   type ModalStateProps,
   type UserFileTypeSafe,
-} from '../FileList/UserDocumentsTable';
+} from '../FileList/UserFilesTable';
 import { type UserFileType } from '@/app/contracts/Documents';
 
 type GridViewProps = {
@@ -63,26 +63,20 @@ export const GridView = ({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
       {files.map((file) => {
-        const safeFile: UserFileTypeSafe = {
-          ...file,
-          file_type: file.file_type as FileType,
-        };
-
         return (
           <>
-            {showModal.isOpen &&
-              showModal.filePublicId === safeFile.public_id && (
-                <DeleteFileModal
-                  toggleModal={toggleModal}
-                  handleDelete={handleDelete}
-                  fileName={safeFile.file_name}
-                  filePublicId={safeFile.public_id}
-                  isLoading={deleteLoading}
-                />
-              )}
+            {showModal.isOpen && showModal.filePublicId === file.public_id && (
+              <DeleteFileModal
+                toggleModal={toggleModal}
+                handleDelete={handleDelete}
+                fileName={file.file_name}
+                filePublicId={file.public_id}
+                isLoading={deleteLoading}
+              />
+            )}
             <FileCard
-              key={safeFile.public_id}
-              file={safeFile}
+              key={file.public_id}
+              file={file as UserFileTypeSafe}
               isLoading={isLoading}
               toggleModal={toggleModal}
             />

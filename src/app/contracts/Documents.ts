@@ -1,4 +1,4 @@
-import { UserDocument, UserFile } from '@prisma/client';
+import { EmbeddingStatus, UserDocument, UserFile } from '@prisma/client';
 import { Project } from '@prisma/client';
 
 export type ProjectType = {

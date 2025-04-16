@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
-import { ModalStateProps, UserDocumentsTable } from './UserDocumentsTable';
+import { ModalStateProps, UserFilesTable } from './UserFilesTable';
 
 import { type UserFileType } from '@/app/contracts/Documents';
 import { UserFile } from '@prisma/client';
@@ -13,7 +13,7 @@ type FileListViewProps = {
   deleteLoading: boolean;
   isError: boolean;
   showModal: ModalStateProps;
-  toggleModal: (fileId: string | null) => void;
+  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
   addFile: (newFile: UserFileType) => void;
   removeFile: (filePublicId: UserFile['public_id']) => void;
   handleDelete: (
@@ -45,7 +45,7 @@ export const FileListView = ({
   }
 
   return (
-    <UserDocumentsTable
+    <UserFilesTable
       deleteLoading={deleteLoading}
       className="font-sans"
       files={files}
