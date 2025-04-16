@@ -178,7 +178,9 @@ export const getProjectByPublicIdOrThrow = async (
 /**
  * Fetches files associated with a specific project
  */
-export const fetchProjectFiles = async (projectPublicId: string) => {
+export const fetchProjectFiles = async (
+  projectPublicId: Project['public_id']
+) => {
   const orgId = getOrgIdOrThrow();
   const project = await getProjectByPublicIdOrThrow(projectPublicId);
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
 import { Card, Text, LoadingSkeleton, FileUploader } from '@ragenai/common-ui';
 
 import { FileItem } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/FileItem';
@@ -11,9 +10,10 @@ import {
   useProjectFiles,
   FileListState,
 } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/hooks/useProjectFiles';
+import { Project } from '@prisma/client';
 type Props = {
   onFilesLoaded?: (hasFiles: boolean) => void;
-  projectPublicId: string;
+  projectPublicId: Project['public_id'];
   initialFileCount?: number;
 };
 
@@ -21,7 +21,6 @@ export const ProjectFilesList = memo(
   ({ onFilesLoaded, projectPublicId, initialFileCount = 0 }: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const t = useTranslations('projects');
-    const { organization } = useOrganization();
 
     const {
       files,
@@ -35,10 +34,8 @@ export const ProjectFilesList = memo(
     } = useProjectFiles(projectPublicId, onFilesLoaded);
 
     useEffect(() => {
-      if (organization) {
-        loadFiles();
-      }
-    }, [organization, loadFiles]);
+      loadFiles();
+    }, [loadFiles]);
 
     const handleFileSelect = () => {
       fileInputRef.current?.click();
@@ -55,10 +52,6 @@ export const ProjectFilesList = memo(
         event.target.value = '';
       }
     };
-
-    if (!organization) {
-      return null;
-    }
 
     if (listState === FileListState.LOADING) {
       if (initialFileCount > 0) {

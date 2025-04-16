@@ -5,7 +5,7 @@ import { Text, TrashIcon } from '@ragenai/common-ui';
 import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
-import { FileType } from '@prisma/client';
+import { FileType, UserFile } from '@prisma/client';
 
 type FileItemProps = {
   file: {
@@ -14,9 +14,8 @@ type FileItemProps = {
     file_size: number;
     file_type: FileType;
     created_at: Date | null;
-    organization_id: string;
   };
-  onDelete: () => void;
+  onDelete: (publicFileId: UserFile['public_id']) => void;
   isDeleting: boolean;
   t: any;
 };
@@ -42,11 +41,10 @@ export const FileItem = memo(
 
     // Create a handler to manage deletion and modal closing
     const handleConfirmDelete = (
-      organizationId: string,
-      documentId: string,
-      fileName: string
+      filePublicId: UserFile['public_id'],
+      fileName: UserFile['file_name']
     ) => {
-      onDelete();
+      onDelete(filePublicId);
       toggleModal(null);
     };
 
@@ -56,7 +54,6 @@ export const FileItem = memo(
           <DeleteFileModal
             toggleModal={toggleModal}
             handleDelete={handleConfirmDelete}
-            organization_id={file.organization_id}
             filePublicId={file.public_id}
             fileName={file.file_name}
             isLoading={isDeleting}

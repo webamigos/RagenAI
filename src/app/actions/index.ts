@@ -49,7 +49,7 @@ import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
 import { getOrgIdOrThrow } from '../lib/services/clerk';
-import { UserFile } from '@prisma/client';
+import { Project, UserFile } from '@prisma/client';
 
 const serviceName = 'actions';
 
@@ -151,10 +151,13 @@ export const getUserFiles = async () => {
 };
 
 // Get project files
-export const getProjectFiles = async (projectPublicId: string) => {
+export const getProjectFiles = async (
+  projectPublicId: Project['public_id']
+) => {
   try {
     setSentryServiceTag(serviceName);
     const files = await fetchProjectFiles(projectPublicId);
+
     return { files };
   } catch (error) {
     return {
@@ -194,8 +197,8 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 
 // Delete project file
 export const deleteProjectFileAction = async (
-  filePublicId: string,
-  projectPublicId: string
+  filePublicId: UserFile['public_id'],
+  projectPublicId: Project['public_id']
 ) => {
   try {
     setSentryServiceTag(serviceName);
@@ -214,7 +217,10 @@ export const deleteProjectFileAction = async (
 
     const fileId = fileRecord.id;
 
-    const result = await deleteProjectFileFromService(fileId, projectPublicId);
+    const result = await deleteProjectFileFromService(
+      filePublicId,
+      projectPublicId
+    );
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
