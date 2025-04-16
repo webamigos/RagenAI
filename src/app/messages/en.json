@@ -223,7 +223,7 @@
   },
   "admin-panel": {
     "no-files": "No files have been selected for upload",
-    "success": "All files were successfully processed",
+    "success": "All files were uploaded - now are processed",
     "error": "An error occurred",
     "sending-files-error": "An error occurred while sending files",
     "sending": "Sending",
@@ -246,7 +246,7 @@
     "preview": "Preview",
     "title-error": "Title is required",
     "content-error": "Content is required",
-    "created-successful": "Document created",
+    "created-successful": "Document created - is processed now",
     "send-error": "Error creating document",
     "send": "Send"
   },
@@ -368,6 +368,7 @@
     "file-size": "File Size",
     "created": "Created",
     "updated": "Updated",
+    "processed": "Processed",
     "preview": "Preview",
     "no-files": "No files",
     "search-placeholder": "Search in files..."
@@ -602,6 +603,9 @@
     "project-files": "Assistant Files",
     "no-files": "No files in the assistant",
     "file-deleted": "File has been deleted",
+    "file-delete-fail": "An error has occurred during removal",
+    "file-uploaded": "File has been uploaded - processing in progress",
+    "file-upload-fail": "An error has occurred during upload",
     "remove-file": "Remove file",
     "file-singular": "file",
     "file-plural": "files",
@@ -696,6 +700,7 @@
   "notifications": {
     "success": "Success",
     "info": "Info",
-    "error": "Error"
+    "error": "Error",
+    "document-parsed-and-embedded": "File was processed"
   }
 }

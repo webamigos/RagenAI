@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, Button, Input } from '@ragenai/common-ui';
@@ -24,7 +23,6 @@ export const AddFromUrl = () => {
     WebsiteLoaderMode.SCRAPE
   );
 
-  const { organization } = useOrganization();
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('add-from-url');
   const schema = getAddFromUrlSchema(t);
@@ -42,10 +40,6 @@ export const AddFromUrl = () => {
       mode: WebsiteLoaderMode.SCRAPE,
     },
   });
-
-  if (!organization) {
-    return null;
-  }
 
   const handleModeChange = (newMode: WebsiteLoaderMode) => {
     setSelectedMode(newMode);

@@ -4,7 +4,7 @@ import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { Text, Tooltip, InformationCircle } from '@ragenai/common-ui';
 
-import type { UserFileTypeSafe } from '../FileList/UserDocumentsTable';
+import type { UserFileTypeSafe } from '../FileList/UserFilesTable';
 import { FileInfoPopup } from './FileInfoPopup';
 import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscapeAndOutsideClick';
 import { ToolbarActionsMenu } from '../ToolbarActionsMenu';

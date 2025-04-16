@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@clerk/nextjs';

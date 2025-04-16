@@ -2,7 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
-import { FileType } from '@prisma/client';
+import { EmbeddingStatus, FileType, UserFile } from '@prisma/client';
 import * as CommonUi from '@ragenai/common-ui';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';
@@ -16,43 +16,44 @@ type Props = {
   files: UserFileType[];
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  toggleModal: (fileId: string | null) => void;
-  onAddDocument: (newDocument: UserFileType) => void;
-  onRemoveDocument: (documentId: string) => void;
+  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
+  onAddFile: (newFile: UserFileType) => void;
+  onRemoveFile: (filePublicId: UserFile['public_id']) => void;
   handleDelete: (
-    organization_id: string,
-    documentId: string,
-    fileName: string
+    filePublicId: UserFile['public_id'],
+    fileName: UserFile['file_name']
   ) => void;
 };
 
-export type UserFileTypeSafe = UserFileType & { file_type: FileType };
+export type UserFileTypeSafe = UserFileType & {
+  file_type: FileType;
+  embedding_status: EmbeddingStatus;
+  embedding_started_at: UserFile['embedding_started_at'];
+  embedding_completed_at: UserFile['embedding_completed_at'];
+  embedding_failed_at: UserFile['embedding_failed_at'];
+};
 
-type DocumentRowProps = {
-  document: UserFileTypeSafe;
+type FileRowProps = {
+  file: UserFileTypeSafe;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  handleDelete: (
-    organization_id: string,
-    documentId: string,
-    fileName: string
-  ) => void;
-  toggleModal: (fileId: string | null) => void;
-  onRemoveDocument: (documentPublicId: string) => void;
+  handleDelete: (filePublicId: UserFile['public_id'], fileName: string) => void;
+  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
+  onRemoveFile: (filePublicId: UserFile['public_id']) => void;
 };
 
 export type ModalStateProps = {
   isOpen: boolean;
-  fileId: string | null;
+  filePublicId: UserFile['public_id'] | null;
 };
 
-const DocumentRow = ({
-  document,
+const FileRow = ({
+  file,
   showModal,
   deleteLoading,
   toggleModal,
   handleDelete,
-}: DocumentRowProps) => {
+}: FileRowProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -61,16 +62,20 @@ const DocumentRow = ({
     file_name,
     file_size,
     public_id,
-    organization_id,
-  } = document;
+    embedding_status,
+    embedding_completed_at,
+  } = file;
 
-  const fileIcon = getFileIcon(document.file_type);
+  const fileIcon = getFileIcon(file.file_type);
 
-  const { created_at: formattedCreatedAt, updated_at: formattedUpdatedAt } =
-    useMemo(
-      () => formatDates({ created_at, updated_at }),
-      [created_at, updated_at]
-    );
+  const {
+    created_at: formattedCreatedAt,
+    updated_at: formattedUpdatedAt,
+    embedding_completed_at: formattedEmbeddingCompletedAt,
+  } = useMemo(
+    () => formatDates({ created_at, updated_at, embedding_completed_at }),
+    [created_at, updated_at, embedding_completed_at]
+  );
 
   const truncatedFileName = useMemo(
     () => truncateFileName(file_name, 40),
@@ -79,14 +84,12 @@ const DocumentRow = ({
 
   return (
     <>
-      {/* this is UserFile not UserDocument ! */}
-      {showModal.isOpen && showModal.fileId === document.public_id && (
+      {showModal.isOpen && showModal.filePublicId === file.public_id && (
         <DeleteFileModal
           toggleModal={toggleModal}
           handleDelete={handleDelete}
-          organization_id={organization_id}
-          filePublicId={document.public_id}
-          fileName={document.file_name}
+          filePublicId={file.public_id}
+          fileName={file.file_name}
           isLoading={deleteLoading}
         />
       )}
@@ -109,11 +112,15 @@ const DocumentRow = ({
         </CommonUi.TableCell>
         <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
         <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-        <CommonUi.TableCell>{formattedUpdatedAt}</CommonUi.TableCell>
+        <CommonUi.TableCell>
+          {embedding_status === EmbeddingStatus.COMPLETED
+            ? formattedEmbeddingCompletedAt
+            : '-'}
+        </CommonUi.TableCell>
         <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
           <ToolbarActions
             filePublicId={public_id!}
-            documentPublicId={document.document?.public_id}
+            documentPublicId={file.document?.public_id}
             fileName={file_name}
             toggleModal={toggleModal}
             isLoading={isLoading}
@@ -124,13 +131,13 @@ const DocumentRow = ({
   );
 };
 
-export const UserDocumentsTable = ({
+export const UserFilesTable = ({
   files,
   showModal,
   deleteLoading,
   toggleModal,
   handleDelete,
-  onRemoveDocument,
+  onRemoveFile,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const [searchValue, setSearchValue] = useState('');
@@ -155,7 +162,7 @@ export const UserDocumentsTable = ({
             <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
             <CommonUi.TableHeader>{t('file-size')}</CommonUi.TableHeader>
             <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('updated')}</CommonUi.TableHeader>
+            <CommonUi.TableHeader>{t('processed')}</CommonUi.TableHeader>
             <CommonUi.TableHeader>
               <span className="sr-only">Actions</span>
             </CommonUi.TableHeader>
@@ -164,14 +171,14 @@ export const UserDocumentsTable = ({
         <CommonUi.TableBody>
           {filteredDocuments.length > 0 ? (
             filteredDocuments.map((file) => (
-              <DocumentRow
+              <FileRow
                 deleteLoading={deleteLoading}
                 key={file.public_id}
-                document={file}
+                file={file}
                 showModal={showModal}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
-                onRemoveDocument={onRemoveDocument}
+                onRemoveFile={onRemoveFile}
               />
             ))
           ) : (
