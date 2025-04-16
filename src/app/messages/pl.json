@@ -226,7 +226,7 @@
   },
   "admin-panel": {
     "no-files": "Nie wybrano żadnych plików do wysłania",
-    "success": "Wszystkie pliki zostały pomyślnie przetworzone",
+    "success": "Pliki zostały wgrane - trwa ich przetwarzanie",
     "error": "Wystąpił błąd",
     "sending-files-error": "Wystąpił błąd podczas wysyłania plików",
     "sending": "Wysyłanie",
@@ -249,7 +249,7 @@
     "preview": "Podgląd",
     "title-error": "Tytuł jest wymagany",
     "content-error": "Treść jest wymagana",
-    "created-successful": "Stworzono dokument",
+    "created-successful": "Stworzono dokument - trwa jego przetwarzanie",
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
@@ -698,6 +698,7 @@
   "notifications": {
     "success": "Sukces",
     "info": "Info",
-    "error": "Błąd"
+    "error": "Błąd",
+    "document-parsed-and-embedded": "Plik został przetworzony"
   }
 }

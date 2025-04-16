@@ -140,8 +140,8 @@ export const getUserFiles = async () => {
     const orgId = getOrgIdOrThrow();
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
-    const documentDetails = await fetchFilesDetails(orgId);
-    return { documentDetails };
+    const files = await fetchFilesDetails(orgId);
+    return { files };
   } catch (error) {
     return {
       error: 'Fetching documents details failed',
@@ -315,6 +315,10 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
       status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
   }
+
+  return {
+    status: StatusCodes.NOT_FOUND,
+  };
 };
 
 //save data to clerk user profile

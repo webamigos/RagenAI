@@ -1,10 +1,7 @@
-'use client';
-
-import { DocumentsProvider } from '@/context/DocumentsContext';
 import { Sidebar } from '../../components/Sidebar';
-import { Toast } from '../../components/Toast';
 import TabsWrapper from './TabsWrapper';
 import { getDefaultProjectPublicId } from '@/app/actions';
+import { ManageKnowledgeProviders } from './Providers';
 
 export default async function AdminLayout({
   children,
@@ -15,15 +12,14 @@ export default async function AdminLayout({
 
   return (
     <div className="h-screen flex flex-col">
-      <Toast />
-      <DocumentsProvider>
-        <Sidebar defaultPublicProjectId={defaultPublicProjectId}>
-          <div className="w-full h-full flex flex-col mt-8">
-            <TabsWrapper />
+      <Sidebar defaultPublicProjectId={defaultPublicProjectId}>
+        <div className="w-full h-full flex flex-col mt-8">
+          <TabsWrapper />
+          <ManageKnowledgeProviders>
             <div className="flex-grow mr-2">{children}</div>
-          </div>
-        </Sidebar>
-      </DocumentsProvider>
+          </ManageKnowledgeProviders>
+        </div>
+      </Sidebar>
     </div>
   );
 }

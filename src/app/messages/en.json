@@ -223,7 +223,7 @@
   },
   "admin-panel": {
     "no-files": "No files have been selected for upload",
-    "success": "All files were successfully processed",
+    "success": "All files were uploaded - now are processed",
     "error": "An error occurred",
     "sending-files-error": "An error occurred while sending files",
     "sending": "Sending",
@@ -246,7 +246,7 @@
     "preview": "Preview",
     "title-error": "Title is required",
     "content-error": "Content is required",
-    "created-successful": "Document created",
+    "created-successful": "Document created - is processed now",
     "send-error": "Error creating document",
     "send": "Send"
   },
@@ -696,6 +696,7 @@
   "notifications": {
     "success": "Success",
     "info": "Info",
-    "error": "Error"
+    "error": "Error",
+    "document-parsed-and-embedded": "File was processed"
   }
 }

@@ -6,13 +6,12 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
-import { useOrganization } from '@clerk/nextjs';
 import TurndownService from 'turndown';
 import { useRouter } from 'next/navigation';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
-import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
+import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import {
   Card,
   Input,
@@ -27,8 +26,6 @@ import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
 import { logger } from '@/app/lib/utils/logger';
-import { FileType } from '@prisma/client';
-import { UserFileType } from '@/app/contracts/Documents';
 
 const schema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -47,9 +44,7 @@ export const DocumentCreator = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const t = useTranslations('create-document');
-  const { successToast, errorToast } = statusToast();
-  const { organization } = useOrganization();
-  const { addDocument } = useUserDocumentsContext();
+  const { infoToast, errorToast } = statusToast();
   const router = useRouter();
 
   const {
@@ -75,11 +70,9 @@ export const DocumentCreator = () => {
   };
 
   const onSubmit = async (data: DocumentSchema) => {
-    if (!organization) return;
     setIsLoading(true);
 
     try {
-      // const organizationId = organization.id;
       const markdownContent = turndownService.turndown(editorContent);
 
       const formData = new FormData();
@@ -89,7 +82,6 @@ export const DocumentCreator = () => {
           type: 'text/markdown',
         })
       );
-      formData.append('organizationId', organization.id);
 
       const response = await uploadFiles(formData);
 
@@ -109,7 +101,7 @@ export const DocumentCreator = () => {
         reset();
         router.push('/manage-knowledge/documents-list');
 
-        successToast({ message: t('created-successful') });
+        infoToast({ message: t('created-successful') });
       } else if (response.message) {
         errorToast({ message: response.message });
       }

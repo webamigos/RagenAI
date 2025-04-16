@@ -2,10 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 import { Card } from '@ragenai/common-ui/Card';
-import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
+import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { deleteFileAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useSettings } from '@/app/hooks/useSettings';
@@ -19,11 +18,10 @@ import { UserFile } from '@prisma/client';
 
 export type ModalStateProps = {
   isOpen: boolean;
-  fileId: string | null;
+  filePublicId: UserFile['public_id'] | null;
 };
 
 export const FileListWrapper = () => {
-  const t = useTranslations('files-table');
   const { successToast, errorToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
@@ -33,7 +31,7 @@ export const FileListWrapper = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
     isOpen: false,
-    fileId: null,
+    filePublicId: null,
   });
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,27 +55,27 @@ export const FileListWrapper = () => {
 
   const { refreshSettings } = useSettings();
 
-  const toggleModal = (fileId: string | null = null) => {
+  const toggleModal = (filePublicId: UserFile['public_id'] | null = null) => {
     setShowModal((prevState) => ({
       ...prevState,
       isOpen: !prevState.isOpen,
-      fileId: prevState.isOpen ? null : fileId,
+      filePublicId: prevState.isOpen ? null : filePublicId,
     }));
   };
 
   // TODO: refactor to files
-  const { documents, isLoading, isError, addDocument, removeDocument } =
-    useUserDocumentsContext();
+  const { files, isLoading, isError, addFile, removeFile } =
+    useUserFilesContext();
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value.trim());
   };
 
   const defaultProjectFiles = useMemo(() => {
-    return documents.filter((doc) =>
-      doc.file_name.toLowerCase().includes(searchValue.toLowerCase())
+    return files.filter((file) =>
+      file.file_name.toLowerCase().includes(searchValue.toLowerCase())
     );
-  }, [documents, searchValue]);
+  }, [files, searchValue]);
 
   const handleDelete = async (
     filePublicId: UserFile['public_id'],
@@ -88,7 +86,7 @@ export const FileListWrapper = () => {
       const { status } = await deleteFileAction(filePublicId);
 
       if (status === 200) {
-        removeDocument(documentId);
+        removeFile(filePublicId);
         refreshSettings();
         successToast({ message: `${tSuccess('deleted')}: ${fileName}` });
       }
@@ -119,8 +117,8 @@ export const FileListWrapper = () => {
           isError={isError}
           deleteLoading={deleteLoading}
           isLoading={isLoading}
-          addDocument={addDocument}
-          removeDocument={removeDocument}
+          addFile={addFile}
+          removeFile={removeFile}
           files={defaultProjectFiles}
           showModal={showModal}
           toggleModal={toggleModal}
@@ -131,9 +129,9 @@ export const FileListWrapper = () => {
           deleteLoading={deleteLoading}
           isError={isError}
           isLoading={isLoading}
-          addDocument={addDocument}
+          addFile={addFile}
           showModal={showModal}
-          removeDocument={removeDocument}
+          removeFile={removeFile}
           files={defaultProjectFiles}
           toggleModal={toggleModal}
           handleDelete={handleDelete}

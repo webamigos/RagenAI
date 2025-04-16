@@ -1,10 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useOrganization } from '@clerk/nextjs';
 import { statusToast } from '@/app/lib/utils/toast';
 import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
 import { uploadProjectFiles } from '@/app/lib/services/api';
-import { FileType } from '@prisma/client';
+import { FileType, UserFile } from '@prisma/client';
 
 export enum FileListState {
   LOADING,
@@ -21,7 +20,6 @@ type ProjectFile = {
   created_at: Date | null;
   updated_at?: Date | null;
   metadata?: any;
-  organization_id: string;
 };
 
 export const useProjectFiles = (
@@ -37,13 +35,10 @@ export const useProjectFiles = (
   const [isUploading, setIsUploading] = useState(false);
 
   const initialLoadComplete = useRef(false);
-  const { organization } = useOrganization();
   const router = useRouter();
   const { successToast, errorToast } = statusToast();
 
   const loadFiles = useCallback(async () => {
-    if (!organization) return;
-
     try {
       if (!initialLoadComplete.current) {
         setListState(FileListState.LOADING);
@@ -74,15 +69,18 @@ export const useProjectFiles = (
         onFilesLoaded(false);
       }
     }
-  }, [organization, projectPublicId, onFilesLoaded]);
+  }, [projectPublicId, onFilesLoaded]);
 
   const handleDeleteFile = useCallback(
-    async (fileId: string) => {
-      if (!organization || deletingFileId) return;
+    async (publicFileId: UserFile['public_id']) => {
+      if (deletingFileId) return;
 
       try {
-        setDeletingFileId(fileId);
-        const result = await deleteProjectFileAction(fileId, projectPublicId);
+        setDeletingFileId(publicFileId);
+        const result = await deleteProjectFileAction(
+          publicFileId,
+          projectPublicId
+        );
 
         if (result.error) {
           throw new Error(result.error);

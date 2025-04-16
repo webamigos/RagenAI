@@ -16,10 +16,10 @@ import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
 import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
-import { getOrgIdOrThrow } from '@/app/lib/services/clerk';
 import db from '@ragenai/prisma-client';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/app/contracts/Workflows';
+
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -35,10 +35,9 @@ export async function POST(request: NextRequest) {
     setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
-    const organizationId = getOrgIdOrThrow();
     const formProjectId = formData.get('projectId')?.toString();
 
-    setSentryClerkOrganizationTag(organizationId);
+    setSentryClerkOrganizationTag(orgId);
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -47,9 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const defaultProjectId = await fetchOrganizationDefaultProjectId(
-      organizationId
-    );
+    const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
 
     if (!defaultProjectId) {
       throw new Error('Default project ID is missing');
@@ -68,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     for (const file of files) {
       try {
-        const parsedFile = await parseFile(file, organizationId);
+        const parsedFile = await parseFile(file, orgId);
         const fileType = getFileType(parsedFile.fileName);
         const fileExtension = parsedFile.fileExtension;
 
@@ -78,7 +75,7 @@ export async function POST(request: NextRequest) {
         const fileRecord = await createFileDetailsInDB(
           parsedFile.fileName,
           file.size,
-          organizationId,
+          orgId,
           fileType,
           projectRecord?.id ?? defaultProjectId
         );
@@ -239,7 +236,7 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-    await saveOrganizationPublicMetadata(organizationId, {
+    await saveOrganizationPublicMetadata(orgId, {
       hasKnowledge: true,
     });
     return NextResponse.json({

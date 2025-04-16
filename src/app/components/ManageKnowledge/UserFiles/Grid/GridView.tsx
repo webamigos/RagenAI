@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Text } from '@ragenai/common-ui/Text';
-import { FileType } from '@prisma/client';
+import { FileType, UserFile } from '@prisma/client';
 
 import { FileCard } from './FileCard';
 import { DeleteFileModal } from '../DeleteFileModal';
@@ -20,13 +20,12 @@ type GridViewProps = {
   isError: boolean;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  toggleModal: (fileId: string | null) => void;
-  addDocument: (newDocument: UserFileType) => void;
-  removeDocument: (documentId: string) => void;
+  toggleModal: (publicFileId: UserFile['public_id'] | null) => void;
+  addFile: (newFile: UserFileType) => void;
+  removeFile: (publicFileId: UserFile['public_id']) => void;
   handleDelete: (
-    organization_id: string,
-    documentId: string,
-    fileName: string
+    filePublicId: UserFile['public_id'],
+    fileName: UserFile['file_name']
   ) => void;
 };
 
@@ -71,16 +70,16 @@ export const GridView = ({
 
         return (
           <>
-            {showModal.isOpen && showModal.fileId === safeFile.public_id && (
-              <DeleteFileModal
-                toggleModal={toggleModal}
-                handleDelete={handleDelete}
-                fileName={safeFile.file_name}
-                filePublicId={safeFile.public_id} // ist's UserFile not UserDocument
-                organization_id={safeFile.organization_id}
-                isLoading={deleteLoading}
-              />
-            )}
+            {showModal.isOpen &&
+              showModal.filePublicId === safeFile.public_id && (
+                <DeleteFileModal
+                  toggleModal={toggleModal}
+                  handleDelete={handleDelete}
+                  fileName={safeFile.file_name}
+                  filePublicId={safeFile.public_id}
+                  isLoading={deleteLoading}
+                />
+              )}
             <FileCard
               key={safeFile.public_id}
               file={safeFile}

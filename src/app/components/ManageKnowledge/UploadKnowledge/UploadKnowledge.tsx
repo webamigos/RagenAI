@@ -2,12 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
 
 import { Card, FileUploader, Button } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
-import { useUserDocumentsContext } from '@/app/hooks/useUserDocumentsContext';
 import { useSettings } from '@/app/hooks/useSettings';
 
 import { UploadList } from './UploadList';
@@ -19,15 +17,10 @@ export const UploadKnowledge = () => {
   const { push } = useRouter();
   const [_, startTransition] = useTransition();
 
-  const { refreshDocuments } = useUserDocumentsContext();
-  const { successToast, errorToast } = statusToast();
+  // const { refreshFiles } = useUserFilesContext(); // Moved to worker
+  const { infoToast, errorToast } = statusToast();
   const t = useTranslations('admin-panel');
-  const { organization } = useOrganization();
   const { refreshSettings } = useSettings();
-
-  if (!organization) {
-    return;
-  }
 
   const handleFilesAdded = (newFiles: File[]) => {
     //To refactor
@@ -71,9 +64,9 @@ export const UploadKnowledge = () => {
     try {
       const response = await uploadFiles(formData);
       if (response.status === 200) {
-        successToast({ message: t('success') });
+        infoToast({ message: t('success') });
         setFiles([]);
-        refreshDocuments();
+        // refreshFiles();
         startTransition(() => {
           push('/manage-knowledge/documents-list');
         });
