@@ -11,7 +11,11 @@ import { logger } from '../utils/logger';
 const verbose = process.env.NODE_ENV === 'development';
 
 export const MODELS_MAP = {
-  google: ['gemini-2.0-flash', 'gemini-2.5-pro-exp-03-25'],
+  google: [
+    'gemini-2.5-flash-preview-04-17',
+    'gemini-2.5-pro-preview-03-25',
+    'gemini-2.0-flash',
+  ],
   openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o1-mini', 'o3-mini'],
   anthropic: [
     'claude-3-7-sonnet-latest',
