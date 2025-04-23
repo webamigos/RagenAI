@@ -29,7 +29,7 @@ export function Listbox<T>({
           // Basic layout
           'group relative block w-full',
           // Background color + shadow applied to inset pseudo element, so shadow blends with border in light mode
-          'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white before:shadow-sm',
+          'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white before:shadow-xs',
           // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
           'dark:before:hidden',
           // Hide default focus styles
@@ -64,9 +64,9 @@ export function Listbox<T>({
             // Background color
             'bg-transparent dark:bg-white/5',
             // Invalid state
-            'group-data-invalid:border-red-500 group-data-hover:group-data-invalid:border-red-500 dark:group-data-invalid:border-red-600 dark:data-hover:group-data-invalid:border-red-600',
+            'group-data-invalid:border-red-500 group-data-invalid:group-data-hover:border-red-500 dark:group-data-invalid:border-red-600 dark:group-data-invalid:data-hover:border-red-600',
             // Disabled state
-            'group-data-disabled:border-zinc-950/20 group-data-disabled:opacity-100 dark:group-data-disabled:border-white/15 dark:group-data-disabled:bg-white/[2.5%] dark:group-data-disabled:data-hover:border-white/15',
+            'group-data-disabled:border-zinc-950/20 group-data-disabled:opacity-100 dark:group-data-disabled:border-white/15 dark:group-data-disabled:bg-white/[2.5%] dark:data-hover:group-data-disabled:border-white/15',
           ])}
         />
         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -129,11 +129,11 @@ export function ListboxOption<T>({
     // Base
     'flex min-w-0 items-center',
     // Icons
-    '*:data-[slot=icon]:size-5 *:data-[slot=icon]:shrink-0 sm:*:data-[slot=icon]:size-4',
-    '*:data-[slot=icon]:text-zinc-500 group-data-focus/option:*:data-[slot=icon]:text-white dark:*:data-[slot=icon]:text-zinc-400',
-    'forced-colors:*:data-[slot=icon]:text-[CanvasText] forced-colors:group-data-focus/option:*:data-[slot=icon]:text-[Canvas]',
+    'data-[slot=icon]:*:size-5 data-[slot=icon]:*:shrink-0 sm:data-[slot=icon]:*:size-4',
+    'data-[slot=icon]:*:text-zinc-500 data-[slot=icon]:*:group-data-focus/option:text-white dark:data-[slot=icon]:*:text-zinc-400',
+    'forced-colors:data-[slot=icon]:*:text-[CanvasText] forced-colors:data-[slot=icon]:*:group-data-focus/option:text-[Canvas]',
     // Avatars
-    '*:data-[slot=avatar]:-mx-0.5 *:data-[slot=avatar]:size-6 sm:*:data-[slot=avatar]:size-5'
+    'data-[slot=avatar]:*:-mx-0.5 data-[slot=avatar]:*:size-6 sm:data-[slot=avatar]:*:size-5'
   );
 
   return (

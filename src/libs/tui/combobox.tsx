@@ -52,7 +52,7 @@ export function Combobox<T>({
           // Basic layout
           'relative block w-full',
           // Background color + shadow applied to inset pseudo element, so shadow blends with border in light mode
-          'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white before:shadow-sm',
+          'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white before:shadow-xs',
           // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
           'dark:before:hidden',
           // Focus ring
@@ -152,11 +152,11 @@ export function ComboboxOption<T>({
     // Base
     'flex min-w-0 items-center',
     // Icons
-    '*:data-[slot=icon]:size-5 *:data-[slot=icon]:shrink-0 sm:*:data-[slot=icon]:size-4',
-    '*:data-[slot=icon]:text-zinc-500 group-data-focus/option:*:data-[slot=icon]:text-white dark:*:data-[slot=icon]:text-zinc-400',
-    'forced-colors:*:data-[slot=icon]:text-[CanvasText] forced-colors:group-data-focus/option:*:data-[slot=icon]:text-[Canvas]',
+    'data-[slot=icon]:*:size-5 data-[slot=icon]:*:shrink-0 sm:data-[slot=icon]:*:size-4',
+    'data-[slot=icon]:*:text-zinc-500 data-[slot=icon]:*:group-data-focus/option:text-white dark:data-[slot=icon]:*:text-zinc-400',
+    'forced-colors:data-[slot=icon]:*:text-[CanvasText] forced-colors:data-[slot=icon]:*:group-data-focus/option:text-[Canvas]',
     // Avatars
-    '*:data-[slot=avatar]:-mx-0.5 *:data-[slot=avatar]:size-6 sm:*:data-[slot=avatar]:size-5'
+    'data-[slot=avatar]:*:-mx-0.5 data-[slot=avatar]:*:size-6 sm:data-[slot=avatar]:*:size-5'
   );
 
   return (

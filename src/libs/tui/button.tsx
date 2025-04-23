@@ -14,7 +14,7 @@ const styles = {
     // Disabled
     'data-disabled:opacity-50',
     // Icon
-    '*:data-[slot=icon]:-mx-0.5 *:data-[slot=icon]:my-0.5 *:data-[slot=icon]:size-5 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center *:data-[slot=icon]:text-(--btn-icon) sm:*:data-[slot=icon]:my-1 sm:*:data-[slot=icon]:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:data-hover:[--btn-icon:ButtonText]',
+    'data-[slot=icon]:*:-mx-0.5 data-[slot=icon]:*:my-0.5 data-[slot=icon]:*:size-5 data-[slot=icon]:*:shrink-0 data-[slot=icon]:*:self-center data-[slot=icon]:*:text-(--btn-icon) sm:data-[slot=icon]:*:my-1 sm:data-[slot=icon]:*:size-4 forced-colors:[--btn-icon:ButtonText] forced-colors:data-hover:[--btn-icon:ButtonText]',
   ],
   solid: [
     // Optical border, implemented as the button background to avoid corner artifacts
@@ -24,7 +24,7 @@ const styles = {
     // Button background, implemented as foreground layer to stack on top of pseudo-border layer
     'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-lg)-1px)] before:bg-(--btn-bg)',
     // Drop shadow, applied to the inset `before` layer so it blends with the border
-    'before:shadow-sm',
+    'before:shadow-xs',
     // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
     'dark:before:hidden',
     // Dark mode: Subtle white outline is applied using a border
@@ -158,7 +158,7 @@ const styles = {
   },
 };
 
-type ButtonProps = (
+export type ButtonProps = (
   | { color?: keyof typeof styles.colors; outline?: never; plain?: never }
   | { color?: never; outline: true; plain?: never }
   | { color?: never; outline?: never; plain: true }

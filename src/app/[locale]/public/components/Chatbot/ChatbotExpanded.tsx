@@ -45,10 +45,10 @@ export const ChatbotExpanded = ({
           </button>
         </div>
       </div>
-      <div className={`flex-grow ${isMinimized ? 'hidden' : 'flex flex-col'}`}>
+      <div className={`grow ${isMinimized ? 'hidden' : 'flex flex-col'}`}>
         <iframe
           src={`/en/public/${organizationId}?widgetMode=true`}
-          className="w-full flex-grow border-0"
+          className="w-full grow border-0"
         />
       </div>
       <div

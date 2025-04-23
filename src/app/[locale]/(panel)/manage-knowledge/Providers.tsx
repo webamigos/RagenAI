@@ -9,7 +9,7 @@ type Props = {
 export const ManageKnowledgeProviders = ({ children }: Props) => {
   return (
     <FilesProvider>
-      <div className="flex-grow mr-2">{children}</div>
+      <div className="grow mr-2">{children}</div>
     </FilesProvider>
   );
 };

@@ -96,7 +96,7 @@ export const CustomContent: Story = {
 
 export const NoShadowCard: Story = {
   args: {
-    title: 'No shadow card',
+    title: 'No shadow-sm card',
     size: 'md',
     // shadow: false,
     children: (

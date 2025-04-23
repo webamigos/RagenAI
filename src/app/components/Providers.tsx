@@ -43,9 +43,9 @@ export function Providers({ children }: Props) {
         <>
           <ThemeWatcher />
           {children}
-          <Toast />
           <Notifications />
         </>
+        <Toast />
       </ThemeProvider>
     </Provider>
   );

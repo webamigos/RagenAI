@@ -16,7 +16,7 @@ export default async function AdminLayout({
         <div className="w-full h-full flex flex-col mt-8">
           <TabsWrapper />
           <ManageKnowledgeProviders>
-            <div className="flex-grow mr-2">{children}</div>
+            <div className="grow mr-2">{children}</div>
           </ManageKnowledgeProviders>
         </div>
       </Sidebar>

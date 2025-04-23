@@ -257,7 +257,7 @@ export default function DocumentPage({ params }: DocumentPageProps) {
                   }
                 }}
                 autoFocus
-                className="py-1 max-w-96 min-w-24	text-md md:text-xl font-bold bg-transparent outline-none"
+                className="py-1 max-w-96 min-w-24	text-md md:text-xl font-bold bg-transparent outline-hidden"
               />
               {errorsTitle.title && (
                 <span className="text-red-500">

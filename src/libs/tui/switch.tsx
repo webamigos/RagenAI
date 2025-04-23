@@ -13,9 +13,9 @@ export function SwitchGroup({
       className={clsx(
         className,
         // Basic groups
-        'space-y-3 **:data-[slot=label]:font-normal',
+        'space-y-3 data-[slot=label]:**:font-normal',
         // With descriptions
-        'has-data-[slot=description]:space-y-6 has-data-[slot=description]:**:data-[slot=label]:font-medium'
+        'has-data-[slot=description]:space-y-6 data-[slot=label]:**:has-data-[slot=description]:font-medium'
       )}
     />
   );
@@ -34,13 +34,13 @@ export function SwitchField({
         // Base layout
         'grid grid-cols-[1fr_auto] gap-x-8 gap-y-1 sm:grid-cols-[1fr_auto]',
         // Control layout
-        '*:data-[slot=control]:col-start-2 *:data-[slot=control]:self-start sm:*:data-[slot=control]:mt-0.5',
+        'data-[slot=control]:*:col-start-2 data-[slot=control]:*:self-start sm:data-[slot=control]:*:mt-0.5',
         // Label layout
-        '*:data-[slot=label]:col-start-1 *:data-[slot=label]:row-start-1',
+        'data-[slot=label]:*:col-start-1 data-[slot=label]:*:row-start-1',
         // Description layout
-        '*:data-[slot=description]:col-start-1 *:data-[slot=description]:row-start-2',
+        'data-[slot=description]:*:col-start-1 data-[slot=description]:*:row-start-2',
         // With description
-        'has-data-[slot=description]:**:data-[slot=label]:font-medium'
+        'data-[slot=label]:**:has-data-[slot=description]:font-medium'
       )}
     />
   );
@@ -185,12 +185,12 @@ export function Switch({
           // Invisible border so the switch is still visible in forced-colors mode
           'border border-transparent',
           // Unchecked
-          'bg-white shadow-sm ring-1 ring-black/5',
+          'bg-white shadow-xs ring-1 ring-black/5',
           // Checked
           'group-data-checked:bg-(--switch) group-data-checked:shadow-(--switch-shadow) group-data-checked:ring-(--switch-ring)',
           'group-data-checked:translate-x-4 sm:group-data-checked:translate-x-3',
           // Disabled
-          'group-data-checked:group-data-disabled:bg-white group-data-checked:group-data-disabled:shadow-sm group-data-checked:group-data-disabled:ring-black/5'
+          'group-data-disabled:group-data-checked:bg-white group-data-disabled:group-data-checked:shadow-xs group-data-disabled:group-data-checked:ring-black/5'
         )}
       />
     </Headless.Switch>

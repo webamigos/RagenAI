@@ -417,7 +417,7 @@
     "name-is-to-short": "Name is to short - use at least 3 characters",
     "failed-to-load": "Failed to load keys",
     "assistant": "Assistant",
-    "project-is-required": "Assistant is required",
+    "project-is-required": "Knowledge source is required",
     "copy": "Copy",
     "done": "Done",
     "dialog": {
