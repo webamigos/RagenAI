@@ -40,11 +40,9 @@ export function Providers({ children }: Props) {
   return (
     <Provider store={store}>
       <ThemeProvider attribute="class" defaultTheme="system">
-        <>
-          <ThemeWatcher />
-          {children}
-          <Notifications />
-        </>
+        <ThemeWatcher />
+        {children}
+        <Notifications />
         <Toast />
       </ThemeProvider>
     </Provider>

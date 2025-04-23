@@ -316,6 +316,7 @@
     "add-from-url": "Dodaj wiedzę z linku"
   },
   "sidebar": {
+    "back": "Powrót",
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
@@ -477,7 +478,8 @@
     "per-year": "rocznie",
     "already-active": "Masz już aktywny plan płatny!",
     "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
-    "view-subscription": "Zarządzaj swoją subskrypcją"
+    "view-subscription": "Zarządzaj swoją subskrypcją",
+    "back-to-subscription": "Powrót do subskrypcji"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",

@@ -4,8 +4,7 @@ import {
   getAccountSetupStatusAction,
   getDefaultProjectPublicId,
 } from '@/app/actions';
-// import { Sidebar } from '../../components/Sidebar';
-import { Toast } from '../../components/Toast';
+
 import { redirect } from 'next/navigation';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -26,14 +25,11 @@ import {
 } from '@ragenai/tui/navbar';
 import {
   Sidebar,
-  SidebarBody,
   SidebarFooter,
   SidebarHeader,
-  SidebarHeading,
   SidebarItem,
   SidebarLabel,
   SidebarSection,
-  SidebarSpacer,
 } from '@ragenai/tui/sidebar';
 import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
 import {
@@ -46,17 +42,9 @@ import {
   ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/16/solid';
-import {
-  Cog6ToothIcon,
-  HomeIcon,
-  InboxIcon,
-  MagnifyingGlassIcon,
-  MegaphoneIcon,
-  QuestionMarkCircleIcon,
-  SparklesIcon,
-  Square2StackIcon,
-  TicketIcon,
-} from '@heroicons/react/20/solid';
+import { InboxIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { NewMainSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewMainSidebarBody';
+import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -89,10 +77,10 @@ export default async function PanelLayout({ children }: Props) {
           <NavbarSpacer />
           <NavbarSection>
             <NavbarItem href="/search" aria-label="Search">
-              <MagnifyingGlassIcon className="w-6 h-6" />
+              <MagnifyingGlassIcon className="w-5 h-5" />
             </NavbarItem>
             <NavbarItem href="/inbox" aria-label="Inbox">
-              <InboxIcon className="w-6 h-6" />
+              <InboxIcon className="w-5 h-5" />
             </NavbarItem>
             <Dropdown>
               <DropdownButton as={NavbarItem}>
@@ -100,25 +88,25 @@ export default async function PanelLayout({ children }: Props) {
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
                 <DropdownItem href="/my-profile">
-                  <UserIcon className="w-6 h-6" />
+                  <UserIcon className="w-5 h-5" />
                   <DropdownLabel>My profile</DropdownLabel>
                 </DropdownItem>
                 <DropdownItem href="/settings">
-                  <Cog8ToothIcon className="w-6 h-6" />
+                  <Cog8ToothIcon className="w-5 h-5" />
                   <DropdownLabel>Settings</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
                 <DropdownItem href="/privacy-policy">
-                  <ShieldCheckIcon className="w-6 h-6" />
+                  <ShieldCheckIcon className="w-5 h-5" />
                   <DropdownLabel>Privacy policy</DropdownLabel>
                 </DropdownItem>
                 <DropdownItem href="/share-feedback">
-                  <LightBulbIcon className="w-6 h-6" />
+                  <LightBulbIcon className="w-5 h-5" />
                   <DropdownLabel>Share feedback</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
                 <DropdownItem href="/logout">
-                  <ArrowRightStartOnRectangleIcon className="w-6 h-6" />
+                  <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
                   <DropdownLabel>Sign out</DropdownLabel>
                 </DropdownItem>
               </DropdownMenu>
@@ -178,50 +166,9 @@ export default async function PanelLayout({ children }: Props) {
               </SidebarItem>
             </SidebarSection>
           </SidebarHeader>
-          <SidebarBody>
-            <SidebarSection>
-              <SidebarItem href="/">
-                <HomeIcon className="w-6 h-6" />
-                <SidebarLabel>Home</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/events">
-                <Square2StackIcon className="w-6 h-6" />
-                <SidebarLabel>Events</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/orders">
-                <TicketIcon className="w-6 h-6" />
-                <SidebarLabel>Orders</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/settings">
-                <Cog6ToothIcon className="w-6 h-6" />
-                <SidebarLabel>Settings</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/broadcasts">
-                <MegaphoneIcon className="w-6 h-6" />
-                <SidebarLabel>Broadcasts</SidebarLabel>
-              </SidebarItem>
-            </SidebarSection>
-            <SidebarSection className="max-lg:hidden">
-              <SidebarHeading>Upcoming Events</SidebarHeading>
-              <SidebarItem href="/events/1">
-                Bear Hug: Live in Concert
-              </SidebarItem>
-              <SidebarItem href="/events/2">Viking People</SidebarItem>
-              <SidebarItem href="/events/3">Six Fingers — DJ Set</SidebarItem>
-              <SidebarItem href="/events/4">We All Look The Same</SidebarItem>
-            </SidebarSection>
-            <SidebarSpacer />
-            <SidebarSection>
-              <SidebarItem href="/support">
-                <QuestionMarkCircleIcon className="w-6 h-6" />
-                <SidebarLabel>Support</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/changelog">
-                <SparklesIcon className="w-6 h-6" />
-                <SidebarLabel>Changelog</SidebarLabel>
-              </SidebarItem>
-            </SidebarSection>
-          </SidebarBody>
+
+          <NewSidebarBody />
+
           <SidebarFooter className="max-lg:hidden">
             <Dropdown>
               <DropdownButton as={SidebarItem}>

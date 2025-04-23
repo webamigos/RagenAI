@@ -3,7 +3,7 @@ import React, { forwardRef } from 'react';
 
 interface Props extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'full';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   className?: string;
 }
 
@@ -14,6 +14,8 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         sm: 'max-w-sm w-full',
         md: 'max-w-md w-full',
         lg: 'max-w-lg w-full',
+        xl: 'max-w-xl w-full',
+        '2xl': 'max-w-2xl w-full',
         full: 'w-full',
       }[size] || 'max-w-md w-full';
 

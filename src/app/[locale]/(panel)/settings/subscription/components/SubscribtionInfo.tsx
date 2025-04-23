@@ -13,6 +13,11 @@ import {
 } from '../actions';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import {
+  DescriptionDetails,
+  DescriptionList,
+  DescriptionTerm,
+} from '@ragenai/tui/description-list';
 
 type Props = {
   subscription: SubscriptionDetails;
@@ -80,70 +85,57 @@ export const SubscriptionInfo = ({
   };
 
   return (
-    <div className="space-y-4 mt-4">
-      <div>
-        <h2 className="text-sm font-medium text-gray-500">
-          {t('current-plan')}
-        </h2>
-        <p className="mt-1 text-lg font-semibold">
-          {plan.name} ({plan.type})
-        </p>
-      </div>
-      <div>
-        <h2 className="text-sm font-medium text-gray-500">{t('status')}</h2>
-        <p className="mt-1 text-lg font-semibold capitalize">
-          <span
-            className={`${
-              status === SubscriptionStatus.ACTIVE
-                ? 'text-green-600'
-                : 'text-red-600'
-            }`}
-          >
-            {status}
-          </span>
-        </p>
-      </div>
-      <div>
-        <h2 className="text-sm font-medium text-gray-500">
-          {t('period-start')}
-        </h2>
-        <p className="mt-1 text-lg font-semibold">
-          {format(current_period_start, 'dd.MM.yyyy')}
-        </p>
-      </div>
+    <DescriptionList>
+      <DescriptionTerm>{t('current-plan')}</DescriptionTerm>
+      <DescriptionDetails>
+        {plan.name} ({plan.type})
+      </DescriptionDetails>
+
+      <DescriptionTerm>{t('status')}</DescriptionTerm>
+      <DescriptionDetails>
+        <span
+          className={`${
+            status === SubscriptionStatus.ACTIVE
+              ? 'text-green-600'
+              : 'text-red-600'
+          }`}
+        >
+          {status}
+        </span>
+      </DescriptionDetails>
+
+      <DescriptionTerm>{t('period-start')}</DescriptionTerm>
+      <DescriptionDetails>
+        {format(current_period_start, 'dd.MM.yyyy')}
+      </DescriptionDetails>
+
       {canceled_at && (
-        <div>
-          <h2 className="text-sm font-medium text-gray-500">
-            {t('canceled-at')}
-          </h2>
-          <p className="mt-1 text-lg font-semibold">
-            {format(canceled_at, 'dd.MM.yyyy')}
-          </p>
-          <p className="text-sm">{t('cancel-subscription-confirmation')}</p>
-        </div>
+        <>
+          <DescriptionTerm>{t('canceled-at')}</DescriptionTerm>
+          <DescriptionDetails>
+            <p>{format(canceled_at, 'dd.MM.yyyy')}</p>
+            <p className="text-sm">{t('cancel-subscription-confirmation')}</p>
+          </DescriptionDetails>
+        </>
       )}
       {trial_end && (
-        <div>
-          <h2 className="text-sm font-medium text-gray-500">
-            {t('trial-ends')}
-          </h2>
-          <p className="mt-1 text-lg font-semibold">
+        <>
+          <DescriptionTerm>{t('trial-ends')}</DescriptionTerm>
+          <DescriptionDetails>
             {format(trial_end, 'dd.MM.yyyy')}
-          </p>
-        </div>
+          </DescriptionDetails>
+        </>
       )}
       {current_period_end && (
-        <div>
-          <h2 className="text-sm font-medium text-gray-500">
-            {t('current-period-ends')}
-          </h2>
-          <p className="mt-1 text-lg font-semibold">
+        <>
+          <DescriptionTerm>{t('current-period-ends')}</DescriptionTerm>
+          <DescriptionDetails>
             {format(current_period_end, 'dd.MM.yyyy')}
-          </p>
-        </div>
+          </DescriptionDetails>
+        </>
       )}
 
-      <div className="flex gap-4 items-center">
+      <div className="mt-6 flex gap-4 items-center">
         {plan.type === PlanType.STRIPE && !canceled_at && (
           <>
             {!showConfirmation ? (
@@ -174,7 +166,9 @@ export const SubscriptionInfo = ({
         )}
 
         {plan.type === PlanType.INTERNAL || canceled_at ? (
-          <Link href="/plans">{t('show-available-plans')}</Link>
+          <Link href="/settings/subscription/plans">
+            {t('show-available-plans')}
+          </Link>
         ) : null}
       </div>
       {canceled_at && (
@@ -201,6 +195,6 @@ export const SubscriptionInfo = ({
           )}
         </>
       )}
-    </div>
+    </DescriptionList>
   );
 };

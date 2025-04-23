@@ -76,9 +76,6 @@ export const ApiKeysList = ({ data, defaultPublicProjectId }: Props) => {
 
   return (
     <div className="flex w-full flex-col">
-      <div className="flex justify-end">
-        <Button href="/settings/api-keys/create">{t('create-key')}</Button>
-      </div>
       <div className="mt-4">
         <Table>
           <TableHead>

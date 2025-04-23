@@ -9,6 +9,8 @@ import { Fallback } from '@/app/components/Fallback';
 import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
 import { ApiKeysList } from '@/app/components/ApiKeys/ApiKeysList';
 import { getDefaultProjectPublicId } from '@/app/actions';
+import { Container } from '@ragenai/common-ui/Container';
+import { Button, Header } from '@ragenai/common-ui';
 
 export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   const t = await getTranslations({ locale, namespace: 'api-keys' });
@@ -31,7 +33,14 @@ export default async function ApiKeysPage({
   }
 
   return (
-    <Card title={t('title')} size="full" className="mb-5">
+    <Container size="full">
+      <div className="flex w-full flex-wrap items-end justify-between gap-4 pb-6 dark:border-white/10">
+        <Header showDivider={false}>{t('title')}</Header>
+        <div className="flex gap-4">
+          <Button href="/settings/api-keys/create">{t('create-key')}</Button>
+        </div>
+      </div>
+
       <Suspense fallback={<Fallback />}>
         {result.payload && (
           <ApiKeysList
@@ -40,6 +49,6 @@ export default async function ApiKeysPage({
           />
         )}
       </Suspense>
-    </Card>
+    </Container>
   );
 }

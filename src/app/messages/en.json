@@ -475,7 +475,8 @@
     "per-year": "yearly",
     "already-active": "You already have an active subscription paid plan!",
     "already-active-description": "To activate a new plan, please activate free plan or wait until your current plan expires.",
-    "view-subscription": "View your subscription"
+    "view-subscription": "View your subscription",
+    "back-to-subscription": "Back to subscription"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",

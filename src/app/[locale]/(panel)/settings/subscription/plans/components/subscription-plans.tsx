@@ -13,7 +13,7 @@ export const SubscriptionPlans = async () => {
   const t = await getTranslations('plans');
 
   return (
-    <Card size="full" className="mb-5 mt-6">
+    <div className="mt-8">
       {stripeSubscriptionIsActive && (
         <div className="mb-4">
           <p className="text-orange-500">
@@ -32,6 +32,6 @@ export const SubscriptionPlans = async () => {
           />
         ))}
       </div>
-    </Card>
+    </div>
   );
 };

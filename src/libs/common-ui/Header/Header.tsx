@@ -6,9 +6,10 @@ import { Divider } from '../Divider';
 
 type Props = {
   children: React.ReactNode;
+  showDivider?: boolean;
 } & ComponentProps<'h1'>;
 
-export const Header = ({ children, className }: Props) => {
+export const Header = ({ children, showDivider = true, className }: Props) => {
   return (
     <>
       <Heading
@@ -19,7 +20,7 @@ export const Header = ({ children, className }: Props) => {
       >
         {children}
       </Heading>
-      <Divider className="mb-2" />
+      {showDivider && <Divider className="mb-2" />}
     </>
   );
 };
