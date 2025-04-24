@@ -52,7 +52,7 @@ export const NewSidebarFooter = () => {
           <ChevronUpIcon className="w-5 h-5" />
         </DropdownButton>
         <DropdownMenu className="min-w-64" anchor="top start">
-          <DropdownItem href="/my-profile">
+          <DropdownItem href="/user/profile">
             <UserIcon className="w-6 h-6" />
             <DropdownLabel>{t('my-profile')}</DropdownLabel>
           </DropdownItem>
