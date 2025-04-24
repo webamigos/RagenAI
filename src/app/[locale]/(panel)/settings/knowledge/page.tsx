@@ -14,5 +14,5 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 }
 
 export default function AdminPage() {
-  redirect('/manage-knowledge/documents-list');
+  redirect('/settings/knowledge/documents-list');
 }

@@ -4,8 +4,9 @@ import { useTheme } from 'next-themes';
 import { dark, experimental__simple } from '@clerk/themes';
 import { OrganizationProfile } from '@clerk/nextjs';
 import { Card } from '@ragenai/common-ui/Card';
-import { SubscriptionDetails } from '@/app/[locale]/my-profile/subscription/types';
 import { FREE_PLAN_NAME, TRIAL_PLAN_NAME } from '@/app/config';
+import { SubscriptionDetails } from '@/app/[locale]/(panel)/settings/subscription/types';
+import { Container } from '@ragenai/common-ui/Container';
 
 type Props = {
   allowAddToOrganization: boolean;
@@ -32,8 +33,8 @@ export const ManageOrganization = ({
   }
 
   return (
-    <Card className="w-full p-0" size="full">
-      <div className="w-full overflow-x-auto">
+    <Container size="full">
+      <div className="w-full mx-auto overflow-x-auto">
         <OrganizationProfile
           afterLeaveOrganizationUrl="/my-profile"
           appearance={{
@@ -63,6 +64,6 @@ export const ManageOrganization = ({
           }}
         />
       </div>
-    </Card>
+    </Container>
   );
 };

@@ -25,7 +25,6 @@ import {
 } from '@ragenai/tui/navbar';
 import {
   Sidebar,
-  SidebarFooter,
   SidebarHeader,
   SidebarItem,
   SidebarLabel,
@@ -35,7 +34,6 @@ import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
-  ChevronUpIcon,
   Cog8ToothIcon,
   LightBulbIcon,
   PlusIcon,
@@ -43,8 +41,8 @@ import {
   UserIcon,
 } from '@heroicons/react/16/solid';
 import { InboxIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
-import { NewMainSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewMainSidebarBody';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
+import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -168,54 +166,7 @@ export default async function PanelLayout({ children }: Props) {
           </SidebarHeader>
 
           <NewSidebarBody />
-
-          <SidebarFooter className="max-lg:hidden">
-            <Dropdown>
-              <DropdownButton as={SidebarItem}>
-                <span className="flex min-w-0 items-center gap-3">
-                  <Avatar
-                    src="/profile-photo.jpg"
-                    className="size-10"
-                    square
-                    alt=""
-                  />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
-                      Erica
-                    </span>
-                    <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
-                      erica@example.com
-                    </span>
-                  </span>
-                </span>
-                <ChevronUpIcon className="w-6 h-6" />
-              </DropdownButton>
-              <DropdownMenu className="min-w-64" anchor="top start">
-                <DropdownItem href="/my-profile">
-                  <UserIcon className="w-6 h-6" />
-                  <DropdownLabel>My profile</DropdownLabel>
-                </DropdownItem>
-                <DropdownItem href="/settings">
-                  <Cog8ToothIcon className="w-6 h-6" />
-                  <DropdownLabel>Settings</DropdownLabel>
-                </DropdownItem>
-                <DropdownDivider />
-                <DropdownItem href="/privacy-policy">
-                  <ShieldCheckIcon className="w-6 h-6" />
-                  <DropdownLabel>Privacy policy</DropdownLabel>
-                </DropdownItem>
-                <DropdownItem href="/support">
-                  <LightBulbIcon className="w-6 h-6" />
-                  <DropdownLabel>Share feedback</DropdownLabel>
-                </DropdownItem>
-                <DropdownDivider />
-                <DropdownItem href="/logout">
-                  <ArrowRightStartOnRectangleIcon className="w-6 h-6" />
-                  <DropdownLabel>Sign out</DropdownLabel>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </SidebarFooter>
+          <NewSidebarFooter />
         </Sidebar>
       }
     >

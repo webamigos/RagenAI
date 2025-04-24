@@ -354,6 +354,13 @@
       "add-files": "Dodaj pliki do bazy wiedzy",
       "create-new-project": "Stwórz nowego asystenta",
       "or": "lub"
+    },
+    "footer": {
+      "my-profile": "Mój profil",
+      "settings": "Ustawienia",
+      "privacy-policy": "Polityka prywatności",
+      "share-feedback": "Twój feedback",
+      "sign-out": "Wyloguj się"
     }
   },
   "search-threads": {

@@ -351,6 +351,13 @@
       "add-files": "Add files to knowledge base",
       "create-new-project": "Create new assistant",
       "or": "or"
+    },
+    "footer": {
+      "my-profile": "My profile",
+      "settings": "Settings",
+      "privacy-policy": "Privacy policy",
+      "share-feedback": "Your feedback",
+      "sign-out": "Sign out"
     }
   },
   "search-threads": {
