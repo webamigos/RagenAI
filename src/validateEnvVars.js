@@ -39,9 +39,10 @@ const envSchema = z.object({
 
   // Temporal
   TEMPORAL_SERVER_ADDRESS: z.string(),
-  TEMPORAL_NAMESPACE: z.string(),
-  TEMPORAL_CERT: z.string(),
-  TEMPORAL_KEY: z.string(),
+  // For Temporal Cloud
+  // TEMPORAL_NAMESPACE: z.string(),
+  // TEMPORAL_CERT: z.string(),
+  // TEMPORAL_KEY: z.string(),
 
   // Qdrant
   QDRANT_URL: z.string().url(),
