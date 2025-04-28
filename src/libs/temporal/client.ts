@@ -1,5 +1,5 @@
 import { Client, Connection } from '@temporalio/client';
-import { TEMPORAL_SERVER_ADDRESS, TEMPORAL_NAMESPACE } from './consts';
+import { TEMPORAL_SERVER_ADDRESS } from './consts';
 
 const createClient = (): Client => {
   // For Temporal Cloud
