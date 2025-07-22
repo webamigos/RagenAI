@@ -38,7 +38,7 @@ export const FileCard = ({ file, isLoading, toggleModal }: Props) => {
     : '-';
 
   return (
-    <div className="p-4 min-w-48 w-full h-48 pb-10 bg-slate-100 dark:bg-accent-dark-500 hover:bg-slate-200 rounded-md shadow relative group">
+    <div className="p-4 min-w-48 w-full h-48 pb-10 bg-slate-100 dark:bg-accent-dark-500 hover:bg-slate-200 rounded-md shadow-sm relative group">
       <div className="h-6 flex items-center justify-between">
         <p className="mr-2">{fileIcon}</p>
         <Tooltip

@@ -316,6 +316,7 @@
     "add-from-url": "Dodaj wiedzę z linku"
   },
   "sidebar": {
+    "back": "Powrót",
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
@@ -353,6 +354,13 @@
       "add-files": "Dodaj pliki do bazy wiedzy",
       "create-new-project": "Stwórz nowego asystenta",
       "or": "lub"
+    },
+    "footer": {
+      "my-profile": "Mój profil",
+      "settings": "Ustawienia",
+      "privacy-policy": "Polityka prywatności",
+      "share-feedback": "Twój feedback",
+      "sign-out": "Wyloguj się"
     }
   },
   "search-threads": {
@@ -419,7 +427,7 @@
     "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
     "failed-to-load": "Błąd podczas pobierania klucza api",
     "assistant": "Asystent",
-    "project-is-required": "Asystent jest wymagany",
+    "project-is-required": "Źródło wiedzy jest wymagane",
     "copy": "Kopiuj",
     "done": "Gotowe",
     "dialog": {
@@ -477,7 +485,8 @@
     "per-year": "rocznie",
     "already-active": "Masz już aktywny plan płatny!",
     "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
-    "view-subscription": "Zarządzaj swoją subskrypcją"
+    "view-subscription": "Zarządzaj swoją subskrypcją",
+    "back-to-subscription": "Powrót do subskrypcji"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",

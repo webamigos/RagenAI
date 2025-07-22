@@ -18,9 +18,12 @@ import {
   TrashIcon,
 } from '@ragenai/common-ui';
 
+import { Button } from '@ragenai/tui';
+
 import { RemoveApiKeyDialog } from './RemoveApiKey/RemoveApiKeyDialog';
 import { removeApiKey } from './RemoveApiKey/actions';
 import { Link } from '@/i18n/routing';
+import { PlusIcon } from '@heroicons/react/16/solid';
 
 type Props = {
   data: {
@@ -73,14 +76,6 @@ export const ApiKeysList = ({ data, defaultPublicProjectId }: Props) => {
 
   return (
     <div className="flex w-full flex-col">
-      <div className="flex justify-end">
-        <Link
-          href="/my-profile/api-keys/create"
-          className="ring-1 ring-primary-dark rounded-md bg-blue-500 text-white px-2 py-2"
-        >
-          {t('create-key')}
-        </Link>
-      </div>
       <div className="mt-4">
         <Table>
           <TableHead>

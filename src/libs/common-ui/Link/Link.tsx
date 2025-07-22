@@ -22,7 +22,7 @@ export const Link = forwardRef<HTMLAnchorElement, Props>(
           className={classMerge(
             'text-sm font-semibold text-blue-500',
             variant === 'button'
-              ? 'rounded-md bg-ragen-blue px-3.5 py-2.5 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+              ? 'rounded-md bg-ragen-blue px-3.5 py-2.5 text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
               : '',
             variant === 'arrow' ? 'leading-6' : '',
             underline ? 'hover:underline' : '',

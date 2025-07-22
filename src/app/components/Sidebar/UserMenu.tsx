@@ -28,14 +28,14 @@ export const UserMenu = ({ userAvatar, userEmail }: Props) => {
     <Popover className="relative">
       <PopoverButton
         data-testid="avatar-icon"
-        className="block text-sm/6 font-semibold text-white/50 focus:outline-none data-[active]:text-white data-[hover]:text-white data-[focus]:outline-1 data-[focus]:outline-white"
+        className="block text-sm/6 font-semibold text-white/50 focus:outline-hidden data-active:text-white data-hover:text-white data-focus:outline-1 data-focus:outline-white"
       >
         <Avatar
           className="w-9 h-9 mr-1 hidden sm:flex cursor-pointer group-hover:opacity-100"
           src={userAvatar}
         />
       </PopoverButton>
-      <PopoverPanel className="absolute top-12 -right-1 z-50 w-44 divide-y dark:divide-white/5 divide-accent-dark-100 rounded-xl dark:bg-[#253745] bg-[#f6f6f8] text-sm/6 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+      <PopoverPanel className="absolute top-12 -right-1 z-50 w-44 divide-y dark:divide-white/5 divide-accent-dark-100 rounded-xl dark:bg-[#253745] bg-[#f6f6f8] text-sm/6 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-hidden">
         <div className="p-3">
           <Text
             fontSize="sm"

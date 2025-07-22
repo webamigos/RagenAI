@@ -151,7 +151,7 @@ export const Textarea = forwardRef(
               'h-9 w-9',
               disabled
                 ? 'text-gray-300 dark:text-gray-600'
-                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
             )}
             aria-hidden="true"
           />
@@ -162,7 +162,7 @@ export const Textarea = forwardRef(
           <MicrophoneIcon
             className={classMerge(
               'h-7 w-7 mb-1.5',
-              'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+              'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
             )}
             aria-hidden="true"
           />
@@ -176,7 +176,7 @@ export const Textarea = forwardRef(
             className={classMerge(
               'h-9 w-9',
               value?.trim()
-                ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 hover:dark:text-gray-300'
+                ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
                 : 'text-gray-300 dark:text-gray-600'
             )}
             aria-hidden="true"
@@ -198,7 +198,7 @@ export const Textarea = forwardRef(
           {label}
           {mandatory && <span className="text-red-600">*</span>}
         </label>
-        <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
+        <div className={error ? 'relative mt-2 rounded-md shadow-xs' : 'mt-2'}>
           <div className="relative">
             <textarea
               id={id}
@@ -215,12 +215,12 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-none resize-none overflow-y-auto min-h-[50px]',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
                     error,
-                  'shadow-sm': !error,
+                  'shadow-xs': !error,
                 },
                 'pr-12',
                 className

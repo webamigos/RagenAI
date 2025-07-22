@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-import Page from '../app/[locale]/(marketing)/page';
+import Page from '../app/[locale]/(panel)/page';
 
 describe('Page', () => {
   it('should render successfully', () => {
