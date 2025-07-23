@@ -120,10 +120,6 @@ export default async function PanelLayout({ children }: Props) {
                 <MagnifyingGlassIcon className="w-6 h-6" />
                 <SidebarLabel>Search</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/inbox">
-                <InboxIcon className="w-6 h-6" />
-                <SidebarLabel>Inbox</SidebarLabel>
-              </SidebarItem>
             </SidebarSection>
           </SidebarHeader>
 

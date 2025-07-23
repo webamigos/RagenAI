@@ -47,7 +47,7 @@ export const TUIThreadsSection = ({
       {nonEmptyCategories.map(
         ({ title, threads }, categoryIndex) =>
           threads.length > 0 && (
-            <div key={title} className="w-11/12 mt-3">
+            <div key={title} className="w-11/12">
               <SidebarHeading
                 className="text-gray-500 dark:text-gray-100 font-bold p-2 uppercase"
                 role="heading"

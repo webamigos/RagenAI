@@ -88,7 +88,7 @@ export const TUIUserThreadsHistory = ({
         )}
 
         <TUIThreadsSection
-          className="flex flex-col justify-end mt-1"
+          className="flex flex-col justify-end"
           activeThread={activeThread}
           threadCategories={threadCategories}
           lastThreadElementRef={lastThreadElementRef}

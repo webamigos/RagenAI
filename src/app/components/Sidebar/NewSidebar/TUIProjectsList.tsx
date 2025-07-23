@@ -41,7 +41,7 @@ export const TUIProjectsList = ({
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
               plain
-              className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
+              className="p-1  hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
               aria-label="Create new project"
             >
               {projects.length > 0 ? (

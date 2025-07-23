@@ -5,6 +5,7 @@ import {
   SidebarLabel,
   SidebarSection,
   SidebarSpacer,
+  SidebarDivider,
 } from '@ragenai/tui/sidebar';
 import {
   Cog6ToothIcon,
@@ -69,7 +70,7 @@ export const NewMainSidebarBody = () => {
               refreshProjects={refreshProjects}
             />
           )}
-
+          <SidebarDivider />
           {/* Threads History Section */}
           {!onboardingInProgress && !error && (
             <TUIUserThreadsHistory
