@@ -45,7 +45,6 @@ export const NewMainSidebarBody = () => {
     getSidebarThreadsError,
   } = useSidebarLogic();
 
-  // Get default public project id from Redux state
   const { defaultProjectPublicId } = useAppSelector((state) => state.threads);
 
   const projectsWithoutDefault = projects.filter(

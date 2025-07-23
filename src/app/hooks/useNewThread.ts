@@ -64,7 +64,6 @@ export const useNewThread = () => {
   const [isPending, setTransition] = useTransition();
 
   const reduxDispatch = useAppDispatch();
-  // Get default project public id for determining default project threads
   const defaultProjectPublicId = useAppSelector(
     (state) => state.threads.defaultProjectPublicId
   );

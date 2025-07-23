@@ -34,9 +34,7 @@ export const TUIUserThreadsHistory = ({
   useEffect(() => {
     if (isLoading || !hasMore) return;
 
-    // Check for IntersectionObserver support
     if (typeof IntersectionObserver === 'undefined') {
-      // Fallback to scroll-based pagination for older browsers
       const handleScroll = () => {
         const scrollTop =
           window.pageYOffset || document.documentElement.scrollTop;
