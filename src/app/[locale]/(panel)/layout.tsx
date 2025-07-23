@@ -43,6 +43,7 @@ import {
 import { InboxIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
+import { SearchButton } from '@/app/components/Sidebar/SearchButton';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -74,9 +75,9 @@ export default async function PanelLayout({ children }: Props) {
         <Navbar>
           <NavbarSpacer />
           <NavbarSection>
-            <NavbarItem href="/search" aria-label="Search">
+            <SearchButton variant="navbar" aria-label="Search">
               <MagnifyingGlassIcon className="w-5 h-5" />
-            </NavbarItem>
+            </SearchButton>
             <NavbarItem href="/inbox" aria-label="Inbox">
               <InboxIcon className="w-5 h-5" />
             </NavbarItem>
@@ -116,10 +117,10 @@ export default async function PanelLayout({ children }: Props) {
         <Sidebar>
           <SidebarHeader>
             <SidebarSection className="max-lg:hidden">
-              <SidebarItem href="/search">
+              <SearchButton variant="sidebar">
                 <MagnifyingGlassIcon className="w-6 h-6" />
                 <SidebarLabel>Search</SidebarLabel>
-              </SidebarItem>
+              </SearchButton>
             </SidebarSection>
           </SidebarHeader>
 
