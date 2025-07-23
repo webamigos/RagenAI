@@ -173,7 +173,8 @@
     "create-new-thread": "Create a new thread",
     "today": "Today",
     "yesterday": "Yesterday",
-    "older": "Older"
+    "older": "Older",
+    "threads-history": "Conversation history"
   },
   "form": {
     "enter-your-question": "Enter your question",

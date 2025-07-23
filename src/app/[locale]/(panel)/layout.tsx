@@ -115,44 +115,6 @@ export default async function PanelLayout({ children }: Props) {
       sidebar={
         <Sidebar>
           <SidebarHeader>
-            <Dropdown>
-              <DropdownButton as={SidebarItem} className="lg:mb-2.5">
-                <Avatar src="/tailwind-logo.svg" />
-                <SidebarLabel>Tailwind Labs</SidebarLabel>
-                <ChevronDownIcon className="w-6 h-6" />
-              </DropdownButton>
-              <DropdownMenu
-                className="min-w-80 lg:min-w-64"
-                anchor="bottom start"
-              >
-                <DropdownItem href="/teams/1/settings">
-                  <Cog8ToothIcon className="w-6 h-6" />
-                  <DropdownLabel>Settings</DropdownLabel>
-                </DropdownItem>
-                <DropdownDivider />
-                <DropdownItem href="/teams/1">
-                  <Avatar
-                    slot="icon"
-                    src="/tailwind-logo.svg"
-                    className="w-6 h-6"
-                  />
-                  <DropdownLabel>Tailwind Labs</DropdownLabel>
-                </DropdownItem>
-                <DropdownItem href="/teams/2">
-                  <Avatar
-                    slot="icon"
-                    initials="WC"
-                    className="bg-purple-500 text-white"
-                  />
-                  <DropdownLabel>Workcation</DropdownLabel>
-                </DropdownItem>
-                <DropdownDivider />
-                <DropdownItem href="/teams/create">
-                  <PlusIcon className="w-6 h-6" />
-                  <DropdownLabel>New team&hellip;</DropdownLabel>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
             <SidebarSection className="max-lg:hidden">
               <SidebarItem href="/search">
                 <MagnifyingGlassIcon className="w-6 h-6" />

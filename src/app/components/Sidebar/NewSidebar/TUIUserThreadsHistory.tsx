@@ -1,7 +1,7 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { SidebarSection } from '@ragenai/tui/sidebar';
+import { SidebarSection, SidebarHeading } from '@ragenai/tui/sidebar';
 import { TUIThreadsSection } from './TUIThreadsSection';
 import { ThreadHistoryResponse } from '../../../contracts/Message';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';

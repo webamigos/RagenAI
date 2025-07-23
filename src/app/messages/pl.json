@@ -174,7 +174,8 @@
     "create-new-thread": "Stwórz nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
-    "older": "Starsze niż 2 dni"
+    "older": "Starsze niż 2 dni",
+    "threads-history": "Historia konwersacji"
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",

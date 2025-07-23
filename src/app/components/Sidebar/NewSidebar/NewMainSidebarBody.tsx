@@ -9,11 +9,7 @@ import {
 import {
   Cog6ToothIcon,
   HomeIcon,
-  MegaphoneIcon,
   QuestionMarkCircleIcon,
-  SparklesIcon,
-  Square2StackIcon,
-  TicketIcon,
 } from '@heroicons/react/20/solid';
 
 import { useAppSelector } from '@/store/hooks';
