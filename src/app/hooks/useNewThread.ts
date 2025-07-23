@@ -64,8 +64,9 @@ export const useNewThread = () => {
   const [isPending, setTransition] = useTransition();
 
   const reduxDispatch = useAppDispatch();
-  const defaultProjectId = useAppSelector(
-    (state) => state.threads.defaultProjectId
+  // Get default project public id for determining default project threads
+  const defaultProjectPublicId = useAppSelector(
+    (state) => state.threads.defaultProjectPublicId
   );
   const { organization } = useOrganization();
   const { user } = useUser();
@@ -171,8 +172,10 @@ export const useNewThread = () => {
           //this hook logic is reused for global and project-scoped threads
           //for threads connected to the default project id redux threads.userThreads state must be updated
           //for the other projects there is a separate state cell sidebar.projects
-          const projectId = result.thread.project_id;
-          const isDefaultProject = projectId === defaultProjectId;
+          const projectIdNumeric = result.thread.project_id;
+          const isDefaultProject =
+            (!projectIdNumeric && !projectPublicId) ||
+            projectPublicId === defaultProjectPublicId;
           if (isDefaultProject) {
             reduxDispatch(addThread(newThread));
           }
