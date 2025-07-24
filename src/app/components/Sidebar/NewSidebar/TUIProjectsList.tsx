@@ -41,8 +41,8 @@ export const TUIProjectsList = ({
               type="button"
               onClick={() => setIsCreateModalOpen(true)}
               plain
-              className="p-1 mr-4 hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
-              aria-label="Create new project"
+              className="p-1  hover:bg-gray-200 dark:hover:bg-accent-dark-500 rounded-lg transition-colors cursor-pointer"
+              aria-label={t('create-project')}
             >
               {projects.length > 0 ? (
                 <PlusIcon className="w-4 h-4" />
@@ -65,10 +65,8 @@ export const TUIProjectsList = ({
             ) : !isLoading ? (
               <div className="text-center py-4 text-gray-500 dark:text-gray-400">
                 <FolderPlusIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No projects yet</p>
-                <p className="text-xs mt-1">
-                  Click + to create your first project
-                </p>
+                <p className="text-sm">{t('no-projects')}</p>
+                <p className="text-xs mt-1">{t('no-projects-description')}</p>
               </div>
             ) : null}
           </div>

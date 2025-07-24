@@ -42,8 +42,8 @@ export const Start = () => {
         </div>
       )}
 
-      <div className="container mx-auto h-full">
-        <div className="flex flex-col h-full items-center justify-center pb-10">
+      <div className="container mx-auto w-full">
+        <div className="flex flex-col items-center justify-center w-full">
           <OnboardingSteps />
           {shouldShowValidationBoard ? (
             <ValidationBoard />
@@ -57,7 +57,7 @@ export const Start = () => {
             <NewChatInterface />
           )}
           {isLimitLock && !isSignedIn && (
-            <Alert title={t('limit-reached')} type="info" />
+            <Alert title={t('limit-reached')} type="info" className="mt-6" />
           )}
         </div>
       </div>
