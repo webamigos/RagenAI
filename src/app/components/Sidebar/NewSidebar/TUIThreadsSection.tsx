@@ -1,5 +1,6 @@
 import { ComponentProps } from 'react';
 import { ChatBubbleLeftIcon } from '@heroicons/react/20/solid';
+import { useTranslations } from 'next-intl';
 
 import {
   SidebarHeading,
@@ -29,15 +30,15 @@ export const TUIThreadsSection = ({
   lastThreadElementRef,
 }: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
-
+  const t = useTranslations('sidebar.threads');
   const nonEmptyCategories = threadCategories.filter((c) => c.threads?.length);
 
   if (nonEmptyCategories.length === 0) {
     return (
       <div className="text-center py-6 text-gray-500 dark:text-gray-400">
         <ChatBubbleLeftIcon className="w-6 h-6 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No conversations yet</p>
-        <p className="text-xs mt-1">Start a new conversation to see it here</p>
+        <p className="text-sm">{t('no-threads')}</p>
+        <p className="text-xs mt-1">{t('no-threads-description')}</p>
       </div>
     );
   }
