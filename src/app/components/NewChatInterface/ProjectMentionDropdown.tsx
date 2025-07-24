@@ -11,7 +11,7 @@ interface Project {
   public_id: string;
   title: string;
   created_at: Date;
-  organization_id: string;
+  organization_id: string | null;
 }
 
 interface ProjectMentionDropdownProps {
@@ -31,7 +31,6 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
   const { orgId, userId } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch user's projects
   useEffect(() => {
     const loadProjects = async () => {
       if (!orgId || !userId) return;
@@ -41,7 +40,6 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
         const userProjects = await fetchProjectsForUser(orgId, userId);
         setProjects(userProjects);
       } catch (error) {
-        // Handle error silently and set empty projects array
         setProjects([]);
       } finally {
         setLoading(false);
@@ -51,17 +49,14 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     loadProjects();
   }, [orgId, userId]);
 
-  // Filter projects based on query
   const filteredProjects = projects.filter((project) =>
     project.title.toLowerCase().includes(query.toLowerCase())
   );
 
-  // Reset selected index when filtered projects change
   useEffect(() => {
     setSelectedIndex(0);
   }, [filteredProjects.length]);
 
-  // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (filteredProjects.length === 0) return;
@@ -102,7 +97,6 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     };
   }, [filteredProjects, selectedIndex, onSelect, onClose]);
 
-  // Scroll selected item into view
   useEffect(() => {
     if (dropdownRef.current) {
       const selectedElement = dropdownRef.current.children[
@@ -129,7 +123,10 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   if (filteredProjects.length === 0) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+      <div
+        data-project-dropdown
+        className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+      >
         <div className="p-3 text-center text-sm text-gray-500 dark:text-gray-400">
           {query
             ? `No projects found matching "${query}"`
@@ -141,6 +138,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   return (
     <div
+      data-project-dropdown
       ref={dropdownRef}
       className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-48 overflow-y-auto"
     >
@@ -153,13 +151,15 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
           } ${index === 0 ? 'rounded-t-md' : ''} ${
             index === filteredProjects.length - 1 ? 'rounded-b-md' : ''
           }`}
-          onClick={() =>
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             onSelect({
               id: project.id,
               publicId: project.public_id,
               title: project.title,
-            })
-          }
+            });
+          }}
           onMouseEnter={() => setSelectedIndex(index)}
         >
           <FolderIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2 flex-shrink-0" />

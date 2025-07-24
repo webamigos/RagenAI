@@ -26,32 +26,31 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
+  const mentionStartRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Handle text change and detect @ mentions
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
-      const cursorPos = e.target.selectionStart || 0;
+      const cursorPos = e.target.selectionStart ?? 0;
 
-      // Call original onChange if provided
       onChange?.(e);
 
       setCursorPosition(cursorPos);
 
-      // Check for @ mention at cursor position
       const textBeforeCursor = newValue.slice(0, cursorPos);
       const mentionMatch = textBeforeCursor.match(/@([^@\s]*?)$/);
 
       if (mentionMatch) {
         setMentionQuery(mentionMatch[1]);
         setShowDropdown(true);
+        mentionStartRef.current = textBeforeCursor.lastIndexOf('@');
       } else {
         setShowDropdown(false);
         setMentionQuery('');
+        mentionStartRef.current = null;
       }
 
-      // Check if mentioned project was removed from text
       if (
         mentionedProject &&
         !newValue.includes(`@${mentionedProject.title}`)
@@ -62,54 +61,48 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     [onChange, mentionedProject, onProjectMention]
   );
 
-  // Handle project selection from dropdown
   const handleProjectSelect = useCallback(
     (project: MentionedProject) => {
-      if (!textareaRef.current) return;
-
       const textarea = textareaRef.current;
+      if (!textarea) return;
+
       const currentValue = textarea.value;
-
-      // Find the @ position before cursor
-      const textBeforeCursor = currentValue.slice(0, cursorPosition);
-      const mentionStartIndex = textBeforeCursor.lastIndexOf('@');
-
-      if (mentionStartIndex !== -1) {
-        // Replace the @query with @projectTitle
-        const textAfterCursor = currentValue.slice(cursorPosition);
-        const newValue =
-          currentValue.slice(0, mentionStartIndex) +
-          `@${project.title}` +
-          textAfterCursor;
-
-        // Update the actual textarea value first
-        textarea.value = newValue;
-
-        // Create synthetic event to trigger onChange
-        const syntheticEvent = {
-          target: textarea,
-          currentTarget: textarea,
-        } as React.ChangeEvent<HTMLTextAreaElement>;
-
-        onChange?.(syntheticEvent);
-
-        // Update cursor position after the mention
-        const newCursorPos = mentionStartIndex + project.title.length + 1;
-        setTimeout(() => {
-          textarea.focus();
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
-        }, 0);
-
-        onProjectMention?.(project);
+      let currentCursorPos = textarea.selectionStart ?? cursorPosition;
+      if (currentCursorPos === 0 && cursorPosition > 0) {
+        currentCursorPos = cursorPosition;
       }
 
+      const mentionStartIndex = mentionStartRef.current;
+      if (mentionStartIndex === null) return;
+
+      const mentionEndIndex = mentionStartIndex + 1 + mentionQuery.length;
+
+      const newValue =
+        currentValue.slice(0, mentionStartIndex) +
+        `@${project.title}` +
+        currentValue.slice(mentionEndIndex);
+      const newCursorPos = mentionStartIndex + project.title.length + 1;
+
+      const syntheticEvent = {
+        target: { ...textarea, value: newValue },
+        currentTarget: { ...textarea, value: newValue },
+      } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
+
+      onChange?.(syntheticEvent);
+
+      requestAnimationFrame(() => {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        setCursorPosition(newCursorPos);
+      });
+
+      onProjectMention?.(project);
       setShowDropdown(false);
       setMentionQuery('');
     },
-    [cursorPosition, onChange, onProjectMention]
+    [cursorPosition, onChange, onProjectMention, mentionQuery]
   );
 
-  // Handle keyboard events
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (showDropdown) {
@@ -117,31 +110,29 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
           setShowDropdown(false);
           setMentionQuery('');
           e.preventDefault();
+          return;
         }
-        // Let the dropdown handle other navigation keys
+
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          return;
+        }
       }
 
-      // Call original onKeyDown if provided
       textareaProps.onKeyDown?.(e);
     },
-    [showDropdown, textareaProps.onKeyDown]
+    [showDropdown, textareaProps]
   );
 
-  // Handle clicks outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        textareaRef.current &&
-        !textareaRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
+      const target = event.target as HTMLElement;
+      if (textareaRef.current?.contains(target)) return;
+      if (target.closest('[data-project-dropdown]')) return;
+      setShowDropdown(false);
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
@@ -158,7 +149,10 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         <ProjectMentionDropdown
           query={mentionQuery}
           onSelect={handleProjectSelect}
-          onClose={() => setShowDropdown(false)}
+          onClose={() => {
+            setShowDropdown(false);
+            setMentionQuery('');
+          }}
         />
       )}
     </div>
