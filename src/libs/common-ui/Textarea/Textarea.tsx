@@ -162,7 +162,7 @@ export const Textarea = forwardRef(
           <MicrophoneIcon
             className={classMerge(
               'h-7 w-7 mb-1.5',
-              'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
+              'text-gray-600 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300'
             )}
             aria-hidden="true"
           />
@@ -215,7 +215,7 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border-0 px-2.5 py-3 text-gray-900 placeholder:text-gray-400 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border border-gray-300 dark:border-gray-800 px-2.5 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
