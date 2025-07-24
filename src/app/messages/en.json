@@ -173,7 +173,8 @@
     "create-new-thread": "Create a new thread",
     "today": "Today",
     "yesterday": "Yesterday",
-    "older": "Older"
+    "older": "Older",
+    "threads-history": "Conversation history"
   },
   "form": {
     "enter-your-question": "Enter your question",
@@ -328,6 +329,10 @@
     "generate-access-key": "Public access",
     "support-page": "Support Page",
     "return-to-home": "Threads",
+    "threads": {
+      "no-threads": "No conversations yet",
+      "no-threads-description": "Start a new conversation to see it here"
+    },
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -335,7 +340,9 @@
     },
     "projects": {
       "title": "Assistants",
-      "create-project": "Create Assistant"
+      "create-project": "Create Assistant",
+      "no-projects": "No assistants yet",
+      "no-projects-description": "Click + to create your first assistant"
     },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",

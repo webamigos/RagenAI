@@ -174,7 +174,8 @@
     "create-new-thread": "Stwórz nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
-    "older": "Starsze niż 2 dni"
+    "older": "Starsze niż 2 dni",
+    "threads-history": "Historia konwersacji"
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",
@@ -332,6 +333,10 @@
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
     "return-to-home": "Lista wątków",
+    "threads": {
+      "no-threads": "Brak wątków",
+      "no-threads-description": "Rozpocznij nową konwersację, aby zobaczyć ją tutaj"
+    },
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
@@ -339,7 +344,9 @@
     },
     "projects": {
       "title": "Asystenci",
-      "create-project": ""
+      "create-project": "Stwórz asystenta",
+      "no-projects": "Brak asystentów",
+      "no-projects-description": "Kliknij + aby stworzyć swojego pierwszego asystenta"
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",

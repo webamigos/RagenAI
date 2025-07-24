@@ -56,18 +56,9 @@ export const NewSidebarFooter = () => {
             <UserIcon className="w-6 h-6" />
             <DropdownLabel>{t('my-profile')}</DropdownLabel>
           </DropdownItem>
-          <DropdownItem href="/user/settings">
+          <DropdownItem href="/settings">
             <Cog8ToothIcon className="w-6 h-6" />
             <DropdownLabel>{t('settings')}</DropdownLabel>
-          </DropdownItem>
-          <DropdownDivider />
-          <DropdownItem href="/privacy-policy">
-            <ShieldCheckIcon className="w-6 h-6" />
-            <DropdownLabel>{t('privacy-policy')}</DropdownLabel>
-          </DropdownItem>
-          <DropdownItem href="/support">
-            <LightBulbIcon className="w-6 h-6" />
-            <DropdownLabel>{t('share-feedback')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
           <DropdownItem>

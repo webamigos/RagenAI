@@ -72,10 +72,10 @@ export const NewChatInterface = ({
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
       <div className="flex flex-col items-center justify-center text-center">
-        <h1 className="text-2xl font-semibold mb-4">
+        <h1 className="text-2xl font-semibold mb-4 sm:text-3xl">
           {t('new-thread-header')}
         </h1>
-        <p className="text-muted-foreground mb-6">
+        <p className="text-muted-foreground mb-8 text-lg sm:mb-10">
           {projectTitle
             ? t('project-context', { projectTitle })
             : t('new-thread-description')}

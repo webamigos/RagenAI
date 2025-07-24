@@ -43,6 +43,7 @@ import {
 import { InboxIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
+import { SearchButton } from '@/app/components/Sidebar/SearchButton';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -74,9 +75,9 @@ export default async function PanelLayout({ children }: Props) {
         <Navbar>
           <NavbarSpacer />
           <NavbarSection>
-            <NavbarItem href="/search" aria-label="Search">
+            <SearchButton variant="navbar" aria-label="Search">
               <MagnifyingGlassIcon className="w-5 h-5" />
-            </NavbarItem>
+            </SearchButton>
             <NavbarItem href="/inbox" aria-label="Inbox">
               <InboxIcon className="w-5 h-5" />
             </NavbarItem>
@@ -115,53 +116,11 @@ export default async function PanelLayout({ children }: Props) {
       sidebar={
         <Sidebar>
           <SidebarHeader>
-            <Dropdown>
-              <DropdownButton as={SidebarItem} className="lg:mb-2.5">
-                <Avatar src="/tailwind-logo.svg" />
-                <SidebarLabel>Tailwind Labs</SidebarLabel>
-                <ChevronDownIcon className="w-6 h-6" />
-              </DropdownButton>
-              <DropdownMenu
-                className="min-w-80 lg:min-w-64"
-                anchor="bottom start"
-              >
-                <DropdownItem href="/teams/1/settings">
-                  <Cog8ToothIcon className="w-6 h-6" />
-                  <DropdownLabel>Settings</DropdownLabel>
-                </DropdownItem>
-                <DropdownDivider />
-                <DropdownItem href="/teams/1">
-                  <Avatar
-                    slot="icon"
-                    src="/tailwind-logo.svg"
-                    className="w-6 h-6"
-                  />
-                  <DropdownLabel>Tailwind Labs</DropdownLabel>
-                </DropdownItem>
-                <DropdownItem href="/teams/2">
-                  <Avatar
-                    slot="icon"
-                    initials="WC"
-                    className="bg-purple-500 text-white"
-                  />
-                  <DropdownLabel>Workcation</DropdownLabel>
-                </DropdownItem>
-                <DropdownDivider />
-                <DropdownItem href="/teams/create">
-                  <PlusIcon className="w-6 h-6" />
-                  <DropdownLabel>New team&hellip;</DropdownLabel>
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
             <SidebarSection className="max-lg:hidden">
-              <SidebarItem href="/search">
+              <SearchButton variant="sidebar">
                 <MagnifyingGlassIcon className="w-6 h-6" />
                 <SidebarLabel>Search</SidebarLabel>
-              </SidebarItem>
-              <SidebarItem href="/inbox">
-                <InboxIcon className="w-6 h-6" />
-                <SidebarLabel>Inbox</SidebarLabel>
-              </SidebarItem>
+              </SearchButton>
             </SidebarSection>
           </SidebarHeader>
 

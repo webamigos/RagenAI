@@ -2,14 +2,10 @@ import React, { useReducer, useRef, useEffect } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
 
-import {
-  Input,
-  Text,
-  SpinnerSVG,
-  SidebarItem,
-  Dialog,
-  DialogTitle,
-} from '@ragenai/common-ui';
+import { Input } from '@ragenai/tui/input';
+import { Text } from '@ragenai/tui/text';
+import { SidebarItem } from '@ragenai/tui/sidebar';
+import { Dialog, DialogTitle, DialogBody } from '@ragenai/tui/dialog';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchThreadSuggestions } from '../../../actions';
 import { reducer, initialState } from './SearchThreadsReducer';
@@ -100,53 +96,50 @@ export const SearchThreads = React.forwardRef<
   }, [isSearchOpen]);
 
   return (
-    <Dialog
-      onClick={(e) => e.stopPropagation()}
-      size="lg"
-      className="h-96 p-4 overflow-auto"
-      open={isSearchOpen}
-      onClose={closeSearch}
-    >
+    <Dialog size="lg" open={isSearchOpen} onClose={closeSearch}>
       <DialogTitle>{t('title')}</DialogTitle>
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-opacity-50 z-10">
-          <SpinnerSVG size="lg" />
-        </div>
-      )}
-      <form onSubmit={handleSearch}>
-        <Input
-          value={query}
-          onChange={handleInputChange}
-          placeholder={t('placeholder')}
-          className="py-2 mb-4"
-          ref={inputRef}
-        />
-      </form>
-      {suggestions.length > 0 && (
-        <div className="mt-2">
-          {suggestions.map((suggestion) => (
-            <SidebarItem
-              key={suggestion.id}
-              hasIcon
-              href={`/threads/${suggestion.id}`}
-              onClick={() => handleSuggestionClick(suggestion.id)}
-            >
-              {suggestion.title}
-            </SidebarItem>
-          ))}
-        </div>
-      )}
-      <div className="mt-4">
-        {hasSearched && results.length === 0 && suggestions.length === 0 && (
-          <Text className="text-gray-500">{t('no-results')}</Text>
+      <DialogBody className="relative h-96 overflow-auto">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm z-10">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400 dark:border-zinc-600"></div>
+          </div>
         )}
-        {results.length > 0 &&
-          results.map((thread) => (
-            <Text key={thread.id} className="mt-2">
-              {thread.title} - {new Date(thread.createdAt).toLocaleString()}
+        <form onSubmit={handleSearch}>
+          <Input
+            value={query}
+            onChange={handleInputChange}
+            placeholder={t('placeholder')}
+            className="mb-4"
+            ref={inputRef}
+          />
+        </form>
+        {suggestions.length > 0 && (
+          <div className="mt-2">
+            {suggestions.map((suggestion) => (
+              <SidebarItem
+                key={suggestion.id}
+                href={`/threads/${suggestion.id}`}
+                onClick={() => handleSuggestionClick(suggestion.id)}
+              >
+                {suggestion.title}
+              </SidebarItem>
+            ))}
+          </div>
+        )}
+        <div className="mt-4">
+          {hasSearched && results.length === 0 && suggestions.length === 0 && (
+            <Text className="text-zinc-500 dark:text-zinc-400">
+              {t('no-results')}
             </Text>
-          ))}
-      </div>
+          )}
+          {results.length > 0 &&
+            results.map((thread) => (
+              <Text key={thread.id} className="mt-2">
+                {thread.title} - {new Date(thread.createdAt).toLocaleString()}
+              </Text>
+            ))}
+        </div>
+      </DialogBody>
     </Dialog>
   );
 });
