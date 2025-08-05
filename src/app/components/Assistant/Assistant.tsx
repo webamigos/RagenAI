@@ -6,14 +6,17 @@ import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
+import { ProjectContextIndicator } from './ProjectContextIndicator';
 
-import { useOrganization } from '@clerk/nextjs';
-import { useEffect } from 'react';
+import { useOrganization, useUser } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/app/contracts/Message';
 import { useDispatch, useSelector } from 'react-redux';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
 import { RootState } from '@/store';
+import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+import type { Project } from '@prisma/client';
 
 type Props = {
   threadId: string;
@@ -49,10 +52,12 @@ export const Assistant = ({ threadId }: Props) => {
   const messages = reduxMessages.length > 0 ? reduxMessages : localMessages;
 
   const { organization } = useOrganization();
+  const { user } = useUser();
   const dispatch = useDispatch();
   const { voiceId, isRecording } = useSelector(
     (state: RootState) => state.assistant.voice
   );
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     const getVoiceSettings = async () => {
@@ -81,6 +86,25 @@ export const Assistant = ({ threadId }: Props) => {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchAvailableProjects = async () => {
+      if (!organization?.id || !user?.id) {
+        return;
+      }
+
+      try {
+        const response = await getProjects(organization.id, user.id);
+        if (response.projects) {
+          setAvailableProjects(response.projects);
+        }
+      } catch (error) {
+        // Silently handle error - projects will remain empty array
+      }
+    };
+
+    fetchAvailableProjects();
+  }, [organization?.id, user?.id]);
+
   return (
     <>
       {isSearchOpen && (
@@ -102,6 +126,12 @@ export const Assistant = ({ threadId }: Props) => {
           />
         )}
         <div className="grow overflow-y-auto my-14 md:my-0">
+          <div className="max-w-4xl mx-auto px-4">
+            <ProjectContextIndicator
+              threadId={threadId}
+              availableProjects={availableProjects}
+            />
+          </div>
           <ChatOutput
             responseType={responseType}
             messages={messages}

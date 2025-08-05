@@ -1,5 +1,5 @@
 import { api } from './config';
-import { MessageDto } from '../../contracts/Message';
+import { MessagesWithContext } from '../../contracts/Message';
 import { logger } from '@/app/lib/utils/logger';
 
 export const fetchMessagesFromApi = async (
@@ -9,7 +9,7 @@ export const fetchMessagesFromApi = async (
   if (!threadId) {
     return undefined;
   }
-  return api.get<MessageDto[]>(`/messages/${threadId}/${visitorId}`);
+  return api.get<MessagesWithContext>(`/messages/${threadId}/${visitorId}`);
 };
 
 export const fetchProject = async (projectId: string) => {

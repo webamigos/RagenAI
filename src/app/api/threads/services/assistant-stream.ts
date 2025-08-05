@@ -1,4 +1,5 @@
 import { Role, Source } from '@prisma/client';
+import db from '@ragenai/prisma-client';
 import {
   getThreadMessages,
   getThreadDetails,
@@ -88,33 +89,112 @@ export async function streamEvents({
           id: threadMessage.public_id,
         });
 
-        // Fetch project instruction if the thread is associated with a project
+        // Determine project instructions with fallback hierarchy
+        // Priority: mentioned_project_id > project_id > organization instructions (from rawSettings.prompt)
         let projectInstruction: string | null = null;
+        let effectiveProjectId: number | null = null;
 
         try {
           sendApiEvent(controller, 'init_lmm');
-          if (threadRecord.project_id && threadRecord.project?.public_id) {
-            projectInstruction = await getProjectInstruction(
-              threadRecord.project.public_id
-            );
 
-            logger.info(
-              {
-                internalProjectId: threadRecord.project_id,
-                publicProjectId: threadRecord.project.public_id,
-                hasInstruction: Boolean(projectInstruction),
-              },
-              'Retrieved project instruction'
-            );
-          } else if (threadRecord.project_id) {
+          // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
+          if (threadRecord.mentioned_project_id) {
+            const mentionedProject = await db.project.findUnique({
+              where: { id: threadRecord.mentioned_project_id },
+              select: { id: true, public_id: true, title: true },
+            });
+
+            if (mentionedProject) {
+              try {
+                projectInstruction = await getProjectInstruction(
+                  mentionedProject.public_id
+                );
+                effectiveProjectId = mentionedProject.id;
+
+                logger.info(
+                  {
+                    mentionedProjectId: threadRecord.mentioned_project_id,
+                    mentionedProjectPublicId: mentionedProject.public_id,
+                    hasInstruction: Boolean(projectInstruction),
+                  },
+                  'Using instructions from mentioned project (highest priority)'
+                );
+              } catch (error) {
+                logger.error(
+                  {
+                    err: error,
+                    mentionedProjectId: threadRecord.mentioned_project_id,
+                    mentionedProjectPublicId: mentionedProject.public_id,
+                  },
+                  'Error getting instructions from mentioned project, falling back to thread project'
+                );
+                // Continue to fallback logic below
+              }
+            } else {
+              logger.warn(
+                { mentionedProjectId: threadRecord.mentioned_project_id },
+                'Mentioned project not found, falling back to thread project'
+              );
+              // Continue to fallback logic below
+            }
+          }
+
+          // 2. MEDIUM PRIORITY: Thread project (if no mentioned project or mentioned project failed)
+          if (
+            !projectInstruction &&
+            threadRecord.project_id &&
+            threadRecord.project?.public_id
+          ) {
+            try {
+              projectInstruction = await getProjectInstruction(
+                threadRecord.project.public_id
+              );
+              effectiveProjectId = threadRecord.project.id;
+
+              logger.info(
+                {
+                  internalProjectId: threadRecord.project_id,
+                  publicProjectId: threadRecord.project.public_id,
+                  hasInstruction: Boolean(projectInstruction),
+                },
+                'Using instructions from thread project (medium priority)'
+              );
+            } catch (error) {
+              logger.error(
+                {
+                  err: error,
+                  projectId: threadRecord.project_id,
+                  publicProjectId: threadRecord.project?.public_id,
+                },
+                'Error getting instructions from thread project, will use organization instructions'
+              );
+              // Will fallback to organization instructions via rawSettings.prompt
+            }
+          } else if (!projectInstruction && threadRecord.project_id) {
             logger.warn(
               { projectId: threadRecord.project_id },
               'Project associated with thread, but missing public_id'
             );
           }
+
+          // 3. LOWEST PRIORITY: Organization instructions
+          // This fallback is automatically handled by rawSettings.prompt in the chain initialization
+          // No additional code needed - if projectInstruction is null, chains use organization instructions
+          if (!projectInstruction) {
+            logger.info(
+              {
+                orgId,
+                hasOrgPrompt: Boolean(rawSettings.prompt),
+              },
+              'No project instructions found, will use organization instructions (lowest priority fallback)'
+            );
+          }
         } catch (error) {
-          logger.error({ err: error }, 'Error fetching project instruction');
-          // Continue without project instruction if there's an error
+          logger.error(
+            { err: error },
+            'Error in project instruction resolution, using organization fallback'
+          );
+          // projectInstruction stays null, chains will use organization instructions
         }
 
         let chain: Runnable | undefined = undefined;
@@ -131,23 +211,38 @@ export async function streamEvents({
             chain = conversation.chain;
             finalAnswerRunName = conversation.finalAnswerRunName;
           } else {
-            if (!threadRecord.project?.id) {
-              throw new Error('Project ID is required');
+            // Use effective project ID (mentioned project takes priority over thread project)
+            const projectIdToUse =
+              effectiveProjectId || threadRecord.project?.id;
+            if (!projectIdToUse) {
+              logger.error(
+                {
+                  threadId: publicThreadId,
+                  effectiveProjectId,
+                  threadProjectId: threadRecord.project?.id,
+                  mentionedProjectId: threadRecord.mentioned_project_id,
+                },
+                'No project ID available for RAG chain initialization'
+              );
+              throw new Error(
+                'Project ID is required for knowledge base access'
+              );
             }
             const basicRag = await initializeRagChain({
               settings: { ...rawSettings, apiKey: rawSettings.apiKey },
               projectInstruction,
-              internalProjectId: threadRecord.project.id,
+              internalProjectId: projectIdToUse,
             });
             chain = basicRag.chain;
             finalAnswerRunName = basicRag.finalAnswerRunName;
           }
         } else if (mode === AssistantMode.PUBLIC) {
+          const projectIdToUse = effectiveProjectId || threadRecord.project?.id;
           const publicRag = await initializePublicRagChain({
             settings: { ...rawSettings, apiKey: rawSettings.apiKey },
             organizationId: orgId,
             projectInstruction,
-            projectId: threadRecord.project?.id,
+            projectId: projectIdToUse,
           });
           chain = publicRag.chain;
           finalAnswerRunName = publicRag.finalAnswerRunName;

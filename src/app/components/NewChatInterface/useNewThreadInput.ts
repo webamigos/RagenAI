@@ -73,10 +73,12 @@ export const useNewThreadInput = ({
     // Use mentioned project if available, otherwise use passed project
     const targetProjectId = mentionedProject?.id || projectId;
     const targetProjectPublicId = mentionedProject?.publicId || projectPublicId;
+    const mentionedProjectIdForThread = mentionedProject?.id;
     await threadHandler.handleNewThread(
       undefined,
       targetProjectId,
-      targetProjectPublicId
+      targetProjectPublicId,
+      mentionedProjectIdForThread
     );
   }, [threadHandler, projectId, projectPublicId, mentionedProject]);
 
@@ -88,10 +90,12 @@ export const useNewThreadInput = ({
       const targetProjectId = mentionedProject?.id || projectId;
       const targetProjectPublicId =
         mentionedProject?.publicId || projectPublicId;
+      const mentionedProjectIdForThread = mentionedProject?.id;
       await threadHandler.handleNewThread(
         data.prompt.trim(),
         targetProjectId,
-        targetProjectPublicId
+        targetProjectPublicId,
+        mentionedProjectIdForThread
       );
       reset();
     },
