@@ -32,7 +32,7 @@ const Template: StoryFn<typeof Dialog> = (args) => {
 
   return (
     <>
-      <Button label="Open Dialog" onClick={handleOpen} />
+      <Button onClick={handleOpen}>Open Dialog</Button>
       <Dialog {...args} open={isOpen} onClose={handleClose}>
         <DialogTitle>Dialog Title</DialogTitle>
         <DialogBody>
@@ -42,9 +42,9 @@ const Template: StoryFn<typeof Dialog> = (args) => {
           </DialogDescription>
         </DialogBody>
         <DialogActions>
-          <Button label="Cancel" onClick={handleClose} />
+          <Button onClick={handleClose}>Cancel</Button>
 
-          <Button label="Confirm" onClick={handleClose} />
+          <Button onClick={handleClose}>Confirm</Button>
         </DialogActions>
       </Dialog>
     </>

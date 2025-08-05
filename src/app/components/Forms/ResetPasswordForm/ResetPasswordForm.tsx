@@ -87,9 +87,10 @@ export const ResetPasswordForm = () => {
         <Button
           className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           isLoading={isLoading}
-          label={t('Reset-password')}
-          type="submit"
-        />
+          isSubmit={true}
+        >
+          {t('Reset-password')}
+        </Button>
         <ClerkErrorsInterface apiErrors={apiErrors} />
       </form>
     </Card>

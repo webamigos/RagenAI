@@ -17,15 +17,16 @@ import {
 } from '@/app/lib/actions/threads';
 import { statusToast } from '@/app/lib/utils/toast';
 
-interface Project {
+// Simplified Project type for context management
+type ProjectForContext = {
   id: number;
   public_id: string;
   title: string;
-}
+};
 
 interface ProjectContextManagerProps {
   threadId: string;
-  availableProjects: Project[];
+  availableProjects: ProjectForContext[];
   onContextChange?: (projectContext: any) => void;
 }
 
@@ -43,7 +44,7 @@ export const ProjectContextManager = ({
   const currentMentionedProject = threadContext?.mentionedProject;
   const currentProject = threadContext?.project;
 
-  const handleProjectSelect = async (project: Project | null) => {
+  const handleProjectSelect = async (project: ProjectForContext | null) => {
     if (isUpdating) return;
 
     setIsUpdating(true);
@@ -136,7 +137,7 @@ export const ProjectContextManager = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isUpdating}
-        className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 min-w-0"
+        className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 min-w-0"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {getCurrentIcon()}
@@ -150,7 +151,7 @@ export const ProjectContextManager = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full right-0 mt-1 min-w-full w-72 md:w-80 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
           {/* Organization option */}
           <button
             onClick={() => handleRemoveContext()}

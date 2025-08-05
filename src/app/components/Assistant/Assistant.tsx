@@ -13,10 +13,16 @@ import { useEffect, useState } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/app/contracts/Message';
 import { useDispatch, useSelector } from 'react-redux';
+import { logger } from '@/app/lib/utils/logger';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
 import { RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-import type { Project } from '@prisma/client';
+
+type ProjectForContext = {
+  id: number;
+  public_id: string;
+  title: string;
+};
 
 type Props = {
   threadId: string;
@@ -57,7 +63,9 @@ export const Assistant = ({ threadId }: Props) => {
   const { voiceId, isRecording } = useSelector(
     (state: RootState) => state.assistant.voice
   );
-  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+  const [availableProjects, setAvailableProjects] = useState<
+    ProjectForContext[]
+  >([]);
 
   useEffect(() => {
     const getVoiceSettings = async () => {
@@ -95,10 +103,18 @@ export const Assistant = ({ threadId }: Props) => {
       try {
         const response = await getProjects(organization.id, user.id);
         if (response.projects) {
-          setAvailableProjects(response.projects);
+          const mappedProjects: ProjectForContext[] = response.projects.map(
+            (project) => ({
+              id: project.id,
+              public_id: project.public_id,
+              title: project.title,
+            })
+          );
+
+          setAvailableProjects(mappedProjects);
         }
       } catch (error) {
-        // Silently handle error - projects will remain empty array
+        logger.error({ error: error }, 'Error fetching available projects');
       }
     };
 
@@ -125,13 +141,7 @@ export const Assistant = ({ threadId }: Props) => {
             assistantError={assistantError}
           />
         )}
-        <div className="grow overflow-y-auto my-14 md:my-0">
-          <div className="max-w-4xl mx-auto px-4">
-            <ProjectContextIndicator
-              threadId={threadId}
-              availableProjects={availableProjects}
-            />
-          </div>
+        <div className="grow overflow-y-auto my-14 md:my-0 pb-20 md:pb-24">
           <ChatOutput
             responseType={responseType}
             messages={messages}
@@ -143,7 +153,15 @@ export const Assistant = ({ threadId }: Props) => {
           />
           <div ref={messagesEndDivRef} />
         </div>
-        <div className="shrink-0 w-full fixed bottom-0 left-0 right-0 md:static">
+
+        <div className="fixed top-16 right-4 md:top-6 md:right-6 z-50">
+          <ProjectContextIndicator
+            threadId={threadId}
+            availableProjects={availableProjects}
+          />
+        </div>
+
+        <div className="shrink-0 w-full fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm

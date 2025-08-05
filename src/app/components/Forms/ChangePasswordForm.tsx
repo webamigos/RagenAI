@@ -96,11 +96,12 @@ export const ChangePasswordForm = () => {
         <div>
           <Button
             className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            label={t('change-password')}
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            type="submit"
-          />
+            isSubmit={true}
+          >
+            {t('change-password')}
+          </Button>
           <ClerkErrorsInterface apiErrors={apiErrors} />
         </div>
       </form>

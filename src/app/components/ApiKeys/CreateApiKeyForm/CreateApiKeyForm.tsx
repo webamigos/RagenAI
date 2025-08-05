@@ -89,7 +89,7 @@ export const CreateApiKeyForm = ({
             error={errors.name}
           />
           <div className="flex justify-end">
-            <Button type="submit" isLoading={isSubmitting}>
+            <Button isSubmit={true} isLoading={isSubmitting}>
               {t('create')}
             </Button>
           </div>

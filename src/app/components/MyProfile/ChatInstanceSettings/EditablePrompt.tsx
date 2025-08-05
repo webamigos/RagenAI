@@ -99,10 +99,11 @@ export const EditablePrompt = () => {
           />
         </div>
         <Button
-          type="submit"
-          label={`${t('update')}`}
+          isSubmit={true}
           className="px-4 py-2 bg-primary-blue-400 dark:bg-accent-dark-500 text-white hover:bg-primary-blue-500 dark:hover:bg-accent-dark-700"
-        />
+        >
+          {t('update')}
+        </Button>
       </form>
     </Card>
   );

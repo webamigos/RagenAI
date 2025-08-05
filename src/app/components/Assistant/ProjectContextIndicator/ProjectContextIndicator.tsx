@@ -12,12 +12,17 @@ import { setThreadContext } from '@/store/assistant/assistantSlice';
 import { removeThreadContextAction } from '@/app/lib/actions/threads';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ProjectContextManager } from '../ProjectContextManager';
-import type { Project } from '@prisma/client';
+// Simplified Project type for context management
+type ProjectForContext = {
+  id: number;
+  public_id: string;
+  title: string;
+};
 
 interface ProjectContextIndicatorProps {
   threadId?: string;
   onContextChange?: (projectContext: any) => void;
-  availableProjects?: Project[];
+  availableProjects?: ProjectForContext[];
 }
 
 export const ProjectContextIndicator = ({
