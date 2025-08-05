@@ -76,10 +76,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     const useKnowledge = watch('useKnowledge');
 
     return (
-      <div className="px-5 lg:px-22 bg-primary-light dark:bg-primary-dark">
+      <div className="px-5 bg-white dark:bg-zinc-900">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="flex flex-col w-full sm:w-4/5 lg:w-1/2 mx-auto justify-center"
+          className="flex flex-col w-full sm:w-11/12 lg:w-4/5 mx-auto justify-center"
         >
           <div className="flex w-full justify-center">
             <AskQuestion

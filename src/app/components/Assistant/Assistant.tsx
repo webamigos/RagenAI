@@ -161,7 +161,7 @@ export const Assistant = ({ threadId }: Props) => {
           />
         </div>
 
-        <div className="shrink-0 w-full fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 w-full fixed bottom-0 left-0 lg:left-64 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm

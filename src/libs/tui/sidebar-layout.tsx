@@ -93,7 +93,7 @@ export function SidebarLayout({
 
       {/* Content */}
       <main className="flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 lg:pl-64">
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
+        <div className="flex items-start justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
           <div className="w-full max-w-6xl">{children}</div>
         </div>
       </main>
