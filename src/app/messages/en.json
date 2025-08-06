@@ -22,6 +22,12 @@
       "prompt-min-length": "Message must contain at least 10 characters"
     }
   },
+  "Breadcrumbs": {
+    "assistants": "Assistants",
+    "mainThreads": "Main Threads",
+    "conversation": "Conversation",
+    "unknownProject": "Unknown Project"
+  },
   "sign-up": {
     "create-account": "Create your account",
     "to-continue": "to continue to Ragen Assistant",

@@ -7,6 +7,7 @@ import { useAssistantLogic } from './useAssistantLogic';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
+import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
@@ -141,6 +142,12 @@ export const Assistant = ({ threadId }: Props) => {
             assistantError={assistantError}
           />
         )}
+
+        {/* Breadcrumb Navigation */}
+        <div className="fixed top-4 left-4 lg:left-68 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2">
+          <BreadcrumbNavigation threadId={threadId} />
+        </div>
+
         <div className="grow overflow-y-auto my-14 md:my-0 pb-20 md:pb-24">
           <ChatOutput
             responseType={responseType}
