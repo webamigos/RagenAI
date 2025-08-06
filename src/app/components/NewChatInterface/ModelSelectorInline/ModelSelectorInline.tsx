@@ -55,7 +55,6 @@ export const ModelSelectorInline = ({
     availableModels.find((m) => m.value === selectedModel)?.label ||
     selectedModel;
 
-  // Get short version of model label for compact display
   const getShortLabel = (label: string) => {
     return label
       .replace('GPT-', '')
@@ -94,13 +93,11 @@ export const ModelSelectorInline = ({
 
       {isOpen && (
         <>
-          {/* Overlay to close dropdown when clicking outside */}
           <div
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Dropdown menu - positioned above the button */}
           <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20">
             <div className="py-1">
               {availableModels.map(({ value, label }) => (
