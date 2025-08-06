@@ -44,10 +44,12 @@ export const createNewThreadInDb = async ({
   visitorId,
   projectId,
   mentionedProjectId,
+  preferredModel,
 }: {
   visitorId: string | null | undefined;
   projectId?: number;
   mentionedProjectId?: number;
+  preferredModel?: string;
 }) => {
   try {
     setSentryServiceTag(serviceName);
@@ -71,6 +73,7 @@ export const createNewThreadInDb = async ({
         project_id: projectId ?? defaultProjectId,
         mentioned_project_id: mentionedProjectId,
         visitor_id: userId ? userId : visitorId,
+        preferred_model: preferredModel,
       },
     });
 
@@ -122,6 +125,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
         created_at: true,
         visitor_id: true,
         preferred_communication_type: true,
+        preferred_model: true,
         project_id: true,
         mentioned_project_id: true,
         project: {

@@ -7,7 +7,7 @@ import { Card } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 
-import { availableModels } from '../../config';
+import { getAvailableModels } from '../../config';
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
 
@@ -17,6 +17,7 @@ export const ChatModelSelect = ({}) => {
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant-settings.model-select');
+  const availableModels = getAvailableModels();
 
   useEffect(() => {
     const fetchModel = async () => {

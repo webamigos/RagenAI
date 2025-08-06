@@ -64,6 +64,7 @@ export type ThreadHistoryResponse = {
   public_id: string;
   messages: MessageDtoWithoutPublicId[];
   project_id?: number | null;
+  preferred_model?: string | null;
 };
 
 export type StreamedMessageDto = {

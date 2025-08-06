@@ -135,7 +135,8 @@ export const useNewThread = () => {
     initialMessage?: string,
     projectId?: number,
     projectPublicId?: string,
-    mentionedProjectId?: number
+    mentionedProjectId?: number,
+    preferredModel?: string
   ) => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
@@ -143,8 +144,12 @@ export const useNewThread = () => {
       reduxDispatch(clearMessages());
 
       const result = user
-        ? await createThreadAction(projectId, mentionedProjectId)
-        : await createGuestThreadAction({ mentionedProjectId });
+        ? await createThreadAction(
+            projectId,
+            mentionedProjectId,
+            preferredModel
+          )
+        : await createGuestThreadAction({ mentionedProjectId, preferredModel });
 
       if (result.success) {
         trackThreadCreated();

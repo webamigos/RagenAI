@@ -61,6 +61,18 @@ export const sidebarSlice = createSlice({
         }
       }
     },
+    updateThreadModel: (
+      state,
+      action: PayloadAction<{ threadId: string; model: string | null }>
+    ) => {
+      const { threadId, model } = action.payload;
+      state.projects.forEach((project) => {
+        const thread = project.threads.find((t) => t.public_id === threadId);
+        if (thread) {
+          thread.preferred_model = model;
+        }
+      });
+    },
   },
 });
 
@@ -73,6 +85,7 @@ export const {
   setSearchQuery,
   setCreateModalOpen,
   addThreadToProject,
+  updateThreadModel,
 } = sidebarSlice.actions;
 
 export default sidebarSlice.reducer;

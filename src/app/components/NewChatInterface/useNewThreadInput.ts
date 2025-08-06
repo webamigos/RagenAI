@@ -25,6 +25,7 @@ type Props = {
   projectId?: number;
   projectPublicId?: string;
   accessToken?: string;
+  preferredModel?: string;
 };
 
 export const useNewThreadInput = ({
@@ -34,6 +35,7 @@ export const useNewThreadInput = ({
   projectId,
   projectPublicId,
   accessToken,
+  preferredModel,
 }: Props) => {
   const t = useTranslations('Index.warning-messages');
   const [mentionedProject, setMentionedProject] =
@@ -78,9 +80,16 @@ export const useNewThreadInput = ({
       undefined,
       targetProjectId,
       targetProjectPublicId,
-      mentionedProjectIdForThread
+      mentionedProjectIdForThread,
+      preferredModel
     );
-  }, [threadHandler, projectId, projectPublicId, mentionedProject]);
+  }, [
+    threadHandler,
+    projectId,
+    projectPublicId,
+    mentionedProject,
+    preferredModel,
+  ]);
 
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
@@ -95,11 +104,19 @@ export const useNewThreadInput = ({
         data.prompt.trim(),
         targetProjectId,
         targetProjectPublicId,
-        mentionedProjectIdForThread
+        mentionedProjectIdForThread,
+        preferredModel
       );
       reset();
     },
-    [threadHandler, reset, projectId, projectPublicId, mentionedProject]
+    [
+      threadHandler,
+      reset,
+      projectId,
+      projectPublicId,
+      mentionedProject,
+      preferredModel,
+    ]
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

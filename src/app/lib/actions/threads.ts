@@ -28,7 +28,8 @@ type ThreadAction =
 
 export const createThreadAction = async (
   projectId?: number,
-  mentionedProjectId?: number
+  mentionedProjectId?: number,
+  preferredModel?: string
 ): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
@@ -37,6 +38,7 @@ export const createThreadAction = async (
       visitorId: null,
       projectId,
       mentionedProjectId,
+      preferredModel,
     });
 
     return {
@@ -57,11 +59,13 @@ export const createGuestThreadAction = async ({
   projectId,
   initialMessage,
   mentionedProjectId,
+  preferredModel,
 }: {
   organizationId?: string;
   projectId?: number;
   initialMessage?: string;
   mentionedProjectId?: number;
+  preferredModel?: string;
 }): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('guest-threads');
@@ -74,6 +78,7 @@ export const createGuestThreadAction = async ({
         visitor_id: visitorId,
         project_id: projectId,
         mentioned_project_id: mentionedProjectId,
+        preferred_model: preferredModel,
       },
     });
 
