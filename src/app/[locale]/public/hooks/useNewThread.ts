@@ -121,7 +121,7 @@ export const useNewThread = ({
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  }, [accessToken, threadId]);
+  }, [accessToken, threadId, push, handleNewThread, errorToast]);
 
   useEffect(() => {
     if (!widgetMode && !pathname.includes('/threads')) {
