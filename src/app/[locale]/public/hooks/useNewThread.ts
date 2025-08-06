@@ -89,7 +89,6 @@ export const useNewThread = ({
         const newThreadId = result.thread.public_id;
         setThreadId(newThreadId);
 
-        // Save initial message to sessionStorage if provided
         if (initialMessage) {
           sessionStorage.setItem(
             SESSION_STORAGE_TEMP_MESSAGE_KEY,
