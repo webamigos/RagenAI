@@ -102,7 +102,7 @@ export const ChatOutput = ({
     useChatViewLogic(streamedMessage);
 
   return (
-    <div className="px-5 mt-5 mr-3 lg:px-8">
+    <div className="px-5 pt-5 mr-3 lg:px-8">
       <div className="flex flex-col">
         {messages.map((message, messageIndex) => (
           <div

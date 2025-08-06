@@ -141,17 +141,19 @@ export const Assistant = ({ threadId }: Props) => {
             assistantError={assistantError}
           />
         )}
-        <div className="grow overflow-y-auto my-14 md:my-0 pb-20 md:pb-24">
-          <ChatOutput
-            responseType={responseType}
-            messages={messages}
-            isLoading={isGlobalLoading}
-            loadingMessage={messageLoadingText}
-            streamedMessage={streamedMessage}
-            isPublicAccess={isPublicAccess}
-            voiceId={voiceId}
-          />
-          <div ref={messagesEndDivRef} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto pb-20 md:pb-24">
+            <ChatOutput
+              responseType={responseType}
+              messages={messages}
+              isLoading={isGlobalLoading}
+              loadingMessage={messageLoadingText}
+              streamedMessage={streamedMessage}
+              isPublicAccess={isPublicAccess}
+              voiceId={voiceId}
+            />
+            <div ref={messagesEndDivRef} />
+          </div>
         </div>
 
         <div className="fixed top-16 right-4 md:top-6 md:right-6 z-50">
@@ -161,7 +163,7 @@ export const Assistant = ({ threadId }: Props) => {
           />
         </div>
 
-        <div className="shrink-0 w-full fixed bottom-0 left-0 lg:left-64 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 w-full fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 dark:border-gray-700 lg:pl-64">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm
