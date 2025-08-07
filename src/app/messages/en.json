@@ -331,6 +331,7 @@
     "assistant-management": "Assistant settings",
     "api-keys": "API Keys",
     "create-new-thread": "New thread",
+    "new-chat": "New Chat",
     "search-threads": "Search in threads",
     "generate-access-key": "Public access",
     "support-page": "Support Page",
