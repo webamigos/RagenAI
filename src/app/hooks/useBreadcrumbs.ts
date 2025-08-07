@@ -20,12 +20,9 @@ export const useBreadcrumbs = (threadId?: string) => {
   const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
     const items: BreadcrumbItem[] = [];
 
-    // Analiza ścieżki URL
     const pathSegments = pathname.split('/').filter(Boolean);
 
-    // Sprawdź czy jesteśmy w ścieżce asystentów vs głównych wątków
     if (pathSegments.includes('assistants')) {
-      // Ścieżka: /assistants/[projectId]/threads/[threadId]
       const projectIndex = pathSegments.indexOf('assistants');
       const projectId = pathSegments[projectIndex + 1];
       const isInThread = pathSegments.includes('threads') && threadId;
@@ -33,11 +30,10 @@ export const useBreadcrumbs = (threadId?: string) => {
       // Dodaj breadcrumb dla asystentów
       items.push({
         label: t('assistants'),
-        href: '/', // Link do głównej strony aplikacji
+        href: '/',
       });
 
       if (projectId) {
-        // Znajdź projekt w store
         const project = projects.find((p) => p.public_id === projectId);
         const projectTitle = project?.title || t('unknownProject');
 
@@ -47,7 +43,6 @@ export const useBreadcrumbs = (threadId?: string) => {
         });
 
         if (isInThread) {
-          // Znajdź wątek w projekcie
           let threadTitle = t('conversation');
 
           if (project && threadId) {
@@ -55,7 +50,6 @@ export const useBreadcrumbs = (threadId?: string) => {
               (t) => t.public_id === threadId
             );
             if (thread && thread.messages && thread.messages.length > 0) {
-              // Użyj pierwszych 50 znaków pierwszej wiadomości jako tytuł
               const firstMessage = thread.messages[0]?.content;
               if (firstMessage && firstMessage.trim()) {
                 threadTitle =
@@ -73,19 +67,16 @@ export const useBreadcrumbs = (threadId?: string) => {
         }
       }
     } else if (pathSegments.includes('threads')) {
-      // Ścieżka: /threads/[publicId] - główne wątki
       items.push({
         label: t('mainThreads'),
-        href: '/', // Link do głównej strony aplikacji
+        href: '/',
       });
 
       if (threadId) {
-        // Znajdź wątek w głównych wątkach
         const thread = userThreads.find((t) => t.public_id === threadId);
         let threadTitle = t('conversation');
 
         if (thread && thread.messages && thread.messages.length > 0) {
-          // Użyj pierwszych 50 znaków pierwszej wiadomości jako tytuł
           const firstMessage = thread.messages[0]?.content;
           if (firstMessage && firstMessage.trim()) {
             threadTitle =
