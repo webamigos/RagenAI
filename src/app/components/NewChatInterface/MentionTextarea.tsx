@@ -3,7 +3,16 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Textarea } from '@ragenai/common-ui';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
+import { validateTextFile } from '@/app/lib/utils/fileValidation';
 import type { ComponentPropsWithRef } from 'react';
+
+// Thread-level document interface (temporary, będzie przeniesione do contracts)
+interface ThreadDocument {
+  name: string;
+  content: string;
+  size: number;
+  type: string;
+}
 
 export interface MentionedProject {
   publicId: string;
@@ -26,6 +35,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [threadDocuments, setThreadDocuments] = useState<ThreadDocument[]>([]);
   const mentionStartRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -103,6 +113,58 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     [cursorPosition, onChange, onProjectMention, mentionQuery]
   );
 
+  // File handling
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          resolve(event.target.result as string);
+        } else {
+          reject(new Error('Failed to read file content'));
+        }
+      };
+      reader.onerror = () =>
+        reject(new Error(`Failed to read file: ${file.name}`));
+      reader.readAsText(file, 'UTF-8');
+    });
+  };
+
+  const handleFilesDrop = useCallback(async (files: File[]) => {
+    const validFiles: File[] = [];
+
+    for (const file of files) {
+      const validation = validateTextFile(file);
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        // TODO: Show error toast with validation.error
+      }
+    }
+
+    // Read file contents
+    const newDocuments: ThreadDocument[] = [];
+    for (const file of validFiles) {
+      try {
+        const content = await readFileAsText(file);
+        newDocuments.push({
+          name: file.name,
+          content: content.trim(),
+          size: file.size,
+          type: file.type || 'text/plain',
+        });
+      } catch (error) {
+        // TODO: Show error toast for file read error
+      }
+    }
+
+    setThreadDocuments((prev) => [...prev, ...newDocuments]);
+  }, []);
+
+  const handleThreadDocumentRemove = useCallback((index: number) => {
+    setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (showDropdown) {
@@ -143,6 +205,10 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         value={value}
         onChange={handleTextChange}
         onKeyDown={handleKeyDown}
+        showFileAttachment={true}
+        onFilesDrop={handleFilesDrop}
+        threadDocuments={threadDocuments}
+        onThreadDocumentRemove={handleThreadDocumentRemove}
       />
 
       {showDropdown && (

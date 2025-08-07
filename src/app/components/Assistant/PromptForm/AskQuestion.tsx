@@ -3,6 +3,14 @@ import { FieldError, UseFormRegister } from 'react-hook-form';
 
 import { Textarea } from '@ragenai/common-ui';
 
+// Thread-level document interface (temporary, będzie przeniesione do contracts)
+interface ThreadDocument {
+  name: string;
+  content: string;
+  size: number;
+  type: string;
+}
+
 type Props = {
   disabled: boolean;
   error?: FieldError;
@@ -14,6 +22,10 @@ type Props = {
   onSend: () => void;
   setPromptValue: (text: string) => void;
   value: string;
+  showFileAttachment?: boolean;
+  onFilesDrop?: (files: File[]) => void;
+  threadDocuments?: ThreadDocument[];
+  onThreadDocumentRemove?: (index: number) => void;
 };
 
 export const AskQuestion = ({
@@ -25,6 +37,10 @@ export const AskQuestion = ({
   register,
   onSend,
   isUserLogged,
+  showFileAttachment,
+  onFilesDrop,
+  threadDocuments,
+  onThreadDocumentRemove,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -43,6 +59,10 @@ export const AskQuestion = ({
       placeholder={t('enter-your-question')}
       handleResponseType={handleResponseType}
       showVoiceInput={isUserLogged}
+      showFileAttachment={showFileAttachment}
+      onFilesDrop={onFilesDrop}
+      threadDocuments={threadDocuments}
+      onThreadDocumentRemove={onThreadDocumentRemove}
     />
   );
 };
