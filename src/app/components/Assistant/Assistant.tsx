@@ -143,7 +143,6 @@ export const Assistant = ({ threadId }: Props) => {
           />
         )}
 
-        {/* Breadcrumb Navigation */}
         <div className="fixed top-4 left-4 lg:left-68 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2">
           <BreadcrumbNavigation threadId={threadId} />
         </div>
@@ -168,7 +167,7 @@ export const Assistant = ({ threadId }: Props) => {
           />
         </div>
 
-        <div className="shrink-0 w-full fixed bottom-0 left-0 lg:left-64 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
+        <div className="shrink-0 w-full fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 dark:border-gray-700 lg:pl-64">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm
