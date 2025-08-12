@@ -1,0 +1,160 @@
+'use client';
+
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Textarea } from '@ragenai/common-ui';
+import { ProjectMentionDropdown } from './ProjectMentionDropdown';
+import type { ComponentPropsWithRef } from 'react';
+
+export interface MentionedProject {
+  publicId: string;
+  title: string;
+  id?: number;
+}
+
+interface MentionTextareaProps extends ComponentPropsWithRef<typeof Textarea> {
+  onProjectMention?: (project: MentionedProject | null) => void;
+  mentionedProject?: MentionedProject | null;
+}
+
+export const MentionTextarea: React.FC<MentionTextareaProps> = ({
+  onProjectMention,
+  mentionedProject,
+  value = '',
+  onChange,
+  ...textareaProps
+}) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const mentionStartRef = useRef<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleTextChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      const cursorPos = e.target.selectionStart ?? 0;
+
+      onChange?.(e);
+
+      setCursorPosition(cursorPos);
+
+      const textBeforeCursor = newValue.slice(0, cursorPos);
+      const mentionMatch = textBeforeCursor.match(/@([^@\s]*?)$/);
+
+      if (mentionMatch) {
+        setMentionQuery(mentionMatch[1]);
+        setShowDropdown(true);
+        mentionStartRef.current = textBeforeCursor.lastIndexOf('@');
+      } else {
+        setShowDropdown(false);
+        setMentionQuery('');
+        mentionStartRef.current = null;
+      }
+
+      if (
+        mentionedProject &&
+        !newValue.includes(`@${mentionedProject.title}`)
+      ) {
+        onProjectMention?.(null);
+      }
+    },
+    [onChange, mentionedProject, onProjectMention]
+  );
+
+  const handleProjectSelect = useCallback(
+    (project: MentionedProject) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const currentValue = textarea.value;
+      let currentCursorPos = textarea.selectionStart ?? cursorPosition;
+      if (currentCursorPos === 0 && cursorPosition > 0) {
+        currentCursorPos = cursorPosition;
+      }
+
+      const mentionStartIndex = mentionStartRef.current;
+      if (mentionStartIndex === null) return;
+
+      const mentionEndIndex = mentionStartIndex + 1 + mentionQuery.length;
+
+      const newValue =
+        currentValue.slice(0, mentionStartIndex) +
+        `@${project.title}` +
+        currentValue.slice(mentionEndIndex);
+      const newCursorPos = mentionStartIndex + project.title.length + 1;
+
+      const syntheticEvent = {
+        target: { ...textarea, value: newValue },
+        currentTarget: { ...textarea, value: newValue },
+      } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
+
+      onChange?.(syntheticEvent);
+
+      requestAnimationFrame(() => {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        setCursorPosition(newCursorPos);
+      });
+
+      onProjectMention?.(project);
+      setShowDropdown(false);
+      setMentionQuery('');
+    },
+    [cursorPosition, onChange, onProjectMention, mentionQuery]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (showDropdown) {
+        if (e.key === 'Escape') {
+          setShowDropdown(false);
+          setMentionQuery('');
+          e.preventDefault();
+          return;
+        }
+
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          return;
+        }
+      }
+
+      textareaProps.onKeyDown?.(e);
+    },
+    [showDropdown, textareaProps]
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (textareaRef.current?.contains(target)) return;
+      if (target.closest('[data-project-dropdown]')) return;
+      setShowDropdown(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative">
+      <Textarea
+        {...textareaProps}
+        ref={textareaRef}
+        value={value}
+        onChange={handleTextChange}
+        onKeyDown={handleKeyDown}
+      />
+
+      {showDropdown && (
+        <ProjectMentionDropdown
+          query={mentionQuery}
+          onSelect={handleProjectSelect}
+          onClose={() => {
+            setShowDropdown(false);
+            setMentionQuery('');
+          }}
+        />
+      )}
+    </div>
+  );
+};

@@ -4,6 +4,7 @@ import {
   StreamedMessageDto,
   ChatResponseType,
   ChatType,
+  ThreadContext,
 } from '@/app/contracts/Message';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import voiceReducer from '../voice/voiceSlice';
@@ -21,6 +22,7 @@ export interface AssistantState {
   assistantMode: AssistantMode;
   voice: ReturnType<typeof voiceReducer>;
   isLimitLock: boolean;
+  threadContext: ThreadContext | null;
 }
 
 const initialState: AssistantState = {
@@ -36,6 +38,7 @@ const initialState: AssistantState = {
   assistantMode: AssistantMode.INTERNAL,
   voice: voiceReducer(undefined, { type: '@@INIT' }),
   isLimitLock: false,
+  threadContext: null,
 };
 
 export const assistantSlice = createSlice({
@@ -44,6 +47,7 @@ export const assistantSlice = createSlice({
   reducers: {
     clearMessages: (state) => {
       state.messages = [];
+      state.threadContext = null;
     },
     setMessages: (state, action: PayloadAction<MessageDto[]>) => {
       state.messages = action.payload;
@@ -88,6 +92,28 @@ export const assistantSlice = createSlice({
           : message
       );
     },
+    setThreadContext: (state, action: PayloadAction<ThreadContext | null>) => {
+      state.threadContext = action.payload;
+    },
+    updateMentionedProject: (
+      state,
+      action: PayloadAction<{
+        id: number;
+        public_id: string;
+        title: string;
+      } | null>
+    ) => {
+      if (state.threadContext) {
+        state.threadContext.mentionedProject = action.payload;
+        state.threadContext.mentionedProjectId = action.payload?.id || null;
+      }
+    },
+    removeMentionedProject: (state) => {
+      if (state.threadContext) {
+        state.threadContext.mentionedProject = null;
+        state.threadContext.mentionedProjectId = null;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addDefaultCase((state, action) => {
@@ -112,6 +138,9 @@ export const {
   setLimitLock,
   setMessagePlayed,
   clearMessages,
+  setThreadContext,
+  updateMentionedProject,
+  removeMentionedProject,
 } = assistantSlice.actions;
 
 export default assistantSlice.reducer;

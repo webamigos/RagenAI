@@ -22,7 +22,7 @@ export default {
 
 const Template: StoryFn<TooltipProps> = (args) => (
   <Tooltip {...args}>
-    <Button label="Hover over me" />
+    <Button>Hover over me</Button>
   </Tooltip>
 );
 

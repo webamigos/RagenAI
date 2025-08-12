@@ -71,3 +71,20 @@ export type StreamedMessageDto = {
   created_at: string;
   runId: string;
 };
+
+export type ProjectContext = {
+  id: number;
+  public_id: string;
+  title: string;
+};
+
+export type ThreadContext = {
+  project: ProjectContext | null;
+  mentionedProject: ProjectContext | null;
+  mentionedProjectId: number | null;
+};
+
+export type MessagesWithContext = {
+  messages: MessageDto[];
+  threadContext: ThreadContext | null;
+};

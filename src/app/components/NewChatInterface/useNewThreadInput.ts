@@ -1,4 +1,4 @@
-import { useCallback, KeyboardEvent } from 'react';
+import { useCallback, KeyboardEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 import { ChatResponseType } from '@/app/contracts/Message';
+import type { MentionedProject } from './MentionTextarea';
 
 const threadSchema = (t: (key: string) => string) =>
   z.object({
@@ -35,6 +36,8 @@ export const useNewThreadInput = ({
   accessToken,
 }: Props) => {
   const t = useTranslations('Index.warning-messages');
+  const [mentionedProject, setMentionedProject] =
+    useState<MentionedProject | null>(null);
   const {
     handleSubmit: handleFormSubmit,
     formState: { errors },
@@ -66,21 +69,37 @@ export const useNewThreadInput = ({
     if (threadHandler.isLoading || threadHandler.isPending) return;
 
     sessionStorage.setItem('response_type', ChatResponseType.VOICE);
-    await threadHandler.handleNewThread(undefined, projectId, projectPublicId);
-  }, [threadHandler, projectId, projectPublicId, prompt]);
+
+    // Use mentioned project if available, otherwise use passed project
+    const targetProjectId = mentionedProject?.id || projectId;
+    const targetProjectPublicId = mentionedProject?.publicId || projectPublicId;
+    const mentionedProjectIdForThread = mentionedProject?.id;
+    await threadHandler.handleNewThread(
+      undefined,
+      targetProjectId,
+      targetProjectPublicId,
+      mentionedProjectIdForThread
+    );
+  }, [threadHandler, projectId, projectPublicId, mentionedProject]);
 
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
       if (threadHandler.isLoading || threadHandler.isPending) return;
 
+      // Use mentioned project if available, otherwise use passed project
+      const targetProjectId = mentionedProject?.id || projectId;
+      const targetProjectPublicId =
+        mentionedProject?.publicId || projectPublicId;
+      const mentionedProjectIdForThread = mentionedProject?.id;
       await threadHandler.handleNewThread(
         data.prompt.trim(),
-        projectId,
-        projectPublicId
+        targetProjectId,
+        targetProjectPublicId,
+        mentionedProjectIdForThread
       );
       reset();
     },
-    [threadHandler, reset, projectId, projectPublicId]
+    [threadHandler, reset, projectId, projectPublicId, mentionedProject]
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -99,5 +118,6 @@ export const useNewThreadInput = ({
     handleKeyDown,
     createVoiceThread,
     errors,
+    setMentionedProjectInHook: setMentionedProject,
   };
 };

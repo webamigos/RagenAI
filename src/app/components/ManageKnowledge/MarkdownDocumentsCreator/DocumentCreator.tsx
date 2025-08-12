@@ -156,10 +156,11 @@ export const DocumentCreator = () => {
         <div className="mt-auto">
           <Button
             className="w-full flex justify-center md:block md:w-auto"
-            label={t('send')}
             isSubmit
             isLoading={isLoading}
-          />
+          >
+            {t('send')}
+          </Button>
         </div>
       </form>
     </Card>

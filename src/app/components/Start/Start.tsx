@@ -43,21 +43,24 @@ export const Start = () => {
       )}
 
       <div className="container mx-auto w-full">
-        <div className="flex flex-col items-center justify-center w-full">
+        <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-8rem)]">
           <OnboardingSteps />
           {shouldShowValidationBoard ? (
             <ValidationBoard />
           ) : !isPending && showOnboarding ? (
             <Button
-              label={t('start-tour')}
               onClick={runJoyride}
               className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
-            />
+            >
+              {t('start-tour')}
+            </Button>
           ) : (
             <NewChatInterface />
           )}
           {isLimitLock && !isSignedIn && (
-            <Alert title={t('limit-reached')} type="info" className="mt-6" />
+            <div className="mt-6">
+              <Alert title={t('limit-reached')} type="info" />
+            </div>
           )}
         </div>
       </div>

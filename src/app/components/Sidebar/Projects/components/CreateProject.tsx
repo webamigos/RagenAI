@@ -132,7 +132,7 @@ export function CreateProject({
           >
             {t('projects.cancel')}
           </Button>
-          <Button type="submit" disabled={isSubmitting || isPending}>
+          <Button isSubmit={true} disabled={isSubmitting || isPending}>
             {t('projects.create-project')}
           </Button>
         </div>

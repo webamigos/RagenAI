@@ -64,8 +64,8 @@ export const GET = async (_request: Request, { params }: Params) => {
 
     // 🚨 what if someone from outside organization somehow will with get thread id
     // and then will use /messages/{threadId} endpoint?
-    const messages = await fetchMessagesFromDb(threadPublicId, visitorId);
-    return NextResponse.json(messages);
+    const result = await fetchMessagesFromDb(threadPublicId, visitorId);
+    return NextResponse.json(result);
   } catch (e) {
     logger.error({ err: e }, 'Failed fetching messages');
     return NextResponse.json(

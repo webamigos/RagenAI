@@ -71,9 +71,10 @@ const UploadView = memo(
                   isLoading={uploading}
                   isSubmit={!uploading}
                   onClick={onSend}
-                  label={t('upload.button')}
                   className="self-start mt-4"
-                />
+                >
+                  {t('upload.button')}
+                </Button>
               </>
             )}
           </div>

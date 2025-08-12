@@ -30,6 +30,7 @@ export const TUIThreadsSection = ({
   lastThreadElementRef,
 }: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
+
   const t = useTranslations('sidebar.threads');
   const nonEmptyCategories = threadCategories.filter((c) => c.threads?.length);
 

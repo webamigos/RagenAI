@@ -1,11 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { classMerge, Textarea } from '@ragenai/common-ui/index';
+import { classMerge } from '@ragenai/common-ui/index';
 
 import { useNewThreadInput } from './useNewThreadInput';
+import { MentionTextarea, type MentionedProject } from './MentionTextarea';
 
 import { ChatResponseType } from '@/app/contracts/Message';
 
@@ -35,6 +36,9 @@ export const NewChatInterface = ({
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [mentionedProject, setMentionedProject] =
+    useState<MentionedProject | null>(null);
+
   const {
     prompt,
     isLoading,
@@ -44,6 +48,7 @@ export const NewChatInterface = ({
     createVoiceThread,
     handleSubmit,
     errors,
+    setMentionedProjectInHook,
   } = useNewThreadInput({
     organizationId,
     isPublicAccess,
@@ -69,6 +74,11 @@ export const NewChatInterface = ({
     await createVoiceThread();
   };
 
+  const handleProjectMention = (project: MentionedProject | null) => {
+    setMentionedProject(project);
+    setMentionedProjectInHook(project);
+  };
+
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
       <div className="flex flex-col items-center justify-center text-center">
@@ -83,7 +93,7 @@ export const NewChatInterface = ({
       </div>
 
       <div className="relative">
-        <Textarea
+        <MentionTextarea
           ref={inputRef}
           value={prompt}
           onChange={(e) => handleInputChange(e.target.value)}
@@ -95,6 +105,8 @@ export const NewChatInterface = ({
           showVoiceInput={!isPublicAccess}
           error={errors.prompt}
           handleResponseType={handleVoiceModeActivation}
+          onProjectMention={handleProjectMention}
+          mentionedProject={mentionedProject}
         />
       </div>
     </div>

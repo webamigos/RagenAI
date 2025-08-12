@@ -51,12 +51,14 @@ const ButtonComponent = forwardRef(
     const linkClasses =
       'flex items-center gap-3 rounded-md px-2 py-2.5 font-sans text-left text-base font-medium text-gray-600 dark:text-gray-400 md:py-2 text-sm hover:bg-primary-gray-200 dark:hover:bg-accent-dark-500';
 
+    const { color: _, outline: __, plain: ___, ...tuiButtonProps } = rest;
+
     return (
       <TuiButton
-        ref={ref}
+        ref={ref as any}
         color="indigo"
         disabled={disabled || isLoading || isError}
-        {...rest}
+        {...tuiButtonProps}
         className={
           isLink
             ? classMerge(linkClasses, className)

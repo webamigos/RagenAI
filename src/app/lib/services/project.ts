@@ -110,6 +110,7 @@ export const fetchProjectsForUser = async (
         created_at: 'desc',
       },
       select: {
+        id: true,
         public_id: true,
         title: true,
         created_at: true,
