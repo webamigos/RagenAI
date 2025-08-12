@@ -4,15 +4,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Textarea } from '@ragenai/common-ui';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 import type { ComponentPropsWithRef } from 'react';
-
-// Thread-level document interface (temporary, będzie przeniesione do contracts)
-interface ThreadDocument {
-  name: string;
-  content: string;
-  size: number;
-  type: string;
-}
 
 export interface MentionedProject {
   publicId: string;
@@ -35,7 +28,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [threadDocuments, setThreadDocuments] = useState<ThreadDocument[]>([]);
+  const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
+    []
+  );
   const mentionStartRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -143,7 +138,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     }
 
     // Read file contents
-    const newDocuments: ThreadDocument[] = [];
+    const newDocuments: ThreadDocumentUI[] = [];
     for (const file of validFiles) {
       try {
         const content = await readFileAsText(file);

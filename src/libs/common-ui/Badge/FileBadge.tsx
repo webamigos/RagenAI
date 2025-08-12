@@ -2,16 +2,10 @@
 
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { classMerge } from '../utils/cn';
-// Thread-level document interface (temporary, będzie przeniesione do contracts)
-interface ThreadDocument {
-  name: string;
-  content: string;
-  size: number;
-  type: string;
-}
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 interface FileBadgeProps {
-  document: ThreadDocument;
+  document: ThreadDocumentUI;
   onRemove: () => void;
   className?: string;
 }

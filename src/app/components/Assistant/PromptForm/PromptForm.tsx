@@ -12,14 +12,7 @@ import {
   ChatResponseType,
 } from '../../../contracts/Message';
 import { createMessageSchema } from '../../../contracts/Message';
-
-// Thread-level document interface (temporary, będzie przeniesione do contracts)
-interface ThreadDocument {
-  name: string;
-  content: string;
-  size: number;
-  type: string;
-}
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 type Props = {
   isLoading: boolean;
@@ -47,7 +40,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     ref
   ) => {
     const t = useTranslations('form');
-    const [threadDocuments, setThreadDocuments] = useState<ThreadDocument[]>(
+    const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
       []
     );
 
@@ -100,7 +93,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       }
 
       // Read file contents
-      const newDocuments: ThreadDocument[] = [];
+      const newDocuments: ThreadDocumentUI[] = [];
       for (const file of validFiles) {
         try {
           const content = await readFileAsText(file);
@@ -129,7 +122,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
         messageType: responseType,
         voiceDurationSeconds: data.voiceDurationSeconds,
+        threadDocuments:
+          threadDocuments.length > 0 ? threadDocuments : undefined,
       });
+      setThreadDocuments([]);
     };
 
     const handleSend = () => {

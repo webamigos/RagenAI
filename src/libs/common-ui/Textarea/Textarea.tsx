@@ -26,14 +26,7 @@ import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
 import { FileBadge } from '../Badge/FileBadge';
 import { useVoiceInput } from '../../../app/hooks/useAudioRecording';
-
-// Thread-level document interface (temporary, będzie przeniesione do contracts)
-interface ThreadDocument {
-  name: string;
-  content: string;
-  size: number;
-  type: string;
-}
+import { ThreadDocumentUI } from '../../../app/contracts/ThreadDocument';
 
 type Props = {
   label?: string;
@@ -52,7 +45,7 @@ type Props = {
   showFileAttachment?: boolean;
   onFileIconClick?: () => void;
   onFilesDrop?: (files: File[]) => void;
-  threadDocuments?: ThreadDocument[];
+  threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentRemove?: (index: number) => void;
   disabled?: boolean;
   handleSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
@@ -355,7 +348,7 @@ export const Textarea = forwardRef(
               <button
                 type="button"
                 onClick={onFileIconClick || handleFileIconClick}
-                className="absolute bottom-1.5 right-12 flex items-center"
+                className="absolute bottom-3.5 right-12 flex items-center"
               >
                 {attachmentIcon}
               </button>
