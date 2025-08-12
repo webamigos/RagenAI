@@ -16,6 +16,7 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:codegen": "npx playwright codegen",
     "test:e2e:report": "npx playwright show-report",
+    "start:e2e": "tsx scripts/start-for-e2e.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "generate:types": "npx prisma generate",
