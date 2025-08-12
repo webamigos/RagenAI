@@ -5,7 +5,7 @@ import {
   type ForwardedRef,
 } from 'react';
 import { classMerge } from '../utils/cn';
-import { SpinnerSVG, ArrowPath, ClourArrowIcon } from '../icons';
+import { SpinnerSVG, ArrowPath } from '../icons';
 import { Button as TuiButton, type ButtonProps } from '@ragenai/tui';
 
 type Props = Readonly<{
@@ -76,7 +76,6 @@ const ButtonComponent = forwardRef(
           {iconRight && !isLoading && <span className="pl-2">{iconRight}</span>}
           {isLoading && <SpinnerSVG size="sm" className="ml-3 text-white" />}
           {isError && <ArrowPath />}
-          {isSubmit && <ClourArrowIcon className="ml-2" />}
         </span>
       </TuiButton>
     );

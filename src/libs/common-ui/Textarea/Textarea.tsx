@@ -224,7 +224,7 @@ export const Textarea = forwardRef(
                     error,
                   'shadow-xs': !error,
                 },
-                modelSelector ? 'px-2.5 pr-24' : 'px-2.5 pr-12',
+                modelSelector ? 'px-2.5 pr-20' : 'px-2.5 pr-10',
                 className
               )}
               onInput={adjustHeight}
@@ -235,7 +235,7 @@ export const Textarea = forwardRef(
             />
 
             {modelSelector && (
-              <div className="absolute bottom-1.5 right-14 flex items-center">
+              <div className="absolute bottom-1.5 right-12 flex items-center">
                 {modelSelector}
               </div>
             )}
@@ -244,7 +244,7 @@ export const Textarea = forwardRef(
               <button
                 type="button"
                 onClick={handleIconClick}
-                className="absolute bottom-1.5 right-3 flex items-center"
+                className="absolute bottom-1.5 right-2 flex items-center"
               >
                 {icon}
               </button>

@@ -125,17 +125,7 @@ export const Input = forwardRef(
                 max={max}
                 autoComplete={autocomplete}
                 step={step}
-                className={classMerge(
-                  // 'block w-full py-2  dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
-                  {
-                    // 'pl-2.5 pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-md cursor-pointer':
-                    //   type !== 'range',
-                    // 'text-red-900 ring-red-300 placeholder:text-red-300 focus-visible:ring-red-500 focus-visible:ring-2':
-                    //   error,
-                    // 'shadow-xs': !error,
-                  },
-                  className
-                )}
+                className={className}
                 {...rest}
               />
             )}

@@ -5,19 +5,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import {
   FolderIcon,
-  XMarkIcon,
   ChevronDownIcon,
   BuildingOfficeIcon,
   CheckIcon,
 } from '@heroicons/react/20/solid';
 import { setThreadContext } from '@/store/assistant/assistantSlice';
-import {
-  updateThreadContextAction,
-  removeThreadContextAction,
-} from '@/app/lib/actions/threads';
+import { updateThreadContextAction } from '@/app/lib/actions/threads';
 import { statusToast } from '@/app/lib/utils/toast';
 
-// Simplified Project type for context management
 type ProjectForContext = {
   id: number;
   public_id: string;
@@ -55,7 +50,6 @@ export const ProjectContextManager = ({
       );
 
       if (result.success) {
-        // Update local state
         const updatedContext = {
           project: threadContext?.project || null,
           mentionedProject: project
@@ -99,7 +93,6 @@ export const ProjectContextManager = ({
     handleProjectSelect(null);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -120,7 +113,7 @@ export const ProjectContextManager = ({
       return `Projekt: ${currentMentionedProject.title}`;
     }
     if (currentProject) {
-      return `Wątek: ${currentProject.title}`;
+      return `Asystent: ${currentProject.title}`;
     }
     return 'Instrukcje organizacji';
   };

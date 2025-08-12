@@ -67,7 +67,6 @@ export const ChangePasswordForm = () => {
     <Card title="Zmień hasło" size="lg">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs"
           errorMessage={errors.currentPassword?.message}
           {...register('currentPassword')}
           error={errors.currentPassword}
@@ -76,7 +75,6 @@ export const ChangePasswordForm = () => {
           type="password"
         />
         <Input
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs"
           errorMessage={errors.confirmPassword?.message}
           {...register('newPassword')}
           error={errors.newPassword}
@@ -85,7 +83,6 @@ export const ChangePasswordForm = () => {
           type="password"
         />
         <Input
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-xs"
           errorMessage={errors.confirmPassword?.message}
           {...register('confirmPassword')}
           error={errors.confirmPassword}

@@ -181,7 +181,7 @@ export const Assistant = ({ threadId }: Props) => {
         </div>
       )}
 
-      <div className="h-full flex flex-col font-sans">
+      <div className="min-h-full flex flex-col font-sans">
         {responseType === ChatResponseType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
@@ -198,7 +198,7 @@ export const Assistant = ({ threadId }: Props) => {
           <BreadcrumbNavigation threadId={threadId} />
         </div>
 
-        <div className="grow overflow-y-auto my-14 md:my-0 pb-20 md:pb-24">
+        <div className="flex-1 overflow-y-auto py-6">
           <ChatOutput
             responseType={responseType}
             messages={messages}
@@ -218,30 +218,35 @@ export const Assistant = ({ threadId }: Props) => {
           />
         </div>
 
-        {!isPublicAccess && threadId && (
-          <div className="fixed bottom-24 md:bottom-28 right-4 md:right-6 z-50">
-            <ModelSelector
-              threadId={threadId}
-              currentModel={currentThreadModel || undefined}
-              organizationDefaultModel={organizationDefaultModel}
-              onChange={handleModelChange}
-              disabled={isGlobalLoading}
-            />
-          </div>
-        )}
-
-        <div className="shrink-0 w-full fixed bottom-0 left-0 lg:left-64 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
+        <div className="w-full fixed bottom-0 left-1/2 -translate-x-1/2 lg:left-[35%] lg:-translate-x-0">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
-            <PromptForm
-              handleResponseType={handleResponseType}
-              ref={promptFormRef}
-              isUserLogged={!!isSignedIn}
-              isLoading={isGlobalLoading}
-              onSubmit={onSubmit}
-              isPublicAccess={isPublicAccess}
-              responseType={responseType}
-            />
+            <>
+              <PromptForm
+                handleResponseType={handleResponseType}
+                ref={promptFormRef}
+                isUserLogged={!!isSignedIn}
+                isLoading={isGlobalLoading}
+                onSubmit={onSubmit}
+                isPublicAccess={isPublicAccess}
+                responseType={responseType}
+                currentThreadModel={currentThreadModel || undefined}
+                organizationDefaultModel={organizationDefaultModel}
+                onChange={handleModelChange}
+                isGlobalLoading={isGlobalLoading}
+              />
+              {/* {!isPublicAccess && (
+                <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
+                  <ModelSelector
+                    threadId={threadId}
+                    currentModel={currentThreadModel || undefined}
+                    organizationDefaultModel={organizationDefaultModel}
+                    onChange={handleModelChange}
+                    disabled={isGlobalLoading}
+                  />
+                </div>
+              )} */}
+            </>
           )}
         </div>
       </div>

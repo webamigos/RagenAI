@@ -67,7 +67,6 @@ export const ForgotPasswordForm = () => {
         label={t('Provide-email')}
         type="email"
         {...register('email')}
-        className="py-1.5 border rounded-md"
         placeholder="e.g john@doe.com"
         error={errors.email}
         errorMessage={errors.email?.message}

@@ -11,6 +11,7 @@ import {
   ChatResponseType,
 } from '../../../contracts/Message';
 import { createMessageSchema } from '../../../contracts/Message';
+import { ModelSelector } from '../ModelSelector';
 
 type Props = {
   isLoading: boolean;
@@ -19,6 +20,10 @@ type Props = {
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
   responseType: ChatResponseType;
+  currentThreadModel: string | undefined;
+  organizationDefaultModel: string;
+  onChange: (model: string) => void;
+  isGlobalLoading: boolean;
 };
 
 export type PromptFormRef = {
@@ -34,6 +39,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       isPublicAccess,
       handleResponseType,
       responseType,
+      currentThreadModel,
+      organizationDefaultModel,
+      onChange,
+      isGlobalLoading,
     },
     ref
   ) => {
@@ -73,28 +82,37 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     };
 
     const promptValue = watch('prompt', '');
-    const useKnowledge = watch('useKnowledge');
+    // const useKnowledge = watch('useKnowledge');
 
     return (
-      <div className="px-5 bg-white dark:bg-zinc-900">
+      <div className="dark:bg-zinc-900 p-4 w-full">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="flex flex-col max-w-3xl mx-auto justify-center"
+          className="flex flex-col max-w-2xl"
         >
-          <div className="flex w-full justify-center">
-            <AskQuestion
-              isUserLogged={isUserLogged}
-              disabled={isLoading}
-              error={errors?.prompt}
-              register={register}
-              onSend={handleSend}
-              value={promptValue}
-              handleResponseType={handleResponseType}
-              setPromptValue={(text: string) => setValue('prompt', text)}
-            />
+          <div className="flex w-full justify-end">
+            {!isPublicAccess && (
+              <ModelSelector
+                currentModel={currentThreadModel || undefined}
+                organizationDefaultModel={organizationDefaultModel}
+                onChange={onChange}
+                disabled={isGlobalLoading}
+              />
+            )}
           </div>
+          <AskQuestion
+            isUserLogged={isUserLogged}
+            disabled={isLoading}
+            error={errors?.prompt}
+            register={register}
+            onSend={handleSend}
+            value={promptValue}
+            handleResponseType={handleResponseType}
+            setPromptValue={(text: string) => setValue('prompt', text)}
+          />
+
           {!isPublicAccess && (
-            <div className="flex w-full justify-center">
+            <div className="flex w-full">
               <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">
                 <input
                   type="checkbox"
