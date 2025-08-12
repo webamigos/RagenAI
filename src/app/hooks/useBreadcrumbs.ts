@@ -20,7 +20,6 @@ export const useBreadcrumbs = (threadId?: string) => {
   const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
     const items: BreadcrumbItem[] = [];
 
-    // Analiza ścieżki URL
     const pathSegments = pathname.split('/').filter(Boolean);
 
     if (pathSegments.includes('assistants')) {

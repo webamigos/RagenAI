@@ -197,10 +197,6 @@ export const Textarea = forwardRef(
 
     const maxHeightClass = `max-h-[${maxHeight}px]`;
 
-    /**
-     * Kontrolujemy wyświetlanie poszczególnych ikon głosowych / strzałki
-     * w zależności od showVoiceInput oraz showArrowIcon.
-     */
     let icon = null;
     let onClick: (() => void) | undefined = undefined;
 
@@ -265,7 +261,6 @@ export const Textarea = forwardRef(
         );
         onClick = value?.trim() ? onSend : undefined;
       } else {
-        // Brak ikony jeśli nie używamy voice input i nie chcemy strzałki
         icon = null;
       }
     }
@@ -302,7 +297,7 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px] transition-colors',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border border-gray-300 dark:border-gray-800 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px] transition-colors',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
@@ -314,12 +309,12 @@ export const Textarea = forwardRef(
                     !isDragOver && !error,
                 },
                 modelSelector && showFileAttachment
-                  ? 'px-2.5 pr-28' // Wszystkie 3: model + attachment + main icon
+                  ? 'px-2.5 pr-28'
                   : modelSelector
-                  ? 'px-2.5 pr-24' // Model + main icon
+                  ? 'px-2.5 pr-24'
                   : showFileAttachment
-                  ? 'px-2.5 pr-20' // Attachment + main icon
-                  : 'px-2.5 pr-12', // Tylko main icon
+                  ? 'px-2.5 pr-20'
+                  : 'px-2.5 pr-12',
                 className
               )}
               onInput={adjustHeight}

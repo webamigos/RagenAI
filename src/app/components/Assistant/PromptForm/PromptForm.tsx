@@ -139,7 +139,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       <div className="px-5 bg-white dark:bg-zinc-900">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="flex flex-col w-full sm:w-11/12 lg:w-4/5 mx-auto justify-center"
+          className="flex flex-col max-w-3xl mx-auto justify-center"
         >
           <div className="flex w-full justify-center">
             <AskQuestion

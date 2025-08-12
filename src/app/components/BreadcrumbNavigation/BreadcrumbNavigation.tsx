@@ -20,7 +20,6 @@ export const BreadcrumbNavigation = ({
 }: BreadcrumbNavigationProps) => {
   const breadcrumbs = useBreadcrumbs(threadId);
 
-  // Nie wyświetlamy breadcrumbs jeśli jest mniej niż 2 elementy
   if (breadcrumbs.length < 2) {
     return null;
   }
