@@ -194,7 +194,6 @@ export const Assistant = ({ threadId }: Props) => {
           />
         )}
 
-        {/* Breadcrumb Navigation */}
         <div className="fixed top-4 left-4 lg:left-68 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2">
           <BreadcrumbNavigation threadId={threadId} />
         </div>

@@ -44,6 +44,8 @@ import { InboxIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
+import { NewChatButton } from '@/app/components/Sidebar/NewChatButton';
+import { getTranslations } from 'next-intl/server';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -58,6 +60,7 @@ export default async function PanelLayout({ children }: Props) {
     redirect('/account-configuration?misconfigurationDetected=true');
   }
   const defaultPublicProjectId = await getDefaultProjectPublicId();
+  const t = await getTranslations('sidebar');
 
   return (
     // <>
@@ -117,6 +120,10 @@ export default async function PanelLayout({ children }: Props) {
         <Sidebar>
           <SidebarHeader>
             <SidebarSection className="max-lg:hidden">
+              <NewChatButton variant="sidebar">
+                <PlusIcon className="w-6 h-6" />
+                <SidebarLabel>{t('new-chat')}</SidebarLabel>
+              </NewChatButton>
               <SearchButton variant="sidebar">
                 <MagnifyingGlassIcon className="w-6 h-6" />
                 <SidebarLabel>Search</SidebarLabel>
