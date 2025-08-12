@@ -2,7 +2,7 @@ import {
   Text,
   Skeleton,
   DocumentIcon,
-  ClourArrowIcon,
+  CloudArrowIcon,
 } from '@ragenai/common-ui';
 
 export type FileStatus = {
@@ -66,7 +66,7 @@ export const ProjectFileUploadContent = ({
         <Text className="font-medium text-gray-900 dark:text-gray-200">
           {t('upload-file')}
         </Text>
-        <ClourArrowIcon className="h-6 w-6 text-primary-blue-500" />
+        <CloudArrowIcon className="h-6 w-6 text-primary-blue-500" />
       </div>
     </div>
   );

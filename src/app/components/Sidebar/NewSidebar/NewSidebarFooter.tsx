@@ -30,7 +30,7 @@ export const NewSidebarFooter = () => {
   const userFirstName = user?.firstName;
 
   return (
-    <SidebarFooter className="max-lg:hidden">
+    <SidebarFooter>
       <Dropdown>
         <DropdownButton as={SidebarItem}>
           <span className="flex min-w-0 items-center gap-3">
@@ -61,14 +61,12 @@ export const NewSidebarFooter = () => {
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
-          <DropdownItem>
-            <SignOutButton>
-              <>
-                <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
-                <DropdownLabel>{t('sign-out')}</DropdownLabel>
-              </>
-            </SignOutButton>
-          </DropdownItem>
+          <SignOutButton>
+            <DropdownItem>
+              <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
+              <DropdownLabel>{t('sign-out')}</DropdownLabel>
+            </DropdownItem>
+          </SignOutButton>
         </DropdownMenu>
       </Dropdown>
     </SidebarFooter>

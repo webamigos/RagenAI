@@ -21,6 +21,8 @@ const PUBLIC_ROUTES = [
   '/:locale/guest-threads/:threadId',
   '/:locale/sso-callback',
   '/:locale/enter-code',
+  '/:locale/forgot-password',
+  '/:locale/reset-password',
 ];
 
 const PROTECTED_ROUTES = ['/:locale/threads/:threadId', '/admin'];
@@ -46,7 +48,9 @@ function redirectToSignInIfNeeded(url: string, request: NextRequest) {
     !url.includes(SIGN_IN_PATH) &&
     !url.includes('/sign-up') &&
     !url.includes('/sso-callback') &&
-    !url.includes('/enter-code')
+    !url.includes('/enter-code') &&
+    !url.includes('/forgot-password') &&
+    !url.includes('/reset-password')
   ) {
     return NextResponse.redirect(new URL(SIGN_IN_PATH, request.url));
   }
@@ -90,7 +94,9 @@ export default clerkMiddleware(
           url.includes('/public') ||
           url.includes('/sign-up') ||
           url.includes('/sso-callback') ||
-          url.includes('/enter-code')
+          url.includes('/enter-code') ||
+          url.includes('/forgot-password') ||
+          url.includes('/reset-password')
         ) {
           return NextResponse.next();
         }

@@ -78,7 +78,6 @@ export const RegisterForm = () => {
           type="email"
           id="email"
           {...register('email')}
-          className="w-full px-3 py-2 border rounded-md"
           label="Email"
           error={errors.email}
           errorMessage={errors.email?.message}
@@ -88,7 +87,6 @@ export const RegisterForm = () => {
           type="password"
           id="password"
           {...register('password')}
-          className="w-full py-2 border rounded-md"
           error={errors.email}
           errorMessage={errors.password?.message}
         />
