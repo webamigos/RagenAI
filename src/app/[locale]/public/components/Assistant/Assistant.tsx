@@ -47,6 +47,10 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
             responseType={ChatResponseType.TEXT}
+            currentThreadModel={undefined}
+            organizationDefaultModel=""
+            onChange={() => {}}
+            isGlobalLoading={isGlobalLoading}
           />
         )}
       </div>
