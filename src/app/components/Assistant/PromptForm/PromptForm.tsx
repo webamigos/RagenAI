@@ -73,15 +73,15 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     };
 
     const promptValue = watch('prompt', '');
-    const useKnowledge = watch('useKnowledge');
+    // const useKnowledge = watch('useKnowledge');
 
     return (
-      <div className="px-5 bg-white dark:bg-zinc-900">
+      <div className="dark:bg-zinc-900 p-4 w-full">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="flex flex-col max-w-3xl mx-auto justify-center"
+          className="flex flex-col max-w-2xl"
         >
-          <div className="flex w-full justify-center">
+          <div className="flex w-full">
             <AskQuestion
               isUserLogged={isUserLogged}
               disabled={isLoading}
@@ -94,7 +94,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             />
           </div>
           {!isPublicAccess && (
-            <div className="flex w-full justify-center">
+            <div className="flex w-full">
               <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">
                 <input
                   type="checkbox"
