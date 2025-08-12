@@ -277,6 +277,14 @@
       "invalid-url": "Wprowadź poprawny adres strony internetowej (np. https://przyklad.pl)"
     }
   },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Wybierz model AI",
+      "model-updated": "Model zmieniony na {model}",
+      "model-update-failed": "Nie udało się zmienić modelu: {error}",
+      "model-label": "Model"
+    }
+  },
   "assistant-settings": {
     "prompt-assistant-settings": "Ustawienia asystenta",
     "model-select": {

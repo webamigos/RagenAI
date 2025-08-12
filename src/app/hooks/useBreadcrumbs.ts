@@ -27,7 +27,6 @@ export const useBreadcrumbs = (threadId?: string) => {
       const projectId = pathSegments[projectIndex + 1];
       const isInThread = pathSegments.includes('threads') && threadId;
 
-      // Dodaj breadcrumb dla asystentów
       items.push({
         label: t('assistants'),
         href: '/',

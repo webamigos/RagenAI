@@ -8,6 +8,7 @@ import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
+import { ModelSelector } from './ModelSelector';
 
 import { useOrganization, useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
@@ -18,6 +19,10 @@ import { logger } from '@/app/lib/utils/logger';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
 import { RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
+import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
+import { updateThreadModel as updateThreadModelAction } from '@/store/threads/threadsSlice';
+import { updateThreadModel as updateSidebarThreadModelAction } from '@/store/sidebar/sidebarSlice';
 
 type ProjectForContext = {
   id: number;
@@ -67,6 +72,11 @@ export const Assistant = ({ threadId }: Props) => {
   const [availableProjects, setAvailableProjects] = useState<
     ProjectForContext[]
   >([]);
+  const [currentThreadModel, setCurrentThreadModel] = useState<string | null>(
+    null
+  );
+  const [organizationDefaultModel, setOrganizationDefaultModel] =
+    useState<string>('gpt-4o');
 
   useEffect(() => {
     const getVoiceSettings = async () => {
@@ -122,6 +132,47 @@ export const Assistant = ({ threadId }: Props) => {
     fetchAvailableProjects();
   }, [organization?.id, user?.id]);
 
+  useEffect(() => {
+    const getOrganizationModel = async () => {
+      try {
+        const result = await getOrganizationSettings();
+        if (result.success && result.settings) {
+          setOrganizationDefaultModel(result.settings.model);
+        }
+      } catch (error) {
+        logger.error(
+          { error: error },
+          'Error fetching organization model settings'
+        );
+      }
+    };
+    getOrganizationModel();
+  }, [organization?.id]);
+
+  useEffect(() => {
+    const currentThread =
+      reduxMessages.length > 0 ? null : localMessages.find((m) => m.public_id);
+
+    setCurrentThreadModel(null);
+  }, [threadId, reduxMessages, localMessages]);
+
+  const handleModelChange = async (model: string) => {
+    try {
+      const result = await updateThreadModel(threadId, model);
+      if (result.success) {
+        setCurrentThreadModel(model);
+
+        dispatch(updateThreadModelAction({ threadId, model }));
+        dispatch(updateSidebarThreadModelAction({ threadId, model }));
+      } else {
+        throw new Error(result.error || 'Failed to update thread model');
+      }
+    } catch (error) {
+      logger.error({ error }, 'Error updating thread model');
+      throw error;
+    }
+  };
+
   return (
     <>
       {isSearchOpen && (
@@ -167,7 +218,19 @@ export const Assistant = ({ threadId }: Props) => {
           />
         </div>
 
-        <div className="shrink-0 w-full fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 dark:border-gray-700 lg:pl-64">
+        {!isPublicAccess && threadId && (
+          <div className="fixed bottom-24 md:bottom-28 right-4 md:right-6 z-50">
+            <ModelSelector
+              threadId={threadId}
+              currentModel={currentThreadModel || undefined}
+              organizationDefaultModel={organizationDefaultModel}
+              onChange={handleModelChange}
+              disabled={isGlobalLoading}
+            />
+          </div>
+        )}
+
+        <div className="shrink-0 w-full fixed bottom-0 left-0 lg:left-64 right-0 z-40 border-t border-gray-200 dark:border-gray-700">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
             <PromptForm

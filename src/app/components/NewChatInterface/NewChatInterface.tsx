@@ -7,6 +7,7 @@ import { classMerge } from '@ragenai/common-ui/index';
 
 import { useNewThreadInput } from './useNewThreadInput';
 import { MentionTextarea, type MentionedProject } from './MentionTextarea';
+import { ModelSelectorInline } from './ModelSelectorInline';
 
 import { ChatResponseType } from '@/app/contracts/Message';
 
@@ -21,6 +22,7 @@ interface NewChatInterfaceProps {
   projectPublicId?: string;
   projectTitle?: string;
   accessToken?: string;
+  organizationDefaultModel?: string;
 }
 
 export const NewChatInterface = ({
@@ -33,11 +35,15 @@ export const NewChatInterface = ({
   projectId,
   projectPublicId,
   projectTitle,
+  organizationDefaultModel,
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>(
+    organizationDefaultModel || 'gpt-4o'
+  );
 
   const {
     prompt,
@@ -56,6 +62,7 @@ export const NewChatInterface = ({
     projectId,
     projectPublicId,
     accessToken,
+    preferredModel: selectedModel,
   });
 
   useEffect(() => {
@@ -63,6 +70,12 @@ export const NewChatInterface = ({
       inputRef.current.focus();
     }
   }, [isEmbedded]);
+
+  useEffect(() => {
+    if (organizationDefaultModel) {
+      setSelectedModel(organizationDefaultModel);
+    }
+  }, [organizationDefaultModel]);
 
   if (isEmbedded) {
     return null;
@@ -107,6 +120,16 @@ export const NewChatInterface = ({
           handleResponseType={handleVoiceModeActivation}
           onProjectMention={handleProjectMention}
           mentionedProject={mentionedProject}
+          modelSelector={
+            !isPublicAccess ? (
+              <ModelSelectorInline
+                selectedModel={selectedModel}
+                organizationDefaultModel={organizationDefaultModel}
+                onChange={setSelectedModel}
+                disabled={isLoading || isPending}
+              />
+            ) : undefined
+          }
         />
       </div>
     </div>

@@ -274,6 +274,14 @@
       "invalid-url": "Please enter a valid URL (e.g., https://example.com)"
     }
   },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Select AI model",
+      "model-updated": "Model changed to {model}",
+      "model-update-failed": "Failed to change model: {error}",
+      "model-label": "Model"
+    }
+  },
   "assistant-settings": {
     "prompt-assistant-settings": "Assistant settings",
     "model-select": {

@@ -62,6 +62,15 @@ export async function streamEvents({
           id: threadRecord.public_id,
         });
 
+        const effectiveSettings = {
+          apiKey: rawSettings.apiKey,
+          model: threadRecord.preferred_model || rawSettings.model,
+          temperature: rawSettings.temperature,
+          prompt: rawSettings.prompt,
+          maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
+          voiceId: rawSettings.voiceId,
+        };
+
         // TODO: handle moderated message
         // save message
         sendApiEvent(controller, 'save_user_message');
@@ -90,7 +99,7 @@ export async function streamEvents({
         });
 
         // Determine project instructions with fallback hierarchy
-        // Priority: mentioned_project_id > project_id > organization instructions (from rawSettings.prompt)
+        // Priority: mentioned_project_id > project_id > organization instructions (from effectiveSettings.prompt)
         let projectInstruction: string | null = null;
         let effectiveProjectId: number | null = null;
 
@@ -168,7 +177,7 @@ export async function streamEvents({
                 },
                 'Error getting instructions from thread project, will use organization instructions'
               );
-              // Will fallback to organization instructions via rawSettings.prompt
+              // Will fallback to organization instructions via effectiveSettings.prompt
             }
           } else if (!projectInstruction && threadRecord.project_id) {
             logger.warn(
@@ -178,13 +187,16 @@ export async function streamEvents({
           }
 
           // 3. LOWEST PRIORITY: Organization instructions
-          // This fallback is automatically handled by rawSettings.prompt in the chain initialization
+          // This fallback is automatically handled by effectiveSettings.prompt in the chain initialization
           // No additional code needed - if projectInstruction is null, chains use organization instructions
           if (!projectInstruction) {
             logger.info(
               {
                 orgId,
-                hasOrgPrompt: Boolean(rawSettings.prompt),
+                hasOrgPrompt: Boolean(effectiveSettings.prompt),
+                effectiveModel: effectiveSettings.model,
+                threadModel: threadRecord.preferred_model,
+                orgDefaultModel: rawSettings.model,
               },
               'No project instructions found, will use organization instructions (lowest priority fallback)'
             );
@@ -205,7 +217,10 @@ export async function streamEvents({
         if (mode === AssistantMode.INTERNAL) {
           if (filteredMode === ChatType.CONVERSATION) {
             const conversation = await initializeConversationChain({
-              settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              settings: {
+                ...effectiveSettings,
+                apiKey: effectiveSettings.apiKey,
+              },
               projectInstruction,
             });
             chain = conversation.chain;
@@ -229,7 +244,10 @@ export async function streamEvents({
               );
             }
             const basicRag = await initializeRagChain({
-              settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+              settings: {
+                ...effectiveSettings,
+                apiKey: effectiveSettings.apiKey,
+              },
               projectInstruction,
               internalProjectId: projectIdToUse,
             });
@@ -239,7 +257,10 @@ export async function streamEvents({
         } else if (mode === AssistantMode.PUBLIC) {
           const projectIdToUse = effectiveProjectId || threadRecord.project?.id;
           const publicRag = await initializePublicRagChain({
-            settings: { ...rawSettings, apiKey: rawSettings.apiKey },
+            settings: {
+              ...effectiveSettings,
+              apiKey: effectiveSettings.apiKey,
+            },
             organizationId: orgId,
             projectInstruction,
             projectId: projectIdToUse,

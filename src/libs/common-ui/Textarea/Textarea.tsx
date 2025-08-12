@@ -39,6 +39,7 @@ type Props = {
   showArrowIcon?: boolean;
   disabled?: boolean;
   handleSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  modelSelector?: React.ReactNode;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -60,6 +61,7 @@ export const Textarea = forwardRef(
       setValue,
       value,
       handleSubmit,
+      modelSelector,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>
@@ -215,14 +217,14 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border border-gray-300 dark:border-gray-800 px-2.5 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
+                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border border-gray-300 dark:border-gray-800 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
                     error,
                   'shadow-xs': !error,
                 },
-                'pr-12',
+                modelSelector ? 'px-2.5 pr-24' : 'px-2.5 pr-12',
                 className
               )}
               onInput={adjustHeight}
@@ -231,6 +233,13 @@ export const Textarea = forwardRef(
               placeholder={t('placeholder')}
               {...rest}
             />
+
+            {modelSelector && (
+              <div className="absolute bottom-1.5 right-14 flex items-center">
+                {modelSelector}
+              </div>
+            )}
+
             {icon && (
               <button
                 type="button"

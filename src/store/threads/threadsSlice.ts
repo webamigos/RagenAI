@@ -108,6 +108,16 @@ export const threadsSlice = createSlice({
     ) => {
       state.defaultProjectPublicId = action.payload;
     },
+    updateThreadModel: (
+      state,
+      action: PayloadAction<{ threadId: string; model: string | null }>
+    ) => {
+      const { threadId, model } = action.payload;
+      const thread = state.userThreads.find((t) => t.public_id === threadId);
+      if (thread) {
+        thread.preferred_model = model;
+      }
+    },
   },
 });
 
@@ -124,6 +134,7 @@ export const {
   resetThreads,
   setCurrentThreadId,
   setDefaultProjectPublicId,
+  updateThreadModel,
 } = threadsSlice.actions;
 
 export default threadsSlice.reducer;

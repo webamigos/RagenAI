@@ -1,0 +1,1 @@
+export { ModelSelectorInline } from './ModelSelectorInline';

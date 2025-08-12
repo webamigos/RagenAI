@@ -52,6 +52,7 @@ model Thread {
   organization_id              String?
   user_id                      String? // api related field
   preferred_communication_type ThreadCommunicationType @default(TEXT)
+  preferred_model              String? // AI model preference for this thread, fallback to organization default
   source                       Source                  @default(UI)
   project                      Project?                @relation(fields: [project_id], references: [id])
   project_id                   Int?
