@@ -221,7 +221,10 @@ export const useSidebarLogic = () => {
   // Refresh projects when new thread is added
   useEffect(() => {
     const parts = pathname.split('/');
-    const isInProjectContext = parts.includes('projects');
+    const isInProjectContext =
+      parts.includes('projects') ||
+      parts.includes('assistants') ||
+      parts.includes('threads');
 
     if (organization?.id && user?.id && isInProjectContext) {
       fetchProjects();

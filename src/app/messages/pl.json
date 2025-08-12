@@ -22,6 +22,12 @@
       "prompt-min-length": "Wiadomość musi zawierać przynajmniej 10 znaków"
     }
   },
+  "Breadcrumbs": {
+    "assistants": "Asystenci",
+    "mainThreads": "Główne wątki",
+    "conversation": "Konwersacja",
+    "unknownProject": "Nieznany projekt"
+  },
   "sign-up": {
     "create-account": "Załóż konto",
     "to-continue": "aby kontynuować w Ragen Assistant",
@@ -329,6 +335,7 @@
     "subscription-management": "Subskrypcja",
     "api-keys": "Klucze API",
     "create-new-thread": "Nowy wątek",
+    "new-chat": "Nowy czat",
     "search-threads": "Szukaj w wątkach",
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",

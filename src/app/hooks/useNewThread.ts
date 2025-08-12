@@ -12,7 +12,7 @@ import { usePathname, useRouter } from '@/i18n/routing';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addThread } from '@/store/threads/threadsSlice';
-import { setProjects } from '@/store/sidebar/sidebarSlice';
+import { setProjects, addThreadToProject } from '@/store/sidebar/sidebarSlice';
 import { clearMessages } from '@/store/assistant/assistantSlice';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 
@@ -61,7 +61,7 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 export const useNewThread = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [visitorId, setVisitorId] = useState('');
-  const [isPending, setTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const reduxDispatch = useAppDispatch();
   const defaultProjectPublicId = useAppSelector(
@@ -115,7 +115,7 @@ export const useNewThread = () => {
         payload: 'Failed to load visitor messages.',
       });
     }
-  }, [visitorId, pathname]);
+  }, [visitorId, pathname, push, user]);
 
   useEffect(() => {
     loadVisitorMessages();
@@ -172,28 +172,39 @@ export const useNewThread = () => {
           //this hook logic is reused for global and project-scoped threads
           //for threads connected to the default project id redux threads.userThreads state must be updated
           //for the other projects there is a separate state cell sidebar.projects
-          const projectIdNumeric = result.thread.project_id;
           const isDefaultProject =
-            (!projectIdNumeric && !projectPublicId) ||
-            projectPublicId === defaultProjectPublicId;
+            !projectPublicId || projectPublicId === defaultProjectPublicId;
           if (isDefaultProject) {
             reduxDispatch(addThread(newThread));
-          }
 
-          // Always refresh projects if we have a project context
-          if (
-            organization?.id &&
-            user?.id &&
-            (projectId || result.thread.project_id)
-          ) {
-            const fetchedProjects = await getProjects(organization.id, user.id);
-            if (fetchedProjects.projects) {
-              reduxDispatch(setProjects(fetchedProjects.projects));
+            if (organization?.id && user?.id) {
+              const fetchedProjects = await getProjects(
+                organization.id,
+                user.id
+              );
+              if (fetchedProjects.projects) {
+                reduxDispatch(setProjects(fetchedProjects.projects));
+              }
             }
+          } else if (result.thread.project_id != null) {
+            const threadForProject = {
+              created_at: new Date(),
+              public_id: threadId,
+              visitor_id: user.id,
+              preferred_communication_type: 'TEXT' as const,
+              project_id: result.thread.project_id,
+              messages: initialMessage ? [{ content: initialMessage }] : [],
+            };
+            reduxDispatch(
+              addThreadToProject({
+                projectId: result.thread.project_id,
+                thread: threadForProject,
+              })
+            );
           }
         }
 
-        setTransition(() => {
+        startTransition(() => {
           const route = projectPublicId
             ? `/assistants/${projectPublicId}/threads/${threadId}`
             : `/threads/${threadId}`;
