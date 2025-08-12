@@ -11,6 +11,7 @@ import {
   ChatResponseType,
 } from '../../../contracts/Message';
 import { createMessageSchema } from '../../../contracts/Message';
+import { ModelSelector } from '../ModelSelector';
 
 type Props = {
   isLoading: boolean;
@@ -19,6 +20,10 @@ type Props = {
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
   responseType: ChatResponseType;
+  currentThreadModel: string | undefined;
+  organizationDefaultModel: string;
+  onChange: (model: string) => void;
+  isGlobalLoading: boolean;
 };
 
 export type PromptFormRef = {
@@ -34,6 +39,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       isPublicAccess,
       handleResponseType,
       responseType,
+      currentThreadModel,
+      organizationDefaultModel,
+      onChange,
+      isGlobalLoading,
     },
     ref
   ) => {
@@ -81,18 +90,27 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           onSubmit={handleSubmit(handleFormSubmit)}
           className="flex flex-col max-w-2xl"
         >
-          <div className="flex w-full">
-            <AskQuestion
-              isUserLogged={isUserLogged}
-              disabled={isLoading}
-              error={errors?.prompt}
-              register={register}
-              onSend={handleSend}
-              value={promptValue}
-              handleResponseType={handleResponseType}
-              setPromptValue={(text: string) => setValue('prompt', text)}
-            />
+          <div className="flex w-full justify-end">
+            {!isPublicAccess && (
+              <ModelSelector
+                currentModel={currentThreadModel || undefined}
+                organizationDefaultModel={organizationDefaultModel}
+                onChange={onChange}
+                disabled={isGlobalLoading}
+              />
+            )}
           </div>
+          <AskQuestion
+            isUserLogged={isUserLogged}
+            disabled={isLoading}
+            error={errors?.prompt}
+            register={register}
+            onSend={handleSend}
+            value={promptValue}
+            handleResponseType={handleResponseType}
+            setPromptValue={(text: string) => setValue('prompt', text)}
+          />
+
           {!isPublicAccess && (
             <div className="flex w-full">
               <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">

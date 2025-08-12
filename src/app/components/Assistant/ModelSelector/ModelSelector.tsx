@@ -8,15 +8,13 @@ import { getAvailableModels } from '../../config';
 import { statusToast } from '@/app/lib/utils/toast';
 
 type Props = {
-  threadId: string;
   currentModel?: string;
   organizationDefaultModel?: string;
-  onChange: (model: string) => Promise<void>;
+  onChange: (model: string) => void;
   disabled?: boolean;
 };
 
 export const ModelSelector = ({
-  threadId,
   currentModel,
   organizationDefaultModel,
   onChange,

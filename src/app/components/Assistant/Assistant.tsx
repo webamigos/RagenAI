@@ -218,31 +218,35 @@ export const Assistant = ({ threadId }: Props) => {
           />
         </div>
 
-        {!isPublicAccess && threadId && (
-          <div className="fixed bottom-4 right-4 md:right-6 z-50">
-            <ModelSelector
-              threadId={threadId}
-              currentModel={currentThreadModel || undefined}
-              organizationDefaultModel={organizationDefaultModel}
-              onChange={handleModelChange}
-              disabled={isGlobalLoading}
-            />
-          </div>
-        )}
-
         <div className="w-full fixed bottom-0 left-1/2 -translate-x-1/2 lg:left-[35%] lg:-translate-x-0">
-          {' '}
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && (
-            <PromptForm
-              handleResponseType={handleResponseType}
-              ref={promptFormRef}
-              isUserLogged={!!isSignedIn}
-              isLoading={isGlobalLoading}
-              onSubmit={onSubmit}
-              isPublicAccess={isPublicAccess}
-              responseType={responseType}
-            />
+            <>
+              <PromptForm
+                handleResponseType={handleResponseType}
+                ref={promptFormRef}
+                isUserLogged={!!isSignedIn}
+                isLoading={isGlobalLoading}
+                onSubmit={onSubmit}
+                isPublicAccess={isPublicAccess}
+                responseType={responseType}
+                currentThreadModel={currentThreadModel || undefined}
+                organizationDefaultModel={organizationDefaultModel}
+                onChange={handleModelChange}
+                isGlobalLoading={isGlobalLoading}
+              />
+              {/* {!isPublicAccess && (
+                <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
+                  <ModelSelector
+                    threadId={threadId}
+                    currentModel={currentThreadModel || undefined}
+                    organizationDefaultModel={organizationDefaultModel}
+                    onChange={handleModelChange}
+                    disabled={isGlobalLoading}
+                  />
+                </div>
+              )} */}
+            </>
           )}
         </div>
       </div>
