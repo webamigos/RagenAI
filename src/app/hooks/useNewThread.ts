@@ -10,6 +10,7 @@ import {
 import { useUser, useOrganization } from '@clerk/nextjs';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addThread } from '@/store/threads/threadsSlice';
 import { setProjects, addThreadToProject } from '@/store/sidebar/sidebarSlice';
@@ -136,7 +137,8 @@ export const useNewThread = () => {
     projectId?: number,
     projectPublicId?: string,
     mentionedProjectId?: number,
-    preferredModel?: string
+    preferredModel?: string,
+    threadDocuments?: ThreadDocumentUI[]
   ) => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
@@ -147,7 +149,8 @@ export const useNewThread = () => {
         ? await createThreadAction(
             projectId,
             mentionedProjectId,
-            preferredModel
+            preferredModel,
+            threadDocuments
           )
         : await createGuestThreadAction({ mentionedProjectId, preferredModel });
 

@@ -10,6 +10,7 @@ import { MentionTextarea, type MentionedProject } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
 
 import { ChatResponseType } from '@/app/contracts/Message';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 interface NewChatInterfaceProps {
   className?: string;
@@ -44,6 +45,9 @@ export const NewChatInterface = ({
   const [selectedModel, setSelectedModel] = useState<string>(
     organizationDefaultModel || 'gpt-4o'
   );
+  const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
+    []
+  );
 
   const {
     prompt,
@@ -63,6 +67,8 @@ export const NewChatInterface = ({
     projectPublicId,
     accessToken,
     preferredModel: selectedModel,
+    threadDocuments,
+    onThreadDocumentsChange: setThreadDocuments,
   });
 
   useEffect(() => {
@@ -120,6 +126,8 @@ export const NewChatInterface = ({
           handleResponseType={handleVoiceModeActivation}
           onProjectMention={handleProjectMention}
           mentionedProject={mentionedProject}
+          threadDocuments={threadDocuments}
+          onThreadDocumentsChange={setThreadDocuments}
           modelSelector={
             !isPublicAccess ? (
               <ModelSelectorInline

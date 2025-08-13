@@ -22,6 +22,61 @@ import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { getProjectInstruction } from '@/app/lib/services/projectInstructions';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+
+/**
+ * Load thread documents from database for a specific thread
+ */
+async function loadThreadDocuments(
+  threadId: string
+): Promise<ThreadDocumentUI[]> {
+  try {
+    const threadDocuments = await db.threadDocument.findMany({
+      where: { thread_id: threadId },
+      include: {
+        userFile: {
+          select: {
+            public_id: true,
+            file_name: true,
+            file_size: true,
+            file_mime_type: true,
+            document: {
+              select: {
+                content: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    logger.info(
+      {
+        threadId,
+        threadDocumentsFound: threadDocuments.length,
+        userFileIds: threadDocuments.map((td) => td.userFile.public_id),
+        fileNames: threadDocuments.map((td) => td.userFile.file_name),
+      },
+      'loadThreadDocuments: Retrieved thread documents from database'
+    );
+
+    const threadDocumentsUI: ThreadDocumentUI[] = threadDocuments.map((td) => ({
+      name: td.userFile.file_name,
+      content: td.userFile.document?.content || '',
+      size: td.userFile.file_size,
+      type: td.userFile.file_mime_type || 'application/octet-stream',
+      userFileId: td.userFile.public_id,
+    }));
+
+    return threadDocumentsUI;
+  } catch (error) {
+    logger.error(
+      { error, threadId },
+      'loadThreadDocuments: Error loading thread documents from database'
+    );
+    return [];
+  }
+}
 
 type Config = {
   publicThreadId: string;
@@ -243,6 +298,9 @@ export async function streamEvents({
                 'Project ID is required for knowledge base access'
               );
             }
+
+            const threadDocuments = await loadThreadDocuments(threadRecord.id);
+
             const basicRag = await initializeRagChain({
               settings: {
                 ...effectiveSettings,
@@ -250,6 +308,7 @@ export async function streamEvents({
               },
               projectInstruction,
               internalProjectId: projectIdToUse,
+              threadDocuments,
             });
             chain = basicRag.chain;
             finalAnswerRunName = basicRag.finalAnswerRunName;

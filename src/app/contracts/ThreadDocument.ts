@@ -3,4 +3,5 @@ export interface ThreadDocumentUI {
   content: string;
   size: number;
   type: string;
+  userFileId?: string;
 }

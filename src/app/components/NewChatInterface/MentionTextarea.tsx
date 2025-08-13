@@ -5,8 +5,10 @@ import { Textarea } from '@ragenai/common-ui';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
-import type { ComponentPropsWithRef } from 'react';
+import { statusToast } from '@/app/lib/utils/toast';
+import { logger } from '@/app/lib/utils/logger';
 
+import type { ComponentPropsWithRef } from 'react';
 export interface MentionedProject {
   publicId: string;
   title: string;
@@ -16,11 +18,15 @@ export interface MentionedProject {
 interface MentionTextareaProps extends ComponentPropsWithRef<typeof Textarea> {
   onProjectMention?: (project: MentionedProject | null) => void;
   mentionedProject?: MentionedProject | null;
+  threadDocuments?: ThreadDocumentUI[];
+  onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
 }
 
 export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   onProjectMention,
   mentionedProject,
+  threadDocuments: externalThreadDocuments,
+  onThreadDocumentsChange,
   value = '',
   onChange,
   ...textareaProps
@@ -28,12 +34,13 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
-    []
-  );
+
+  const threadDocuments = externalThreadDocuments ?? [];
+  const setThreadDocuments = onThreadDocumentsChange ?? (() => {});
   const mentionStartRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const { errorToast } = statusToast();
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
@@ -125,40 +132,66 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     });
   };
 
-  const handleFilesDrop = useCallback(async (files: File[]) => {
-    const validFiles: File[] = [];
+  const handleFilesDrop = useCallback(
+    async (files: File[]) => {
+      const validFiles: File[] = [];
 
-    for (const file of files) {
-      const validation = validateTextFile(file);
-      if (validation.valid) {
-        validFiles.push(file);
-      } else {
-        // TODO: Show error toast with validation.error
+      for (const file of files) {
+        const validation = validateTextFile(file);
+        if (validation.valid) {
+          validFiles.push(file);
+        } else {
+          logger.error({ validation }, 'Error validating file');
+          errorToast({
+            message: validation.error || 'Błąd podczas wgrywania plików',
+          });
+        }
       }
-    }
 
-    // Read file contents
-    const newDocuments: ThreadDocumentUI[] = [];
-    for (const file of validFiles) {
       try {
-        const content = await readFileAsText(file);
-        newDocuments.push({
-          name: file.name,
-          content: content.trim(),
-          size: file.size,
-          type: file.type || 'text/plain',
+        const { uploadFiles } = await import('@/app/lib/services/api');
+
+        const formData = new FormData();
+        validFiles.forEach((file) => {
+          formData.append('files', file);
         });
+        formData.append('thread_specific', 'true');
+
+        const uploadResponse = await uploadFiles(formData);
+
+        const newDocuments: ThreadDocumentUI[] = [];
+        for (let i = 0; i < validFiles.length; i++) {
+          const file = validFiles[i];
+          const uploadedFile = uploadResponse.files[i];
+          try {
+            const content = await readFileAsText(file);
+            newDocuments.push({
+              name: uploadedFile.fileName,
+              content: content.trim(),
+              size: uploadedFile.fileSize,
+              type: file.type || 'text/plain',
+              userFileId: uploadedFile.uniqueFileId,
+            });
+          } catch (error) {
+            logger.error({ error }, `Error reading file ${file.name}`);
+            errorToast({ message: `Błąd odczytu pliku ${file.name}` });
+          }
+        }
+
+        setThreadDocuments([...threadDocuments, ...newDocuments]);
       } catch (error) {
-        // TODO: Show error toast for file read error
+        errorToast({ message: 'Błąd podczas wgrywania plików' });
       }
-    }
+    },
+    [threadDocuments, setThreadDocuments]
+  );
 
-    setThreadDocuments((prev) => [...prev, ...newDocuments]);
-  }, []);
-
-  const handleThreadDocumentRemove = useCallback((index: number) => {
-    setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+  const handleThreadDocumentRemove = useCallback(
+    (index: number) => {
+      setThreadDocuments(threadDocuments.filter((_, i) => i !== index));
+    },
+    [threadDocuments, setThreadDocuments]
+  );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -36,6 +36,7 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           content: z.string(),
           size: z.number(),
           type: z.string(),
+          userFileId: z.string().optional(),
         })
       )
       .optional(),

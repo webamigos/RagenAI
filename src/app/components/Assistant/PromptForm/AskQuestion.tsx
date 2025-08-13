@@ -2,14 +2,7 @@ import { useTranslations } from 'next-intl';
 import { FieldError, UseFormRegister } from 'react-hook-form';
 
 import { Textarea } from '@ragenai/common-ui';
-
-// Thread-level document interface (temporary, będzie przeniesione do contracts)
-interface ThreadDocument {
-  name: string;
-  content: string;
-  size: number;
-  type: string;
-}
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 type Props = {
   disabled: boolean;
@@ -24,7 +17,7 @@ type Props = {
   value: string;
   showFileAttachment?: boolean;
   onFilesDrop?: (files: File[]) => void;
-  threadDocuments?: ThreadDocument[];
+  threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentRemove?: (index: number) => void;
 };
 
