@@ -353,7 +353,7 @@ export const Textarea = forwardRef(
               <button
                 type="button"
                 onClick={handleIconClick}
-                className="absolute bottom-1.5 right-3 flex items-center"
+                className="absolute bottom-1.5 right-2 flex items-center"
               >
                 {icon}
               </button>

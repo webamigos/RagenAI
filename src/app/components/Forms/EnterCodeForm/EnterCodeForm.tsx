@@ -101,7 +101,6 @@ export const EnterCodeForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Text>{t('verification-code-hint')}</Text>
         <Input
-          className="w-full px-3 py-2 border rounded-md"
           errorMessage={errors.email_code?.message}
           label={t('verification-code')}
           error={errors.email_code}

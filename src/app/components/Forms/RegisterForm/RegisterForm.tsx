@@ -78,7 +78,6 @@ export const RegisterForm = () => {
           type="email"
           id="email"
           {...register('email')}
-          className="w-full px-3 py-2 border rounded-md"
           label="Email"
           error={errors.email}
           errorMessage={errors.email?.message}
@@ -88,7 +87,6 @@ export const RegisterForm = () => {
           type="password"
           id="password"
           {...register('password')}
-          className="w-full py-2 border rounded-md"
           error={errors.email}
           errorMessage={errors.password?.message}
         />
@@ -175,6 +173,7 @@ export const RegisterForm = () => {
         </div>
 
         <Button
+          type="submit"
           className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           disabled={isSubmitting}
           isLoading={isSubmitting}
