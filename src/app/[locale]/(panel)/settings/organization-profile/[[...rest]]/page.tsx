@@ -3,13 +3,14 @@ import { getTranslations } from 'next-intl/server';
 import { getSubscriptionData } from '../../subscription/actions';
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
     rest: string[];
-  };
+  }>;
 };
 
-export async function generateMetadata({ params: { locale, rest } }: Props) {
+export async function generateMetadata({ params }: Props) {
+  const { locale, rest } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   const subPath = rest?.[0];
 

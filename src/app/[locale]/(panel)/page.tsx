@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Start } from '../../components/Start';
+import { PropsWihLocale } from '@/app/lib/types/types';
 
 type Props = {
   params: {
@@ -8,7 +9,8 @@ type Props = {
   };
 };
 
-export async function generateMetadata({ params: { locale } }: Props) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
@@ -16,7 +18,8 @@ export async function generateMetadata({ params: { locale } }: Props) {
   };
 }
 
-export default function Index({ params: { locale } }: Props) {
+export default async function Index({ params }: PropsWihLocale) {
+  const { locale } = await params;
   setRequestLocale(locale);
 
   /*

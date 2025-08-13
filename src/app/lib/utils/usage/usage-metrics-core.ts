@@ -8,7 +8,6 @@ import { UsageMetrics } from './types';
 import { addMonths } from 'date-fns';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
 import { ApiKey } from '@/app/api/v1/__logic__/types/brand';
-import { P } from 'pino';
 import { API_HEADER } from '@/app/api/v1/__logic__/guards/api-key.guard';
 
 export class UsageMetricsCore {

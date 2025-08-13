@@ -76,6 +76,4 @@ const envSchema = z.object({
   NEXT_PUBLIC_PUSHER_KEY: z.string(),
 });
 
-const validateEnvs = () => envSchema.safeParse(process.env);
-
-module.exports = validateEnvs;
+export const validateEnvs = () => envSchema.safeParse(process.env);

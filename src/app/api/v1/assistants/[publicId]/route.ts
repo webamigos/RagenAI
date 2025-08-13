@@ -14,11 +14,11 @@ import { updateProjectSchema } from '../../__logic__/dtos/project.dto';
 export const dynamic = 'force-dynamic';
 
 export type Params = {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 };
 
 export const GET = async (request: NextRequest, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
   try {
     setSentryServiceTag('api.assistants.id.get');
     const apiContext = await getApiContext(request);
@@ -37,7 +37,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
 };
 
 export const PATCH = async (request: NextRequest, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
   try {
     setSentryServiceTag('api.assistants.id.patch');
     const body = await request.json();

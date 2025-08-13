@@ -35,7 +35,7 @@ export async function createCheckoutSession(priceId: string) {
 
     const user = await clerkClient.users.getUser(userId);
     const email = user.emailAddresses[0].emailAddress;
-    const origin: string = headers().get('origin') as string;
+    const origin: string = (await headers()).get('origin') as string;
 
     const checkoutSession = await createCheckout({
       priceId,

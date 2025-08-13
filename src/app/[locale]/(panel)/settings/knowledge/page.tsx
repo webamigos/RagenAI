@@ -5,7 +5,8 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {

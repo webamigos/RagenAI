@@ -7,7 +7,8 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
 import { SignUpContainer } from '@/app/components/Forms/RegisterForm/SignUpContainer';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
@@ -16,12 +17,13 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
 }
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
-export default function SignUpPage({ params: { locale } }: Props) {
+export default async function SignUpPage({ params }: Props) {
+  const { locale } = await params;
   setRequestLocale(locale);
   const t = useTranslations('sign-up');
 

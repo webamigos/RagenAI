@@ -4,7 +4,8 @@ import { syncOrganizationAndProject } from '@/app/components/MyProfile/CreateOrg
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { Card } from '@ragenai/common-ui/Card';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {

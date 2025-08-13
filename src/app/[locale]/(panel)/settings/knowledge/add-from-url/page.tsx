@@ -2,9 +2,9 @@ import { getTranslations } from 'next-intl/server';
 import { AddFromUrl } from '@/app/components/ManageKnowledge/AddFromUrl';
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: Props) {

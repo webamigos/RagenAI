@@ -5,20 +5,22 @@ import { notFound } from 'next/navigation';
 import { Assistant } from '../../../../components/Assistant';
 
 type Props = {
-  params: {
+  params: Promise<{
     publicId: string;
     locale: string;
-  };
+  }>;
 };
 
-export async function generateMetadata({ params: { locale } }: Props) {
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
     title: t('index.title'),
   };
 }
 
-export default function ThreadPage({ params: { publicId, locale } }: Props) {
+export default async function ThreadPage({ params }: Props) {
+  const { locale, publicId } = await params;
   const threadPublicId = publicId;
   if (!threadPublicId) {
     notFound();

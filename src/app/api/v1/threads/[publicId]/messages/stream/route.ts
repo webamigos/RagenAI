@@ -20,11 +20,11 @@ import { Role, Source } from '@prisma/client';
 export const dynamic = 'force-dynamic';
 
 export type Params = {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 };
 
 export const POST = async (request: NextRequest, { params }: Params) => {
-  const threadPublicId = params.publicId;
+  const { publicId } = await params;
   try {
     setSentryServiceTag('api.threads.threadId.messages.stream.get');
     const body = await request.json();
@@ -50,14 +50,14 @@ export const POST = async (request: NextRequest, { params }: Params) => {
               threadRecord,
               threadMessage,
             } = await apiDbService.streamChatMessages(
-              threadPublicId,
+              publicId,
               parsedData,
               controller
             );
 
             setSentryContext('EXTRA_DATA', {
               userQuestion: parsedData,
-              threadPublicId,
+              threadPublicId: publicId,
             });
 
             // streaming part

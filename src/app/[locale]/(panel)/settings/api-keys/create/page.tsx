@@ -11,7 +11,8 @@ import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectPublicId } from '@/app/actions';
 import { Header } from '@ragenai/common-ui';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'api-keys' });
 
   return {
@@ -19,9 +20,8 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default async function CreateApiKeyPage({
-  params: { locale },
-}: PropsWihLocale) {
+export default async function CreateApiKeyPage({ params }: PropsWihLocale) {
+  const { locale } = await params;
   setRequestLocale(locale);
 
   const { orgId, userId } = auth();

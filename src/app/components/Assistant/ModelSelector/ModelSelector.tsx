@@ -44,7 +44,9 @@ export const ModelSelector = ({
       setIsOpen(false);
       successToast({
         message: t('model-updated', {
-          model: availableModels.find((m) => m.value === newModel)?.label,
+          model:
+            availableModels.find((m) => m.value === newModel)?.label ||
+            newModel,
         }),
       });
     } catch (error) {

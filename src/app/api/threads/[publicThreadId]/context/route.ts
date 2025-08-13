@@ -16,7 +16,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { publicThreadId: string };
+  params: Promise<{ publicThreadId: string }>;
 };
 
 const updateContextSchema = z.object({
@@ -25,6 +25,7 @@ const updateContextSchema = z.object({
 
 // PATCH - Update thread project context
 export async function PATCH(request: NextRequest, { params }: Params) {
+  const { publicThreadId } = await params;
   try {
     const { orgId, userId } = getAuth(request);
     setSentryServiceTag('thread-context');
@@ -35,7 +36,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     setSentryClerkOrganizationTag(orgId);
 
-    const { publicThreadId } = params;
     const body = await request.json();
     const { mentionedProjectId } = updateContextSchema.parse(body);
 
@@ -93,6 +93,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 // DELETE - Remove thread project context (fallback to organization instructions)
 export async function DELETE(request: NextRequest, { params }: Params) {
+  const { publicThreadId } = await params;
   try {
     const { orgId, userId } = getAuth(request);
     setSentryServiceTag('thread-context');
@@ -102,8 +103,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     }
 
     setSentryClerkOrganizationTag(orgId);
-
-    const { publicThreadId } = params;
 
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({

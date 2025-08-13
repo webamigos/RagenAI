@@ -13,11 +13,11 @@ import {
 export const dynamic = 'force-dynamic';
 
 export type Params = {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 };
 
 export const GET = async (request: NextRequest, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
   try {
     setSentryServiceTag('api.threads.id.get');
     const apiContext = await getApiContext(request);
@@ -36,7 +36,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
 };
 
 export const PATCH = async (request: NextRequest, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
   try {
     setSentryServiceTag('api.threads.id.patch');
     const body = await request.json();
@@ -55,7 +55,7 @@ export const PATCH = async (request: NextRequest, { params }: Params) => {
 };
 
 export const DELETE = async (request: NextRequest, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
   try {
     setSentryServiceTag('api.threads.id.delete');
     const apiContext = await getApiContext(request);
