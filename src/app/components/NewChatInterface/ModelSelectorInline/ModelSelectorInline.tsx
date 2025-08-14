@@ -11,6 +11,8 @@ import {
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
+import { logger } from '@/app/lib/utils/logger';
+import { statusToast } from '@/app/lib/utils/toast';
 
 type Props = {
   selectedModel: string;
@@ -32,11 +34,10 @@ export const ModelSelectorInline = ({
   const [modelsLoading, setModelsLoading] = useState(true);
   const isLoadingModels = useRef(false);
   const t = useTranslations('assistant.model-selector');
+  const { errorToast } = statusToast();
 
-  // Load available models on component mount
   useEffect(() => {
     const loadAvailableModels = async () => {
-      // Prevent multiple simultaneous calls
       if (isLoadingModels.current) return;
 
       try {
@@ -45,7 +46,10 @@ export const ModelSelectorInline = ({
         const models = await getAvailableModelsForOrganization();
         setAvailableModels(models);
       } catch (error) {
-        // Failed to load available models - silent fail
+        logger.error('Failed to load available models');
+        errorToast({
+          message: 'Failed to load available models',
+        });
       } finally {
         setModelsLoading(false);
         isLoadingModels.current = false;
@@ -56,22 +60,17 @@ export const ModelSelectorInline = ({
   }, []);
 
   useEffect(() => {
-    // Load model after models are loaded, respecting hierarchy: organizationDefault > localStorage > hardcoded default
     if (!modelsLoading && availableModels.length > 0) {
-      let modelToUse = selectedModel; // Keep current if already set
+      let modelToUse = selectedModel;
       let shouldUpdateModel = false;
 
-      // Priority 1: Organization default model (highest priority)
       if (
         organizationDefaultModel &&
         availableModels.some((m) => m.value === organizationDefaultModel)
       ) {
         modelToUse = organizationDefaultModel;
-        // Always apply organization model, even if selectedModel already matches
         shouldUpdateModel = true;
-      }
-      // Priority 2: localStorage (only if no organization default)
-      else if (!organizationDefaultModel) {
+      } else if (!organizationDefaultModel) {
         try {
           const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
           if (
@@ -82,11 +81,13 @@ export const ModelSelectorInline = ({
             shouldUpdateModel = modelToUse !== selectedModel;
           }
         } catch (error) {
-          // Ignore localStorage errors
+          logger.error('Failed to load model from localStorage');
+          errorToast({
+            message: 'Failed to load model from localStorage',
+          });
         }
       }
 
-      // Call onChange if model should be updated
       if (modelToUse && shouldUpdateModel) {
         onChange(modelToUse);
       }
@@ -105,11 +106,13 @@ export const ModelSelectorInline = ({
     onChange(newModel);
     setIsOpen(false);
 
-    // Save selected model to localStorage
     try {
       localStorage.setItem(MODEL_STORAGE_KEY, newModel);
     } catch (error) {
-      // Ignore localStorage errors
+      logger.error('Failed to save model to localStorage');
+      errorToast({
+        message: 'Failed to save model to localStorage',
+      });
     }
   };
 

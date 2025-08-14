@@ -249,7 +249,7 @@ export async function saveVoiceId(
 
 export async function getVoiceId(orgId: string): Promise<string> {
   const voiceId = await redis.hget(`org:${orgId}`, 'voiceId');
-  return voiceId ?? 'JBFqnCBsd6RMkjVDRZzb'; // default male voice
+  return voiceId ?? 'JBFqnCBsd6RMkjVDRZzb';
 }
 
 export async function getAllSettings(
@@ -261,7 +261,6 @@ export async function getAllSettings(
     ? decryptApiKey(result.openai)
     : defaultOrganizationSettings.apiKey;
 
-  // Decrypt all provider credentials
   const anthropicApiKey = result.anthropic
     ? decryptApiKey(result.anthropic)
     : null;

@@ -17,12 +17,11 @@ import {
   getAzureOpenAICredentials,
 } from '../services/settings';
 
-// Cache for provider statuses to avoid repeated Redis/env checks
 const providerStatusCache = new Map<
   string,
   { data: ProviderStatus[]; timestamp: number }
 >();
-const CACHE_TTL = 30000; // 30 seconds
+const CACHE_TTL = 30000;
 
 type ProviderStatus = {
   provider: ModelProvider;
@@ -37,7 +36,6 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
     throw new Error('Organization ID is required');
   }
 
-  // Check cache first
   const cacheKey = orgId;
   const cached = providerStatusCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -61,7 +59,6 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
     let hasOrganizationCredentials = false;
     let hasEnvironmentCredentials = false;
 
-    // Check organization credentials
     switch (provider) {
       case 'openai':
         const openaiKey = await getOpenaiAPIKey(orgId);
@@ -97,7 +94,6 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
         break;
     }
 
-    // Check environment credentials
     switch (provider) {
       case 'openai':
         hasEnvironmentCredentials = !!process.env.OPENAI_API_KEY;
@@ -134,7 +130,6 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
         break;
     }
 
-    // Determine source and availability
     const available = hasOrganizationCredentials || hasEnvironmentCredentials;
     let source: 'organization' | 'environment' | 'both' = 'environment';
 
@@ -151,7 +146,6 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
     });
   }
 
-  // Cache the results
   providerStatusCache.set(cacheKey, {
     data: providerStatuses,
     timestamp: Date.now(),

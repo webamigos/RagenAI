@@ -15,6 +15,7 @@ import {
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
+import { logger } from '@/app/lib/utils/logger';
 
 export const ChatModelSelect = ({}) => {
   const [model, setModel] = useState<string>(defaultOrganizationSettings.model);
@@ -25,7 +26,6 @@ export const ChatModelSelect = ({}) => {
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant-settings.model-select');
 
-  // Load available models
   useEffect(() => {
     const loadAvailableModels = async () => {
       try {
@@ -42,9 +42,8 @@ export const ChatModelSelect = ({}) => {
     };
 
     loadAvailableModels();
-  }, []); // Fix: Remove errorToast and t dependencies to prevent repeated calls
+  }, []);
 
-  // Load current model setting
   useEffect(() => {
     const fetchModel = async () => {
       setIsLoading(true);
@@ -54,6 +53,7 @@ export const ChatModelSelect = ({}) => {
           setModel(response.data.model);
         }
       } catch (error) {
+        logger.error({ error }, 'Failed to fetch model');
         errorToast({
           message: `${t('failed-to-fetch-model')} ${error}`,
         });
@@ -63,7 +63,7 @@ export const ChatModelSelect = ({}) => {
     };
 
     fetchModel();
-  }, []); // Fix: Remove errorToast and t dependencies to prevent repeated calls
+  }, []);
 
   const handleModelChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -77,6 +77,7 @@ export const ChatModelSelect = ({}) => {
         successToast({ message: t('model-updated-successfully') });
       }
     } catch (error) {
+      logger.error({ error }, 'Failed to update model');
       errorToast({
         message: `${t('failed-to-update-model')} ${error}`,
       });

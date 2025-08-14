@@ -61,14 +61,12 @@ export const availableModels: AvailableModel[] = [
   },
 ] as const;
 
-// Helper function to get provider for a model
 export const getModelProvider = (
   modelValue: string
 ): ModelProvider | undefined => {
   return availableModels.find((model) => model.value === modelValue)?.provider;
 };
 
-// Helper function to check if model is a reasoning model (thinking/reasoning capabilities)
 export const isReasoningModel = (modelValue: string): boolean => {
   return [
     // OpenAI reasoning models
@@ -83,7 +81,6 @@ export const isReasoningModel = (modelValue: string): boolean => {
   ].includes(modelValue);
 };
 
-// Helper function to check if a provider requires API keys that might not be configured
 export const getProviderRequirements = (
   provider: ModelProvider
 ): { envVars: string[]; optional?: boolean } => {
@@ -118,17 +115,13 @@ export const getProviderRequirements = (
   }
 };
 
-// Helper function to check if provider is configured via environment variables
-// NOTE: This is deprecated - use checkAvailableProviders server action instead
 const isProviderConfigured = (provider: ModelProvider): boolean => {
-  // OpenAI is always available since it's used by default and can work with org API keys
   if (provider === 'openai') return true;
 
   const requirements = getProviderRequirements(provider);
   return requirements.envVars.every((envVar) => process.env[envVar]);
 };
 
-// Get display name for provider
 export const getProviderDisplayName = (provider: ModelProvider): string => {
   switch (provider) {
     case 'openai':
@@ -152,7 +145,6 @@ export const getProviderDisplayName = (provider: ModelProvider): string => {
   }
 };
 
-// Group models by provider for dropdown display
 export const groupModelsByProvider = (
   models: AvailableModel[]
 ): Array<{
@@ -173,7 +165,6 @@ export const groupModelsByProvider = (
     return acc;
   }, {} as Record<ModelProvider, { provider: ModelProvider; displayName: string; models: AvailableModel[] }>);
 
-  // Return sorted by provider order (OpenAI first, then Google, then Anthropic, rest alphabetically)
   const providerOrder: ModelProvider[] = [
     'openai',
     'google',

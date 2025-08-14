@@ -79,7 +79,6 @@ export const NewChatInterface = ({
     }
   }, [isEmbedded]);
 
-  // Fetch organization model if not provided as prop
   useEffect(() => {
     const getOrganizationModel = async () => {
       if (!organizationDefaultModel && organization?.id && !isPublicAccess) {
@@ -111,13 +110,12 @@ export const NewChatInterface = ({
     return null;
   }
 
-  // Don't render until organization model is loaded (for private access only)
   if (
     !isPublicAccess &&
     !organizationDefaultModel &&
     internalOrganizationDefaultModel === null
   ) {
-    return null; // Loading state
+    return null;
   }
 
   const handleVoiceModeActivation = async () => {

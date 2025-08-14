@@ -12,6 +12,7 @@ import {
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { statusToast } from '@/app/lib/utils/toast';
 import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
+import { logger } from '@/app/lib/utils/logger';
 
 type Props = {
   currentModel?: string;
@@ -44,10 +45,8 @@ export const ModelSelector = ({
     );
   }, [currentModel, organizationDefaultModel]);
 
-  // Load available models on component mount
   useEffect(() => {
     const loadAvailableModels = async () => {
-      // Prevent multiple simultaneous calls
       if (isLoadingModels.current) return;
 
       try {
@@ -56,7 +55,7 @@ export const ModelSelector = ({
         const models = await getAvailableModelsForOrganization();
         setAvailableModels(models);
       } catch (error) {
-        // Failed to load available models
+        logger.error('Failed to load available models');
         errorToast({
           message: 'Failed to load available models',
         });
@@ -67,7 +66,7 @@ export const ModelSelector = ({
     };
 
     loadAvailableModels();
-  }, []); // Fix: Remove errorToast dependency to prevent repeated calls
+  }, []);
 
   const handleModelChange = async (newModel: string) => {
     if (newModel === selectedModel || isLoading || disabled) return;
@@ -130,13 +129,11 @@ export const ModelSelector = ({
 
       {isOpen && (
         <>
-          {/* Overlay to close dropdown when clicking outside */}
           <div
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Dropdown menu */}
           <div className="absolute top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20">
             <div className="py-1">
               {modelsLoading ? (
@@ -146,11 +143,9 @@ export const ModelSelector = ({
               ) : (
                 groupedModels.map(({ provider, displayName, models }) => (
                   <div key={provider}>
-                    {/* Provider header */}
                     <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                       {displayName}
                     </div>
-                    {/* Models in this provider */}
                     {models.map(({ value, label }) => (
                       <button
                         key={value}
