@@ -9,7 +9,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 
 type Props = {
   currentModel?: string;
-  organizationDefaultModel?: string;
+  organizationDefaultModel?: string | null;
   onChange: (model: string) => void;
   disabled?: boolean;
 };
@@ -21,7 +21,7 @@ export const ModelSelector = ({
   disabled = false,
 }: Props) => {
   const [selectedModel, setSelectedModel] = useState<string>(
-    currentModel || organizationDefaultModel || 'gpt-4o'
+    currentModel || organizationDefaultModel || 'gemini-2.0-flash'
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +31,9 @@ export const ModelSelector = ({
   const availableModels = getAvailableModels();
 
   useEffect(() => {
-    setSelectedModel(currentModel || organizationDefaultModel || 'gpt-4o');
+    setSelectedModel(
+      currentModel || organizationDefaultModel || 'gemini-2.0-flash'
+    );
   }, [currentModel, organizationDefaultModel]);
 
   const handleModelChange = async (newModel: string) => {

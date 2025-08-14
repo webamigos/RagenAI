@@ -5,6 +5,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
+import { getModelProvider, type ModelProvider } from '../../components/config';
 import { usageTracker } from './usage';
 import { logger } from '../utils/logger';
 
@@ -85,6 +86,106 @@ const modelConfig = modelsSchema.parse({
 });
 
 // TODO: in future user will select model: Gpt4o, Gemini 2.0, Claude 3.7 etc
+
+// Models that don't support temperature parameter
+const modelsWithoutTemperature = ['o1', 'o1-mini', 'o3-mini'];
+
+// Helper function to check if model supports temperature
+const supportsTemperature = (model: string): boolean => {
+  if (!model) return true; // Default to supporting temperature
+  return !modelsWithoutTemperature.includes(model);
+};
+
+// Function to create credentials for a specific provider
+const createCredentialsForProvider = (
+  provider: ModelProvider
+): ProviderCredentials | null => {
+  switch (provider) {
+    case 'openai':
+      return {
+        provider: 'openai',
+        apiKey: process.env.OPENAI_API_KEY!,
+      };
+
+    case 'google':
+      const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+      if (!GOOGLE_API_KEY) return null;
+      return {
+        provider: 'google',
+        apiKey: GOOGLE_API_KEY,
+      };
+
+    case 'anthropic':
+      const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+      if (!ANTHROPIC_API_KEY) return null;
+      return {
+        provider: 'anthropic',
+        apiKey: ANTHROPIC_API_KEY,
+      };
+
+    case 'bedrock':
+      const AWS_REGION = process.env.AWS_REGION;
+      const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+      const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+      if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY)
+        return null;
+      return {
+        provider: 'bedrock',
+        region: AWS_REGION,
+        credentials: {
+          accessKeyId: AWS_ACCESS_KEY_ID,
+          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        },
+      };
+
+    case 'ollama':
+      const OLLAMA_HOST = process.env.OLLAMA_HOST;
+      if (!OLLAMA_HOST) return null;
+      return {
+        provider: 'ollama',
+        baseUrl: OLLAMA_HOST,
+      };
+
+    case 'openrouter':
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+      if (!OPENROUTER_API_KEY) return null;
+      return {
+        provider: 'openrouter',
+        apiKey: OPENROUTER_API_KEY,
+      };
+
+    case 'fireworks':
+      const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY;
+      if (!FIREWORKS_API_KEY) return null;
+      return {
+        provider: 'fireworks',
+        apiKey: FIREWORKS_API_KEY,
+      };
+
+    case 'azure-openai':
+      const AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY;
+      const AZURE_OPENAI_INSTANCE = process.env.AZURE_OPENAI_INSTANCE;
+      const AZURE_OPENAI_DEPLOYMENT = process.env.AZURE_OPENAI_DEPLOYMENT;
+      const AZURE_OPENAI_VERSION = process.env.AZURE_OPENAI_VERSION;
+      if (
+        !AZURE_OPENAI_KEY ||
+        !AZURE_OPENAI_INSTANCE ||
+        !AZURE_OPENAI_DEPLOYMENT ||
+        !AZURE_OPENAI_VERSION
+      )
+        return null;
+      return {
+        provider: 'azure-openai',
+        apiKey: AZURE_OPENAI_KEY,
+        instanceName: AZURE_OPENAI_INSTANCE,
+        deploymentName: AZURE_OPENAI_DEPLOYMENT,
+        apiVersion: AZURE_OPENAI_VERSION,
+      };
+
+    default:
+      return null;
+  }
+};
 
 //Todo implement logic to select provider's credentials, ditch logic below after adding provider to the settings
 //------------Keep values below as null to use openai and config from settings------------
@@ -257,15 +358,75 @@ export const createChatCompletionInstance = (
   options: ChatOpenAIFields, //todo use BaseCompletionConfig after adding provider to the settings
   streaming: boolean = true
 ): BaseChatModel => {
-  //todo remove this once we have a way to select provider's credentials using settings
-  const credentials: ProviderCredentials = customCredentials || {
-    provider: 'openai',
-    apiKey: process.env.OPENAI_API_KEY!,
+  // Determine the model to use: options.model (from UI) > customChatModel (from env) > undefined
+  const selectedModel = options.model || customChatModel;
+
+  // Determine the provider based on the selected model
+  let requiredProvider: ModelProvider;
+  let credentials: ProviderCredentials;
+
+  if (selectedModel) {
+    // Get provider for the selected model (e.g., 'gpt-4o' -> 'openai')
+    const modelProvider = getModelProvider(selectedModel);
+    if (modelProvider) {
+      requiredProvider = modelProvider;
+      const providerCredentials = createCredentialsForProvider(modelProvider);
+      if (providerCredentials) {
+        credentials = providerCredentials;
+      } else {
+        // Fallback to OpenAI if provider credentials are not available
+        logger.warn(
+          `No credentials found for provider ${modelProvider}, falling back to OpenAI`
+        );
+        credentials = {
+          provider: 'openai',
+          apiKey: process.env.OPENAI_API_KEY!,
+        };
+      }
+    } else {
+      // Unknown model, fallback to environment provider or OpenAI
+      logger.warn(
+        `Unknown model ${selectedModel}, using environment provider fallback`
+      );
+      credentials = customCredentials || {
+        provider: 'openai',
+        apiKey: process.env.OPENAI_API_KEY!,
+      };
+    }
+  } else {
+    // No specific model selected, use environment provider
+    credentials = customCredentials || {
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY!,
+    };
+  }
+
+  // Filter out temperature parameter for models that don't support it
+  const filteredOptions = {
+    ...options,
+    model: selectedModel || undefined,
   };
 
+  // Only include temperature if the model supports it
+  if (selectedModel && supportsTemperature(selectedModel)) {
+    // Model supports temperature - include it if provided
+    if (options.temperature !== undefined) {
+      filteredOptions.temperature = options.temperature;
+    }
+  } else if (selectedModel && !supportsTemperature(selectedModel)) {
+    // Model doesn't support temperature - exclude it and log warning if it was provided
+    if (options.temperature !== undefined) {
+      logger.info(
+        { model: selectedModel, temperature: options.temperature },
+        'Temperature parameter excluded for model that does not support it'
+      );
+    }
+    // Remove temperature from filteredOptions (it won't be included)
+    delete filteredOptions.temperature;
+  }
+
   return ChatCompletionFactory.createInstance(credentials, {
-    ...options,
-    model: customChatModel || options.model,
+    ...filteredOptions,
     verbose,
     streaming,
     callbacks: [
