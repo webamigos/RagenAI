@@ -1,11 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
-import { getAvailableModels } from '../../config';
+import {
+  AvailableModel,
+  groupModelsByProvider,
+  isReasoningModel,
+} from '../../config';
+import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { statusToast } from '@/app/lib/utils/toast';
+import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
 
 type Props = {
   currentModel?: string;
@@ -25,16 +31,43 @@ export const ModelSelector = ({
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(true);
+  const isLoadingModels = useRef(false);
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant.model-selector');
-  const availableModels = getAvailableModels();
 
   useEffect(() => {
     setSelectedModel(
       currentModel || organizationDefaultModel || 'gemini-2.0-flash'
     );
   }, [currentModel, organizationDefaultModel]);
+
+  // Load available models on component mount
+  useEffect(() => {
+    const loadAvailableModels = async () => {
+      // Prevent multiple simultaneous calls
+      if (isLoadingModels.current) return;
+
+      try {
+        isLoadingModels.current = true;
+        setModelsLoading(true);
+        const models = await getAvailableModelsForOrganization();
+        setAvailableModels(models);
+      } catch (error) {
+        // Failed to load available models
+        errorToast({
+          message: 'Failed to load available models',
+        });
+      } finally {
+        setModelsLoading(false);
+        isLoadingModels.current = false;
+      }
+    };
+
+    loadAvailableModels();
+  }, []); // Fix: Remove errorToast dependency to prevent repeated calls
 
   const handleModelChange = async (newModel: string) => {
     if (newModel === selectedModel || isLoading || disabled) return;
@@ -61,6 +94,8 @@ export const ModelSelector = ({
   const selectedModelLabel =
     availableModels.find((m) => m.value === selectedModel)?.label ||
     selectedModel;
+
+  const groupedModels = groupModelsByProvider(availableModels);
   const isUsingDefault =
     !currentModel && selectedModel === organizationDefaultModel;
 
@@ -104,29 +139,49 @@ export const ModelSelector = ({
           {/* Dropdown menu */}
           <div className="absolute top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20">
             <div className="py-1">
-              {availableModels.map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => handleModelChange(value)}
-                  className={`
-                    w-full text-left px-3 py-2 text-sm transition-colors duration-200
-                    ${
-                      value === selectedModel
-                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }
-                  `}
-                >
-                  <div className="flex justify-between items-center">
-                    <span>{label}</span>
-                    {value === organizationDefaultModel && (
-                      <span className="text-xs text-gray-400">
-                        (org default)
-                      </span>
-                    )}
+              {modelsLoading ? (
+                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                  Loading models...
+                </div>
+              ) : (
+                groupedModels.map(({ provider, displayName, models }) => (
+                  <div key={provider}>
+                    {/* Provider header */}
+                    <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                      {displayName}
+                    </div>
+                    {/* Models in this provider */}
+                    {models.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        onClick={() => handleModelChange(value)}
+                        className={`
+                          w-full text-left px-4 py-2 text-sm transition-colors duration-200
+                          ${
+                            value === selectedModel
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }
+                        `}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-1">
+                            <span>{label}</span>
+                            {isReasoningModel(value) && (
+                              <BrainIcon className="h-3 w-3 text-gray-500" />
+                            )}
+                          </div>
+                          {value === organizationDefaultModel && (
+                            <span className="text-xs text-gray-400">
+                              (org default)
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                </button>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </>

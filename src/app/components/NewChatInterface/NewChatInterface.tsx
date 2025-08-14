@@ -163,7 +163,9 @@ export const NewChatInterface = ({
             !isPublicAccess ? (
               <ModelSelectorInline
                 selectedModel={selectedModel}
-                organizationDefaultModel={organizationDefaultModel}
+                organizationDefaultModel={
+                  internalOrganizationDefaultModel || organizationDefaultModel
+                }
                 onChange={setSelectedModel}
                 disabled={isLoading || isPending}
               />

@@ -1,10 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
-import { getAvailableModels } from '../../config';
+import {
+  AvailableModel,
+  groupModelsByProvider,
+  isReasoningModel,
+} from '../../config';
+import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
+import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
 
 type Props = {
   selectedModel: string;
@@ -22,20 +28,76 @@ export const ModelSelectorInline = ({
   disabled = false,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
+  const [modelsLoading, setModelsLoading] = useState(true);
+  const isLoadingModels = useRef(false);
   const t = useTranslations('assistant.model-selector');
-  const availableModels = getAvailableModels();
+
+  // Load available models on component mount
+  useEffect(() => {
+    const loadAvailableModels = async () => {
+      // Prevent multiple simultaneous calls
+      if (isLoadingModels.current) return;
+
+      try {
+        isLoadingModels.current = true;
+        setModelsLoading(true);
+        const models = await getAvailableModelsForOrganization();
+        setAvailableModels(models);
+      } catch (error) {
+        // Failed to load available models - silent fail
+      } finally {
+        setModelsLoading(false);
+        isLoadingModels.current = false;
+      }
+    };
+
+    loadAvailableModels();
+  }, []);
 
   useEffect(() => {
-    // Load saved model from localStorage on component mount
-    try {
-      const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
-      if (savedModel && availableModels.some((m) => m.value === savedModel)) {
-        onChange(savedModel);
+    // Load model after models are loaded, respecting hierarchy: organizationDefault > localStorage > hardcoded default
+    if (!modelsLoading && availableModels.length > 0) {
+      let modelToUse = selectedModel; // Keep current if already set
+      let shouldUpdateModel = false;
+
+      // Priority 1: Organization default model (highest priority)
+      if (
+        organizationDefaultModel &&
+        availableModels.some((m) => m.value === organizationDefaultModel)
+      ) {
+        modelToUse = organizationDefaultModel;
+        // Always apply organization model, even if selectedModel already matches
+        shouldUpdateModel = true;
       }
-    } catch (error) {
-      // Ignore localStorage errors
+      // Priority 2: localStorage (only if no organization default)
+      else if (!organizationDefaultModel) {
+        try {
+          const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+          if (
+            savedModel &&
+            availableModels.some((m) => m.value === savedModel)
+          ) {
+            modelToUse = savedModel;
+            shouldUpdateModel = modelToUse !== selectedModel;
+          }
+        } catch (error) {
+          // Ignore localStorage errors
+        }
+      }
+
+      // Call onChange if model should be updated
+      if (modelToUse && shouldUpdateModel) {
+        onChange(modelToUse);
+      }
     }
-  }, [onChange]);
+  }, [
+    modelsLoading,
+    availableModels,
+    onChange,
+    selectedModel,
+    organizationDefaultModel,
+  ]);
 
   const handleModelChange = (newModel: string) => {
     if (newModel === selectedModel || disabled) return;
@@ -63,6 +125,7 @@ export const ModelSelectorInline = ({
   };
 
   const shortLabel = getShortLabel(selectedModelLabel);
+  const groupedModels = groupModelsByProvider(availableModels);
 
   return (
     <div className="relative">
@@ -100,27 +163,49 @@ export const ModelSelectorInline = ({
 
           <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20">
             <div className="py-1">
-              {availableModels.map(({ value, label }) => (
-                <button
-                  key={value}
-                  onClick={() => handleModelChange(value)}
-                  className={`
-                    w-full text-left px-3 py-2 text-sm transition-colors duration-200
-                    ${
-                      value === selectedModel
-                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }
-                  `}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">{label}</span>
-                    {value === organizationDefaultModel && (
-                      <span className="text-xs text-gray-400">(default)</span>
-                    )}
+              {modelsLoading ? (
+                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                  Loading models...
+                </div>
+              ) : (
+                groupedModels.map(({ provider, displayName, models }) => (
+                  <div key={provider}>
+                    {/* Provider header */}
+                    <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                      {displayName}
+                    </div>
+                    {/* Models in this provider */}
+                    {models.map(({ value, label }) => (
+                      <button
+                        key={value}
+                        onClick={() => handleModelChange(value)}
+                        className={`
+                          w-full text-left px-4 py-2 text-sm transition-colors duration-200
+                          ${
+                            value === selectedModel
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }
+                        `}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium">{label}</span>
+                            {isReasoningModel(value) && (
+                              <BrainIcon className="h-3 w-3 text-gray-500" />
+                            )}
+                          </div>
+                          {value === organizationDefaultModel && (
+                            <span className="text-xs text-gray-400">
+                              (default)
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                </button>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </>
