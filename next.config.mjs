@@ -21,9 +21,12 @@ if (IS_API_MODE) {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
-  // swcMinify: true,
   images: {
-    domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
+    remotePatterns: [
+      { hostname: 'img.clerk.com' },
+      { hostname: 'files.stripe.com' },
+      { hostname: 'images.unsplash.com' },
+    ],
   },
 
   async rewrites() {
@@ -54,17 +57,19 @@ const nextConfig = {
     ];
   },
 
-  serverComponentsExternalPackages: [
-    'pino',
-    'pino-pretty',
-    'pino-sentry',
-    '@sentry/node',
-    '@hyzyla/pdfium',
-    '@aws-sdk',
-    '@langchain/core',
-    'langchain',
-    '@langchain/community',
-  ],
+  experimental: {
+    serverComponentsExternalPackages: [
+      'pino',
+      'pino-pretty',
+      'pino-sentry',
+      '@sentry/node',
+      '@hyzyla/pdfium',
+      '@aws-sdk',
+      '@langchain/core',
+      'langchain',
+      '@langchain/community',
+    ],
+  },
 
   webpack: (config, { isServer }) => {
     if (!isServer) {
