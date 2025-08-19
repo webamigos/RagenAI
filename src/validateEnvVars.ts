@@ -9,7 +9,6 @@ const envSchema = z.object({
 
   // Supabase for the App
   DATABASE_URL: z.string().url(),
-  DATABASE_DIRECT_URL: z.string().url(),
 
   // Supabase for Vector store
   SUPABASE_API_URL: z.string().url(),

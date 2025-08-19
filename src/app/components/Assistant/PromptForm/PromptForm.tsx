@@ -21,7 +21,7 @@ type Props = {
   onSubmit: SubmitHandler<CreateMessageDto>;
   responseType: ChatResponseType;
   currentThreadModel: string | undefined;
-  organizationDefaultModel: string;
+  organizationDefaultModel: string | null;
   onChange: (model: string) => void;
   isGlobalLoading: boolean;
 };
