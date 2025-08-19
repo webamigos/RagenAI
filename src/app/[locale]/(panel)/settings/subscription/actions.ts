@@ -8,7 +8,7 @@ import type { SubscriptionDetails } from './types';
 import { activateFreePlan } from '@/app/lib/services/plan';
 
 export async function getSubscriptionData(): Promise<SubscriptionDetails | null> {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     return null;
@@ -33,7 +33,7 @@ export async function getSubscriptionData(): Promise<SubscriptionDetails | null>
 export async function cancelSubscription(
   subscriptionId: string | null
 ): Promise<Stripe.Subscription | null> {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId || !subscriptionId) {
     return null;
@@ -43,7 +43,7 @@ export async function cancelSubscription(
 }
 
 export async function activateInternalFreePlan() {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error('Cannot activate free plan, no organization id found');

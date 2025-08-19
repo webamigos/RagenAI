@@ -257,7 +257,7 @@ export const convertAndStoreDocument = async ({
 
     const docs = await textSplitter.splitDocuments(rawDocs);
 
-    const { orgId } = auth();
+    const { orgId } = await auth();
 
     if (!orgId) {
       throw new Error('Invalid organization!');

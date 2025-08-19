@@ -15,7 +15,7 @@ import {
 const serviceName = 'apiKeySynchronizer';
 
 export const syncOrganizationAndProject = async () => {
-  const { orgId, userId, sessionId } = auth();
+  const { orgId, userId, sessionId } = await auth();
 
   if (!orgId) {
     return {

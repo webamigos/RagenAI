@@ -18,7 +18,7 @@ export async function createCheckoutSession(priceId: string) {
       throw new Error('Price ID is required');
     }
 
-    const { orgId, userId, sessionId } = auth();
+    const { orgId, userId, sessionId } = await auth();
     if (!orgId) {
       throw new Error(
         'Cannot create checkout session, no organization id found'

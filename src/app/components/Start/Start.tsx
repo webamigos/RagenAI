@@ -43,8 +43,6 @@ export const Start = () => {
         <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-8rem)]">
           {shouldShowValidationBoard ? (
             <ValidationBoard />
-          ) : !isPending ? (
-            <></>
           ) : (
             <NewChatInterface />
           )}

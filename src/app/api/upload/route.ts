@@ -26,7 +26,7 @@ export const runtime = 'nodejs';
 // I've removed uploader/organization id from request
 // it was security breach - everyone could set any organization during files transfer
 export async function POST(request: NextRequest) {
-  const { orgId } = auth();
+  const { orgId } = await auth();
   if (!orgId) {
     throw new Error('Invalid organization');
   }

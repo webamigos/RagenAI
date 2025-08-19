@@ -24,7 +24,7 @@ export default async function CreateApiKeyPage({ params }: PropsWihLocale) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { orgId, userId } = auth();
+  const { orgId, userId } = await auth();
   if (!orgId) {
     logger.error('Organization not found in API keys creation form!');
     throw new Error('Organization not found!');

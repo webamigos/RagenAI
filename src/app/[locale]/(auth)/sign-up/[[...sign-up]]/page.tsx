@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { useTranslations } from 'next-intl';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
@@ -25,7 +24,7 @@ type Props = {
 export default async function SignUpPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = useTranslations('sign-up');
+  const t = await getTranslations('sign-up');
 
   return (
     <>

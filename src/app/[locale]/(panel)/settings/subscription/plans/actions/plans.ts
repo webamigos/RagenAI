@@ -23,7 +23,7 @@ export async function fetchAvailablePlans() {
 }
 
 export async function checkIfStripeSubscriptionIsActive() {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     return false;

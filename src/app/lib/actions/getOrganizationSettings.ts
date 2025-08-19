@@ -7,7 +7,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 export async function getOrganizationSettings() {
   try {
-    const { orgId } = auth();
+    const { orgId } = await auth();
 
     if (!orgId) {
       throw new Error('Unauthorized');

@@ -120,7 +120,7 @@ export const updateThreadContextAction = async (
   try {
     setSentryServiceTag('thread-context');
 
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return {
         success: false,
@@ -197,7 +197,7 @@ export const removeThreadContextAction = async (
   try {
     setSentryServiceTag('thread-context');
 
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return {
         success: false,

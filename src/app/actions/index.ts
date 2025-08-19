@@ -137,7 +137,7 @@ export const getUserMessages = async (
 //get user documents
 export const getUserFiles = async () => {
   try {
-    const orgId = getOrgIdOrThrow();
+    const orgId = await getOrgIdOrThrow();
     setSentryServiceTag(serviceName);
     setSentryClerkOrganizationTag(orgId);
     const files = await fetchFilesDetails(orgId);
@@ -486,7 +486,7 @@ export const trackThreadCreated = async () => {
 };
 
 export const getDefaultProjectId = async () => {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error('Organization ID is required');
@@ -501,7 +501,7 @@ export const getDefaultProjectId = async () => {
 };
 
 export const getDefaultProjectPublicId = async () => {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error('Organization ID is required');

@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 
-export const getOrgIdOrThrow = () => {
-  const { orgId } = auth();
+export const getOrgIdOrThrow = async () => {
+  const { orgId } = await auth();
   if (!orgId) {
     throw new Error('Invalid organization!');
   }

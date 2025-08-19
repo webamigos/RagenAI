@@ -182,7 +182,7 @@ export const getProjectByPublicIdOrThrow = async (
 export const fetchProjectFiles = async (
   projectPublicId: Project['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
   return await db.userFile.findMany({
@@ -213,7 +213,7 @@ export const deleteProjectFile = async (
   publicFileId: UserFile['public_id'],
   projectPublicId: Project['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   const projectRecord = await getProjectByPublicId(projectPublicId);
 
   if (!projectRecord) {
@@ -293,7 +293,7 @@ export const generateProjectKey = async (projectId: number) => {
 // TODO: refactor to use public id
 export const disablePublicAccessForProject = async (projectId: number) => {
   try {
-    const orgId = getOrgIdOrThrow();
+    const orgId = await getOrgIdOrThrow();
 
     const project = await db.project.findFirst({
       where: {
@@ -330,7 +330,7 @@ export const toggleChatbotEnabled = async (
   enabled: boolean
 ) => {
   try {
-    const orgId = getOrgIdOrThrow();
+    const orgId = await getOrgIdOrThrow();
 
     const project = await db.project.findFirst({
       where: {

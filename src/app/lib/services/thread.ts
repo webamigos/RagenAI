@@ -54,7 +54,7 @@ export const createNewThreadInDb = async ({
   try {
     setSentryServiceTag(serviceName);
 
-    const { userId, orgId } = auth();
+    const { userId, orgId } = await auth();
     if (!orgId) {
       throw new Error('Organization ID is required');
     }

@@ -14,7 +14,7 @@ async function getProjectInfo(projectId: string) {
       return null;
     }
 
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       logger.error('User not authenticated or missing organization ID');
       return null;

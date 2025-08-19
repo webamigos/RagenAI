@@ -17,7 +17,7 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
       fileId,
     });
 
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       throw new Error('Invalid organization!');
     }

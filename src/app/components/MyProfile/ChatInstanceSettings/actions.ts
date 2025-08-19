@@ -68,7 +68,7 @@ export const checkIfApiKeyExists = async (
 export const fetchSettings = async (): Promise<
   ActionResponse<SettingsData>
 > => {
-  const { orgId, userId, sessionId } = auth();
+  const { orgId, userId, sessionId } = await auth();
 
   if (!orgId) {
     return {
@@ -106,7 +106,7 @@ export const saveSetting = async (
   type: SettingsType,
   value: string | number
 ): Promise<SaveSettingsActionResponse> => {
-  const { orgId, userId, sessionId } = auth();
+  const { orgId, userId, sessionId } = await auth();
 
   if (!orgId) {
     return { success: false, message: 'Unauthorized' };

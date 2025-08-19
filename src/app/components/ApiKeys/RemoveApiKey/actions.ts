@@ -12,7 +12,7 @@ import { ApiKey } from '@prisma/client';
 const serviceName = 'removeApiKey';
 
 export const removeApiKey = async (publicKeyId: ApiKey['public_id']) => {
-  const { orgId, userId, sessionId } = auth();
+  const { orgId, userId, sessionId } = await auth();
 
   if (!orgId) {
     return {

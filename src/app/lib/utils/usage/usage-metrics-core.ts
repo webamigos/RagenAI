@@ -35,7 +35,7 @@ export class UsageMetricsCore {
       return orgId;
     }
 
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       throw new Error("Can't track usage, organization ID not found");
     }

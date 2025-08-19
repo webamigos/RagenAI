@@ -18,7 +18,7 @@ export const getAwsClient = () => {
 
 // function uses AWS SDK v3 and we can use parallelUploads and streaming in the future
 export async function uploadToS3(fileName: string, fileContent: Buffer) {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
 
   const parallelUploads3 = new Upload({
     client: getAwsClient(),
@@ -33,7 +33,7 @@ export async function uploadToS3(fileName: string, fileContent: Buffer) {
 }
 
 export async function deleteFromS3(fileName: string) {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   await getAwsClient().send(
     new DeleteObjectCommand({
       Bucket: process.env.AWS_DOCUMENTS_BUCKET,
@@ -48,7 +48,7 @@ export async function deleteFromS3(fileName: string) {
  * @returns A promise that resolves to the file content as a Buffer
  */
 export async function getFileFromS3(fileName: string): Promise<Buffer> {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
 
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_DOCUMENTS_BUCKET,

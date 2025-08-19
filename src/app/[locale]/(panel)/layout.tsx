@@ -52,7 +52,7 @@ type Props = Readonly<{
 }>;
 
 export default async function PanelLayout({ children }: Props) {
-  const { sessionClaims } = auth();
+  const { sessionClaims } = await auth();
   const membership = sessionClaims?.membership;
   const status = await getAccountSetupStatusAction();
   if (!status.accountSetupComplete) {

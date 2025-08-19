@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { useTranslations } from 'next-intl';
 
 import { EnterCodeForm } from '@/app/components/Forms/EnterCodeForm';
 import { PropsWihLocale } from '@/app/lib/types/types';
@@ -20,7 +19,7 @@ export async function generateMetadata({ params }: PropsWihLocale) {
 export default async function EnterCodePage({ params }: PropsWihLocale) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const tsu = useTranslations('sign-up');
+  const tsu = await getTranslations('sign-up');
 
   return (
     <div className="flex min-h-screen flex-1">

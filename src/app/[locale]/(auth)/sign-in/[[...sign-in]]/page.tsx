@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+
 import { getTranslations } from 'next-intl/server';
 import { auth } from '@clerk/nextjs/server';
 
@@ -20,9 +20,9 @@ export async function generateMetadata({ params }: PropsWihLocale) {
   };
 }
 
-export default function SignInPage() {
-  const { userId } = auth();
-  const t = useTranslations('sign-in');
+export default async function SignInPage() {
+  const { userId } = await auth();
+  const t = await getTranslations('sign-in');
 
   if (userId) {
     redirect('/');

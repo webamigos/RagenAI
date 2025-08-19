@@ -38,7 +38,7 @@ export const initializeRagChain = async ({
   internalProjectId,
 }: InitializeRagChainParams) => {
   try {
-    const { orgId } = auth();
+    const { orgId } = await auth();
     setSentryServiceTag(serviceName);
 
     if (!orgId) {
@@ -128,7 +128,7 @@ export const initializeRagChain = async ({
 
 const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
   try {
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       throw new Error('Organization ID is required, could not get from clerk');
     }
@@ -156,7 +156,7 @@ const createSupabaseVectorStore = async (
   projectId?: number
 ): Promise<SupabaseVectorStore> => {
   try {
-    const { orgId } = auth();
+    const { orgId } = await auth();
     if (!orgId) {
       throw new Error('Organization ID is required, could not get from clerk');
     }

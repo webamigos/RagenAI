@@ -29,7 +29,7 @@ export async function processUrl(
   url: string,
   mode: WebsiteLoaderMode
 ): Promise<ProcessUrlResult> {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     return {

@@ -1,25 +1,12 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-import { validateEnvs } from './src/validateEnvVars';
-
-const validateEnvsResult = validateEnvs();
-
-if (!validateEnvsResult.success) {
-  // eslint-disable-next-line no-console
-  console.error(
-    'Environment variable validation errors:',
-    validateEnvsResult.error.format()
-  );
-  process.exit(1);
-}
-
 const withNextIntl = createNextIntlPlugin();
 
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
 const isStagingTargetEnv = process.env.TARGET_ENV === 'staging';
 
-const rewrites: { source: string; destination: string }[] = [];
+const rewrites = [];
 const IS_API_MODE = process.env.IS_API_MODE === '1';
 
 if (IS_API_MODE) {
@@ -67,7 +54,7 @@ const nextConfig = {
     ];
   },
 
-  serverExternalPackages: [
+  serverComponentsExternalPackages: [
     'pino',
     'pino-pretty',
     'pino-sentry',
@@ -79,7 +66,7 @@ const nextConfig = {
     '@langchain/community',
   ],
 
-  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+  webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

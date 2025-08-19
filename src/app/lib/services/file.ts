@@ -7,7 +7,7 @@ import { FileType, UserFile } from '@prisma/client';
 export const getFileDetailsByPublicId = async (
   publicFileId: UserFile['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   return await db.userFile.findFirst({
     where: {
       organization_id: orgId,
@@ -101,7 +101,7 @@ export const deleteProjectFile = async (
   publicFileId: string,
   projectId: number
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   return await db.userFile.deleteMany({
     where: {
       public_id: publicFileId,

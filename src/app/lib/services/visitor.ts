@@ -60,7 +60,7 @@ export const getUserThreads = async (
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     throw new Error('Organization id is not found');
