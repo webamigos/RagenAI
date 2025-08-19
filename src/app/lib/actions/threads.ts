@@ -7,6 +7,7 @@ import {
   createNewThreadInDb,
   updateThreadProjectContext,
   removeThreadProjectContext,
+  getThreadDetails,
 } from '../services/thread';
 import { logger } from '../utils/logger';
 import { createAndStoreMessage } from '../services/message';
@@ -243,6 +244,37 @@ export const removeThreadContextAction = async (
     return {
       success: false,
       errorMessage: 'Failed to remove thread context',
+    };
+  }
+};
+
+type ThreadDetailsAction =
+  | {
+      success: true;
+      preferredModel: string | null;
+    }
+  | {
+      success: false;
+      errorMessage: string;
+    };
+
+export const getThreadDetailsAction = async (
+  threadId: string
+): Promise<ThreadDetailsAction> => {
+  try {
+    setSentryServiceTag('thread-details');
+
+    const threadRecord = await getThreadDetails(threadId);
+
+    return {
+      success: true,
+      preferredModel: threadRecord.preferred_model,
+    };
+  } catch (error) {
+    logger.error({ err: error, threadId }, 'Error fetching thread details');
+    return {
+      success: false,
+      errorMessage: 'Failed to fetch thread details',
     };
   }
 };

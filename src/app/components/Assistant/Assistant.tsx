@@ -21,6 +21,7 @@ import { RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
+import { getThreadDetailsAction } from '@/app/lib/actions/threads';
 import { updateThreadModel as updateThreadModelAction } from '@/store/threads/threadsSlice';
 import { updateThreadModel as updateSidebarThreadModelAction } from '@/store/sidebar/sidebarSlice';
 
@@ -75,8 +76,9 @@ export const Assistant = ({ threadId }: Props) => {
   const [currentThreadModel, setCurrentThreadModel] = useState<string | null>(
     null
   );
-  const [organizationDefaultModel, setOrganizationDefaultModel] =
-    useState<string>('gpt-4o');
+  const [organizationDefaultModel, setOrganizationDefaultModel] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     const getVoiceSettings = async () => {
@@ -150,11 +152,26 @@ export const Assistant = ({ threadId }: Props) => {
   }, [organization?.id]);
 
   useEffect(() => {
-    const currentThread =
-      reduxMessages.length > 0 ? null : localMessages.find((m) => m.public_id);
+    const fetchThreadModel = async () => {
+      try {
+        const result = await getThreadDetailsAction(threadId);
+        if (result.success) {
+          setCurrentThreadModel(result.preferredModel || null);
+        } else {
+          logger.error(
+            { error: result.errorMessage },
+            'Error fetching thread model'
+          );
+          setCurrentThreadModel(null);
+        }
+      } catch (error) {
+        logger.error({ error }, 'Error fetching thread model');
+        setCurrentThreadModel(null);
+      }
+    };
 
-    setCurrentThreadModel(null);
-  }, [threadId, reduxMessages, localMessages]);
+    fetchThreadModel();
+  }, [threadId]);
 
   const handleModelChange = async (model: string) => {
     try {
@@ -220,7 +237,7 @@ export const Assistant = ({ threadId }: Props) => {
 
         <div className="w-full fixed bottom-0 left-1/2 -translate-x-1/2 lg:left-[35%] lg:-translate-x-0">
           {isLimitLock && !isSignedIn && <LimitReached />}
-          {!isLocked() && threadId && (
+          {!isLocked() && threadId && organizationDefaultModel !== null && (
             <>
               <PromptForm
                 handleResponseType={handleResponseType}
