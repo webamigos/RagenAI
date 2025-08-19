@@ -61,14 +61,26 @@ export const availableModels: AvailableModel[] = [
   },
 ] as const;
 
-// Helper function to get provider for a model
 export const getModelProvider = (
   modelValue: string
 ): ModelProvider | undefined => {
   return availableModels.find((model) => model.value === modelValue)?.provider;
 };
 
-// Helper function to check if a provider requires API keys that might not be configured
+export const isReasoningModel = (modelValue: string): boolean => {
+  return [
+    // OpenAI reasoning models
+    'o1',
+    'o1-mini',
+    'o3-mini',
+    // Google Gemini thinking models
+    'gemini-2.5-flash-preview-04-17',
+    'gemini-2.5-pro-preview-03-25',
+    // Anthropic extended thinking models
+    'claude-3-7-sonnet-latest',
+  ].includes(modelValue);
+};
+
 export const getProviderRequirements = (
   provider: ModelProvider
 ): { envVars: string[]; optional?: boolean } => {
@@ -103,16 +115,80 @@ export const getProviderRequirements = (
   }
 };
 
-// Helper function to check if provider is configured via environment variables
 const isProviderConfigured = (provider: ModelProvider): boolean => {
-  // OpenAI is always available since it's used by default and can work with org API keys
   if (provider === 'openai') return true;
 
   const requirements = getProviderRequirements(provider);
   return requirements.envVars.every((envVar) => process.env[envVar]);
 };
 
+export const getProviderDisplayName = (provider: ModelProvider): string => {
+  switch (provider) {
+    case 'openai':
+      return 'OpenAI';
+    case 'google':
+      return 'Google';
+    case 'anthropic':
+      return 'Anthropic';
+    case 'bedrock':
+      return 'AWS Bedrock';
+    case 'ollama':
+      return 'Ollama';
+    case 'openrouter':
+      return 'OpenRouter';
+    case 'fireworks':
+      return 'Fireworks';
+    case 'azure-openai':
+      return 'Azure OpenAI';
+    default:
+      return provider;
+  }
+};
+
+export const groupModelsByProvider = (
+  models: AvailableModel[]
+): Array<{
+  provider: ModelProvider;
+  displayName: string;
+  models: AvailableModel[];
+}> => {
+  const grouped = models.reduce((acc, model) => {
+    const provider = model.provider;
+    if (!acc[provider]) {
+      acc[provider] = {
+        provider,
+        displayName: getProviderDisplayName(provider),
+        models: [],
+      };
+    }
+    acc[provider].models.push(model);
+    return acc;
+  }, {} as Record<ModelProvider, { provider: ModelProvider; displayName: string; models: AvailableModel[] }>);
+
+  const providerOrder: ModelProvider[] = [
+    'openai',
+    'google',
+    'anthropic',
+    'bedrock',
+    'azure-openai',
+    'ollama',
+    'openrouter',
+    'fireworks',
+  ];
+
+  return providerOrder
+    .filter((provider) => grouped[provider])
+    .map((provider) => grouped[provider])
+    .concat(
+      Object.values(grouped).filter(
+        (group) => !providerOrder.includes(group.provider)
+      )
+    );
+};
+
 // Filter available models based on environment configuration
+// NOTE: This is deprecated for client-side use - use getAvailableModelsForOrganization server action instead
+// This function is kept for backward compatibility and server-side usage where organization context is not available
 export const getAvailableModels = (): AvailableModel[] => {
   return availableModels.filter((model) =>
     isProviderConfigured(model.provider)

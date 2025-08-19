@@ -5,6 +5,17 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
 import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
+import { getModelProvider, type ModelProvider } from '../../components/config';
+import {
+  getOpenaiAPIKey,
+  getAnthropicAPIKey,
+  getGoogleAPIKey,
+  getBedrockCredentials,
+  getOllamaHost,
+  getOpenrouterAPIKey,
+  getFireworksAPIKey,
+  getAzureOpenAICredentials,
+} from './settings';
 import { usageTracker } from './usage';
 import { logger } from '../utils/logger';
 
@@ -85,6 +96,282 @@ const modelConfig = modelsSchema.parse({
 });
 
 // TODO: in future user will select model: Gpt4o, Gemini 2.0, Claude 3.7 etc
+
+// Models that don't support temperature parameter
+const modelsWithoutTemperature = ['o1', 'o1-mini', 'o3-mini'];
+
+// Helper function to check if model supports temperature
+const supportsTemperature = (model: string): boolean => {
+  if (!model) return true; // Default to supporting temperature
+  return !modelsWithoutTemperature.includes(model);
+};
+
+// Function to create credentials for a specific provider
+// This function will be replaced by createCredentialsForProviderWithOrg which checks organization settings first
+const createCredentialsForProvider = (
+  provider: ModelProvider
+): ProviderCredentials | null => {
+  switch (provider) {
+    case 'openai':
+      return {
+        provider: 'openai',
+        apiKey: process.env.OPENAI_API_KEY!,
+      };
+
+    case 'google':
+      const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+      if (!GOOGLE_API_KEY) return null;
+      return {
+        provider: 'google',
+        apiKey: GOOGLE_API_KEY,
+      };
+
+    case 'anthropic':
+      const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+      if (!ANTHROPIC_API_KEY) return null;
+      return {
+        provider: 'anthropic',
+        apiKey: ANTHROPIC_API_KEY,
+      };
+
+    case 'bedrock':
+      const AWS_REGION = process.env.AWS_REGION;
+      const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+      const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+      if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY)
+        return null;
+      return {
+        provider: 'bedrock',
+        region: AWS_REGION,
+        credentials: {
+          accessKeyId: AWS_ACCESS_KEY_ID,
+          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        },
+      };
+
+    case 'ollama':
+      const OLLAMA_HOST = process.env.OLLAMA_HOST;
+      if (!OLLAMA_HOST) return null;
+      return {
+        provider: 'ollama',
+        baseUrl: OLLAMA_HOST,
+      };
+
+    case 'openrouter':
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+      if (!OPENROUTER_API_KEY) return null;
+      return {
+        provider: 'openrouter',
+        apiKey: OPENROUTER_API_KEY,
+      };
+
+    case 'fireworks':
+      const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY;
+      if (!FIREWORKS_API_KEY) return null;
+      return {
+        provider: 'fireworks',
+        apiKey: FIREWORKS_API_KEY,
+      };
+
+    case 'azure-openai':
+      const AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY;
+      const AZURE_OPENAI_INSTANCE = process.env.AZURE_OPENAI_INSTANCE;
+      const AZURE_OPENAI_DEPLOYMENT = process.env.AZURE_OPENAI_DEPLOYMENT;
+      const AZURE_OPENAI_VERSION = process.env.AZURE_OPENAI_VERSION;
+      if (
+        !AZURE_OPENAI_KEY ||
+        !AZURE_OPENAI_INSTANCE ||
+        !AZURE_OPENAI_DEPLOYMENT ||
+        !AZURE_OPENAI_VERSION
+      )
+        return null;
+      return {
+        provider: 'azure-openai',
+        apiKey: AZURE_OPENAI_KEY,
+        instanceName: AZURE_OPENAI_INSTANCE,
+        deploymentName: AZURE_OPENAI_DEPLOYMENT,
+        apiVersion: AZURE_OPENAI_VERSION,
+      };
+
+    default:
+      return null;
+  }
+};
+
+// Function to create credentials for a specific provider, checking organization settings first
+const createCredentialsForProviderWithOrg = async (
+  provider: ModelProvider,
+  orgId: string
+): Promise<ProviderCredentials | null> => {
+  switch (provider) {
+    case 'openai': {
+      // Priority: Organization API key > Environment API key
+      const orgKey = await getOpenaiAPIKey(orgId);
+      if (orgKey) {
+        return {
+          provider: 'openai',
+          apiKey: orgKey,
+        };
+      }
+      const envKey = process.env.OPENAI_API_KEY;
+      if (envKey) {
+        return {
+          provider: 'openai',
+          apiKey: envKey,
+        };
+      }
+      return null;
+    }
+
+    case 'google': {
+      const orgKey = await getGoogleAPIKey(orgId);
+      if (orgKey) {
+        return {
+          provider: 'google',
+          apiKey: orgKey,
+        };
+      }
+      const envKey = process.env.GOOGLE_API_KEY;
+      if (envKey) {
+        return {
+          provider: 'google',
+          apiKey: envKey,
+        };
+      }
+      return null;
+    }
+
+    case 'anthropic': {
+      const orgKey = await getAnthropicAPIKey(orgId);
+      if (orgKey) {
+        return {
+          provider: 'anthropic',
+          apiKey: orgKey,
+        };
+      }
+      const envKey = process.env.ANTHROPIC_API_KEY;
+      if (envKey) {
+        return {
+          provider: 'anthropic',
+          apiKey: envKey,
+        };
+      }
+      return null;
+    }
+
+    case 'bedrock': {
+      const orgCreds = await getBedrockCredentials(orgId);
+      if (orgCreds) {
+        return {
+          provider: 'bedrock',
+          region: orgCreds.region,
+          credentials: {
+            accessKeyId: orgCreds.accessKeyId,
+            secretAccessKey: orgCreds.secretAccessKey,
+          },
+        };
+      }
+      const envRegion = process.env.AWS_REGION;
+      const envAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
+      const envSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+      if (envRegion && envAccessKeyId && envSecretAccessKey) {
+        return {
+          provider: 'bedrock',
+          region: envRegion,
+          credentials: {
+            accessKeyId: envAccessKeyId,
+            secretAccessKey: envSecretAccessKey,
+          },
+        };
+      }
+      return null;
+    }
+
+    case 'ollama': {
+      const orgHost = await getOllamaHost(orgId);
+      if (orgHost) {
+        return {
+          provider: 'ollama',
+          baseUrl: orgHost,
+        };
+      }
+      const envHost = process.env.OLLAMA_HOST;
+      if (envHost) {
+        return {
+          provider: 'ollama',
+          baseUrl: envHost,
+        };
+      }
+      return null;
+    }
+
+    case 'openrouter': {
+      const orgKey = await getOpenrouterAPIKey(orgId);
+      if (orgKey) {
+        return {
+          provider: 'openrouter',
+          apiKey: orgKey,
+        };
+      }
+      const envKey = process.env.OPENROUTER_API_KEY;
+      if (envKey) {
+        return {
+          provider: 'openrouter',
+          apiKey: envKey,
+        };
+      }
+      return null;
+    }
+
+    case 'fireworks': {
+      const orgKey = await getFireworksAPIKey(orgId);
+      if (orgKey) {
+        return {
+          provider: 'fireworks',
+          apiKey: orgKey,
+        };
+      }
+      const envKey = process.env.FIREWORKS_API_KEY;
+      if (envKey) {
+        return {
+          provider: 'fireworks',
+          apiKey: envKey,
+        };
+      }
+      return null;
+    }
+
+    case 'azure-openai': {
+      const orgCreds = await getAzureOpenAICredentials(orgId);
+      if (orgCreds) {
+        return {
+          provider: 'azure-openai',
+          apiKey: orgCreds.apiKey,
+          instanceName: orgCreds.instanceName,
+          deploymentName: orgCreds.deploymentName,
+          apiVersion: orgCreds.apiVersion,
+        };
+      }
+      const envKey = process.env.AZURE_OPENAI_KEY;
+      const envInstance = process.env.AZURE_OPENAI_INSTANCE;
+      const envDeployment = process.env.AZURE_OPENAI_DEPLOYMENT;
+      const envVersion = process.env.AZURE_OPENAI_VERSION;
+      if (envKey && envInstance && envDeployment && envVersion) {
+        return {
+          provider: 'azure-openai',
+          apiKey: envKey,
+          instanceName: envInstance,
+          deploymentName: envDeployment,
+          apiVersion: envVersion,
+        };
+      }
+      return null;
+    }
+
+    default:
+      return null;
+  }
+};
 
 //Todo implement logic to select provider's credentials, ditch logic below after adding provider to the settings
 //------------Keep values below as null to use openai and config from settings------------
@@ -257,15 +544,177 @@ export const createChatCompletionInstance = (
   options: ChatOpenAIFields, //todo use BaseCompletionConfig after adding provider to the settings
   streaming: boolean = true
 ): BaseChatModel => {
-  //todo remove this once we have a way to select provider's credentials using settings
-  const credentials: ProviderCredentials = customCredentials || {
-    provider: 'openai',
-    apiKey: process.env.OPENAI_API_KEY!,
+  // Determine the model to use: options.model (from UI) > customChatModel (from env) > undefined
+  const selectedModel = options.model || customChatModel;
+
+  // Determine the provider based on the selected model
+  let requiredProvider: ModelProvider;
+  let credentials: ProviderCredentials;
+
+  if (selectedModel) {
+    // Get provider for the selected model (e.g., 'gpt-4o' -> 'openai')
+    const modelProvider = getModelProvider(selectedModel);
+    if (modelProvider) {
+      requiredProvider = modelProvider;
+      const providerCredentials = createCredentialsForProvider(modelProvider);
+      if (providerCredentials) {
+        credentials = providerCredentials;
+      } else {
+        // Fallback to OpenAI if provider credentials are not available
+        logger.warn(
+          `No credentials found for provider ${modelProvider}, falling back to OpenAI`
+        );
+        credentials = {
+          provider: 'openai',
+          apiKey: process.env.OPENAI_API_KEY!,
+        };
+      }
+    } else {
+      // Unknown model, fallback to environment provider or OpenAI
+      logger.warn(
+        `Unknown model ${selectedModel}, using environment provider fallback`
+      );
+      credentials = customCredentials || {
+        provider: 'openai',
+        apiKey: process.env.OPENAI_API_KEY!,
+      };
+    }
+  } else {
+    // No specific model selected, use environment provider
+    credentials = customCredentials || {
+      provider: 'openai',
+      apiKey: process.env.OPENAI_API_KEY!,
+    };
+  }
+
+  // Filter out temperature parameter for models that don't support it
+  const filteredOptions = {
+    ...options,
+    model: selectedModel || undefined,
   };
 
+  // Only include temperature if the model supports it
+  if (selectedModel && supportsTemperature(selectedModel)) {
+    // Model supports temperature - include it if provided
+    if (options.temperature !== undefined) {
+      filteredOptions.temperature = options.temperature;
+    }
+  } else if (selectedModel && !supportsTemperature(selectedModel)) {
+    // Model doesn't support temperature - exclude it and log warning if it was provided
+    if (options.temperature !== undefined) {
+      logger.info(
+        { model: selectedModel, temperature: options.temperature },
+        'Temperature parameter excluded for model that does not support it'
+      );
+    }
+    // Remove temperature from filteredOptions (it won't be included)
+    delete filteredOptions.temperature;
+  }
+
   return ChatCompletionFactory.createInstance(credentials, {
+    ...filteredOptions,
+    verbose,
+    streaming,
+    callbacks: [
+      {
+        handleLLMEnd: (output) => {
+          usageTracker.incChatCompletionTokens(output);
+        },
+      },
+    ],
+  });
+};
+
+// New organization-aware version that checks organization API keys first
+export const createChatCompletionInstanceWithOrg = async (
+  options: ChatOpenAIFields,
+  orgId: string,
+  streaming: boolean = true
+): Promise<BaseChatModel> => {
+  // Determine the model to use: options.model (from UI) > customChatModel (from env) > undefined
+  const selectedModel = options.model || customChatModel;
+
+  // Determine the provider based on the selected model
+  let credentials: ProviderCredentials;
+
+  if (selectedModel) {
+    // Get provider for the selected model (e.g., 'gpt-4o' -> 'openai')
+    const modelProvider = getModelProvider(selectedModel);
+    if (modelProvider) {
+      const providerCredentials = await createCredentialsForProviderWithOrg(
+        modelProvider,
+        orgId
+      );
+      if (providerCredentials) {
+        credentials = providerCredentials;
+      } else {
+        // Fallback to OpenAI if provider credentials are not available
+        logger.warn(
+          `No credentials found for provider ${modelProvider}, falling back to OpenAI`
+        );
+        const fallbackCredentials = await createCredentialsForProviderWithOrg(
+          'openai',
+          orgId
+        );
+        credentials = fallbackCredentials || {
+          provider: 'openai',
+          apiKey: process.env.OPENAI_API_KEY!,
+        };
+      }
+    } else {
+      // Unknown model, fallback to organization OpenAI or environment provider
+      logger.warn(
+        `Unknown model ${selectedModel}, using organization provider fallback`
+      );
+      const fallbackCredentials = await createCredentialsForProviderWithOrg(
+        'openai',
+        orgId
+      );
+      credentials = fallbackCredentials ||
+        customCredentials || {
+          provider: 'openai',
+          apiKey: process.env.OPENAI_API_KEY!,
+        };
+    }
+  } else {
+    // No specific model selected, try organization OpenAI first, then environment provider
+    const fallbackCredentials = await createCredentialsForProviderWithOrg(
+      'openai',
+      orgId
+    );
+    credentials = fallbackCredentials ||
+      customCredentials || {
+        provider: 'openai',
+        apiKey: process.env.OPENAI_API_KEY!,
+      };
+  }
+
+  // Filter out temperature parameter for models that don't support it
+  const filteredOptions = {
     ...options,
-    model: customChatModel || options.model,
+    model: selectedModel || undefined,
+  };
+
+  // Only include temperature if the model supports it
+  if (selectedModel && supportsTemperature(selectedModel)) {
+    // Model supports temperature - include it if provided
+    if (options.temperature !== undefined) {
+      filteredOptions.temperature = options.temperature;
+    }
+  } else if (selectedModel && !supportsTemperature(selectedModel)) {
+    // Model doesn't support temperature - exclude it and log warning if it was provided
+    if (options.temperature !== undefined) {
+      logger.info(
+        { model: selectedModel, temperature: options.temperature },
+        'Temperature parameter excluded for model that does not support it'
+      );
+    }
+    // Remove temperature from filteredOptions (it won't be included)
+    delete filteredOptions.temperature;
+  }
+
+  return ChatCompletionFactory.createInstance(credentials, {
+    ...filteredOptions,
     verbose,
     streaming,
     callbacks: [
