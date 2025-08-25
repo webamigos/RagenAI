@@ -13,6 +13,7 @@ import { logger } from '../utils/logger';
 import { createAndStoreMessage } from '../services/message';
 import { getVisitorIdFromCookie } from '../services/cookies';
 import { auth } from '@clerk/nextjs/server';
+import { ThreadDocumentUI } from '../../contracts/ThreadDocument';
 
 type ThreadAction =
   | {
@@ -30,7 +31,8 @@ type ThreadAction =
 export const createThreadAction = async (
   projectId?: number,
   mentionedProjectId?: number,
-  preferredModel?: string
+  preferredModel?: string,
+  threadDocuments?: ThreadDocumentUI[]
 ): Promise<ThreadAction> => {
   try {
     setSentryServiceTag('threads');
@@ -40,6 +42,7 @@ export const createThreadAction = async (
       projectId,
       mentionedProjectId,
       preferredModel,
+      threadDocuments,
     });
 
     return {

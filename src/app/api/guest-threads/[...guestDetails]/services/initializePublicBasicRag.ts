@@ -121,6 +121,7 @@ export const initializePublicRagChain = async ({
         contentModerator,
         questionRephraser,
         answerGenerator,
+        embeddings: embeddingModel,
       },
       config: {
         metadataFilter: isSupabaseVectorStore ? {} : metadataFilter,

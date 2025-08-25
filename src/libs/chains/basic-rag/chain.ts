@@ -6,6 +6,7 @@ import {
   generateFinalAnswer,
   rephraseQuestion,
   retrieveRelevantDocuments,
+  retrieveThreadDocuments,
 } from './operations';
 import {
   sanitizeAndValidateInput,
@@ -44,6 +45,15 @@ export const basicRagChain = async ({
         vectorStore,
         config?.maxDocumentsToRetrieve,
         config?.metadataFilter
+      ),
+    }),
+
+    RunnablePassthrough.assign({
+      thread_context: retrieveThreadDocuments(
+        config?.threadDocuments || [],
+        vectorStore,
+        models.embeddings,
+        config?.maxDocumentsToRetrieve || 3
       ),
     }),
 

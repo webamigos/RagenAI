@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 import { ChatResponseType } from '@/app/contracts/Message';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 import type { MentionedProject } from './MentionTextarea';
 
 const threadSchema = (t: (key: string) => string) =>
@@ -26,6 +27,8 @@ type Props = {
   projectPublicId?: string;
   accessToken?: string;
   preferredModel?: string;
+  threadDocuments?: ThreadDocumentUI[];
+  onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
 };
 
 export const useNewThreadInput = ({
@@ -36,6 +39,8 @@ export const useNewThreadInput = ({
   projectPublicId,
   accessToken,
   preferredModel,
+  threadDocuments = [],
+  onThreadDocumentsChange,
 }: Props) => {
   const t = useTranslations('Index.warning-messages');
   const [mentionedProject, setMentionedProject] =
@@ -105,7 +110,8 @@ export const useNewThreadInput = ({
         targetProjectId,
         targetProjectPublicId,
         mentionedProjectIdForThread,
-        preferredModel
+        preferredModel,
+        threadDocuments
       );
       reset();
     },
@@ -116,6 +122,7 @@ export const useNewThreadInput = ({
       projectPublicId,
       mentionedProject,
       preferredModel,
+      threadDocuments,
     ]
   );
 
@@ -136,5 +143,7 @@ export const useNewThreadInput = ({
     createVoiceThread,
     errors,
     setMentionedProjectInHook: setMentionedProject,
+    threadDocuments,
+    onThreadDocumentsChange,
   };
 };

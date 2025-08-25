@@ -29,6 +29,17 @@ export const createMessageSchema = (t?: (key: string) => string) =>
     useKnowledge: z.boolean().optional(),
     messageType: z.enum(['TEXT', 'VOICE']).optional(),
     voiceDurationSeconds: z.number().optional(),
+    threadDocuments: z
+      .array(
+        z.object({
+          name: z.string(),
+          content: z.string(),
+          size: z.number(),
+          type: z.string(),
+          userFileId: z.string().optional(),
+        })
+      )
+      .optional(),
   });
 
 export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;

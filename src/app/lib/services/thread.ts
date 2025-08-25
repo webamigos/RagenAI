@@ -5,6 +5,7 @@ import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
 import { logger } from '../utils/logger';
 import { fetchOrganizationDefaultProjectId } from './project';
+import { ThreadDocumentUI } from '../../contracts/ThreadDocument';
 
 export const serviceName = 'thread';
 
@@ -45,11 +46,13 @@ export const createNewThreadInDb = async ({
   projectId,
   mentionedProjectId,
   preferredModel,
+  threadDocuments,
 }: {
   visitorId: string | null | undefined;
   projectId?: number;
   mentionedProjectId?: number;
   preferredModel?: string;
+  threadDocuments?: ThreadDocumentUI[];
 }) => {
   try {
     setSentryServiceTag(serviceName);
@@ -76,6 +79,33 @@ export const createNewThreadInDb = async ({
         preferred_model: preferredModel,
       },
     });
+
+    if (threadDocuments && threadDocuments.length > 0 && userId && orgId) {
+      const documentsWithUserFileId = threadDocuments.filter(
+        (doc) => doc.userFileId
+      );
+
+      if (documentsWithUserFileId.length > 0) {
+        const threadDocumentData = documentsWithUserFileId.map((doc) => ({
+          thread_id: threadRecord.id,
+          user_file_id: doc.userFileId!,
+        }));
+
+        await db.threadDocument.createMany({
+          data: threadDocumentData,
+        });
+      }
+
+      logger.info(
+        {
+          threadId: threadRecord.id,
+          totalThreadDocumentsCount: threadDocuments.length,
+          savedThreadDocumentsCount: documentsWithUserFileId.length,
+          userFileIds: documentsWithUserFileId.map((doc) => doc.userFileId),
+        },
+        'Created ThreadDocument relationships for uploaded files'
+      );
+    }
 
     return {
       public_id: threadRecord.public_id,
