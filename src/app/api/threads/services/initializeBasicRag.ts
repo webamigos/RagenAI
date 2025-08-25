@@ -20,6 +20,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { getOrganizationMetadata } from '@/app/actions';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 const serviceName = 'initializeBasicRag';
 
@@ -27,6 +28,7 @@ type InitializeRagChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
   internalProjectId: number;
+  threadDocuments?: ThreadDocumentUI[];
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -36,6 +38,7 @@ export const initializeRagChain = async ({
   settings,
   projectInstruction,
   internalProjectId,
+  threadDocuments,
 }: InitializeRagChainParams) => {
   try {
     const { orgId } = await auth();
@@ -111,12 +114,14 @@ export const initializeRagChain = async ({
         contentModerator,
         questionRephraser,
         answerGenerator,
+        embeddings: embeddingModel,
       },
       config: {
         metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
+        threadDocuments: threadDocuments || [],
       },
       vectorStore,
     });

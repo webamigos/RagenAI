@@ -5,7 +5,11 @@ import { Button } from './Button';
 describe('Button component', () => {
   // TODO: do not write tests like below
   it('should renders correctly', () => {
-    const { debug, rerender, unmount } = render(<Button label="Click me" />);
+    const { debug, rerender, unmount } = render(
+      <Button label="Click me" plain>
+        Test
+      </Button>
+    );
     const button = screen.getByText('Click me');
 
     fireEvent.click(button);
@@ -16,7 +20,11 @@ describe('Button component', () => {
     expect(screen.getByText('Click me')).toBeInTheDocument();
   });
   it('should have no violations', async () => {
-    const { container } = render(<Button label="Click me" />);
+    const { container } = render(
+      <Button label="Click me" plain>
+        Test
+      </Button>
+    );
     const result = await axe(container);
     expect(result).toHaveNoViolations();
   });

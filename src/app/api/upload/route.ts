@@ -69,8 +69,6 @@ export async function POST(request: NextRequest) {
         const fileType = getFileType(parsedFile.fileName);
         const fileExtension = parsedFile.fileExtension;
 
-        const uniqueFileId = uuidv4();
-
         // Step 1: create file details in db
         const fileRecord = await createFileDetailsInDB(
           parsedFile.fileName,
@@ -103,7 +101,7 @@ export async function POST(request: NextRequest) {
           processedFiles.push({
             fileName: parsedFile.fileName,
             fileSize: file.size,
-            uniqueFileId,
+            uniqueFileId: fileRecord.public_id,
             content: parsedFile.content,
           });
 

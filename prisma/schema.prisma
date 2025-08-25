@@ -57,6 +57,7 @@ model Thread {
   project_id                   Int?
   mentioned_project_id         Int? // project mentioned via @ in thread context
   created_at                   DateTime                @default(now()) @db.Timestamptz
+  threadDocuments              ThreadDocument[]
 
   @@index([public_id])
   @@index([organization_id])
@@ -98,6 +99,7 @@ model UserFile {
   is_binary_file         Boolean         @default(true) // is content of file is binary or plain text
   file_extension         String? // this is detected by file-type library in temporal worker
   file_mime_type         String? // this is detected by file-type library in temporal worker
+  threadDocuments        ThreadDocument[]
 
   @@unique([id, organization_id])
   @@index([organization_id])
@@ -121,6 +123,20 @@ model UserDocument {
 
   @@index([organization_id])
   @@index([project_id])
+}
+
+// Thread-specific document associations
+model ThreadDocument {
+  id           String   @id @default(uuid())
+  thread_id    String   // References Thread.id (internal UUID)
+  user_file_id String   // References UserFile.public_id (external cuid)
+  created_at   DateTime @default(now()) @db.Timestamptz
+  thread       Thread   @relation(fields: [thread_id], references: [id], onDelete: Cascade)
+  userFile     UserFile @relation(fields: [user_file_id], references: [public_id], onDelete: Cascade)
+
+  @@unique([thread_id, user_file_id])
+  @@index([thread_id])
+  @@index([user_file_id])
 }
 
 // Organizations, Projects and ApiKeys ids will be used in Redis for store:

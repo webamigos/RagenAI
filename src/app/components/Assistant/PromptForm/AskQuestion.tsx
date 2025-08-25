@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { FieldError, UseFormRegister } from 'react-hook-form';
 
 import { Textarea } from '@ragenai/common-ui';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 type Props = {
   disabled: boolean;
@@ -14,6 +15,10 @@ type Props = {
   onSend: () => void;
   setPromptValue: (text: string) => void;
   value: string;
+  showFileAttachment?: boolean;
+  onFilesDrop?: (files: File[]) => void;
+  threadDocuments?: ThreadDocumentUI[];
+  onThreadDocumentRemove?: (index: number) => void;
 };
 
 export const AskQuestion = ({
@@ -25,6 +30,10 @@ export const AskQuestion = ({
   register,
   onSend,
   isUserLogged,
+  showFileAttachment,
+  onFilesDrop,
+  threadDocuments,
+  onThreadDocumentRemove,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -43,6 +52,10 @@ export const AskQuestion = ({
       placeholder={t('enter-your-question')}
       handleResponseType={handleResponseType}
       showVoiceInput={isUserLogged}
+      showFileAttachment={showFileAttachment}
+      onFilesDrop={onFilesDrop}
+      threadDocuments={threadDocuments}
+      onThreadDocumentRemove={onThreadDocumentRemove}
     />
   );
 };
