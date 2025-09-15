@@ -1,3 +1,5 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 import { ComponentProps } from 'react';
 import { FieldError } from 'react-hook-form';

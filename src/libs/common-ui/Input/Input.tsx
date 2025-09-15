@@ -150,7 +150,7 @@ export const Input = forwardRef(
             className="mt-2 text-sm text-red-600 dark:text-red-500"
             id="input-error"
           >
-            {t(errorMessage ? errorMessage : error.message)}
+            {t(errorMessage || error.message || '')}
           </Text>
         )}
         {hint && !isLoading && (

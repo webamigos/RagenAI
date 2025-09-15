@@ -8,7 +8,8 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 import { Toast } from '@/app/components/Toast';
 import { Logo } from '@/app/components/Logo';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
@@ -16,7 +17,8 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default function EnterCodePage({ params: { locale } }: PropsWihLocale) {
+export default async function EnterCodePage({ params }: PropsWihLocale) {
+  const { locale } = await params;
   setRequestLocale(locale);
   const tsu = useTranslations('sign-up');
 

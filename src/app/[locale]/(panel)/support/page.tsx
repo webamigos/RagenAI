@@ -6,7 +6,8 @@ import { CTA } from '@/app/components/Support/CTA';
 import { Container } from '@ragenai/common-ui/Container';
 import { Header } from '@ragenai/common-ui/Header';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {

@@ -13,16 +13,17 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: {
+  params: Promise<{
     guestDetails: string[];
-  };
+  }>;
 };
 
 export async function POST(request: NextRequest, { params }: Params) {
   let stream: ReadableStream | undefined;
 
   try {
-    const [publicThreadId, organizationAccessToken] = params.guestDetails;
+    const { guestDetails } = await params;
+    const [publicThreadId, organizationAccessToken] = guestDetails;
 
     const projectData = await getPublicProject(organizationAccessToken);
     if (!projectData) {

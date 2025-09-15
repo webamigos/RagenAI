@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { useCloseThread } from '../../hooks/useCloseThreads';
-import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
 import { getDefaultProjectPublicId, getUserMessages } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -54,7 +53,6 @@ export const useSidebarLogic = () => {
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
   const { handleCloseThread } = useCloseThread();
-  const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
   const { openSearch } = useSearchThreads();
   const { organization } = useOrganization();
@@ -259,7 +257,6 @@ export const useSidebarLogic = () => {
     handleThread,
     activeThread,
     handleSearch,
-    showOnboarding,
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,

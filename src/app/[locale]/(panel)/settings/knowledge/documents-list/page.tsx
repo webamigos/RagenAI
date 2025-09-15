@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { FileListWrapper } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: Props) {

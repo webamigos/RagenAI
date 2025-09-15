@@ -6,21 +6,18 @@ import { Container } from '@ragenai/common-ui/Container';
 import { Header } from '@ragenai/common-ui/Header';
 import { Link } from '@/i18n/routing';
 import { ArrowLeftIcon } from '@heroicons/react/20/solid';
+import { PropsWihLocale } from '@/app/lib/types/types';
 
-type Props = {
-  params: {
-    locale: string;
-  };
-};
-
-export async function generateMetadata({ params: { locale } }: Props) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
     title: t('plans.title'),
   };
 }
 
-export default async function PlansPage({ params: { locale } }: Props) {
+export default async function PlansPage({ params }: PropsWihLocale) {
+  const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'plans' });
 

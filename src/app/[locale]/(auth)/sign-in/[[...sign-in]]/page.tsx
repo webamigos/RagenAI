@@ -11,7 +11,8 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 import { redirect } from 'next/navigation';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {

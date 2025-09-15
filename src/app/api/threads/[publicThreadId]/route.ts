@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { publicThreadId: string };
+  params: Promise<{ publicThreadId: string }>;
 };
 
 export async function POST(request: NextRequest, { params }: Params) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
     setSentryClerkOrganizationTag(orgId);
 
-    const { publicThreadId } = params;
+    const { publicThreadId } = await params;
     const chatType = request?.nextUrl?.searchParams.get('mode');
 
     const filteredMode =

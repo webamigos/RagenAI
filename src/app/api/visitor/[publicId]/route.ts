@@ -8,13 +8,13 @@ import { logger } from '../../../lib/utils/logger';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
 
 type Params = {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 };
 
 export const dynamic = 'force-dynamic';
 
 export const GET = async (_request: Request, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
 
   try {
     setSentryServiceTag('visitor');

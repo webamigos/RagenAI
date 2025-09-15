@@ -2,7 +2,8 @@ import { CreateOrganizationComponent } from '@/app/components/MyProfile/CreateOr
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { getTranslations } from 'next-intl/server';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {

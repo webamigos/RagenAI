@@ -5,15 +5,16 @@ import { logger } from '@/app/lib/utils/logger';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { publicId: string } }
+  { params }: { params: Promise<{ publicId: string }> }
 ) {
   try {
+    const { publicId } = await params;
     logger.info('Request params:', { params, url: request.url });
 
     // Find project by public_id
     const project = await db.project.findFirst({
       where: {
-        access_token: params.publicId,
+        access_token: publicId,
       },
       select: {
         id: true,

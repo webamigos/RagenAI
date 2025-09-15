@@ -2,22 +2,20 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Assistant } from '../../../../components/Assistant';
+import { PropsWihLocale } from '@/app/lib/types/types';
 
-type Props = {
-  params: {
-    publicId: string;
-    locale: string;
-  };
-};
-
-export async function generateMetadata({ params: { locale } }: Props) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
   return {
     title: t('guest-threads.title'),
   };
 }
 
-export default function ThreadPage({ params: { publicId, locale } }: Props) {
+export default async function ThreadPage({
+  params,
+}: PropsWihLocale & { params: Promise<{ publicId: string }> }) {
+  const { locale, publicId } = await params;
   const threadPublicId = publicId;
   if (!threadPublicId) {
     notFound();
