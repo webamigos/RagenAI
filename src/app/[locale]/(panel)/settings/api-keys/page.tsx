@@ -12,7 +12,8 @@ import { getDefaultProjectPublicId } from '@/app/actions';
 import { Container } from '@ragenai/common-ui/Container';
 import { Button, Header } from '@ragenai/common-ui';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'api-keys' });
 
   return {
@@ -20,9 +21,8 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default async function ApiKeysPage({
-  params: { locale },
-}: PropsWihLocale) {
+export default async function ApiKeysPage({ params }: PropsWihLocale) {
+  const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('api-keys');
   const result = await fetchApiKeys();

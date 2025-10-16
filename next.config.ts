@@ -1,7 +1,7 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 
-import validateEnvs from './src/validateEnvVars.js';
+import { validateEnvs } from './src/validateEnvVars';
 
 const validateEnvsResult = validateEnvs();
 
@@ -19,7 +19,7 @@ const withNextIntl = createNextIntlPlugin();
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
 const isStagingTargetEnv = process.env.TARGET_ENV === 'staging';
 
-const rewrites = [];
+const rewrites: { source: string; destination: string }[] = [];
 const IS_API_MODE = process.env.IS_API_MODE === '1';
 
 if (IS_API_MODE) {
@@ -34,7 +34,7 @@ if (IS_API_MODE) {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true, // false is only for local debugging
-  swcMinify: true,
+  // swcMinify: true,
   images: {
     domains: ['img.clerk.com', 'files.stripe.com', 'images.unsplash.com'],
   },
@@ -67,21 +67,19 @@ const nextConfig = {
     ];
   },
 
-  experimental: {
-    serverComponentsExternalPackages: [
-      'pino',
-      'pino-pretty',
-      'pino-sentry',
-      '@sentry/node',
-      '@hyzyla/pdfium',
-      '@aws-sdk',
-      '@langchain/core',
-      'langchain',
-      '@langchain/community',
-    ],
-  },
+  serverExternalPackages: [
+    'pino',
+    'pino-pretty',
+    'pino-sentry',
+    '@sentry/node',
+    '@hyzyla/pdfium',
+    '@aws-sdk',
+    '@langchain/core',
+    'langchain',
+    '@langchain/community',
+  ],
 
-  webpack: (config, { isServer }) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -133,9 +131,6 @@ export default !(isProductionTargetEnv || isStagingTargetEnv)
       // side errors will fail.
       // tunnelRoute: "/monitoring",
 
-      // Hides source maps from generated client bundles
-      hideSourceMaps: true,
-
       // Automatically tree-shake Sentry logger statements to reduce bundle size
       disableLogger: true,
 
@@ -143,5 +138,5 @@ export default !(isProductionTargetEnv || isStagingTargetEnv)
       // See the following for more information:
       // https://docs.sentry.io/product/crons/
       // https://vercel.com/docs/cron-jobs
-      automaticVercelMonitors: false,
+      automaticVercelMonitors: true,
     });

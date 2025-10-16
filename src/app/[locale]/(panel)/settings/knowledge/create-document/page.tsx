@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { DocumentCreator } from '@/app/components/ManageKnowledge/MarkdownDocumentsCreator/DocumentCreator';
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: Props) {

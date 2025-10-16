@@ -155,7 +155,7 @@ export const useNewThread = () => {
         : await createGuestThreadAction({ mentionedProjectId, preferredModel });
 
       if (result.success) {
-        trackThreadCreated();
+        await trackThreadCreated();
         const threadId = result.thread.public_id;
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 

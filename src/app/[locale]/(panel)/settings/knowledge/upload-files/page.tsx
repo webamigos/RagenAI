@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { UploadKnowledge } from '@/app/components/ManageKnowledge/UploadKnowledge';
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: Props) {

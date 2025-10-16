@@ -135,7 +135,7 @@ export async function POST(req: Request) {
 
           await createTrialSubscription(clerkOrgId);
 
-          //To do: store relevant subscription info to clerk organization metadata
+          // Todo: store relevant subscription info to clerk organization metadata
           await saveOrganizationInitialMetadata(clerkOrgId, {
             publicMetadata: {
               hasKnowledge: false,

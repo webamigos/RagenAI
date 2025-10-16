@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { publicThreadId: string };
+  params: Promise<{ publicThreadId: string }>;
 };
 
 const updateModelSchema = z.object({
@@ -20,6 +20,7 @@ const updateModelSchema = z.object({
 });
 
 export async function PATCH(request: NextRequest, { params }: Params) {
+  const { publicThreadId } = await params;
   try {
     const { orgId, userId } = getAuth(request);
     setSentryServiceTag('threads.model.patch');
@@ -30,7 +31,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     setSentryClerkOrganizationTag(orgId);
 
-    const { publicThreadId } = params;
     const body = await request.json();
     const { model } = updateModelSchema.parse(body);
 
@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     );
   } catch (error) {
     logger.error(
-      { err: error, threadId: params.publicThreadId },
+      { err: error, threadId: publicThreadId },
       'Error updating thread model'
     );
 

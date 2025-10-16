@@ -1,15 +1,13 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
-import { Alert, Button } from '@ragenai/common-ui';
+import { Alert } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 
 import { useNewThread } from '@/app/hooks/useNewThread';
-import { useOnboardingContext } from '@/app/hooks/useOnboardingContext';
 import { useSettings } from '@/app/hooks/useSettings';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 
-import { OnboardingSteps } from './OnboardingSteps';
 import { ValidationBoard } from './ValidationBoard';
 import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { useModalWithEscapeAndOutsideClick } from '@/app/hooks/useModalWithEscapeAndOutsideClick';
@@ -19,7 +17,6 @@ export const Start = () => {
   const { isSignedIn, user } = useUser();
   const t = useTranslations('Index');
   const { isPending, isLimitLock } = useNewThread();
-  const { runJoyride, showOnboarding } = useOnboardingContext();
   const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
   const { isSearchOpen, closeSearch } = useSearchThreads();
   const { modalRef } = useModalWithEscapeAndOutsideClick<HTMLDivElement>();
@@ -44,16 +41,10 @@ export const Start = () => {
 
       <div className="container mx-auto w-full">
         <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-8rem)]">
-          <OnboardingSteps />
           {shouldShowValidationBoard ? (
             <ValidationBoard />
-          ) : !isPending && showOnboarding ? (
-            <Button
-              onClick={runJoyride}
-              className="start-button px-5 py-3 sm:mb-12 mb-8 tracking-wide"
-            >
-              {t('start-tour')}
-            </Button>
+          ) : !isPending ? (
+            <></>
           ) : (
             <NewChatInterface />
           )}

@@ -68,7 +68,7 @@ export const UploadKnowledge = () => {
         setFiles([]);
         // refreshFiles();
         startTransition(() => {
-          push('/manage-knowledge/documents-list');
+          push('/settings/knowledge/documents-list');
         });
         refreshSettings();
       } else {

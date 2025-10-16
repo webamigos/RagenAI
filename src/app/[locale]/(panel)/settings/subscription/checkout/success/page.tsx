@@ -6,15 +6,14 @@ import { CheckoutSuccess } from '../../components/CheckoutSuccess';
 export default async function ResultPage({
   searchParams,
 }: {
-  searchParams: { session_id: string };
+  searchParams: Promise<{ session_id: string }>;
 }): Promise<JSX.Element> {
-  if (!searchParams.session_id) {
+  const { session_id } = await searchParams;
+  if (!session_id) {
     return <></>;
   }
 
-  const checkoutSession = await retrieveCheckoutSessionDetails(
-    searchParams.session_id
-  );
+  const checkoutSession = await retrieveCheckoutSessionDetails(session_id);
 
   const subscription = checkoutSession.subscription as Stripe.Subscription;
   const lineItems = checkoutSession.line_items?.data[0];

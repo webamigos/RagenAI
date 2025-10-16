@@ -3,13 +3,13 @@ import { NextResponse } from 'next/server';
 import { getTemporalClient } from '@/libs/temporal';
 
 type Params = {
-  params: { workflowId: string };
+  params: Promise<{ workflowId: string }>;
 };
 
 export const dynamic = 'force-dynamic';
 
 export const GET = async (_request: Request, { params }: Params) => {
-  const workflowId = params.workflowId;
+  const { workflowId } = await params;
 
   try {
     const client = await getTemporalClient();

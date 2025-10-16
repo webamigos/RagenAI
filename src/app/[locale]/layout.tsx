@@ -1,8 +1,7 @@
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { ClerkProvider } from '@clerk/nextjs';
 import { enUS } from '@clerk/localizations';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
-import dynamic from 'next/dynamic';
+import { NextIntlClientProvider } from 'next-intl';
 import { GoogleTagManager } from '@next/third-parties/google';
 
 import { Providers } from '../components/Providers';
@@ -15,19 +14,6 @@ import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
-import { getDefaultProjectPublicId } from '../actions';
-
-const JoyrideProvider = dynamic<JoyrideProviderProps>(
-  () =>
-    import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
-  {
-    ssr: false,
-  }
-);
-
-type JoyrideProviderProps = {
-  children: React.ReactNode;
-};
 
 type Props = {
   children: React.ReactNode;
@@ -65,9 +51,7 @@ export default async function LocaleLayout({
           <body className={`${interFont.className} h-full`}>
             <Providers>
               <SearchThreadsProvider>
-                <SettingsProvider>
-                  <JoyrideProvider>{children}</JoyrideProvider>
-                </SettingsProvider>
+                <SettingsProvider>{children}</SettingsProvider>
               </SearchThreadsProvider>
             </Providers>
           </body>

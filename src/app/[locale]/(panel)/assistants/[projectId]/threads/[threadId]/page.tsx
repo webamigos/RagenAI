@@ -2,12 +2,13 @@ import { notFound } from 'next/navigation';
 import { Assistant } from '@/app/components/Assistant';
 
 type Props = {
-  params: {
+  params: Promise<{
     projectId: string;
     threadId: string;
-  };
+  }>;
 };
 
-export default function ProjectThreadPage({ params }: Props) {
-  return <Assistant threadId={params.threadId} />;
+export default async function ProjectThreadPage({ params }: Props) {
+  const { projectId, threadId } = await params;
+  return <Assistant threadId={threadId} />;
 }

@@ -39,8 +39,9 @@ const validateHeaders = (request: Request) => {
 
 export async function GET(
   request: Request,
-  { params }: { params: { organizationId: string } }
+  { params }: { params: Promise<{ organizationId: string }> }
 ) {
+  const { organizationId } = await params;
   try {
     const { searchParams } = new URL(request.url);
     const { host, origin } = validateHeaders(request);
@@ -50,7 +51,7 @@ export async function GET(
     const appOrigin = `${CONFIG.protocol}://${host}`;
 
     const script = createEmbedScript(
-      params.organizationId,
+      organizationId,
       { title, message },
       appOrigin
     );

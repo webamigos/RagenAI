@@ -140,6 +140,11 @@ const createQdrantVectorStore = async (
   embeddingModel: Embeddings,
   organizationId: string
 ) => {
+  logger.info('creating qdrant vector store', {
+    url: process.env.QDRANT_URL,
+    apiKey: process.env.QDRANT_API_KEY, // staging and prod
+    collectionName: organizationId,
+  });
   const vectorStore = await QdrantVectorStore.fromExistingCollection(
     embeddingModel,
     {

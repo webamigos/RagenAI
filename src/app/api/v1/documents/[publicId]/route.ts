@@ -8,11 +8,11 @@ import { ApiErrorService } from '../../__logic__/services/api-errors.service';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 };
 
 export const GET = async (request: NextRequest, { params }: Params) => {
-  const publicId = params.publicId;
+  const { publicId } = await params;
   try {
     const apiContext = await getApiContext(request);
     const apiDbService = new ApiDbService(apiContext);

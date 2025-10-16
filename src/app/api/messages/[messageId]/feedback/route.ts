@@ -9,11 +9,11 @@ import {
 } from '@/app/lib/services/sentry';
 
 type Params = {
-  params: { messageId: string };
+  params: Promise<{ messageId: string }>;
 };
 
 export const POST = async (request: Request, { params }: Params) => {
-  const { messageId } = params;
+  const { messageId } = await params;
 
   try {
     setSentryServiceTag('messages-feedback');
