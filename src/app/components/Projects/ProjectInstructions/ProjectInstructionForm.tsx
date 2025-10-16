@@ -114,7 +114,7 @@ export const ProjectInstructionForm = ({
         >
           {t('cancel')}
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button isSubmit={true} disabled={isSubmitting}>
           {isSubmitting ? t('saving') : t('save')}
         </Button>
       </div>

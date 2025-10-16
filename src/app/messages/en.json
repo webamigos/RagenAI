@@ -22,6 +22,12 @@
       "prompt-min-length": "Message must contain at least 10 characters"
     }
   },
+  "Breadcrumbs": {
+    "assistants": "Assistants",
+    "mainThreads": "Main Threads",
+    "conversation": "Conversation",
+    "unknownProject": "Unknown Project"
+  },
   "sign-up": {
     "create-account": "Create your account",
     "to-continue": "to continue to Ragen Assistant",
@@ -173,7 +179,8 @@
     "create-new-thread": "Create a new thread",
     "today": "Today",
     "yesterday": "Yesterday",
-    "older": "Older"
+    "older": "Older",
+    "threads-history": "Conversation history"
   },
   "form": {
     "enter-your-question": "Enter your question",
@@ -267,6 +274,14 @@
       "invalid-url": "Please enter a valid URL (e.g., https://example.com)"
     }
   },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Select AI model",
+      "model-updated": "Model changed to {model}",
+      "model-update-failed": "Failed to change model: {error}",
+      "model-label": "Model"
+    }
+  },
   "assistant-settings": {
     "prompt-assistant-settings": "Assistant settings",
     "model-select": {
@@ -324,10 +339,15 @@
     "assistant-management": "Assistant settings",
     "api-keys": "API Keys",
     "create-new-thread": "New thread",
+    "new-chat": "New Chat",
     "search-threads": "Search in threads",
     "generate-access-key": "Public access",
     "support-page": "Support Page",
     "return-to-home": "Threads",
+    "threads": {
+      "no-threads": "No conversations yet",
+      "no-threads-description": "Start a new conversation to see it here"
+    },
     "threads-categories": {
       "today": "Today",
       "yesterday": "Yesterday",
@@ -335,7 +355,9 @@
     },
     "projects": {
       "title": "Assistants",
-      "create-project": "Create Assistant"
+      "create-project": "Create Assistant",
+      "no-projects": "No assistants yet",
+      "no-projects-description": "Click + to create your first assistant"
     },
     "errors": {
       "general": "An unexpected error occurred. Please try again later.",
@@ -351,6 +373,13 @@
       "add-files": "Add files to knowledge base",
       "create-new-project": "Create new assistant",
       "or": "or"
+    },
+    "footer": {
+      "my-profile": "My profile",
+      "settings": "Settings",
+      "privacy-policy": "Privacy policy",
+      "share-feedback": "Your feedback",
+      "sign-out": "Sign out"
     }
   },
   "search-threads": {
@@ -417,7 +446,7 @@
     "name-is-to-short": "Name is to short - use at least 3 characters",
     "failed-to-load": "Failed to load keys",
     "assistant": "Assistant",
-    "project-is-required": "Assistant is required",
+    "project-is-required": "Knowledge source is required",
     "copy": "Copy",
     "done": "Done",
     "dialog": {
@@ -475,7 +504,8 @@
     "per-year": "yearly",
     "already-active": "You already have an active subscription paid plan!",
     "already-active-description": "To activate a new plan, please activate free plan or wait until your current plan expires.",
-    "view-subscription": "View your subscription"
+    "view-subscription": "View your subscription",
+    "back-to-subscription": "Back to subscription"
   },
   "chain-errors": {
     "sending-error": "Error occured while sending message",

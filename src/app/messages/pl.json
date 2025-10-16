@@ -22,6 +22,12 @@
       "prompt-min-length": "Wiadomość musi zawierać przynajmniej 10 znaków"
     }
   },
+  "Breadcrumbs": {
+    "assistants": "Asystenci",
+    "mainThreads": "Główne wątki",
+    "conversation": "Konwersacja",
+    "unknownProject": "Nieznany projekt"
+  },
   "sign-up": {
     "create-account": "Załóż konto",
     "to-continue": "aby kontynuować w Ragen Assistant",
@@ -174,7 +180,8 @@
     "create-new-thread": "Stwórz nowy wątek",
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
-    "older": "Starsze niż 2 dni"
+    "older": "Starsze niż 2 dni",
+    "threads-history": "Historia konwersacji"
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",
@@ -270,6 +277,14 @@
       "invalid-url": "Wprowadź poprawny adres strony internetowej (np. https://przyklad.pl)"
     }
   },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Wybierz model AI",
+      "model-updated": "Model zmieniony na {model}",
+      "model-update-failed": "Nie udało się zmienić modelu: {error}",
+      "model-label": "Model"
+    }
+  },
   "assistant-settings": {
     "prompt-assistant-settings": "Ustawienia asystenta",
     "model-select": {
@@ -316,6 +331,7 @@
     "add-from-url": "Dodaj wiedzę z linku"
   },
   "sidebar": {
+    "back": "Powrót",
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
@@ -327,10 +343,15 @@
     "subscription-management": "Subskrypcja",
     "api-keys": "Klucze API",
     "create-new-thread": "Nowy wątek",
+    "new-chat": "Nowy czat",
     "search-threads": "Szukaj w wątkach",
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
     "return-to-home": "Lista wątków",
+    "threads": {
+      "no-threads": "Brak wątków",
+      "no-threads-description": "Rozpocznij nową konwersację, aby zobaczyć ją tutaj"
+    },
     "threads-categories": {
       "today": "Dzisiaj",
       "yesterday": "Wczoraj",
@@ -338,7 +359,9 @@
     },
     "projects": {
       "title": "Asystenci",
-      "create-project": ""
+      "create-project": "Stwórz asystenta",
+      "no-projects": "Brak asystentów",
+      "no-projects-description": "Kliknij + aby stworzyć swojego pierwszego asystenta"
     },
     "errors": {
       "general": "Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
@@ -353,6 +376,13 @@
       "add-files": "Dodaj pliki do bazy wiedzy",
       "create-new-project": "Stwórz nowego asystenta",
       "or": "lub"
+    },
+    "footer": {
+      "my-profile": "Mój profil",
+      "settings": "Ustawienia",
+      "privacy-policy": "Polityka prywatności",
+      "share-feedback": "Twój feedback",
+      "sign-out": "Wyloguj się"
     }
   },
   "search-threads": {
@@ -419,7 +449,7 @@
     "name-is-to-short": "Nazwa jest za krótka - składać się z przynajmniej 3 znaków",
     "failed-to-load": "Błąd podczas pobierania klucza api",
     "assistant": "Asystent",
-    "project-is-required": "Asystent jest wymagany",
+    "project-is-required": "Źródło wiedzy jest wymagane",
     "copy": "Kopiuj",
     "done": "Gotowe",
     "dialog": {
@@ -477,7 +507,8 @@
     "per-year": "rocznie",
     "already-active": "Masz już aktywny plan płatny!",
     "already-active-description": "Aby aktywować nowy plan, najpierw przejdz na plan darmowy lub czekaj, aż bieżąca subskrypcja wygaśnie.",
-    "view-subscription": "Zarządzaj swoją subskrypcją"
+    "view-subscription": "Zarządzaj swoją subskrypcją",
+    "back-to-subscription": "Powrót do subskrypcji"
   },
   "chain-errors": {
     "sending-error": "Wystąpił błąd podczas wysyłania wiadomości",

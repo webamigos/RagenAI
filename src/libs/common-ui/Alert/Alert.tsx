@@ -91,7 +91,7 @@ export const Alert = ({
       )}
     >
       <div className="flex">
-        <div className="flex-shrink-0">{palette[type].icon}</div>
+        <div className="shrink-0">{palette[type].icon}</div>
         <div className="ml-3">
           <h3
             className={classMerge(`text-sm`, palette[type].textColorBold, {

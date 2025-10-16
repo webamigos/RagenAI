@@ -14,7 +14,7 @@ import { logger } from '@/app/lib/utils/logger';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: { threadId: string };
+  params: Promise<{ threadId: string }>;
 };
 
 /**
@@ -50,13 +50,14 @@ export const POST = async (request: Request) => {
 
 export const GET = async (_request: Request, { params }: Params) => {
   try {
+    const { threadId } = await params;
     const { userId } = auth();
     if (!userId) {
       throw new Error('Invalid user id');
     }
 
-    const threadPublicId = params.threadId[0];
-    const visitorId = params.threadId[1];
+    const threadPublicId = threadId.split('/')[0];
+    const visitorId = threadId.split('/')[1];
 
     setSentryServiceTag('messages');
     setSentryUserId(visitorId);
@@ -64,8 +65,8 @@ export const GET = async (_request: Request, { params }: Params) => {
 
     // 🚨 what if someone from outside organization somehow will with get thread id
     // and then will use /messages/{threadId} endpoint?
-    const messages = await fetchMessagesFromDb(threadPublicId, visitorId);
-    return NextResponse.json(messages);
+    const result = await fetchMessagesFromDb(threadPublicId, visitorId);
+    return NextResponse.json(result);
   } catch (e) {
     logger.error({ err: e }, 'Failed fetching messages');
     return NextResponse.json(

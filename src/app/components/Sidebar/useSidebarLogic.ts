@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useUser, useOrganization } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
@@ -7,9 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { useCloseThread } from '../../hooks/useCloseThreads';
-import { useOnboardingContext } from '../../hooks/useOnboardingContext';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
-import { getDefaultProjectId, getUserMessages } from '@/app/actions';
+import { getDefaultProjectPublicId, getUserMessages } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 
 import {
@@ -25,7 +24,7 @@ import {
   setHasMore,
   setError,
   resetThreads,
-  setDefaultProjectId,
+  setDefaultProjectPublicId,
 } from '@/store/threads/threadsSlice';
 import type { ErrorState } from '@/store/threads/threadsSlice';
 import { logger } from '@/app/lib/utils/logger';
@@ -36,6 +35,7 @@ export const useSidebarLogic = () => {
   );
   const { errorToast } = statusToast();
   const router = useRouter();
+  const loadingRef = useRef(false);
 
   const {
     error,
@@ -53,7 +53,6 @@ export const useSidebarLogic = () => {
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userAvatar = user?.imageUrl;
   const { handleCloseThread } = useCloseThread();
-  const { showOnboarding } = useOnboardingContext();
   const t = useTranslations('sidebar');
   const { openSearch } = useSearchThreads();
   const { organization } = useOrganization();
@@ -71,8 +70,9 @@ export const useSidebarLogic = () => {
   );
 
   const loadMoreThreads = useCallback(async () => {
-    if (isLoading || !hasMore || !user?.id) return;
+    if (isLoading || !hasMore || !user?.id || loadingRef.current) return;
 
+    loadingRef.current = true;
     const viewportHeight = window.innerHeight;
     const avgThreadHeight = 100;
     const limit = Math.ceil(viewportHeight / avgThreadHeight) + 5;
@@ -121,6 +121,7 @@ export const useSidebarLogic = () => {
     // }
 
     dispatch(setLoading(false));
+    loadingRef.current = false;
   }, [isLoading, hasMore, user?.id, skip, dispatch, prefetchThreads]);
 
   const refetchThreads = useCallback(async () => {
@@ -218,7 +219,10 @@ export const useSidebarLogic = () => {
   // Refresh projects when new thread is added
   useEffect(() => {
     const parts = pathname.split('/');
-    const isInProjectContext = parts.includes('projects');
+    const isInProjectContext =
+      parts.includes('projects') ||
+      parts.includes('assistants') ||
+      parts.includes('threads');
 
     if (organization?.id && user?.id && isInProjectContext) {
       fetchProjects();
@@ -226,18 +230,18 @@ export const useSidebarLogic = () => {
   }, [organization?.id, user?.id, userThreads.length, pathname]);
 
   useEffect(() => {
-    const fetchDefaultProjectId = async () => {
+    const fetchDefaultProjectPublicId = async () => {
       if (!organization?.id) {
         return;
       }
 
-      const projectId = await getDefaultProjectId();
-      if (projectId) {
-        dispatch(setDefaultProjectId(projectId));
+      const projectPublicId = await getDefaultProjectPublicId();
+      if (projectPublicId) {
+        dispatch(setDefaultProjectPublicId(projectPublicId));
       }
     };
 
-    fetchDefaultProjectId();
+    fetchDefaultProjectPublicId();
   }, [organization?.id, dispatch]);
 
   return {
@@ -253,7 +257,6 @@ export const useSidebarLogic = () => {
     handleThread,
     activeThread,
     handleSearch,
-    showOnboarding,
     refetchThreads,
     isThreadLoading,
     isThreadsLoaded,

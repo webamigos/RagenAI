@@ -1,7 +1,10 @@
 // Use this file to export React client components (e.g. those with 'use client' directive) or other non-server utilities
 
 export * from './Alert';
+export * from './Badge';
+export * from './Breadcrumb';
 export * from './Button';
+export * from './Container';
 export * from './Header';
 export * from './Input';
 export * from './Text';
@@ -13,6 +16,7 @@ export * from './Link';
 export * from './Navbar';
 export * from './Avatar';
 export * from './Card';
+export * from './Container';
 export * from './Divider';
 export * from './Dropdown';
 export * from './Dialog';
@@ -25,3 +29,4 @@ export * from './Skeleton';
 export * from './Switch';
 export * from './CopyButton';
 export * from './Notifications';
+export * from './Select';

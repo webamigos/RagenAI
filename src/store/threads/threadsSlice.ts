@@ -15,7 +15,7 @@ export interface ThreadState {
   skip: number;
   hasMore: boolean;
   currentThreadId: string;
-  defaultProjectId: number | null;
+  defaultProjectPublicId: string | null;
 }
 
 const initialState: ThreadState = {
@@ -27,7 +27,7 @@ const initialState: ThreadState = {
   skip: 0,
   hasMore: true,
   currentThreadId: '',
-  defaultProjectId: null,
+  defaultProjectPublicId: null,
 };
 
 export const threadsSlice = createSlice({
@@ -102,8 +102,21 @@ export const threadsSlice = createSlice({
     setCurrentThreadId: (state, action: PayloadAction<string>) => {
       state.currentThreadId = action.payload;
     },
-    setDefaultProjectId: (state, action: PayloadAction<number | null>) => {
-      state.defaultProjectId = action.payload;
+    setDefaultProjectPublicId: (
+      state,
+      action: PayloadAction<string | null>
+    ) => {
+      state.defaultProjectPublicId = action.payload;
+    },
+    updateThreadModel: (
+      state,
+      action: PayloadAction<{ threadId: string; model: string | null }>
+    ) => {
+      const { threadId, model } = action.payload;
+      const thread = state.userThreads.find((t) => t.public_id === threadId);
+      if (thread) {
+        thread.preferred_model = model;
+      }
     },
   },
 });
@@ -120,7 +133,8 @@ export const {
   incrementSkip,
   resetThreads,
   setCurrentThreadId,
-  setDefaultProjectId,
+  setDefaultProjectPublicId,
+  updateThreadModel,
 } = threadsSlice.actions;
 
 export default threadsSlice.reducer;

@@ -20,6 +20,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
 import { getOrganizationMetadata } from '@/app/actions';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 const serviceName = 'initializeBasicRag';
 
@@ -27,6 +28,7 @@ type InitializeRagChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
   internalProjectId: number;
+  threadDocuments?: ThreadDocumentUI[];
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -36,6 +38,7 @@ export const initializeRagChain = async ({
   settings,
   projectInstruction,
   internalProjectId,
+  threadDocuments,
 }: InitializeRagChainParams) => {
   try {
     const { orgId } = auth();
@@ -111,12 +114,14 @@ export const initializeRagChain = async ({
         contentModerator,
         questionRephraser,
         answerGenerator,
+        embeddings: embeddingModel,
       },
       config: {
         metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
+        threadDocuments: threadDocuments || [],
       },
       vectorStore,
     });
@@ -133,6 +138,12 @@ const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
       throw new Error('Organization ID is required, could not get from clerk');
     }
 
+    logger.info('creating qdrant vector store', {
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY, // staging and prod
+      collectionName: orgId,
+    });
+
     const vectorStore = await QdrantVectorStore.fromExistingCollection(
       embeddingModel,
       {
@@ -144,7 +155,15 @@ const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
 
     return vectorStore;
   } catch (error) {
-    logger.error({ err: error }, 'Error creating Qdrant vector store');
+    logger.error(
+      {
+        err: error,
+        url: process.env.QDRANT_URL,
+        apiKey: process.env.QDRANT_API_KEY, // staging and prod
+        // collectionName: orgId,
+      },
+      'Error creating Qdrant vector store'
+    );
     throw error;
   }
 };

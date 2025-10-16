@@ -52,11 +52,7 @@ export const SupportForm = () => {
   };
 
   return (
-    <Card
-      size="full"
-      title={t('card-title')}
-      className="w-full lg:max-w-lg lg:ml-4 max-h-[650px] overflow-auto"
-    >
+    <Card size="full" title={t('card-title')} className="w-full">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
           <Input
@@ -64,7 +60,6 @@ export const SupportForm = () => {
             mandatory={true}
             type="text"
             {...register('title')}
-            className="w-full mt-1 p-2 border cursor-auto"
             error={errors.title}
             errorMessage={errors.title?.message}
           />
@@ -90,7 +85,6 @@ export const SupportForm = () => {
             accept="image/*"
             multiple
             {...register('file')}
-            className="w-full mt-1 p-2 border rounded-md"
             error={errors.file}
             errorMessage={errors.file?.message}
           />

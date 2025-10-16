@@ -35,12 +35,12 @@ export const RemoveApiKeyDialog = ({
         <DialogDescription>{t('remove-key.description')}</DialogDescription>
       </DialogBody>
       <DialogActions>
-        <Button label={t('cancel')} onClick={onCancel} />
-        <Button
-          label={t('confirm')}
-          onClick={onConfirm}
-          isLoading={isPending}
-        />
+        <Button onClick={onCancel} plain>
+          {t('cancel')}
+        </Button>
+        <Button onClick={onConfirm} isLoading={isPending} plain>
+          {t('confirm')}
+        </Button>
       </DialogActions>
     </Dialog>
   );

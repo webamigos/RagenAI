@@ -67,17 +67,17 @@ export const ForgotPasswordForm = () => {
         label={t('Provide-email')}
         type="email"
         {...register('email')}
-        className="py-1.5 border rounded-md"
         placeholder="e.g john@doe.com"
         error={errors.email}
         errorMessage={errors.email?.message}
       />
       <Button
-        className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        label={t('Send-reset-code')}
+        className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         isLoading={isLoading}
-        type="submit"
-      />
+        isSubmit={true}
+      >
+        {t('Send-reset-code')}
+      </Button>
       <ClerkErrorsInterface apiErrors={apiErrors} />
     </form>
   );

@@ -13,20 +13,20 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    label: 'Click me',
+    children: 'Click me',
   },
 };
 
 export const _Red: Story = {
   args: {
-    label: 'Click me',
+    children: 'Click me',
     className: 'bg-red-600 hover:bg-red-500',
   },
 };
 
 export const _Blue: Story = {
   args: {
-    label: 'Click me',
+    children: 'Click me',
     className: 'bg-blue-600 hover:bg-blue-500',
   },
 };
@@ -34,5 +34,6 @@ export const _Blue: Story = {
 export const _Error: Story = {
   args: {
     isError: true,
+    children: 'Error',
   },
 };

@@ -99,7 +99,7 @@ export const DocumentCreator = () => {
         //   project: { id: projectId, title: document.fileName },
         // } as UserFileType); // TODO: temporary, will be refactored
         reset();
-        router.push('/manage-knowledge/documents-list');
+        router.push('/settings/knowledge/documents-list');
 
         infoToast({ message: t('created-successful') });
       } else if (response.message) {
@@ -156,10 +156,11 @@ export const DocumentCreator = () => {
         <div className="mt-auto">
           <Button
             className="w-full flex justify-center md:block md:w-auto"
-            label={t('send')}
             isSubmit
             isLoading={isLoading}
-          />
+          >
+            {t('send')}
+          </Button>
         </div>
       </form>
     </Card>

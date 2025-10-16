@@ -7,12 +7,7 @@ export const CTA = () => {
 
   return (
     <div className="w-full my-4">
-      <Text
-        fontSize="lg"
-        fontWeight="semibold"
-        color="gray-700"
-        className="dark:text-gray-400"
-      >
+      <Text color="gray-700" className="dark:text-gray-400 mb-6">
         {t('call-to-action')}
       </Text>
     </div>

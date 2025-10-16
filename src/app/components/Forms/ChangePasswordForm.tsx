@@ -67,7 +67,6 @@ export const ChangePasswordForm = () => {
     <Card title="Zmień hasło" size="lg">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
           errorMessage={errors.currentPassword?.message}
           {...register('currentPassword')}
           error={errors.currentPassword}
@@ -76,7 +75,6 @@ export const ChangePasswordForm = () => {
           type="password"
         />
         <Input
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
           errorMessage={errors.confirmPassword?.message}
           {...register('newPassword')}
           error={errors.newPassword}
@@ -85,7 +83,6 @@ export const ChangePasswordForm = () => {
           type="password"
         />
         <Input
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
           errorMessage={errors.confirmPassword?.message}
           {...register('confirmPassword')}
           error={errors.confirmPassword}
@@ -95,12 +92,13 @@ export const ChangePasswordForm = () => {
         />
         <div>
           <Button
-            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            label={t('change-password')}
+            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            type="submit"
-          />
+            isSubmit={true}
+          >
+            {t('change-password')}
+          </Button>
           <ClerkErrorsInterface apiErrors={apiErrors} />
         </div>
       </form>

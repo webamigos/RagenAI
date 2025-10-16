@@ -62,45 +62,65 @@ export const useNewThread = ({
     removeValue: removeThreadId,
   } = useSessionStorage<string | null>(LOCAL_STORAGE_THREAD_KEY, null);
 
-  const handleNewThread = async (initialMessage?: string) => {
-    try {
-      dispatch({ type: 'SET_IS_LOADING', payload: true });
-      handleCloseThread(false);
-      reduxDispatch(clearMessages());
+  const handleNewThread = useCallback(
+    async (
+      initialMessage?: string,
+      passedProjectId?: number,
+      projectPublicId?: string,
+      mentionedProjectId?: number,
+      preferredModel?: string
+    ) => {
+      try {
+        dispatch({ type: 'SET_IS_LOADING', payload: true });
+        handleCloseThread(false);
+        reduxDispatch(clearMessages());
 
-      const result = await createGuestThreadAction({
-        projectId,
-        initialMessage,
-      });
+        const result = await createGuestThreadAction({
+          projectId: passedProjectId ?? projectId,
+          initialMessage,
+          mentionedProjectId,
+          preferredModel,
+        });
 
-      if (!result.success) {
-        throw new Error('Invalid response from server');
-      }
+        if (!result.success) {
+          throw new Error('Invalid response from server');
+        }
 
-      const newThreadId = result.thread.public_id;
-      setThreadId(newThreadId);
+        const newThreadId = result.thread.public_id;
+        setThreadId(newThreadId);
 
-      // Save initial message to sessionStorage if provided
-      if (initialMessage) {
-        sessionStorage.setItem(
-          SESSION_STORAGE_TEMP_MESSAGE_KEY,
-          initialMessage
+        if (initialMessage) {
+          sessionStorage.setItem(
+            SESSION_STORAGE_TEMP_MESSAGE_KEY,
+            initialMessage
+          );
+        }
+
+        startTransition(() =>
+          push(`/public/assistants/${accessToken}/threads/${newThreadId}`)
         );
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to create new thread.';
+        dispatch({ type: 'SET_ERROR', payload: errorMessage });
+        errorToast({ message: errorMessage });
+        logger.error({ err }, 'Failed to create new thread');
+      } finally {
+        dispatch({ type: 'SET_IS_LOADING', payload: false });
       }
-
-      startTransition(() =>
-        push(`/public/assistants/${accessToken}/threads/${newThreadId}`)
-      );
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to create new thread.';
-      dispatch({ type: 'SET_ERROR', payload: errorMessage });
-      errorToast({ message: errorMessage });
-      logger.error({ err }, 'Failed to create new thread');
-    } finally {
-      dispatch({ type: 'SET_IS_LOADING', payload: false });
-    }
-  };
+    },
+    [
+      dispatch,
+      handleCloseThread,
+      reduxDispatch,
+      projectId,
+      setThreadId,
+      startTransition,
+      push,
+      accessToken,
+      errorToast,
+    ]
+  );
 
   const checkExistingThread = useCallback(async () => {
     try {
@@ -121,7 +141,7 @@ export const useNewThread = ({
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  }, [accessToken, threadId]);
+  }, [accessToken, threadId, push, handleNewThread, errorToast]);
 
   useEffect(() => {
     if (!widgetMode && !pathname.includes('/threads')) {

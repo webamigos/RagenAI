@@ -101,7 +101,6 @@ export const EnterCodeForm = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Text>{t('verification-code-hint')}</Text>
         <Input
-          className="w-full px-3 py-2 border rounded-md"
           errorMessage={errors.email_code?.message}
           label={t('verification-code')}
           error={errors.email_code}
@@ -123,11 +122,13 @@ export const EnterCodeForm = () => {
           )}
         </div>
         <Button
-          className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          isLoading={isSubmitting}
-          label={t('confirm')}
           type="submit"
-        />
+          className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          isLoading={isSubmitting}
+          isSubmit={true}
+        >
+          {t('confirm')}
+        </Button>
         <ClerkErrorsInterface apiErrors={apiErrors} />
       </form>
     </div>

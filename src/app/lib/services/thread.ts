@@ -5,6 +5,7 @@ import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
 import { logger } from '../utils/logger';
 import { fetchOrganizationDefaultProjectId } from './project';
+import { ThreadDocumentUI } from '../../contracts/ThreadDocument';
 
 export const serviceName = 'thread';
 
@@ -43,9 +44,15 @@ export const findOrCreateThread = async (
 export const createNewThreadInDb = async ({
   visitorId,
   projectId,
+  mentionedProjectId,
+  preferredModel,
+  threadDocuments,
 }: {
   visitorId: string | null | undefined;
   projectId?: number;
+  mentionedProjectId?: number;
+  preferredModel?: string;
+  threadDocuments?: ThreadDocumentUI[];
 }) => {
   try {
     setSentryServiceTag(serviceName);
@@ -67,9 +74,38 @@ export const createNewThreadInDb = async ({
         organization_id: orgId,
         user_id: userId,
         project_id: projectId ?? defaultProjectId,
+        mentioned_project_id: mentionedProjectId,
         visitor_id: userId ? userId : visitorId,
+        preferred_model: preferredModel,
       },
     });
+
+    if (threadDocuments && threadDocuments.length > 0 && userId && orgId) {
+      const documentsWithUserFileId = threadDocuments.filter(
+        (doc) => doc.userFileId
+      );
+
+      if (documentsWithUserFileId.length > 0) {
+        const threadDocumentData = documentsWithUserFileId.map((doc) => ({
+          thread_id: threadRecord.id,
+          user_file_id: doc.userFileId!,
+        }));
+
+        await db.threadDocument.createMany({
+          data: threadDocumentData,
+        });
+      }
+
+      logger.info(
+        {
+          threadId: threadRecord.id,
+          totalThreadDocumentsCount: threadDocuments.length,
+          savedThreadDocumentsCount: documentsWithUserFileId.length,
+          userFileIds: documentsWithUserFileId.map((doc) => doc.userFileId),
+        },
+        'Created ThreadDocument relationships for uploaded files'
+      );
+    }
 
     return {
       public_id: threadRecord.public_id,
@@ -119,7 +155,9 @@ export const getThreadDetails = async (publicThreadId: string) => {
         created_at: true,
         visitor_id: true,
         preferred_communication_type: true,
+        preferred_model: true,
         project_id: true,
+        mentioned_project_id: true,
         project: {
           select: {
             public_id: true,
@@ -131,6 +169,81 @@ export const getThreadDetails = async (publicThreadId: string) => {
     });
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
+    throw error;
+  }
+};
+
+export const updateThreadProjectContext = async (
+  publicThreadId: string,
+  mentionedProjectId: number | null
+) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      publicThreadId,
+    });
+    setSentryContext('EXTRA_DATA', {
+      mentionedProjectId,
+    });
+
+    const updatedThread = await db.thread.update({
+      where: { public_id: publicThreadId },
+      data: { mentioned_project_id: mentionedProjectId },
+      select: {
+        id: true,
+        public_id: true,
+        mentioned_project_id: true,
+      },
+    });
+
+    logger.info(
+      {
+        threadId: publicThreadId,
+        mentionedProjectId,
+      },
+      'Thread project context updated successfully'
+    );
+
+    return updatedThread;
+  } catch (error) {
+    logger.error(
+      { err: error },
+      `Failed to update thread context ${publicThreadId}`
+    );
+    throw error;
+  }
+};
+
+export const removeThreadProjectContext = async (publicThreadId: string) => {
+  try {
+    setSentryServiceTag(serviceName);
+    setSentryContext('THREAD_ID', {
+      publicThreadId,
+    });
+
+    const updatedThread = await db.thread.update({
+      where: { public_id: publicThreadId },
+      data: { mentioned_project_id: null },
+      select: {
+        id: true,
+        public_id: true,
+        mentioned_project_id: true,
+      },
+    });
+
+    logger.info(
+      {
+        threadId: publicThreadId,
+      },
+      'Thread project context removed successfully'
+    );
+
+    return updatedThread;
+  } catch (error) {
+    logger.error(
+      { err: error },
+      `Failed to remove thread context ${publicThreadId}`
+    );
     throw error;
   }
 };

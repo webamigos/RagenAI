@@ -62,7 +62,6 @@ export const LoginForm = () => {
         type="email"
         id="email"
         {...register('email')}
-        className="w-full px-3 py-2 border rounded-md"
         label="Email"
         error={errors.email}
         errorMessage={errors.email?.message}
@@ -71,17 +70,18 @@ export const LoginForm = () => {
         type="password"
         id="password"
         {...register('password')}
-        className="w-full px-3 py-2 border rounded-md"
         label={t('Password')}
         error={errors.password}
         errorMessage={errors.password?.message}
       />
       <Button
-        className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-        isLoading={isSubmitting}
-        label={t('sign-in')}
         type="submit"
-      />
+        className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        isLoading={isSubmitting}
+        isSubmit={true}
+      >
+        {t('sign-in')}
+      </Button>
       <ClerkErrorsInterface apiErrors={apiErrors} />
     </form>
   );

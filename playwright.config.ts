@@ -32,14 +32,12 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [['list'], ['html'], ['playwright-ctrf-json-reporter', {}]],
 
-  webServer: process.env.CI
-    ? {
-        command: 'npm run dev',
-        url: baseURL,
-        timeout: 120 * 1000,
-        reuseExistingServer: true,
-      }
-    : undefined,
+  webServer: {
+    command: 'npm run start:e2e',
+    url: baseURL,
+    timeout: 120 * 1000,
+    reuseExistingServer: true,
+  },
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

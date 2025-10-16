@@ -26,7 +26,7 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
 
   return (
     <div className="h-full flex flex-col font-sans">
-      <div className="flex-grow overflow-y-auto">
+      <div className="grow overflow-y-auto">
         <ChatOutput
           messages={messages}
           isLoading={isGlobalLoading}
@@ -38,7 +38,7 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
         />
         <div ref={messagesEndDivRef} />
       </div>
-      <div className="flex-shrink-0 w-full mb-8">
+      <div className="shrink-0 w-full mb-8">
         {!isLocked() && threadId && (
           <PromptForm
             ref={promptFormRef}
@@ -47,6 +47,10 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
             responseType={ChatResponseType.TEXT}
+            currentThreadModel={undefined}
+            organizationDefaultModel=""
+            onChange={() => {}}
+            isGlobalLoading={isGlobalLoading}
           />
         )}
       </div>

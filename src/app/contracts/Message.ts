@@ -29,6 +29,17 @@ export const createMessageSchema = (t?: (key: string) => string) =>
     useKnowledge: z.boolean().optional(),
     messageType: z.enum(['TEXT', 'VOICE']).optional(),
     voiceDurationSeconds: z.number().optional(),
+    threadDocuments: z
+      .array(
+        z.object({
+          name: z.string(),
+          content: z.string(),
+          size: z.number(),
+          type: z.string(),
+          userFileId: z.string().optional(),
+        })
+      )
+      .optional(),
   });
 
 export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;
@@ -64,10 +75,28 @@ export type ThreadHistoryResponse = {
   public_id: string;
   messages: MessageDtoWithoutPublicId[];
   project_id?: number | null;
+  preferred_model?: string | null;
 };
 
 export type StreamedMessageDto = {
   content: string;
   created_at: string;
   runId: string;
+};
+
+export type ProjectContext = {
+  id: number;
+  public_id: string;
+  title: string;
+};
+
+export type ThreadContext = {
+  project: ProjectContext | null;
+  mentionedProject: ProjectContext | null;
+  mentionedProjectId: number | null;
+};
+
+export type MessagesWithContext = {
+  messages: MessageDto[];
+  threadContext: ThreadContext | null;
 };

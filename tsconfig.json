@@ -24,6 +24,8 @@
       // for backward compatibility,
       "@ragenai/common-ui/*": ["./src/libs/common-ui/*"],
       "@ragenai/common-ui": ["./src/libs/common-ui"],
+      "@ragenai/tui/*": ["./src/libs/tui/*"], // Tailwind UI
+      "@ragenai/tui": ["./src/libs/tui"], // Tailwind UI
       "@ragenai/prisma-client": ["./src/libs/db"],
 
       "@/*": ["./src/*"],

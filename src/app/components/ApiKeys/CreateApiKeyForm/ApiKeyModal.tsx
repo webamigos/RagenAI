@@ -46,8 +46,10 @@ export const ApiKeyModal = ({ isOpen, apiKey, onClose }: Props) => {
             <Button
               onClick={handleCopy}
               iconRight={isCopied ? <ClipboardChecked /> : <Clipboard />}
-              label={t('copy')}
-            />
+              plain
+            >
+              {t('copy')}
+            </Button>
           </div>
         </div>
       </DialogBody>

@@ -14,7 +14,7 @@ export const rateLimit = async (request: NextRequest) => {
   const url = request.nextUrl.pathname;
   const isApiUrl = url.startsWith('/api/v1');
   if (isApiUrl) {
-    const ip = request.ip ?? '127.0.0.1';
+    const ip = request.headers.get('x-forwarded-for') ?? '127.0.0.1';
     const key = `rate-limit:${ip}`;
 
     const current = await redis.incr(key);

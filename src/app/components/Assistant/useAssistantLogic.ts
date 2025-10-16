@@ -12,6 +12,7 @@ import {
   setResponseType,
   setMessagePlayed,
   setError,
+  setThreadContext,
 } from '@/store/assistant/assistantSlice';
 import { useAppSelector } from '@/store/hooks';
 import { useRouter, usePathname } from '@/i18n/routing';
@@ -89,7 +90,9 @@ export const useAssistantLogic = (threadId: string) => {
       const response = await fetchMessagesFromApi(threadId, userVisitorId);
       if (response) {
         dispatch(setInitialLoad(false));
-        dispatch(setMessages(response.data));
+        dispatch(setMessages(response.data.messages));
+        // Store thread context for UI display
+        dispatch(setThreadContext(response.data.threadContext));
       }
     } catch (error) {
       logger.error('Error fetching messages: %o', error);

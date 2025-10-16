@@ -1,7 +1,7 @@
 export type PropsWihLocale = {
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
 export type VectorStoreDocumentMetadata = {

@@ -1,9 +1,11 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 import { ComponentProps } from 'react';
 import { FieldError } from 'react-hook-form';
 import { Text } from '../Text';
 import { classMerge } from '../utils/cn';
-import './editor-styles.css';
+// import './editor-styles.css';
 
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 

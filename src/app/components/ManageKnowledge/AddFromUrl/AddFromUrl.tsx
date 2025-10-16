@@ -119,13 +119,12 @@ export const AddFromUrl = () => {
               <div className="mt-2">
                 <Button
                   className="px-6"
-                  label={
-                    isLoading ? t('button-processing') : t('button-process')
-                  }
-                  type="submit"
+                  isSubmit={true}
                   isLoading={isLoading}
                   disabled={isLoading}
-                />
+                >
+                  {isLoading ? t('button-processing') : t('button-process')}
+                </Button>
               </div>
             </form>
           </div>

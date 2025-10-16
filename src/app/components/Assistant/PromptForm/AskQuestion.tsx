@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { FieldError, UseFormRegister } from 'react-hook-form';
 
 import { Textarea } from '@ragenai/common-ui';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 type Props = {
   disabled: boolean;
@@ -14,6 +15,10 @@ type Props = {
   onSend: () => void;
   setPromptValue: (text: string) => void;
   value: string;
+  showFileAttachment?: boolean;
+  onFilesDrop?: (files: File[]) => void;
+  threadDocuments?: ThreadDocumentUI[];
+  onThreadDocumentRemove?: (index: number) => void;
 };
 
 export const AskQuestion = ({
@@ -25,6 +30,10 @@ export const AskQuestion = ({
   register,
   onSend,
   isUserLogged,
+  showFileAttachment,
+  onFilesDrop,
+  threadDocuments,
+  onThreadDocumentRemove,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -33,8 +42,8 @@ export const AskQuestion = ({
       autoFocus={true}
       value={value}
       onSend={onSend}
-      containerClassName="w-full md:w-11/12 mt-3"
-      className="h-10 lg:mt-0 lg:-mb-0.5"
+      containerClassName="w-full max-w-full mt-3"
+      className="h-10 lg:mt-0 lg:-mb-0.5 shadow-lg"
       errorMessage={error?.message}
       error={error}
       disabled={disabled}
@@ -43,6 +52,10 @@ export const AskQuestion = ({
       placeholder={t('enter-your-question')}
       handleResponseType={handleResponseType}
       showVoiceInput={isUserLogged}
+      showFileAttachment={showFileAttachment}
+      onFilesDrop={onFilesDrop}
+      threadDocuments={threadDocuments}
+      onThreadDocumentRemove={onThreadDocumentRemove}
     />
   );
 };

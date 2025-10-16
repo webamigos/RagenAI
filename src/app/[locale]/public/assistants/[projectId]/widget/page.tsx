@@ -1,17 +1,19 @@
 import { ChatbotWidget } from '../../../components/Chatbot/ChatbotWidget';
 
-export default function WidgetPage({
+export default async function WidgetPage({
   params,
   searchParams,
 }: {
-  params: { organizationId: string };
-  searchParams: { title: string; message: string };
+  params: Promise<{ organizationId: string }>;
+  searchParams: Promise<{ title: string; message: string }>;
 }) {
+  const { organizationId } = await params;
+  const _searchParams = await searchParams;
   return (
     <div className="w-full h-full">
       <ChatbotWidget
-        organizationId={params.organizationId}
-        searchParams={searchParams}
+        organizationId={organizationId}
+        searchParams={_searchParams}
       />
     </div>
   );

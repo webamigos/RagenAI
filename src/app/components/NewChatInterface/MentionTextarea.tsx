@@ -1,0 +1,254 @@
+'use client';
+
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Textarea } from '@ragenai/common-ui';
+import { ProjectMentionDropdown } from './ProjectMentionDropdown';
+import { validateTextFile } from '@/app/lib/utils/fileValidation';
+import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { statusToast } from '@/app/lib/utils/toast';
+import { logger } from '@/app/lib/utils/logger';
+
+import type { ComponentPropsWithRef } from 'react';
+export interface MentionedProject {
+  publicId: string;
+  title: string;
+  id?: number;
+}
+
+interface MentionTextareaProps extends ComponentPropsWithRef<typeof Textarea> {
+  onProjectMention?: (project: MentionedProject | null) => void;
+  mentionedProject?: MentionedProject | null;
+  threadDocuments?: ThreadDocumentUI[];
+  onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
+}
+
+export const MentionTextarea: React.FC<MentionTextareaProps> = ({
+  onProjectMention,
+  mentionedProject,
+  threadDocuments: externalThreadDocuments,
+  onThreadDocumentsChange,
+  value = '',
+  onChange,
+  ...textareaProps
+}) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [cursorPosition, setCursorPosition] = useState(0);
+
+  const threadDocuments = externalThreadDocuments ?? [];
+  const setThreadDocuments = onThreadDocumentsChange ?? (() => {});
+  const mentionStartRef = useRef<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { errorToast } = statusToast();
+  const handleTextChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newValue = e.target.value;
+      const cursorPos = e.target.selectionStart ?? 0;
+
+      onChange?.(e);
+
+      setCursorPosition(cursorPos);
+
+      const textBeforeCursor = newValue.slice(0, cursorPos);
+      const mentionMatch = textBeforeCursor.match(/@([^@\s]*?)$/);
+
+      if (mentionMatch) {
+        setMentionQuery(mentionMatch[1]);
+        setShowDropdown(true);
+        mentionStartRef.current = textBeforeCursor.lastIndexOf('@');
+      } else {
+        setShowDropdown(false);
+        setMentionQuery('');
+        mentionStartRef.current = null;
+      }
+
+      if (
+        mentionedProject &&
+        !newValue.includes(`@${mentionedProject.title}`)
+      ) {
+        onProjectMention?.(null);
+      }
+    },
+    [onChange, mentionedProject, onProjectMention]
+  );
+
+  const handleProjectSelect = useCallback(
+    (project: MentionedProject) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const currentValue = textarea.value;
+      let currentCursorPos = textarea.selectionStart ?? cursorPosition;
+      if (currentCursorPos === 0 && cursorPosition > 0) {
+        currentCursorPos = cursorPosition;
+      }
+
+      const mentionStartIndex = mentionStartRef.current;
+      if (mentionStartIndex === null) return;
+
+      const mentionEndIndex = mentionStartIndex + 1 + mentionQuery.length;
+
+      const newValue =
+        currentValue.slice(0, mentionStartIndex) +
+        `@${project.title}` +
+        currentValue.slice(mentionEndIndex);
+      const newCursorPos = mentionStartIndex + project.title.length + 1;
+
+      const syntheticEvent = {
+        target: { ...textarea, value: newValue },
+        currentTarget: { ...textarea, value: newValue },
+      } as unknown as React.ChangeEvent<HTMLTextAreaElement>;
+
+      onChange?.(syntheticEvent);
+
+      requestAnimationFrame(() => {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+        setCursorPosition(newCursorPos);
+      });
+
+      onProjectMention?.(project);
+      setShowDropdown(false);
+      setMentionQuery('');
+    },
+    [cursorPosition, onChange, onProjectMention, mentionQuery]
+  );
+
+  // File handling
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          resolve(event.target.result as string);
+        } else {
+          reject(new Error('Failed to read file content'));
+        }
+      };
+      reader.onerror = () =>
+        reject(new Error(`Failed to read file: ${file.name}`));
+      reader.readAsText(file, 'UTF-8');
+    });
+  };
+
+  const handleFilesDrop = useCallback(
+    async (files: File[]) => {
+      const validFiles: File[] = [];
+
+      for (const file of files) {
+        const validation = validateTextFile(file);
+        if (validation.valid) {
+          validFiles.push(file);
+        } else {
+          logger.error({ validation }, 'Error validating file');
+          errorToast({
+            message: validation.error || 'Błąd podczas wgrywania plików',
+          });
+        }
+      }
+
+      try {
+        const { uploadFiles } = await import('@/app/lib/services/api');
+
+        const formData = new FormData();
+        validFiles.forEach((file) => {
+          formData.append('files', file);
+        });
+        formData.append('thread_specific', 'true');
+
+        const uploadResponse = await uploadFiles(formData);
+
+        const newDocuments: ThreadDocumentUI[] = [];
+        for (let i = 0; i < validFiles.length; i++) {
+          const file = validFiles[i];
+          const uploadedFile = uploadResponse.files[i];
+          try {
+            const content = await readFileAsText(file);
+            newDocuments.push({
+              name: uploadedFile.fileName,
+              content: content.trim(),
+              size: uploadedFile.fileSize,
+              type: file.type || 'text/plain',
+              userFileId: uploadedFile.uniqueFileId,
+            });
+          } catch (error) {
+            logger.error({ error }, `Error reading file ${file.name}`);
+            errorToast({ message: `Błąd odczytu pliku ${file.name}` });
+          }
+        }
+
+        setThreadDocuments([...threadDocuments, ...newDocuments]);
+      } catch (error) {
+        errorToast({ message: 'Błąd podczas wgrywania plików' });
+      }
+    },
+    [threadDocuments, setThreadDocuments]
+  );
+
+  const handleThreadDocumentRemove = useCallback(
+    (index: number) => {
+      setThreadDocuments(threadDocuments.filter((_, i) => i !== index));
+    },
+    [threadDocuments, setThreadDocuments]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (showDropdown) {
+        if (e.key === 'Escape') {
+          setShowDropdown(false);
+          setMentionQuery('');
+          e.preventDefault();
+          return;
+        }
+
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          return;
+        }
+      }
+
+      textareaProps.onKeyDown?.(e);
+    },
+    [showDropdown, textareaProps]
+  );
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (textareaRef.current?.contains(target)) return;
+      if (target.closest('[data-project-dropdown]')) return;
+      setShowDropdown(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative">
+      <Textarea
+        {...textareaProps}
+        ref={textareaRef}
+        value={value}
+        onChange={handleTextChange}
+        onKeyDown={handleKeyDown}
+        showFileAttachment={true}
+        onFilesDrop={handleFilesDrop}
+        threadDocuments={threadDocuments}
+        onThreadDocumentRemove={handleThreadDocumentRemove}
+      />
+
+      {showDropdown && (
+        <ProjectMentionDropdown
+          query={mentionQuery}
+          onSelect={handleProjectSelect}
+          onClose={() => {
+            setShowDropdown(false);
+            setMentionQuery('');
+          }}
+        />
+      )}
+    </div>
+  );
+};

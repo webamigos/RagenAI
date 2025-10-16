@@ -68,7 +68,7 @@ export const UploadKnowledge = () => {
         setFiles([]);
         // refreshFiles();
         startTransition(() => {
-          push('/manage-knowledge/documents-list');
+          push('/settings/knowledge/documents-list');
         });
         refreshSettings();
       } else {
@@ -98,8 +98,9 @@ export const UploadKnowledge = () => {
           isLoading={uploading}
           isSubmit={!uploading}
           onClick={handleSend}
-          label={t('send')}
-        />
+        >
+          {t('send')}
+        </Button>
       </div>
     </Card>
   );

@@ -5,27 +5,24 @@ import { notFound } from 'next/navigation';
 import { PublicStart } from '../../components/public-start';
 
 type Props = {
-  params: {
+  params: Promise<{
     locale: string;
     projectId: string;
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     widgetMode?: boolean;
-  };
+  }>;
 };
 
-export async function generateMetadata({
-  params: { locale, projectId },
-}: Props) {
+export async function generateMetadata() {
   return {
     title: 'Publiczny chatbot',
   };
 }
 
-export default async function Index({
-  params: { locale, projectId },
-  searchParams,
-}: Props) {
+export default async function Index({ params, searchParams }: Props) {
+  const { locale, projectId } = await params;
+  const { widgetMode } = await searchParams;
   setRequestLocale(locale);
 
   // Get public project using accessToken (projectId in URL is actually the access token)
@@ -42,7 +39,7 @@ export default async function Index({
           organizationId={projectData.organizationId}
           projectId={projectData.projectId}
           accessToken={projectId}
-          widgetMode={searchParams.widgetMode}
+          widgetMode={widgetMode}
         />
       </div>
     </div>

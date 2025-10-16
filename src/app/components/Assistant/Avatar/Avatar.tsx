@@ -13,7 +13,10 @@ export const Avatar = () => {
 
   return (
     <div className="mt-auto px-4 sm:px-4 lg:px-22 pb-8">
-      Video here <Button label="Start session" onClick={handleClick} />
+      Video here{' '}
+      <Button onClick={handleClick} plain>
+        Start session
+      </Button>
     </div>
   );
 };

@@ -7,7 +7,8 @@ import { PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
 import Link from 'next/link';
 
-export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
@@ -15,9 +16,8 @@ export async function generateMetadata({ params: { locale } }: PropsWihLocale) {
   };
 }
 
-export default function ForgotPasswordPage({
-  params: { locale },
-}: PropsWihLocale) {
+export default async function ForgotPasswordPage({ params }: PropsWihLocale) {
+  const { locale } = await params;
   setRequestLocale(locale);
   const tsu = useTranslations('sign-up');
 

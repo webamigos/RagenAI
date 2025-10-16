@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { type ProjectType } from '@/app/components/Sidebar/Projects/types';
+import {
+  type ProjectType,
+  type ThreadType,
+} from '@/app/components/Sidebar/Projects/types';
 
 export type SidebarState = {
   isOpen: boolean;
@@ -43,6 +46,33 @@ export const sidebarSlice = createSlice({
     setCreateModalOpen: (state, action: PayloadAction<boolean>) => {
       state.isCreateModalOpen = action.payload;
     },
+    addThreadToProject: (
+      state,
+      action: PayloadAction<{ projectId: number; thread: ThreadType }>
+    ) => {
+      const { projectId, thread } = action.payload;
+      const project = state.projects.find((p) => (p as any).id === projectId);
+      if (project) {
+        const existingThreadIndex = project.threads.findIndex(
+          (t) => t.public_id === thread.public_id
+        );
+        if (existingThreadIndex === -1) {
+          project.threads.unshift(thread);
+        }
+      }
+    },
+    updateThreadModel: (
+      state,
+      action: PayloadAction<{ threadId: string; model: string | null }>
+    ) => {
+      const { threadId, model } = action.payload;
+      state.projects.forEach((project) => {
+        const thread = project.threads.find((t) => t.public_id === threadId);
+        if (thread) {
+          thread.preferred_model = model;
+        }
+      });
+    },
   },
 });
 
@@ -54,6 +84,8 @@ export const {
   setProjects,
   setSearchQuery,
   setCreateModalOpen,
+  addThreadToProject,
+  updateThreadModel,
 } = sidebarSlice.actions;
 
 export default sidebarSlice.reducer;

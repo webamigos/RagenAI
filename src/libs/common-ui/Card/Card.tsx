@@ -63,7 +63,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
             {collapsible && (
               <button
                 onClick={() => setCollapsed((prev) => !prev)}
-                className="ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
+                className="ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden"
                 aria-label={collapsed ? 'Expand card' : 'Collapse card'}
               >
                 {collapsed ? (

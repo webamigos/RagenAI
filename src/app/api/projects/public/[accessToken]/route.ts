@@ -5,10 +5,10 @@ import { getPublicProject } from '@/app/lib/services/project';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { accessToken: string } }
+  { params }: { params: Promise<{ accessToken: string }> }
 ) {
   try {
-    const accessToken = params.accessToken;
+    const { accessToken } = await params;
 
     if (!accessToken) {
       return NextResponse.json(

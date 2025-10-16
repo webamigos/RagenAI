@@ -29,6 +29,7 @@ import {
   setInitialLoad,
   setLimitLock,
   setError,
+  setThreadContext,
 } from '@/store/assistant/assistantSlice';
 
 const { errorToast } = statusToast();
@@ -74,7 +75,8 @@ export const usePublicAssistantLogic = (
 
       if (response) {
         dispatch(setInitialLoad(false));
-        dispatch(setMessages(response.data));
+        dispatch(setMessages(response.data.messages));
+        dispatch(setThreadContext(response.data.threadContext));
 
         // Check if we have a temporary message to process
         const tempMessage = sessionStorage.getItem(
@@ -93,7 +95,7 @@ export const usePublicAssistantLogic = (
           await handleAssistantStream({
             mode: AssistantMode.PUBLIC,
             organizationId,
-            messages: response.data,
+            messages: response.data.messages,
             userMessageId: userMessage.public_id,
             userMessage,
             t,

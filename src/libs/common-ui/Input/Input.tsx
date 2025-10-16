@@ -12,6 +12,7 @@ import {
 import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
+import { Input as TuiInput, Field, Label } from '@ragenai/tui';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -97,17 +98,14 @@ export const Input = forwardRef(
       );
     }
     return (
-      <div className={classMerge('pt-2', containerClassName)}>
+      <Field className={classMerge('pt-2', containerClassName)}>
         {label && (
-          <label
-            htmlFor={id}
-            className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300"
-          >
+          <Label htmlFor={id}>
             {label}
             {mandatory && <span className="text-red-600">*</span>}
-          </label>
+          </Label>
         )}
-        <div className={error ? 'relative mt-2 rounded-md shadow-sm' : 'mt-2'}>
+        <div className={error ? 'relative mt-2 rounded-md shadow-xs' : 'mt-2'}>
           <div className="relative flex items-center">
             {iconLeft && <span className="absolute left-3">{iconLeft}</span>}
             {isLoading ? (
@@ -119,7 +117,7 @@ export const Input = forwardRef(
                 )}
               />
             ) : (
-              <input
+              <TuiInput
                 ref={ref}
                 id={id}
                 type={inputType}
@@ -127,17 +125,7 @@ export const Input = forwardRef(
                 max={max}
                 autoComplete={autocomplete}
                 step={step}
-                className={classMerge(
-                  'block w-full py-2  dark:bg-accent-dark-500 dark:text-gray-300 text-gray-900 sm:text-sm sm:leading-6 overflow-auto',
-                  {
-                    'pl-2.5 pr-12 ring-1 ring-inset ring-primary-blue-500 dark:ring-gray-600 rounded-md cursor-pointer':
-                      type !== 'range',
-                    'text-red-900 ring-red-300 placeholder:text-red-300 focus-visible:ring-red-500 focus-visible:ring-2':
-                      error,
-                    'shadow-sm': !error,
-                  },
-                  className
-                )}
+                className={className}
                 {...rest}
               />
             )}
@@ -159,10 +147,10 @@ export const Input = forwardRef(
         </div>
         {error && !isLoading && (
           <Text
-            className="mt-4 text-sm text-red-600 dark:text-red-500"
+            className="mt-2 text-sm text-red-600 dark:text-red-500"
             id="input-error"
           >
-            {t(errorMessage ? errorMessage : error.message)}
+            {t(errorMessage || error.message || '')}
           </Text>
         )}
         {hint && !isLoading && (
@@ -173,7 +161,7 @@ export const Input = forwardRef(
             {hint}
           </Text>
         )}
-      </div>
+      </Field>
     );
   }
 );
