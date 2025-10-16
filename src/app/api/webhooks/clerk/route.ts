@@ -128,17 +128,14 @@ export async function POST(req: Request) {
         setSentryClerkOrganizationTag(clerkOrgId);
 
         try {
-          console.log('creating organization');
           const ragenOrg = await createOrganizationWithDefaultProject(
             clerkOrgId,
             clerkUserId
           );
 
-          console.log('creating trial subscription');
           await createTrialSubscription(clerkOrgId);
 
           // Todo: store relevant subscription info to clerk organization metadata
-          console.log('save organization initial metadata');
           await saveOrganizationInitialMetadata(clerkOrgId, {
             publicMetadata: {
               hasKnowledge: false,
@@ -152,7 +149,6 @@ export async function POST(req: Request) {
             `Organization ${clerkOrgId} created and configured with id: ${ragenOrg.id} and public id: ${ragenOrg.publicId}`
           );
         } catch (error) {
-          console.log('error creating organization');
           logger.error(
             { err: error },
             `Error: cannot sync organization with app ${clerkOrgId}:`
