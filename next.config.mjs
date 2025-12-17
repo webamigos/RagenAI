@@ -60,19 +60,17 @@ const nextConfig = {
     ];
   },
 
-  experimental: {
-    serverComponentsExternalPackages: [
-      'pino',
-      'pino-pretty',
-      'pino-sentry',
-      '@sentry/node',
-      '@hyzyla/pdfium',
-      '@aws-sdk',
-      '@langchain/core',
-      'langchain',
-      '@langchain/community',
-    ],
-  },
+  serverExternalPackages: [
+    'pino',
+    'pino-pretty',
+    'pino-sentry',
+    '@sentry/node',
+    '@hyzyla/pdfium',
+    '@aws-sdk',
+    '@langchain/core',
+    'langchain',
+    '@langchain/community',
+  ],
 
   webpack: (config, { isServer }) => {
     if (!isServer) {

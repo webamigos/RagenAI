@@ -16,12 +16,8 @@ import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 
-const JoyrideProvider = dynamic<JoyrideProviderProps>(
-  () =>
-    import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
-  {
-    ssr: false,
-  }
+const JoyrideProvider = dynamic<JoyrideProviderProps>(() =>
+  import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider)
 );
 
 type JoyrideProviderProps = {
