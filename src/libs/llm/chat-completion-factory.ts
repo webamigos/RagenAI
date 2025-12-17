@@ -81,7 +81,7 @@ export class ChatCompletionFactory {
   private static createGoogleInstance(
     credentials: GoogleCredentials,
     config: BaseCompletionConfig
-  ): any {
+  ): ChatGoogleGenerativeAI {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Google');
     }
