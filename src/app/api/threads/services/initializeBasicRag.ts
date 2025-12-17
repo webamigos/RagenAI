@@ -138,6 +138,12 @@ const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
       throw new Error('Organization ID is required, could not get from clerk');
     }
 
+    logger.info('creating qdrant vector store', {
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY, // staging and prod
+      collectionName: orgId,
+    });
+
     const vectorStore = await QdrantVectorStore.fromExistingCollection(
       embeddingModel,
       {
@@ -149,7 +155,15 @@ const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
 
     return vectorStore;
   } catch (error) {
-    logger.error({ err: error }, 'Error creating Qdrant vector store');
+    logger.error(
+      {
+        err: error,
+        url: process.env.QDRANT_URL,
+        apiKey: process.env.QDRANT_API_KEY, // staging and prod
+        // collectionName: orgId,
+      },
+      'Error creating Qdrant vector store'
+    );
     throw error;
   }
 };

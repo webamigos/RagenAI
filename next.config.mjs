@@ -1,6 +1,9 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+// Note: validateEnvs removed due to ESM import limitations with .ts files in .mjs
+// Consider converting next.config.mjs to next.config.ts if env validation is needed
+
 const withNextIntl = createNextIntlPlugin();
 
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
