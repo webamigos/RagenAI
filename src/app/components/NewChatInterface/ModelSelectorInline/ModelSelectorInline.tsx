@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { useUser, useOrganization } from '@clerk/nextjs';
 
 import {
   AvailableModel,
@@ -35,18 +36,30 @@ export const ModelSelectorInline = ({
   const isLoadingModels = useRef(false);
   const t = useTranslations('assistant.model-selector');
   const { errorToast } = statusToast();
+  const { organization } = useOrganization();
+  const { user } = useUser();
 
   useEffect(() => {
     const loadAvailableModels = async () => {
       if (isLoadingModels.current) return;
 
+      // Fallback pattern: get orgId from organization hook or user memberships
+      const orgId =
+        organization?.id || user?.organizationMemberships[0]?.organization.id;
+
+      if (!orgId) {
+        logger.warn('No organization ID available, cannot load models');
+        setModelsLoading(false);
+        return;
+      }
+
       try {
         isLoadingModels.current = true;
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(orgId);
         setAvailableModels(models);
       } catch (error) {
-        logger.error('Failed to load available models');
+        logger.error('Failed to load available models', error);
         errorToast({
           message: 'Failed to load available models',
         });
@@ -57,7 +70,7 @@ export const ModelSelectorInline = ({
     };
 
     loadAvailableModels();
-  }, []);
+  }, [organization?.id, user?.organizationMemberships]);
 
   useEffect(() => {
     if (!modelsLoading && availableModels.length > 0) {

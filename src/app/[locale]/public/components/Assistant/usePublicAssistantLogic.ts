@@ -87,7 +87,7 @@ export const usePublicAssistantLogic = (
             public_id: `user-${Date.now()}`,
             role: Role.USER,
             content: tempMessage,
-            created_at: new Date(),
+            created_at: new Date().toISOString(),
           };
 
           sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
@@ -151,7 +151,7 @@ export const usePublicAssistantLogic = (
       public_id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       visitorId: visitorId,
     };
 

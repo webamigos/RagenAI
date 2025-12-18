@@ -2,6 +2,7 @@
 
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { StatusCodes } from 'http-status-codes';
+import { getOrgIdFromAuthOrThrow } from '../lib/utils/auth-helpers';
 
 import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
@@ -391,7 +392,9 @@ export const saveOrganizationInitialMetadata = async (
   setSentryClerkUserTag(organizationId);
 
   try {
-    await clerkClient.organizations.updateOrganizationMetadata(organizationId, {
+    await (
+      await clerkClient()
+    ).organizations.updateOrganizationMetadata(organizationId, {
       publicMetadata,
       privateMetadata,
     });
@@ -410,7 +413,9 @@ export const getOrganizationMetadata = async (
   setSentryClerkUserTag(organizationId);
 
   try {
-    const organization = await clerkClient.organizations.getOrganization({
+    const organization = await (
+      await clerkClient()
+    ).organizations.getOrganization({
       organizationId,
     });
     return {
@@ -501,11 +506,12 @@ export const getDefaultProjectId = async () => {
 };
 
 export const getDefaultProjectPublicId = async () => {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
-  if (!orgId) {
-    throw new Error('Organization ID is required');
-  }
+  logger.info(
+    { orgId },
+    'Organization ID retrieved in getDefaultProjectPublicId'
+  );
 
   try {
     return await fetchOrganizationDefaultProjectPublicId(orgId);
@@ -517,7 +523,20 @@ export const getDefaultProjectPublicId = async () => {
 
 export const getAccountSetupStatusAction = async () => {
   try {
-    return await getAccountSetupStatus();
+    // Try to get userId from auth context
+    // This works in some contexts where currentUser() doesn't
+    let userId: string | undefined;
+    try {
+      const authResult = await auth();
+      userId = authResult.userId || undefined;
+    } catch (authError) {
+      // If auth() fails, getAccountSetupStatus will try currentUser() as fallback
+      logger.warn(
+        'Could not get userId from auth() in Server Action, will use currentUser()'
+      );
+    }
+
+    return await getAccountSetupStatus(userId);
   } catch (error) {
     logger.error({ err: error }, 'Error fetching account setup status');
     throw error;

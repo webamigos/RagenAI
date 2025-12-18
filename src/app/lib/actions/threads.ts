@@ -29,6 +29,8 @@ type ThreadAction =
     };
 
 export const createThreadAction = async (
+  orgId: string,
+  userId: string | undefined,
   projectId?: number,
   mentionedProjectId?: number,
   preferredModel?: string,
@@ -43,6 +45,8 @@ export const createThreadAction = async (
       mentionedProjectId,
       preferredModel,
       threadDocuments,
+      orgId,
+      userId,
     });
 
     return {

@@ -254,7 +254,7 @@ export const handleAssistantStream = async ({
                 public_id: id,
                 role,
                 content: accumulatingMessage,
-                created_at: new Date(),
+                created_at: new Date().toISOString(),
                 run_id: runId,
                 message_type: responseType,
               };

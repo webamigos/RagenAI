@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ThreadCommunicationType } from '@prisma/client';
 
 export type ThreadType = {
-  created_at: Date;
+  created_at: string;
   public_id: string;
   visitor_id: string | null;
   preferred_communication_type: ThreadCommunicationType;
@@ -15,7 +15,7 @@ export type ThreadType = {
 };
 
 export type ProjectType = {
-  created_at: Date;
+  created_at: string;
   public_id: string;
   title: string;
   threads: ThreadType[];

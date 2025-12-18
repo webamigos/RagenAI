@@ -10,7 +10,7 @@ interface Project {
   id: number;
   public_id: string;
   title: string;
-  created_at: Date;
+  created_at: string;
   organization_id: string | null;
 }
 

@@ -145,14 +145,24 @@ export const useNewThread = () => {
       handleCloseThread(false);
       reduxDispatch(clearMessages());
 
-      const result = user
-        ? await createThreadAction(
-            projectId,
-            mentionedProjectId,
-            preferredModel,
-            threadDocuments
-          )
-        : await createGuestThreadAction({ mentionedProjectId, preferredModel });
+      // Fallback pattern: get orgId from organization hook or user memberships
+      const orgId =
+        organization?.id || user?.organizationMemberships[0]?.organization.id;
+
+      const result =
+        user && orgId
+          ? await createThreadAction(
+              orgId,
+              user.id,
+              projectId,
+              mentionedProjectId,
+              preferredModel,
+              threadDocuments
+            )
+          : await createGuestThreadAction({
+              mentionedProjectId,
+              preferredModel,
+            });
 
       if (result.success) {
         await trackThreadCreated();
@@ -168,13 +178,13 @@ export const useNewThread = () => {
               ? [
                   {
                     content: initialMessage,
-                    created_at: new Date(),
+                    created_at: new Date().toISOString(),
                     role: 'USER' as const,
                     message_type: 'TEXT' as const,
                   },
                 ]
               : [],
-            created_at: new Date(),
+            created_at: new Date().toISOString(),
           };
 
           //this hook logic is reused for global and project-scoped threads
@@ -196,7 +206,7 @@ export const useNewThread = () => {
             }
           } else if (result.thread.project_id != null) {
             const threadForProject = {
-              created_at: new Date(),
+              created_at: new Date().toISOString(),
               public_id: threadId,
               visitor_id: user.id,
               preferred_communication_type: 'TEXT' as const,

@@ -91,7 +91,9 @@ export async function POST(req: Request) {
         setSentryServiceTag('webhook:user.created');
 
         try {
-          const { id } = await clerkClient.organizations.createOrganization({
+          const { id } = await (
+            await clerkClient()
+          ).organizations.createOrganization({
             name: organizationName,
             createdBy: userId,
           });

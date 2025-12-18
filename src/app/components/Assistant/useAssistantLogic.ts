@@ -133,7 +133,7 @@ export const useAssistantLogic = (threadId: string) => {
       public_id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       mode: data.mode,
       message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,

@@ -2,7 +2,7 @@ import { Message } from '@prisma/client';
 import { startOfDay, setHours } from 'date-fns';
 
 import db from '@ragenai/prisma-client';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '../utils/auth-helpers';
 import { fetchOrganizationDefaultProjectId } from './project';
 
 const today = new Date();
@@ -60,11 +60,7 @@ export const getUserThreads = async (
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    throw new Error('Organization id is not found');
-  }
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
 
@@ -72,7 +68,7 @@ export const getUserThreads = async (
     throw new Error('Default project ID does not exist!');
   }
 
-  return await db.thread.findMany({
+  const threads = await db.thread.findMany({
     where: {
       visitor_id: visitorId,
       project_id: defaultProjectId,
@@ -111,4 +107,14 @@ export const getUserThreads = async (
       },
     },
   });
+
+  // Convert Date objects to ISO strings for Redux serialization
+  return threads.map((thread) => ({
+    ...thread,
+    created_at: thread.created_at.toISOString(),
+    messages: thread.messages.map((msg) => ({
+      ...msg,
+      created_at: msg.created_at.toISOString(),
+    })),
+  }));
 };
