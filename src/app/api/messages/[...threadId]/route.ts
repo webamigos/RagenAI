@@ -14,7 +14,7 @@ import { logger } from '@/app/lib/utils/logger';
 export const dynamic = 'force-dynamic';
 
 type Params = {
-  params: Promise<{ threadId: string }>;
+  params: Promise<{ threadId: string[] }>;
 };
 
 /**
@@ -56,8 +56,15 @@ export const GET = async (_request: Request, { params }: Params) => {
       throw new Error('Invalid user id');
     }
 
-    const threadPublicId = threadId.split('/')[0];
-    const visitorId = threadId.split('/')[1];
+    // Validate threadId array
+    if (!threadId || threadId.length < 2) {
+      throw new Error(
+        'Invalid thread ID format: expected [threadId, visitorId]'
+      );
+    }
+
+    const threadPublicId = threadId[0];
+    const visitorId = threadId[1];
 
     setSentryServiceTag('messages');
     setSentryUserId(visitorId);

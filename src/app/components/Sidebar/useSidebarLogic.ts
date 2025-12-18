@@ -70,7 +70,9 @@ export const useSidebarLogic = () => {
   );
 
   const loadMoreThreads = useCallback(async () => {
-    if (isLoading || !hasMore || !user?.id || loadingRef.current) return;
+    if (isLoading || !hasMore || !user?.id || loadingRef.current) {
+      return;
+    }
 
     loadingRef.current = true;
     const viewportHeight = window.innerHeight;
@@ -95,7 +97,7 @@ export const useSidebarLogic = () => {
         if (threads?.length) {
           dispatch(addThreads(threads));
           dispatch(incrementSkip(threads.length));
-          dispatch(setHasMore(threads.length === limit));
+          dispatch(setHasMore(threads.length >= limit));
 
           if (threads.length === limit) {
             prefetchThreads(user.id, skip + limit, limit);
@@ -104,8 +106,9 @@ export const useSidebarLogic = () => {
           dispatch(setHasMore(false));
         }
         // break;
+      } else {
+        throw new Error(error);
       }
-      throw new Error(error);
     } catch (err) {
       retryCount++;
       if (retryCount === maxRetries) {

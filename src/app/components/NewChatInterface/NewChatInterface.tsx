@@ -98,7 +98,12 @@ export const NewChatInterface = ({
           const result = await getOrganizationSettings();
           if (result.success && result.settings) {
             setInternalOrganizationDefaultModel(result.settings.model);
-            setSelectedModel(result.settings.model);
+            // Only set selectedModel if it's still the default (hasn't been manually changed)
+            setSelectedModel((prev) =>
+              prev === (organizationDefaultModel || 'gemini-2.0-flash')
+                ? result.settings.model
+                : prev
+            );
           }
         } catch (error) {
           logger.error('Error fetching organization model', error);
@@ -113,10 +118,11 @@ export const NewChatInterface = ({
     isPublicAccess,
   ]);
 
+  // Only set the model once on mount, don't reset user's selection
   useEffect(() => {
     if (organizationDefaultModel) {
       setInternalOrganizationDefaultModel(organizationDefaultModel);
-      setSelectedModel(organizationDefaultModel);
+      // Don't reset selectedModel - user may have already chosen a different model
     }
   }, [organizationDefaultModel]);
 

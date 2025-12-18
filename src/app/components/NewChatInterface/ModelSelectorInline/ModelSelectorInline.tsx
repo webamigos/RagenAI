@@ -77,28 +77,26 @@ export const ModelSelectorInline = ({
       let modelToUse = selectedModel;
       let shouldUpdateModel = false;
 
-      if (
-        organizationDefaultModel &&
-        availableModels.some((m) => m.value === organizationDefaultModel)
-      ) {
-        modelToUse = organizationDefaultModel;
-        shouldUpdateModel = true;
-      } else if (!organizationDefaultModel) {
-        try {
-          const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
-          if (
-            savedModel &&
-            availableModels.some((m) => m.value === savedModel)
-          ) {
-            modelToUse = savedModel;
-            shouldUpdateModel = modelToUse !== selectedModel;
-          }
-        } catch (error) {
-          logger.error('Failed to load model from localStorage');
-          errorToast({
-            message: 'Failed to load model from localStorage',
-          });
+      // Priority 1: Check localStorage for user's saved preference
+      try {
+        const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+        if (savedModel && availableModels.some((m) => m.value === savedModel)) {
+          modelToUse = savedModel;
+          shouldUpdateModel = modelToUse !== selectedModel;
+        } else if (
+          // Priority 2: Use organization default only if no saved preference
+          organizationDefaultModel &&
+          availableModels.some((m) => m.value === organizationDefaultModel) &&
+          selectedModel !== organizationDefaultModel
+        ) {
+          modelToUse = organizationDefaultModel;
+          shouldUpdateModel = true;
         }
+      } catch (error) {
+        logger.error('Failed to load model from localStorage');
+        errorToast({
+          message: 'Failed to load model from localStorage',
+        });
       }
 
       if (modelToUse && shouldUpdateModel) {
@@ -114,7 +112,9 @@ export const ModelSelectorInline = ({
   ]);
 
   const handleModelChange = (newModel: string) => {
-    if (newModel === selectedModel || disabled) return;
+    if (newModel === selectedModel || disabled) {
+      return;
+    }
 
     onChange(newModel);
     setIsOpen(false);
