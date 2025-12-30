@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 import { Dialog, Text, Switch } from '@ragenai/common-ui';
 import { Collapse } from '@ragenai/common-ui/Collapse';

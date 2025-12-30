@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { RegisterForm } from './RegisterForm';
-import { SocialAuthOptions } from '../../SocialAuthOptions';
 import { ForgotPasswordLink } from '../ForgotPasswordLink';
 
 type SignUpContainerProps = {

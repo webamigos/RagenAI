@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useClerk } from '@clerk/nextjs';
+import { useClerk } from '@/app/hooks/use-auth';
 import { logger } from '@/app/lib/utils/logger';
 import { getAccountSetupStatusAction } from '../actions';
 

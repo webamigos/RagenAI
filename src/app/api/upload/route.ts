@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryClerkOrganizationTag,
@@ -26,7 +26,7 @@ export const runtime = 'nodejs';
 // I've removed uploader/organization id from request
 // it was security breach - everyone could set any organization during files transfer
 export async function POST(request: NextRequest) {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
   if (!orgId) {
     throw new Error('Invalid organization');
   }

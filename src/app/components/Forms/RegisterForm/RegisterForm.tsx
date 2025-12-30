@@ -1,71 +1,65 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSignUp } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { useRouter } from '@/i18n/routing';
-import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { Button, Input } from '@ragenai/common-ui';
+import { signUp } from '@/app/hooks/use-better-auth';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
-import { type ClerkAPIError } from '@clerk/types';
 import { addSubscriberToKit } from './actions';
-import { SocialAuthOptions } from '../../SocialAuthOptions';
 
 export const RegisterForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const locale = useLocale();
 
-  const { isLoaded, signUp } = useSignUp();
   const t = useTranslations('sign-up');
   const { push } = useRouter();
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-    setError,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema(t)),
   });
 
-  const termsValue = watch('terms');
-  useEffect(() => {
-    setTermsAccepted(!!termsValue);
-  }, [termsValue]);
-
   const onSubmit = async (data: RegistrationFormData) => {
-    if (!isLoaded) return;
     setIsSubmitting(true);
+    setError(null);
 
     const { email, password } = data;
 
     try {
-      await signUp.create({
-        emailAddress: email,
+      const result = await signUp.email({
+        email,
         password,
+        name: email.split('@')[0], // Default name from email
       });
 
-      await signUp.prepareEmailAddressVerification({
-        strategy: 'email_code',
-      });
+      if (result.error) {
+        setError(result.error.message || 'Registration failed');
+        return;
+      }
 
-      // TODO: works for non SSO login
+      // Add to newsletter if consent given
       if (data.newsletter_consent) {
         await addSubscriberToKit(email);
       }
 
-      push('/enter-code');
-    } catch (error) {
-      if (isClerkAPIResponseError(error)) {
-        setApiErrors(error.errors);
-      }
+      // Email verification is disabled (requireEmailVerification: false)
+      // User is automatically logged in after registration
+      // Use window.location.href to force full page reload and session refresh
+      window.location.href = '/';
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Registration error:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -172,6 +166,10 @@ export const RegisterForm = () => {
           </div>
         </div>
 
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>
+        )}
+
         <Button
           type="submit"
           className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -181,14 +179,7 @@ export const RegisterForm = () => {
         >
           {t('sign-up')}
         </Button>
-        <ClerkErrorsInterface apiErrors={apiErrors} />
       </form>
-
-      <SocialAuthOptions
-        setError={setError}
-        isSignUp={true}
-        termsAccepted={termsAccepted}
-      />
     </>
   );
 };

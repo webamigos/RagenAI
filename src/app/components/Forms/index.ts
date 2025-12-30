@@ -1,5 +1,5 @@
 export { ForgotPasswordForm } from './ForgotPasswordForm';
 export { ResetPasswordForm } from './ResetPasswordForm';
-export { EnterCodeForm } from './EnterCodeForm';
+// EnterCodeForm was removed during Clerk to Better Auth migration
 export { RegisterForm } from './RegisterForm';
 export { LoginForm } from './LoginForm';

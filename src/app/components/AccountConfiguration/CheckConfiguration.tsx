@@ -7,14 +7,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@ragenai/common-ui/Button';
 import { Text } from '@ragenai/common-ui/Text';
 import { useTranslations } from 'next-intl';
-import { useClerk } from '@clerk/nextjs';
+import { signOut } from '@/app/hooks/use-better-auth';
 
 const REFETCH_INTERVAL = 1000;
 const SETUP_COMPLETE_REDIRECT_PATH = '/';
 
 export const CheckConfiguration = () => {
   const router = useRouter();
-  const { signOut } = useClerk();
 
   const t = useTranslations('account-configuration');
 

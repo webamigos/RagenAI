@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useOrganization, useUser } from '@/app/hooks/use-auth';
 
 import { classMerge } from '@ragenai/common-ui/index';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@/app/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 
 import { statusToast } from '../lib/utils/toast';

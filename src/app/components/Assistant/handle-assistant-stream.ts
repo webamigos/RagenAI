@@ -18,12 +18,19 @@ import {
   ThreadHistoryResponse,
 } from '@/app/contracts/Message';
 import axios, { AxiosError } from 'axios';
-import { type UserResource } from '@clerk/types';
 import {
   ApiEvent,
   ApiEventData,
   parseSseString,
 } from '@/libs/sse/prepare-sse-message';
+
+// Better Auth user type (simplified)
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+};
 import { deleteUserMessage } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
 import { ToastProps } from '@/app/lib/utils/toast';
@@ -63,7 +70,7 @@ type CommonConfig = {
 
 type HandleAssistantStreamConfig = {
   mode: AssistantMode;
-  user?: UserResource | undefined | null;
+  user?: User | undefined | null;
   organizationId?: string;
   threadsState?: ThreadHistoryResponse[];
 } & CommonConfig;
@@ -124,7 +131,7 @@ const getStreamUrl = (
   mode: AssistantMode,
   threadId: string,
   chatType?: ChatType,
-  user?: UserResource,
+  user?: User,
   organizationId?: string
 ): string => {
   if (mode === AssistantMode.INTERNAL) {

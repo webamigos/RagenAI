@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
 
 type Props = {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect } from 'react';
-import { useUser, useOrganization, useClerk } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 
 import {
   checkIfApiKeyExists,
@@ -29,9 +29,8 @@ export const SettingsProvider = ({
 
   const { user } = useUser();
   const { organization } = useOrganization();
-  const clerk = useClerk();
 
-  const belongsToOrganization = user?.organizationMemberships.length! > 0;
+  const belongsToOrganization = !!organization?.id;
 
   const refreshSettings = async () => {
     const response = await fetchSettings();
@@ -40,15 +39,15 @@ export const SettingsProvider = ({
       setHasApiKey(newApiKeyState);
     }
 
-    if (clerk.organization) {
-      await clerk.organization.reload();
-      setHasKnowledge(!!clerk.organization.publicMetadata.hasKnowledge);
+    if (organization?.id) {
+      // Refetch organization data to get latest hasKnowledge status
+      await refreshSettings();
     }
   };
 
   useEffect(() => {
     if (user?.id && organization?.id) {
-      setHasKnowledge(!!organization.publicMetadata.hasKnowledge);
+      setHasKnowledge(!!(organization as any).hasKnowledge);
       refreshSettings();
     }
   }, [user?.id, organization?.id]);
@@ -57,9 +56,9 @@ export const SettingsProvider = ({
     let intervalId: NodeJS.Timeout;
 
     const checkIfOrganizationHasApiKey = async () => {
-      //TODO: in future revalidate clerk session to use useOrganization hook, now we use a bad hack by getting index 0 from user.organizationMemberships
-      const userOrgId = user?.organizationMemberships[0]?.organization.id;
-      const settingsResponse = await checkIfApiKeyExists(userOrgId!);
+      if (!organization?.id) return;
+
+      const settingsResponse = await checkIfApiKeyExists(organization.id);
 
       if (settingsResponse.success) {
         const apiKeyExists = settingsResponse.data.apiKeyExists;

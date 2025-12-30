@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 import { Alert } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 

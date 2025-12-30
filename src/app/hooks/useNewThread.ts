@@ -7,7 +7,7 @@ import {
   useCallback,
   useState,
 } from 'react';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';

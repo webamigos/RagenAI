@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { useRouter } from 'next/navigation';
@@ -51,7 +51,7 @@ export const useSidebarLogic = () => {
   const pathname = usePathname();
   const locale = useLocale();
   const userEmail = user?.emailAddresses[0].emailAddress;
-  const userAvatar = user?.imageUrl;
+  const userAvatar = user?.image;
   const { handleCloseThread } = useCloseThread();
   const t = useTranslations('sidebar');
   const { openSearch } = useSearchThreads();

@@ -1,6 +1,7 @@
 'use client';
 
-import { SignOutButton, useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
+import { signOut } from '@/app/hooks/use-better-auth';
 
 import { Avatar } from '@ragenai/tui/avatar';
 import {
@@ -25,7 +26,7 @@ import { useTranslations } from 'next-intl';
 export const NewSidebarFooter = () => {
   const { user } = useUser();
   const t = useTranslations('sidebar.footer');
-  const userAvatar = user?.imageUrl;
+  const userAvatar = user?.image;
   const userEmail = user?.emailAddresses[0].emailAddress;
   const userFirstName = user?.firstName;
 
@@ -61,12 +62,10 @@ export const NewSidebarFooter = () => {
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
-          <SignOutButton>
-            <DropdownItem>
-              <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
-              <DropdownLabel>{t('sign-out')}</DropdownLabel>
-            </DropdownItem>
-          </SignOutButton>
+          <DropdownItem onClick={() => signOut()}>
+            <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
+            <DropdownLabel>{t('sign-out')}</DropdownLabel>
+          </DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </SidebarFooter>

@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 import { fetchOrganizationDefaultProjectId } from './project';
 import { FileType, UserFile } from '@prisma/client';

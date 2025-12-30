@@ -1,20 +1,20 @@
 'use server';
 
 import Stripe from 'stripe';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import db from '@ragenai/prisma-client';
 import { cancelSubscriptionAtPeriodEnd } from '@/app/lib/services/stripe';
 import type { SubscriptionDetails } from './types';
 import { activateFreePlan } from '@/app/lib/services/plan';
 
 export async function getSubscriptionData(): Promise<SubscriptionDetails | null> {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return null;
   }
 
-  const organization = await db.organization.findFirst({
+  const organization = await db.internalOrganization.findFirst({
     where: {
       provider_id: orgId,
     },
@@ -33,7 +33,7 @@ export async function getSubscriptionData(): Promise<SubscriptionDetails | null>
 export async function cancelSubscription(
   subscriptionId: string | null
 ): Promise<Stripe.Subscription | null> {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId || !subscriptionId) {
     return null;
@@ -43,7 +43,7 @@ export async function cancelSubscription(
 }
 
 export async function activateInternalFreePlan() {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     throw new Error('Cannot activate free plan, no organization id found');

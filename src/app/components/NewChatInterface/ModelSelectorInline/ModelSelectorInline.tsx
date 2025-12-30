@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 
 import {
   AvailableModel,

@@ -8,7 +8,7 @@ import Joyride, {
   Step,
   CallBackProps,
 } from 'react-joyride';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { useTranslations } from 'next-intl';
@@ -44,12 +44,12 @@ export const JoyrideProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { user, isSignedIn } = useUser();
+  const { organization } = useOrganization();
   const t = useTranslations('joyride');
   const { openSidebar, closeSidebar } = useSidebar();
 
-  const onboardingComplete = user?.publicMetadata.onboardingComplete as boolean;
-  const userBelongsToOrganization =
-    user?.organizationMemberships[0]?.id !== undefined;
+  const onboardingComplete = user?.onboardingComplete as boolean;
+  const userBelongsToOrganization = !!organization?.id;
   const showOnboarding =
     !userBelongsToOrganization && !onboardingComplete && isSignedIn;
 
@@ -77,7 +77,6 @@ export const JoyrideProvider = ({
 
     if (action === ACTIONS.CLOSE || status === STATUS.SKIPPED) {
       await saveUserMetadata(user.id, metadata);
-      await user.reload();
       stopJoyride();
       return;
     }
@@ -131,7 +130,6 @@ export const JoyrideProvider = ({
       }
     } else if (status === STATUS.FINISHED) {
       await saveUserMetadata(user.id, metadata);
-      await user.reload();
       stopJoyride();
     }
   };

@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { UsagePeriod } from '@prisma/client';
 
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '../auth-helpers';
 import { PrismaClient } from '@prisma/client';
 import { logger } from '../logger';
 import { UsageMetrics } from './types';
@@ -35,7 +35,7 @@ export class UsageMetricsCore {
       return orgId;
     }
 
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error("Can't track usage, organization ID not found");
     }

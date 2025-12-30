@@ -1,7 +1,10 @@
 'use server';
 
 import * as Sentry from '@sentry/nextjs';
-import { auth } from '@clerk/nextjs/server';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 
 import {
   createOrganizationWithDefaultProject,
@@ -15,17 +18,21 @@ import {
 const serviceName = 'apiKeysList';
 
 export const fetchApiKeys = async () => {
-  const { orgId, userId, sessionId } = await auth();
-  if (!orgId) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
+
+  if (!orgId || !user?.id) {
     return {
       success: false,
-      message: 'Organization not found',
+      message: 'Organization or user not found',
     };
   }
 
+  const userId = user.id;
+
   try {
     setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+    setSentryTagsAndContextForClerk({ sessionId: undefined, orgId, userId });
 
     const keys = await fetchApiKeysFromDb(orgId);
 

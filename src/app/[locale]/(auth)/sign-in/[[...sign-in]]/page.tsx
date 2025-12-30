@@ -2,11 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { getTranslations } from 'next-intl/server';
-import { auth } from '@clerk/nextjs/server';
+import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 
 import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
-import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { redirect } from 'next/navigation';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
@@ -21,10 +20,10 @@ export async function generateMetadata({ params }: PropsWihLocale) {
 }
 
 export default async function SignInPage() {
-  const { userId } = await auth();
+  const user = await getCurrentUser();
   const t = await getTranslations('sign-in');
 
-  if (userId) {
+  if (user) {
     redirect('/');
   }
 
@@ -50,8 +49,6 @@ export default async function SignInPage() {
 
           <div className="mt-8">
             <LoginForm />
-
-            <SocialAuthOptions isSignUp={false} />
 
             <ForgotPasswordLink label={t('forgot-password')} />
           </div>

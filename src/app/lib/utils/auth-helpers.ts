@@ -1,117 +1,54 @@
-import { auth, currentUser, clerkClient } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { cache } from 'react';
 import { logger } from './logger';
 
 /**
- * Multi-strategy helper function to get organization ID from Clerk auth
+ * Get organization ID from Better Auth session
  *
- * ROOT CAUSE FIX: Next.js 15 + Clerk v6 has a bug where auth() fails in Server Actions
- * due to middleware detection issues. This function implements multiple fallback strategies.
- *
- * Strategy 1: Try auth().orgId - Works in most contexts
- * Strategy 2: Extract from auth().sessionClaims.membership - Works when orgId is not set
- * Strategy 3: Check custom header x-clerk-org-id - Set by middleware (future enhancement)
- * Strategy 4: Fallback to currentUser() + membership lookup - Works when auth() fails
- * Strategy 5: Emergency fallback with clerkClient - Guaranteed to work
+ * Much simpler than Clerk version - Better Auth works properly with Next.js 15!
+ * No need for complex fallback strategies.
  */
-export async function getOrgIdFromAuth(): Promise<string | null> {
+export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
   try {
-    // Strategy 1: Standard auth() call
-    const authResult = await auth();
-    if (authResult.orgId) {
-      logger.debug({ orgId: authResult.orgId }, 'Got orgId from auth()');
-      return authResult.orgId;
-    }
-
-    // Strategy 2: Extract from sessionClaims if available
-    if (authResult.sessionClaims?.membership) {
-      const membershipKeys = Object.keys(authResult.sessionClaims.membership);
-      if (membershipKeys.length > 0) {
-        const orgId = membershipKeys[0];
-        logger.debug({ orgId }, 'Got orgId from sessionClaims.membership');
-        return orgId;
-      }
-    }
-
-    // Strategy 3: Check custom header (set by middleware)
-    try {
-      const headersList = await headers();
-      const orgIdFromHeader = headersList.get('x-clerk-org-id');
-      if (orgIdFromHeader) {
-        logger.debug(
-          { orgId: orgIdFromHeader },
-          'Got orgId from custom header'
-        );
-        return orgIdFromHeader;
-      }
-    } catch (headerError) {
-      // Headers might not be available in all contexts
-      logger.debug('Headers not available, trying next strategy');
-    }
-
-    // Strategy 4: Fallback to currentUser() and membership lookup
-    // This is more expensive but guaranteed to work
-    const userId = authResult.userId;
-    if (!userId) {
-      logger.warn('No userId found in auth context');
-      return null;
-    }
-
-    const user = await currentUser();
-    if (!user) {
-      logger.warn('currentUser() returned null');
-      return null;
-    }
-
-    // Strategy 5: Get organization from memberships
-    const memberships = await (
-      await clerkClient()
-    ).users.getOrganizationMembershipList({
-      userId: user.id,
+    const session = await auth.api.getSession({
+      headers: await headers(),
     });
 
-    const firstOrgId = memberships.data[0]?.organization?.id;
+    if (!session?.user) {
+      logger.warn('No user session found');
+      return null;
+    }
+
+    // Better Auth stores active organization in session
+    const orgId = session.activeOrganizationId;
+
+    if (orgId) {
+      logger.debug({ orgId }, 'Got orgId from session');
+      return orgId;
+    }
+
+    // Fallback: Get user's first organization
+    const memberships = await auth.api.listOrganizations({
+      headers: await headers(),
+      query: {
+        userId: session.user.id,
+      },
+    });
+
+    const firstOrgId = memberships?.[0]?.id;
     if (firstOrgId) {
-      logger.debug(
-        { orgId: firstOrgId },
-        'Got orgId from membership lookup (fallback)'
-      );
+      logger.debug({ orgId: firstOrgId }, 'Got orgId from first membership');
       return firstOrgId;
     }
 
     logger.warn('No organization found for user');
     return null;
   } catch (error) {
-    logger.error(
-      { err: error },
-      'Error in getOrgIdFromAuth, attempting final fallback'
-    );
-
-    // Final fallback: Try currentUser() directly
-    try {
-      const user = await currentUser();
-      if (user) {
-        const memberships = await (
-          await clerkClient()
-        ).users.getOrganizationMembershipList({
-          userId: user.id,
-        });
-        const firstOrgId = memberships.data[0]?.organization?.id;
-        if (firstOrgId) {
-          logger.info(
-            { orgId: firstOrgId },
-            'Got orgId from emergency fallback'
-          );
-          return firstOrgId;
-        }
-      }
-    } catch (fallbackError) {
-      logger.error({ err: fallbackError }, 'Emergency fallback also failed');
-    }
-
+    logger.error({ err: error }, 'Error in getOrgIdFromAuth');
     return null;
   }
-}
+});
 
 /**
  * Helper function that throws if no org ID is found
@@ -124,4 +61,71 @@ export async function getOrgIdFromAuthOrThrow(): Promise<string> {
   }
 
   return orgId;
+}
+
+/**
+ * Get current user from Better Auth session
+ */
+export const getCurrentUser = cache(async () => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    return session?.user || null;
+  } catch (error) {
+    logger.error({ err: error }, 'Error getting current user');
+    return null;
+  }
+});
+
+/**
+ * Get current user ID
+ */
+export const getCurrentUserId = cache(async (): Promise<string | null> => {
+  const user = await getCurrentUser();
+  return user?.id || null;
+});
+
+/**
+ * Check if user has specific role in organization
+ */
+export async function hasOrganizationRole(
+  userId: string,
+  organizationId: string,
+  role: 'owner' | 'admin' | 'member'
+): Promise<boolean> {
+  try {
+    const org = await auth.api.getFullOrganization({
+      headers: await headers(),
+      query: { organizationId },
+    });
+
+    const member = org?.members?.find((m: any) => m.userId === userId);
+    return member?.role === role;
+  } catch (error) {
+    logger.error({ err: error }, 'Error checking organization role');
+    return false;
+  }
+}
+
+/**
+ * Check if user is admin or owner
+ */
+export async function isOrganizationAdmin(
+  userId: string,
+  organizationId: string
+): Promise<boolean> {
+  try {
+    const org = await auth.api.getFullOrganization({
+      headers: await headers(),
+      query: { organizationId },
+    });
+
+    const member = org?.members?.find((m: any) => m.userId === userId);
+    return member?.role === 'admin' || member?.role === 'owner';
+  } catch (error) {
+    logger.error({ err: error }, 'Error checking admin role');
+    return false;
+  }
 }

@@ -1,9 +1,16 @@
 import { useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Role, MessageContentType } from '@prisma/client';
-import { useUser } from '@clerk/nextjs';
-import { type UserResource } from '@clerk/types';
+import { useUser } from '@/app/hooks/use-auth';
 import { useDispatch } from 'react-redux';
+
+// Better Auth user type (simplified)
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+};
 import { setRecording } from '@/store/voice/voiceSlice';
 import {
   setMessages,
@@ -168,7 +175,7 @@ export const useAssistantLogic = (threadId: string) => {
         data,
         chatType:
           data.mode === 'conversation' ? ChatType.CONVERSATION : ChatType.RAG,
-        user: user as unknown as UserResource,
+        user: user as unknown as User,
         reduxDispatch: dispatch,
       });
     } catch {

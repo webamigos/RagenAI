@@ -1,1 +1,0 @@
-export { ManageOrganization } from './ManageOrganization';

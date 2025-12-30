@@ -12,7 +12,7 @@ import {
 import { logger } from '../utils/logger';
 import { createAndStoreMessage } from '../services/message';
 import { getVisitorIdFromCookie } from '../services/cookies';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '../utils/auth-helpers';
 import { ThreadDocumentUI } from '../../contracts/ThreadDocument';
 
 type ThreadAction =
@@ -128,7 +128,7 @@ export const updateThreadContextAction = async (
   try {
     setSentryServiceTag('thread-context');
 
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       return {
         success: false,
@@ -205,7 +205,7 @@ export const removeThreadContextAction = async (
   try {
     setSentryServiceTag('thread-context');
 
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       return {
         success: false,

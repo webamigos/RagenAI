@@ -10,7 +10,7 @@ import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 import { ModelSelector } from './ModelSelector';
 
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/app/contracts/Message';
@@ -255,7 +255,6 @@ export const Assistant = ({ threadId }: Props) => {
               {!isPublicAccess && (
                 <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
                   <ModelSelector
-                    threadId={threadId}
                     currentModel={currentThreadModel || undefined}
                     organizationDefaultModel={organizationDefaultModel}
                     onChange={handleModelChange}

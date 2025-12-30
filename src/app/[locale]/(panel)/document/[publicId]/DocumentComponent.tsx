@@ -4,7 +4,7 @@ import React, { useEffect, useReducer } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@/app/hooks/use-auth';
 import MarkdownIt from 'markdown-it';
 import TurndownService from 'turndown';
 import { useTranslations } from 'next-intl';

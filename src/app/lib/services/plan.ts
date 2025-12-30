@@ -24,7 +24,7 @@ export async function createTrialSubscription(providerId: string) {
   const now = new Date();
   const trialEnd = new Date(now.setDate(now.getDate() + TRIAL_DAYS));
 
-  const organization = await db.organization.findFirst({
+  const organization = await db.internalOrganization.findFirst({
     where: {
       provider_id: providerId,
     },
@@ -62,7 +62,7 @@ export async function activateFreePlan(providerId: string) {
     throw new Error('Free plan not found');
   }
 
-  const organization = await db.organization.findFirst({
+  const organization = await db.internalOrganization.findFirst({
     where: {
       provider_id: providerId,
     },
@@ -116,7 +116,7 @@ export async function activateFreePlan(providerId: string) {
 }
 
 export async function checkIfOrganizationPlanIsExpired(organizationId: string) {
-  const organization = await db.organization.findFirst({
+  const organization = await db.internalOrganization.findFirst({
     where: {
       provider_id: organizationId,
     },
@@ -223,7 +223,7 @@ export async function extractSubscriptionData(
   const priceId = items[0].price.id;
   const status = data.status?.toUpperCase() as SubscriptionStatus;
 
-  const organization = await db.organization.findFirst({
+  const organization = await db.internalOrganization.findFirst({
     where: {
       provider_id: organizationId,
     },
@@ -279,7 +279,7 @@ export async function handleSubscriptionDelete(data: Stripe.Subscription) {
 async function checkIfOrganizationHasSubscription(
   organizationId: string
 ): Promise<Subscription | null> {
-  const organization = await db.organization.findFirst({
+  const organization = await db.internalOrganization.findFirst({
     where: {
       provider_id: organizationId,
     },

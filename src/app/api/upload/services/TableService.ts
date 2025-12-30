@@ -5,7 +5,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { VECTOR_STORE_TABLE_NAME } from '@/libs/db/constants/vectorStore';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { UserFile } from '@prisma/client';
@@ -17,7 +17,7 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
       fileId,
     });
 
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error('Invalid organization!');
     }

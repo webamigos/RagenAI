@@ -1,6 +1,7 @@
-import { ManageOrganization } from '@/app/components/MyProfile/OrganizationProfile';
 import { getTranslations } from 'next-intl/server';
 import { getSubscriptionData } from '../../subscription/actions';
+import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { redirect } from 'next/navigation';
 
 type Props = {
   params: Promise<{
@@ -21,16 +22,32 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-const FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION =
-  !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
-
 export default async function OrganizationProfilePage() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/sign-in');
+  }
+
   const subscription = await getSubscriptionData();
 
+  // TODO: Create Better Auth organization management UI
   return (
-    <ManageOrganization
-      allowAddToOrganization={FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION}
-      subscription={subscription}
-    />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Organization Profile</h1>
+      {subscription && (
+        <div className="space-y-2 mb-4">
+          <p>
+            <strong>Subscription Status:</strong> {subscription.status}
+          </p>
+          <p>
+            <strong>Plan:</strong> {subscription.plan?.name}
+          </p>
+        </div>
+      )}
+      <p className="text-sm text-gray-500">
+        Organization management UI is being migrated to Better Auth.
+      </p>
+    </div>
   );
 }

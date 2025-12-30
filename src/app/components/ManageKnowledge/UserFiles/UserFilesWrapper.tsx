@@ -8,7 +8,7 @@ import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { deleteFileAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useSettings } from '@/app/hooks/useSettings';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
