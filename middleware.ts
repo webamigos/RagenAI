@@ -1,6 +1,5 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth'; // Server instance - no HTTP calls!
 
 import { routing } from './i18n/routing';
 
@@ -33,10 +32,8 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get session from Better Auth
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
+  // Check if session cookie exists (lightweight check without DB query)
+  const sessionCookie = request.cookies.get('better-auth.session_token');
 
   // Public routes whitelist - allow unauthenticated access
   const publicRoutes = [
@@ -46,15 +43,17 @@ export default async function middleware(request: NextRequest) {
     '/forgot-password',
     '/reset-password',
     '/public',
+    '/account-configuration',
   ];
   const isPublic = publicRoutes.some((route) => url.includes(route));
 
   if (isPublic) {
-    return handleI18nRouting(request);
+    return await handleI18nRouting(request);
   }
 
-  // Protected routes - require authentication
-  if (!session?.user) {
+  // Protected routes - require session cookie to exist
+  // (actual authentication will be verified in Server Components/layouts)
+  if (!sessionCookie) {
     // Extract locale from current URL
     const localeMatch = url.match(LOCALE_PREFIX_REGEX);
     const locale = localeMatch ? localeMatch[1] : 'en';
@@ -62,6 +61,7 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(signInUrl, request.url));
   }
 
-  // User is authenticated, allow request through
-  return handleI18nRouting(request);
+  // Session cookie exists, allow request through
+  // Server Components will verify actual session validity
+  return await handleI18nRouting(request);
 }

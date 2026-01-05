@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
 import { signIn } from '@/app/hooks/use-better-auth';
+import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
 import { type LoginFormData, loginSchema } from './schema';
 
@@ -42,8 +43,18 @@ export const LoginForm = () => {
         return;
       }
 
-      // Better Auth automatically handles organization activation
-      // Redirect to home
+      // Finalize user onboarding (set activeOrganizationId + trial subscription)
+      try {
+        await finalizeUserOnboarding();
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          'Onboarding finalization failed, relying on fallback:',
+          err
+        );
+        // Continue anyway - middleware/account-configuration will handle it
+      }
+
       push('/');
     } catch (err) {
       setError('An unexpected error occurred');

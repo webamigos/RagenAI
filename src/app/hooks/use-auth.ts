@@ -27,6 +27,7 @@ export function useAuth() {
 
   return {
     userId: session?.user?.id || null,
+    // @ts-ignore - Better Auth types don't expose activeOrganizationId yet
     orgId: session?.activeOrganizationId || null,
     isLoaded: !isPending,
     isSignedIn: !!session?.user,
@@ -47,42 +48,10 @@ export function useOrganization() {
     isLoaded: !isPending,
     membership: org
       ? {
-          role: org.role,
-          permissions: org.permissions || [],
-        }
-      : null,
-  };
-}
-
-/**
- * Compatibility stub for Clerk's useClerk hook
- *
- * Provides minimal compatibility for code that needs to be migrated
- * TODO: Remove this once all Clerk-specific code is fully migrated
- */
-export function useClerk() {
-  const { data: org } = useActiveOrganization();
-
-  return {
-    // Stub for clerk.setActive() - Better Auth handles this differently
-    setActive: async ({ organization }: { organization?: string }) => {
-      // eslint-disable-next-line no-console
-      console.warn(
-        '[useClerk] setActive is deprecated - Better Auth handles organization switching differently'
-      );
-      // TODO: Implement Better Auth organization switching if needed
-    },
-    // Stub for clerk.organization
-    organization: org
-      ? {
-          publicMetadata: (org as any).publicMetadata || {},
-          reload: async () => {
-            // eslint-disable-next-line no-console
-            console.warn(
-              '[useClerk] organization.reload() is deprecated - use refetch instead'
-            );
-            // TODO: Implement refetch logic if needed
-          },
+          // @ts-ignore - Better Auth types don't expose role/permissions yet
+          role: (org as any).role,
+          // @ts-ignore
+          permissions: (org as any).permissions || [],
         }
       : null,
   };

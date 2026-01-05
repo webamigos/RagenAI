@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { useOrganization, useUser } from '@/app/hooks/use-auth';
+import { useOrganization, useUser, useAuth } from '@/app/hooks/use-auth';
 
 import { classMerge } from '@ragenai/common-ui/index';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
@@ -44,6 +44,7 @@ export const NewChatInterface = ({
   const t = useTranslations('Index');
   const { organization } = useOrganization();
   const { user } = useUser();
+  const { orgId: sessionOrgId } = useAuth(); // Get orgId from session.activeOrganizationId
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
@@ -88,10 +89,9 @@ export const NewChatInterface = ({
 
   useEffect(() => {
     const getOrganizationModel = async () => {
-      // Fallback pattern: use organization?.id from useOrganization() hook,
-      // or get it from user.organizationMemberships[0] if not available
-      const orgId =
-        organization?.id || user?.organizationMemberships[0]?.organization.id;
+      // Get orgId from organization hook or session.activeOrganizationId
+      // (activeOrganizationId is set by finalizeUserOnboarding during login/registration)
+      const orgId = organization?.id || sessionOrgId;
 
       if (!organizationDefaultModel && orgId && !isPublicAccess) {
         try {
@@ -114,7 +114,7 @@ export const NewChatInterface = ({
   }, [
     organizationDefaultModel,
     organization?.id,
-    user?.organizationMemberships,
+    sessionOrgId,
     isPublicAccess,
   ]);
 

@@ -21,6 +21,7 @@ export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
     }
 
     // Better Auth stores active organization in session
+    // @ts-ignore - Better Auth types don't expose activeOrganizationId yet
     const orgId = session.activeOrganizationId;
 
     if (orgId) {
@@ -29,11 +30,9 @@ export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
     }
 
     // Fallback: Get user's first organization
-    const memberships = await auth.api.listOrganizations({
+    // @ts-ignore - Better Auth types don't expose listOrganizations yet
+    const memberships = await (auth.api as any).listOrganizations({
       headers: await headers(),
-      query: {
-        userId: session.user.id,
-      },
     });
 
     const firstOrgId = memberships?.[0]?.id;
@@ -96,7 +95,8 @@ export async function hasOrganizationRole(
   role: 'owner' | 'admin' | 'member'
 ): Promise<boolean> {
   try {
-    const org = await auth.api.getFullOrganization({
+    // @ts-ignore - Better Auth types don't expose getFullOrganization yet
+    const org = await (auth.api as any).getFullOrganization({
       headers: await headers(),
       query: { organizationId },
     });
@@ -117,7 +117,8 @@ export async function isOrganizationAdmin(
   organizationId: string
 ): Promise<boolean> {
   try {
-    const org = await auth.api.getFullOrganization({
+    // @ts-ignore - Better Auth types don't expose getFullOrganization yet
+    const org = await (auth.api as any).getFullOrganization({
       headers: await headers(),
       query: { organizationId },
     });

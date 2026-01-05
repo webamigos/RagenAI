@@ -50,7 +50,7 @@ export const useSidebarLogic = () => {
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const locale = useLocale();
-  const userEmail = user?.emailAddresses[0].emailAddress;
+  const userEmail = user?.email; // Better Auth: email is a direct string property
   const userAvatar = user?.image;
   const { handleCloseThread } = useCloseThread();
   const t = useTranslations('sidebar');

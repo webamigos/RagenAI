@@ -7,7 +7,7 @@ import {
   useCallback,
   useState,
 } from 'react';
-import { useUser, useOrganization } from '@/app/hooks/use-auth';
+import { useUser, useOrganization, useAuth } from '@/app/hooks/use-auth';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
@@ -70,6 +70,7 @@ export const useNewThread = () => {
   );
   const { organization } = useOrganization();
   const { user } = useUser();
+  const { orgId: sessionOrgId } = useAuth(); // Get orgId from session.activeOrganizationId
   const { push } = useRouter();
   const pathname = usePathname();
   const { handleCloseThread } = useCloseThread();
@@ -145,9 +146,9 @@ export const useNewThread = () => {
       handleCloseThread(false);
       reduxDispatch(clearMessages());
 
-      // Fallback pattern: get orgId from organization hook or user memberships
-      const orgId =
-        organization?.id || user?.organizationMemberships[0]?.organization.id;
+      // Get orgId from organization hook or session.activeOrganizationId
+      // (activeOrganizationId is set by finalizeUserOnboarding during login/registration)
+      const orgId = organization?.id || sessionOrgId;
 
       const result =
         user && orgId

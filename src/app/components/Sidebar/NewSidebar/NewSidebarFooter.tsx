@@ -27,8 +27,8 @@ export const NewSidebarFooter = () => {
   const { user } = useUser();
   const t = useTranslations('sidebar.footer');
   const userAvatar = user?.image;
-  const userEmail = user?.emailAddresses[0].emailAddress;
-  const userFirstName = user?.firstName;
+  const userEmail = user?.email; // Better Auth: email is a direct string property
+  const userFirstName = user?.name; // Better Auth: uses 'name' instead of 'firstName'
 
   return (
     <SidebarFooter>

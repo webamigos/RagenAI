@@ -120,9 +120,9 @@ async function getBetterAuthOrganizationId(
   try {
     logger.info({ userId }, 'Fetching Better Auth organization memberships');
 
-    const memberships = await auth.api.listOrganizations({
+    // @ts-ignore - Better Auth types don't expose listOrganizations yet
+    const memberships = await (auth.api as any).listOrganizations({
       headers: await headers(),
-      query: { userId },
     });
 
     logger.info(

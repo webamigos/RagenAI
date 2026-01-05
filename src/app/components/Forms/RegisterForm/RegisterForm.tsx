@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Button, Input } from '@ragenai/common-ui';
 import { signUp } from '@/app/hooks/use-better-auth';
+import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { addSubscriberToKit } from './actions';
@@ -52,8 +53,20 @@ export const RegisterForm = () => {
 
       // Email verification is disabled (requireEmailVerification: false)
       // User is automatically logged in after registration
+      // Finalize user onboarding (set activeOrganizationId + trial subscription)
+      try {
+        await finalizeUserOnboarding();
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          'Onboarding finalization failed, relying on fallback:',
+          err
+        );
+        // Continue anyway - middleware/account-configuration will handle it
+      }
+
       // Use window.location.href to force full page reload and session refresh
-      window.location.href = '/';
+      window.location.href = `/${locale}/`;
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Registration error:', err);
