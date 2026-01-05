@@ -120,7 +120,8 @@ export class UsageMetricsCore {
 
   private async getCurrentSubscription() {
     const organizationId = await this.getOrganizationId();
-    const org = await this.dbClient.organization.findUnique({
+    // organizationId from Better Auth maps to InternalOrganization.provider_id
+    const org = await this.dbClient.internalOrganization.findUnique({
       where: { provider_id: organizationId },
       include: { subscription: true },
     });
@@ -166,8 +167,8 @@ export class UsageMetricsCore {
     const organizationId = await this.getOrganizationId();
     logger.info({ organizationId, metric, increment }, 'Tracking usage');
 
-    // Get current subscription for the organization
-    const org = await this.dbClient.organization.findUnique({
+    // organizationId from Better Auth maps to InternalOrganization.provider_id
+    const org = await this.dbClient.internalOrganization.findUnique({
       where: { provider_id: organizationId },
       include: { subscription: true },
     });

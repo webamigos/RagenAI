@@ -1,6 +1,6 @@
 import { ComponentProps } from 'react';
 import { ChatBubbleLeftIcon } from '@heroicons/react/20/solid';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 import {
   SidebarHeading,
@@ -30,7 +30,7 @@ export const TUIThreadsSection = ({
   lastThreadElementRef,
 }: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
-
+  const locale = useLocale();
   const t = useTranslations('sidebar.threads');
   const nonEmptyCategories = threadCategories.filter((c) => c.threads?.length);
 
@@ -84,7 +84,7 @@ export const TUIThreadsSection = ({
                       role="listitem"
                     >
                       <SidebarItem
-                        href={`/threads/${thread.public_id}`}
+                        href={`/${locale}/threads/${thread.public_id}`}
                         current={isActive}
                         onClick={() => closeSidebar()}
                         aria-label={`Thread: ${contentPreview}`}

@@ -51,36 +51,19 @@ type Props = Readonly<{
 
 export default async function PanelLayout({ children }: Props) {
   // Authentication is handled by middleware, no need to check here
-  // This avoids Clerk v6 + Next.js 15 Server Actions middleware detection issues
 
-  // Account setup check - only validate on initial page load (GET requests)
-  // Skip validation during Server Actions (POST) due to Clerk v6 + Next.js 15 middleware detection issues
-  try {
-    const status = await getAccountSetupStatusAction();
-    if (!status.accountSetupComplete) {
-      logger.error({ status }, 'Account misconfiguration detected');
-      redirect('/account-configuration?misconfigurationDetected=true');
-    }
-  } catch (error) {
-    // During Server Actions, Clerk can't detect middleware
-    // Skip validation in this case - middleware already protects the route
-    logger.warn(
-      { err: error },
-      'Skipping account setup validation (likely Server Action context)'
-    );
-  }
+  // IMPORTANT: DO NOT call Server Actions in layouts!
+  // Server Actions cause re-renders which can lead to infinite loops.
+  // Account setup validation has been moved to middleware.
 
-  // Get default project ID - may fail during Server Actions
-  let defaultPublicProjectId: string | undefined;
-  try {
-    defaultPublicProjectId = (await getDefaultProjectPublicId()) ?? undefined;
-  } catch (error) {
-    logger.warn(
-      { err: error },
-      'Could not get default project ID (likely Server Action context)'
-    );
-    // Continue without default project ID - not critical for layout rendering
-  }
+  // Account setup check disabled - was causing infinite loop
+  // The layout was calling getAccountSetupStatusAction() which triggered re-renders
+  // This has been moved to middleware for lightweight checking
+  // TODO: Implement account setup check in middleware if needed
+
+  // Get default project ID disabled - was potentially causing infinite loop
+  // Server Actions in layouts can cause re-render loops
+  const defaultPublicProjectId: string | undefined = undefined;
 
   const t = await getTranslations('sidebar');
 

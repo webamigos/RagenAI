@@ -76,6 +76,24 @@ export async function finalizeUserOnboarding() {
         );
         await createOrganizationWithDefaultProject(orgId, userId);
 
+        // Set default vector store (qdrant for local dev, can be changed in settings)
+        // This prevents defaulting to Supabase which may not be available
+        const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+        await db.organization.update({
+          where: { id: orgId },
+          data: {
+            vectorStore: defaultVectorStore,
+            metadata: {
+              vector_store: defaultVectorStore,
+            },
+          },
+        });
+
+        logger.info(
+          { userId, orgId, vectorStore: defaultVectorStore },
+          'Set default vector store for new organization'
+        );
+
         // Set firstOrg to the created organization
         firstOrg = { id: orgId, name: `${userName}'s Organization` };
       } catch (createError) {
@@ -92,26 +110,26 @@ export async function finalizeUserOnboarding() {
     }
 
     // Set active organization in session
-    // NOTE: Better Auth organization plugin provides setActiveOrganization
-    // Using 'as any' to bypass TypeScript errors until types are fixed
+    // Use Better Auth API to properly update both database and session cookie
     try {
-      await (auth.api as any).setActiveOrganization({
+      await auth.api.setActiveOrganization({
+        body: {
+          organizationId: firstOrg.id,
+        },
         headers: await headers(),
-        body: { organizationId: firstOrg.id },
       });
 
       logger.info(
         { userId, orgId: firstOrg.id },
         'Set activeOrganizationId via Better Auth API'
       );
-    } catch (err) {
-      // Fallback: Update Session table directly
-      logger.warn(
-        { userId, orgId: firstOrg.id, err },
-        'setActiveOrganization not available, using direct Prisma update'
+    } catch (setActiveError) {
+      logger.error(
+        { err: setActiveError, userId, orgId: firstOrg.id },
+        'Failed to set active organization via API, trying direct update'
       );
 
-      // Find user's session and update activeOrganizationId
+      // Fallback to direct Prisma update if Better Auth API fails
       const userSessions = await db.session.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
@@ -126,8 +144,11 @@ export async function finalizeUserOnboarding() {
 
         logger.info(
           { userId, orgId: firstOrg.id, sessionId: userSessions[0].id },
-          'Set activeOrganizationId via direct Prisma update'
+          'Set activeOrganizationId via direct Prisma update fallback'
         );
+      } else {
+        logger.error({ userId }, 'No session found for user');
+        throw new Error('No session found for user');
       }
     }
 

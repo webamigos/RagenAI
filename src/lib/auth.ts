@@ -161,6 +161,19 @@ export const auth = betterAuth({
               ragenOrgId: ragenOrg.id,
             });
 
+            // Set default vector store (qdrant for local dev, can be changed in settings)
+            const defaultVectorStore =
+              process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+            await db.organization.update({
+              where: { id: org.data!.id },
+              data: {
+                vectorStore: defaultVectorStore,
+                metadata: {
+                  vector_store: defaultVectorStore,
+                },
+              },
+            });
+
             // TEMPORARILY COMMENTED: Will be moved to Server Action in FAZA 2
             // Create trial subscription
             // await createTrialSubscription(org.data!.id);

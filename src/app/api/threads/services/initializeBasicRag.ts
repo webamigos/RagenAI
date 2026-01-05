@@ -117,7 +117,9 @@ export const initializeRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
+        // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
+        // QdrantVectorStore needs filter passed to asRetriever()
+        metadataFilter: isSupabaseVectorStore ? undefined : filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',

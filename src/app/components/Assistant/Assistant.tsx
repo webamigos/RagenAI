@@ -136,10 +136,20 @@ export const Assistant = ({ threadId }: Props) => {
 
   useEffect(() => {
     const getOrganizationModel = async () => {
+      // Only fetch if user is signed in
+      if (!user?.id) {
+        return;
+      }
+
       try {
         const result = await getOrganizationSettings();
         if (result.success && result.settings) {
           setOrganizationDefaultModel(result.settings.model);
+        } else {
+          logger.error(
+            { error: result.error },
+            'Failed to fetch organization settings'
+          );
         }
       } catch (error) {
         logger.error(
@@ -149,7 +159,8 @@ export const Assistant = ({ threadId }: Props) => {
       }
     };
     getOrganizationModel();
-  }, [organization?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   useEffect(() => {
     const fetchThreadModel = async () => {

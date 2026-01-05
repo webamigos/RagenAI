@@ -39,10 +39,9 @@ export const SettingsProvider = ({
       setHasApiKey(newApiKeyState);
     }
 
-    if (organization?.id) {
-      // Refetch organization data to get latest hasKnowledge status
-      await refreshSettings();
-    }
+    // Removed recursive call - was causing infinite loop
+    // The organization data doesn't need to be refetched here
+    // as it's already being watched by useEffect dependencies
   };
 
   useEffect(() => {
