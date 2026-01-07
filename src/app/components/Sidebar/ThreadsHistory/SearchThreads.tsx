@@ -1,6 +1,6 @@
 import React, { useReducer, useRef, useEffect } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 import { Input } from '@ragenai/tui/input';
 import { Text } from '@ragenai/tui/text';
@@ -21,7 +21,6 @@ export const SearchThreads = React.forwardRef<
   const [state, dispatch] = useReducer(reducer, initialState);
   const { query, results, suggestions, isLoading, hasSearched } = state;
   const { closeSearch, isSearchOpen } = useSearchThreads();
-  const locale = useLocale();
 
   const { errorToast } = statusToast();
   const t = useTranslations('search-threads');
@@ -119,7 +118,7 @@ export const SearchThreads = React.forwardRef<
             {suggestions.map((suggestion) => (
               <SidebarItem
                 key={suggestion.id}
-                href={`/${locale}/threads/${suggestion.id}`}
+                href={`/threads/${suggestion.id}`}
                 onClick={() => handleSuggestionClick(suggestion.id)}
               >
                 {suggestion.title}

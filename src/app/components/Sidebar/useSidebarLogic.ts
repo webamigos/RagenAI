@@ -2,7 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';

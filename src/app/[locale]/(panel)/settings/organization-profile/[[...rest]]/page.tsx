@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getSubscriptionData } from '../../subscription/actions';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/routing';
 
 type Props = {
   params: Promise<{

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useOrganization } from '@/app/hooks/use-auth';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 import { statusToast } from '../lib/utils/toast';
 import { uploadProjectFiles } from '../lib/services/api';

@@ -3,7 +3,7 @@
 import { useAccountSetupStatus } from '@/app/hooks/useAccountConfigurationStatus';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
 import { Text } from '@ragenai/common-ui/Text';
 import { useTranslations } from 'next-intl';

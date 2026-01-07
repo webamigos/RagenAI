@@ -3,7 +3,7 @@ import {
   getDefaultProjectPublicId,
 } from '@/app/actions';
 
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/routing';
 import { logger } from '@/app/lib/utils/logger';
 
 import { Avatar } from '@ragenai/tui/avatar';

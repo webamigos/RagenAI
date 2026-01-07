@@ -1,14 +1,12 @@
 /**
- * TODO: Update this component to use your client-side framework's link
- * component. We've provided examples of how to do this for Next.js, Remix, and
- * Inertia.js in the Catalyst documentation:
- *
- * https://catalyst.tailwindui.com/docs#client-side-router-integration
+ * Updated to use next-intl's localized Link component for automatic locale handling.
+ * This ensures all links across the application maintain the current locale.
  */
 
 import * as Headless from '@headlessui/react';
 import React, { forwardRef } from 'react';
-import NextLink, { type LinkProps } from 'next/link';
+import { Link as I18nLink } from '@/i18n/routing';
+import type { LinkProps } from 'next/link';
 
 export const Link = forwardRef(function Link(
   props: LinkProps & React.ComponentPropsWithoutRef<'a'>,
@@ -16,7 +14,7 @@ export const Link = forwardRef(function Link(
 ) {
   return (
     <Headless.DataInteractive>
-      <NextLink {...props} ref={ref} />
+      <I18nLink {...props} ref={ref} />
     </Headless.DataInteractive>
   );
 });

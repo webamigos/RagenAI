@@ -49,7 +49,11 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider timeZone={timezone} messages={messages}>
+    <NextIntlClientProvider
+      locale={locale}
+      timeZone={timezone}
+      messages={messages}
+    >
       <html lang={locale} className="h-full" suppressHydrationWarning>
         {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
         <body className={`${interFont.className} h-full`}>

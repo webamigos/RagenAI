@@ -1,13 +1,12 @@
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { Link, redirect } from '@/i18n/routing';
 
 import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
 import { PropsWihLocale } from '@/app/lib/types/types';
-import { redirect } from 'next/navigation';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
