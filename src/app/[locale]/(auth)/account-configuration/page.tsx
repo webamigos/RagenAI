@@ -1,16 +1,22 @@
 'use client';
 
 import Image from 'next/image';
+import { Suspense } from 'react';
 import { AccountConfiguration } from '@/app/components/AccountConfiguration';
 import { Logo } from '@/app/components/Logo';
 import { useSearchParams } from 'next/navigation';
 
-export default function AccountConfigurationPage() {
+function AccountConfigurationContent() {
   const searchParams = useSearchParams();
-
   const misconfigurationDetected =
     searchParams.get('misconfigurationDetected') === 'true';
 
+  return (
+    <AccountConfiguration misconfigurationDetected={misconfigurationDetected} />
+  );
+}
+
+export default function AccountConfigurationPage() {
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -19,9 +25,9 @@ export default function AccountConfigurationPage() {
             <Logo className="h-16" disableLink />
           </div>
           <div className="mt-1 min-h-[180px]">
-            <AccountConfiguration
-              misconfigurationDetected={misconfigurationDetected}
-            />
+            <Suspense fallback={<div>Loading...</div>}>
+              <AccountConfigurationContent />
+            </Suspense>
           </div>
         </div>
       </div>

@@ -6,10 +6,12 @@
 import * as Headless from '@headlessui/react';
 import React, { forwardRef } from 'react';
 import { Link as I18nLink } from '@/i18n/routing';
-import type { LinkProps } from 'next/link';
+import type { ComponentProps } from 'react';
+
+type I18nLinkProps = ComponentProps<typeof I18nLink>;
 
 export const Link = forwardRef(function Link(
-  props: LinkProps & React.ComponentPropsWithoutRef<'a'>,
+  props: I18nLinkProps,
   ref: React.ForwardedRef<HTMLAnchorElement>
 ) {
   return (
