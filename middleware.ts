@@ -1,10 +1,11 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { routing } from './i18n/routing';
+import { routing } from './src/i18n/routing';
 
 const IS_API_MODE = process.env.IS_API_MODE === '1';
 
+// Create i18n middleware handler OUTSIDE the middleware function
 const handleI18nRouting = createMiddleware(routing);
 
 const LOCALE_PREFIX_REGEX = /^\/(pl|en)/;
@@ -47,8 +48,12 @@ export default async function middleware(request: NextRequest) {
   ];
   const isPublic = publicRoutes.some((route) => url.includes(route));
 
+  // Run i18n middleware FIRST before auth checks
+  const response = await handleI18nRouting(request);
+
+  // If it's public route, return i18n response immediately
   if (isPublic) {
-    return await handleI18nRouting(request);
+    return response;
   }
 
   // Protected routes - require session cookie to exist
@@ -61,7 +66,6 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(signInUrl, request.url));
   }
 
-  // Session cookie exists, allow request through
-  // Server Components will verify actual session validity
-  return await handleI18nRouting(request);
+  // Session cookie exists, return i18n response
+  return response;
 }

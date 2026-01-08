@@ -1,8 +1,9 @@
 import Image from 'next/image';
+import { redirect } from 'next/navigation';
 
 import { getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
-import { Link, redirect } from '@/i18n/routing';
+import { Link } from '@/i18n/routing';
 
 import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';

@@ -441,7 +441,7 @@ export const getOrganizationMetadata = async (
       },
       privateMetadata: {
         vector_store: org.vectorStore || undefined,
-        ragen_org_id: org.ragenOrgId ? parseInt(org.ragenOrgId) : undefined,
+        ragen_org_id: org.ragenOrgId || undefined,
       },
     } as ClerkOrganizationMetadata;
   } catch (error) {

@@ -34,29 +34,20 @@ export const ForgotPasswordForm = () => {
 
     try {
       // Better Auth forget password endpoint
-      const result = await authClient.forgetPassword(
+      // @ts-ignore - forgetPassword exists but is not properly typed in Better Auth client
+      const { data: result, error: apiError } = await authClient.forgetPassword(
         {
           email,
           redirectTo: '/reset-password',
-        },
-        {
-          onSuccess: () => {
-            setSuccessMessage(t('check-email'));
-          },
-          onError: (ctx) => {
-            setError(ctx.error.message || 'Failed to send reset email');
-          },
         }
       );
 
-      if (result.error) {
-        setError(result.error.message || 'Failed to send reset email');
+      if (apiError) {
+        setError(apiError.message || 'Failed to send reset email');
         return;
       }
 
       setSuccess(true);
-      // Optionally redirect after showing success message
-      setTimeout(() => push('/reset-password'), 2000);
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {

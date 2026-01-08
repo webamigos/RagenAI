@@ -1,7 +1,7 @@
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
-import { redirect } from '@/i18n/routing';
+import { redirect } from 'next/navigation';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;

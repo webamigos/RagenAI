@@ -41,10 +41,8 @@ export const FileListWrapper = () => {
   };
 
   useEffect(() => {
-    const savedViewMode = user?.publicMetadata?.viewMode as 'grid' | 'list';
-    if (savedViewMode === 'grid' || savedViewMode === 'list') {
-      setViewMode(savedViewMode);
-    }
+    // TODO: Restore saved view mode from localStorage or user preferences
+    // This was previously stored in Clerk's publicMetadata
 
     window.addEventListener('keydown', handleKeyDown);
 

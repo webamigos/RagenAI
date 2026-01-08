@@ -1,7 +1,12 @@
 import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 import { getSubscriptionData } from '../../subscription/actions';
-import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
-import { redirect } from '@/i18n/routing';
+import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { OrganizationTabs } from '../components/OrganizationTabs';
+import db from '@ragenai/prisma-client';
+
+const TRIAL_PLAN_NAME = 'Trial';
+const FREE_PLAN_NAME = 'Free';
 
 type Props = {
   params: Promise<{
@@ -22,32 +27,108 @@ export async function generateMetadata({ params }: Props) {
   };
 }
 
-export default async function OrganizationProfilePage() {
-  const user = await getCurrentUser();
+export default async function OrganizationProfilePage({ params }: Props) {
+  // Await params to comply with Next.js 15 requirements
+  await params;
 
+  // Auth check
+  const user = await getCurrentUser();
   if (!user) {
     redirect('/sign-in');
   }
 
+  // Get active organization (with fallback to first organization)
+  const organizationId = await getOrgIdFromAuth();
+
+  if (!organizationId) {
+    redirect('/');
+  }
+
+  // Get organization details from database
+  const organization = await db.organization.findUnique({
+    where: { id: organizationId },
+  });
+
+  if (!organization) {
+    redirect('/');
+  }
+
+  // Fetch members with user data
+  const members = await db.member.findMany({
+    where: { organizationId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  // Fetch invitations
+  const invitations = await db.invitation.findMany({
+    where: { organizationId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Fetch subscription
   const subscription = await getSubscriptionData();
 
-  // TODO: Create Better Auth organization management UI
+  // Get current user's role
+  const activeMember = members.find((m) => m.userId === user.id);
+
+  // Calculate allowInvite flag
+  const FEATURE_FLAG = !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
+  const planName = subscription?.plan?.name;
+  const allowInvite = Boolean(
+    FEATURE_FLAG &&
+      planName &&
+      planName !== TRIAL_PLAN_NAME &&
+      planName !== FREE_PLAN_NAME
+  );
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Organization Profile</h1>
-      {subscription && (
-        <div className="space-y-2 mb-4">
-          <p>
-            <strong>Subscription Status:</strong> {subscription.status}
-          </p>
-          <p>
-            <strong>Plan:</strong> {subscription.plan?.name}
-          </p>
-        </div>
-      )}
-      <p className="text-sm text-gray-500">
-        Organization management UI is being migrated to Better Auth.
-      </p>
+      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+        Profil Organizacji
+      </h1>
+
+      <OrganizationTabs
+        organization={{
+          id: organization.id,
+          name: organization.name,
+          slug: organization.slug || undefined,
+          logo: organization.logo || undefined,
+          members: members.map((m) => ({
+            id: m.id,
+            userId: m.userId,
+            role: m.role,
+            createdAt: m.createdAt,
+            user: {
+              id: m.user.id,
+              name: m.user.name || undefined,
+              email: m.user.email,
+              image: m.user.image || undefined,
+            },
+          })),
+        }}
+        invitations={invitations.map((inv) => ({
+          id: inv.id,
+          email: inv.email,
+          role: inv.role,
+          status: inv.status as 'pending' | 'accepted' | 'rejected' | 'expired',
+          expiresAt: inv.expiresAt,
+          createdAt: inv.createdAt,
+          inviterId: inv.inviterId || undefined,
+        }))}
+        currentUserRole={activeMember?.role || 'member'}
+        currentUserEmail={user.email}
+        allowInvite={allowInvite}
+      />
     </div>
   );
 }

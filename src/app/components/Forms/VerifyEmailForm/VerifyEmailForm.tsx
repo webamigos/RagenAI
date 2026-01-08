@@ -29,7 +29,9 @@ export const VerifyEmailForm = () => {
 
     try {
       const result = await authClient.verifyEmail({
-        code: data.code,
+        query: {
+          token: data.code,
+        },
       });
 
       if (result.error) {
@@ -79,7 +81,7 @@ export const VerifyEmailForm = () => {
           placeholder="Enter the code from your email"
           {...register('code', { required: 'Verification code is required' })}
           type="text"
-          error={!!errors.code}
+          error={errors.code}
           errorMessage={errors.code?.message}
         />
 

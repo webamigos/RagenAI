@@ -48,6 +48,7 @@ export const JoyrideProvider = ({
   const t = useTranslations('joyride');
   const { openSidebar, closeSidebar } = useSidebar();
 
+  // @ts-ignore - onboardingComplete is defined as additionalField in Better Auth config
   const onboardingComplete = user?.onboardingComplete as boolean;
   const userBelongsToOrganization = !!organization?.id;
   const showOnboarding =

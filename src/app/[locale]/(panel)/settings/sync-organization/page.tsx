@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
-import { redirect } from '@/i18n/routing';
+import { redirect } from 'next/navigation';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { Card } from '@ragenai/common-ui/Card';

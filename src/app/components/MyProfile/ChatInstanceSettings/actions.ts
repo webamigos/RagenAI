@@ -82,7 +82,11 @@ export const fetchSettings = async (): Promise<
   }
 
   setSentryServiceTag(serviceName);
-  setSentryClerkContext({ orgId, userId: user?.id, sessionId: undefined });
+  setSentryClerkContext({
+    orgId,
+    userId: user?.id || '',
+    sessionId: undefined,
+  });
 
   try {
     const unmaskedApiKey = await getOpenaiAPIKey(orgId);
@@ -118,7 +122,11 @@ export const saveSetting = async (
   }
 
   setSentryServiceTag(serviceName);
-  setSentryClerkContext({ orgId, userId: user?.id, sessionId: undefined });
+  setSentryClerkContext({
+    orgId,
+    userId: user?.id || '',
+    sessionId: undefined,
+  });
   setSentryContext('EXTRA_DATA', { type });
 
   try {

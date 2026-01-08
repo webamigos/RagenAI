@@ -4,6 +4,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI } from 'better-auth/plugins';
+import { createAuthMiddleware } from 'better-auth/api';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
 // TEMPORARILY COMMENTED: Causes logger import which breaks Edge Runtime middleware
@@ -70,29 +71,11 @@ export const auth = betterAuth({
 
   plugins: [
     openAPI(),
+    // TODO: Add custom roles configuration using createAccessControl API
+    // For now using default roles: owner, admin, member
     organization({
       async sendInvitationEmail(data) {
         await sendOrganizationInvite(data);
-      },
-      roles: {
-        owner: {
-          permissions: ['*'],
-        },
-        admin: {
-          permissions: [
-            'organization:read',
-            'organization:update',
-            'member:create',
-            'member:read',
-            'member:update',
-            'member:delete',
-            'project:*',
-            'knowledge:*',
-          ],
-        },
-        member: {
-          permissions: ['organization:read', 'project:read', 'thread:*'],
-        },
       },
     }),
   ],
@@ -111,10 +94,10 @@ export const auth = betterAuth({
     },
   },
 
-  hooks: {
+  databaseHooks: {
     user: {
-      created: {
-        after: async ({ user }) => {
+      create: {
+        after: async (user) => {
           try {
             const firstName = user.name || 'User';
             const organizationName = `${firstName}'s Organization`;
@@ -132,15 +115,19 @@ export const auth = betterAuth({
               headers: new Headers(),
             });
 
+            if (!org?.id) {
+              throw new Error('Failed to create organization');
+            }
+
             console.log('[AUTH] Organization created', {
               userId: user.id,
-              orgId: org.data?.id,
+              orgId: org.id,
             });
 
             // Add user as owner
             await auth.api.addMember({
               body: {
-                organizationId: org.data!.id,
+                organizationId: org.id,
                 userId: user.id,
                 role: 'owner',
               },
@@ -149,12 +136,12 @@ export const auth = betterAuth({
 
             console.log('[AUTH] User added as owner', {
               userId: user.id,
-              orgId: org.data?.id,
+              orgId: org.id,
             });
 
             // Create internal org + default project
             const ragenOrg = await createOrganizationWithDefaultProject(
-              org.data!.id,
+              org.id,
               user.id
             );
             console.log('[AUTH] Internal organization created', {
@@ -165,7 +152,7 @@ export const auth = betterAuth({
             const defaultVectorStore =
               process.env.DEFAULT_VECTOR_STORE || 'qdrant';
             await db.organization.update({
-              where: { id: org.data!.id },
+              where: { id: org.id },
               data: {
                 vectorStore: defaultVectorStore,
                 metadata: {
@@ -213,35 +200,17 @@ export const auth = betterAuth({
         },
       },
     },
-    session: {
-      created: {
-        after: async ({ session }) => {
-          try {
-            const orgId = session.activeOrganizationId;
-            if (!orgId) {
-              console.log(
-                '[AUTH] No active organization for session, skipping plan check'
-              );
-              return;
-            }
-
-            // TEMPORARILY COMMENTED: Will be moved to Server Action in FAZA 2
-            // const isExpired = await checkIfOrganizationPlanIsExpired(orgId);
-            // if (isExpired) {
-            //   console.log('[AUTH] Plan expired, activating free plan', { orgId });
-            //   await activateFreePlan(orgId);
-            // }
-            console.log(
-              '[AUTH] Plan check skipped (will be handled in Server Action)'
-            );
-          } catch (error) {
-            console.error('[AUTH] Error in session.created hook', { error });
-            // Don't throw - session creation should succeed
-          }
-        },
-      },
-    },
   },
+
+  // TODO FAZA 2: Re-enable session hooks for plan expiration check
+  // Currently disabled as plan checking will be moved to Server Actions
+  // hooks: {
+  //   after: createAuthMiddleware(async (ctx) => {
+  //     const newSession = ctx.context.newSession;
+  //     if (!newSession) return;
+  //     // Check plan expiration and activate free plan if needed
+  //   }),
+  // },
 });
 
 export type Session = typeof auth.$Infer.Session;

@@ -4,7 +4,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 // Note: validateEnvs removed due to ESM import limitations with .ts files in .mjs
 // Consider converting next.config.mjs to next.config.ts if env validation is needed
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
 const isStagingTargetEnv = process.env.TARGET_ENV === 'staging';

@@ -112,6 +112,7 @@ export async function finalizeUserOnboarding() {
     // Set active organization in session
     // Use Better Auth API to properly update both database and session cookie
     try {
+      // @ts-ignore - setActiveOrganization exists but is not properly typed in Better Auth API
       await auth.api.setActiveOrganization({
         body: {
           organizationId: firstOrg.id,

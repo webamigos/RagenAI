@@ -736,5 +736,69 @@
     "info": "Info",
     "error": "Błąd",
     "document-parsed-and-embedded": "Plik został przetworzony"
+  },
+  "organization": {
+    "tabs": {
+      "general": "Ogólne",
+      "members": "Członkowie",
+      "invitations": "Zaproszenia"
+    },
+    "profile": {
+      "title": "Profil Organizacji",
+      "name": "Nazwa",
+      "slug": "Slug URL",
+      "coming-soon": "Edycja profilu organizacji będzie dostępna wkrótce (FAZA 2)"
+    },
+    "members": {
+      "title": "Członkowie",
+      "invite-member": "Zaproś członka",
+      "no-members": "Brak członków",
+      "user": "Użytkownik",
+      "role": "Rola",
+      "joined": "Dołączył",
+      "actions": "Akcje",
+      "you": "Ty",
+      "role-owner": "Właściciel",
+      "role-admin": "Administrator",
+      "role-member": "Członek",
+      "email": "Email",
+      "send-invitation": "Wyślij zaproszenie",
+      "sending": "Wysyłanie...",
+      "cancel": "Anuluj",
+      "invite-success": "Zaproszenie zostało wysłane",
+      "invite-error": "Wystąpił błąd podczas wysyłania zaproszenia",
+      "invite-unavailable-plan": "Zapraszanie członków dostępne tylko w płatnych planach. Zmień swój plan w sekcji Subskrypcja.",
+      "confirm-remove": "Czy na pewno chcesz usunąć tego członka z organizacji?",
+      "remove-success": "Członek został usunięty",
+      "remove-error": "Wystąpił błąd podczas usuwania członka",
+      "role-update-success": "Rola została zaktualizowana",
+      "role-update-error": "Wystąpił błąd podczas aktualizacji roli",
+      "change-role": "Zmień rolę",
+      "remove": "Usuń",
+      "change-to-admin": "Zmień na Administratora",
+      "change-to-member": "Zmień na Członka"
+    },
+    "invitations": {
+      "title": "Zaproszenia",
+      "no-invitations": "Brak oczekujących zaproszeń",
+      "email": "Email",
+      "role": "Rola",
+      "role-admin": "Administrator",
+      "role-member": "Członek",
+      "status": "Status",
+      "sent": "Wysłano",
+      "actions": "Akcje",
+      "cancel": "Anuluj",
+      "resend": "Wyślij ponownie",
+      "status-pending": "Oczekujące",
+      "status-accepted": "Zaakceptowane",
+      "status-rejected": "Odrzucone",
+      "status-expired": "Wygasłe",
+      "confirm-cancel": "Czy na pewno chcesz anulować to zaproszenie?",
+      "cancel-success": "Zaproszenie zostało anulowane",
+      "cancel-error": "Wystąpił błąd podczas anulowania zaproszenia",
+      "resend-success": "Zaproszenie zostało wysłane ponownie",
+      "resend-error": "Wystąpił błąd podczas wysyłania zaproszenia"
+    }
   }
 }
