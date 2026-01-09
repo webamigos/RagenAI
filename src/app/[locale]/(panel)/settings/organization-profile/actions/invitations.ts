@@ -98,7 +98,9 @@ export async function resendInvitation(
 
     const session = await auth.api.getSession({ headers: await headers() });
 
-    await db.invitation.upsert({
+    const invitationId = `inv_${Math.random().toString(36).substr(2, 9)}`;
+
+    const invitation = await db.invitation.upsert({
       where: {
         organizationId_email: {
           organizationId,
@@ -110,7 +112,7 @@ export async function resendInvitation(
         status: 'pending',
       },
       create: {
-        id: `inv_${Math.random().toString(36).substr(2, 9)}`,
+        id: invitationId,
         organizationId,
         email,
         role,
@@ -120,8 +122,37 @@ export async function resendInvitation(
       },
     });
 
+    // Fetch organization and inviter details for email
+    const organization = await db.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    });
+
+    const inviter = session?.user?.name;
+
+    // Send invitation email
+    const { sendInvitationEmail } = await import(
+      '@/app/emails/services/mailer'
+    );
+    const emailResult = await sendInvitationEmail({
+      to: email,
+      organizationName: organization?.name || 'Organization',
+      inviterName: inviter,
+      role,
+      invitationId: invitation.id,
+      expiresAt,
+    });
+
+    if (emailResult.error) {
+      logger.error(
+        { email, organizationId, error: emailResult.error },
+        'Failed to send invitation email'
+      );
+      // Don't fail the whole operation - invitation is updated
+    }
+
     logger.info(
-      { email, role, organizationId },
+      { email, role, organizationId, invitationId: invitation.id },
       'Invitation resent successfully'
     );
 

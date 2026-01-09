@@ -1,5 +1,6 @@
 import { CreateContactOptions, Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
+import { InvitationEmail } from '../invitation-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -77,4 +78,54 @@ export const addEmailToAudience = async (
   resendContactDetails: CreateContactOptions
 ) => {
   return await resend.contacts.create(resendContactDetails);
+};
+
+export const sendInvitationEmail = async ({
+  to,
+  organizationName,
+  inviterName,
+  role,
+  invitationId,
+  expiresAt,
+}: {
+  to: string;
+  organizationName: string;
+  inviterName?: string;
+  role: string;
+  invitationId: string;
+  expiresAt: Date;
+}) => {
+  try {
+    logger.info(
+      { to, organizationName, invitationId },
+      'Attempting to send invitation email'
+    );
+
+    const response = await resend.emails.send({
+      from: 'Acme <onboarding@resend.dev>', // Zmieniono na zweryfikowaną domenę testową
+      to: [to],
+      subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
+      react: InvitationEmail({
+        invitedEmail: to,
+        organizationName,
+        inviterName,
+        role,
+        invitationId,
+        expiresAt,
+      }),
+    });
+
+    logger.info(
+      { to, organizationName, invitationId, resendResponse: response },
+      'Invitation email sent successfully via Resend'
+    );
+
+    return { data: response };
+  } catch (error) {
+    logger.error(
+      { error, to, organizationName, invitationId },
+      'Failed to send invitation email'
+    );
+    return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
+  }
 };

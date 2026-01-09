@@ -45,15 +45,13 @@ export default async function middleware(request: NextRequest) {
     '/reset-password',
     '/public',
     '/account-configuration',
+    '/accept-invitation',
   ];
   const isPublic = publicRoutes.some((route) => url.includes(route));
 
-  // Run i18n middleware FIRST before auth checks
-  const response = await handleI18nRouting(request);
-
-  // If it's public route, return i18n response immediately
+  // Public routes - call i18n routing directly
   if (isPublic) {
-    return response;
+    return handleI18nRouting(request);
   }
 
   // Protected routes - require session cookie to exist
@@ -66,6 +64,6 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(signInUrl, request.url));
   }
 
-  // Session cookie exists, return i18n response
-  return response;
+  // Session cookie exists, allow request through
+  return handleI18nRouting(request);
 }

@@ -111,9 +111,11 @@ export async function inviteMember(
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
+    const invitationId = `inv_${Math.random().toString(36).substr(2, 9)}`;
+
     await db.invitation.create({
       data: {
-        id: `inv_${Math.random().toString(36).substr(2, 9)}`,
+        id: invitationId,
         organizationId,
         email: email.toLowerCase(),
         role,
@@ -123,9 +125,38 @@ export async function inviteMember(
       },
     });
 
+    // Fetch organization and inviter details for email
+    const organization = await db.organization.findUnique({
+      where: { id: organizationId },
+      select: { name: true },
+    });
+
+    const inviter = session?.user?.name;
+
+    // Send invitation email
+    const { sendInvitationEmail } = await import(
+      '@/app/emails/services/mailer'
+    );
+    const emailResult = await sendInvitationEmail({
+      to: email,
+      organizationName: organization?.name || 'Organization',
+      inviterName: inviter,
+      role,
+      invitationId,
+      expiresAt,
+    });
+
+    if (emailResult.error) {
+      logger.error(
+        { email, organizationId, error: emailResult.error },
+        'Failed to send invitation email'
+      );
+      // Don't fail the whole operation - invitation is created
+    }
+
     logger.info(
-      { email, role, organizationId },
-      'Invitation sent successfully'
+      { email, role, organizationId, invitationId },
+      'Invitation created and email sent successfully'
     );
 
     revalidatePath('/settings/organization-profile');

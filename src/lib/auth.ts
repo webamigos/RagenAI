@@ -30,7 +30,23 @@ async function sendPasswordResetEmail({
 }
 
 async function sendOrganizationInvite(data: any) {
-  console.log('[AUTH] Organization invite email would be sent', data);
+  // Import mailer dynamically to avoid Edge Runtime issues
+  const { sendInvitationEmail } = await import('@/app/emails/services/mailer');
+
+  try {
+    await sendInvitationEmail({
+      to: data.email,
+      organizationName: data.organizationName,
+      inviterName: data.inviterName,
+      role: data.role,
+      invitationId: data.id,
+      expiresAt: data.expiresAt,
+    });
+    console.log('[AUTH] Invitation email sent', { email: data.email });
+  } catch (error) {
+    console.error('[AUTH] Failed to send invitation email', { error, data });
+    // Don't throw - invitation was created successfully
+  }
 }
 
 async function sendWelcomeEmail({ to, name }: { to: string; name: string }) {

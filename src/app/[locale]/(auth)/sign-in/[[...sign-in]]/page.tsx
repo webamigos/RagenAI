@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
+import { redirect as nextRedirect } from 'next/navigation';
 
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { Link } from '@/i18n/routing';
 
@@ -24,7 +24,8 @@ export default async function SignInPage() {
   const t = await getTranslations('sign-in');
 
   if (user) {
-    redirect('/');
+    const locale = await getLocale();
+    nextRedirect(`/${locale}`);
   }
 
   return (

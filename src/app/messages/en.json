@@ -797,5 +797,28 @@
       "resend-success": "Invitation has been resent",
       "resend-error": "An error occurred while resending invitation"
     }
+  },
+  "accept-invitation": {
+    "title": "Accept Invitation",
+    "description": "You've been invited to join an organization",
+    "organization": "Organization",
+    "role": "Role",
+    "email": "Email address",
+    "expires": "Expires on",
+    "accept-button": "Accept Invitation",
+    "reject-button": "Reject",
+    "confirm-reject": "Are you sure you want to reject this invitation?",
+    "loading": "Loading invitation details...",
+    "invalid-token": "Invalid invitation link",
+    "error-loading": "Failed to load invitation details",
+    "error-accepting": "Failed to accept invitation",
+    "error-rejecting": "Failed to reject invitation",
+    "error-title": "Error",
+    "success-message": "Successfully joined the organization!",
+    "rejected-message": "Invitation rejected",
+    "go-home": "Go to Home Page",
+    "role-admin": "Administrator",
+    "role-member": "Member",
+    "role-owner": "Owner"
   }
 }

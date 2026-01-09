@@ -800,5 +800,28 @@
       "resend-success": "Zaproszenie zostało wysłane ponownie",
       "resend-error": "Wystąpił błąd podczas wysyłania zaproszenia"
     }
+  },
+  "accept-invitation": {
+    "title": "Akceptacja zaproszenia",
+    "description": "Otrzymałeś zaproszenie do organizacji",
+    "organization": "Organizacja",
+    "role": "Rola",
+    "email": "Adres email",
+    "expires": "Wygasa",
+    "accept-button": "Zaakceptuj zaproszenie",
+    "reject-button": "Odrzuć",
+    "confirm-reject": "Czy na pewno chcesz odrzucić to zaproszenie?",
+    "loading": "Ładowanie szczegółów zaproszenia...",
+    "invalid-token": "Nieprawidłowy link zaproszenia",
+    "error-loading": "Nie udało się załadować szczegółów zaproszenia",
+    "error-accepting": "Nie udało się zaakceptować zaproszenia",
+    "error-rejecting": "Nie udało się odrzucić zaproszenia",
+    "error-title": "Błąd",
+    "success-message": "Pomyślnie dołączono do organizacji!",
+    "rejected-message": "Zaproszenie odrzucone",
+    "go-home": "Przejdź do strony głównej",
+    "role-admin": "Administrator",
+    "role-member": "Członek",
+    "role-owner": "Właściciel"
   }
 }

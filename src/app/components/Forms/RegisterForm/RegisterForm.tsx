@@ -51,6 +51,39 @@ export const RegisterForm = () => {
         await addSubscriberToKit(email);
       }
 
+      // Check if user came from invitation link
+      const searchParams = new URLSearchParams(window.location.search);
+      const invitationId = searchParams.get('invitationId');
+
+      if (invitationId) {
+        // Auto-accept invitation after registration
+        try {
+          const { acceptInvitation } = await import(
+            '@/app/[locale]/(auth)/accept-invitation/actions'
+          );
+          const acceptResult = await acceptInvitation(invitationId);
+
+          if (acceptResult.success) {
+            // eslint-disable-next-line no-console
+            console.log('Invitation accepted automatically after registration');
+            // Redirect to home page
+            window.location.href = `/${locale}/`;
+            return;
+          } else {
+            // eslint-disable-next-line no-console
+            console.warn(
+              'Failed to auto-accept invitation:',
+              acceptResult.error
+            );
+            // Continue with normal onboarding
+          }
+        } catch (inviteError) {
+          // eslint-disable-next-line no-console
+          console.error('Error auto-accepting invitation:', inviteError);
+          // Continue with normal onboarding
+        }
+      }
+
       // Email verification is disabled (requireEmailVerification: false)
       // User is automatically logged in after registration
       // Finalize user onboarding (set activeOrganizationId + trial subscription)
