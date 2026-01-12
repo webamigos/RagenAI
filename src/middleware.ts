@@ -1,7 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { routing } from './src/i18n/routing';
+import { routing } from './i18n/routing';
 
 const IS_API_MODE = process.env.IS_API_MODE === '1';
 
@@ -17,6 +17,8 @@ export const config = {
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
+    // Explicitly match root path
+    '/',
   ],
 };
 
@@ -31,6 +33,21 @@ export default async function middleware(request: NextRequest) {
   // Skip auth checks for API routes - early return
   if (url.startsWith('/api')) {
     return NextResponse.next();
+  }
+
+  // Manually handle root path redirect to default locale
+  // next-intl might not handle this with localePrefix: { mode: 'always' }
+  if (url === '/') {
+    // Get locale from Accept-Language header or use default
+    const locale =
+      request.headers
+        .get('accept-language')
+        ?.split(',')[0]
+        ?.split('-')[0]
+        ?.toLowerCase() === 'pl'
+        ? 'pl'
+        : 'en';
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
   // Check if session cookie exists (lightweight check without DB query)
@@ -48,6 +65,13 @@ export default async function middleware(request: NextRequest) {
     '/accept-invitation',
   ];
   const isPublic = publicRoutes.some((route) => url.includes(route));
+
+  // Let next-intl handle paths without locale prefix or locale-only paths
+  // This includes root path '/' and locale roots '/pl', '/en'
+  const hasLocalePrefix = url.match(LOCALE_PREFIX_REGEX);
+  if (!hasLocalePrefix || url.match(/^\/(pl|en)$/)) {
+    return handleI18nRouting(request);
+  }
 
   // Public routes - call i18n routing directly
   if (isPublic) {
