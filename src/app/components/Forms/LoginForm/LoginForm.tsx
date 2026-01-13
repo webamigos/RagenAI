@@ -1,11 +1,10 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
-import { useRouter } from '@/i18n/routing';
 import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
 import { signIn } from '@/app/hooks/use-better-auth';
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
@@ -17,7 +16,7 @@ export const LoginForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const t = useTranslations('sign-in');
-  const { push } = useRouter();
+  const locale = useLocale();
 
   const {
     register,
@@ -55,7 +54,8 @@ export const LoginForm = () => {
         // Continue anyway - middleware/account-configuration will handle it
       }
 
-      push('/');
+      // Use window.location.href to force full page reload and session refresh
+      window.location.href = `/${locale}/`;
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {

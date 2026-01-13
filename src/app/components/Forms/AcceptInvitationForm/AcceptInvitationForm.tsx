@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card, Button } from '@ragenai/common-ui';
 import { Logo } from '@/app/components/Logo';
 import { useRouter } from '@/i18n/routing';
@@ -28,6 +28,7 @@ export const AcceptInvitationForm = () => {
   const token = searchParams.get('token');
   const t = useTranslations('accept-invitation');
   const { push } = useRouter();
+  const locale = useLocale();
   const { data: session, isPending: sessionLoading } = useSession();
   const { successToast, errorToast } = statusToast();
 
@@ -91,9 +92,9 @@ export const AcceptInvitationForm = () => {
 
       successToast({ message: t('success-message') });
 
-      // Redirect to home page
+      // Redirect to home page - use window.location.href to force full page reload
       setTimeout(() => {
-        push('/');
+        window.location.href = `/${locale}/`;
       }, 1000);
     } catch (err) {
       setError(t('error-accepting'));
@@ -118,9 +119,9 @@ export const AcceptInvitationForm = () => {
 
       successToast({ message: t('rejected-message') });
 
-      // Redirect to home page
+      // Redirect to home page - use window.location.href to force full page reload
       setTimeout(() => {
-        push('/');
+        window.location.href = `/${locale}/`;
       }, 1000);
     } catch (err) {
       setError(t('error-rejecting'));
@@ -150,7 +151,7 @@ export const AcceptInvitationForm = () => {
           </h2>
           <p className="text-red-600 dark:text-red-500 mb-6">{error}</p>
           <Button
-            onClick={() => push('/')}
+            onClick={() => (window.location.href = `/${locale}/`)}
             className="bg-indigo-600 text-white"
           >
             {t('go-home')}

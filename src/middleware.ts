@@ -66,10 +66,23 @@ export default async function middleware(request: NextRequest) {
   ];
   const isPublic = publicRoutes.some((route) => url.includes(route));
 
-  // Let next-intl handle paths without locale prefix or locale-only paths
-  // This includes root path '/' and locale roots '/pl', '/en'
+  // Let next-intl handle paths without locale prefix
   const hasLocalePrefix = url.match(LOCALE_PREFIX_REGEX);
-  if (!hasLocalePrefix || url.match(/^\/(pl|en)$/)) {
+  if (!hasLocalePrefix) {
+    return handleI18nRouting(request);
+  }
+
+  // Handle locale-only paths '/pl' or '/en'
+  const isLocaleOnlyPath = url.match(/^\/(pl|en)$/);
+  if (isLocaleOnlyPath) {
+    // If no session, redirect to sign-in
+    if (!sessionCookie) {
+      const localeMatch = url.match(LOCALE_PREFIX_REGEX);
+      const locale = localeMatch ? localeMatch[1] : 'en';
+      const signInUrl = `/${locale}${SIGN_IN_PATH}`;
+      return NextResponse.redirect(new URL(signInUrl, request.url));
+    }
+    // Has session, allow through to panel
     return handleI18nRouting(request);
   }
 

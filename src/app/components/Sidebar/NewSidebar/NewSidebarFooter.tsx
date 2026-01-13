@@ -21,11 +21,12 @@ import {
   ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/16/solid';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 export const NewSidebarFooter = () => {
   const { user } = useUser();
   const t = useTranslations('sidebar.footer');
+  const locale = useLocale();
   const userAvatar = user?.image;
   const userEmail = user?.email; // Better Auth: email is a direct string property
   const userFirstName = user?.name; // Better Auth: uses 'name' instead of 'firstName'
@@ -62,7 +63,12 @@ export const NewSidebarFooter = () => {
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
-          <DropdownItem onClick={() => signOut()}>
+          <DropdownItem
+            onClick={async () => {
+              await signOut();
+              window.location.href = `/${locale}/sign-in`;
+            }}
+          >
             <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
             <DropdownLabel>{t('sign-out')}</DropdownLabel>
           </DropdownItem>
