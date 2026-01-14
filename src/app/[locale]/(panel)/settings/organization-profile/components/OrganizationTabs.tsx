@@ -4,6 +4,7 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { useTranslations } from 'next-intl';
 import { MembersList } from './MembersList';
 import { ManageInvitationsSection } from './ManageInvitationsSection';
+import { OrganizationProfileForm } from './OrganizationProfileForm';
 import type { Member, Invitation } from '../types';
 
 type Organization = {
@@ -55,35 +56,16 @@ export function OrganizationTabs({
       </TabList>
 
       <TabPanels className="mt-6">
-        {/* General tab - Placeholder for FAZA 2 */}
+        {/* General tab - Organization profile form */}
         <TabPanel className="rounded-xl bg-white p-6 shadow dark:bg-gray-900">
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {t('profile.title')}
             </h3>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('profile.name')}
-                </label>
-                <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                  {organization.name}
-                </p>
-              </div>
-              {organization.slug && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('profile.slug')}
-                  </label>
-                  <p className="mt-1 text-sm text-gray-900 dark:text-gray-100">
-                    {organization.slug}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-              <p>{t('profile.coming-soon')}</p>
-            </div>
+            <OrganizationProfileForm
+              organization={organization}
+              canEdit={['admin', 'owner'].includes(currentUserRole)}
+            />
           </div>
         </TabPanel>
 

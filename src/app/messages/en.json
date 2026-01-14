@@ -332,7 +332,6 @@
     "security": "Security",
     "create-organization": "Create organization",
     "manage-organization": "Organization",
-    "manage-members": "Members",
     "manage-knowledge": "Knowledge",
     "subscription-management": "Subscription management",
     "organization-list": "Organization list",
@@ -744,7 +743,14 @@
       "title": "Organization Profile",
       "name": "Name",
       "slug": "URL Slug",
-      "coming-soon": "Organization profile editing will be available soon (PHASE 2)"
+      "name-placeholder": "Organization name",
+      "slug-placeholder": "my-organization",
+      "slug-hint": "Slug is used in URLs. Leave empty for automatic generation.",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "edit-success": "Organization profile has been updated",
+      "edit-error": "An error occurred while updating the profile"
     },
     "members": {
       "title": "Members",

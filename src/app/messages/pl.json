@@ -336,7 +336,6 @@
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
     "manage-organization": "Organizacja",
-    "manage-members": "Użytkownicy",
     "manage-knowledge": "Baza wiedzy",
     "organization-list": "Lista organizacji",
     "assistant-management": "Ustawienia asystenta",
@@ -747,7 +746,14 @@
       "title": "Profil Organizacji",
       "name": "Nazwa",
       "slug": "Slug URL",
-      "coming-soon": "Edycja profilu organizacji będzie dostępna wkrótce (FAZA 2)"
+      "name-placeholder": "Nazwa organizacji",
+      "slug-placeholder": "moja-organizacja",
+      "slug-hint": "Slug używany jest w URL-ach. Pozostaw puste dla automatycznego generowania.",
+      "save": "Zapisz zmiany",
+      "saving": "Zapisywanie...",
+      "cancel": "Anuluj",
+      "edit-success": "Profil organizacji został zaktualizowany",
+      "edit-error": "Wystąpił błąd podczas aktualizacji profilu"
     },
     "members": {
       "title": "Członkowie",

@@ -13,9 +13,24 @@ export const UpdateMemberRoleSchema = z.object({
   role: z.enum(['admin', 'member']), // owner nie może być zmieniany
 });
 
+export const UpdateOrganizationSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Nazwa jest wymagana')
+    .max(100, 'Nazwa może mieć max 100 znaków'),
+  slug: z
+    .string()
+    .max(50, 'Slug może mieć max 50 znaków')
+    .optional()
+    .or(z.literal('')),
+});
+
 // TypeScript types
 export type InviteMemberFormData = z.infer<typeof InviteMemberSchema>;
 export type UpdateMemberRoleFormData = z.infer<typeof UpdateMemberRoleSchema>;
+export type UpdateOrganizationFormData = z.infer<
+  typeof UpdateOrganizationSchema
+>;
 
 export type Member = {
   id: string;

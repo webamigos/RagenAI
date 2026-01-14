@@ -7,16 +7,9 @@ import {
   SidebarSpacer,
 } from '@ragenai/tui/sidebar';
 import {
-  Cog6ToothIcon,
-  HomeIcon,
-  MegaphoneIcon,
-  QuestionMarkCircleIcon,
-  SparklesIcon,
-  Square2StackIcon,
   TicketIcon,
   ArrowLeftIcon,
   BookOpenIcon,
-  UserGroupIcon,
   WrenchScrewdriverIcon,
   CreditCardIcon,
   KeyIcon,
@@ -41,10 +34,6 @@ export const NewSidebarSettingsBody = () => {
         <SidebarItem href="/settings/organization-profile">
           <TicketIcon className="w-5 h-5" />
           <SidebarLabel>{t('manage-organization')}</SidebarLabel>
-        </SidebarItem>
-        <SidebarItem href="/settings/organization-profile/organization-members">
-          <UserGroupIcon className="w-5 h-5" />
-          <SidebarLabel>{t('manage-members')}</SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/prompt-management">
           <WrenchScrewdriverIcon className="w-5 h-5" />
