@@ -110,18 +110,18 @@ export const NewMainSidebarBody = () => {
           {/* Default navigation sections for non-main pages */}
           <SidebarSection>
             <SidebarItem href="/">
-              <HomeIcon data-slot="icon" />
+              <HomeIcon className="w-5 h-5" />
               <SidebarLabel>Home</SidebarLabel>
             </SidebarItem>
             <SidebarItem href="/settings">
-              <Cog6ToothIcon data-slot="icon" />
+              <Cog6ToothIcon className="w-5 h-5" />
               <SidebarLabel>Settings</SidebarLabel>
             </SidebarItem>
           </SidebarSection>
           <SidebarSpacer />
           <SidebarSection>
             <SidebarItem href="/support">
-              <QuestionMarkCircleIcon data-slot="icon" />
+              <QuestionMarkCircleIcon className="w-5 h-5" />
               <SidebarLabel>Support</SidebarLabel>
             </SidebarItem>
           </SidebarSection>

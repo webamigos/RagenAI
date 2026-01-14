@@ -829,5 +829,36 @@
     "role-admin": "Administrator",
     "role-member": "Członek",
     "role-owner": "Właściciel"
+  },
+  "user-profile": {
+    "title": "Mój Profil",
+    "tabs": {
+      "profile": "Profil",
+      "security": "Bezpieczeństwo"
+    },
+    "profile": {
+      "title": "Informacje o profilu",
+      "email": "Email",
+      "email-hint": "Email nie może być zmieniony",
+      "name": "Nazwa",
+      "name-placeholder": "Twoje imię",
+      "image": "URL zdjęcia profilowego",
+      "image-placeholder": "https://example.com/avatar.jpg",
+      "image-hint": "Podaj URL do swojego zdjęcia profilowego",
+      "save": "Zapisz zmiany",
+      "saving": "Zapisywanie...",
+      "cancel": "Anuluj",
+      "success": "Profil zaktualizowany",
+      "error": "Nie udało się zaktualizować profilu"
+    },
+    "password": {
+      "current": "Obecne hasło",
+      "new": "Nowe hasło",
+      "confirm": "Potwierdź hasło",
+      "change": "Zmień hasło",
+      "changing": "Zmiana hasła...",
+      "success": "Hasło zostało zmienione",
+      "error": "Nieprawidłowe obecne hasło"
+    }
   }
 }

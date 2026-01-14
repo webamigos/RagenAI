@@ -826,5 +826,36 @@
     "role-admin": "Administrator",
     "role-member": "Member",
     "role-owner": "Owner"
+  },
+  "user-profile": {
+    "title": "My Profile",
+    "tabs": {
+      "profile": "Profile",
+      "security": "Security"
+    },
+    "profile": {
+      "title": "Profile Information",
+      "email": "Email",
+      "email-hint": "Email cannot be changed",
+      "name": "Name",
+      "name-placeholder": "Your name",
+      "image": "Profile Image URL",
+      "image-placeholder": "https://example.com/avatar.jpg",
+      "image-hint": "Enter URL to your profile picture",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "success": "Profile updated",
+      "error": "Failed to update profile"
+    },
+    "password": {
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm password",
+      "change": "Change password",
+      "changing": "Changing password...",
+      "success": "Password has been changed",
+      "error": "Invalid current password"
+    }
   }
 }
