@@ -1,8 +1,10 @@
-import { currentUser, clerkClient } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 import { AccountSetupStatus } from '../types/account-setup';
 import db from '@ragenai/prisma-client';
 import { PlanStatus } from '@prisma/client';
 import { logger } from '../utils/logger';
+import { getCurrentUser } from '../utils/auth-helpers';
 
 const DEFAULT_PROJECT_TITLE = 'Default';
 
@@ -17,19 +19,19 @@ export async function getAccountSetupStatus(
     let userEmail: string | undefined;
 
     if (!userIdToUse) {
-      const user = await currentUser();
+      const user = await getCurrentUser();
       if (!user) {
-        logger.error('❌ User not found in currentUser()');
+        logger.error('❌ User not found');
         throw new Error('Cannot check account configuration, user not found');
       }
       userIdToUse = user.id;
-      userEmail = user.emailAddresses[0]?.emailAddress;
+      userEmail = user.email;
     }
 
     logger.info({ userId: userIdToUse, email: userEmail }, '✅ User found');
 
-    const orgId = await getClerkOrganizationId(userIdToUse);
-    logger.info({ orgId }, 'Clerk Organization ID retrieved');
+    const orgId = await getBetterAuthOrganizationId(userIdToUse);
+    logger.info({ orgId }, 'Better Auth Organization ID retrieved');
 
     if (!orgId) {
       logger.warn('⚠️ No Clerk organization found for user');
@@ -112,25 +114,26 @@ export async function getAccountSetupStatus(
 }
 
 //Our system takes the first organization as a default
-async function getClerkOrganizationId(userId: string): Promise<string | null> {
+async function getBetterAuthOrganizationId(
+  userId: string
+): Promise<string | null> {
   try {
-    logger.info({ userId }, 'Fetching Clerk organization memberships');
+    logger.info({ userId }, 'Fetching Better Auth organization memberships');
 
-    const client = await clerkClient();
-    const memberships = await client.users.getOrganizationMembershipList({
-      userId,
+    // @ts-ignore - Better Auth types don't expose listOrganizations yet
+    const memberships = await (auth.api as any).listOrganizations({
+      headers: await headers(),
     });
 
     logger.info(
       {
-        membershipCount: memberships?.data?.length,
-        firstOrgId: memberships?.data[0]?.organization?.id,
+        membershipCount: memberships?.length,
+        firstOrgId: memberships?.[0]?.id,
       },
-      'Clerk memberships retrieved'
+      'Better Auth memberships retrieved'
     );
 
-    const organization = memberships?.data[0]?.organization;
-    return organization?.id || null;
+    return memberships?.[0]?.id || null;
   } catch (error) {
     logger.error({ err: error }, 'Error getting organization ID');
     throw error;
@@ -141,7 +144,7 @@ async function getInternalOrganization(orgId: string) {
   try {
     logger.info({ orgId }, 'Querying database for internal organization');
 
-    const org = await db.organization.findFirst({
+    const org = await db.internalOrganization.findFirst({
       where: {
         provider_id: orgId,
       },

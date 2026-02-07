@@ -1,71 +1,111 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSignUp } from '@clerk/nextjs';
 import { useLocale, useTranslations } from 'next-intl';
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 
 import { useRouter } from '@/i18n/routing';
-import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
 import { Button, Input } from '@ragenai/common-ui';
+import { signUp } from '@/app/hooks/use-better-auth';
+import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
-import { type ClerkAPIError } from '@clerk/types';
 import { addSubscriberToKit } from './actions';
-import { SocialAuthOptions } from '../../SocialAuthOptions';
 
 export const RegisterForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const locale = useLocale();
 
-  const { isLoaded, signUp } = useSignUp();
   const t = useTranslations('sign-up');
   const { push } = useRouter();
 
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-    setError,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema(t)),
   });
 
-  const termsValue = watch('terms');
-  useEffect(() => {
-    setTermsAccepted(!!termsValue);
-  }, [termsValue]);
-
   const onSubmit = async (data: RegistrationFormData) => {
-    if (!isLoaded) return;
     setIsSubmitting(true);
+    setError(null);
 
     const { email, password } = data;
 
     try {
-      await signUp.create({
-        emailAddress: email,
+      const result = await signUp.email({
+        email,
         password,
+        name: email.split('@')[0], // Default name from email
       });
 
-      await signUp.prepareEmailAddressVerification({
-        strategy: 'email_code',
-      });
+      if (result.error) {
+        setError(result.error.message || 'Registration failed');
+        return;
+      }
 
-      // TODO: works for non SSO login
+      // Add to newsletter if consent given
       if (data.newsletter_consent) {
         await addSubscriberToKit(email);
       }
 
-      push('/enter-code');
-    } catch (error) {
-      if (isClerkAPIResponseError(error)) {
-        setApiErrors(error.errors);
+      // Check if user came from invitation link
+      const searchParams = new URLSearchParams(window.location.search);
+      const invitationId = searchParams.get('invitationId');
+
+      if (invitationId) {
+        // Auto-accept invitation after registration
+        try {
+          const { acceptInvitation } = await import(
+            '@/app/[locale]/(auth)/accept-invitation/actions'
+          );
+          const acceptResult = await acceptInvitation(invitationId);
+
+          if (acceptResult.success) {
+            // eslint-disable-next-line no-console
+            console.log('Invitation accepted automatically after registration');
+            // Redirect to home page
+            window.location.href = `/${locale}/`;
+            return;
+          } else {
+            // eslint-disable-next-line no-console
+            console.warn(
+              'Failed to auto-accept invitation:',
+              acceptResult.error
+            );
+            // Continue with normal onboarding
+          }
+        } catch (inviteError) {
+          // eslint-disable-next-line no-console
+          console.error('Error auto-accepting invitation:', inviteError);
+          // Continue with normal onboarding
+        }
       }
+
+      // Email verification is disabled (requireEmailVerification: false)
+      // User is automatically logged in after registration
+      // Finalize user onboarding (set activeOrganizationId + trial subscription)
+      try {
+        await finalizeUserOnboarding();
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          'Onboarding finalization failed, relying on fallback:',
+          err
+        );
+        // Continue anyway - middleware/account-configuration will handle it
+      }
+
+      // Use window.location.href to force full page reload and session refresh
+      window.location.href = `/${locale}/`;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Registration error:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -172,6 +212,10 @@ export const RegisterForm = () => {
           </div>
         </div>
 
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>
+        )}
+
         <Button
           type="submit"
           className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -181,14 +225,7 @@ export const RegisterForm = () => {
         >
           {t('sign-up')}
         </Button>
-        <ClerkErrorsInterface apiErrors={apiErrors} />
       </form>
-
-      <SocialAuthOptions
-        setError={setError}
-        isSignUp={true}
-        termsAccepted={termsAccepted}
-      />
     </>
   );
 };

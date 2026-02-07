@@ -4,7 +4,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 // Note: validateEnvs removed due to ESM import limitations with .ts files in .mjs
 // Consider converting next.config.mjs to next.config.ts if env validation is needed
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
 const isStagingTargetEnv = process.env.TARGET_ENV === 'staging';
@@ -70,10 +70,77 @@ const nextConfig = {
     '@langchain/core',
     'langchain',
     '@langchain/community',
+    // Note: better-auth removed from serverExternalPackages to allow client-side usage
   ],
 
-  webpack: (config, { isServer }) => {
+
+  transpilePackages: ['better-auth'],
+
+  webpack: (config, { isServer, webpack }) => {
+    // Handle Node.js protocol imports (node:stream, node:crypto, etc.) used by Better Auth and pino-pretty
+    const nodeModules = [
+      'stream',
+      'crypto',
+      'buffer',
+      'util',
+      'path',
+      'fs',
+      'os',
+      'http',
+      'https',
+      'url',
+      'zlib',
+      'querystring',
+      'events',
+      'process',
+      'assert',
+      'constants',
+      'worker_threads',
+      'child_process',
+      'net',
+      'tls',
+      'dns',
+      'dgram',
+    ];
+
+    // Replace node: protocol imports with standard module names
+    nodeModules.forEach((module) => {
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          new RegExp(`^node:${module}$`),
+          module
+        )
+      );
+    });
+
     if (!isServer) {
+      // Replace serverLogger with clientLogger on client-side using NormalModuleReplacementPlugin
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /serverLogger/,
+          (resource) => {
+            resource.request = resource.request.replace(/serverLogger/, 'clientLogger');
+          }
+        )
+      );
+
+      // Prevent server-only modules from being bundled on client-side
+      config.externals = config.externals || [];
+      config.externals.push(
+        'better-auth',
+        'better-auth/adapters/prisma',
+        'better-auth/plugins',
+        'pino',
+        'pino-pretty',
+        'pino-sentry'
+      );
+
+      // Replace serverLogger with clientLogger on client-side
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@/app/lib/utils/logger/serverLogger': '@/app/lib/utils/logger/clientLogger',
+      };
+
       config.resolve.fallback = {
         ...config.resolve.fallback,
         child_process: false, // for pino-sentry server logging
@@ -84,6 +151,10 @@ const nextConfig = {
         async_hooks: false, // for pino-sentry server logging
         diagnostics_channel: false, // for playwright
         worker_threads: false,
+        // Better Auth fallbacks for client-side
+        crypto: false,
+        stream: false,
+        buffer: false,
       };
     } else {
       // Setting `resolve.alias` to `false` will tell webpack to ignore a module.

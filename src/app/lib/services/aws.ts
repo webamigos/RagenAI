@@ -4,7 +4,7 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 export const getAwsClient = () => {
   return new S3Client({

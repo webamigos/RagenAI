@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
@@ -41,7 +41,7 @@ export const initializeRagChain = async ({
   threadDocuments,
 }: InitializeRagChainParams) => {
   try {
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     setSentryServiceTag(serviceName);
 
     if (!orgId) {
@@ -117,7 +117,9 @@ export const initializeRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
+        // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
+        // QdrantVectorStore needs filter passed to asRetriever()
+        metadataFilter: isSupabaseVectorStore ? undefined : filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
@@ -133,9 +135,9 @@ export const initializeRagChain = async ({
 
 const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
   try {
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
-      throw new Error('Organization ID is required, could not get from clerk');
+      throw new Error('Organization ID is required');
     }
 
     logger.info('creating qdrant vector store', {
@@ -175,9 +177,9 @@ const createSupabaseVectorStore = async (
   projectId?: number
 ): Promise<SupabaseVectorStore> => {
   try {
-    const { orgId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
-      throw new Error('Organization ID is required, could not get from clerk');
+      throw new Error('Organization ID is required');
     }
 
     setSentryServiceTag(serviceName);

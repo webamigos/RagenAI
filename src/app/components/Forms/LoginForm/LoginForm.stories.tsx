@@ -1,6 +1,12 @@
 import { Meta, StoryFn } from '@storybook/react';
 import { LoginForm } from './LoginForm';
-import { ClerkAPIError } from '@clerk/types';
+
+// Simple error type to replace APIError
+type APIError = {
+  code?: string;
+  message: string;
+  meta?: Record<string, unknown>;
+};
 
 export default {
   title: 'UI/Pages/LoginForm',
@@ -23,7 +29,7 @@ WithValidationErrors.args = {
       meta: {},
     },
     { code: 'invalid_password', message: 'Password is too weak', meta: {} },
-  ] as ClerkAPIError[],
+  ] as APIError[],
 };
 
 export const Submitting = Template.bind({});
@@ -35,5 +41,5 @@ export const ClerkErrors = Template.bind({});
 ClerkErrors.args = {
   apiErrors: [
     { code: 'not_found', message: 'User not found', meta: {} },
-  ] as ClerkAPIError[],
+  ] as APIError[],
 };

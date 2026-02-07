@@ -1,14 +1,13 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import { redirect as nextRedirect } from 'next/navigation';
 
-import { getTranslations } from 'next-intl/server';
-import { auth } from '@clerk/nextjs/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { Link } from '@/i18n/routing';
 
 import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
-import { SocialAuthOptions } from '@/app/components/SocialAuthOptions';
 import { PropsWihLocale } from '@/app/lib/types/types';
-import { redirect } from 'next/navigation';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
@@ -21,11 +20,12 @@ export async function generateMetadata({ params }: PropsWihLocale) {
 }
 
 export default async function SignInPage() {
-  const { userId } = await auth();
+  const user = await getCurrentUser();
   const t = await getTranslations('sign-in');
 
-  if (userId) {
-    redirect('/');
+  if (user) {
+    const locale = await getLocale();
+    nextRedirect(`/${locale}`);
   }
 
   return (
@@ -50,8 +50,6 @@ export default async function SignInPage() {
 
           <div className="mt-8">
             <LoginForm />
-
-            <SocialAuthOptions isSignUp={false} />
 
             <ForgotPasswordLink label={t('forgot-password')} />
           </div>

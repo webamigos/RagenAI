@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { statusToast } from '@/app/lib/utils/toast';
 import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
 import { uploadProjectFiles } from '@/app/lib/services/api';

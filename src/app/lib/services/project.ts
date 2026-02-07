@@ -2,13 +2,13 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '../utils/logger';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 import crypto from 'crypto';
 import { Project, Source, UserFile } from '@prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
-  const result = await db.organization.findFirst({
+  const result = await db.internalOrganization.findFirst({
     where: {
       provider_id: clerkOrgId,
     },
@@ -28,7 +28,7 @@ export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
 export const fetchOrganizationDefaultProjectPublicId = async (
   clerkOrgId: string
 ) => {
-  const result = await db.organization.findFirst({
+  const result = await db.internalOrganization.findFirst({
     where: {
       provider_id: clerkOrgId,
     },
@@ -47,7 +47,7 @@ export const fetchOrganizationDefaultProjectPublicId = async (
 
 export const findOrganizationByProviderId = async (providerId: string) => {
   try {
-    return await db.organization.findUnique({
+    return await db.internalOrganization.findUnique({
       where: {
         provider_id: providerId,
       },

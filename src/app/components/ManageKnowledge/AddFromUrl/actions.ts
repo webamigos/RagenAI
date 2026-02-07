@@ -2,7 +2,7 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryClerkOrganizationTag,
@@ -29,7 +29,7 @@ export async function processUrl(
   url: string,
   mode: WebsiteLoaderMode
 ): Promise<ProcessUrlResult> {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return {

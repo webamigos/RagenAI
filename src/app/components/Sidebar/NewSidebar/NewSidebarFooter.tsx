@@ -1,6 +1,7 @@
 'use client';
 
-import { SignOutButton, useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
+import { signOut } from '@/app/hooks/use-better-auth';
 
 import { Avatar } from '@ragenai/tui/avatar';
 import {
@@ -20,14 +21,15 @@ import {
   ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/16/solid';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 export const NewSidebarFooter = () => {
   const { user } = useUser();
   const t = useTranslations('sidebar.footer');
-  const userAvatar = user?.imageUrl;
-  const userEmail = user?.emailAddresses[0].emailAddress;
-  const userFirstName = user?.firstName;
+  const locale = useLocale();
+  const userAvatar = user?.image;
+  const userEmail = user?.email; // Better Auth: email is a direct string property
+  const userFirstName = user?.name; // Better Auth: uses 'name' instead of 'firstName'
 
   return (
     <SidebarFooter>
@@ -61,12 +63,15 @@ export const NewSidebarFooter = () => {
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
-          <SignOutButton>
-            <DropdownItem>
-              <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
-              <DropdownLabel>{t('sign-out')}</DropdownLabel>
-            </DropdownItem>
-          </SignOutButton>
+          <DropdownItem
+            onClick={async () => {
+              await signOut();
+              window.location.href = `/${locale}/sign-in`;
+            }}
+          >
+            <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
+            <DropdownLabel>{t('sign-out')}</DropdownLabel>
+          </DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </SidebarFooter>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
@@ -7,6 +7,7 @@ import {
   setSentryClerkOrganizationTag,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,13 +23,24 @@ const updateModelSchema = z.object({
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { publicThreadId } = await params;
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('threads.model.patch');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!orgId) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+    setSentryServiceTag('threads.model.patch');
     setSentryClerkOrganizationTag(orgId);
 
     const body = await request.json();

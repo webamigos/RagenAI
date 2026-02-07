@@ -1,8 +1,10 @@
 'use server';
 
-import { auth, clerkClient } from '@clerk/nextjs/server';
 import { StatusCodes } from 'http-status-codes';
-import { getOrgIdFromAuthOrThrow } from '../lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '../lib/utils/auth-helpers';
 
 import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
@@ -49,8 +51,9 @@ import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
-import { getOrgIdOrThrow } from '../lib/services/clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import { Project, UserFile } from '@prisma/client';
+import db from '@ragenai/prisma-client';
 
 const serviceName = 'actions';
 
@@ -328,29 +331,28 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
   };
 };
 
-//save data to clerk user profile
 export const saveUserMetadata = async (
-  clerkUserId: string,
+  userId: string,
   metadata: Record<string, unknown>
 ): Promise<{ success: boolean; error?: string }> => {
-  if (!clerkUserId || typeof clerkUserId !== 'string') {
-    return { success: false, error: 'Invalid clerkUserId' };
+  if (!userId || typeof userId !== 'string') {
+    return { success: false, error: 'Invalid userId' };
   }
 
   try {
-    const user = await clerkClient().users.getUser(clerkUserId);
-    const currentMetadata = user.publicMetadata || {};
-
-    await clerkClient().users.updateUser(clerkUserId, {
-      publicMetadata: {
-        ...currentMetadata,
-        ...metadata,
+    // Update User table with metadata
+    await db.user.update({
+      where: { id: userId },
+      data: {
+        onboardingComplete: metadata.onboardingComplete as boolean | undefined,
+        viewMode: metadata.viewMode as string | undefined,
       },
     });
 
+    logger.info({ userId, metadata }, 'User metadata saved');
     return { success: true };
   } catch (error) {
-    logger.error(`${{ err: error }} Error saving user metadata:`);
+    logger.error({ err: error }, 'Error saving user metadata');
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -358,8 +360,6 @@ export const saveUserMetadata = async (
   }
 };
 
-// save data to clerk organization profile
-// TODO: should it be public?
 export const saveOrganizationPublicMetadata = async (
   organizationId: string,
   { hasKnowledge }: ClerkOrganizationPublicMetadata
@@ -368,13 +368,14 @@ export const saveOrganizationPublicMetadata = async (
   setSentryClerkUserTag(organizationId);
 
   try {
-    await clerkClient().organizations.updateOrganizationMetadata(
-      organizationId,
-      {
-        publicMetadata: {
-          hasKnowledge,
-        },
-      }
+    await db.organization.update({
+      where: { id: organizationId },
+      data: { hasKnowledge },
+    });
+
+    logger.info(
+      { organizationId, hasKnowledge },
+      'Organization metadata saved'
     );
   } catch (error) {
     logger.error(
@@ -392,12 +393,19 @@ export const saveOrganizationInitialMetadata = async (
   setSentryClerkUserTag(organizationId);
 
   try {
-    await (
-      await clerkClient()
-    ).organizations.updateOrganizationMetadata(organizationId, {
-      publicMetadata,
-      privateMetadata,
+    await db.organization.update({
+      where: { id: organizationId },
+      data: {
+        hasKnowledge: publicMetadata?.hasKnowledge,
+        vectorStore: privateMetadata?.vector_store,
+        ragenOrgId: privateMetadata?.ragen_org_id?.toString(),
+      },
     });
+
+    logger.info(
+      { organizationId, publicMetadata, privateMetadata },
+      'Organization initial metadata saved'
+    );
   } catch (error) {
     logger.error(
       { error },
@@ -413,14 +421,28 @@ export const getOrganizationMetadata = async (
   setSentryClerkUserTag(organizationId);
 
   try {
-    const organization = await (
-      await clerkClient()
-    ).organizations.getOrganization({
-      organizationId,
+    const org = await db.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        hasKnowledge: true,
+        vectorStore: true,
+        ragenOrgId: true,
+      },
     });
+
+    if (!org) {
+      throw new Error(`Organization ${organizationId} not found`);
+    }
+
+    logger.info({ organizationId }, 'Organization metadata retrieved');
     return {
-      publicMetadata: organization.publicMetadata,
-      privateMetadata: organization.privateMetadata,
+      publicMetadata: {
+        hasKnowledge: org.hasKnowledge,
+      },
+      privateMetadata: {
+        vector_store: org.vectorStore || undefined,
+        ragen_org_id: org.ragenOrgId || undefined,
+      },
     } as ClerkOrganizationMetadata;
   } catch (error) {
     logger.error(
@@ -491,11 +513,7 @@ export const trackThreadCreated = async () => {
 };
 
 export const getDefaultProjectId = async () => {
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    throw new Error('Organization ID is required');
-  }
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   try {
     return await fetchOrganizationDefaultProjectId(orgId);
@@ -523,17 +541,13 @@ export const getDefaultProjectPublicId = async () => {
 
 export const getAccountSetupStatusAction = async () => {
   try {
-    // Try to get userId from auth context
-    // This works in some contexts where currentUser() doesn't
-    let userId: string | undefined;
-    try {
-      const authResult = await auth();
-      userId = authResult.userId || undefined;
-    } catch (authError) {
-      // If auth() fails, getAccountSetupStatus will try currentUser() as fallback
-      logger.warn(
-        'Could not get userId from auth() in Server Action, will use currentUser()'
-      );
+    // Get userId from Better Auth
+    const user = await getCurrentUser();
+    const userId = user?.id;
+
+    if (!userId) {
+      logger.warn('No user found in getAccountSetupStatusAction');
+      throw new Error('User not authenticated');
     }
 
     return await getAccountSetupStatus(userId);

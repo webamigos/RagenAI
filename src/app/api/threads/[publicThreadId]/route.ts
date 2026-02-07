@@ -1,12 +1,13 @@
 import { NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
-import { getAuth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
 import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { ChatType, createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '@/app/api/threads/services/assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,11 +20,20 @@ export async function POST(request: NextRequest, { params }: Params) {
   let stream: ReadableStream | undefined;
 
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('threads');
-    if (!orgId) {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user) {
       throw new Error('Unauthorized');
     }
+
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      throw new Error('Organization not found');
+    }
+
+    setSentryServiceTag('threads');
     setSentryClerkOrganizationTag(orgId);
 
     const { publicThreadId } = await params;

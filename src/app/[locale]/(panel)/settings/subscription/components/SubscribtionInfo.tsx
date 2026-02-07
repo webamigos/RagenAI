@@ -12,7 +12,7 @@ import {
   getSubscriptionData,
 } from '../actions';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import {
   DescriptionDetails,
   DescriptionList,

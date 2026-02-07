@@ -1,13 +1,9 @@
 import { getMessages, setRequestLocale } from 'next-intl/server';
-import { ClerkProvider } from '@clerk/nextjs';
-import { enUS } from '@clerk/localizations';
 import { NextIntlClientProvider } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { GoogleTagManager } from '@next/third-parties/google';
 
 import { Providers } from '../components/Providers';
-import { OrganizationActivator } from '../components/OrganizationActivator';
-import { plPL } from '../messages/pl-PL-clerk';
 import { timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
@@ -53,22 +49,23 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider timeZone={timezone} messages={messages}>
-      <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
-        <OrganizationActivator />
-        <html lang={locale} className="h-full" suppressHydrationWarning>
-          {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
-          <body className={`${interFont.className} h-full`}>
-            <Providers>
-              <SearchThreadsProvider>
-                <SettingsProvider>
-                  <JoyrideProvider>{children}</JoyrideProvider>
-                </SettingsProvider>
-              </SearchThreadsProvider>
-            </Providers>
-          </body>
-        </html>
-      </ClerkProvider>
+    <NextIntlClientProvider
+      locale={locale}
+      timeZone={timezone}
+      messages={messages}
+    >
+      <html lang={locale} className="h-full" suppressHydrationWarning>
+        {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
+        <body className={`${interFont.className} h-full`}>
+          <Providers>
+            <SearchThreadsProvider>
+              <SettingsProvider>
+                <JoyrideProvider>{children}</JoyrideProvider>
+              </SettingsProvider>
+            </SearchThreadsProvider>
+          </Providers>
+        </body>
+      </html>
     </NextIntlClientProvider>
   );
 }

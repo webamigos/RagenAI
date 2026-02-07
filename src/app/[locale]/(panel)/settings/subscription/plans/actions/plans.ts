@@ -3,7 +3,7 @@
 import { PlanStatus, PlanType, SubscriptionStatus } from '@prisma/client';
 import prisma from '@ragenai/prisma-client';
 import { fetchStripePlans } from '@/app/lib/services/stripe';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export async function fetchAvailablePlans() {
   const plans = await prisma.plan.findMany({
@@ -23,13 +23,13 @@ export async function fetchAvailablePlans() {
 }
 
 export async function checkIfStripeSubscriptionIsActive() {
-  const { orgId } = await auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return false;
   }
 
-  const organization = await prisma.organization.findUnique({
+  const organization = await prisma.internalOrganization.findUnique({
     where: { provider_id: orgId },
     select: {
       subscription: {

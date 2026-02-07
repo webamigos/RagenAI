@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  email String
-  id    String @id @default(uuid())
-}
-
 model Settings {
   key   String @id
   value String
@@ -144,11 +139,11 @@ model ThreadDocument {
 // keys, stats and other informations. Other tables rather doesn't need this kind of ids
 // id - internal id, will be used in internal systems and for redis
 // public_id - id which will be used in routing in the app
-// provider_id - organization id from provider (e.g. Clerk organization id)
+// provider_id - organization id from provider (e.g. Better Auth organization id)
 // NOTE: Prisma nukes custom sequences:
 // - https://github.com/prisma/prisma/issues/24677
 // - https://github.com/prisma/prisma/issues/25060
-model Organization {
+model InternalOrganization {
   // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
   id           Int           @id @default(autoincrement())
   public_id    String        @unique @default(cuid())
@@ -161,12 +156,13 @@ model Organization {
 
   @@index([public_id])
   @@index([provider_id])
+  @@map("Organization")
 }
 
 model Subscription {
-  id                     Int                @id @default(autoincrement())
-  organization           Organization       @relation(fields: [organization_id], references: [id])
-  organization_id        Int                @unique
+  id                     Int                       @id @default(autoincrement())
+  organization           InternalOrganization @relation(fields: [organization_id], references: [id])
+  organization_id        Int                       @unique
   plan                   Plan               @relation(fields: [plan_id], references: [id])
   plan_id                Int
   stripe_customer_id     String?
@@ -217,11 +213,11 @@ model UsagePeriod {
 }
 
 model Project {
-  id                       Int            @id @default(autoincrement())
-  public_id                String         @unique @default(cuid())
+  id                       Int                       @id @default(autoincrement())
+  public_id                String                    @unique @default(cuid())
   title                    String
-  organization             Organization?  @relation(fields: [internal_organization_id], references: [id], onDelete: SetNull)
-  created_at               DateTime       @default(now()) @db.Timestamptz
+  organization             InternalOrganization? @relation(fields: [internal_organization_id], references: [id], onDelete: SetNull)
+  created_at               DateTime                  @default(now()) @db.Timestamptz
   updated_at               DateTime       @updatedAt @db.Timestamptz
   internal_organization_id Int?
   api_key                  ApiKey[]
@@ -244,21 +240,142 @@ model Project {
 
 model ApiKey {
   // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
-  id              Int           @id @default(autoincrement())
+  id              Int                       @id @default(autoincrement())
   name            String
-  public_id       String        @unique @default(cuid())
+  public_id       String                    @unique @default(cuid())
   masked_value    String
-  last_used_at    DateTime?     @db.Timestamptz
-  created_at      DateTime      @default(now()) @db.Timestamptz
+  last_used_at    DateTime?                 @db.Timestamptz
+  created_at      DateTime                  @default(now()) @db.Timestamptz
   created_by      String?
-  updated_at      DateTime      @updatedAt @db.Timestamptz
-  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  updated_at      DateTime                  @updatedAt @db.Timestamptz
+  organization    InternalOrganization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
   organization_id Int?
   project         Project?      @relation(fields: [project_id], references: [id], onDelete: SetNull)
   project_id      Int?
 
   @@index([public_id])
   @@index([organization_id])
+}
+
+// Better Auth tables
+model User {
+  id                 String   @id
+  name               String?
+  email              String   @unique
+  emailVerified      Boolean  @default(false)
+  image              String?
+  createdAt          DateTime @default(now()) @db.Timestamptz
+  updatedAt          DateTime @updatedAt @db.Timestamptz
+  onboardingComplete Boolean  @default(false)
+  viewMode           String   @default("list")
+
+  sessions Session[]
+  accounts Account[]
+  members  Member[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime @db.Timestamptz
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  // Better Auth organization plugin fields
+  activeOrganizationId String?
+  activeTeamId         String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id           String    @id
+  userId       String
+  accountId    String
+  providerId   String
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime? @db.Timestamptz
+  password     String?
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Organization {
+  id        String   @id
+  name      String
+  slug      String?  @unique
+  logo      String?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  metadata  Json?
+
+  // Metadata fields from Clerk migration
+  hasKnowledge  Boolean @default(false)
+  vectorStore   String?
+  ragenOrgId    String?
+
+  members Member[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String   @id
+  organizationId String
+  userId         String
+  role           String
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String   @id
+  organizationId String
+  email          String
+  role           String
+  status         String
+  expiresAt      DateTime @db.Timestamptz
+  inviterId      String?
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
+
+  @@unique([organizationId, email])
+  @@map("invitation")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @db.Timestamptz
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  updatedAt  DateTime @updatedAt @db.Timestamptz
+
+  @@unique([identifier, value])
+  @@map("verification")
 }
 
 enum Source {

@@ -1,6 +1,9 @@
 'use server';
 
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import {
+  getCurrentUser,
+  getOrgIdFromAuthOrThrow,
+} from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import { createCheckout } from '@/app/lib/services/stripe';
 import { headers } from 'next/headers';
@@ -18,14 +21,19 @@ export async function createCheckoutSession(priceId: string) {
       throw new Error('Price ID is required');
     }
 
-    const { orgId, userId, sessionId } = await auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error(
         'Cannot create checkout session, no organization id found'
       );
     }
 
-    setSentryClerkContext({ orgId, userId, sessionId });
+    const user = await getCurrentUser();
+    if (!user || !user.email) {
+      throw new Error('Cannot create checkout session, user not found');
+    }
+
+    setSentryClerkContext({ orgId, userId: user.id, sessionId: undefined });
 
     const subscriptionIsActive = await checkIfStripeSubscriptionIsActive();
 
@@ -33,8 +41,7 @@ export async function createCheckoutSession(priceId: string) {
       throw new Error('Cannot create checkout session, subscription is active');
     }
 
-    const user = await (await clerkClient()).users.getUser(userId);
-    const email = user.emailAddresses[0].emailAddress;
+    const email = user.email;
     const origin: string = (await headers()).get('origin') as string;
 
     const checkoutSession = await createCheckout({

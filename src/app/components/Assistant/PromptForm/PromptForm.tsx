@@ -166,16 +166,6 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               onThreadDocumentRemove={handleThreadDocumentRemove}
             />
           </div>
-          <AskQuestion
-            isUserLogged={isUserLogged}
-            disabled={isLoading}
-            error={errors?.prompt}
-            register={register}
-            onSend={handleSend}
-            value={promptValue}
-            handleResponseType={handleResponseType}
-            setPromptValue={(text: string) => setValue('prompt', text)}
-          />
 
           {!isPublicAccess && (
             <div className="flex w-full">

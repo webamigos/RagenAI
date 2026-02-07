@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Link } from '@/i18n/routing';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';

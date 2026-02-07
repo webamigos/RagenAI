@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { useVoiceMode } from './hooks/useVoiceMode';
 import { VoiceModeButton } from './components/VoiceModeButton';
 import { VoiceModeHeader } from './components/VoiceModeHeader';
@@ -39,6 +39,18 @@ export const VoiceMode = ({
     isWaitingForResponse,
     error,
   } = state;
+
+  // Handle Escape key to close voice mode
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isWaitingForResponse) {
+        handlers.handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handlers, isWaitingForResponse]);
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-secondary-dark z-50 flex flex-col items-center justify-center">

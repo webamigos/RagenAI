@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { Suspense } from 'react';
 
 import { ResetPasswordForm } from '@/app/components/Forms';
 import { PropsWihLocale } from '@/app/lib/types/types';
@@ -16,5 +17,9 @@ export default async function ResetPasswordPage({ params }: PropsWihLocale) {
   const { locale } = await params;
 
   setRequestLocale(locale);
-  return <ResetPasswordForm />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
 }

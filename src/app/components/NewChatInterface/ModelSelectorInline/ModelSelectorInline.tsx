@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useUser, useOrganization, useAuth } from '@/app/hooks/use-auth';
 
 import {
   AvailableModel,
@@ -38,14 +38,15 @@ export const ModelSelectorInline = ({
   const { errorToast } = statusToast();
   const { organization } = useOrganization();
   const { user } = useUser();
+  const { orgId: sessionOrgId } = useAuth(); // Get orgId from session.activeOrganizationId
 
   useEffect(() => {
     const loadAvailableModels = async () => {
       if (isLoadingModels.current) return;
 
-      // Fallback pattern: get orgId from organization hook or user memberships
-      const orgId =
-        organization?.id || user?.organizationMemberships[0]?.organization.id;
+      // Get orgId from organization hook or session.activeOrganizationId
+      // (activeOrganizationId is set by finalizeUserOnboarding during login/registration)
+      const orgId = organization?.id || sessionOrgId;
 
       if (!orgId) {
         logger.warn('No organization ID available, cannot load models');
@@ -70,7 +71,7 @@ export const ModelSelectorInline = ({
     };
 
     loadAvailableModels();
-  }, [organization?.id, user?.organizationMemberships]);
+  }, [organization?.id, sessionOrgId]);
 
   useEffect(() => {
     if (!modelsLoading && availableModels.length > 0) {

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '@/app/hooks/use-auth';
 import { FolderIcon } from '@heroicons/react/20/solid';
 import { fetchProjectsForUser } from '@/app/lib/services/project';
 import type { MentionedProject } from './MentionTextarea';

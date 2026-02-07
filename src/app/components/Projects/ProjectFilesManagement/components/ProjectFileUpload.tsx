@@ -2,7 +2,7 @@
 
 import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@/app/hooks/use-auth';
 import { Suspense, lazy } from 'react';
 
 import { FileUploader } from '@ragenai/common-ui/FileUploader';

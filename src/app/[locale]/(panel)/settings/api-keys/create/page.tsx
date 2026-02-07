@@ -1,6 +1,9 @@
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
-import { auth } from '@clerk/nextjs/server';
+import {
+  getCurrentUser,
+  getOrgIdFromAuthOrThrow,
+} from '@/app/lib/utils/auth-helpers';
 
 import { Container } from '@ragenai/common-ui';
 
@@ -24,12 +27,14 @@ export default async function CreateApiKeyPage({ params }: PropsWihLocale) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { orgId, userId } = await auth();
-  if (!orgId) {
-    logger.error('Organization not found in API keys creation form!');
-    throw new Error('Organization not found!');
+  const user = await getCurrentUser();
+  const orgId = await getOrgIdFromAuthOrThrow();
+
+  if (!orgId || !user?.id) {
+    logger.error('Organization or user not found in API keys creation form!');
+    throw new Error('Organization or user not found!');
   }
-  const userProjects = await fetchProjectsForUser(orgId, userId);
+  const userProjects = await fetchProjectsForUser(orgId, user.id);
   const defaultPublicProjectId = await getDefaultProjectPublicId();
   const t = await getTranslations('api-keys');
 

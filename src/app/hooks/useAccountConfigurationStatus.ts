@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useClerk } from '@clerk/nextjs';
 import { logger } from '@/app/lib/utils/logger';
 import { getAccountSetupStatusAction } from '../actions';
+import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
 import type { AccountSetupStatus } from '@/app/lib/types/account-setup';
 
@@ -25,7 +25,6 @@ export function useAccountSetupStatus({
   onSuccessCallback,
   onErrorCallback,
 }: HookInputType): HookOutputType {
-  const clerk = useClerk();
   const checkInProgressRef = useRef(false);
   const retryCountRef = useRef(0);
 
@@ -64,8 +63,18 @@ export function useAccountSetupStatus({
         const setupComplete = status?.accountSetupComplete;
 
         if (setupComplete) {
-          logger.info('Account configuration complete, redirecting...');
-          await clerk.setActive({ organization: status.organizationId });
+          logger.info(
+            'Account configuration complete, finalizing onboarding...'
+          );
+
+          // Use Better Auth instead of Clerk stub
+          try {
+            await finalizeUserOnboarding();
+          } catch (err) {
+            logger.error({ err }, 'Failed to finalize onboarding');
+            // Continue anyway - status check passed
+          }
+
           onSuccessCallback?.(status);
           return;
         } else {
@@ -84,7 +93,7 @@ export function useAccountSetupStatus({
 
     poll();
     return () => clearTimeout(timeoutId);
-  }, [clerk, refetchInterval, isError, onSuccessCallback, onErrorCallback]);
+  }, [refetchInterval, isError, onSuccessCallback, onErrorCallback]);
 
   return {
     isError,
