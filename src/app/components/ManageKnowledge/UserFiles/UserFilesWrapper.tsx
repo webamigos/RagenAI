@@ -14,7 +14,7 @@ import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
 import { LayoutToggle } from './LayoutToggle';
-import { UserFile } from '@prisma/client';
+import { UserFile } from '@/generated/prisma/client';
 
 export type ModalStateProps = {
   isOpen: boolean;

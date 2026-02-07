@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { Thread } from '@prisma/client';
+import { Thread } from '@/generated/prisma/client';
 import { setSentryServiceTag } from '../services/sentry';
 import {
   createNewThreadInDb,

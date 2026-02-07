@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { AccountSetupStatus } from '../types/account-setup';
 import db from '@ragenai/prisma-client';
-import { PlanStatus } from '@prisma/client';
+import { PlanStatus } from '@/generated/prisma/client';
 import { logger } from '../utils/logger';
 import { getCurrentUser } from '../utils/auth-helpers';
 

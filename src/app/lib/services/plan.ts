@@ -1,5 +1,9 @@
-import { PlanStatus, SubscriptionStatus, Subscription } from '@prisma/client';
-import { PlanType } from '@prisma/client';
+import {
+  PlanStatus,
+  SubscriptionStatus,
+  Subscription,
+} from '@/generated/prisma/client';
+import { PlanType } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import Stripe from 'stripe';
 import { logger } from '../utils/logger';

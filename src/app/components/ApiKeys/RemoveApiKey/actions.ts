@@ -10,7 +10,7 @@ import {
   setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';
 import { removeApiKeyFromDb } from '@/app/lib/services/apiKeys';
-import { ApiKey } from '@prisma/client';
+import { ApiKey } from '@/generated/prisma/client';
 
 const serviceName = 'removeApiKey';
 

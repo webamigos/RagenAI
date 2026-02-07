@@ -1,9 +1,10 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 
 const prismaClientSingleton = () => {
-  // prisma logs are too verbose and nobody reads it even on localhost ;)
-  // return new PrismaClient({ log: ['query'] });
-  return new PrismaClient();
+  return new PrismaClient({ adapter });
 };
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;

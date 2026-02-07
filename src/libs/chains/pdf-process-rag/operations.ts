@@ -16,10 +16,12 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { PDFiumPageRenderOptions } from '@hyzyla/pdfium/dist/page.types';
+import type { PDFiumPageRenderOptions } from '@hyzyla/pdfium';
 
-async function renderImage(options: PDFiumPageRenderOptions) {
-  return await sharp(options.data, {
+async function renderImage(
+  options: PDFiumPageRenderOptions
+): Promise<Uint8Array> {
+  const buffer = await sharp(options.data, {
     raw: {
       width: options.width,
       height: options.height,
@@ -28,6 +30,7 @@ async function renderImage(options: PDFiumPageRenderOptions) {
   })
     .png()
     .toBuffer();
+  return new Uint8Array(buffer);
 }
 
 export async function describeImageWithLLM(
@@ -122,7 +125,7 @@ export const convertPDFToImages = async (filePath: string, fileId: string) => {
   try {
     const pdfBuffer = await readFile(filePath);
     const library = await PDFiumLibrary.init();
-    const document = await library.loadDocument(pdfBuffer);
+    const document = await library.loadDocument(new Uint8Array(pdfBuffer));
 
     const convertedPages = [];
 
@@ -138,7 +141,7 @@ export const convertPDFToImages = async (filePath: string, fileId: string) => {
         directory,
         `${PDF_IMAGE_CONFIG.saveFilename}${page.number}.png`
       );
-      await fs.promises.writeFile(outputPath, Buffer.from(image.data));
+      await fs.promises.writeFile(outputPath, new Uint8Array(image.data));
 
       convertedPages.push({
         page: page.number,

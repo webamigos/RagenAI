@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES2022",
     "lib": ["dom", "dom.iterable", "esnext"],
     "types": ["node", "jest", "dom-speech-recognition"],
     "allowJs": true,
@@ -9,7 +9,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -42,5 +42,11 @@
     "src/app/api/settings/api-key/route.ts",
     "storybook/main.js"
   ],
-  "exclude": ["node_modules", "src/temporal", "scripts"]
+  "exclude": [
+    "node_modules",
+    "src/temporal",
+    "scripts",
+    "prisma.config.ts",
+    "vitest.config.ts"
+  ]
 }

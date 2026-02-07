@@ -1,4 +1,4 @@
-import { Role, Source } from '@prisma/client';
+import { Role, Source } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import {
   getThreadMessages,

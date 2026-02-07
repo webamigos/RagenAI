@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ThreadCommunicationType } from '@prisma/client';
+import { ThreadCommunicationType } from '@/generated/prisma/client';
 
 export type ThreadType = {
   created_at: string;

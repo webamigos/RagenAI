@@ -70,6 +70,7 @@ const nextConfig = {
     '@langchain/core',
     'langchain',
     '@langchain/community',
+    '@prisma/adapter-pg',
     // Note: better-auth removed from serverExternalPackages to allow client-side usage
   ],
 
@@ -101,6 +102,8 @@ const nextConfig = {
       'tls',
       'dns',
       'dgram',
+      'async_hooks',
+      'module',
     ];
 
     // Replace node: protocol imports with standard module names
@@ -151,6 +154,8 @@ const nextConfig = {
         async_hooks: false, // for pino-sentry server logging
         diagnostics_channel: false, // for playwright
         worker_threads: false,
+        dns: false, // for pg (Prisma adapter)
+        module: false, // for @prisma/client runtime
         // Better Auth fallbacks for client-side
         crypto: false,
         stream: false,

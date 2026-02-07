@@ -5,7 +5,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { ModalStateProps, UserFilesTable } from './UserFilesTable';
 
 import { type UserFileType } from '@/app/contracts/Documents';
-import { UserFile } from '@prisma/client';
+import { UserFile } from '@/generated/prisma/client';
 
 type FileListViewProps = {
   files: UserFileType[];

@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 import crypto from 'crypto';
-import { Project, Source, UserFile } from '@prisma/client';
+import { Project, Source, UserFile } from '@/generated/prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
   const result = await db.internalOrganization.findFirst({

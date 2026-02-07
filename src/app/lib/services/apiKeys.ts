@@ -4,7 +4,7 @@ import {
   ApiKey,
   type InternalOrganization,
   type Project,
-} from '@prisma/client';
+} from '@/generated/prisma/client';
 
 export const fetchOrganizationByProviderId = async (
   organizationProviderId: InternalOrganization['provider_id']

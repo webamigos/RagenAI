@@ -2,7 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
-import { EmbeddingStatus, FileType, UserFile } from '@prisma/client';
+import { EmbeddingStatus, FileType, UserFile } from '@/generated/prisma/client';
 import * as CommonUi from '@ragenai/common-ui';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';

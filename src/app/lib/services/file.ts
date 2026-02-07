@@ -2,7 +2,7 @@ import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 import { fetchOrganizationDefaultProjectId } from './project';
-import { FileType, UserFile } from '@prisma/client';
+import { FileType, UserFile } from '@/generated/prisma/client';
 
 export const getFileDetailsByPublicId = async (
   publicFileId: UserFile['public_id']

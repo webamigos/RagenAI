@@ -8,7 +8,7 @@ import {
   SseMessageError,
 } from '@/app/contracts/Events';
 
-import { Thread } from '@prisma/client';
+import { Thread } from '@/generated/prisma/client';
 import {
   ChatResponseType,
   ChatType,

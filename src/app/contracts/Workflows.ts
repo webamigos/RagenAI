@@ -1,4 +1,4 @@
-import { UserFile } from '@prisma/client';
+import { UserFile } from '@/generated/prisma/client';
 import { WebsiteLoaderMode } from './DocumentLoading';
 
 // Temporal workflow names

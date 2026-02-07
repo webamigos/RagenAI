@@ -1,4 +1,4 @@
-import { Message } from '@prisma/client';
+import { Message } from '@/generated/prisma/client';
 import { startOfDay, setHours } from 'date-fns';
 
 import db from '@ragenai/prisma-client';

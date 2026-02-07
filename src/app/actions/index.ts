@@ -52,7 +52,7 @@ import { logger } from '../lib/utils/logger';
 import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
-import { Project, UserFile } from '@prisma/client';
+import { Project, UserFile } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 
 const serviceName = 'actions';

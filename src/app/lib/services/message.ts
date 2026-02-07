@@ -1,6 +1,11 @@
 'use server';
 
-import { Thread, Message, Role, MessageContentType } from '@prisma/client';
+import {
+  Thread,
+  Message,
+  Role,
+  MessageContentType,
+} from '@/generated/prisma/client';
 
 import db from '@ragenai/prisma-client';
 

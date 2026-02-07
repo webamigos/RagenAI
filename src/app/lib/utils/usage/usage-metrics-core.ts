@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
-import { UsagePeriod } from '@prisma/client';
+import { UsagePeriod } from '@/generated/prisma/client';
 
 import { getOrgIdFromAuthOrThrow } from '../auth-helpers';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma/client';
 import { logger } from '../logger';
 import { UsageMetrics } from './types';
 import { addMonths } from 'date-fns';

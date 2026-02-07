@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Role, Message as MessageModel } from '@prisma/client';
+import { Role, Message as MessageModel } from '@/generated/prisma/client';
 
 export enum ChatType {
   CONVERSATION = 'conversation',

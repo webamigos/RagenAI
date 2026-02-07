@@ -4,7 +4,9 @@ import { OpenAIModerationChain } from 'langchain/chains';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
-import { OpenAIModerationChainInput } from 'langchain/dist/chains/openai_moderation';
+type OpenAIModerationChainInput = NonNullable<
+  ConstructorParameters<typeof OpenAIModerationChain>[0]
+>;
 import { getModelProvider, type ModelProvider } from '../../components/config';
 import {
   getOpenaiAPIKey,

@@ -55,3 +55,6 @@ temporal/clover
 temporal/lib
 
 tmp/
+
+# Prisma generated client
+/src/generated/prisma/

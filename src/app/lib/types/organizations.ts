@@ -1,4 +1,4 @@
-import { Organization } from '@prisma/client';
+import { Organization } from '@/generated/prisma/client';
 
 export type OrganizationVectorStore = 'qdrant' | 'supabase';
 

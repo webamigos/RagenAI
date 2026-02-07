@@ -1,6 +1,10 @@
 'use server';
 
-import { PlanStatus, PlanType, SubscriptionStatus } from '@prisma/client';
+import {
+  PlanStatus,
+  PlanType,
+  SubscriptionStatus,
+} from '@/generated/prisma/client';
 import prisma from '@ragenai/prisma-client';
 import { fetchStripePlans } from '@/app/lib/services/stripe';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';

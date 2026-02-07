@@ -3,7 +3,7 @@ import { useRouter } from '@/i18n/routing';
 import { statusToast } from '@/app/lib/utils/toast';
 import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
 import { uploadProjectFiles } from '@/app/lib/services/api';
-import { FileType, UserFile } from '@prisma/client';
+import { FileType, UserFile } from '@/generated/prisma/client';
 import { useTranslations } from 'next-intl';
 
 export enum FileListState {

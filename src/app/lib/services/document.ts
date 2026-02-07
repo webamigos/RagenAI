@@ -1,4 +1,4 @@
-import { type UserDocument } from '@prisma/client';
+import { type UserDocument } from '@/generated/prisma/client';
 
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
