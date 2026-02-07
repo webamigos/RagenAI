@@ -4,7 +4,7 @@ import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
-import { useSignIn } from '@clerk/nextjs';
+import { useSignIn, useClerk } from '@clerk/nextjs';
 import { useState } from 'react';
 
 import { useRouter } from '@/i18n/routing';
@@ -18,6 +18,7 @@ export const LoginForm = () => {
   const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoaded, signIn, setActive } = useSignIn();
+  const clerk = useClerk();
 
   const t = useTranslations('sign-in');
   const { push } = useRouter();
@@ -45,6 +46,14 @@ export const LoginForm = () => {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
+
+        // Set active organization if user has one
+        const firstOrgId =
+          clerk.user?.organizationMemberships[0]?.organization.id;
+        if (firstOrgId) {
+          await setActive({ organization: firstOrgId });
+        }
+
         push('/');
       }
     } catch (error) {

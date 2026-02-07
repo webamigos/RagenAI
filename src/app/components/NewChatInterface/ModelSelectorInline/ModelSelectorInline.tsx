@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { useUser, useOrganization } from '@clerk/nextjs';
 
 import {
   AvailableModel,
@@ -35,18 +36,30 @@ export const ModelSelectorInline = ({
   const isLoadingModels = useRef(false);
   const t = useTranslations('assistant.model-selector');
   const { errorToast } = statusToast();
+  const { organization } = useOrganization();
+  const { user } = useUser();
 
   useEffect(() => {
     const loadAvailableModels = async () => {
       if (isLoadingModels.current) return;
 
+      // Fallback pattern: get orgId from organization hook or user memberships
+      const orgId =
+        organization?.id || user?.organizationMemberships[0]?.organization.id;
+
+      if (!orgId) {
+        logger.warn('No organization ID available, cannot load models');
+        setModelsLoading(false);
+        return;
+      }
+
       try {
         isLoadingModels.current = true;
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(orgId);
         setAvailableModels(models);
       } catch (error) {
-        logger.error('Failed to load available models');
+        logger.error('Failed to load available models', error);
         errorToast({
           message: 'Failed to load available models',
         });
@@ -57,35 +70,33 @@ export const ModelSelectorInline = ({
     };
 
     loadAvailableModels();
-  }, []);
+  }, [organization?.id, user?.organizationMemberships]);
 
   useEffect(() => {
     if (!modelsLoading && availableModels.length > 0) {
       let modelToUse = selectedModel;
       let shouldUpdateModel = false;
 
-      if (
-        organizationDefaultModel &&
-        availableModels.some((m) => m.value === organizationDefaultModel)
-      ) {
-        modelToUse = organizationDefaultModel;
-        shouldUpdateModel = true;
-      } else if (!organizationDefaultModel) {
-        try {
-          const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
-          if (
-            savedModel &&
-            availableModels.some((m) => m.value === savedModel)
-          ) {
-            modelToUse = savedModel;
-            shouldUpdateModel = modelToUse !== selectedModel;
-          }
-        } catch (error) {
-          logger.error('Failed to load model from localStorage');
-          errorToast({
-            message: 'Failed to load model from localStorage',
-          });
+      // Priority 1: Check localStorage for user's saved preference
+      try {
+        const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+        if (savedModel && availableModels.some((m) => m.value === savedModel)) {
+          modelToUse = savedModel;
+          shouldUpdateModel = modelToUse !== selectedModel;
+        } else if (
+          // Priority 2: Use organization default only if no saved preference
+          organizationDefaultModel &&
+          availableModels.some((m) => m.value === organizationDefaultModel) &&
+          selectedModel !== organizationDefaultModel
+        ) {
+          modelToUse = organizationDefaultModel;
+          shouldUpdateModel = true;
         }
+      } catch (error) {
+        logger.error('Failed to load model from localStorage');
+        errorToast({
+          message: 'Failed to load model from localStorage',
+        });
       }
 
       if (modelToUse && shouldUpdateModel) {
@@ -101,7 +112,9 @@ export const ModelSelectorInline = ({
   ]);
 
   const handleModelChange = (newModel: string) => {
-    if (newModel === selectedModel || disabled) return;
+    if (newModel === selectedModel || disabled) {
+      return;
+    }
 
     onChange(newModel);
     setIsOpen(false);

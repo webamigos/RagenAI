@@ -59,20 +59,10 @@ function redirectToSignInIfNeeded(url: string, request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|trpc|_next|_vercel|monitoring|.*\\..*).*)',
-    '/api/threads/(.*)',
-    '/api/threads',
-    '/api/settings/',
-    '/api/settings/api-key',
-    '/api/settings/temperature',
-    '/api/settings/model',
-    '/api/settings/prompt',
-    '/api/messages/(.*)',
-    '/api/send',
-    '/api/upload',
-    '/:locale/admin/manage-knowledge',
-    '/:locale/sso-callback',
-    '/:locale/sign-in',
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
   ],
 };
 
@@ -85,7 +75,7 @@ export default clerkMiddleware(
 
     const url = request.nextUrl.pathname;
     const localePrefixRegex = /^\/(pl|en)/;
-    const session = auth();
+    const session = await auth();
 
     // Handle root routes specifically to prevent flashing
     if (LOCALE_PREFIX_REGEX.test(url)) {
@@ -151,10 +141,10 @@ export default clerkMiddleware(
     }
 
     if (isProtectedRoute(request)) {
-      auth().protect();
+      (await auth()).protect();
     } else {
       if (isProtectedRoute(request)) {
-        auth().protect();
+        (await auth()).protect();
       } else {
         const redirectResponse = redirectToSignInIfNeeded(url, request);
         if (redirectResponse) return redirectResponse;

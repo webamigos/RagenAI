@@ -176,9 +176,9 @@ export const Assistant = ({ threadId }: Props) => {
   const handleModelChange = async (model: string) => {
     try {
       const result = await updateThreadModel(threadId, model);
+
       if (result.success) {
         setCurrentThreadModel(model);
-
         dispatch(updateThreadModelAction({ threadId, model }));
         dispatch(updateSidebarThreadModelAction({ threadId, model }));
       } else {
@@ -252,7 +252,7 @@ export const Assistant = ({ threadId }: Props) => {
                 onChange={handleModelChange}
                 isGlobalLoading={isGlobalLoading}
               />
-              {/* {!isPublicAccess && (
+              {!isPublicAccess && (
                 <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
                   <ModelSelector
                     threadId={threadId}
@@ -262,7 +262,7 @@ export const Assistant = ({ threadId }: Props) => {
                     disabled={isGlobalLoading}
                   />
                 </div>
-              )} */}
+              )}
             </>
           )}
         </div>

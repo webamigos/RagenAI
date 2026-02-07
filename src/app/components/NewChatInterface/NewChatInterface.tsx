@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization, useUser } from '@clerk/nextjs';
 
 import { classMerge } from '@ragenai/common-ui/index';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
@@ -43,6 +43,7 @@ export const NewChatInterface = ({
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const { organization } = useOrganization();
+  const { user } = useUser();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
@@ -87,28 +88,41 @@ export const NewChatInterface = ({
 
   useEffect(() => {
     const getOrganizationModel = async () => {
-      if (!organizationDefaultModel && organization?.id && !isPublicAccess) {
+      // Fallback pattern: use organization?.id from useOrganization() hook,
+      // or get it from user.organizationMemberships[0] if not available
+      const orgId =
+        organization?.id || user?.organizationMemberships[0]?.organization.id;
+
+      if (!organizationDefaultModel && orgId && !isPublicAccess) {
         try {
           const result = await getOrganizationSettings();
           if (result.success && result.settings) {
             setInternalOrganizationDefaultModel(result.settings.model);
-            setSelectedModel(result.settings.model);
+            // Only set selectedModel if it's still the default (hasn't been manually changed)
+            setSelectedModel((prev) =>
+              prev === (organizationDefaultModel || 'gemini-2.0-flash')
+                ? result.settings.model
+                : prev
+            );
           }
         } catch (error) {
-          logger.error(
-            { error },
-            'Error fetching organization model in NewChatInterface'
-          );
+          logger.error('Error fetching organization model', error);
         }
       }
     };
     getOrganizationModel();
-  }, [organizationDefaultModel, organization?.id, isPublicAccess]);
+  }, [
+    organizationDefaultModel,
+    organization?.id,
+    user?.organizationMemberships,
+    isPublicAccess,
+  ]);
 
+  // Only set the model once on mount, don't reset user's selection
   useEffect(() => {
     if (organizationDefaultModel) {
       setInternalOrganizationDefaultModel(organizationDefaultModel);
-      setSelectedModel(organizationDefaultModel);
+      // Don't reset selectedModel - user may have already chosen a different model
     }
   }, [organizationDefaultModel]);
 
@@ -116,12 +130,20 @@ export const NewChatInterface = ({
     return null;
   }
 
+  // Show loading state while fetching organization settings
   if (
     !isPublicAccess &&
     !organizationDefaultModel &&
     internalOrganizationDefaultModel === null
   ) {
-    return null;
+    return (
+      <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleVoiceModeActivation = async () => {

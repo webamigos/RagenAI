@@ -80,13 +80,16 @@ export const useAssistantLogic = (threadId: string) => {
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const fetchData = async () => {
+    logger.info({ threadId, userVisitorId, isLoaded }, 'fetchData called');
     if (!userVisitorId) {
+      logger.warn({}, 'No userVisitorId, redirecting to sign-in');
       startTransition(() => router.push('/sign-in'));
       return;
     }
 
     dispatch(setInitialLoad(true));
     try {
+      logger.info({ threadId, userVisitorId }, 'Fetching messages from API');
       const response = await fetchMessagesFromApi(threadId, userVisitorId);
       if (response) {
         dispatch(setInitialLoad(false));
@@ -133,7 +136,7 @@ export const useAssistantLogic = (threadId: string) => {
       public_id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       mode: data.mode,
       message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,

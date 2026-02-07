@@ -138,7 +138,15 @@ export const fetchProjectsForUser = async (
       },
     });
 
-    return projects;
+    // Convert Date objects to ISO strings for Redux serialization
+    return projects.map((project) => ({
+      ...project,
+      created_at: project.created_at.toISOString(),
+      threads: project.threads.map((thread) => ({
+        ...thread,
+        created_at: thread.created_at.toISOString(),
+      })),
+    }));
   } catch (error) {
     logger.error({ err: error }, 'Error fetching projects for user');
     throw error;

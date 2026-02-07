@@ -48,7 +48,9 @@ export const NewMainSidebarBody = () => {
     (project) => project.public_id !== defaultProjectPublicId
   );
   const onboardingInProgress =
-    !hasKnowledge && projectsWithoutDefault.length === 0;
+    !hasKnowledge &&
+    projectsWithoutDefault.length === 0 &&
+    userThreads.length === 0;
 
   const shouldShowMainContent =
     pathname === '/' ||

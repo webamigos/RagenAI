@@ -1,5 +1,4 @@
 import db from '@ragenai/prisma-client';
-import { auth } from '@clerk/nextjs/server';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
 import { setSentryContext, setSentryServiceTag } from './sentry';
@@ -47,17 +46,20 @@ export const createNewThreadInDb = async ({
   mentionedProjectId,
   preferredModel,
   threadDocuments,
+  orgId,
+  userId,
 }: {
   visitorId: string | null | undefined;
   projectId?: number;
   mentionedProjectId?: number;
   preferredModel?: string;
   threadDocuments?: ThreadDocumentUI[];
+  orgId: string;
+  userId?: string;
 }) => {
   try {
     setSentryServiceTag(serviceName);
 
-    const { userId, orgId } = await auth();
     if (!orgId) {
       throw new Error('Organization ID is required');
     }
@@ -123,7 +125,7 @@ export const getThreadMessages = async (publicThreadId: string) => {
     setSentryContext('THREAD_ID', {
       publicThreadId,
     });
-    return await db.thread.findUnique({
+    const thread = await db.thread.findUnique({
       where: {
         public_id: publicThreadId,
       },
@@ -135,6 +137,19 @@ export const getThreadMessages = async (publicThreadId: string) => {
         },
       },
     });
+
+    // Convert Date objects to ISO strings for serialization
+    if (thread?.messages) {
+      return {
+        ...thread,
+        messages: thread.messages.map((message) => ({
+          ...message,
+          created_at: message.created_at.toISOString(),
+        })),
+      };
+    }
+
+    return thread;
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
     throw error;
@@ -147,7 +162,7 @@ export const getThreadDetails = async (publicThreadId: string) => {
     setSentryContext('THREAD_ID', {
       publicThreadId,
     });
-    return await db.thread.findUniqueOrThrow({
+    const thread = await db.thread.findUniqueOrThrow({
       where: { public_id: publicThreadId },
       select: {
         id: true,
@@ -167,6 +182,12 @@ export const getThreadDetails = async (publicThreadId: string) => {
         },
       },
     });
+
+    // Convert Date object to ISO string for serialization
+    return {
+      ...thread,
+      created_at: thread.created_at.toISOString(),
+    };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
     throw error;

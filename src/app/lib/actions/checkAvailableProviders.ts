@@ -1,6 +1,5 @@
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
 import {
   ModelProvider,
   availableModels,
@@ -29,9 +28,9 @@ type ProviderStatus = {
   source: 'organization' | 'environment' | 'both';
 };
 
-export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
-  const { orgId } = auth();
-
+export async function checkAvailableProviders(
+  orgId: string
+): Promise<ProviderStatus[]> {
   if (!orgId) {
     throw new Error('Organization ID is required');
   }
@@ -154,10 +153,10 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
   return providerStatuses;
 }
 
-export async function getAvailableModelsForOrganization(): Promise<
-  AvailableModel[]
-> {
-  const providerStatuses = await checkAvailableProviders();
+export async function getAvailableModelsForOrganization(
+  orgId: string
+): Promise<AvailableModel[]> {
+  const providerStatuses = await checkAvailableProviders(orgId);
   const availableProviders = providerStatuses
     .filter((status) => status.available)
     .map((status) => status.provider);

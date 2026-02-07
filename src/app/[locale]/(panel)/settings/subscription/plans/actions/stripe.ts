@@ -33,7 +33,7 @@ export async function createCheckoutSession(priceId: string) {
       throw new Error('Cannot create checkout session, subscription is active');
     }
 
-    const user = await clerkClient.users.getUser(userId);
+    const user = await (await clerkClient()).users.getUser(userId);
     const email = user.emailAddresses[0].emailAddress;
     const origin: string = (await headers()).get('origin') as string;
 

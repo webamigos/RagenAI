@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { GoogleTagManager } from '@next/third-parties/google';
 
 import { Providers } from '../components/Providers';
+import { OrganizationActivator } from '../components/OrganizationActivator';
 import { plPL } from '../messages/pl-PL-clerk';
 import { timezone } from '../config';
 import './global.css';
@@ -26,9 +27,9 @@ type JoyrideProviderProps = {
 
 type Props = {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     locale: string;
-  };
+  }>;
 };
 
 const interFont = Inter({
@@ -40,10 +41,9 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-export default async function LocaleLayout({
-  children,
-  params: { locale },
-}: Props) {
+export default async function LocaleLayout({ children, params }: Props) {
+  const { locale } = await params;
+
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as any)) {
     notFound();
@@ -55,6 +55,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider timeZone={timezone} messages={messages}>
       <ClerkProvider localization={locale === 'pl' ? plPL : enUS}>
+        <OrganizationActivator />
         <html lang={locale} className="h-full" suppressHydrationWarning>
           {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
           <body className={`${interFont.className} h-full`}>

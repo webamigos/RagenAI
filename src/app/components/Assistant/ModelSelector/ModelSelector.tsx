@@ -69,7 +69,9 @@ export const ModelSelector = ({
   }, []);
 
   const handleModelChange = async (newModel: string) => {
-    if (newModel === selectedModel || isLoading || disabled) return;
+    if (newModel === selectedModel || isLoading || disabled) {
+      return;
+    }
 
     setIsLoading(true);
     try {

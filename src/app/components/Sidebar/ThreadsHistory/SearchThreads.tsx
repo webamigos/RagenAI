@@ -17,7 +17,7 @@ type SearchThreadsProps = {
 export const SearchThreads = React.forwardRef<
   HTMLDivElement,
   SearchThreadsProps
->(({ visitorId }) => {
+>(({ visitorId }, ref) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { query, results, suggestions, isLoading, hasSearched } = state;
   const { closeSearch, isSearchOpen } = useSearchThreads();
