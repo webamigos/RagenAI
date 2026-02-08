@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { getAuth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryClerkOrganizationTag,
@@ -11,6 +11,7 @@ import {
   removeThreadProjectContext,
 } from '@/app/lib/services/thread';
 import db from '@ragenai/prisma-client';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,13 +28,20 @@ const updateContextSchema = z.object({
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { publicThreadId } = await params;
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('thread-context');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!orgId) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return new Response('Organization not found', { status: 401 });
+    }
+
+    setSentryServiceTag('thread-context');
     setSentryClerkOrganizationTag(orgId);
 
     const body = await request.json();
@@ -95,13 +103,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(request: NextRequest, { params }: Params) {
   const { publicThreadId } = await params;
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('thread-context');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!orgId) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
 
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return new Response('Organization not found', { status: 401 });
+    }
+
+    setSentryServiceTag('thread-context');
     setSentryClerkOrganizationTag(orgId);
 
     // Verify thread belongs to user's organization

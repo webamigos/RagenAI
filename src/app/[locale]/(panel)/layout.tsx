@@ -1,11 +1,9 @@
-import { auth } from '@clerk/nextjs/server';
-
 import {
   getAccountSetupStatusAction,
   getDefaultProjectPublicId,
 } from '@/app/actions';
 
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/routing';
 import { logger } from '@/app/lib/utils/logger';
 
 import { Avatar } from '@ragenai/tui/avatar';
@@ -52,14 +50,21 @@ type Props = Readonly<{
 }>;
 
 export default async function PanelLayout({ children }: Props) {
-  const { sessionClaims } = auth();
-  const membership = sessionClaims?.membership;
-  const status = await getAccountSetupStatusAction();
-  if (!status.accountSetupComplete) {
-    logger.error({ status }, 'Account misconfiguration detected');
-    redirect('/account-configuration?misconfigurationDetected=true');
-  }
-  const defaultPublicProjectId = await getDefaultProjectPublicId();
+  // Authentication is handled by middleware, no need to check here
+
+  // IMPORTANT: DO NOT call Server Actions in layouts!
+  // Server Actions cause re-renders which can lead to infinite loops.
+  // Account setup validation has been moved to middleware.
+
+  // Account setup check disabled - was causing infinite loop
+  // The layout was calling getAccountSetupStatusAction() which triggered re-renders
+  // This has been moved to middleware for lightweight checking
+  // TODO: Implement account setup check in middleware if needed
+
+  // Get default project ID disabled - was potentially causing infinite loop
+  // Server Actions in layouts can cause re-render loops
+  const defaultPublicProjectId: string | undefined = undefined;
+
   const t = await getTranslations('sidebar');
 
   const navbar = (

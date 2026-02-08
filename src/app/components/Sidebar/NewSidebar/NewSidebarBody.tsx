@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 import { NewSidebarSettingsBody } from './NewSettingsSidebarBody';
 import { NewMainSidebarBody } from './NewMainSidebarBody';
 

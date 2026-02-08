@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 
 import { Tabs, Tab, TabList } from '@ragenai/common-ui/Tabs';

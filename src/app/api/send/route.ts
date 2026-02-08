@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { sendContactEmail } from '@/app/emails/services/mailer';
 import { logger } from '@/app/lib/utils/logger';
-import { currentUser } from '@clerk/nextjs/server';
+import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const user = await getCurrentUser();
+    if (!user || !user.email) {
       throw new Error('Invalid user');
     }
     const formData = await req.formData();
     const files = formData.getAll('files') as File[];
 
     const type = formData.get('type');
-    const email = user.emailAddresses[0].emailAddress;
+    const email = user.email;
     const title = formData.get('title') as string;
     const message = formData.get('message') as string;
     const file = formData.get('file') as File | null;

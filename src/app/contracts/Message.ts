@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Role, Message as MessageModel } from '@prisma/client';
+import { Role, Message as MessageModel } from '@/generated/prisma/client';
 
 export enum ChatType {
   CONVERSATION = 'conversation',
@@ -47,7 +47,7 @@ export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;
 export type MessageDto = {
   role: Role;
   content: MessageModel['content'];
-  created_at: MessageModel['created_at'];
+  created_at: string;
   public_id: MessageModel['public_id'];
   run_id?: MessageModel['run_id'];
   rate?: MessageModel['rate'];
@@ -71,7 +71,7 @@ export type Thread = {
 export type MessageDtoWithoutPublicId = Omit<MessageDto, 'public_id'>;
 
 export type ThreadHistoryResponse = {
-  created_at: Date;
+  created_at: string;
   public_id: string;
   messages: MessageDtoWithoutPublicId[];
   project_id?: number | null;

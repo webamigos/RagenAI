@@ -21,7 +21,7 @@ import {
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStore } from '@langchain/qdrant';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
@@ -257,7 +257,7 @@ export const convertAndStoreDocument = async ({
 
     const docs = await textSplitter.splitDocuments(rawDocs);
 
-    const { orgId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
 
     if (!orgId) {
       throw new Error('Invalid organization!');

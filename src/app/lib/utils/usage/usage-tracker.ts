@@ -1,7 +1,7 @@
 import { LLMResult } from '@langchain/core/outputs';
 import { logger } from '../logger';
 import { UsageMetricsCore } from './usage-metrics-core';
-import { Role, UsagePeriod } from '@prisma/client';
+import { Role, UsagePeriod } from '@/generated/prisma/client';
 import type { ChatGenerationWithMetadata, UsageMetrics } from './types';
 import { CreateEmbeddingResponse } from 'openai/resources/embeddings';
 

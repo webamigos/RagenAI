@@ -1,6 +1,6 @@
 import { getRedisInstance } from './redis';
 import db from '@ragenai/prisma-client';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '../utils/auth-helpers';
 import { logger } from '../utils/logger';
 
 const redis = getRedisInstance();
@@ -14,7 +14,7 @@ async function getProjectInfo(projectId: string) {
       return null;
     }
 
-    const { orgId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       logger.error('User not authenticated or missing organization ID');
       return null;

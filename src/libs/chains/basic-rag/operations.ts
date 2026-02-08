@@ -54,9 +54,16 @@ export const retrieveRelevantDocuments = async (
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
+  // Only pass filter if it's defined and not empty
+  // SupabaseVectorStore doesn't allow filter in asRetriever if filter was set in constructor
+  const retrieverOptions: any = { k: maxDocuments };
+  if (metadataFilter && Object.keys(metadataFilter).length > 0) {
+    retrieverOptions.filter = metadataFilter;
+  }
+
   return RunnableSequence.from([
     (input) => input.standalone_question,
-    vectorStore.asRetriever({ k: maxDocuments, filter: metadataFilter }),
+    vectorStore.asRetriever(retrieverOptions),
     combineDocuments,
   ]).withConfig({
     runName: 'Retrieve relevant documents',

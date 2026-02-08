@@ -59,6 +59,7 @@ const ButtonComponent = forwardRef(
         color="indigo"
         disabled={disabled || isLoading || isError}
         {...tuiButtonProps}
+        type={isSubmit ? 'submit' : tuiButtonProps.type}
         className={
           isLink
             ? classMerge(linkClasses, className)

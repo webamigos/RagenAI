@@ -1,10 +1,10 @@
-import { type UserDocument } from '@prisma/client';
+import { type UserDocument } from '@/generated/prisma/client';
 
 import db from '@ragenai/prisma-client';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 export const getDocumentById = async (documentId: UserDocument['id']) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   return await db.userDocument.findFirst({
     where: {
       organization_id: orgId,
@@ -16,7 +16,7 @@ export const getDocumentById = async (documentId: UserDocument['id']) => {
 export const getDocumentByPublicId = async (
   documentPublicId: UserDocument['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   return await db.userDocument.findFirst({
     where: {
       organization_id: orgId,

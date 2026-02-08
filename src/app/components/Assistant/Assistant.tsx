@@ -10,7 +10,7 @@ import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 import { ModelSelector } from './ModelSelector';
 
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/app/contracts/Message';
@@ -136,10 +136,20 @@ export const Assistant = ({ threadId }: Props) => {
 
   useEffect(() => {
     const getOrganizationModel = async () => {
+      // Only fetch if user is signed in
+      if (!user?.id) {
+        return;
+      }
+
       try {
         const result = await getOrganizationSettings();
         if (result.success && result.settings) {
           setOrganizationDefaultModel(result.settings.model);
+        } else {
+          logger.error(
+            { error: result.error },
+            'Failed to fetch organization settings'
+          );
         }
       } catch (error) {
         logger.error(
@@ -149,7 +159,8 @@ export const Assistant = ({ threadId }: Props) => {
       }
     };
     getOrganizationModel();
-  }, [organization?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   useEffect(() => {
     const fetchThreadModel = async () => {
@@ -176,9 +187,9 @@ export const Assistant = ({ threadId }: Props) => {
   const handleModelChange = async (model: string) => {
     try {
       const result = await updateThreadModel(threadId, model);
+
       if (result.success) {
         setCurrentThreadModel(model);
-
         dispatch(updateThreadModelAction({ threadId, model }));
         dispatch(updateSidebarThreadModelAction({ threadId, model }));
       } else {
@@ -252,17 +263,16 @@ export const Assistant = ({ threadId }: Props) => {
                 onChange={handleModelChange}
                 isGlobalLoading={isGlobalLoading}
               />
-              {/* {!isPublicAccess && (
+              {!isPublicAccess && (
                 <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
                   <ModelSelector
-                    threadId={threadId}
                     currentModel={currentThreadModel || undefined}
                     organizationDefaultModel={organizationDefaultModel}
                     onChange={handleModelChange}
                     disabled={isGlobalLoading}
                   />
                 </div>
-              )} */}
+              )}
             </>
           )}
         </div>

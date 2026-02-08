@@ -1,6 +1,6 @@
 'use server';
 
-import { type Project } from '@prisma/client';
+import { type Project } from '@/generated/prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
 import {

@@ -1,6 +1,6 @@
 import { getFileType } from '../utils/getFileType';
 import { getFileExtension } from '../utils/getFileExtension';
-import { FileType } from '@prisma/client';
+import { FileType } from '@/generated/prisma/client';
 
 export type ParsedFile = {
   content: string | Buffer;

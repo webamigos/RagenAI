@@ -8,13 +8,13 @@ import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { deleteFileAction } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useSettings } from '@/app/hooks/useSettings';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
 import { LayoutToggle } from './LayoutToggle';
-import { UserFile } from '@prisma/client';
+import { UserFile } from '@/generated/prisma/client';
 
 export type ModalStateProps = {
   isOpen: boolean;
@@ -41,10 +41,8 @@ export const FileListWrapper = () => {
   };
 
   useEffect(() => {
-    const savedViewMode = user?.publicMetadata?.viewMode as 'grid' | 'list';
-    if (savedViewMode === 'grid' || savedViewMode === 'list') {
-      setViewMode(savedViewMode);
-    }
+    // TODO: Restore saved view mode from localStorage or user preferences
+    // This was previously stored in Clerk's publicMetadata
 
     window.addEventListener('keydown', handleKeyDown);
 

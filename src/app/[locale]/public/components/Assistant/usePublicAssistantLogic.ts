@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role } from '@prisma/client';
-import { usePathname } from 'next/navigation';
+import { Role } from '@/generated/prisma/client';
+import { usePathname } from '@/i18n/routing';
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '@/store/hooks';
 
@@ -87,7 +87,7 @@ export const usePublicAssistantLogic = (
             public_id: `user-${Date.now()}`,
             role: Role.USER,
             content: tempMessage,
-            created_at: new Date(),
+            created_at: new Date().toISOString(),
           };
 
           sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
@@ -151,7 +151,7 @@ export const usePublicAssistantLogic = (
       public_id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       visitorId: visitorId,
     };
 

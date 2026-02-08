@@ -1,7 +1,10 @@
 'use server';
 
 import * as Sentry from '@sentry/nextjs';
-import { auth } from '@clerk/nextjs/server';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 import { revalidatePath } from 'next/cache';
 
 import db from '@ragenai/prisma-client';
@@ -49,18 +52,21 @@ const serviceName = 'createKeyActions';
 export const createApiKey = async (
   data: ApiKeyDto
 ): Promise<ActionResponse> => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
 
-  if (!orgId) {
+  if (!orgId || !user?.id) {
     return {
       success: false,
-      message: 'Organization not found',
+      message: 'Organization or user not found',
     };
   }
 
+  const userId = user.id;
+
   try {
     setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+    setSentryTagsAndContextForClerk({ sessionId: undefined, orgId, userId });
 
     const userProject = await getProjectByPublicId(data.project_id);
     if (!userProject || userProject.owner_id !== userId) {

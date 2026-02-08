@@ -1,23 +1,27 @@
 'use server';
 
 import * as Sentry from '@sentry/nextjs';
-import { auth } from '@clerk/nextjs/server';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 import {
   setSentryServiceTag,
   setSentryTagsAndContextForClerk,
 } from '@/app/lib/services/sentry';
 import { removeApiKeyFromDb } from '@/app/lib/services/apiKeys';
-import { ApiKey } from '@prisma/client';
+import { ApiKey } from '@/generated/prisma/client';
 
 const serviceName = 'removeApiKey';
 
 export const removeApiKey = async (publicKeyId: ApiKey['public_id']) => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
 
-  if (!orgId) {
+  if (!orgId || !user?.id) {
     return {
       success: false,
-      message: 'Organization not found',
+      message: 'Organization or user not found',
     };
   } else if (!publicKeyId) {
     return {
@@ -26,9 +30,11 @@ export const removeApiKey = async (publicKeyId: ApiKey['public_id']) => {
     };
   }
 
+  const userId = user.id;
+
   try {
     setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+    setSentryTagsAndContextForClerk({ sessionId: undefined, orgId, userId });
 
     await removeApiKeyFromDb(orgId, publicKeyId);
 

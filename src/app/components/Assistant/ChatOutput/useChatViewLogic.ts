@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import MarkdownIt from 'markdown-it';
@@ -46,7 +46,7 @@ export const useChatViewLogic = (
   const [streamedMessageRunId, setStreamedMessageRunId] = useState<string>();
 
   const { user } = useUser();
-  const userAvatar = user?.imageUrl;
+  const userAvatar = user?.image;
   const t = useTranslations('chat');
 
   const md = useMemo(() => createMarkdownRenderer(), []);

@@ -15,7 +15,7 @@ import { createMessageInDB } from '@/app/lib/services/message';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
 import { ApiSseMessageEvent } from '@/app/contracts/Events';
-import { Role, Source } from '@prisma/client';
+import { Role, Source } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 

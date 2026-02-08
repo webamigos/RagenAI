@@ -1,13 +1,13 @@
 import db from '@ragenai/prisma-client';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 import { fetchOrganizationDefaultProjectId } from './project';
-import { FileType, UserFile } from '@prisma/client';
+import { FileType, UserFile } from '@/generated/prisma/client';
 
 export const getFileDetailsByPublicId = async (
   publicFileId: UserFile['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   return await db.userFile.findFirst({
     where: {
       organization_id: orgId,
@@ -101,7 +101,7 @@ export const deleteProjectFile = async (
   publicFileId: string,
   projectId: number
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   return await db.userFile.deleteMany({
     where: {
       public_id: publicFileId,

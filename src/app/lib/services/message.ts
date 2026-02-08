@@ -1,6 +1,11 @@
 'use server';
 
-import { Thread, Message, Role, MessageContentType } from '@prisma/client';
+import {
+  Thread,
+  Message,
+  Role,
+  MessageContentType,
+} from '@/generated/prisma/client';
 
 import db from '@ragenai/prisma-client';
 
@@ -156,8 +161,12 @@ export const fetchMessagesFromDb = async (
       }
     }
 
+    // Convert Date objects to ISO strings for serialization
     return {
-      messages,
+      messages: messages.map((message) => ({
+        ...message,
+        created_at: message.created_at.toISOString(),
+      })),
       threadContext: {
         project: thread.project,
         mentionedProject,
@@ -217,7 +226,7 @@ export const createAndStoreMessage = async ({
     return {
       public_id: dbMessage.public_id,
       role: dbMessage.role,
-      created_at: dbMessage.created_at,
+      created_at: dbMessage.created_at.toISOString(),
       content: dbMessage.content,
       message_type: dbMessage.message_type,
       voice_duration_seconds: dbMessage.voice_duration_seconds,

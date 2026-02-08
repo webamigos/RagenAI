@@ -6,7 +6,7 @@ import {
   Source,
   Message,
   Project,
-} from '@prisma/client';
+} from '@/generated/prisma/client';
 
 import db from '@ragenai/prisma-client';
 import OpenAI from 'openai';

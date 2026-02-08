@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Card } from '@ragenai/common-ui';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
+import { useActiveOrganization } from '@/app/hooks/use-better-auth';
 
 import {
   AvailableModel,
@@ -25,12 +26,15 @@ export const ChatModelSelect = ({}) => {
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant-settings.model-select');
+  const { data: activeOrg } = useActiveOrganization();
 
   useEffect(() => {
     const loadAvailableModels = async () => {
+      if (!activeOrg?.id) return;
+
       try {
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(activeOrg.id);
         setAvailableModels(models);
       } catch (error) {
         errorToast({
@@ -42,7 +46,7 @@ export const ChatModelSelect = ({}) => {
     };
 
     loadAvailableModels();
-  }, []);
+  }, [activeOrg?.id]);
 
   useEffect(() => {
     const fetchModel = async () => {

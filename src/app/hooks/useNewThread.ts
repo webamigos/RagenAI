@@ -7,7 +7,7 @@ import {
   useCallback,
   useState,
 } from 'react';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useUser, useOrganization, useAuth } from '@/app/hooks/use-auth';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { ThreadHistoryResponse } from '@/app/contracts/Message';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
@@ -70,6 +70,7 @@ export const useNewThread = () => {
   );
   const { organization } = useOrganization();
   const { user } = useUser();
+  const { orgId: sessionOrgId } = useAuth(); // Get orgId from session.activeOrganizationId
   const { push } = useRouter();
   const pathname = usePathname();
   const { handleCloseThread } = useCloseThread();
@@ -145,14 +146,24 @@ export const useNewThread = () => {
       handleCloseThread(false);
       reduxDispatch(clearMessages());
 
-      const result = user
-        ? await createThreadAction(
-            projectId,
-            mentionedProjectId,
-            preferredModel,
-            threadDocuments
-          )
-        : await createGuestThreadAction({ mentionedProjectId, preferredModel });
+      // Get orgId from organization hook or session.activeOrganizationId
+      // (activeOrganizationId is set by finalizeUserOnboarding during login/registration)
+      const orgId = organization?.id || sessionOrgId;
+
+      const result =
+        user && orgId
+          ? await createThreadAction(
+              orgId,
+              user.id,
+              projectId,
+              mentionedProjectId,
+              preferredModel,
+              threadDocuments
+            )
+          : await createGuestThreadAction({
+              mentionedProjectId,
+              preferredModel,
+            });
 
       if (result.success) {
         await trackThreadCreated();
@@ -168,13 +179,13 @@ export const useNewThread = () => {
               ? [
                   {
                     content: initialMessage,
-                    created_at: new Date(),
+                    created_at: new Date().toISOString(),
                     role: 'USER' as const,
                     message_type: 'TEXT' as const,
                   },
                 ]
               : [],
-            created_at: new Date(),
+            created_at: new Date().toISOString(),
           };
 
           //this hook logic is reused for global and project-scoped threads
@@ -196,7 +207,7 @@ export const useNewThread = () => {
             }
           } else if (result.thread.project_id != null) {
             const threadForProject = {
-              created_at: new Date(),
+              created_at: new Date().toISOString(),
               public_id: threadId,
               visitor_id: user.id,
               preferred_communication_type: 'TEXT' as const,

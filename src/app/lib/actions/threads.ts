@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { Thread } from '@prisma/client';
+import { Thread } from '@/generated/prisma/client';
 import { setSentryServiceTag } from '../services/sentry';
 import {
   createNewThreadInDb,
@@ -12,7 +12,7 @@ import {
 import { logger } from '../utils/logger';
 import { createAndStoreMessage } from '../services/message';
 import { getVisitorIdFromCookie } from '../services/cookies';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '../utils/auth-helpers';
 import { ThreadDocumentUI } from '../../contracts/ThreadDocument';
 
 type ThreadAction =
@@ -29,6 +29,8 @@ type ThreadAction =
     };
 
 export const createThreadAction = async (
+  orgId: string,
+  userId: string | undefined,
   projectId?: number,
   mentionedProjectId?: number,
   preferredModel?: string,
@@ -43,6 +45,8 @@ export const createThreadAction = async (
       mentionedProjectId,
       preferredModel,
       threadDocuments,
+      orgId,
+      userId,
     });
 
     return {
@@ -124,7 +128,7 @@ export const updateThreadContextAction = async (
   try {
     setSentryServiceTag('thread-context');
 
-    const { orgId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       return {
         success: false,
@@ -201,7 +205,7 @@ export const removeThreadContextAction = async (
   try {
     setSentryServiceTag('thread-context');
 
-    const { orgId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       return {
         success: false,

@@ -1,5 +1,8 @@
 'use server';
-import { auth } from '@clerk/nextjs/server';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 
 import {
   getAssistantPrompt,
@@ -68,7 +71,8 @@ export const checkIfApiKeyExists = async (
 export const fetchSettings = async (): Promise<
   ActionResponse<SettingsData>
 > => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
 
   if (!orgId) {
     return {
@@ -78,7 +82,11 @@ export const fetchSettings = async (): Promise<
   }
 
   setSentryServiceTag(serviceName);
-  setSentryClerkContext({ orgId, userId, sessionId });
+  setSentryClerkContext({
+    orgId,
+    userId: user?.id || '',
+    sessionId: undefined,
+  });
 
   try {
     const unmaskedApiKey = await getOpenaiAPIKey(orgId);
@@ -106,14 +114,19 @@ export const saveSetting = async (
   type: SettingsType,
   value: string | number
 ): Promise<SaveSettingsActionResponse> => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
 
   if (!orgId) {
     return { success: false, message: 'Unauthorized' };
   }
 
   setSentryServiceTag(serviceName);
-  setSentryClerkContext({ orgId, userId, sessionId });
+  setSentryClerkContext({
+    orgId,
+    userId: user?.id || '',
+    sessionId: undefined,
+  });
   setSentryContext('EXTRA_DATA', { type });
 
   try {

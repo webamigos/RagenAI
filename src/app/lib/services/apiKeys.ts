@@ -1,11 +1,15 @@
 import db from '@ragenai/prisma-client';
 
-import { ApiKey, type Organization, type Project } from '@prisma/client';
+import {
+  ApiKey,
+  type InternalOrganization,
+  type Project,
+} from '@/generated/prisma/client';
 
 export const fetchOrganizationByProviderId = async (
-  organizationProviderId: Organization['provider_id']
+  organizationProviderId: InternalOrganization['provider_id']
 ) => {
-  return await db.organization.findUniqueOrThrow({
+  return await db.internalOrganization.findUniqueOrThrow({
     where: {
       provider_id: organizationProviderId,
     },
@@ -13,7 +17,7 @@ export const fetchOrganizationByProviderId = async (
 };
 
 export const fetchOrganizationDefaultProject = async (
-  systemOrgId: Organization['id']
+  systemOrgId: InternalOrganization['id']
 ) => {
   return await db.project.findFirstOrThrow({
     where: {
@@ -23,11 +27,11 @@ export const fetchOrganizationDefaultProject = async (
 };
 
 export const createOrganizationWithDefaultProject = async (
-  organizationProviderId: Organization['provider_id'],
+  organizationProviderId: InternalOrganization['provider_id'],
   userId: string
 ) => {
   const organization = await db.$transaction(async (tx) => {
-    const organization = await tx.organization.create({
+    const organization = await tx.internalOrganization.create({
       data: {
         provider_id: organizationProviderId,
       },
@@ -53,7 +57,7 @@ export const createOrganizationWithDefaultProject = async (
 };
 
 export const fetchApiKeysFromDb = async (
-  organizationProviderId: Organization['provider_id']
+  organizationProviderId: InternalOrganization['provider_id']
 ) => {
   const organization = await fetchOrganizationByProviderId(
     organizationProviderId
@@ -88,13 +92,13 @@ export const fetchApiKeysFromDb = async (
 
 /**
  * Consider if it's safe to pass organizationId by argument
- * Maybe it'd be safer to fetch it from clerk auth function here? 🤔
+ * Maybe it'd be safer to fetch it from Better Auth session here? 🤔
  *
  * @param organizationProviderId
  * @param apiKeyId
  */
 export const removeApiKeyFromDb = async (
-  organizationProviderId: Organization['provider_id'],
+  organizationProviderId: InternalOrganization['provider_id'],
   publicApiKeyId: ApiKey['public_id']
 ) => {
   const organization = await fetchOrganizationByProviderId(

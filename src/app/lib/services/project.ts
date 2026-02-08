@@ -2,13 +2,13 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '../utils/logger';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 import crypto from 'crypto';
-import { Project, Source, UserFile } from '@prisma/client';
+import { Project, Source, UserFile } from '@/generated/prisma/client';
 
 export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
-  const result = await db.organization.findFirst({
+  const result = await db.internalOrganization.findFirst({
     where: {
       provider_id: clerkOrgId,
     },
@@ -28,7 +28,7 @@ export const fetchOrganizationDefaultProjectId = async (clerkOrgId: string) => {
 export const fetchOrganizationDefaultProjectPublicId = async (
   clerkOrgId: string
 ) => {
-  const result = await db.organization.findFirst({
+  const result = await db.internalOrganization.findFirst({
     where: {
       provider_id: clerkOrgId,
     },
@@ -47,7 +47,7 @@ export const fetchOrganizationDefaultProjectPublicId = async (
 
 export const findOrganizationByProviderId = async (providerId: string) => {
   try {
-    return await db.organization.findUnique({
+    return await db.internalOrganization.findUnique({
       where: {
         provider_id: providerId,
       },
@@ -138,7 +138,15 @@ export const fetchProjectsForUser = async (
       },
     });
 
-    return projects;
+    // Convert Date objects to ISO strings for Redux serialization
+    return projects.map((project) => ({
+      ...project,
+      created_at: project.created_at.toISOString(),
+      threads: project.threads.map((thread) => ({
+        ...thread,
+        created_at: thread.created_at.toISOString(),
+      })),
+    }));
   } catch (error) {
     logger.error({ err: error }, 'Error fetching projects for user');
     throw error;
@@ -182,7 +190,7 @@ export const getProjectByPublicIdOrThrow = async (
 export const fetchProjectFiles = async (
   projectPublicId: Project['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
   return await db.userFile.findMany({
@@ -213,7 +221,7 @@ export const deleteProjectFile = async (
   publicFileId: UserFile['public_id'],
   projectPublicId: Project['public_id']
 ) => {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   const projectRecord = await getProjectByPublicId(projectPublicId);
 
   if (!projectRecord) {
@@ -293,7 +301,7 @@ export const generateProjectKey = async (projectId: number) => {
 // TODO: refactor to use public id
 export const disablePublicAccessForProject = async (projectId: number) => {
   try {
-    const orgId = getOrgIdOrThrow();
+    const orgId = await getOrgIdOrThrow();
 
     const project = await db.project.findFirst({
       where: {
@@ -330,7 +338,7 @@ export const toggleChatbotEnabled = async (
   enabled: boolean
 ) => {
   try {
-    const orgId = getOrgIdOrThrow();
+    const orgId = await getOrgIdOrThrow();
 
     const project = await db.project.findFirst({
       where: {

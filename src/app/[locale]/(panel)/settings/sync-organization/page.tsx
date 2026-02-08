@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
+import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { redirect } from 'next/navigation';
 
-import { syncOrganizationAndProject } from '@/app/components/MyProfile/CreateOrganization/actions';
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { Card } from '@ragenai/common-ui/Card';
 
@@ -16,24 +17,23 @@ export async function generateMetadata({ params }: PropsWihLocale) {
 // IT's only for internal purpose in situations that organization synchronization
 // failed during creation
 export default async function SyncOrganizationsPage() {
-  const { success } = await syncOrganizationAndProject();
-  if (success) {
-    return (
-      <div className="flex w-full">
-        <Card size="full">
-          <p className="font-bold text-green-700 dark:text-green-400">
-            Synchronization status: OK
-          </p>
-        </Card>
-      </div>
-    );
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/sign-in');
   }
 
+  // TODO: Organization sync functionality needs to be reimplemented for Better Auth
+  // Organizations are now automatically created and synced during user signup
   return (
     <div className="flex w-full">
       <Card size="full">
-        <p className="font-bold text-red-700 dark:text-red-400">
-          Synchronization status: FAIL
+        <p className="font-bold text-gray-700 dark:text-gray-400">
+          Organization synchronization is now automatic with Better Auth.
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          This page is no longer needed as organizations are created and synced
+          during signup.
         </p>
       </Card>
     </div>

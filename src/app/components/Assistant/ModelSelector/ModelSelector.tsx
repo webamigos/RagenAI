@@ -13,6 +13,7 @@ import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvaila
 import { statusToast } from '@/app/lib/utils/toast';
 import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
 import { logger } from '@/app/lib/utils/logger';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 type Props = {
   currentModel?: string;
@@ -38,6 +39,7 @@ export const ModelSelector = ({
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant.model-selector');
+  const { organization } = useOrganization();
 
   useEffect(() => {
     setSelectedModel(
@@ -47,12 +49,12 @@ export const ModelSelector = ({
 
   useEffect(() => {
     const loadAvailableModels = async () => {
-      if (isLoadingModels.current) return;
+      if (isLoadingModels.current || !organization?.id) return;
 
       try {
         isLoadingModels.current = true;
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(organization.id);
         setAvailableModels(models);
       } catch (error) {
         logger.error('Failed to load available models');
@@ -66,10 +68,12 @@ export const ModelSelector = ({
     };
 
     loadAvailableModels();
-  }, []);
+  }, [organization?.id]);
 
   const handleModelChange = async (newModel: string) => {
-    if (newModel === selectedModel || isLoading || disabled) return;
+    if (newModel === selectedModel || isLoading || disabled) {
+      return;
+    }
 
     setIsLoading(true);
     try {

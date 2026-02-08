@@ -9,7 +9,7 @@ import { uploadFiles } from '@/app/lib/services/api';
 import { useSettings } from '@/app/hooks/useSettings';
 
 import { UploadList } from './UploadList';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);

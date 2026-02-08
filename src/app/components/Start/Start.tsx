@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 import { Alert } from '@ragenai/common-ui';
 import { useTranslations } from 'next-intl';
 
@@ -43,8 +43,6 @@ export const Start = () => {
         <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-8rem)]">
           {shouldShowValidationBoard ? (
             <ValidationBoard />
-          ) : !isPending ? (
-            <></>
           ) : (
             <NewChatInterface />
           )}

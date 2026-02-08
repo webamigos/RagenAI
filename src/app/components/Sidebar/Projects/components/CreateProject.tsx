@@ -2,8 +2,8 @@ import { useEffect, useRef, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useRouter } from '@/i18n/routing';
+import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { StatusCodes } from 'http-status-codes';
 
 import { Dialog, DialogTitle } from '@ragenai/common-ui';

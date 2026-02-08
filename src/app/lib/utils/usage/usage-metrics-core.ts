@@ -1,8 +1,8 @@
 import { headers } from 'next/headers';
-import { UsagePeriod } from '@prisma/client';
+import { UsagePeriod } from '@/generated/prisma/client';
 
-import { auth } from '@clerk/nextjs/server';
-import { PrismaClient } from '@prisma/client';
+import { getOrgIdFromAuthOrThrow } from '../auth-helpers';
+import { PrismaClient } from '@/generated/prisma/client';
 import { logger } from '../logger';
 import { UsageMetrics } from './types';
 import { addMonths } from 'date-fns';
@@ -35,7 +35,7 @@ export class UsageMetricsCore {
       return orgId;
     }
 
-    const { orgId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error("Can't track usage, organization ID not found");
     }
@@ -120,7 +120,8 @@ export class UsageMetricsCore {
 
   private async getCurrentSubscription() {
     const organizationId = await this.getOrganizationId();
-    const org = await this.dbClient.organization.findUnique({
+    // organizationId from Better Auth maps to InternalOrganization.provider_id
+    const org = await this.dbClient.internalOrganization.findUnique({
       where: { provider_id: organizationId },
       include: { subscription: true },
     });
@@ -166,8 +167,8 @@ export class UsageMetricsCore {
     const organizationId = await this.getOrganizationId();
     logger.info({ organizationId, metric, increment }, 'Tracking usage');
 
-    // Get current subscription for the organization
-    const org = await this.dbClient.organization.findUnique({
+    // organizationId from Better Auth maps to InternalOrganization.provider_id
+    const org = await this.dbClient.internalOrganization.findUnique({
       where: { provider_id: organizationId },
       include: { subscription: true },
     });

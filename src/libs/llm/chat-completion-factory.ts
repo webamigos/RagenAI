@@ -23,7 +23,7 @@ export class ChatCompletionFactory {
   private static createBedrockInstance(
     credentials: BedrockCredentials,
     config: BaseCompletionConfig
-  ): BedrockChat {
+  ): BaseChatModel {
     if (!credentials.credentials) {
       throw new Error('Credentials are required for Bedrock');
     }
@@ -36,7 +36,7 @@ export class ChatCompletionFactory {
       ...config,
       region: credentials.region,
       credentials: credentials.credentials,
-    });
+    }) as BaseChatModel;
   }
 
   private static createOpenAIInstance(
@@ -81,7 +81,7 @@ export class ChatCompletionFactory {
   private static createGoogleInstance(
     credentials: GoogleCredentials,
     config: BaseCompletionConfig
-  ): any {
+  ): ChatGoogleGenerativeAI {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Google');
     }

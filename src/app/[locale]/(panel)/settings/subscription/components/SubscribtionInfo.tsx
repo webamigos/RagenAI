@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import type { SubscriptionDetails } from '../types';
-import { PlanType, SubscriptionStatus } from '@prisma/client';
+import { PlanType, SubscriptionStatus } from '@/generated/prisma/client';
 import { Button, Link } from '@ragenai/common-ui';
 import {
   cancelSubscription,
@@ -12,7 +12,7 @@ import {
   getSubscriptionData,
 } from '../actions';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import {
   DescriptionDetails,
   DescriptionList,
