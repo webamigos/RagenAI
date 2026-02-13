@@ -1,7 +1,0 @@
--- This is an empty migration
-CREATE SEQUENCE IF NOT EXISTS "custom_id_seq"
-    START WITH 10001
-    INCREMENT BY 3
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;

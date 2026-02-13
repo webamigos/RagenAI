@@ -86,6 +86,20 @@
     "Reset-password": "Zresetuj hasło",
     "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym."
   },
+  "initial-account": {
+    "title": "Utwórz konto administratora",
+    "already-have-account": "Masz już konto?",
+    "sign-in": "Zaloguj się",
+    "password": "Hasło",
+    "submit": "Utwórz konto",
+    "submitting": "Tworzenie...",
+    "success": "Konto administratora zostało utworzone",
+    "error": "Błąd podczas tworzenia konta administratora",
+    "validation": {
+      "email": "Wprowadź prawidłowy adres email",
+      "password": "Hasło musi mieć co najmniej 8 znaków"
+    }
+  },
   "account-configuration": {
     "in-progress": "Trwa konfigurowanie Twojego konta, proszę czekać...",
     "complete": "Twoje konto zostało skonfigurowane, za chwilę zostaniesz przekierowany do aplikacji.",
@@ -171,6 +185,9 @@
     },
     "support-page": {
       "title": "Formularz kontaktowy | Wsparcie | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Utwórz konto administratora | Ragen AI"
     }
   },
   "chat": {

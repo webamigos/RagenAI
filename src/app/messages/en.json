@@ -85,6 +85,20 @@
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Reset password"
   },
+  "initial-account": {
+    "title": "Create Admin Account",
+    "already-have-account": "Already have an account?",
+    "sign-in": "Sign in",
+    "password": "Password",
+    "submit": "Create Account",
+    "submitting": "Creating...",
+    "success": "Admin account created successfully",
+    "error": "Error creating admin account",
+    "validation": {
+      "email": "Please enter a valid email address",
+      "password": "Password must be at least 8 characters"
+    }
+  },
   "account-configuration": {
     "in-progress": "Configuring your account, please wait...",
     "complete": "Your account has been configured, you will be redirected to the application shortly.",
@@ -170,6 +184,9 @@
     },
     "support-page": {
       "title": "Contact Form | Support | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Create Admin Account | Ragen AI"
     }
   },
   "chat": {
