@@ -10,6 +10,10 @@ datasource db {
 model Settings {
   key   String @id
   value String
+
+  @@unique([key])
+
+  @@map("settings")
 }
 
 model Message {
@@ -27,6 +31,11 @@ model Message {
   voice_played           Boolean            @default(false)
   thread                 Thread?            @relation(fields: [thread_id], references: [id])
   source                 Source             @default(UI)
+
+  @@index([public_id])
+  @@index([thread_id])
+  @@index([visitor_id])
+  @@map("messages")
 }
 
 model FlaggedMessage {
@@ -35,6 +44,9 @@ model FlaggedMessage {
   content    String
   role       Role     @default(USER)
   id         String   @id @default(uuid())
+
+  @@index([public_id])
+  @@map("flagged_messages")
 }
 
 model Thread {
@@ -57,6 +69,7 @@ model Thread {
   @@index([public_id])
   @@index([organization_id])
   @@index([user_id])
+  @@map("threads")
 }
 
 model VisitorMessages {
@@ -64,6 +77,10 @@ model VisitorMessages {
   message_id String
   created_at DateTime @default(now()) @db.Timestamptz
   id         String   @id @default(uuid())
+
+  @@index([visitor_id])
+  @@index([message_id])
+  @@map("visitor_messages")
 }
 
 // Files uploaded by user
@@ -100,6 +117,8 @@ model UserFile {
   @@index([organization_id])
   @@index([public_id])
   @@index([project_id])
+
+  @@map("user_files")
 }
 
 // Documents from CMS
@@ -118,6 +137,8 @@ model UserDocument {
 
   @@index([organization_id])
   @@index([project_id])
+
+  @@map("user_documents")
 }
 
 // Thread-specific document associations
@@ -132,6 +153,8 @@ model ThreadDocument {
   @@unique([thread_id, user_file_id])
   @@index([thread_id])
   @@index([user_file_id])
+
+  @@map("thread_documents")
 }
 
 // Organizations, Projects and ApiKeys ids will be used in Redis for store:
@@ -156,7 +179,7 @@ model InternalOrganization {
 
   @@index([public_id])
   @@index([provider_id])
-  @@map("Organization")
+  @@map("internal_organizations")
 }
 
 model Subscription {
@@ -178,6 +201,8 @@ model Subscription {
 
   @@index([status])
   @@index([current_period_end])
+
+  @@map("subscriptions")
 }
 
 model Plan {
@@ -197,6 +222,8 @@ model Plan {
 
   @@index([stripe_price_id])
   @@index([status])
+
+  @@map("plans")
 }
 
 model UsagePeriod {
@@ -210,6 +237,8 @@ model UsagePeriod {
   updated_at      DateTime     @updatedAt @db.Timestamptz
 
   @@index([subscription_id, end_date])
+
+  @@map("usage_periods")
 }
 
 model Project {
@@ -236,6 +265,8 @@ model Project {
   @@index([organization_id])
   @@index([owner_id])
   @@index([access_token])
+
+  @@map("projects")
 }
 
 model ApiKey {
@@ -255,6 +286,8 @@ model ApiKey {
 
   @@index([public_id])
   @@index([organization_id])
+
+  @@map("api_keys")
 }
 
 // Better Auth tables
@@ -262,58 +295,59 @@ model User {
   id                 String   @id
   name               String?
   email              String   @unique
-  emailVerified      Boolean  @default(false)
+  emailVerified      Boolean  @default(false) @map("email_verified")
   image              String?
-  createdAt          DateTime @default(now()) @db.Timestamptz
-  updatedAt          DateTime @updatedAt @db.Timestamptz
-  onboardingComplete Boolean  @default(false)
-  viewMode           String   @default("list")
+  createdAt          DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt          DateTime @updatedAt @db.Timestamptz @map("updated_at")
+  onboardingComplete Boolean  @default(false) @map("onboarding_complete")
+  viewMode           String   @default("list") @map("view_mode")
+  role               String   @default("user")
 
   sessions Session[]
   accounts Account[]
   members  Member[]
 
-  @@map("user")
+  @@map("users")
 }
 
 model Session {
   id        String   @id
-  userId    String
-  expiresAt DateTime @db.Timestamptz
+  userId    String   @map("user_id")
+  expiresAt DateTime @db.Timestamptz @map("expires_at")
   token     String   @unique
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt DateTime @updatedAt @db.Timestamptz @map("updated_at")
 
   // Better Auth organization plugin fields
-  activeOrganizationId String?
-  activeTeamId         String?
+  activeOrganizationId String? @map("active_organization_id")
+  activeTeamId         String? @map("active_team_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@map("session")
+  @@map("sessions")
 }
 
 model Account {
   id           String    @id
-  userId       String
-  accountId    String
-  providerId   String
-  accessToken  String?
-  refreshToken String?
-  idToken      String?
-  expiresAt    DateTime? @db.Timestamptz
+  userId       String    @map("user_id")
+  accountId    String    @map("account_id")
+  providerId   String    @map("provider_id")
+  accessToken  String?   @map("access_token")
+  refreshToken String?   @map("refresh_token")
+  idToken      String?   @map("id_token")
+  expiresAt    DateTime? @db.Timestamptz @map("expires_at")
   password     String?
-  createdAt    DateTime  @default(now()) @db.Timestamptz
-  updatedAt    DateTime  @updatedAt @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt    DateTime  @updatedAt @db.Timestamptz @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([providerId, accountId])
   @@index([userId])
-  @@map("account")
+  @@map("accounts")
 }
 
 model Organization {
@@ -321,61 +355,61 @@ model Organization {
   name      String
   slug      String?  @unique
   logo      String?
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt DateTime @updatedAt @db.Timestamptz @map("updated_at")
   metadata  Json?
 
   // Metadata fields from Clerk migration
-  hasKnowledge  Boolean @default(false)
-  vectorStore   String?
-  ragenOrgId    String?
+  hasKnowledge  Boolean @default(false) @map("has_knowledge")
+  vectorStore   String? @map("vector_store")
+  ragenOrgId    String? @map("ragen_org_id")
 
   members Member[]
 
-  @@map("organization")
+  @@map("organizations")
 }
 
 model Member {
   id             String   @id
-  organizationId String
-  userId         String
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
   role           String
-  createdAt      DateTime @default(now()) @db.Timestamptz
-  updatedAt      DateTime @updatedAt @db.Timestamptz
+  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime @updatedAt @db.Timestamptz @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, userId])
   @@index([userId])
-  @@map("member")
+  @@map("members")
 }
 
 model Invitation {
   id             String   @id
-  organizationId String
+  organizationId String   @map("organization_id")
   email          String
   role           String
   status         String
-  expiresAt      DateTime @db.Timestamptz
-  inviterId      String?
-  createdAt      DateTime @default(now()) @db.Timestamptz
-  updatedAt      DateTime @updatedAt @db.Timestamptz
+  expiresAt      DateTime @db.Timestamptz @map("expires_at")
+  inviterId      String?  @map("inviter_id")
+  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime @updatedAt @db.Timestamptz @map("updated_at")
 
   @@unique([organizationId, email])
-  @@map("invitation")
+  @@map("invitations")
 }
 
 model Verification {
   id         String   @id
   identifier String
   value      String
-  expiresAt  DateTime @db.Timestamptz
-  createdAt  DateTime @default(now()) @db.Timestamptz
-  updatedAt  DateTime @updatedAt @db.Timestamptz
+  expiresAt  DateTime @db.Timestamptz @map("expires_at")
+  createdAt  DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt  DateTime @updatedAt @db.Timestamptz @map("updated_at")
 
   @@unique([identifier, value])
-  @@map("verification")
+  @@map("verifications")
 }
 
 enum Source {

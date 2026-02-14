@@ -63,6 +63,7 @@ export default async function middleware(request: NextRequest) {
     '/public',
     '/account-configuration',
     '/accept-invitation',
+    '/initial-account',
   ];
   const isPublic = publicRoutes.some((route) => url.includes(route));
 
