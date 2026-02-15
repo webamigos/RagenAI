@@ -13,7 +13,7 @@ export const getSupportFormSchema = (t: (key: string) => string) =>
             .instanceof(FileList)
             .transform((fileList) => Array.from(fileList) as File[])
             .refine((fileList) => fileList.length > 0, {
-              message: t('errors.file-required'),
+              error: t('errors.file-required'),
             })
             .refine(
               (fileList) =>
@@ -21,7 +21,7 @@ export const getSupportFormSchema = (t: (key: string) => string) =>
                   (file) => file.size <= MAX_FILE_SIZE
                 ),
               {
-                message: t('errors.file-size'),
+                error: t('errors.file-size'),
               }
             ),
   });

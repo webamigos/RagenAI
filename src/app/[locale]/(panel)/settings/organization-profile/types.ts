@@ -2,10 +2,8 @@ import { z } from 'zod';
 
 // Zod schemas
 export const InviteMemberSchema = z.object({
-  email: z.string().email('Nieprawidłowy adres email'),
-  role: z.enum(['admin', 'member'], {
-    required_error: 'Rola jest wymagana',
-  }),
+  email: z.email('Nieprawidłowy adres email'),
+  role: z.enum(['admin', 'member'], { error: 'Rola jest wymagana' }),
 });
 
 export const UpdateMemberRoleSchema = z.object({

@@ -59,11 +59,11 @@ export function DocumentComponent({ publicId }: Props) {
   const orgId = organization?.id;
 
   const documentSchema = z.object({
-    content: z.string().min(1, { message: t('content-empty') }),
+    content: z.string().min(1, { error: t('content-empty') }),
   });
 
   const titleSchema = z.object({
-    title: z.string().min(1, { message: t('title-empty') }),
+    title: z.string().min(1, { error: t('title-empty') }),
   });
 
   const {

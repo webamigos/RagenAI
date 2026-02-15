@@ -19,7 +19,8 @@
       "Bash(npx vitest:*)",
       "Bash(npm uninstall:*)",
       "Bash(find:*)",
-      "mcp__plugin_serena_serena__list_dir"
+      "mcp__plugin_serena_serena__list_dir",
+      "WebFetch(domain:zod.dev)"
     ]
   },
   "enabledPlugins": {
