@@ -5,7 +5,7 @@ import {
   getOrgIdFromAuthOrThrow,
 } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { createCheckout } from '@/app/lib/services/stripe';
+import { stripe } from '@/libs/payments/stripe';
 import { headers } from 'next/headers';
 import {
   setSentryClerkContext,
@@ -44,11 +44,20 @@ export async function createCheckoutSession(priceId: string) {
     const email = user.email;
     const origin: string = (await headers()).get('origin') as string;
 
-    const checkoutSession = await createCheckout({
-      priceId,
-      orgId,
-      email,
-      origin,
+    const checkoutSession = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${origin}/settings/subscription/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/settings/subscription/plans`,
+      payment_method_types: ['card'],
+      client_reference_id: orgId,
+      customer_email: email,
+      tax_id_collection: { enabled: true },
     });
 
     return {

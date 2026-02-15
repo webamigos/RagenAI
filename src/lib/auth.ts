@@ -4,16 +4,12 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI } from 'better-auth/plugins';
-import { createAuthMiddleware } from 'better-auth/api';
+import { stripe } from '@better-auth/stripe';
+import Stripe from 'stripe';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
-// TEMPORARILY COMMENTED: Causes logger import which breaks Edge Runtime middleware
-// These will be removed entirely in FAZA 2 when hooks are replaced with Server Actions
-// import {
-//   activateFreePlan,
-//   checkIfOrganizationPlanIsExpired,
-//   createTrialSubscription,
-// } from '@/app/lib/services/plan';
+
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
 
@@ -92,6 +88,31 @@ export const auth = betterAuth({
     organization({
       async sendInvitationEmail(data) {
         await sendOrganizationInvite(data);
+      },
+    }),
+    stripe({
+      stripeClient,
+      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+      createCustomerOnSignUp: true,
+      subscription: {
+        enabled: true,
+        plans: async () => {
+          const plans = await db.subscriptionPlan.findMany({
+            where: { status: 'ACTIVE' },
+          });
+          return plans.map((plan) => ({
+            name: plan.name,
+            priceId: plan.priceId,
+            limits: plan.limits as Record<string, number>,
+            freeTrial: { days: 14 },
+          }));
+        },
+      },
+      onCustomerCreate: async ({ stripeCustomer, user }) => {
+        console.log('[AUTH:Stripe] Customer created', {
+          customerId: stripeCustomer.id,
+          userId: user.id,
+        });
       },
     }),
   ],
@@ -181,12 +202,8 @@ export const auth = betterAuth({
               },
             });
 
-            // TEMPORARILY COMMENTED: Will be moved to Server Action in FAZA 2
-            // Create trial subscription
-            // await createTrialSubscription(org.data!.id);
-            console.log(
-              '[AUTH] Trial subscription skipped (will be created in Server Action)'
-            );
+            // Stripe customer + trial subscription handled by Better Auth stripe plugin
+            console.log('[AUTH] Stripe customer creation handled by plugin');
 
             // Send welcome email
             await sendWelcomeEmail({
@@ -222,15 +239,7 @@ export const auth = betterAuth({
     },
   },
 
-  // TODO FAZA 2: Re-enable session hooks for plan expiration check
-  // Currently disabled as plan checking will be moved to Server Actions
-  // hooks: {
-  //   after: createAuthMiddleware(async (ctx) => {
-  //     const newSession = ctx.context.newSession;
-  //     if (!newSession) return;
-  //     // Check plan expiration and activate free plan if needed
-  //   }),
-  // },
+  // Subscription lifecycle managed by Better Auth stripe plugin
 });
 
 export type Session = typeof auth.$Infer.Session;

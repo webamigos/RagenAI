@@ -53,7 +53,7 @@ export async function inviteMember(
     const FEATURE_FLAG =
       !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
     const subscription = await getSubscriptionData();
-    const planName = subscription?.plan?.name;
+    const planName = subscription?.plan;
 
     const allowAddMembers =
       FEATURE_FLAG &&

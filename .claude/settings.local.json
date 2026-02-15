@@ -17,7 +17,9 @@
       "Bash(npm ls:*)",
       "Bash(npm run lint:*)",
       "Bash(npx vitest:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(find:*)",
+      "mcp__plugin_serena_serena__list_dir"
     ]
   },
   "enabledPlugins": {

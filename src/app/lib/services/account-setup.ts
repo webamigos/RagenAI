@@ -2,7 +2,6 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { AccountSetupStatus } from '../types/account-setup';
 import db from '@ragenai/prisma-client';
-import { PlanStatus } from '@/generated/prisma/client';
 import { logger } from '../utils/logger';
 import { getCurrentUser } from '../utils/auth-helpers';
 
@@ -12,7 +11,7 @@ export async function getAccountSetupStatus(
   userId?: string
 ): Promise<AccountSetupStatus> {
   try {
-    logger.info('🔍 Starting account setup status check');
+    logger.info('Starting account setup status check');
 
     // If userId not provided, try to get current user
     let userIdToUse = userId;
@@ -21,20 +20,20 @@ export async function getAccountSetupStatus(
     if (!userIdToUse) {
       const user = await getCurrentUser();
       if (!user) {
-        logger.error('❌ User not found');
+        logger.error('User not found');
         throw new Error('Cannot check account configuration, user not found');
       }
       userIdToUse = user.id;
       userEmail = user.email;
     }
 
-    logger.info({ userId: userIdToUse, email: userEmail }, '✅ User found');
+    logger.info({ userId: userIdToUse, email: userEmail }, 'User found');
 
     const orgId = await getBetterAuthOrganizationId(userIdToUse);
     logger.info({ orgId }, 'Better Auth Organization ID retrieved');
 
     if (!orgId) {
-      logger.warn('⚠️ No Clerk organization found for user');
+      logger.warn('No Better Auth organization found for user');
       return {
         clerkOrganizationExists: false,
         internalOrganizationExists: false,
@@ -46,28 +45,25 @@ export async function getAccountSetupStatus(
     }
 
     const internalOrganization = await getInternalOrganization(orgId);
+    const subscription = await getSubscription(orgId);
+
     logger.info(
       {
         internalOrgId: internalOrganization?.id,
-        hasSubscription: !!internalOrganization?.subscription,
+        hasSubscription: !!subscription,
         projectCount: internalOrganization?.project?.length,
       },
       'Internal organization data'
     );
 
     const internalOrganizationExists = !!internalOrganization;
-    logger.info(
-      { internalOrganizationExists },
-      'Check: Internal organization exists'
-    );
 
     const organizationHasSubscription =
-      internalOrganization?.subscription?.plan.status === PlanStatus.ACTIVE;
+      !!subscription && subscription.status === 'active';
     logger.info(
       {
         organizationHasSubscription,
-        subscriptionStatus: internalOrganization?.subscription?.status,
-        planStatus: internalOrganization?.subscription?.plan.status,
+        subscriptionStatus: subscription?.status,
       },
       'Check: Organization has active subscription'
     );
@@ -77,25 +73,15 @@ export async function getAccountSetupStatus(
         (project) => project.title === DEFAULT_PROJECT_TITLE
       )
     );
-    logger.info(
-      {
-        organizationHasDefaultProject,
-        projects: internalOrganization?.project?.map((p) => ({
-          id: p.id,
-          title: p.title,
-        })),
-      },
-      'Check: Organization has default project'
-    );
 
     const accountSetupComplete =
       internalOrganizationExists &&
       organizationHasSubscription &&
       organizationHasDefaultProject;
 
-    logger.info({ accountSetupComplete }, '🏁 Final account setup status');
+    logger.info({ accountSetupComplete }, 'Final account setup status');
 
-    const result = {
+    return {
       clerkOrganizationExists: true,
       internalOrganizationExists,
       organizationHasSubscription,
@@ -103,10 +89,6 @@ export async function getAccountSetupStatus(
       accountSetupComplete,
       organizationId: orgId,
     };
-
-    logger.info({ result }, '📊 Complete status object');
-
-    return result;
   } catch (error) {
     logger.error({ err: error }, 'Error checking user account configuration');
     throw error;
@@ -142,38 +124,29 @@ async function getBetterAuthOrganizationId(
 
 async function getInternalOrganization(orgId: string) {
   try {
-    logger.info({ orgId }, 'Querying database for internal organization');
-
     const org = await db.internalOrganization.findFirst({
-      where: {
-        provider_id: orgId,
-      },
+      where: { provider_id: orgId },
       select: {
         id: true,
         provider_id: true,
-        subscription: {
-          include: {
-            plan: true,
-          },
-        },
         project: true,
       },
     });
 
-    logger.info(
-      {
-        found: !!org,
-        orgId: org?.id,
-        providerId: org?.provider_id,
-        hasSubscription: !!org?.subscription,
-        projectCount: org?.project?.length,
-      },
-      'Database query result'
-    );
-
     return org;
   } catch (error) {
     logger.error({ err: error }, 'Error getting internal organization');
+    throw error;
+  }
+}
+
+async function getSubscription(referenceId: string) {
+  try {
+    return await db.subscription.findFirst({
+      where: { referenceId },
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error getting subscription');
     throw error;
   }
 }
