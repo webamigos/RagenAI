@@ -211,10 +211,10 @@
   },
   "overrides": {
     "@langchain/core": "^1.1.6",
-    "@clerk/types": "^4.26.0"
+    "zod": "$zod"
   },
   "resolutions": {
     "@langchain/core": "^1.1.6",
-    "@clerk/types": "^4.26.0"
+    "zod": "^4.3.6"
   }
 }
