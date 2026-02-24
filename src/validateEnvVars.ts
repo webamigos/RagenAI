@@ -22,13 +22,6 @@ const envSchema = z.object({
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string(),
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string(),
 
-  // Langsmith?
-  LANGCHAIN_TRACING_V2: z.coerce.boolean(),
-  LANGCHAIN_ENDPOINT: z.string().url(),
-  LANGCHAIN_API_KEY: z.string(),
-  LANGCHAIN_PROJECT: z.enum(TARGET_ENV),
-  LANGCHAIN_CALLBACKS_BACKGROUND: z.coerce.boolean(),
-
   // Redis for organization settings
   REDIS_URL: z.string().url(),
   SECRET_KEY: z.string(), // for hashing organization settings in Redis
