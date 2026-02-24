@@ -15,7 +15,6 @@ import { initializeConversationChain } from '../services/initializeConversationC
 import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
-import { setSentryContext } from '@/app/lib/services/sentry';
 import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
@@ -342,12 +341,6 @@ export async function streamEvents({
         const streamResult = await chainOutput.stream({
           question: threadMessage.content,
           chat_history: conv_history,
-        });
-
-        setSentryContext('EXTRA_DATA', {
-          userQuestion: threadMessage.content,
-          publicThreadId,
-          publicMessageId: threadMessage.public_id,
         });
 
         let fullMessage = '';

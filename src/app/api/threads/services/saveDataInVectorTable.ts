@@ -9,11 +9,6 @@ import {
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
 import { getOpenaiAPIKey } from '@/app/lib/services/settings';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
@@ -31,8 +26,6 @@ import {
   markdownSplit,
   splitDocuments,
 } from '@/libs/text-splitter';
-
-const serviceName = 'saveDataInVectorTable';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -80,7 +73,6 @@ const saveBinaryToTempFile = async (
   const filePath = path.join(projectDir, `temp-${uuidv4()}.${extension}`);
 
   try {
-    setSentryServiceTag(serviceName);
     const data = content instanceof Buffer ? new Uint8Array(content) : content;
     await fs.promises.writeFile(filePath, data);
     await fs.promises
@@ -160,13 +152,6 @@ export const convertAndStoreDocument = async ({
   mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-    setSentryContext('EXTRA_DATA', {
-      fileName,
-      fileId,
-    });
-
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }

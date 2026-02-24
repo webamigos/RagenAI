@@ -2,10 +2,6 @@ import { StatusCodes } from 'http-status-codes';
 import { NextResponse } from 'next/server';
 
 import { logger } from '@/app/lib/utils/logger';
-import {
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { submitFeedbackDirectly } from '@/app/lib/services/feedback';
 
 type Params = {
@@ -16,10 +12,6 @@ export const POST = async (request: Request, { params }: Params) => {
   const { messageId } = await params;
 
   try {
-    setSentryServiceTag('messages-feedback');
-    setSentryContext('EXTRA_DATA', {
-      messageId,
-    });
     const body = await request.json();
     const { feedback } = body;
 

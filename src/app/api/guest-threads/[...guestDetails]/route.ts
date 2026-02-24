@@ -1,8 +1,6 @@
 import { NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
-import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '../../threads/services/assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
@@ -32,12 +30,9 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     const { organizationId, projectId } = projectData;
 
-    setSentryServiceTag('threads');
     if (!organizationId) {
       throw new Error('Unauthorized');
     }
-    setSentryClerkOrganizationTag(organizationId);
-
     const body = await request.json();
     const parsedData = createMessageSchema().parse(body);
 

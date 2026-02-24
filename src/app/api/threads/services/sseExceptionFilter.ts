@@ -4,7 +4,6 @@ import {
   UnknownChainError,
 } from '@/libs/chains/errors';
 import { SseMessageError } from '@/app/contracts/Events';
-import { setSentryContext } from '@/app/lib/services/sentry';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 
 export class SseExceptionFilter {
@@ -29,9 +28,6 @@ export class SseExceptionFilter {
       originalErrorMessage: chainError.originalErrorMessage,
     };
 
-    setSentryContext('CHAIN_SSE_ERROR', {
-      errorMessage,
-    });
     sendApiEvent(controller, 'error', errorMessage);
 
     controller.close();

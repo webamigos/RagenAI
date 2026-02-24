@@ -1,11 +1,5 @@
 import { NextRequest } from 'next/server';
 
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
-
 import { getApiContext } from '../../../../__logic__/context/api.context';
 import { ApiDbService } from '../../../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../../../__logic__/services/api-errors.service';
@@ -26,13 +20,10 @@ export type Params = {
 export const POST = async (request: NextRequest, { params }: Params) => {
   const { publicId } = await params;
   try {
-    setSentryServiceTag('api.threads.threadId.messages.stream.get');
     const body = await request.json();
     const parsedData = chatMessagesSchema.parse(body);
 
     const apiContext = await getApiContext(request);
-
-    setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
 
@@ -48,11 +39,6 @@ export const POST = async (request: NextRequest, { params }: Params) => {
                 parsedData,
                 controller
               );
-
-            setSentryContext('EXTRA_DATA', {
-              userQuestion: parsedData,
-              threadPublicId: publicId,
-            });
 
             // streaming part
             let fullMessage = '';

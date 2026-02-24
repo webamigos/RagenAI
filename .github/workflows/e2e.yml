@@ -2,9 +2,6 @@ name: E2E Tests
 
 env:
   NEXT_PUBLIC_API_URL: 'http://example.com'
-  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-  NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
-  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
   API_BASE_URL: ${{ secrets.API_BASE_URL }}

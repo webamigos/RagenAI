@@ -35,9 +35,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Sentry Config File
-.env.sentry-build-plugin
-
 *storybook.log
 /test-results/
 /playwright-report/
@@ -58,3 +55,6 @@ tmp/
 
 # Prisma generated client
 /src/generated/prisma/
+
+
+.claude/settings.local.json

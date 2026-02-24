@@ -1,6 +1,5 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUser,
@@ -10,10 +9,6 @@ import {
   createOrganizationWithDefaultProject,
   fetchApiKeysFromDb,
 } from '@/app/lib/services/apiKeys';
-import {
-  setSentryServiceTag,
-  setSentryTagsAndContextForClerk,
-} from '@/app/lib/services/sentry';
 
 const serviceName = 'apiKeysList';
 
@@ -31,9 +26,6 @@ export const fetchApiKeys = async () => {
   const userId = user.id;
 
   try {
-    setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId: undefined, orgId, userId });
-
     const keys = await fetchApiKeysFromDb(orgId);
 
     return {
@@ -41,8 +33,6 @@ export const fetchApiKeys = async () => {
       payload: keys,
     };
   } catch (error) {
-    Sentry.captureException(error);
-
     await createOrganizationWithDefaultProject(orgId, userId);
 
     return {

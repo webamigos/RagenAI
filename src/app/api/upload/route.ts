@@ -4,10 +4,6 @@ import { nanoid } from 'nanoid';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
-import {
   fetchOrganizationDefaultProjectId,
   getProjectByPublicIdOrThrow,
 } from '@/app/lib/services/project';
@@ -32,12 +28,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    setSentryServiceTag('upload');
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const formProjectId = formData.get('projectId')?.toString();
-
-    setSentryClerkOrganizationTag(orgId);
 
     if (!files || files.length === 0) {
       return NextResponse.json(

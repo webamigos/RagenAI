@@ -12,7 +12,6 @@ import db from '@ragenai/prisma-client';
 import { MessageDto } from '../../contracts/Message';
 import { createVisitorEntry } from './visitor';
 import { logger } from '../utils/logger';
-import { setSentryContext, setSentryServiceTag } from './sentry';
 import { usageTracker } from './usage';
 
 export type DbMessageDto = {
@@ -43,19 +42,6 @@ export const createMessageInDB = async ({
   voiceDurationSeconds?: number;
 }) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadId: threadId,
-    });
-    setSentryContext('EXTRA_DATA', {
-      // messageId: message.id,
-      role,
-      visitorId,
-      runId,
-      messageType,
-      voiceDurationSeconds,
-    });
-
     usageTracker.incMessagesCount(role);
 
     return await db.message.create({
@@ -80,14 +66,6 @@ export const fetchMessagesFromDb = async (
   visitorId: Thread['visitor_id']
 ) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadId: threadPublicId,
-    });
-    setSentryContext('EXTRA_DATA', {
-      visitorId,
-    });
-
     const thread = await db.thread.findUnique({
       where: { public_id: threadPublicId, visitor_id: visitorId },
       include: {
@@ -193,16 +171,6 @@ export const createAndStoreMessage = async ({
   voiceDurationSeconds?: number;
 }): Promise<MessageDto> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadId: threadId,
-    });
-    setSentryContext('EXTRA_DATA', {
-      visitorId,
-      messageType,
-      voiceDurationSeconds,
-    });
-
     const dbMessage = await createMessageInDB({
       threadId: threadId,
       message: {
@@ -248,10 +216,6 @@ export const getMessageById = async (publicMessageId: string) => {
 
 export const saveRateInDB = async (messagePublicId: string, rate: number) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messageId: messagePublicId,
-    });
     return await db.message.update({
       where: {
         public_id: messagePublicId,
@@ -270,10 +234,6 @@ export const deleteMessageByPublicId = async (
   publicId: string
 ): Promise<void> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messageId: publicId,
-    });
     await db.message.delete({
       where: { public_id: publicId },
     });
@@ -285,10 +245,6 @@ export const deleteMessageByPublicId = async (
 
 export const updateMessagePlayedStatus = async (messagePublicId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messageId: messagePublicId,
-    });
     return await db.message.update({
       where: {
         public_id: messagePublicId,

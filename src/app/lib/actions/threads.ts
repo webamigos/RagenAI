@@ -2,7 +2,6 @@
 
 import db from '@ragenai/prisma-client';
 import { Thread } from '@/generated/prisma/client';
-import { setSentryServiceTag } from '../services/sentry';
 import {
   createNewThreadInDb,
   updateThreadProjectContext,
@@ -37,8 +36,6 @@ export const createThreadAction = async (
   threadDocuments?: ThreadDocumentUI[]
 ): Promise<ThreadAction> => {
   try {
-    setSentryServiceTag('threads');
-
     const thread = await createNewThreadInDb({
       visitorId: null,
       projectId,
@@ -76,8 +73,6 @@ export const createGuestThreadAction = async ({
   preferredModel?: string;
 }): Promise<ThreadAction> => {
   try {
-    setSentryServiceTag('guest-threads');
-
     const visitorId = await getVisitorIdFromCookie();
 
     const threadRecord = await db.thread.create({
@@ -126,8 +121,6 @@ export const updateThreadContextAction = async (
   mentionedProjectId: number | null
 ): Promise<ThreadContextAction> => {
   try {
-    setSentryServiceTag('thread-context');
-
     const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       return {
@@ -203,8 +196,6 @@ export const removeThreadContextAction = async (
   threadId: string
 ): Promise<ThreadContextAction> => {
   try {
-    setSentryServiceTag('thread-context');
-
     const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       return {
@@ -266,8 +257,6 @@ export const getThreadDetailsAction = async (
   threadId: string
 ): Promise<ThreadDetailsAction> => {
   try {
-    setSentryServiceTag('thread-details');
-
     const threadRecord = await getThreadDetails(threadId);
 
     return {

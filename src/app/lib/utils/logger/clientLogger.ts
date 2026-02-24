@@ -1,64 +1,101 @@
-import {
-  isProductionTargetEnv,
-  isStagingTargetEnv,
-  isLocalTargetEnv,
-} from '@/libs/utils/env';
-import * as Sentry from '@sentry/browser';
-import { AppLogger } from './interface';
+import pino, { Logger } from 'pino';
+import { otelLogger } from '@/libs/monitoring/otel-logger';
 
-// Initialize Sentry for browser
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-  integrations: [Sentry.rewriteFramesIntegration()],
-  tracesSampleRate: 1.0,
-});
+const isProductionTargetEnv =
+  process.env.NEXT_PUBLIC_TARGET_ENV === 'production';
 
-type LogLevel = 'info' | 'error' | 'warn' | 'debug';
+const COLOR = {
+  RESET: '\x1b[0m',
+  RED: '\x1b[31m',
+  YELLOW: '\x1b[33m',
+  BLUE: '\x1b[34m',
+  CYAN: '\x1b[36m',
+  WHITE: '\x1b[37m',
+  GRAY: '\x1b[90m',
+  DIM: '\x1b[2m',
+} as const;
 
-class ClientLogger implements AppLogger {
-  private log(level: LogLevel, message: string | object, ...args: any[]) {
-    // Development logging to console
-    if (isLocalTargetEnv) {
-      // eslint-disable-next-line no-console
-      console[level](message, ...args);
-    }
+const getLevelColor = (level: string): string => {
+  switch (level) {
+    case 'ERROR':
+      return COLOR.RED;
+    case 'WARN':
+      return COLOR.YELLOW;
+    case 'INFO':
+      return COLOR.BLUE;
+    case 'DEBUG':
+      return COLOR.GRAY;
+    default:
+      return COLOR.WHITE;
+  }
+};
 
-    // Production or staging logging to Sentry
-    if (isProductionTargetEnv || isStagingTargetEnv) {
-      if (level === 'error') {
-        Sentry.captureException(args[0] || message);
+const pinoLevelToOtel: Record<number, keyof typeof otelLogger> = {
+  30: 'info',
+  40: 'warn',
+  50: 'error',
+  60: 'error',
+};
+
+const logger: Logger = pino({
+  level: isProductionTargetEnv ? 'info' : 'debug',
+  browser: {
+    write: (logObj: unknown) => {
+      if (isProductionTargetEnv) return;
+
+      const { level, msg, time, ...extra } = logObj as Record<string, unknown>;
+      const levelUpperCased = (level as string).toUpperCase();
+      const timeFormatted = new Date(time as string).toLocaleTimeString(
+        'en-GB',
+        {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          fractionalSecondDigits: 3,
+        }
+      );
+      const levelColor = getLevelColor(levelUpperCased);
+
+      const formatted = `[${timeFormatted}] ${levelColor}${levelUpperCased}${COLOR.RESET} ${msg}`;
+
+      if (Object.keys(extra).length > 0) {
+        // eslint-disable-next-line no-console
+        console.log(formatted, extra);
       } else {
-        let logMessage =
-          typeof message === 'string'
-            ? message
-            : `Object: ${JSON.stringify(message, null, 2)}`;
-
-        Sentry.captureMessage(logMessage, {
-          level: level === 'warn' ? 'warning' : level,
-          extra: args.length ? { extra: args } : undefined,
-        });
+        // eslint-disable-next-line no-console
+        console.log(formatted);
       }
-    }
-  }
+    },
+    formatters: {
+      level: (label: string) => ({ level: label }),
+    },
+  },
+  hooks: {
+    logMethod(inputArgs, method, level) {
+      const otelMethod = pinoLevelToOtel[level];
+      if (otelMethod) {
+        let message: string | undefined;
+        let attrs: Record<string, unknown> | undefined;
 
-  info(message: string | object, ...args: any[]) {
-    this.log('info', message as string, ...args);
-  }
+        if (typeof inputArgs[0] === 'string') {
+          message = inputArgs[0];
+        } else if (typeof inputArgs[0] === 'object' && inputArgs[0] !== null) {
+          attrs = inputArgs[0] as Record<string, unknown>;
+          if (typeof inputArgs[1] === 'string') {
+            message = inputArgs[1];
+          }
+        }
 
-  error(message: string | object, ...args: any[]) {
-    this.log('error', message as string, ...args);
-  }
+        if (message) {
+          otelLogger[otelMethod](message, attrs);
+        }
+      }
 
-  warn(message: string | object, ...args: any[]) {
-    this.log('warn', message as string, ...args);
-  }
-
-  debug(message: string | object, ...args: any[]) {
-    this.log('debug', message as string, ...args);
-  }
-}
-
-const logger = new ClientLogger();
+      method.apply(this, inputArgs as Parameters<typeof method>);
+    },
+  },
+});
 
 logger.info('Client logger initialized');
 

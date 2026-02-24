@@ -1,7 +1,3 @@
-import {
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { VECTOR_STORE_TABLE_NAME } from '@/libs/db/constants/vectorStore';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
@@ -12,11 +8,6 @@ import { UserFile } from '@/generated/prisma/client';
 
 export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
   try {
-    setSentryServiceTag('deleteDocument');
-    setSentryContext('EXTRA_DATA', {
-      fileId,
-    });
-
     const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error('Invalid organization!');

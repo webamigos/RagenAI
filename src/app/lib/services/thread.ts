@@ -1,7 +1,6 @@
 import db from '@ragenai/prisma-client';
 
 import { type CreateThreadDto } from '../../contracts/ThreadDto';
-import { setSentryContext, setSentryServiceTag } from './sentry';
 import { logger } from '../utils/logger';
 import { fetchOrganizationDefaultProjectId } from './project';
 import { ThreadDocumentUI } from '../../contracts/ThreadDocument';
@@ -13,14 +12,6 @@ export const findOrCreateThread = async (
   visitorId: string
 ) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      threadPublicId,
-    });
-    setSentryContext('EXTRA_DATA', {
-      visitorId,
-    });
-
     const threadRecord = await db.thread.findUniqueOrThrow({
       where: { public_id: threadPublicId },
     });
@@ -58,8 +49,6 @@ export const createNewThreadInDb = async ({
   userId?: string;
 }) => {
   try {
-    setSentryServiceTag(serviceName);
-
     if (!orgId) {
       throw new Error('Organization ID is required');
     }
@@ -121,10 +110,6 @@ export const createNewThreadInDb = async ({
 
 export const getThreadMessages = async (publicThreadId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      publicThreadId,
-    });
     const thread = await db.thread.findUnique({
       where: {
         public_id: publicThreadId,
@@ -158,10 +143,6 @@ export const getThreadMessages = async (publicThreadId: string) => {
 
 export const getThreadDetails = async (publicThreadId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      publicThreadId,
-    });
     const thread = await db.thread.findUniqueOrThrow({
       where: { public_id: publicThreadId },
       select: {
@@ -199,14 +180,6 @@ export const updateThreadProjectContext = async (
   mentionedProjectId: number | null
 ) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      publicThreadId,
-    });
-    setSentryContext('EXTRA_DATA', {
-      mentionedProjectId,
-    });
-
     const updatedThread = await db.thread.update({
       where: { public_id: publicThreadId },
       data: { mentioned_project_id: mentionedProjectId },
@@ -237,11 +210,6 @@ export const updateThreadProjectContext = async (
 
 export const removeThreadProjectContext = async (publicThreadId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('THREAD_ID', {
-      publicThreadId,
-    });
-
     const updatedThread = await db.thread.update({
       where: { public_id: publicThreadId },
       data: { mentioned_project_id: null },

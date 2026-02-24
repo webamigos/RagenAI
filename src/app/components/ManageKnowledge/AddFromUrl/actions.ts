@@ -4,10 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { usageTracker } from '@/app/lib/services/usage';
@@ -39,9 +35,6 @@ export async function processUrl(
   }
 
   try {
-    setSentryServiceTag('website-parsing');
-    setSentryClerkOrganizationTag(orgId);
-
     const uniqueFileId = uuidv4();
     const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
 

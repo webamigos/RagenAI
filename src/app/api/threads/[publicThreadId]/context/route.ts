@@ -3,10 +3,6 @@ import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
 import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
-import {
   updateThreadProjectContext,
   removeThreadProjectContext,
 } from '@/app/lib/services/thread';
@@ -40,9 +36,6 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     if (!orgId) {
       return new Response('Organization not found', { status: 401 });
     }
-
-    setSentryServiceTag('thread-context');
-    setSentryClerkOrganizationTag(orgId);
 
     const body = await request.json();
     const { mentionedProjectId } = updateContextSchema.parse(body);
@@ -115,9 +108,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     if (!orgId) {
       return new Response('Organization not found', { status: 401 });
     }
-
-    setSentryServiceTag('thread-context');
-    setSentryClerkOrganizationTag(orgId);
 
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({

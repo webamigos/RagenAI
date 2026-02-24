@@ -1,7 +1,5 @@
 import Redis from 'ioredis';
 import { logger } from '../utils/logger';
-import { setSentryContext, setSentryServiceTag } from './sentry';
-
 export class RedisService {
   private static instance: RedisService;
   private client: Redis;
@@ -9,7 +7,6 @@ export class RedisService {
 
   private constructor() {
     logger.info('Started Redis instance');
-    setSentryServiceTag(this.serviceName);
     this.client = new Redis(process.env.REDIS_URL!);
   }
 
@@ -22,10 +19,6 @@ export class RedisService {
 
   async hget(key: string, field: string): Promise<string | null> {
     try {
-      setSentryContext('EXTRA_DATA', {
-        key,
-        field,
-      });
       const result = await this.client.hget(key, field);
       return result;
     } catch (error) {
@@ -36,9 +29,6 @@ export class RedisService {
 
   async hgetall(key: string): Promise<Record<string, string>> {
     try {
-      setSentryContext('EXTRA_DATA', {
-        key,
-      });
       return await this.client.hgetall(key);
     } catch (error) {
       logger.error({ err: error }, 'Error retrieving data from Redis');
@@ -51,10 +41,6 @@ export class RedisService {
     hash: Record<string, string>
   ): Promise<{ success: boolean; status: string }> {
     try {
-      setSentryContext('EXTRA_DATA', {
-        key,
-        hash,
-      });
       const result = await this.client.hset(key, hash);
       if (result > 0) {
         return { success: true, status: `${hash} saved successfully` };
@@ -69,10 +55,6 @@ export class RedisService {
 
   async set(key: string, value: string) {
     try {
-      setSentryContext('EXTRA_DATA', {
-        key,
-        value,
-      });
       return await this.client.set(key, value);
     } catch (error) {
       logger.error({ err: error }, 'Error setting data to Redis');
@@ -81,9 +63,6 @@ export class RedisService {
 
   async get(key: string) {
     try {
-      setSentryContext('EXTRA_DATA', {
-        key,
-      });
       return await this.client.get(key);
     } catch (error) {
       logger.error({ err: error }, 'Error removing key from Redis');
@@ -92,9 +71,6 @@ export class RedisService {
 
   async del(key: string) {
     try {
-      setSentryContext('EXTRA_DATA', {
-        key,
-      });
       return await this.client.del(key);
     } catch (error) {
       logger.error({ err: error }, 'Error removing key from Redis');

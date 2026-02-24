@@ -20,11 +20,6 @@ import {
 } from '@/app/lib/services/settings';
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
-import {
-  setSentryClerkContext,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';
 
 const serviceName = 'ChatInstanceSettings';
@@ -81,13 +76,6 @@ export const fetchSettings = async (): Promise<
     };
   }
 
-  setSentryServiceTag(serviceName);
-  setSentryClerkContext({
-    orgId,
-    userId: user?.id || '',
-    sessionId: undefined,
-  });
-
   try {
     const unmaskedApiKey = await getOpenaiAPIKey(orgId);
     const apiKey = unmaskedApiKey ? maskApiKey(unmaskedApiKey) : '';
@@ -120,14 +108,6 @@ export const saveSetting = async (
   if (!orgId) {
     return { success: false, message: 'Unauthorized' };
   }
-
-  setSentryServiceTag(serviceName);
-  setSentryClerkContext({
-    orgId,
-    userId: user?.id || '',
-    sessionId: undefined,
-  });
-  setSentryContext('EXTRA_DATA', { type });
 
   try {
     switch (type) {
