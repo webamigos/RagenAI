@@ -154,14 +154,33 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
     await this.client.waitForTask(filterableTask.taskUid);
 
     // Configure embedder settings for vector/hybrid search
-    // Meilisearch v1.11+ supports userProvided embedders
-    const embeddersTask = await index.updateEmbedders({
-      [EMBEDDER_NAME]: {
-        source: 'userProvided',
-        dimensions: (await this.embeddings.embedQuery('test')).length,
-      },
-    });
-    await this.client.waitForTask(embeddersTask.taskUid);
+    // Must check current settings first — updating embedders fails if existing
+    // documents lack vectors for the new embedder
+    const currentEmbedders = await index.getEmbedders();
+    if (!currentEmbedders || !(EMBEDDER_NAME in currentEmbedders)) {
+      const embeddersTask = await index.updateEmbedders({
+        [EMBEDDER_NAME]: {
+          source: 'userProvided',
+          dimensions: (await this.embeddings.embedQuery('test')).length,
+        },
+      });
+      const taskResult = await this.client.waitForTask(embeddersTask.taskUid);
+      if (taskResult.status === 'failed') {
+        logger.error(
+          { error: taskResult.error, index: this.indexName },
+          'Failed to configure embedders — clearing documents and retrying'
+        );
+        const deleteTask = await index.deleteAllDocuments();
+        await this.client.waitForTask(deleteTask.taskUid);
+        const retryTask = await index.updateEmbedders({
+          [EMBEDDER_NAME]: {
+            source: 'userProvided',
+            dimensions: (await this.embeddings.embedQuery('test')).length,
+          },
+        });
+        await this.client.waitForTask(retryTask.taskUid);
+      }
+    }
 
     this.indexConfigured = true;
   }

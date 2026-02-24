@@ -36,7 +36,7 @@ services:
       - ragen-network
 
   meilisearch:
-    image: getmeili/meilisearch:v1.11
+    image: getmeili/meilisearch:v1.12
     container_name: ragen-meilisearch
     restart: unless-stopped
     environment:
@@ -44,7 +44,6 @@ services:
       MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY:-ragen-dev-key}
       MEILI_NO_ANALYTICS: "true"
       MEILI_EXPERIMENTAL_ENABLE_METRICS: "true"
-      MEILI_EXPERIMENTAL_VECTOR_STORE: "true"
     ports:
       - "${MEILISEARCH_PORT:-7700}:7700"
     volumes:
