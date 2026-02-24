@@ -412,6 +412,8 @@
   "files-table": {
     "title": "Lista plików",
     "delete": "Usuń",
+    "edit": "Edytuj",
+    "view": "Podgląd",
     "file-name": "Nazwa pliku",
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",

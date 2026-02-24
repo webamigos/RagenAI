@@ -55,6 +55,4 @@ const logger = pino(
   pretty({ colorize: true })
 );
 
-logger.info('Server logger initialized');
-
 export { logger };

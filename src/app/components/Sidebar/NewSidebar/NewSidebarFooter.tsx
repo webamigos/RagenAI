@@ -20,7 +20,7 @@ import {
   LightBulbIcon,
   ShieldCheckIcon,
   UserIcon,
-} from '@heroicons/react/16/solid';
+} from '@heroicons/react/24/outline';
 import { useTranslations, useLocale } from 'next-intl';
 
 export const NewSidebarFooter = () => {
@@ -51,15 +51,15 @@ export const NewSidebarFooter = () => {
               </span>
             </span>
           </span>
-          <ChevronUpIcon className="w-5 h-5" />
+          <ChevronUpIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
         </DropdownButton>
         <DropdownMenu className="min-w-64" anchor="top start">
           <DropdownItem href="/user/profile">
-            <UserIcon className="w-6 h-6" />
+            <UserIcon data-slot="icon" />
             <DropdownLabel>{t('my-profile')}</DropdownLabel>
           </DropdownItem>
           <DropdownItem href="/settings">
-            <Cog8ToothIcon className="w-6 h-6" />
+            <Cog8ToothIcon data-slot="icon" />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
@@ -69,7 +69,7 @@ export const NewSidebarFooter = () => {
               window.location.href = `/${locale}/sign-in`;
             }}
           >
-            <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
+            <ArrowRightStartOnRectangleIcon data-slot="icon" />
             <DropdownLabel>{t('sign-out')}</DropdownLabel>
           </DropdownItem>
         </DropdownMenu>

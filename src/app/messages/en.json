@@ -409,6 +409,8 @@
   "files-table": {
     "title": "File list",
     "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
     "file-name": "File Name",
     "file-size": "File Size",
     "created": "Created",

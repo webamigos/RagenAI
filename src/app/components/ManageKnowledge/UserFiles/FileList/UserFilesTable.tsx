@@ -117,7 +117,7 @@ const FileRow = ({
             ? formattedEmbeddingCompletedAt
             : '-'}
         </CommonUi.TableCell>
-        <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+        <CommonUi.TableCell className="text-right">
           <ToolbarActions
             filePublicId={public_id!}
             documentPublicId={file.document?.public_id}

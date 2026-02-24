@@ -230,7 +230,7 @@ export function DocumentComponent({ publicId }: Props) {
 
   return (
     <>
-      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
+      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
@@ -319,12 +319,14 @@ export function DocumentComponent({ publicId }: Props) {
         </form>
       ) : (
         <div
-          className="flex-1 prose prose-lg dark:prose-invert max-w-none w-full"
+          className="flex-1 w-full overflow-auto px-6 py-8 lg:px-12"
           onDoubleClick={handleDoubleClick}
         >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {documentContent}
-          </ReactMarkdown>
+          <div className="prose prose-xl prose-zinc dark:prose-invert max-w-5xl prose-headings:font-semibold prose-p:leading-relaxed prose-li:leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {documentContent}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </>
