@@ -61,7 +61,6 @@ export const MessageItem = ({
             <RateAnswer
               initialRated={message.rate}
               publicId={message.public_id}
-              runId={streamedMessageRunId || message.run_id}
             />
             <CopyToClipboardButton message={message} />
           </div>

@@ -1,71 +1,71 @@
+import { streamText } from 'ai';
 import {
-  RunnablePassthrough,
-  RunnableSequence,
-} from '@langchain/core/runnables';
-import {
-  generateFinalAnswer,
   rephraseQuestion,
   retrieveRelevantDocuments,
   retrieveThreadDocuments,
+  buildRagMessages,
+  validateAnswerGenerator,
 } from './operations';
 import {
   sanitizeAndValidateInput,
   moderateContent,
 } from '../utils/common-operations';
-import { CHAIN_FINAL_ANSWER_RUN_NAME } from './config';
 import type { BasicRagChainParams } from '../types/basic-rag';
-import type { BaseChatChainInput, BaseChatChainOutput } from '../types/common';
-/**
- * Creates a basic RAG (Retrieval-Augmented Generation) chain.
- *
- * @param {VectorStore} params.vectorStore - The vector store instance used for document retrieval.
- * @param {Object} params.models - LLM models used in the chain.
- * @param {ContentModerator} params.models.contentModerator - Model for content moderation, any BaseChain instance can be used.
- * @param {QuestionRephraser} params.models.questionRephraser - Model for rephrasing questions, any BaseChatModel instance can be used.
- * @param {AnswerGenerator} params.models.answerGenerator - Model for generating final answers, any BaseChatModel instance can be used.
- * @param {BasicRagChainConfig} params.config - Configuration for the chain.
- * @returns {BasicRagChainOutput} An object containing the chain and the final answer run name. Final answer run name can be used to filter events while stream processing.
- */
+import type { BaseChatChainOutput } from '../types/common';
+
 export const basicRagChain = async ({
   vectorStore,
   models,
   config,
 }: BasicRagChainParams): Promise<BaseChatChainOutput> => {
-  const chain = RunnableSequence.from<BaseChatChainInput, string>([
-    sanitizeAndValidateInput,
+  validateAnswerGenerator(models.answerGenerator);
 
-    moderateContent(models.contentModerator),
+  return {
+    stream: async (input) => {
+      // Step 1: Sanitize and validate the input
+      const sanitizedInput = sanitizeAndValidateInput(input);
 
-    RunnablePassthrough.assign({
-      standalone_question: rephraseQuestion(models.questionRephraser),
-    }),
+      // Step 2: Moderate the content
+      await moderateContent(models.contentModerator, sanitizedInput);
 
-    RunnablePassthrough.assign({
-      context: await retrieveRelevantDocuments(
+      // Step 3: Rephrase the question
+      const standaloneQuestion = await rephraseQuestion(
+        models.questionRephraser,
+        sanitizedInput
+      );
+
+      // Step 4: Retrieve relevant documents from vector store
+      const context = await retrieveRelevantDocuments(
         vectorStore,
+        standaloneQuestion,
         config?.maxDocumentsToRetrieve,
         config?.metadataFilter
-      ),
-    }),
+      );
 
-    RunnablePassthrough.assign({
-      thread_context: retrieveThreadDocuments(
+      // Step 5: Retrieve thread-specific documents
+      const threadContext = await retrieveThreadDocuments(
         config?.threadDocuments || [],
         vectorStore,
         models.embeddings,
+        standaloneQuestion,
         config?.maxDocumentsToRetrieve || 3
-      ),
-    }),
+      );
 
-    generateFinalAnswer(
-      models.answerGenerator,
-      CHAIN_FINAL_ANSWER_RUN_NAME,
-      config?.answerInstructions,
-      config?.projectInstruction
-    ),
-  ]).withConfig({
-    runName: 'Basic RAG chain',
-  });
+      // Step 6: Build messages and stream the answer
+      const { system, messages } = buildRagMessages(
+        standaloneQuestion,
+        sanitizedInput.chat_history,
+        context,
+        threadContext,
+        config?.answerInstructions,
+        config?.projectInstruction
+      );
 
-  return { chain, finalAnswerRunName: CHAIN_FINAL_ANSWER_RUN_NAME };
+      return streamText({
+        model: models.answerGenerator,
+        system,
+        messages,
+      });
+    },
+  };
 };

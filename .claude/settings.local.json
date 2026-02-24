@@ -20,7 +20,12 @@
       "Bash(npm uninstall:*)",
       "Bash(find:*)",
       "mcp__plugin_serena_serena__list_dir",
-      "WebFetch(domain:zod.dev)"
+      "WebFetch(domain:zod.dev)",
+      "Bash(git fsck:*)",
+      "Bash(head:*)",
+      "Bash(grep:*)",
+      "Bash(grep error TS:*)",
+      "Bash(npx tsc:*)"
     ]
   },
   "enabledPlugins": {

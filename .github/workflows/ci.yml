@@ -16,9 +16,6 @@ env:
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "dummy"
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/dummy"
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/dummy"
-  LANGCHAIN_API_KEY: "dummy"
-  LANGCHAIN_ENDPOINT: "http://example.com"
-  LANGCHAIN_PROJECT: "ci"
   REDIS_URL: "http://example.com"
   SECRET_KEY: "dummy"
   TARGET_ENV: "ci"
@@ -68,7 +65,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "20"
+          node-version: "22"
 
       # Optional: Cache node modules to speed up the build process
       - name: Cache dependencies

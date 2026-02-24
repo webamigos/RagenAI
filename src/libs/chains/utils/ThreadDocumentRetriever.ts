@@ -1,6 +1,8 @@
-import { VectorStore } from '@langchain/core/vectorstores';
-import { Document as VectorStoreDocument } from '@langchain/core/documents';
-import { Embeddings } from '@langchain/core/embeddings';
+import type {
+  VectorStoreClient,
+  VectorStoreDocument,
+} from '@/libs/vector-store/types';
+import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import { logger } from '@/app/lib/utils/logger';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 import db from '@ragenai/prisma-client';
@@ -10,10 +12,10 @@ import db from '@ragenai/prisma-client';
  * for thread-specific documents uploaded by users
  */
 export class ThreadDocumentRetriever {
-  private vectorStore: VectorStore;
-  private embeddings: Embeddings;
+  private vectorStore: VectorStoreClient;
+  private embeddings: EmbeddingsProvider;
 
-  constructor(vectorStore: VectorStore, embeddings: Embeddings) {
+  constructor(vectorStore: VectorStoreClient, embeddings: EmbeddingsProvider) {
     this.vectorStore = vectorStore;
     this.embeddings = embeddings;
   }
@@ -183,7 +185,7 @@ export class ThreadDocumentRetriever {
       );
 
       // Generate query embedding
-      const [queryEmbedding] = await this.embeddings.embedDocuments([query]);
+      const queryEmbedding = await this.embeddings.embedQuery(query);
 
       // Generate embeddings for all document contents
       const documentEmbeddings = await this.embeddings.embedDocuments(
@@ -203,18 +205,15 @@ export class ThreadDocumentRetriever {
         .slice(0, maxChunks);
 
       // Convert to VectorStoreDocument format
-      const results = topResults.map(
-        (result) =>
-          new VectorStoreDocument({
-            pageContent: result.document.content,
-            metadata: {
-              file_name: result.document.name,
-              file_id: result.document.userFileId,
-              source_type: 'thread_document_inline',
-              similarity_score: result.similarity,
-            },
-          })
-      );
+      const results: VectorStoreDocument[] = topResults.map((result) => ({
+        pageContent: result.document.content,
+        metadata: {
+          file_name: result.document.name,
+          file_id: result.document.userFileId,
+          source_type: 'thread_document_inline',
+          similarity_score: result.similarity,
+        },
+      }));
 
       logger.info(
         {

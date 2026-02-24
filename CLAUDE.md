@@ -20,7 +20,7 @@ npm run db:seed          # Seed database (uses .env.local)
 
 ## Local Development
 
-Requires Node.js 20.x. Start services with `docker compose up` (Postgres on 5432, Redis on 6379, Qdrant on 6333). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Redis on 6379, Qdrant on 6333). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"

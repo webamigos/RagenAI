@@ -1,5 +1,3 @@
-import { Document } from 'langchain/document';
-import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { createMarkdownDocument } from '@/app/lib/services/document';
 import { logger } from '@/app/lib/utils/logger';
 import {
@@ -10,6 +8,7 @@ import {
 import { createChatCompletionInstance } from '@/app/lib/services/llm';
 import { availableModels } from './config';
 import { getOpenaiAPIKey } from '@/app/lib/services/settings';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
 
 export async function processPDFDocument(
   filePath: string,
@@ -17,7 +16,11 @@ export async function processPDFDocument(
   fileId: string,
   organizationId: string,
   projectId?: number
-): Promise<{ rawDocs: Document[]; success: boolean; message: string }> {
+): Promise<{
+  rawDocs: VectorStoreDocument[];
+  success: boolean;
+  message: string;
+}> {
   const apiKey = await getOpenaiAPIKey(organizationId);
 
   try {
@@ -41,16 +44,14 @@ export async function processPDFDocument(
     );
 
     let finalDocument = '';
-    const rawDocs: Document[] = [];
+    const rawDocs: VectorStoreDocument[] = [];
 
     pageDescriptions.forEach((description: string, index: number) => {
       finalDocument += description + '\n';
-      rawDocs.push(
-        new Document({
-          pageContent: description,
-          metadata: { page: index + 1, type: 'image_description' },
-        })
-      );
+      rawDocs.push({
+        pageContent: description,
+        metadata: { page: index + 1, type: 'image_description' },
+      });
     });
 
     await createMarkdownDocument({
@@ -61,9 +62,29 @@ export async function processPDFDocument(
       project_id: projectId,
     });
 
-    const pdfLoader = new PDFLoader(filePath);
-    const pdfDocs = await pdfLoader.load();
-    rawDocs.push(...pdfDocs);
+    // Parse PDF text content using pdf-parse
+    try {
+      const pdfParse = (await import('pdf-parse')).default;
+      const fs = await import('node:fs');
+      const pdfBuffer = await fs.promises.readFile(filePath);
+      const pdfData = await pdfParse(pdfBuffer);
+
+      if (pdfData.text) {
+        // Split by pages if available, otherwise use the whole text
+        const textContent = pdfData.text.trim();
+        if (textContent) {
+          rawDocs.push({
+            pageContent: textContent,
+            metadata: { type: 'pdf_text', source: filePath },
+          });
+        }
+      }
+    } catch (pdfError) {
+      logger.warn(
+        { err: pdfError },
+        'Could not parse PDF text content, using OCR results only'
+      );
+    }
 
     await removeDirectory(directory);
     logger.info(

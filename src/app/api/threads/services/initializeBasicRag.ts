@@ -1,12 +1,11 @@
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
 import { OrganizationSettings } from '@/app/lib/types/settings';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
-import { Embeddings } from '@langchain/core/embeddings';
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { VectorStoreClient } from '@/libs/vector-store/types';
+import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   createChatCompletionInstance,
   createModerationInstance,
@@ -18,7 +17,8 @@ import {
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
-import { QdrantVectorStore } from '@langchain/qdrant';
+import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
+import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
@@ -79,14 +79,17 @@ export const initializeRagChain = async ({
     });
 
     const orgMetadata = await getOrganizationMetadata(orgId);
-    let vectorStore = undefined;
+    let vectorStore: VectorStoreClient;
+    let isQdrant = false;
 
     if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(embeddingModel);
+      vectorStore = createQdrantVectorStore(embeddingModel, orgId);
+      isQdrant = true;
     } else {
-      vectorStore = await createSupabaseVectorStore(
+      vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
+        orgId,
         internalProjectId
       );
     }
@@ -96,18 +99,18 @@ export const initializeRagChain = async ({
       throw new Error('Internal project ID is required');
     }
 
-    const isSupabaseVectorStore = vectorStore instanceof SupabaseVectorStore;
-
-    const filterOptions = {
-      must: [
-        {
-          key: 'metadata.project_id',
-          match: {
-            value: internalProjectId,
-          },
-        },
-      ],
-    };
+    const filterOptions = isQdrant
+      ? {
+          must: [
+            {
+              key: 'metadata.project_id',
+              match: {
+                value: internalProjectId,
+              },
+            },
+          ],
+        }
+      : undefined;
 
     return await basicRagChain({
       models: {
@@ -118,8 +121,8 @@ export const initializeRagChain = async ({
       },
       config: {
         // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
-        // QdrantVectorStore needs filter passed to asRetriever()
-        metadataFilter: isSupabaseVectorStore ? undefined : filterOptions,
+        // QdrantVectorStore needs filter passed to similaritySearch()
+        metadataFilter: filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
@@ -133,71 +136,45 @@ export const initializeRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
-  try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    if (!orgId) {
-      throw new Error('Organization ID is required');
-    }
+const createQdrantVectorStore = (
+  embeddingModel: EmbeddingsProvider,
+  collectionName: string
+): VectorStoreClient => {
+  logger.info('creating qdrant vector store', {
+    url: process.env.QDRANT_URL,
+    collectionName,
+  });
 
-    logger.info('creating qdrant vector store', {
-      url: process.env.QDRANT_URL,
-      apiKey: process.env.QDRANT_API_KEY, // staging and prod
-      collectionName: orgId,
-    });
-
-    const vectorStore = await QdrantVectorStore.fromExistingCollection(
-      embeddingModel,
-      {
-        url: process.env.QDRANT_URL,
-        apiKey: process.env.QDRANT_API_KEY, // staging and prod
-        collectionName: orgId,
-      }
-    );
-
-    return vectorStore;
-  } catch (error) {
-    logger.error(
-      {
-        err: error,
-        url: process.env.QDRANT_URL,
-        apiKey: process.env.QDRANT_API_KEY, // staging and prod
-        // collectionName: orgId,
-      },
-      'Error creating Qdrant vector store'
-    );
-    throw error;
-  }
+  return new QdrantVectorStoreClient(embeddingModel, {
+    url: process.env.QDRANT_URL!,
+    apiKey: process.env.QDRANT_API_KEY,
+    collectionName,
+  });
 };
 
-// TODO: refactor to use with qdrant or switch depending on organization settings?
-const createSupabaseVectorStore = async (
+const createSupabaseVectorStore = (
   client: SupabaseClient,
-  embeddingModel: Embeddings,
+  embeddingModel: EmbeddingsProvider,
+  organizationId: string,
   projectId?: number
-): Promise<SupabaseVectorStore> => {
+): VectorStoreClient => {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    if (!orgId) {
-      throw new Error('Organization ID is required');
-    }
-
     setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
+    setSentryClerkOrganizationTag(organizationId);
 
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.
-    const metadataFilter: VectorStoreMetadataFilter = {
-      organization_id: orgId,
+    const metadataFilter: Record<string, any> = {
+      organization_id: organizationId,
     };
 
     if (projectId) {
       metadataFilter.project_id = projectId;
     }
 
-    return new SupabaseVectorStore(embeddingModel, {
+    return new SupabaseVectorStoreClient(embeddingModel, {
       client,
       queryName: DOCUMENT_SEARCH_QUERY_NAME,
       filter: metadataFilter,
