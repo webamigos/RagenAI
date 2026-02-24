@@ -1,11 +1,10 @@
 'use server';
 
-import Stripe from 'stripe';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import db from '@ragenai/prisma-client';
-import { cancelSubscriptionAtPeriodEnd } from '@/app/lib/services/stripe';
+import { getSubscriptionDetailsQuery } from '@/features/subscriptions/services/queries/get-subscription-details';
+import { cancelSubscriptionCommand } from '@/features/subscriptions/services/commands/cancel-subscription';
+import { activateFreePlanCommand } from '@/features/subscriptions/services/commands/activate-free-plan';
 import type { SubscriptionDetails } from './types';
-import { activateFreePlan } from '@/app/lib/services/plan';
 
 export async function getSubscriptionData(): Promise<SubscriptionDetails | null> {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -14,32 +13,31 @@ export async function getSubscriptionData(): Promise<SubscriptionDetails | null>
     return null;
   }
 
-  const organization = await db.internalOrganization.findFirst({
-    where: {
-      provider_id: orgId,
-    },
-    select: {
-      subscription: {
-        include: {
-          plan: true,
-        },
-      },
-    },
-  });
+  const result = await getSubscriptionDetailsQuery(orgId);
 
-  return organization?.subscription ?? null;
-}
-
-export async function cancelSubscription(
-  subscriptionId: string | null
-): Promise<Stripe.Subscription | null> {
-  const orgId = await getOrgIdFromAuthOrThrow();
-
-  if (!orgId || !subscriptionId) {
+  if (!result.success || !result.data) {
     return null;
   }
 
-  return cancelSubscriptionAtPeriodEnd(subscriptionId);
+  return result.data;
+}
+
+export async function cancelSubscription(
+  stripeSubscriptionId: string | null
+): Promise<{ canceledAt: Date | null } | null> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+
+  if (!orgId || !stripeSubscriptionId) {
+    return null;
+  }
+
+  const result = await cancelSubscriptionCommand(stripeSubscriptionId);
+
+  if (!result.success) {
+    return null;
+  }
+
+  return result.data ?? null;
 }
 
 export async function activateInternalFreePlan() {
@@ -49,5 +47,9 @@ export async function activateInternalFreePlan() {
     throw new Error('Cannot activate free plan, no organization id found');
   }
 
-  await activateFreePlan(orgId);
+  const result = await activateFreePlanCommand(orgId);
+
+  if (!result.success) {
+    throw new Error(result.error ?? 'Failed to activate free plan');
+  }
 }

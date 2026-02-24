@@ -12,7 +12,7 @@ import { updateInitialAdminAccountCommand } from '@/features/users/services/comm
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
 const initialAccountSchema = z.object({
-  email: z.string().email('initial-account.validation.email'),
+  email: z.email('initial-account.validation.email'),
   password: z.string().min(8, 'initial-account.validation.password'),
 });
 

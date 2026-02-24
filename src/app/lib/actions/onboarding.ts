@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { createTrialSubscription } from '@/app/lib/services/plan';
+import { TRIAL_PLAN_NAME, TRIAL_DAYS } from '@/app/config';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 
@@ -153,8 +153,21 @@ export async function finalizeUserOnboarding() {
       }
     }
 
-    // Create trial subscription
-    await createTrialSubscription(firstOrg.id);
+    // Create trial subscription via new Subscription model
+    const now = new Date();
+    const trialEnd = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+    await db.subscription.create({
+      data: {
+        id: crypto.randomUUID(),
+        plan: TRIAL_PLAN_NAME,
+        referenceId: firstOrg.id,
+        status: 'trialing',
+        periodStart: now,
+        periodEnd: trialEnd,
+        trialStart: now,
+        trialEnd: trialEnd,
+      },
+    });
 
     logger.info(
       { userId, orgId: firstOrg.id },

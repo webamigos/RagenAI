@@ -1,9 +1,15 @@
 import { LLMResult } from '@langchain/core/outputs';
 import { logger } from '../logger';
 import { UsageMetricsCore } from './usage-metrics-core';
-import { Role, UsagePeriod } from '@/generated/prisma/client';
+import { Role } from '@/generated/prisma/client';
 import type { ChatGenerationWithMetadata, UsageMetrics } from './types';
 import { CreateEmbeddingResponse } from 'openai/resources/embeddings';
+
+export type UsagePeriodInfo = {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+};
 
 export class UsageTracker {
   constructor(private readonly tracker: UsageMetricsCore) {}
@@ -85,21 +91,23 @@ export class UsageTracker {
 
   async getCurrentPeriodMetrics(): Promise<{
     metrics: UsageMetrics;
-    period: Pick<UsagePeriod, 'start_date' | 'end_date' | 'id'> | null;
+    period: UsagePeriodInfo | null;
   }> {
     try {
-      const currentPeriod = await this.tracker.getCurrentPeriod();
+      const currentSubscription = await this.tracker.getCurrentPeriod();
 
-      if (!currentPeriod) {
+      if (!currentSubscription) {
         return { metrics: {}, period: null };
       }
 
+      // TODO: Usage metrics storage was removed during Better Auth Stripe migration.
+      // Returning empty metrics until usage period tracking is reimplemented.
       return {
-        metrics: currentPeriod?.metrics as UsageMetrics,
+        metrics: {},
         period: {
-          id: currentPeriod.id,
-          start_date: currentPeriod.start_date,
-          end_date: currentPeriod.end_date,
+          id: currentSubscription.id,
+          startDate: currentSubscription.periodStart ?? new Date(),
+          endDate: currentSubscription.periodEnd ?? new Date(),
         },
       };
     } catch (error) {

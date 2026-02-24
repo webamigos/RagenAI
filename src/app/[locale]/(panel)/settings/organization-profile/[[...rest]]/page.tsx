@@ -83,7 +83,7 @@ export default async function OrganizationProfilePage({ params }: Props) {
 
   // Calculate allowInvite flag
   const FEATURE_FLAG = !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
-  const planName = subscription?.plan?.name;
+  const planName = subscription?.plan;
   const allowInvite = Boolean(
     FEATURE_FLAG &&
       planName &&

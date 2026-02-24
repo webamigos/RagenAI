@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { UnauthorizedException } from '../guards/api-key.guard';
 import { LimitExceededException } from '../guards/rate-limit.guard';
 import { logger } from '@/app/lib/utils/logger';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 
 class HttpException extends Error {}
 export class NotFoundException extends HttpException {}
@@ -45,7 +45,7 @@ export class ApiErrorService {
 
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { message: 'Bad request', error: error.flatten().fieldErrors },
+        { message: 'Bad request', error: z.flattenError(error).fieldErrors },
         { status: StatusCodes.BAD_REQUEST }
       );
     }

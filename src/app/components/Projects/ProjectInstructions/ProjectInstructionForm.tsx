@@ -19,7 +19,7 @@ const getProjectInstructionSchema = (t: (key: string) => string) =>
     description: z
       .string()
       .refine((val) => val.length === 0 || val.length >= 10, {
-        message: t('description-min-length'),
+        error: t('description-min-length'),
       }),
   });
 

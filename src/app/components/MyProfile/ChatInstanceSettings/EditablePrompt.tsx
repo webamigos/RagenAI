@@ -17,7 +17,7 @@ const promptSchema = (t: (key: string) => string) =>
     editablePrompt: z
       .string()
       .refine((val) => val.length === 0 || val.length >= 25, {
-        message: t('description-min-length'),
+        error: t('description-min-length'),
       }),
   });
 

@@ -58,5 +58,5 @@ export type EmptyProjectsStateProps = {
 export type CreateProjectFormData = z.infer<typeof createProjectSchema>;
 
 export const createProjectSchema = z.object({
-  title: z.string().trim().min(1, { message: 'projects.error.title-required' }),
+  title: z.string().trim().min(1, { error: 'projects.error.title-required' }),
 });
