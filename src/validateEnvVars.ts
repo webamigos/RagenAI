@@ -48,10 +48,11 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string(),
 
   // AWS
-  AWS_REGION: z.string(),
+  AWS_ENDPOINT_URL: z.string().url(),
+  AWS_S3_BUCKET_NAME: z.string(),
+  AWS_DEFAULT_REGION: z.string(),
   AWS_ACCESS_KEY_ID: z.string(),
   AWS_SECRET_ACCESS_KEY: z.string(),
-  AWS_DOCUMENTS_BUCKET: z.string(),
 
   // Stripe
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
