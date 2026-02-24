@@ -234,7 +234,7 @@ export function DocumentComponent({ publicId }: Props) {
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
-              onClick={() => push('/manage-knowledge/documents-list')}
+              onClick={() => push('/settings/knowledge/documents-list')}
               className="h-8 w-8 cursor-pointer mr-2"
             />
           )}

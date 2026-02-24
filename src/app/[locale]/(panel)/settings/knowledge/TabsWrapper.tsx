@@ -21,10 +21,7 @@ export default function TabsWrapper() {
     router.prefetch(path);
   };
 
-  const pathWithoutLocale = pathname.split('/').slice(2).join('/');
-  const activeTab = tabRoutes.findIndex((tab) =>
-    `/${pathWithoutLocale}`.startsWith(tab.path)
-  );
+  const activeTab = tabRoutes.findIndex((tab) => pathname.startsWith(tab.path));
 
   return (
     <Tabs

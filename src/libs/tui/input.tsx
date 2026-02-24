@@ -49,8 +49,8 @@ export const Input = forwardRef(function Input(
         className,
         // Basic layout
         'relative block w-full',
-        // Background color + shadow applied to inset pseudo element, so shadow blends with border in light mode
-        'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white before:shadow-xs',
+        // Background color applied to inset pseudo element
+        'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white',
         // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
         'dark:before:hidden',
         // Focus ring
@@ -86,7 +86,7 @@ export const Input = forwardRef(function Input(
           // Typography
           'text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white',
           // Border
-          'border border-zinc-950/10 data-hover:border-zinc-950/20 dark:border-white/10 dark:data-hover:border-white/20',
+          'border border-zinc-950/10 data-hover:border-zinc-950/20 focus:border-transparent dark:border-white/10 dark:data-hover:border-white/20 dark:focus:border-transparent',
           // Background color
           'bg-transparent dark:bg-white/5',
           // Hide default focus styles

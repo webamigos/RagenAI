@@ -100,7 +100,7 @@ export const Input = forwardRef(
     return (
       <Field className={classMerge('pt-2', containerClassName)}>
         {label && (
-          <Label htmlFor={id}>
+          <Label htmlFor={id} className="font-medium">
             {label}
             {mandatory && <span className="text-red-600">*</span>}
           </Label>
