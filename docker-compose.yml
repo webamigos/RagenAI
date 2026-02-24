@@ -1,61 +1,70 @@
 version: "3"
 services:
-  db:
+  postgres:
     image: postgres
     container_name: ragen-postgres
-    restart: always
-    ports:
-      - 5432:5432
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pass123
-      POSTGRES_DB: ragen
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass123}
+      POSTGRES_DB: ${POSTGRES_DB:-ragen}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - ./volumes/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ragen-network
 
   redis:
-    image: redis
+    image: redis:7-alpine
     container_name: ragen-redis
     ports:
-      - 6379:6379
-    restart: always
-
-  qdrant:
-    image: qdrant/qdrant
-    container_name: ragen-qdrant
-    ports:
-      - 6333:6333
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - ./volumes/qdrant:/qdrant/storage
-    restart: always
-# mongodb:
-#   build:
-#     context: ./mongodb_replica
-#     args:
-#       MONGO_VERSION: 6
-#   environment:
-#     MONGO_REPLICA_HOST: 127.0.0.1
-#     MONGO_REPLICA_PORT: 27017
-#     MONGO_INITDB_ROOT_USERNAME: root
-#     MONGO_INITDB_ROOT_PASSWORD: pass123
-#     MONGO_INITDB_DATABASE: salesyy
-#     # Use "mongo" instead of "mongosh" before v5.0
-#     MONGO_COMMAND: 'mongosh'
-#   ports:
-#     - '27017:27017'
-#   restart: unless-stopped
-#   healthcheck:
-#     # Use "mongo" instead of "mongosh" before v5.0
-#     test:
-#       [
-#         'CMD',
-#         'mongosh',
-#         'admin',
-#         '--port',
-#         '27017',
-#         '--eval',
-#         "db.adminCommand('ping').ok",
-#       ]
-#     interval: 5s
-#     timeout: 2s
-#     retries: 20
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ragen-network
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: ragen-meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY:-ragen-dev-key}
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_EXPERIMENTAL_ENABLE_METRICS: "true"
+    ports:
+      - "${MEILISEARCH_PORT:-7700}:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ragen-network
+
+volumes:
+  postgres_data:
+    name: ragen-postgres-data
+  redis_data:
+    name: ragen-redis-data
+  meilisearch_data:
+    name: ragen-meilisearch-data
+
+networks:
+  ragen-network:
+    name: ragen-network
+    driver: bridge

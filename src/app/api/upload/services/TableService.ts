@@ -3,7 +3,7 @@ import { VECTOR_STORE_TABLE_NAME } from '@/libs/db/constants/vectorStore';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
-import { QdrantClient } from '@qdrant/js-client-rest';
+import { MeiliSearch } from 'meilisearch';
 import { UserFile } from '@/generated/prisma/client';
 
 export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
@@ -16,28 +16,17 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
     const orgMetadata = await getOrganizationMetadata(orgId);
     const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
 
-    if (vectorStoreType === 'qdrant') {
-      const qdrantClient = new QdrantClient({
-        url: process.env.QDRANT_URL,
-        apiKey: process.env.QDRANT_API_KEY,
+    if (vectorStoreType === 'meilisearch') {
+      const client = new MeiliSearch({
+        host: process.env.MEILISEARCH_URL!,
+        apiKey: process.env.MEILISEARCH_MASTER_KEY,
       });
 
-      const collectionInfo = await qdrantClient.getCollection(orgId);
-      if (!collectionInfo) {
-        throw new Error('Could not delete from Qdrant, collection not found');
-      }
-
-      await qdrantClient.delete(orgId, {
-        wait: true,
-        filter: {
-          must: [
-            {
-              key: 'metadata.file_id',
-              match: { value: fileId },
-            },
-          ],
-        },
+      const index = client.index(orgId);
+      const task = await index.deleteDocuments({
+        filter: `metadata.file_id = '${fileId}'`,
       });
+      await client.waitForTask(task.taskUid);
     } else {
       await supabaseVectorStoreClient
         .from(VECTOR_STORE_TABLE_NAME)

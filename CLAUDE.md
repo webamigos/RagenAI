@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-docker compose up        # Start local Postgres, Redis, Qdrant
+docker compose up        # Start local Postgres, Redis, Meilisearch
 npm run dev              # Start Next.js dev server
 npm run build            # Production build (runs prisma generate first)
 npm run lint             # ESLint
@@ -20,7 +20,7 @@ npm run db:seed          # Seed database (uses .env.local)
 
 ## Local Development
 
-Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Redis on 6379, Qdrant on 6333). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Redis on 6379, Meilisearch on 7700). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
@@ -29,7 +29,7 @@ DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 
 ## Architecture
 
-**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (Upstash)
+**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (Upstash) + Meilisearch (vector/hybrid search)
 
 **What it does**: RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
 
@@ -71,12 +71,13 @@ Uses the PostgreSQL adapter pattern (`@prisma/adapter-pg`). Key files:
 - Client singleton: `src/libs/db/index.ts` (aliased as `@ragenai/prisma-client`)
 - Generated client output: `src/generated/prisma/` (gitignored, regenerated via `npm run generate:types`)
 
-Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also come from there.
+Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also come from there. In client components, webpack auto-redirects this import to `@/generated/prisma/browser` (browser-safe, no Node.js imports).
 
 ### Libraries (`src/libs/`)
 
 - `llm/` — Chat completion & embeddings factories supporting OpenAI, Anthropic, Google, Bedrock, Ollama, OpenRouter, Fireworks, Azure
-- `chains/` — LangChain RAG chains
+- `chains/` — RAG chains
+- `vector-store/` — Vector store clients (Meilisearch, Supabase) implementing `VectorStoreClient` interface
 - `document-loaders/` — PDF, EPUB, Markdown, SRT, URL parsing
 - `db/` — Prisma client singleton (aliased as `@ragenai/prisma-client`)
 - `temporal/` — Temporal.io client for async document processing workflows
@@ -87,7 +88,18 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 
 ### Document Processing Pipeline
 
-Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Qdrant vector DB. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
+Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Meilisearch. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
+
+### Vector Store (Meilisearch)
+
+Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval. Key files:
+- Client: `src/libs/vector-store/meilisearch-client.ts` — implements `VectorStoreClient` interface
+- Interface: `src/libs/vector-store/types.ts` — `similaritySearch()`, `addDocuments()`
+- Organization index: each org gets its own Meilisearch index (named by org ID)
+- Embeddings: `userProvided` embedder with OpenAI `text-embedding-3-small` (1536 dimensions)
+- Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
+- Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
+- Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
 
 ### Server Actions
 

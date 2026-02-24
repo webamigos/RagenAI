@@ -189,9 +189,9 @@ export const auth = betterAuth({
               ragenOrgId: ragenOrg.id,
             });
 
-            // Set default vector store (qdrant for local dev, can be changed in settings)
+            // Set default vector store (meilisearch for local dev, can be changed in settings)
             const defaultVectorStore =
-              process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+              process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
             await db.organization.update({
               where: { id: org.id },
               data: {

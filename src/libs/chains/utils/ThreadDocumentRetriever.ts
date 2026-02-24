@@ -137,8 +137,8 @@ export class ThreadDocumentRetriever {
 
       const internalUserFileIds = userFiles.map((file) => file.id);
 
-      // Search vectorstore with file_id filter (Qdrant format)
-      const qdrantFilter = {
+      // Search vectorstore with file_id filter (Meilisearch format)
+      const meilisearchFilter = {
         should: internalUserFileIds.map((fileId) => ({
           key: 'metadata.file_id',
           match: {
@@ -150,7 +150,7 @@ export class ThreadDocumentRetriever {
       const searchResults = await this.vectorStore.similaritySearch(
         query,
         maxChunks * 2, // Get more results for better filtering
-        qdrantFilter
+        meilisearchFilter
       );
 
       // Additional filtering to ensure results match our files

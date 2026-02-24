@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
@@ -8,11 +11,9 @@
       "mcp__chrome-devtools__press_key",
       "mcp__chrome-devtools__list_console_messages",
       "WebSearch",
-      "Bash(xargs:*)",
       "Bash(ls:*)",
       "Bash(npm view:*)",
       "Bash(git show:*)",
-      "Bash(npm install:*)",
       "Bash(node -e:*)",
       "Bash(npm ls:*)",
       "Bash(npm run lint:*)",
@@ -25,7 +26,6 @@
       "Bash(head:*)",
       "Bash(grep:*)",
       "Bash(grep error TS:*)",
-      "Bash(npx tsc:*)",
       "Bash(cat:*)",
       "Bash(tail:*)",
       "Bash(git status:*)"

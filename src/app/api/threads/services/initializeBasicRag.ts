@@ -12,7 +12,7 @@ import {
   createEmbeddingsInstance,
 } from '../../../lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
-import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
+import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
@@ -64,11 +64,11 @@ export const initializeRagChain = async ({
 
     const orgMetadata = await getOrganizationMetadata(orgId);
     let vectorStore: VectorStoreClient;
-    let isQdrant = false;
+    let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = createQdrantVectorStore(embeddingModel, orgId);
-      isQdrant = true;
+    if (orgMetadata.privateMetadata?.vector_store === 'meilisearch') {
+      vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
+      isMeilisearch = true;
     } else {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
@@ -83,7 +83,7 @@ export const initializeRagChain = async ({
       throw new Error('Internal project ID is required');
     }
 
-    const filterOptions = isQdrant
+    const filterOptions = isMeilisearch
       ? {
           must: [
             {
@@ -105,7 +105,7 @@ export const initializeRagChain = async ({
       },
       config: {
         // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
-        // QdrantVectorStore needs filter passed to similaritySearch()
+        // MeilisearchVectorStore needs filter passed to similaritySearch()
         metadataFilter: filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
@@ -120,19 +120,19 @@ export const initializeRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = (
+const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
-  collectionName: string
+  indexName: string
 ): VectorStoreClient => {
-  logger.info('creating qdrant vector store', {
-    url: process.env.QDRANT_URL,
-    collectionName,
+  logger.info('creating meilisearch vector store', {
+    url: process.env.MEILISEARCH_URL,
+    indexName,
   });
 
-  return new QdrantVectorStoreClient(embeddingModel, {
-    url: process.env.QDRANT_URL!,
-    apiKey: process.env.QDRANT_API_KEY,
-    collectionName,
+  return new MeilisearchVectorStoreClient(embeddingModel, {
+    url: process.env.MEILISEARCH_URL!,
+    apiKey: process.env.MEILISEARCH_MASTER_KEY,
+    indexName,
   });
 };
 

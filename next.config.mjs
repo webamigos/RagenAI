@@ -1,3 +1,4 @@
+import path from 'node:path';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 // Note: validateEnvs removed due to ESM import limitations with .ts files in .mjs
@@ -75,6 +76,7 @@ const nextConfig = {
     '@opentelemetry/exporter-logs-otlp-http',
     '@opentelemetry/instrumentation-http',
     '@opentelemetry/instrumentation-pg',
+    '@prisma/instrumentation',
     // Note: better-auth removed from serverExternalPackages to allow client-side usage
   ],
 
@@ -145,6 +147,19 @@ const nextConfig = {
         ...config.resolve.alias,
         '@/app/lib/utils/logger/serverLogger': '@/app/lib/utils/logger/clientLogger',
       };
+
+      // Redirect Prisma generated client to browser-safe version (no Node.js imports)
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /generated\/prisma\/client/,
+          (resource) => {
+            resource.request = resource.request.replace(
+              /generated\/prisma\/client/,
+              'generated/prisma/browser'
+            );
+          }
+        )
+      );
 
       config.resolve.fallback = {
         ...config.resolve.fallback,

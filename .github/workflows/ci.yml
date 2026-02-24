@@ -20,7 +20,7 @@ env:
   TEMPORAL_NAMESPACE: "ci"
   TEMPORAL_CERT: "dummy"
   TEMPORAL_KEY: "dummy"
-  QDRANT_URL: "http://example.com"
+  MEILISEARCH_URL: "http://example.com"
   RESEND_API_KEY: "dummy"
   RESEND_DEFAULT_AUDIENCE_ID: "dummy"
   AWS_REGION: "dummy"
