@@ -7,16 +7,10 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { stripe } from '@/libs/payments/stripe';
 import { headers } from 'next/headers';
-import {
-  setSentryClerkContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { checkIfStripeSubscriptionIsActive } from './plans';
 
 export async function createCheckoutSession(priceId: string) {
   try {
-    setSentryServiceTag('stripe:createCheckoutSession');
-
     if (!priceId?.trim()) {
       throw new Error('Price ID is required');
     }
@@ -32,8 +26,6 @@ export async function createCheckoutSession(priceId: string) {
     if (!user || !user.email) {
       throw new Error('Cannot create checkout session, user not found');
     }
-
-    setSentryClerkContext({ orgId, userId: user.id, sessionId: undefined });
 
     const subscriptionIsActive = await checkIfStripeSubscriptionIsActive();
 

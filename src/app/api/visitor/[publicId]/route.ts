@@ -5,7 +5,6 @@ import {
   getUserThreads,
 } from '../../../lib/services/visitor';
 import { logger } from '../../../lib/utils/logger';
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
 
 type Params = {
   params: Promise<{ publicId: string }>;
@@ -17,7 +16,6 @@ export const GET = async (_request: Request, { params }: Params) => {
   const { publicId } = await params;
 
   try {
-    setSentryServiceTag('visitor');
     const visitorMessages = await getLast24hVisitorMessages(publicId);
     const userThreads = await getUserThreads(publicId);
     return NextResponse.json({ messages: visitorMessages, userThreads });

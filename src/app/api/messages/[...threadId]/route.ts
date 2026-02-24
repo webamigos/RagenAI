@@ -4,11 +4,6 @@ import { StatusCodes } from 'http-status-codes';
 
 import { createMessageSchema } from '../../../contracts/Message';
 import { fetchMessagesFromDb } from '../../../lib/services/message';
-import {
-  setSentryContext,
-  setSentryServiceTag,
-  setSentryUserId,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -25,7 +20,6 @@ type Params = {
  */
 export const POST = async (request: Request) => {
   try {
-    setSentryServiceTag('messages');
     const requestData = await createMessageSchema().safeParseAsync(
       await request.json()
     );
@@ -63,10 +57,6 @@ export const GET = async (_request: Request, { params }: Params) => {
 
     const threadPublicId = threadId[0];
     const visitorId = threadId[1];
-
-    setSentryServiceTag('messages');
-    setSentryUserId(visitorId);
-    setSentryContext('THREAD_ID', threadPublicId);
 
     // 🚨 what if someone from outside organization somehow will with get thread id
     // and then will use /messages/{threadId} endpoint?

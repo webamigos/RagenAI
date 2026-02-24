@@ -4,11 +4,6 @@ import { type Project } from '@/generated/prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
 import {
-  setSentryServiceTag,
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-} from '@/app/lib/services/sentry';
-import {
   findOrganizationByProviderId,
   createProjectForOrganization,
   fetchProjectsForUser,
@@ -28,13 +23,6 @@ export const createProject = async (
   userId: string
 ): Promise<CreateProjectResponse> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(providerOrgId);
-    setSentryContext('EXTRA_DATA', {
-      title,
-      userId,
-    });
-
     const organization = await findOrganizationByProviderId(providerOrgId);
 
     if (!organization) {
@@ -78,12 +66,6 @@ export const createProject = async (
 
 export const getProjects = async (organizationId: string, userId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-    setSentryContext('EXTRA_DATA', {
-      userId,
-    });
-
     logger.info(
       { organizationId, userId },
       'Getting projects from Clerk organization'

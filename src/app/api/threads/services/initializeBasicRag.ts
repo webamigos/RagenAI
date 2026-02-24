@@ -11,18 +11,11 @@ import {
   createModerationInstance,
   createEmbeddingsInstance,
 } from '../../../lib/services/llm';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
-
-const serviceName = 'initializeBasicRag';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
@@ -42,7 +35,6 @@ export const initializeRagChain = async ({
 }: InitializeRagChainParams) => {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
-    setSentryServiceTag(serviceName);
 
     if (!orgId) {
       throw new Error('Invalid organization');
@@ -55,14 +47,6 @@ export const initializeRagChain = async ({
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
     } = settings;
-
-    setSentryContext('CHAIN_DATA', {
-      answerModel,
-      answerTemperature,
-      answerInstructions,
-      maxDocumentsToRetrieve,
-      hasProjectInstruction: !!projectInstruction,
-    });
 
     const embeddingModel = createEmbeddingsInstance({ apiKey });
     const contentModerator = createModerationInstance({ apiKey });
@@ -159,9 +143,6 @@ const createSupabaseVectorStore = (
   projectId?: number
 ): VectorStoreClient => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations

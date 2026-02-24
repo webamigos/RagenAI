@@ -91,7 +91,7 @@ Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → G
 
 ### Server Actions
 
-Located in `src/app/actions/index.ts` and co-located with components. All instrumented with Sentry tags. Used for: messaging, file operations, thread management, org settings.
+Located in `src/app/actions/index.ts` and co-located with components. Used for: messaging, file operations, thread management, org settings.
 
 ## Path Aliases
 
@@ -115,6 +115,7 @@ Located in `src/app/actions/index.ts` and co-located with components. All instru
 - Components organized by feature under `src/app/components/`
 - Custom error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`
 - Temporal workflows: use string names, not function imports (workflow definition limitation)
-- Logging: Pino (server) with Sentry integration; webpack replaces server logger with client logger on client builds
+- Logging: Pino (server & client) with OpenTelemetry integration; webpack replaces server logger with client logger on client builds
+- Observability: OpenTelemetry for traces, metrics, and logs — server (`ragen-app`) and client (`ragen-app-client`). Configured in `src/instrumentation.ts` and `src/instrumentation-client.ts`
 - Pre-commit hooks: lint-staged runs `eslint --fix` + `prettier --write` on staged files
 - Commit messages follow conventional commits (commitlint enforced via Husky)

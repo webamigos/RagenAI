@@ -1,6 +1,5 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUser,
@@ -10,10 +9,6 @@ import { revalidatePath } from 'next/cache';
 import db from '@ragenai/prisma-client';
 
 import { ApiKeyDto } from './types';
-import {
-  setSentryServiceTag,
-  setSentryTagsAndContextForClerk,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import {
   fetchOrganizationByProviderId,
@@ -65,9 +60,6 @@ export const createApiKey = async (
   const userId = user.id;
 
   try {
-    setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId: undefined, orgId, userId });
-
     const userProject = await getProjectByPublicId(data.project_id);
     if (!userProject || userProject.owner_id !== userId) {
       throw new Error('Not allowed!');
@@ -126,7 +118,6 @@ export const createApiKey = async (
       },
     };
   } catch (error) {
-    Sentry.captureException(error);
     logger.error({ err: error }, 'Failed to create API key');
 
     return {

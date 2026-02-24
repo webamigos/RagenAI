@@ -6,11 +6,6 @@ import type { VectorStoreClient } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import {
   createChatCompletionInstance,
@@ -40,8 +35,6 @@ export const initializePublicRagChain = async ({
   projectId,
 }: InitializePublicRagChainParams) => {
   try {
-    setSentryServiceTag(serviceName);
-
     const {
       apiKey,
       model: answerModel,
@@ -49,14 +42,6 @@ export const initializePublicRagChain = async ({
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
     } = settings;
-
-    setSentryContext('CHAIN_DATA', {
-      answerModel,
-      answerTemperature,
-      answerInstructions,
-      maxDocumentsToRetrieve,
-      hasProjectInstruction: !!projectInstruction,
-    });
 
     const embeddingModel = createEmbeddingsInstance({ apiKey });
     const contentModerator = createModerationInstance({ apiKey });
@@ -149,9 +134,6 @@ const createSupabaseVectorStore = (
   organizationId: string
 ): VectorStoreClient => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations

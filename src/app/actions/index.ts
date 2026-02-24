@@ -34,12 +34,6 @@ import {
   createAndStoreMessage,
   deleteMessageByPublicId,
 } from '../lib/services/message';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryClerkUserTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '../lib/services/sentry';
 import { findOrCreateThread } from '../lib/services/thread';
 import { usageTracker } from '../lib/services/usage';
 import { getUserThreads } from '../lib/services/visitor';
@@ -54,8 +48,6 @@ import { getAccountSetupStatus } from '../lib/services/account-setup';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import { Project, UserFile } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-
-const serviceName = 'actions';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -88,11 +80,6 @@ export const sendMessage = async (
 
   // get or create thread
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      threadPublicId,
-      visitorId,
-    });
     const { threadRecord } = await findOrCreateThread(
       threadPublicId,
       visitorId
@@ -123,10 +110,6 @@ export const getUserMessages = async (
   take?: number
 ): Promise<ResponseHistory> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      visitorId,
-    });
     const userThreads = await getUserThreads(visitorId, skip, take);
 
     return { threads: userThreads, status: StatusCodes.OK };
@@ -142,8 +125,6 @@ export const getUserMessages = async (
 export const getUserFiles = async () => {
   try {
     const orgId = await getOrgIdOrThrow();
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
     const files = await fetchFilesDetails(orgId);
     return { files };
   } catch (error) {
@@ -159,7 +140,6 @@ export const getProjectFiles = async (
   projectPublicId: Project['public_id']
 ) => {
   try {
-    setSentryServiceTag(serviceName);
     const files = await fetchProjectFiles(projectPublicId);
 
     return { files };
@@ -174,11 +154,6 @@ export const getProjectFiles = async (
 // Get file details for download
 export const getFileDetailsForDownload = async (fileId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      fileId,
-    });
-
     const fileRecord = await getFileDetailsByPublicId(fileId);
     if (!fileRecord) {
       return {
@@ -205,12 +180,6 @@ export const deleteProjectFileAction = async (
   projectPublicId: Project['public_id']
 ) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      filePublicId,
-      projectPublicId,
-    });
-
     const fileRecord = await getFileDetailsByPublicId(filePublicId);
     if (!fileRecord) {
       return {
@@ -268,12 +237,6 @@ export const deleteProjectFileAction = async (
 export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
-    setSentryContext('EXTRA_DATA', {
-      filePublicId,
-    });
-
     //  Removal document from `UserFile`
     // TODO: UserFile should be in relation to UserDocument
     const fileRecord = await getFileDetailsByPublicId(filePublicId);
@@ -364,9 +327,6 @@ export const saveOrganizationPublicMetadata = async (
   organizationId: string,
   { hasKnowledge }: ClerkOrganizationPublicMetadata
 ) => {
-  setSentryServiceTag('saveOrganizationPublicMetadata');
-  setSentryClerkUserTag(organizationId);
-
   try {
     await db.organization.update({
       where: { id: organizationId },
@@ -389,9 +349,6 @@ export const saveOrganizationInitialMetadata = async (
   organizationId: string,
   { publicMetadata, privateMetadata }: ClerkOrganizationMetadata
 ) => {
-  setSentryServiceTag('saveOrganizationInitialMetadata');
-  setSentryClerkUserTag(organizationId);
-
   try {
     await db.organization.update({
       where: { id: organizationId },
@@ -417,9 +374,6 @@ export const saveOrganizationInitialMetadata = async (
 export const getOrganizationMetadata = async (
   organizationId: string
 ): Promise<ClerkOrganizationMetadata> => {
-  setSentryServiceTag('getOrganizationMetadata');
-  setSentryClerkUserTag(organizationId);
-
   try {
     const org = await db.organization.findUnique({
       where: { id: organizationId },
@@ -462,11 +416,6 @@ export const rateMessage = async (
   feedback: 'up' | 'down'
 ) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messageId,
-      feedback,
-    });
     await submitFeedbackDirectly(messageId, feedback);
     return { success: true };
   } catch (error) {
@@ -477,10 +426,6 @@ export const rateMessage = async (
 
 export async function deleteUserMessage(messagePublicId: string) {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messagePublicId,
-    });
     await deleteMessageByPublicId(messagePublicId);
     return { success: true };
   } catch (error) {

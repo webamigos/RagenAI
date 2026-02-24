@@ -2,8 +2,6 @@ import { NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
 import { auth } from '@/lib/auth';
-import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
 import { ChatType, createMessageSchema } from '@/app/contracts/Message';
 import { streamEvents } from '@/app/api/threads/services/assistant-stream';
 import { AssistantMode } from '@/app/contracts/Assistant';
@@ -32,9 +30,6 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!orgId) {
       throw new Error('Organization not found');
     }
-
-    setSentryServiceTag('threads');
-    setSentryClerkOrganizationTag(orgId);
 
     const { publicThreadId } = await params;
     const chatType = request?.nextUrl?.searchParams.get('mode');

@@ -1,37 +1,14 @@
 import pino from 'pino';
-import { createWriteStream } from 'pino-sentry';
 import { otelLogger } from '@/libs/monitoring/otel-logger';
 
-import { isProductionTargetEnv, isStagingTargetEnv } from '@/libs/utils/env';
-
-const streams = [];
+import { isProductionTargetEnv } from '@/libs/utils/env';
 
 // Ensure this file only runs on the server
 if (typeof window !== 'undefined') {
   throw new Error('This module should only be used on the server side');
 }
 
-if ((isProductionTargetEnv || isStagingTargetEnv) && process.env.SENTRY_DSN) {
-  const sentryStream = createWriteStream({
-    dsn: process.env.SENTRY_DSN,
-    level: isProductionTargetEnv || isStagingTargetEnv ? 'warning' : 'info',
-    stackAttributeKey: 'err.stack',
-    environment: process.env.TARGET_ENV
-      ? process.env.TARGET_ENV
-      : process.env.NODE_ENV,
-  });
-
-  streams.push({
-    stream: sentryStream,
-  });
-}
-
 const pretty = require('pino-pretty');
-streams.push({
-  stream: pretty({
-    colorize: true,
-  }),
-});
 
 const pinoLevelToOtel: Record<number, keyof typeof otelLogger> = {
   30: 'info',
@@ -75,7 +52,7 @@ const logger = pino(
       },
     },
   },
-  streams.length ? pino.multistream(streams) : pino.destination()
+  pretty({ colorize: true })
 );
 
 logger.info('Server logger initialized');
