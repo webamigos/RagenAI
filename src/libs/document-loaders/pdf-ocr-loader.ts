@@ -1,7 +1,5 @@
-import { Document } from '@langchain/core/documents';
-import { DocumentLoader } from '@langchain/core/document_loaders/base';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import { processPDFDocument } from '@/libs/chains/pdf-process-rag/chain';
-import { TextSplitter } from 'langchain/text_splitter';
 
 type PDFOCRDocumentLoaderProps = {
   filePath: string;
@@ -14,9 +12,8 @@ type PDFOCRDocumentLoaderProps = {
 /**
  * Custom PDF document loader that implements PDF processing with LLM capabilities.
  * LLM is prompted to describe the PDF content (including images, tables, etc.)
- * @implements {DocumentLoader}
  */
-export class PDFOCRDocumentLoader implements DocumentLoader {
+export class PDFOCRDocumentLoader {
   private filePath: string;
   private fileName: string;
   private fileId: string;
@@ -37,7 +34,7 @@ export class PDFOCRDocumentLoader implements DocumentLoader {
     this.projectId = projectId;
   }
 
-  async load(): Promise<Document<Record<string, any>>[]> {
+  async load(): Promise<VectorStoreDocument[]> {
     const { rawDocs, success, message } = await processPDFDocument(
       this.filePath,
       this.fileName,
@@ -51,12 +48,5 @@ export class PDFOCRDocumentLoader implements DocumentLoader {
     }
 
     return rawDocs;
-  }
-
-  async loadAndSplit(
-    splitter?: TextSplitter
-  ): Promise<Document<Record<string, any>>[]> {
-    const docs = await this.load();
-    return splitter ? await splitter.splitDocuments(docs) : docs;
   }
 }

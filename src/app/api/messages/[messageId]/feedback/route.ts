@@ -1,12 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 import { NextResponse } from 'next/server';
-import { Client } from 'langsmith';
 
 import { logger } from '@/app/lib/utils/logger';
 import {
   setSentryContext,
   setSentryServiceTag,
 } from '@/app/lib/services/sentry';
+import { submitFeedbackDirectly } from '@/app/lib/services/feedback';
 
 type Params = {
   params: Promise<{ messageId: string }>;
@@ -21,7 +21,7 @@ export const POST = async (request: Request, { params }: Params) => {
       messageId,
     });
     const body = await request.json();
-    const { feedback, runId } = body;
+    const { feedback } = body;
 
     if (!feedback || (feedback !== 'up' && feedback !== 'down')) {
       return NextResponse.json(
@@ -30,20 +30,7 @@ export const POST = async (request: Request, { params }: Params) => {
       );
     }
 
-    if (!runId) {
-      return NextResponse.json(
-        { error: 'Invalid runId' },
-        { status: StatusCodes.BAD_REQUEST }
-      );
-    }
-
-    const client = new Client({
-      apiKey: process.env.LANGCHAIN_API_KEY,
-    });
-
-    await client.createFeedback(runId, 'user-score', {
-      score: feedback === 'up' ? 1 : 0,
-    });
+    await submitFeedbackDirectly(messageId, feedback);
 
     return NextResponse.json({ message: 'Feedback submitted' });
   } catch (error) {

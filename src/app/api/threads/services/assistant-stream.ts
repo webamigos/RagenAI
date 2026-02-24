@@ -16,13 +16,13 @@ import { getAllSettings } from '@/app/lib/services/settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
 import { setSentryContext } from '@/app/lib/services/sentry';
-import { Runnable } from '@langchain/core/runnables';
 import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
 import { AssistantMode } from '@/app/contracts/Assistant';
 import { getProjectInstruction } from '@/app/lib/services/projectInstructions';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 
 /**
  * Load thread documents from database for a specific thread
@@ -99,8 +99,6 @@ export async function streamEvents({
   return new ReadableStream({
     async start(controller) {
       sendApiEvent(controller, 'init');
-
-      let runId: string = '';
 
       try {
         const rawSettings = await getAllSettings(orgId);
@@ -264,22 +262,19 @@ export async function streamEvents({
           // projectInstruction stays null, chains will use organization instructions
         }
 
-        let chain: Runnable | undefined = undefined;
-        let finalAnswerRunName: string | undefined = undefined;
+        let chainOutput: BaseChatChainOutput | undefined = undefined;
 
         //TODO: stream chain errors
         // Initialize the appropriate chain based on mode
         if (mode === AssistantMode.INTERNAL) {
           if (filteredMode === ChatType.CONVERSATION) {
-            const conversation = await initializeConversationChain({
+            chainOutput = await initializeConversationChain({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
               },
               projectInstruction,
             });
-            chain = conversation.chain;
-            finalAnswerRunName = conversation.finalAnswerRunName;
           } else {
             // Use effective project ID (mentioned project takes priority over thread project)
             const projectIdToUse =
@@ -301,7 +296,7 @@ export async function streamEvents({
 
             const threadDocuments = await loadThreadDocuments(threadRecord.id);
 
-            const basicRag = await initializeRagChain({
+            chainOutput = await initializeRagChain({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
@@ -310,12 +305,10 @@ export async function streamEvents({
               internalProjectId: projectIdToUse,
               threadDocuments,
             });
-            chain = basicRag.chain;
-            finalAnswerRunName = basicRag.finalAnswerRunName;
           }
         } else if (mode === AssistantMode.PUBLIC) {
           const projectIdToUse = effectiveProjectId || threadRecord.project?.id;
-          const publicRag = await initializePublicRagChain({
+          chainOutput = await initializePublicRagChain({
             settings: {
               ...effectiveSettings,
               apiKey: effectiveSettings.apiKey,
@@ -324,11 +317,9 @@ export async function streamEvents({
             projectInstruction,
             projectId: projectIdToUse,
           });
-          chain = publicRag.chain;
-          finalAnswerRunName = publicRag.finalAnswerRunName;
         }
 
-        if (!chain) {
+        if (!chainOutput) {
           // TODO: invalid chain error
           sendApiEvent(controller, 'close');
 
@@ -348,15 +339,10 @@ export async function streamEvents({
 
         sendApiEvent(controller, 'start_lmm');
 
-        const eventStream = chain.streamEvents(
-          {
-            question: threadMessage.content,
-            chat_history: conv_history,
-          },
-          {
-            version: 'v2',
-          }
-        );
+        const streamResult = await chainOutput.stream({
+          question: threadMessage.content,
+          chat_history: conv_history,
+        });
 
         setSentryContext('EXTRA_DATA', {
           userQuestion: threadMessage.content,
@@ -365,93 +351,71 @@ export async function streamEvents({
         });
 
         let fullMessage = '';
-        let chainRunIds = [];
 
-        for await (const event of eventStream) {
-          // TODO: stream selected chain events
-          // e. g. related to start and end of vector store  retrieval
-          // sendApiEvent(controller, event.event, {
-          //   name: event.name,
-          // });
+        for await (const textChunk of streamResult.textStream) {
+          fullMessage += textChunk;
 
-          if (event.event === 'on_chain_start') {
-            chainRunIds.push(event.run_id);
-            runId = chainRunIds[0];
-          }
+          sendApiEvent(controller, 'delta', {
+            content: textChunk,
+          });
+        }
 
-          if (
-            event.event === 'on_parser_stream' &&
-            event.name === finalAnswerRunName
-          ) {
-            const textChunk = event.data.chunk || '';
-            fullMessage += textChunk;
+        sendApiEvent(controller, 'llm_completed');
 
-            sendApiEvent(controller, 'delta', {
-              content: textChunk,
-            });
-          } else if (
-            event.event === 'on_parser_end' &&
-            event.name === finalAnswerRunName
-          ) {
-            sendApiEvent(controller, 'llm_completed');
+        sendApiEvent(controller, 'save_assistant_response');
 
-            sendApiEvent(controller, 'save_assistant_response');
+        try {
+          const dbMessage = await createMessageInDB({
+            threadId: threadRecord.id,
+            message: {
+              id: threadMessage.public_id,
+              content: fullMessage,
+              source: Source.UI,
+            },
+            role: Role.ASSISTANT,
+            runId: '',
+            messageType: threadRecord.preferred_communication_type,
+          });
+
+          sendApiEvent(controller, 'assistant_response_saved');
+
+          try {
+            // We create an object without the full content because it has already been sent in the delta events
+            const messageToSend: ApiSseMessageEvent = {
+              id: dbMessage.public_id,
+              role: dbMessage.role,
+              created_at: dbMessage.created_at.toISOString(),
+              content: '', // We clear the content - the client already has the full message from the delta events
+              run_id: '',
+            };
+
+            sendApiEvent(controller, 'final_response', messageToSend);
+
+            // close stream
+            sendApiEvent(controller, 'close');
+
+            controller.close();
+          } catch (finalResponseError) {
+            logger.error(
+              { err: finalResponseError },
+              'Error sending final_response after assistant_response_saved'
+            );
 
             try {
-              const dbMessage = await createMessageInDB({
-                threadId: threadRecord.id,
-                message: {
-                  id: threadMessage.public_id,
-                  content: event.data.output,
-                  source: Source.UI,
-                },
-                role: Role.ASSISTANT,
-                runId,
-                messageType: threadRecord.preferred_communication_type,
-              });
-
-              sendApiEvent(controller, 'assistant_response_saved');
-
-              try {
-                // We create an object without the full content because it has already been sent in the delta events
-
-                const messageToSend: ApiSseMessageEvent = {
-                  id: dbMessage.public_id,
-                  role: dbMessage.role,
-                  created_at: dbMessage.created_at.toISOString(),
-                  content: '', // We clear the content – the client already has the full message from the delta events
-                  run_id: runId,
-                };
-
-                sendApiEvent(controller, 'final_response', messageToSend);
-
-                // close stream
-                sendApiEvent(controller, 'close');
-
-                controller.close();
-              } catch (finalResponseError) {
-                logger.error(
-                  { err: finalResponseError },
-                  'Error sending final_response after assistant_response_saved'
-                );
-
-                try {
-                  sendApiEvent(controller, 'close');
-                  controller.close();
-                } catch (closeError) {
-                  logger.error(
-                    { err: closeError },
-                    'Error closing stream after final_response error'
-                  );
-                }
-              }
-            } catch (finalResponseError) {
+              sendApiEvent(controller, 'close');
+              controller.close();
+            } catch (closeError) {
               logger.error(
-                { err: finalResponseError },
-                'Error sending final_response after assistant_response_saved'
+                { err: closeError },
+                'Error closing stream after final_response error'
               );
             }
           }
+        } catch (finalResponseError) {
+          logger.error(
+            { err: finalResponseError },
+            'Error sending final_response after assistant_response_saved'
+          );
         }
       } catch (error) {
         const exceptionFilter = new SseExceptionFilter();

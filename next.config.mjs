@@ -67,9 +67,6 @@ const nextConfig = {
     '@sentry/node',
     '@hyzyla/pdfium',
     '@aws-sdk',
-    '@langchain/core',
-    'langchain',
-    '@langchain/community',
     '@prisma/adapter-pg',
     // Note: better-auth removed from serverExternalPackages to allow client-side usage
   ],

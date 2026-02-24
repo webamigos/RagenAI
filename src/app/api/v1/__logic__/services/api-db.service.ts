@@ -330,13 +330,11 @@ export class ApiDbService {
       sendApiEvent(controller, 'init_lmm');
     }
 
-    const basicRag = await initializePublicRagChain({
+    const chainOutput = await initializePublicRagChain({
       settings: { ...rawSettings, apiKey: rawSettings.apiKey },
       organizationId: this.context.orgId,
       projectId: this.context.projectId,
     });
-    const chain = basicRag.chain;
-    const finalAnswerRunName = basicRag.finalAnswerRunName;
 
     if (controller) {
       sendApiEvent(controller, 'get_thread_messages');
@@ -353,8 +351,7 @@ export class ApiDbService {
       .join('\n');
 
     return {
-      chain,
-      finalAnswerRunName,
+      chainOutput,
       runId,
       threadRecord,
       threadMessage,
@@ -367,14 +364,16 @@ export class ApiDbService {
     publicThreadId: Thread['public_id'],
     payload: ChatMessageDto
   ) {
-    const { chain, threadRecord, threadMessage, runId, conv_history } =
+    const { chainOutput, threadRecord, threadMessage, runId, conv_history } =
       await this.prepareChainToRun(publicThreadId, payload);
 
     // for chat without streaming:
-    const chatResponse = await chain.invoke({
+    const streamResult = await chainOutput.stream({
       question: payload.content,
       chat_history: conv_history,
     });
+
+    const chatResponse = await streamResult.text;
 
     const dbMessage = await createMessageInDB({
       threadId: threadRecord.id,
@@ -400,29 +399,18 @@ export class ApiDbService {
     payload: ChatMessageDto,
     controller: ReadableStreamDefaultController
   ) {
-    const {
-      chain,
-      finalAnswerRunName,
-      threadRecord,
-      threadMessage,
-      runId,
-      conv_history,
-    } = await this.prepareChainToRun(publicThreadId, payload, controller);
+    const { chainOutput, threadRecord, threadMessage, conv_history } =
+      await this.prepareChainToRun(publicThreadId, payload, controller);
 
     const encoder = new TextEncoder();
     controller.enqueue(encoder.encode(prepareApiSseMessage('start_lmm')));
 
-    const eventStream = chain.streamEvents(
-      {
-        question: payload.content,
-        chat_history: conv_history,
-      },
-      {
-        version: 'v2',
-      }
-    );
+    const streamResult = await chainOutput.stream({
+      question: payload.content,
+      chat_history: conv_history,
+    });
 
-    return { eventStream, finalAnswerRunName, threadRecord, threadMessage };
+    return { streamResult, threadRecord, threadMessage };
   }
 
   // FIXME: it takes a lot of time
@@ -433,19 +421,18 @@ export class ApiDbService {
       throw new ApiKeyError();
     }
 
-    const basicRag = await initializePublicRagChain({
+    const chainOutput = await initializePublicRagChain({
       settings: { ...rawSettings, apiKey: rawSettings.apiKey },
       organizationId: this.context.orgId,
       // projectId: this.context.projectId,
     });
-    const chain = basicRag.chain;
 
-    const result = await chain.invoke({
+    const streamResult = await chainOutput.stream({
       question: payload.content,
       chat_history: ' ', // FIXME: workaround
     });
 
-    return result;
+    return await streamResult.text;
   }
 
   // ======== PROJECTS / ASSISTANTS ========

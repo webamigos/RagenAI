@@ -65,7 +65,6 @@ const MessageContent = ({
             <RateAnswer
               initialRated={message.rate}
               publicId={message.public_id}
-              runId={streamedMessageRunId || message.run_id}
             />
             <div className="flex items-center gap-2">
               <CopyToClipboardButton message={message} />

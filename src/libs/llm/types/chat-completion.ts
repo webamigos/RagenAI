@@ -1,7 +1,16 @@
-import type { BedrockChatFields } from '@langchain/community/chat_models/bedrock';
-import type { ChatOpenAIFields } from '@langchain/openai';
+export type BaseCompletionConfig = {
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  streaming?: boolean;
+  verbose?: boolean;
+};
 
-export type BaseCompletionConfig = Omit<
-  ChatOpenAIFields | BedrockChatFields,
-  'credentials' | 'apiKey'
->;
+export type ChatCompletionOptions = {
+  apiKey?: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  streaming?: boolean;
+  modelName?: string;
+};

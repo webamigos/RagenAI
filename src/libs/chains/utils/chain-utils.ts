@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { VectorStoreDocument } from '../types/chain-utils';
-import { BaseChain } from 'langchain/chains';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
+import type { ModerationInstance } from '@/app/lib/services/llm';
 import { ModerationError } from '../errors';
 
 export const normalizeAndSanitizeText = (input: string) => {
@@ -33,7 +33,7 @@ export const limitChatHistory = (
 };
 
 export const runModeration = async (
-  moderationInstance: BaseChain,
+  moderationInstance: ModerationInstance,
   contentToModerate: string
 ): Promise<void> => {
   const { results } = await moderationInstance.invoke({

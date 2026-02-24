@@ -36,24 +36,18 @@ export const POST = async (request: NextRequest, { params }: Params) => {
 
     const apiDbService = new ApiDbService(apiContext);
 
-    let runId: string;
-
     return new Response(
       new ReadableStream({
         async start(controller) {
           sendApiEvent(controller, 'init');
 
           try {
-            const {
-              eventStream,
-              finalAnswerRunName,
-              threadRecord,
-              threadMessage,
-            } = await apiDbService.streamChatMessages(
-              publicId,
-              parsedData,
-              controller
-            );
+            const { streamResult, threadRecord, threadMessage } =
+              await apiDbService.streamChatMessages(
+                publicId,
+                parsedData,
+                controller
+              );
 
             setSentryContext('EXTRA_DATA', {
               userQuestion: parsedData,
@@ -62,74 +56,58 @@ export const POST = async (request: NextRequest, { params }: Params) => {
 
             // streaming part
             let fullMessage = '';
-            let chainRunIds = [];
 
-            for await (const event of eventStream) {
-              if (event.event === 'on_chain_start') {
-                chainRunIds.push(event.run_id);
-                runId = chainRunIds[0];
-              }
+            for await (const textChunk of streamResult.textStream) {
+              fullMessage += textChunk;
+              sendApiEvent(controller, 'delta', { content: textChunk });
+            }
 
-              if (
-                event.event === 'on_parser_stream' &&
-                event.name === finalAnswerRunName
-              ) {
-                const textChunk = event.data.chunk || '';
-                fullMessage += textChunk;
-                sendApiEvent(controller, 'delta', { content: textChunk });
-              } else if (
-                event.event === 'on_parser_end' &&
-                event.name === finalAnswerRunName
-              ) {
-                sendApiEvent(controller, 'llm_completed');
+            sendApiEvent(controller, 'llm_completed');
 
-                sendApiEvent(controller, 'save_assistant_response');
+            sendApiEvent(controller, 'save_assistant_response');
 
-                const dbMessage = await createMessageInDB({
-                  threadId: threadRecord.id,
-                  message: {
-                    id: threadMessage.public_id,
-                    content: event.data.output,
-                    source: Source.API,
-                  },
-                  role: Role.ASSISTANT,
-                  runId,
-                });
+            const dbMessage = await createMessageInDB({
+              threadId: threadRecord.id,
+              message: {
+                id: threadMessage.public_id,
+                content: fullMessage,
+                source: Source.API,
+              },
+              role: Role.ASSISTANT,
+              runId: '',
+            });
 
-                sendApiEvent(controller, 'assistant_response_saved');
+            sendApiEvent(controller, 'assistant_response_saved');
 
-                try {
-                  // TODO: replace to: { messaage: {}, response: {}}
-                  const messageToSend: ApiSseMessageEvent = {
-                    id: dbMessage.public_id,
-                    content: '', // We clear the content – the client already has the full message from the delta events
-                    role: dbMessage.role,
-                    created_at: dbMessage.created_at.toISOString(),
-                    run_id: runId,
-                  };
+            try {
+              const messageToSend: ApiSseMessageEvent = {
+                id: dbMessage.public_id,
+                content: '', // We clear the content - the client already has the full message from the delta events
+                role: dbMessage.role,
+                created_at: dbMessage.created_at.toISOString(),
+                run_id: '',
+              };
 
-                  sendApiEvent(controller, 'final_response', messageToSend);
+              sendApiEvent(controller, 'final_response', messageToSend);
 
-                  // close stream
-                  sendApiEvent(controller, 'close');
+              // close stream
+              sendApiEvent(controller, 'close');
 
-                  controller.close();
-                } catch (finalResponseError) {
-                  logger.error(
-                    { err: finalResponseError },
-                    'Error sending final_response after assistant_response_saved'
-                  );
+              controller.close();
+            } catch (finalResponseError) {
+              logger.error(
+                { err: finalResponseError },
+                'Error sending final_response after assistant_response_saved'
+              );
 
-                  try {
-                    sendApiEvent(controller, 'close');
-                    controller.close();
-                  } catch (closeError) {
-                    logger.error(
-                      { err: closeError },
-                      'Error closing stream after final_response error'
-                    );
-                  }
-                }
+              try {
+                sendApiEvent(controller, 'close');
+                controller.close();
+              } catch (closeError) {
+                logger.error(
+                  { err: closeError },
+                  'Error closing stream after final_response error'
+                );
               }
             }
           } catch (error) {

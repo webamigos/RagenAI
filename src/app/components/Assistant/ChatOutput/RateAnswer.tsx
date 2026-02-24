@@ -8,17 +8,16 @@ import { statusToast } from '@/app/lib/utils/toast';
 type Props = {
   publicId: string;
   initialRated?: number | null;
-  runId?: string | null;
 };
 
-export const RateAnswer = memo(({ publicId, runId, initialRated }: Props) => {
+export const RateAnswer = memo(({ publicId, initialRated }: Props) => {
   const [rated, setRated] = useState<number | null | undefined>(initialRated);
 
   const t = useTranslations('rate-answer');
   const { infoToast, errorToast } = statusToast();
 
   const handleRateMessage = async (rate: 'up' | 'down') => {
-    const { success } = await rateMessage(publicId, rate, runId!);
+    const { success } = await rateMessage(publicId, rate);
     if (success) {
       setRated(rate === 'up' ? 1 : 0);
       infoToast({ message: t('thank-you') });

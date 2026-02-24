@@ -1,7 +1,6 @@
 import * as fs from 'node:fs';
 import path from 'path';
 import { logger } from '@/app/lib/utils/logger';
-import OpenAI from 'openai';
 import { readFile } from 'fs/promises';
 import sharp from 'sharp';
 import { PDFiumLibrary } from '@hyzyla/pdfium';
@@ -11,11 +10,8 @@ import {
   systemTemplates,
   humanTemplates,
 } from './config';
-import { RunnableSequence } from '@langchain/core/runnables';
-import { HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
+import { generateText } from 'ai';
 import type { PDFiumPageRenderOptions } from '@hyzyla/pdfium';
 
 async function renderImage(
@@ -35,47 +31,39 @@ async function renderImage(
 
 export async function describeImageWithLLM(
   imagePath: string,
-  chatInstance: BaseChatModel
+  chatInstance: LanguageModelV3
 ): Promise<string> {
   try {
     logger.info(`Processing PDF, describe image path: ${imagePath}`);
 
     const imageBase64 = await readFile(imagePath, 'base64');
-    const messages = [
-      new SystemMessage(systemTemplates.imageAnalysis),
-      new HumanMessage({
-        content: [
-          {
-            type: 'text',
-            text: humanTemplates.imageDescription,
-          },
-          {
-            type: 'image_url',
-            image_url: {
-              url: `data:image/png;base64,${imageBase64}`,
-            },
-          },
-        ],
-      }),
-    ];
 
-    const chain = RunnableSequence.from([
-      ChatPromptTemplate.fromMessages(messages),
-      chatInstance,
-      new StringOutputParser(),
-    ]).withConfig({
-      runName: 'Describe Image',
+    const result = await generateText({
+      model: chatInstance,
+      system: systemTemplates.imageAnalysis,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: humanTemplates.imageDescription,
+            },
+            {
+              type: 'image',
+              image: `data:image/png;base64,${imageBase64}`,
+            },
+          ],
+        },
+      ],
     });
 
-    const response = await chain.invoke({});
-    return response || 'No description generated.';
+    return result.text || 'No description generated.';
   } catch (error) {
     logger.error({ err: error }, 'Error describing image with LLM');
     return `Error describing image: ${error}`;
   }
 }
-
-const openai = new OpenAI();
 
 export const removeDirectory = async (directoryPath: string) => {
   try {
@@ -90,7 +78,7 @@ export const removeDirectory = async (directoryPath: string) => {
 export const processPDFInBatches = async (
   convertedPages: any[],
   directory: string,
-  chatInstance: BaseChatModel,
+  chatInstance: LanguageModelV3,
   batchSize: number = PDF_PROCESSING_CONFIG.batchSize
 ) => {
   logger.info(`Processing PDF in batches with size: ${batchSize}`);
@@ -104,7 +92,7 @@ export const processPDFInBatches = async (
   for (const [batchIndex, batch] of batches.entries()) {
     logger.info(`Processing batch ${batchIndex + 1} of ${batches.length}`);
     const batchDescriptions = await Promise.all(
-      batch.map(async (page) => {
+      batch.map(async (page: any) => {
         const imagePath = path.join(
           directory,
           `${PDF_IMAGE_CONFIG.saveFilename}${page.page}.png`

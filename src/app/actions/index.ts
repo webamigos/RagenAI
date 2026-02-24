@@ -459,17 +459,15 @@ export const getOrganizationMetadata = async (
 //send answer rate to assistant
 export const rateMessage = async (
   messageId: string,
-  feedback: 'up' | 'down',
-  runId: string
+  feedback: 'up' | 'down'
 ) => {
   try {
     setSentryServiceTag(serviceName);
     setSentryContext('EXTRA_DATA', {
       messageId,
       feedback,
-      runId,
     });
-    await submitFeedbackDirectly(messageId, feedback, runId);
+    await submitFeedbackDirectly(messageId, feedback);
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Error sending answer rate');

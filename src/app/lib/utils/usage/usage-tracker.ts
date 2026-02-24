@@ -1,9 +1,7 @@
-import { LLMResult } from '@langchain/core/outputs';
 import { logger } from '../logger';
 import { UsageMetricsCore } from './usage-metrics-core';
 import { Role } from '@/generated/prisma/client';
-import type { ChatGenerationWithMetadata, UsageMetrics } from './types';
-import { CreateEmbeddingResponse } from 'openai/resources/embeddings';
+import type { VercelAIUsage, UsageMetrics } from './types';
 
 export type UsagePeriodInfo = {
   id: string;
@@ -23,27 +21,24 @@ export class UsageTracker {
     }
   }
 
-  incChatCompletionTokens(result: LLMResult) {
+  incChatCompletionTokens(usage: VercelAIUsage) {
     this.safeTrack(async () => {
-      const response = result.generations[0][0] as ChatGenerationWithMetadata;
-      const usageMetadata = response?.message?.usage_metadata;
-
-      if (!usageMetadata) {
+      if (!usage) {
         logger.warn(
           'No usage metadata found, cannot track chat completion tokens'
         );
         return;
       }
 
-      const { input_tokens, output_tokens, total_tokens } = usageMetadata;
+      const { promptTokens, completionTokens, totalTokens } = usage;
 
-      await this.tracker.track('chatCompletionInputTokens', input_tokens);
-      await this.tracker.track('chatCompletionOutputTokens', output_tokens);
-      await this.tracker.track('chatCompletionTotalTokens', total_tokens);
+      await this.tracker.track('chatCompletionInputTokens', promptTokens);
+      await this.tracker.track('chatCompletionOutputTokens', completionTokens);
+      await this.tracker.track('chatCompletionTotalTokens', totalTokens);
     });
   }
 
-  incEmbeddingsTokens(usage: CreateEmbeddingResponse['usage']) {
+  incEmbeddingsTokens(usage: { prompt_tokens: number; total_tokens: number }) {
     this.safeTrack(async () => {
       if (!usage) {
         logger.warn('No usage metadata found, cannot track embeddings tokens');

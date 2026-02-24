@@ -1,6 +1,3 @@
-import { UsageMetadata, BaseMessage } from '@langchain/core/messages';
-import { ChatGeneration } from '@langchain/core/outputs';
-
 export type UsageMetrics = {
   chatCompletionInputTokens?: number;
   chatCompletionOutputTokens?: number;
@@ -16,6 +13,8 @@ export type UsageMetrics = {
   embeddingsTotalTokens?: number;
 };
 
-export interface ChatGenerationWithMetadata extends ChatGeneration {
-  message: BaseMessage & { usage_metadata?: UsageMetadata };
+export interface VercelAIUsage {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
 }
