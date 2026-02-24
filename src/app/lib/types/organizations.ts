@@ -1,6 +1,6 @@
 import { Organization } from '@/generated/prisma/client';
 
-export type OrganizationVectorStore = 'qdrant' | 'supabase';
+export type OrganizationVectorStore = 'meilisearch' | 'supabase';
 
 export type ClerkOrganizationPrivateMetadata = {
   ragen_org_id: Organization['id'];

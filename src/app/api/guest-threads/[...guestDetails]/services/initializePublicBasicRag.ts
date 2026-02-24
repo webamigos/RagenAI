@@ -13,7 +13,7 @@ import {
   createModerationInstance,
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadata } from '@/app/actions';
-import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
+import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 
 const serviceName = 'initializeBasicRag';
@@ -59,11 +59,14 @@ export const initializePublicRagChain = async ({
 
     const orgMetadata = await getOrganizationMetadata(organizationId);
     let vectorStore: VectorStoreClient;
-    let isQdrant = false;
+    let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = createQdrantVectorStore(embeddingModel, organizationId);
-      isQdrant = true;
+    if (orgMetadata.privateMetadata?.vector_store === 'meilisearch') {
+      vectorStore = createMeilisearchVectorStore(
+        embeddingModel,
+        organizationId
+      );
+      isMeilisearch = true;
     } else {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
@@ -79,7 +82,7 @@ export const initializePublicRagChain = async ({
     }
 
     // Configure metadata filter for project-level access control
-    const metadataFilter = isQdrant
+    const metadataFilter = isMeilisearch
       ? {
           must: [
             {
@@ -100,7 +103,7 @@ export const initializePublicRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        metadataFilter: isQdrant ? metadataFilter : undefined,
+        metadataFilter: isMeilisearch ? metadataFilter : undefined,
         maxDocumentsToRetrieve,
         answerInstructions: finalInstructions,
       },
@@ -112,19 +115,19 @@ export const initializePublicRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = (
+const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
-  collectionName: string
+  indexName: string
 ): VectorStoreClient => {
-  logger.info('creating qdrant vector store', {
-    url: process.env.QDRANT_URL,
-    collectionName,
+  logger.info('creating meilisearch vector store', {
+    url: process.env.MEILISEARCH_URL,
+    indexName,
   });
 
-  return new QdrantVectorStoreClient(embeddingModel, {
-    url: process.env.QDRANT_URL!,
-    apiKey: process.env.QDRANT_API_KEY,
-    collectionName,
+  return new MeilisearchVectorStoreClient(embeddingModel, {
+    url: process.env.MEILISEARCH_URL!,
+    apiKey: process.env.MEILISEARCH_MASTER_KEY,
+    indexName,
   });
 };
 

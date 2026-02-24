@@ -76,9 +76,10 @@ export async function finalizeUserOnboarding() {
         );
         await createOrganizationWithDefaultProject(orgId, userId);
 
-        // Set default vector store (qdrant for local dev, can be changed in settings)
+        // Set default vector store (meilisearch for local dev, can be changed in settings)
         // This prevents defaulting to Supabase which may not be available
-        const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+        const defaultVectorStore =
+          process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
         await db.organization.update({
           where: { id: orgId },
           data: {

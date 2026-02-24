@@ -12,7 +12,7 @@ import { getOpenaiAPIKey } from '@/app/lib/services/settings';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
-import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
+import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
@@ -317,7 +317,7 @@ export const convertAndStoreDocument = async ({
           embedding_model: embeddingModel.model,
         };
 
-        if (vectorStoreType === 'qdrant') {
+        if (vectorStoreType === 'meilisearch') {
           return {
             pageContent: text,
             metadata,
@@ -334,11 +334,11 @@ export const convertAndStoreDocument = async ({
       })
     );
 
-    if (vectorStoreType === 'qdrant') {
-      const vectorStore = new QdrantVectorStoreClient(embeddingModel, {
-        url: process.env.QDRANT_URL!,
-        apiKey: process.env.QDRANT_API_KEY,
-        collectionName: orgId,
+    if (vectorStoreType === 'meilisearch') {
+      const vectorStore = new MeilisearchVectorStoreClient(embeddingModel, {
+        url: process.env.MEILISEARCH_URL!,
+        apiKey: process.env.MEILISEARCH_MASTER_KEY,
+        indexName: orgId,
       });
 
       await vectorStore.addDocuments(
