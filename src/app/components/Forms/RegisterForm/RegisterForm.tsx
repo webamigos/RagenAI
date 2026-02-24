@@ -5,7 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
-import { Button, Input } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import { signUp } from '@/app/hooks/use-better-auth';
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 

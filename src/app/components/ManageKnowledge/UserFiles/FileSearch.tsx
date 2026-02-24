@@ -1,7 +1,8 @@
 import { type ComponentProps, useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Input, SearchIcon, XCircle } from '@ragenai/common-ui';
+import { Input } from '@ragenai/common-ui/Input';
+import { SearchIcon, XCircle } from '@ragenai/common-ui/icons';
 
 type FileSearchProps = {
   className?: string;

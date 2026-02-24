@@ -5,7 +5,11 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
-import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Link } from '@ragenai/common-ui/Link';
+import { Text } from '@ragenai/common-ui/Text';
 import { signIn } from '@/app/hooks/use-better-auth';
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 

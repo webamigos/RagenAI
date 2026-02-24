@@ -13,15 +13,11 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { statusToast } from '@/app/lib/utils/toast';
-import {
-  SpinnerSVG,
-  WysiwygEditor,
-  Text,
-  Input,
-  Button,
-  CloudArrowUp,
-  XMarkIcon,
-} from '@ragenai/common-ui';
+import { SpinnerSVG, CloudArrowUp, XMarkIcon } from '@ragenai/common-ui/icons';
+import { WysiwygEditor } from '@ragenai/common-ui/WysywigEditor';
+import { Text } from '@ragenai/common-ui/Text';
+import { Input } from '@ragenai/common-ui/Input';
+import { Button } from '@ragenai/common-ui/Button';
 import {
   fetchDocumentByOrganization,
   updateDocument,

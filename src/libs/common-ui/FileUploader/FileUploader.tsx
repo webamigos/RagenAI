@@ -4,7 +4,9 @@ import { useRef, ComponentPropsWithRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 
-import { UploadInboxIcon, Text, classMerge } from '@ragenai/common-ui';
+import { UploadInboxIcon } from '@ragenai/common-ui/icons';
+import { Text } from '@ragenai/common-ui/Text';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 interface FileUploaderProps extends ComponentPropsWithRef<'div'> {

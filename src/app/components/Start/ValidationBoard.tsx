@@ -1,6 +1,10 @@
 import { useTranslations } from 'next-intl';
 
-import { Card, Text, SidebarItem, CheckIcon, Button } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Card } from '@ragenai/common-ui/Card';
+import { CheckIcon } from '@ragenai/common-ui/icons';
+import { SidebarItem } from '@ragenai/common-ui/Sidebar';
+import { Text } from '@ragenai/common-ui/Text';
 import { useSettings } from '@/app/hooks/useSettings';
 
 export const ValidationBoard = () => {

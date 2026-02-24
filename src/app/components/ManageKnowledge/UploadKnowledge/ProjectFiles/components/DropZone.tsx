@@ -1,6 +1,7 @@
 import { memo, useState } from 'react';
 
-import { Text, UploadInboxIcon } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { UploadInboxIcon } from '@ragenai/common-ui/icons';
 import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 
 type DropZoneProps = {

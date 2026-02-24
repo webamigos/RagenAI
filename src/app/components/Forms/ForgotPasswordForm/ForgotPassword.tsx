@@ -6,7 +6,8 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
 import { useRouter } from '@/i18n/routing';
-import { Button, Input } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import { authClient } from '@/app/hooks/use-better-auth';
 
 import { type ForgotPasswordData, ForgotPasswordSchema } from './schema';

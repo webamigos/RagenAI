@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { FieldError, UseFormRegister } from 'react-hook-form';
 
-import { Textarea } from '@ragenai/common-ui';
+import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 type Props = {

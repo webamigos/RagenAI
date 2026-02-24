@@ -1,7 +1,8 @@
 import { memo, useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 
-import { Text, TrashIcon } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { TrashIcon } from '@ragenai/common-ui/icons';
 import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';

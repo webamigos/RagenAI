@@ -5,14 +5,14 @@ import {
   getOrgIdFromAuthOrThrow,
 } from '@/app/lib/utils/auth-helpers';
 
-import { Container } from '@ragenai/common-ui';
+import { Container } from '@ragenai/common-ui/Container';
+import { Header } from '@ragenai/common-ui/Header';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { CreateApiKeyForm } from '@/app/components/ApiKeys/CreateApiKeyForm/CreateApiKeyForm';
 import { fetchProjectsForUser } from '@/app/lib/services/project';
 import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectPublicId } from '@/app/actions';
-import { Header } from '@ragenai/common-ui';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;

@@ -14,11 +14,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Tooltip,
-  TrashIcon,
-} from '@ragenai/common-ui';
+} from '@ragenai/common-ui/Table';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import { TrashIcon } from '@ragenai/common-ui/icons';
 
-import { Button } from '@ragenai/tui';
+import { Button } from '@ragenai/tui/button';
 
 import { RemoveApiKeyDialog } from './RemoveApiKey/RemoveApiKeyDialog';
 import { removeApiKey } from './RemoveApiKey/actions';

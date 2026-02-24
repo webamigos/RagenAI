@@ -10,7 +10,8 @@ import { fetchApiKeys } from '@/app/components/ApiKeys/actions';
 import { ApiKeysList } from '@/app/components/ApiKeys/ApiKeysList';
 import { getDefaultProjectPublicId } from '@/app/actions';
 import { Container } from '@ragenai/common-ui/Container';
-import { Button, Header } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Header } from '@ragenai/common-ui/Header';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;

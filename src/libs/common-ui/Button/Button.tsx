@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { classMerge } from '../utils/cn';
 import { SpinnerSVG, ArrowPath } from '../icons';
-import { Button as TuiButton, type ButtonProps } from '@ragenai/tui';
+import { Button as TuiButton, type ButtonProps } from '@ragenai/tui/button';
 
 type Props = Readonly<{
   label?: string;

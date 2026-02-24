@@ -1,7 +1,7 @@
 import { ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
-import { Heading } from '@ragenai/tui';
+import { Heading } from '@ragenai/tui/heading';
 import { Divider } from '../Divider';
 
 type Props = {

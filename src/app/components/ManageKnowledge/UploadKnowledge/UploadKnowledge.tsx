@@ -3,7 +3,9 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Card, FileUploader, Button } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { FileUploader } from '@ragenai/common-ui/FileUploader';
+import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useSettings } from '@/app/hooks/useSettings';

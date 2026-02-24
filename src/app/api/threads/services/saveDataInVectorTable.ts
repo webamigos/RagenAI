@@ -1,6 +1,6 @@
 import * as fs from 'node:fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
@@ -70,7 +70,7 @@ const saveBinaryToTempFile = async (
   extension: string
 ) => {
   const projectDir = process.cwd();
-  const filePath = path.join(projectDir, `temp-${uuidv4()}.${extension}`);
+  const filePath = path.join(projectDir, `temp-${randomUUID()}.${extension}`);
 
   try {
     const data = content instanceof Buffer ? new Uint8Array(content) : content;

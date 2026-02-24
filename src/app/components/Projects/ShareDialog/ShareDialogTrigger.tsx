@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GlobalAltIcon } from '@ragenai/common-ui';
+import { GlobalAltIcon } from '@ragenai/common-ui/icons';
 
 import { ShareDialog } from './ShareDialog';
 import { useToggleChatbotEnabled } from '@/app/hooks/useToggleChatbotEnabled';

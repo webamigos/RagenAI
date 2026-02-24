@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, Button, Input } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import {
   Dropdown,
   DropdownButton,

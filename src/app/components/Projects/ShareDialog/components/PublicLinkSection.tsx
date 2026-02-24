@@ -1,6 +1,8 @@
 import { useTranslations } from 'next-intl';
 import { memo } from 'react';
-import { Text, Switch, Input } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { Switch } from '@ragenai/common-ui/Switch';
+import { Input } from '@ragenai/common-ui/Input';
 import { CopyButton } from '@ragenai/common-ui/CopyButton/CopyButton';
 import { PublicProjectSection } from './PublicProjectSection';
 

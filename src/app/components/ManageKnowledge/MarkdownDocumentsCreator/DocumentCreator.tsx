@@ -12,16 +12,11 @@ import { useRouter } from '@/i18n/routing';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
-import {
-  Card,
-  Input,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-  WysiwygEditor,
-  Button,
-} from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Tabs, TabList, Tab, TabPanel } from '@ragenai/common-ui/Tabs';
+import { WysiwygEditor } from '@ragenai/common-ui/WysywigEditor';
+import { Button } from '@ragenai/common-ui/Button';
 import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();

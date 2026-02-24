@@ -27,7 +27,7 @@ export const NewSidebarSettingsBody = () => {
           <ArrowLeftIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('back')}</SidebarLabel>
         </SidebarItem>
-        <SidebarItem href="/settings/knowledge">
+        <SidebarItem href="/settings/knowledge/documents-list">
           <BookOpenIcon className={iconClassName} />
           <SidebarLabel className="font-normal">
             {t('manage-knowledge')}

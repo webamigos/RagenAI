@@ -12,7 +12,8 @@ import {
 import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
-import { Input as TuiInput, Field, Label } from '@ragenai/tui';
+import { Input as TuiInput } from '@ragenai/tui/input';
+import { Field, Label } from '@ragenai/tui/fieldset';
 import { useTranslations } from 'next-intl';
 
 type Props = {

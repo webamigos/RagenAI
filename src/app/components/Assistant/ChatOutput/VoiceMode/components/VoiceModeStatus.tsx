@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { Text } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
 import { formatSecondsToMMSS } from '@/app/lib/utils/formatSecondsToMMSS';
 import { VoiceModeStatusProps } from '../types';
 

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { Card, Button } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Button } from '@ragenai/common-ui/Button';
 import { Logo } from '@/app/components/Logo';
 import { useRouter } from '@/i18n/routing';
 import { useSession } from '@/app/hooks/use-better-auth';

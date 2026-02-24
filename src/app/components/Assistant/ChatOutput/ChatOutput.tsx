@@ -1,4 +1,5 @@
-import { SpinnerSVG, Text } from '@ragenai/common-ui';
+import { SpinnerSVG } from '@ragenai/common-ui/icons';
+import { Text } from '@ragenai/common-ui/Text';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';

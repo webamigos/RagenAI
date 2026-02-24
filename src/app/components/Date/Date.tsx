@@ -1,4 +1,4 @@
-import { classMerge } from '@ragenai/common-ui';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 import { utcToZonedTime } from 'date-fns-tz';
 import { format } from 'date-fns';
 

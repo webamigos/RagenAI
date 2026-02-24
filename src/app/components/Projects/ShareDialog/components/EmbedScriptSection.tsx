@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { memo } from 'react';
-import { Text, Input } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { Input } from '@ragenai/common-ui/Input';
 import { CopyButton } from '@ragenai/common-ui/CopyButton/CopyButton';
 
 type EmbedScriptSectionProps = {
