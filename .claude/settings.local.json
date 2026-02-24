@@ -25,7 +25,10 @@
       "Bash(head:*)",
       "Bash(grep:*)",
       "Bash(grep error TS:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(cat:*)",
+      "Bash(tail:*)",
+      "Bash(git status:*)"
     ]
   },
   "enabledPlugins": {

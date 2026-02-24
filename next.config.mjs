@@ -64,10 +64,23 @@ const nextConfig = {
     'pino',
     'pino-pretty',
     'pino-sentry',
+    'thread-stream',
     '@sentry/node',
     '@hyzyla/pdfium',
     '@aws-sdk',
     '@prisma/adapter-pg',
+    '@opentelemetry/api',
+    '@opentelemetry/api-logs',
+    '@opentelemetry/sdk-trace-node',
+    '@opentelemetry/sdk-logs',
+    '@opentelemetry/sdk-metrics',
+    '@opentelemetry/resources',
+    '@opentelemetry/instrumentation',
+    '@opentelemetry/exporter-trace-otlp-http',
+    '@opentelemetry/exporter-metrics-otlp-http',
+    '@opentelemetry/exporter-logs-otlp-http',
+    '@opentelemetry/instrumentation-http',
+    '@opentelemetry/instrumentation-pg',
     // Note: better-auth removed from serverExternalPackages to allow client-side usage
   ],
 
@@ -130,7 +143,6 @@ const nextConfig = {
         'better-auth',
         'better-auth/adapters/prisma',
         'better-auth/plugins',
-        'pino',
         'pino-pretty',
         'pino-sentry'
       );
