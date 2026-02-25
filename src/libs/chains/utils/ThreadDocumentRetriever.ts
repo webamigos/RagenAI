@@ -22,6 +22,16 @@ export class ThreadDocumentRetriever {
   }
 
   /**
+   * Build a stable, unique cache key for a thread document.
+   * Documents with a userFileId use that; inline documents use name + content length
+   * to avoid collisions between documents sharing the same name.
+   */
+  private documentCacheKey(doc: ThreadDocumentUI): string {
+    if (doc.userFileId) return doc.userFileId;
+    return `${doc.name}:${doc.size}:${doc.content.length}`;
+  }
+
+  /**
    * Retrieve relevant document chunks using dual strategy:
    * 1. Immediate access: Use inline content with on-demand embeddings
    * 2. Optimized access: Use pre-computed embeddings from vectorstore
@@ -192,8 +202,7 @@ export class ThreadDocumentRetriever {
       // Generate embeddings for documents, using cache when available
       const uncachedDocs: { index: number; content: string }[] = [];
       for (let i = 0; i < threadDocuments.length; i++) {
-        const cacheKey =
-          threadDocuments[i].userFileId || threadDocuments[i].name;
+        const cacheKey = this.documentCacheKey(threadDocuments[i]);
         if (!this.cachedDocumentEmbeddings.has(cacheKey)) {
           uncachedDocs.push({ index: i, content: threadDocuments[i].content });
         }
@@ -204,15 +213,13 @@ export class ThreadDocumentRetriever {
           uncachedDocs.map((d) => d.content)
         );
         uncachedDocs.forEach((doc, j) => {
-          const cacheKey =
-            threadDocuments[doc.index].userFileId ||
-            threadDocuments[doc.index].name;
+          const cacheKey = this.documentCacheKey(threadDocuments[doc.index]);
           this.cachedDocumentEmbeddings.set(cacheKey, newEmbeddings[j]);
         });
       }
 
       const documentEmbeddings = threadDocuments.map((doc) => {
-        const cacheKey = doc.userFileId || doc.name;
+        const cacheKey = this.documentCacheKey(doc);
         return this.cachedDocumentEmbeddings.get(cacheKey)!;
       });
 

@@ -88,15 +88,6 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        processedFiles.push({
-          fileName: parsedFile.fileName,
-          fileSize: file.size,
-          uniqueFileId: fileRecord.public_id,
-          content: parsedFile.content,
-        });
-
-        usageTracker.incUploadedFilesSize(file.size);
-        usageTracker.incUploadedFilesCount();
         logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
 
         // Step 3: start async embedding workflow
@@ -113,6 +104,16 @@ export async function POST(request: NextRequest) {
           { workflowId: embeddingWorkflowId, fileName: parsedFile.fileName },
           'Started embedding workflow'
         );
+
+        // Only count as processed after workflow start succeeds
+        processedFiles.push({
+          fileName: parsedFile.fileName,
+          fileSize: file.size,
+          uniqueFileId: fileRecord.public_id,
+        });
+
+        usageTracker.incUploadedFilesSize(file.size);
+        usageTracker.incUploadedFilesCount();
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         failedFiles.push({

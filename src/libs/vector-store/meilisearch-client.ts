@@ -182,12 +182,14 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
       });
       const taskResult = await this.client.waitForTask(embeddersTask.taskUid);
       if (taskResult.status === 'failed') {
+        const errorMsg = `Failed to configure embedders for index "${
+          this.indexName
+        }": ${taskResult.error?.message ?? JSON.stringify(taskResult.error)}`;
         logger.error(
           { error: taskResult.error, index: this.indexName },
-          'Failed to configure embedders — existing documents may lack vectors for this embedder'
+          errorMsg
         );
-        // Do not cache on failure so next request retries configuration
-        return;
+        throw new Error(errorMsg);
       }
     }
 

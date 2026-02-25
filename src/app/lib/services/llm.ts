@@ -670,9 +670,11 @@ export interface ModerationResult {
   categories: Record<string, boolean>;
 }
 
-export const createModerationInstance = () => {
+export const createModerationInstance = (orgApiKey?: string) => {
   const apiKey =
-    process.env.OPENAI_MODERATION_KEY || process.env.OPENAI_API_KEY;
+    orgApiKey ||
+    process.env.OPENAI_MODERATION_KEY ||
+    process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     throw new Error(
