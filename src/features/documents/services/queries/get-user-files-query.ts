@@ -8,6 +8,10 @@ export const getUserFilesQuery = async (organizationId: string) => {
     organizationId
   );
 
+  if (!defaultProjectId) {
+    return [];
+  }
+
   return await db.userFile.findMany({
     where: {
       organization_id: organizationId,

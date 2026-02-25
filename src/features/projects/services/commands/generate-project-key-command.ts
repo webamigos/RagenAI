@@ -3,12 +3,22 @@
 import crypto from 'crypto';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const generateProjectKeyCommand = async (projectId: number) => {
   try {
+    const orgId = await getOrgIdOrThrow();
+
+    const existing = await db.project.findFirst({
+      where: { id: projectId, organization_id: orgId },
+    });
+
+    if (!existing) {
+      throw new Error('Project not found or unauthorized');
+    }
+
     logger.info('Generating access token for project');
 
-    // Update project to be public
     const project = await db.project.update({
       where: { id: projectId },
       data: {
@@ -20,10 +30,6 @@ export const generateProjectKeyCommand = async (projectId: number) => {
         access_token: true,
       },
     });
-
-    if (!projectId) {
-      throw new Error('Failed to generate access token');
-    }
 
     return {
       accessToken: project.access_token,

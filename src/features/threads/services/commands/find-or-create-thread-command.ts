@@ -13,12 +13,24 @@ export const findOrCreateThreadCommand = async (
       where: { public_id: threadPublicId },
     });
 
-    await db.thread.update({
-      where: { public_id: threadPublicId },
-      data: {
-        visitor_id: visitorId,
-      },
-    });
+    if (!threadRecord.visitor_id || threadRecord.visitor_id === visitorId) {
+      await db.thread.update({
+        where: { public_id: threadPublicId },
+        data: {
+          visitor_id: visitorId,
+        },
+      });
+    } else {
+      logger.warn(
+        {
+          threadPublicId,
+          visitorId,
+          existingVisitorId: threadRecord.visitor_id,
+        },
+        'Visitor ID mismatch — thread already bound to another visitor'
+      );
+      throw new Error('Thread belongs to another session');
+    }
 
     return { threadRecord };
   } catch (error) {

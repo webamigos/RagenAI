@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
     let projectRecord = undefined;
     if (formProjectId) {
       projectRecord = await getProjectByPublicIdOrThrow(formProjectId);
+      if (projectRecord.organization_id !== orgId) {
+        return NextResponse.json(
+          { message: 'Project does not belong to this organization' },
+          { status: 403 }
+        );
+      }
     }
 
     if (!projectRecord && !defaultProjectId) {

@@ -1,6 +1,11 @@
 'use server';
 
-import { Thread, Role, MessageContentType } from '@/generated/prisma/client';
+import {
+  Thread,
+  Role,
+  MessageContentType,
+  Source,
+} from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { usageTracker } from '@/app/lib/services/usage';
@@ -32,6 +37,7 @@ export const createMessageInDbCommand = async ({
         thread_id: threadId,
         content: message.content,
         role,
+        source: message.source ?? Source.UI,
         visitor_id: visitorId,
         run_id: runId,
         message_type: messageType,

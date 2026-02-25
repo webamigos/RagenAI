@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { toggleChatbotCommand as toggleChatbotEnabled } from '@/features/projects/services/commands/toggle-chatbot-command';
 

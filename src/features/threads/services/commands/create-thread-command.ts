@@ -52,14 +52,33 @@ export const createThreadCommand = async ({
       );
 
       if (documentsWithUserFileId.length > 0) {
-        const threadDocumentData = documentsWithUserFileId.map((doc) => ({
-          thread_id: threadRecord.id,
-          user_file_id: doc.userFileId!,
-        }));
+        const userFileIds = documentsWithUserFileId.map(
+          (doc) => doc.userFileId!
+        );
 
-        await db.threadDocument.createMany({
-          data: threadDocumentData,
+        const validFiles = await db.userFile.findMany({
+          where: {
+            public_id: { in: userFileIds },
+            organization_id: orgId,
+          },
+          select: { public_id: true },
         });
+
+        const validFileIds = new Set(validFiles.map((f) => f.public_id));
+        const validDocuments = documentsWithUserFileId.filter((doc) =>
+          validFileIds.has(doc.userFileId!)
+        );
+
+        if (validDocuments.length > 0) {
+          const threadDocumentData = validDocuments.map((doc) => ({
+            thread_id: threadRecord.id,
+            user_file_id: doc.userFileId!,
+          }));
+
+          await db.threadDocument.createMany({
+            data: threadDocumentData,
+          });
+        }
       }
 
       logger.info(

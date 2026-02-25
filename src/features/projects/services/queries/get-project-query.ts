@@ -29,6 +29,7 @@ export const getProjectByPublicIdOrThrowQuery = async (
       title: true,
       threads: true,
       internal_organization_id: true,
+      organization_id: true,
       is_public: true,
       access_token: true,
       published_at: true,
