@@ -1,84 +1,174 @@
 # Ragen AI
 
-Retrieval Augmented Generation (RAG)
+RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
 
-## Local development
+## Tech Stack
 
-Run:
+- **Framework**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7
+- **Styling**: Tailwind CSS 4
+- **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
+- **Search**: Meilisearch (vector/hybrid search)
+- **LLM Providers**: OpenAI, Anthropic, Google, AWS Bedrock, Ollama, OpenRouter, Fireworks, Azure OpenAI
+- **Auth**: Better Auth with Prisma adapter
+- **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
+- **Payments**: Stripe
+- **Observability**: OpenTelemetry + Pino logging
+- **i18n**: English & Polish via next-intl
 
-`docker compose up` in root directory - postgres database and redis will up.
+## Local Development
 
-Set `.env.local` to:
+**Prerequisites**: Node.js 22.x, Docker
 
 ```bash
-# LOCAL
-DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
-DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
-
+docker compose up          # Start Postgres (5432), Redis (6379), Meilisearch (7700)
+npm install                # Install dependencies
+npm run generate:types     # Generate Prisma client
+npm run dev                # Start Next.js dev server (Turbopack)
 ```
 
-## API mode
+Set `.env.local` with at minimum:
 
-To run Ragen in API mode set env variable:
+```bash
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+```
 
-`IS_API_MODE=1`
+## Commands
 
-Then all url's will be rewritten to /api
+```bash
+npm run dev              # Start dev server
+npm run build            # Production build (runs prisma generate first)
+npm run lint             # ESLint
+npm run test             # Vitest (unit tests, watch mode)
+npx vitest run           # Vitest (single run)
+npm run test:e2e         # Playwright E2E tests
+npm run test:e2e:ui      # Playwright in UI mode
+npm run generate:types   # Regenerate Prisma client types
+npm run db:seed          # Seed database
+```
 
-Example: `http://localhost:3000/api/v1/healthcheck` -> `http://localhost:3000/v1/healthcheck`
+## Project Structure
 
-The purpose is to decouple API to new instance and use URLs: `https://api.ragen.io/v1/healthcheck`
+```
+src/
+├── app/                          # Next.js App Router
+│   ├── [locale]/                 # Locale-prefixed routes (en, pl)
+│   │   ├── (panel)/              # Authenticated app (threads, settings, documents)
+│   │   ├── (auth)/               # Sign-in, sign-up, forgot password
+│   │   └── public/               # Public assistant chat widgets
+│   ├── api/
+│   │   ├── v1/                   # Public REST API
+│   │   │   └── __logic__/        # API guards, context, DTOs, filters
+│   │   ├── threads/              # Internal thread streaming endpoints
+│   │   └── ...
+│   ├── actions/                  # Server actions
+│   └── components/               # UI components organized by feature
+│
+├── features/                     # Domain feature modules (CQRS pattern)
+│   ├── assistants/               # Assistant mode types
+│   ├── documents/                # Document & file management
+│   ├── messages/                 # Chat messages
+│   ├── onboarding/               # User onboarding flow
+│   ├── organizations/            # Organizations, settings, API keys
+│   ├── projects/                 # Projects & instructions
+│   ├── subscriptions/            # Subscription management
+│   ├── threads/                  # Chat threads & SSE events
+│   └── users/                    # User metadata
+│
+├── libs/                         # Shared libraries
+│   ├── llm/                      # Multi-provider chat completion & embeddings
+│   ├── chains/                   # RAG chains (basic-rag, conversation, PDF processing)
+│   ├── vector-store/             # Meilisearch & Supabase vector store clients
+│   ├── document-loaders/         # PDF, EPUB, Markdown, SRT, URL parsing
+│   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
+│   ├── temporal/                 # Temporal.io client
+│   ├── payments/                 # Stripe integration
+│   ├── sse/                      # Server-Sent Events for streaming
+│   ├── tui/                      # Tailwind UI component library (@ragenai/tui)
+│   └── common-ui/                # Shared UI utilities (@ragenai/common-ui)
+│
+├── store/                        # Redux Toolkit (client UI state)
+├── generated/prisma/             # Generated Prisma client (gitignored)
+└── i18n/                         # Internationalization config
+```
+
+### Feature Modules
+
+Each feature module in `src/features/` follows a CQRS (Command Query Responsibility Segregation) pattern:
+
+```
+features/{feature}/
+├── contracts/          # Types, DTOs, schemas
+├── constants/          # Feature-specific constants
+├── services/
+│   ├── queries/        # Read operations (get*Query)
+│   └── commands/       # Write operations (*Command)
+└── utils/              # Feature-specific utilities
+```
+
+- **Queries** return data directly
+- **Commands** perform mutations and return results or `OperationResult<T>`
+- All server-side functions use `'use server'` directive where needed
+
+## Architecture
+
+### Routing
+
+Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware handles i18n routing and session cookie checks. Auth verification happens in server components/layouts.
+
+### API
+
+REST API at `/api/v1/` authenticated via `x-api-key` header. The app supports API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1` for deployment at `api.ragen.io`.
+
+### Auth
+
+Better Auth with Prisma adapter. On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership + Ragen `InternalOrganization` for app data (projects, API keys, subscriptions).
+
+### Document Processing
+
+Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use OpenAI `text-embedding-3-small` (1536 dimensions).
+
+### State Management
+
+- **Redux Toolkit** (`src/store/`): Client UI state (sidebar, assistant, threads, voice)
+- **React Context**: Assistant settings, files, onboarding, thread search
+- **Server state**: Prisma queries in server components and server actions
+
+## Path Aliases
+
+```
+@/*                    → src/*
+@/temporal/*           → temporal/src/*
+@ragenai/common-ui/*   → src/libs/common-ui/*
+@ragenai/tui/*         → src/libs/tui/*
+@ragenai/prisma-client → src/libs/db
+```
 
 ## Working with Temporal
 
-Temporal is a great tool for managing async tasks without the complexity of managing queues and architecture. I allow easily testing and maintaining distributed architecture. One workflow can be used by many apps.
+Temporal manages async workflows (document processing, file uploads, etc.). The worker runs in a separate repo: [ragen-worker](https://github.com/WebAmigos/ragen-worker).
 
-We can use it for:
-* Document processing workflow
-* File upload process
-* Creating organization with numeric ID
-* Send mails to users on defined interval (e.g. sequence of onboarding e-mails with every three days in first 10 days)
-* End free trial after 14 days
-* Exchange events between backend events (separate project/repo)
-
-Ragen is using Temporal and Workflow from this repository: https://github.com/WebAmigos/ragen-worker
-
-You can find there instructions how to run temporal locally and how to run worker.
-
-### Important notes for launching workflows:
-
-✅ OK: string name for the workflow
+**Important**: Always use string names for workflows, not function imports:
 
 ```ts
-const personHandle = await client.workflow.start('estimateAgeWorkflow', {
+// Correct
+const handle = await client.workflow.start('estimateAgeWorkflow', {
   taskQueue: TASK_QUEUE_NAME,
   workflowId: personWorkflowId,
   args: [{ name: 'Janina' }],
 });
-```
 
-❌ WRONG - do not create workflows in Ragen app
-
-```ts
+// Wrong - do not import workflow functions directly
 import { estimateAgeWorkflow } from '@/temporal/src/workflows';
-
-const personHandle = await client.workflow.start(estimateAgeWorkflow, {
 ```
 
-⚠️ Moreover after changing activity name Temporal cloud still uses activity old name (estimateAge) but not each time 🤦
+## Key Conventions
 
-Temporal solution for Temporal is to create new workflow name.
-
-### How to test
-
-You can launch the application and open route: `/api/run-workflow`.
-
-Keep in mind that Next.js in version 13 and 14 tries cache everything what can and if you want to bet results using route handlers remember to set force dynamic:
-
-```ts
-export const dynamic = 'force-dynamic';
-```
-
-### Running locally
-
-See: https://github.com/WebAmigos/ragen-worker
+- **ESM**: `"type": "module"` — all `.js` files are ESM, CommonJS uses `.cjs`
+- Server components by default; client components use `'use client'`
+- All API routes use `export const dynamic = 'force-dynamic'`
+- Prisma schema: `uuid` for IDs, `cuid` for `public_id` fields
+- Database timestamps: `Timestamptz` (timezone-aware), default Europe/Warsaw
+- i18n: Use `Link`, `redirect`, `usePathname`, `useRouter` from `@/i18n/routing`
+- Pre-commit hooks: lint-staged runs `eslint --fix` + `prettier --write`
+- Commit messages: conventional commits (commitlint enforced via Husky)
