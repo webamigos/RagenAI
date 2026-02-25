@@ -10,6 +10,7 @@ import { Input } from '@ragenai/common-ui/Input';
 import { signUp } from '@/app/hooks/use-better-auth';
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
+import { logger } from '@/app/lib/utils/logger';
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { addSubscriberToKit } from './actions';
 
@@ -65,22 +66,22 @@ export const RegisterForm = () => {
           const acceptResult = await acceptInvitation(invitationId);
 
           if (acceptResult.success) {
-            // eslint-disable-next-line no-console
-            console.log('Invitation accepted automatically after registration');
+            logger.info('Invitation accepted automatically after registration');
             // Redirect to home page
             window.location.href = `/${locale}/`;
             return;
           } else {
-            // eslint-disable-next-line no-console
-            console.warn(
-              'Failed to auto-accept invitation:',
-              acceptResult.error
+            logger.warn(
+              { error: acceptResult.error },
+              'Failed to auto-accept invitation'
             );
             // Continue with normal onboarding
           }
         } catch (inviteError) {
-          // eslint-disable-next-line no-console
-          console.error('Error auto-accepting invitation:', inviteError);
+          logger.error(
+            { error: inviteError },
+            'Error auto-accepting invitation'
+          );
           // Continue with normal onboarding
         }
       }
@@ -91,10 +92,9 @@ export const RegisterForm = () => {
       try {
         await finalizeUserOnboarding();
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          'Onboarding finalization failed, relying on fallback:',
-          err
+        logger.warn(
+          { error: err },
+          'Onboarding finalization failed, relying on fallback'
         );
         // Continue anyway - middleware/account-configuration will handle it
       }
@@ -102,8 +102,7 @@ export const RegisterForm = () => {
       // Use window.location.href to force full page reload and session refresh
       window.location.href = `/${locale}/`;
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Registration error:', err);
+      logger.error({ error: err }, 'Registration error');
       const errorMessage =
         err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(errorMessage);
