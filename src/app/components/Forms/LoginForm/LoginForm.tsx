@@ -13,6 +13,7 @@ import { Text } from '@ragenai/common-ui/Text';
 import { signIn } from '@/app/hooks/use-better-auth';
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
+import { logger } from '@/app/lib/utils/logger';
 import { type LoginFormData, loginSchema } from './schema';
 
 export const LoginForm = () => {
@@ -50,10 +51,9 @@ export const LoginForm = () => {
       try {
         await finalizeUserOnboarding();
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          'Onboarding finalization failed, relying on fallback:',
-          err
+        logger.warn(
+          { error: err },
+          'Onboarding finalization failed, relying on fallback'
         );
         // Continue anyway - middleware/account-configuration will handle it
       }
