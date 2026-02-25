@@ -38,6 +38,7 @@ import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
+import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { Project, UserFile } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 
@@ -252,34 +253,8 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
   };
 };
 
-export const saveUserMetadata = async (
-  userId: string,
-  metadata: Record<string, unknown>
-): Promise<{ success: boolean; error?: string }> => {
-  if (!userId || typeof userId !== 'string') {
-    return { success: false, error: 'Invalid userId' };
-  }
-
-  try {
-    // Update User table with metadata
-    await db.user.update({
-      where: { id: userId },
-      data: {
-        onboardingComplete: metadata.onboardingComplete as boolean | undefined,
-        viewMode: metadata.viewMode as string | undefined,
-      },
-    });
-
-    logger.info({ userId, metadata }, 'User metadata saved');
-    return { success: true };
-  } catch (error) {
-    logger.error({ err: error }, 'Error saving user metadata');
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-};
+/** @deprecated Use saveUserMetadataCommand from @/features/users instead */
+export const saveUserMetadata = saveUserMetadataCommand;
 
 /** @deprecated Use saveOrganizationPublicMetadataCommand from @/features/organizations instead */
 export const saveOrganizationPublicMetadata =
