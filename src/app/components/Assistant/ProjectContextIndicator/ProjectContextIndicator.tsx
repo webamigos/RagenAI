@@ -9,7 +9,7 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/20/solid';
 import { setThreadContext } from '@/store/assistant/assistantSlice';
-import { removeThreadContextAction } from '@/app/lib/actions/threads';
+import { removeThreadContextCommand as removeThreadContextAction } from '@/features/threads/services/commands/remove-thread-context-command';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ProjectContextManager } from '../ProjectContextManager';
 // Simplified Project type for context management

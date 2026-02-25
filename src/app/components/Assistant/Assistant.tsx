@@ -21,7 +21,7 @@ import { RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
-import { getThreadDetailsAction } from '@/app/lib/actions/threads';
+import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
 import { updateThreadModel as updateThreadModelAction } from '@/store/threads/threadsSlice';
 import { updateThreadModel as updateSidebarThreadModelAction } from '@/store/sidebar/sidebarSlice';
 
