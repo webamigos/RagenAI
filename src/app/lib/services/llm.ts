@@ -14,7 +14,7 @@ import {
   getOpenrouterAPIKey,
   getFireworksAPIKey,
   getAzureOpenAICredentials,
-} from './settings';
+} from '@/features/organizations/services/organization-settings';
 import { usageTracker } from './usage';
 import { logger } from '../utils/logger';
 
