@@ -4,6 +4,7 @@ import { rateLimit } from '../guards/rate-limit.guard';
 import { apiKeyGuard } from '../guards/api-key.guard';
 
 export const getApiContext = async (request: NextRequest) => {
-  await rateLimit(request);
-  return apiKeyGuard(request);
+  const apiContext = apiKeyGuard(request);
+  await rateLimit(request, apiContext);
+  return apiContext;
 };

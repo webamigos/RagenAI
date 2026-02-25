@@ -12,13 +12,8 @@ export async function saveProjectInstructionAction(
   instruction: string
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await saveProjectInstruction(projectId, instruction);
-
-    if (result.success) {
-      return { success: true, message: 'Instruction saved successfully' };
-    } else {
-      return { success: false, message: result.status };
-    }
+    await saveProjectInstruction(projectId, instruction);
+    return { success: true, message: 'Instruction saved successfully' };
   } catch (error) {
     logger.error({ err: error }, 'Failed to save project instruction');
     return { success: false, message: 'Failed to save project instruction' };

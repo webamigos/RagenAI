@@ -34,7 +34,7 @@ export class ApiKeysService {
     const keyId: KeyId = generateApiKeyDto.keyId;
     const hashedKey = await this.hashingService.hash(apiKey); // hashed key for storage
 
-    this.apiKeyStorage.insert(keyId, hashedKey);
+    await this.apiKeyStorage.insert(keyId, hashedKey);
 
     return { apiKey, hashedKey };
   }
