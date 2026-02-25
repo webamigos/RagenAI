@@ -1,4 +1,4 @@
-import { OrganizationSettings } from '@/app/lib/types/settings';
+import { OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import {
   createChatCompletionInstance,
   createModerationInstance,

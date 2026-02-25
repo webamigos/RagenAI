@@ -11,9 +11,9 @@ import db from '@ragenai/prisma-client';
 import { ApiKeyDto } from './types';
 import { logger } from '@/app/lib/utils/logger';
 import {
-  fetchOrganizationByProviderId,
-  fetchOrganizationDefaultProject,
-} from '@/app/lib/services/apiKeys';
+  getInternalOrganizationByProviderIdQuery as fetchOrganizationByProviderId,
+  getOrganizationDefaultProjectQuery as fetchOrganizationDefaultProject,
+} from '@/features/organizations/services/queries/get-api-keys-query';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
 import {
   OrgId,
@@ -22,7 +22,7 @@ import {
   KeyId,
 } from '@/app/api/v1/__logic__/types/brand';
 import { fetchProject } from '@/app/lib/services/api';
-import { getProjectByPublicId } from '@/app/lib/services/project';
+import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 
 type SuccessResponse = {
   payload: {

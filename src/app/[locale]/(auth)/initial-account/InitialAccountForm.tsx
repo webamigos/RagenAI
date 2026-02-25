@@ -10,7 +10,7 @@ import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { signUp } from '@/app/hooks/use-better-auth';
 import { updateInitialAdminAccountCommand } from '@/features/users/services/commands/initial-account-commands';
-import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
+import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 const initialAccountSchema = z.object({
   email: z.email('initial-account.validation.email'),

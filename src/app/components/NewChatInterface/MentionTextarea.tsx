@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 

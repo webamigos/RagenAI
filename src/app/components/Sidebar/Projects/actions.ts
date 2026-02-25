@@ -3,11 +3,9 @@
 import { type Project } from '@/generated/prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  findOrganizationByProviderId,
-  createProjectForOrganization,
-  fetchProjectsForUser,
-} from '@/app/lib/services/project';
+import { findInternalOrganizationQuery as findOrganizationByProviderId } from '@/features/organizations/services/queries/find-internal-organization-query';
+import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
+import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 
 const serviceName = 'assistants/actions';
 

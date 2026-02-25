@@ -2,9 +2,12 @@ import { NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
 import { auth } from '@/lib/auth';
-import { ChatType, createMessageSchema } from '@/app/contracts/Message';
+import {
+  ChatType,
+  createMessageSchema,
+} from '@/features/messages/contracts/message.types';
 import { streamEvents } from '@/app/api/threads/services/assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';

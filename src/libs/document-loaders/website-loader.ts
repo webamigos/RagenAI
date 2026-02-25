@@ -3,7 +3,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { createMarkdownDocument } from '@/app/lib/services/document';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { FileType } from '@/generated/prisma/client';
 
 export interface WebsiteDocumentLoaderParams {

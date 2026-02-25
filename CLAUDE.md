@@ -43,10 +43,33 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. All UI routes
 
 Middleware (`src/middleware.ts`) handles i18n routing and session cookie checks. Actual auth verification happens in server components/layouts, not middleware.
 
+### Feature Modules (`src/features/`)
+
+Domain logic is organized into feature modules following a CQRS (Command Query Responsibility Segregation) pattern:
+
+```
+features/{feature}/
+├── contracts/          # Types, DTOs, schemas, enums
+├── constants/          # Feature-specific constants
+├── services/
+│   ├── queries/        # Read operations — named get*Query()
+│   └── commands/       # Write operations — named *Command()
+└── utils/              # Feature-specific utilities
+```
+
+**Current feature modules**: `assistants`, `documents`, `messages`, `onboarding`, `organizations`, `projects`, `subscriptions`, `threads`, `users`
+
+**Conventions**:
+- Queries return data directly; commands return results or `OperationResult<T>`
+- Import types from `@/features/{feature}/contracts/` (not from `@/app/contracts/` or `@/app/lib/types/`)
+- Import business logic from `@/features/{feature}/services/` (not from `@/app/lib/services/`)
+- Organization settings kept as single cohesive file (`organization-settings.ts`) due to shared Redis caching infrastructure
+- Server actions in `src/app/actions/index.ts` delegate to feature commands/queries
+
 ### API
 
 REST API at `src/app/api/v1/` with route handlers. Key subdirectories:
-- `__logic__/` — Cross-cutting concerns: `guards/` (API key validation, rate limiting), `services/` (error handling, DB), `context/` (request context extraction), `dtos/`, `types/`, `filters/`
+- `__logic__/` — Cross-cutting concerns: `guards/`, `context/`, `dtos/`, `types/`, `filters/`, plus `queries/` and `commands/` for API-specific data operations
 - `threads/`, `assistants/`, `documents/`, `auth/`, `healthcheck/`, `query/`
 
 API authentication uses `x-api-key` header → `apiKeyGuard()` → returns `ApiContext` with `orgId`, `userId`, `projectId`.
@@ -103,7 +126,7 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 
 ### Server Actions
 
-Located in `src/app/actions/index.ts` and co-located with components. Used for: messaging, file operations, thread management, org settings.
+`src/app/actions/index.ts` provides auth-wrapped server actions that delegate to feature module queries/commands. Component-level actions are co-located with their components (e.g., `src/app/components/ApiKeys/actions.ts`). New domain logic should go in `src/features/`, not in actions files.
 
 ## Path Aliases
 

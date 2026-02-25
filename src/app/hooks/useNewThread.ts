@@ -9,8 +9,8 @@ import {
 } from 'react';
 import { useUser, useOrganization, useAuth } from '@/app/hooks/use-auth';
 import { usePathname, useRouter } from '@/i18n/routing';
-import { ThreadHistoryResponse } from '@/app/contracts/Message';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addThread } from '@/store/threads/threadsSlice';
 import { setProjects, addThreadToProject } from '@/store/sidebar/sidebarSlice';
@@ -23,10 +23,8 @@ import { dailyMessageLimit } from '../config';
 import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
 import { trackThreadCreated } from '../actions';
-import {
-  createGuestThreadAction,
-  createThreadAction,
-} from '../lib/actions/threads';
+import { createThreadAction } from '@/features/threads/services/commands/create-thread-command';
+import { createGuestThreadCommand as createGuestThreadAction } from '@/features/threads/services/commands/create-guest-thread-command';
 import { getVisitorIdFromBrowserCookie } from '../lib/services/cookies.browser';
 
 type ActionType =

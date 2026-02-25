@@ -10,7 +10,7 @@ import {
   CheckIcon,
 } from '@heroicons/react/20/solid';
 import { setThreadContext } from '@/store/assistant/assistantSlice';
-import { updateThreadContextAction } from '@/app/lib/actions/threads';
+import { updateThreadContextCommand as updateThreadContextAction } from '@/features/threads/services/commands/update-thread-context-command';
 import { statusToast } from '@/app/lib/utils/toast';
 
 type ProjectForContext = {

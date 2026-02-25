@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
-import { ChatResponseType } from '@/app/contracts/Message';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { MentionedProject } from './MentionTextarea';
 
 const threadSchema = (t: (key: string) => string) =>

@@ -16,7 +16,7 @@ import {
 import { statusToast } from '@/app/lib/utils/toast';
 import { processUrl } from './actions';
 import { logger } from '@/app/lib/utils/logger';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { getAddFromUrlSchema, AddFromUrlFormData } from './schema';
 
 export const AddFromUrl = () => {

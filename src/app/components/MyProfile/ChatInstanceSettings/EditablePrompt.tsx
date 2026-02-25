@@ -12,7 +12,7 @@ import { Textarea } from '@ragenai/common-ui/Textarea';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
-import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
+import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 
 const promptSchema = (t: (key: string) => string) =>
   z.object({

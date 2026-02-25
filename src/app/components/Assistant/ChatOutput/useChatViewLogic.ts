@@ -9,7 +9,7 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
-import type { StreamedMessageDto } from '@/app/contracts/Message';
+import type { StreamedMessageDto } from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 
 const createMarkdownRenderer = () => {

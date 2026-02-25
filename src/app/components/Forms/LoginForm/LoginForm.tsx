@@ -11,7 +11,7 @@ import { Input } from '@ragenai/common-ui/Input';
 import { Link } from '@ragenai/common-ui/Link';
 import { Text } from '@ragenai/common-ui/Text';
 import { signIn } from '@/app/hooks/use-better-auth';
-import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
+import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 import { logger } from '@/app/lib/utils/logger';
 import { type LoginFormData, loginSchema } from './schema';

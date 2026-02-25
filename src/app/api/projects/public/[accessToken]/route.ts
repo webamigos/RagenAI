@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
-import { getPublicProject } from '@/app/lib/services/project';
+import { getPublicProjectQuery as getPublicProject } from '@/features/projects/services/queries/get-project-query';
 
 export async function GET(
   request: NextRequest,

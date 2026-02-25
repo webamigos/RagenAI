@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/app/hooks/use-auth';
 import { FolderIcon } from '@heroicons/react/20/solid';
-import { fetchProjectsForUser } from '@/app/lib/services/project';
+import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import type { MentionedProject } from './MentionTextarea';
 
 interface Project {

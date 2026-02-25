@@ -10,7 +10,7 @@ import { Header } from '@ragenai/common-ui/Header';
 
 import { PropsWihLocale } from '@/app/lib/types/types';
 import { CreateApiKeyForm } from '@/app/components/ApiKeys/CreateApiKeyForm/CreateApiKeyForm';
-import { fetchProjectsForUser } from '@/app/lib/services/project';
+import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectPublicId } from '@/app/actions';
 

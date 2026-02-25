@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 
 import { Text } from '@ragenai/common-ui/Text';
 import { ArrowIcon } from '@ragenai/common-ui/icons';
-import { MessageDto } from '@/app/contracts/Message';
+import { MessageDto } from '@/features/messages/contracts/message.types';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';

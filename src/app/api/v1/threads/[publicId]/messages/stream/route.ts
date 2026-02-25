@@ -5,10 +5,10 @@ import { ApiDbService } from '../../../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../../../__logic__/services/api-errors.service';
 import { chatMessagesSchema } from '../../../../__logic__/dtos/chat.dto';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
-import { createMessageInDB } from '@/app/lib/services/message';
+import { createMessageInDbCommand as createMessageInDB } from '@/features/messages/services/commands/create-message-command';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
-import { ApiSseMessageEvent } from '@/app/contracts/Events';
+import { ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
 import { Role, Source } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';

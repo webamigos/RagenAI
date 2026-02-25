@@ -12,7 +12,7 @@ import {
   type ModalStateProps,
   type UserFileTypeSafe,
 } from '../FileList/UserFilesTable';
-import { type UserFileType } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
 
 type GridViewProps = {
   files: UserFileType[];

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProjectByPublicId } from '@/app/lib/services/project';
+import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
 

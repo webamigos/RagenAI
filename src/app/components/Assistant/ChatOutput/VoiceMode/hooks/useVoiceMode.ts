@@ -5,7 +5,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { useVoiceInput } from '@/app/hooks/useAudioRecording';
 import { convertTextToSpeech } from '../../../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
-import { updateMessagePlayedStatus } from '@/app/lib/services/message';
+import { updateMessagePlayedCommand as updateMessagePlayedStatus } from '@/features/messages/services/commands/update-message-played-command';
 import { voiceModeReducer, initialState } from '../voiceModeReducer';
 import { VoiceModeProps, VoiceModeHandlers } from '../types';
 

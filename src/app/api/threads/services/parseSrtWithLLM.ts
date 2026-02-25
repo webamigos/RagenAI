@@ -2,7 +2,7 @@ import { generateText } from 'ai';
 
 import { createChatCompletionInstance } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
-import { getOpenaiAPIKey } from '@/app/lib/services/settings';
+import { getOpenaiAPIKey } from '@/features/organizations/services/organization-settings';
 
 export async function parseSrtToSegmentsUsingLLM(
   organizationId: string,

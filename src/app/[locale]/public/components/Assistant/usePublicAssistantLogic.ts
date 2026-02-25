@@ -14,14 +14,14 @@ import {
   ChatResponseType,
   ChatType,
   type CreateMessageDto,
-} from '@/app/contracts/Message';
+} from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 
 import { useApi } from '@/app/hooks/useApi';
 import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
 import { handleAssistantStream } from '@/app/components/Assistant/handle-assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
 import { getVisitorIdFromBrowserCookie } from '@/app/lib/services/cookies.browser';
 import {

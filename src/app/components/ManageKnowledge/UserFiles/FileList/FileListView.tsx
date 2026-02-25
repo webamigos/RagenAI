@@ -4,7 +4,7 @@ import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ModalStateProps, UserFilesTable } from './UserFilesTable';
 
-import { type UserFileType } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { UserFile } from '@/generated/prisma/browser';
 
 type FileListViewProps = {

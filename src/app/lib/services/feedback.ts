@@ -1,5 +1,7 @@
-import { saveRateInDB } from './message';
+// @deprecated — Use rateMessageCommand from @/features/messages instead
+import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
 
+/** @deprecated Use rateMessageCommand from @/features/messages instead */
 export const submitFeedbackDirectly = async (
   messageId: string,
   feedback: 'up' | 'down'
@@ -8,7 +10,11 @@ export const submitFeedbackDirectly = async (
     throw new Error('Invalid feedback');
   }
 
-  await saveRateInDB(messageId, feedback === 'up' ? 1 : 0);
+  const result = await rateMessageCommand(messageId, feedback);
+
+  if (!result.success) {
+    throw new Error(result.error || 'Failed to submit feedback');
+  }
 
   return { message: 'Feedback submitted' };
 };

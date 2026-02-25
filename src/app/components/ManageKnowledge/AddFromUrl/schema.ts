@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 
 export const getAddFromUrlSchema = (t: (key: string) => string) =>
   z.object({

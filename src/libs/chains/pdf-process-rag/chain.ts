@@ -7,7 +7,7 @@ import {
 } from './operations';
 import { createChatCompletionInstance } from '@/app/lib/services/llm';
 import { availableModels } from './config';
-import { getOpenaiAPIKey } from '@/app/lib/services/settings';
+import { getOpenaiAPIKey } from '@/features/organizations/services/organization-settings';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 
 export async function processPDFDocument(

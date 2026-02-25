@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateProjectKey } from '@/app/lib/services/project';
+import { generateProjectKeyCommand as generateProjectKey } from '@/features/projects/services/commands/generate-project-key-command';
 
 export const useProjectKeyGenerator = (projectId: number) => {
   const [isGenerating, setIsGenerating] = useState(false);

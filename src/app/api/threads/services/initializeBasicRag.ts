@@ -1,6 +1,6 @@
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { OrganizationSettings } from '@/app/lib/types/settings';
+import { OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import type { VectorStoreClient } from '@/libs/vector-store/types';
@@ -15,7 +15,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;

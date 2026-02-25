@@ -5,10 +5,8 @@ import {
   getCurrentUser,
 } from '@/app/lib/utils/auth-helpers';
 
-import {
-  createOrganizationWithDefaultProject,
-  fetchApiKeysFromDb,
-} from '@/app/lib/services/apiKeys';
+import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
+import { getApiKeysQuery as fetchApiKeysFromDb } from '@/features/organizations/services/queries/get-api-keys-query';
 
 const serviceName = 'apiKeysList';
 

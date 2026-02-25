@@ -12,7 +12,7 @@ import { validationSchema, type ApiKeyDto } from './types';
 import { createApiKey } from './actions';
 import { ApiKeyModal } from './ApiKeyModal';
 import { statusToast } from '@/app/lib/utils/toast';
-import { fetchProjectsForUser } from '@/app/lib/services/project';
+import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import { Button } from '@ragenai/common-ui/Button';
 import { Select } from '@ragenai/common-ui/Select';
 

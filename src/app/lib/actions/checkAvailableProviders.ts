@@ -14,7 +14,7 @@ import {
   getOpenrouterAPIKey,
   getFireworksAPIKey,
   getAzureOpenAICredentials,
-} from '../services/settings';
+} from '@/features/organizations/services/organization-settings';
 
 const providerStatusCache = new Map<
   string,

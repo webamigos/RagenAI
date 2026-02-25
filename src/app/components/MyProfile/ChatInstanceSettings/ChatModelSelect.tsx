@@ -15,7 +15,7 @@ import {
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { SettingsType } from './types';
-import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
+import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 import { logger } from '@/app/lib/utils/logger';
 
 export const ChatModelSelect = ({}) => {

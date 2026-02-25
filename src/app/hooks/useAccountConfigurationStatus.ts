@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { logger } from '@/app/lib/utils/logger';
 import { getAccountSetupStatusAction } from '../actions';
-import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
+import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
-import type { AccountSetupStatus } from '@/app/lib/types/account-setup';
+import type { AccountSetupStatus } from '@/features/organizations/contracts/organization.types';
 
 const MAX_RETRIES = 60;
 

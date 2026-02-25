@@ -2,7 +2,11 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
-import { EmbeddingStatus, FileType, UserFile } from '@/generated/prisma/browser';
+import {
+  EmbeddingStatus,
+  FileType,
+  UserFile,
+} from '@/generated/prisma/browser';
 import { Text } from '@ragenai/common-ui/Text';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import {
@@ -18,7 +22,7 @@ import { truncateFileName } from '../../../../lib/utils/truncateFileName';
 import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
-import { type UserFileType } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
 
 type Props = {

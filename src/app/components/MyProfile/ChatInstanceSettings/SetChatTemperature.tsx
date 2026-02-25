@@ -9,7 +9,7 @@ import { Input } from '@ragenai/common-ui/Input';
 import { Text } from '@ragenai/common-ui/Text';
 import { Card } from '@ragenai/common-ui/Card';
 import { SettingsType } from './types';
-import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
+import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 
 export const SetChatTemperature = () => {
   const [temperature, setTemperature] = useState<number>(

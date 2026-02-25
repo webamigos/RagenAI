@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 
 import { SidebarSection, SidebarHeading } from '@ragenai/tui/sidebar';
 import { TUIThreadsSection } from './TUIThreadsSection';
-import { ThreadHistoryResponse } from '../../../contracts/Message';
+import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 
 type Props = {

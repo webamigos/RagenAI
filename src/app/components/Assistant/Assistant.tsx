@@ -13,7 +13,7 @@ import { ModelSelector } from './ModelSelector';
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
-import { ChatResponseType } from '@/app/contracts/Message';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
@@ -21,7 +21,7 @@ import { RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
-import { getThreadDetailsAction } from '@/app/lib/actions/threads';
+import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
 import { updateThreadModel as updateThreadModelAction } from '@/store/threads/threadsSlice';
 import { updateThreadModel as updateSidebarThreadModelAction } from '@/store/sidebar/sidebarSlice';
 

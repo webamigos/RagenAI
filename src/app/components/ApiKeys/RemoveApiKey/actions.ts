@@ -4,7 +4,7 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUser,
 } from '@/app/lib/utils/auth-helpers';
-import { removeApiKeyFromDb } from '@/app/lib/services/apiKeys';
+import { removeApiKeyCommand as removeApiKeyFromDb } from '@/features/organizations/services/commands/remove-api-key-command';
 import { ApiKey } from '@/generated/prisma/client';
 
 const serviceName = 'removeApiKey';

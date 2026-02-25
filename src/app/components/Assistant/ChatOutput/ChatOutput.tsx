@@ -7,7 +7,7 @@ import type {
   MessageDto,
   StreamedMessageDto,
   ChatResponseType,
-} from '../../../contracts/Message';
+} from '@/features/messages/contracts/message.types';
 import './chat-response.css';
 
 type Props = {
@@ -67,9 +67,7 @@ const MessageContent = ({
       {role === 'USER' &&
         message?.message_type === 'VOICE' &&
         message.voice_duration_seconds && (
-          <DurationTime
-            messageDurationTime={message.voice_duration_seconds}
-          />
+          <DurationTime messageDurationTime={message.voice_duration_seconds} />
         )}
     </div>
   );
@@ -129,7 +127,9 @@ export const ChatOutput = ({
               <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
               <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
             </div>
-            <span className="text-xs text-muted-foreground">{loadingMessage}</span>
+            <span className="text-xs text-muted-foreground">
+              {loadingMessage}
+            </span>
           </div>
         )}
       </div>

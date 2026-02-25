@@ -17,7 +17,7 @@ import {
   saveTemperatureSetting,
   getVoiceId,
   saveVoiceId,
-} from '@/app/lib/services/settings';
+} from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';

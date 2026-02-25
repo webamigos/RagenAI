@@ -10,7 +10,7 @@ import {
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
-import { ThreadHistoryResponse } from '../../../contracts/Message';
+import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 
 type Category = {
   title: string;

@@ -2,7 +2,7 @@
 
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { classMerge } from '../utils/cn';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface FileBadgeProps {
   document: ThreadDocumentUI;

@@ -11,7 +11,7 @@ import {
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 
 type Message = {

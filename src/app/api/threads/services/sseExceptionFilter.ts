@@ -3,7 +3,7 @@ import {
   LLMApiError,
   UnknownChainError,
 } from '@/libs/chains/errors';
-import { SseMessageError } from '@/app/contracts/Events';
+import { SseMessageError } from '@/features/threads/contracts/events.types';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 
 export class SseExceptionFilter {

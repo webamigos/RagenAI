@@ -1,36 +1,47 @@
-import {
-  PrismaClient,
-  Role,
+/**
+ * @deprecated Prefer importing from queries/ and commands/ directly.
+ * This class is kept as a thin wrapper for backward compatibility.
+ */
+import type {
   Thread,
   UserDocument,
-  Source,
   Message,
   Project,
 } from '@/generated/prisma/client';
 
-import db from '@ragenai/prisma-client';
-import OpenAI from 'openai';
-
 import { ApiContext } from '../types/ApiContext';
-import { parseResponse } from '../filters/replace-ids.filter';
 import { UpdateThreadDto } from '../dtos/update-thread.dto';
-import { NotFoundException } from './api-errors.service';
 import { ChatMessageDto } from '../dtos/chat.dto';
 import { QueryDto } from '../dtos/query.dto';
-import { getAllSettings } from '@/app/lib/services/settings';
-import { ApiKeyError } from '@/libs/chains/errors';
-import { initializePublicRagChain } from '@/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag';
+import { UpdateProjectDto } from '../dtos/project.dto';
 
 import {
-  createAndStoreMessage,
-  createMessageInDB,
-} from '@/app/lib/services/message';
-import { findOrCreateThread } from '@/app/lib/services/thread';
+  getApiDocumentsQuery,
+  getApiDocumentQuery,
+} from '../queries/api-documents.query';
 import {
-  prepareApiSseMessage,
-  sendApiEvent,
-} from '@/libs/sse/prepare-sse-message';
-import { UpdateProjectDto } from '../dtos/project.dto';
+  getApiUserThreadsQuery,
+  getApiUserThreadQuery,
+  getApiChatMessagesQuery,
+} from '../queries/api-threads.query';
+import {
+  getApiUserProjectQuery,
+  getApiUserProjectsQuery,
+} from '../queries/api-projects.query';
+import {
+  createApiUserThreadCommand,
+  updateApiUserThreadCommand,
+  deleteApiUserThreadCommand,
+} from '../commands/api-threads.command';
+import {
+  createApiChatMessagesCommand,
+  streamApiChatMessagesCommand,
+} from '../commands/api-messages.command';
+import {
+  createApiUserProjectCommand,
+  updateApiUserProjectCommand,
+} from '../commands/api-projects.command';
+import { apiRagQueryCommand } from '../commands/api-query.command';
 
 type ApiCollection<T extends { id: string | number | bigint }> = Omit<
   T,
@@ -44,11 +55,9 @@ type ApiMessage = ApiCollection<Message>;
 type ApiProject = ApiCollection<Project>;
 
 export class ApiDbService {
-  private db: PrismaClient;
   private context: ApiContext;
 
   constructor(context: ApiContext) {
-    this.db = db;
     if (!context.orgId) {
       throw new Error('Invalid organization');
     }
@@ -56,342 +65,49 @@ export class ApiDbService {
   }
 
   async getDocuments(): Promise<ApiUserDocument[]> {
-    const documents = await db.userDocument.findMany({
-      where: {
-        organization_id: this.context.orgId,
-      },
-      select: {
-        public_id: true, // make an alias and return as id?
-        title: true,
-        // content: true, it may be large field
-        created_at: true,
-        updated_at: true,
-        file: {
-          // is this needed?
-          select: {
-            public_id: true, // make an alias and return as id?
-            file_name: true,
-            file_size: true,
-            created_at: true,
-            file_type: true,
-          },
-        },
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
-
-    return parseResponse(documents);
+    return getApiDocumentsQuery(this.context);
   }
 
   async getDocument(
     publicId: UserDocument['public_id']
   ): Promise<ApiUserDocument> {
-    const document = await db.userDocument.findFirst({
-      where: {
-        organization_id: this.context.orgId,
-        public_id: publicId,
-      },
-      select: {
-        public_id: true, // make an alias and return as id?
-        title: true,
-        // content: true, it may be large field
-        created_at: true,
-        updated_at: true,
-        file: {
-          // is this needed?
-          select: {
-            public_id: true, // make an alias and return as id?
-            file_name: true,
-            file_size: true,
-            created_at: true,
-            file_type: true,
-          },
-        },
-      },
-    });
-
-    return parseResponse(document);
+    return getApiDocumentQuery(this.context, publicId);
   }
 
-  // ======== THREADS ========
   async getUserThreads(): Promise<ApiThread[]> {
-    const threads = await db.thread.findMany({
-      where: {
-        organization_id: this.context.orgId,
-        project_id: this.context.projectId,
-        OR: [
-          {
-            user_id: this.context.userId, // filled by API
-          },
-          {
-            visitor_id: this.context.userId, // filled by UI
-          },
-        ],
-      },
-      select: {
-        public_id: true,
-        title: true,
-        source: true,
-        created_at: true,
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
-
-    return parseResponse(threads);
+    return getApiUserThreadsQuery(this.context);
   }
 
   async getUserThread(publicId: Thread['public_id']): Promise<ApiThread> {
-    const document = await db.thread.findFirst({
-      where: {
-        public_id: publicId,
-        organization_id: this.context.orgId,
-        project_id: this.context.projectId,
-        OR: [
-          {
-            user_id: this.context.userId, // filled by API
-          },
-          {
-            visitor_id: this.context.userId, // filled by UI
-          },
-        ],
-      },
-      select: {
-        public_id: true,
-        title: true,
-        source: true,
-        created_at: true,
-      },
-    });
-
-    return parseResponse(document);
+    return getApiUserThreadQuery(this.context, publicId);
   }
 
   async updateUserThread(
     publicId: Thread['public_id'],
     payload: UpdateThreadDto
   ): Promise<ApiThread> {
-    const record = this.getUserThread(publicId);
-
-    if (!record) {
-      throw new NotFoundException();
-    }
-    // TODO: what about public threads which doesn't have organization_id or user_id?
-    const updatedThread = await this.db.thread.update({
-      where: {
-        public_id: publicId,
-        organization_id: this.context.orgId,
-        project_id: this.context.projectId,
-        OR: [
-          {
-            user_id: this.context.userId, // filled by API
-          },
-          {
-            visitor_id: this.context.userId, // filled by UI
-          },
-        ],
-      },
-      data: {
-        title: payload.title,
-      },
-      select: {
-        public_id: true,
-        title: true,
-        source: true,
-        created_at: true,
-      },
-    });
-
-    return parseResponse(updatedThread);
+    return updateApiUserThreadCommand(this.context, publicId, payload);
   }
 
   async deleteUserThread(publicId: Thread['public_id']): Promise<void> {
-    const record = this.getUserThread(publicId);
-
-    if (!record) {
-      throw new NotFoundException();
-    }
-    // TODO: what about public threads which doesn't have organization_id or user_id?
-
-    await this.db.thread.delete({
-      where: {
-        public_id: publicId,
-        organization_id: this.context.orgId,
-        project_id: this.context.projectId,
-        OR: [
-          {
-            user_id: this.context.userId, // filled by API
-          },
-          {
-            visitor_id: this.context.userId, // filled by UI
-          },
-        ],
-      },
-    });
+    return deleteApiUserThreadCommand(this.context, publicId);
   }
 
-  // TODO: decouple from OpenAI
   async createUserThread(): Promise<{ id: Thread['public_id'] }> {
-    const openai = new OpenAI();
-
-    // TODO: move creation of Open AI thread to first message
-    const thread = await openai.beta.threads.create();
-
-    const threadRecord = await db.thread.create({
-      data: {
-        organization_id: this.context.orgId,
-        project_id: this.context.projectId,
-        user_id: this.context.userId,
-        source: Source.API,
-      },
-    });
-
-    return {
-      id: threadRecord.public_id,
-    };
+    return createApiUserThreadCommand(this.context);
   }
 
   async getChatMessages(
     publicThreadId: Thread['public_id']
   ): Promise<ApiMessage[]> {
-    const messages = await db.message.findMany({
-      where: {
-        thread: {
-          organization_id: this.context.orgId,
-          public_id: publicThreadId,
-          OR: [
-            {
-              user_id: this.context.userId, // filled by API
-            },
-            {
-              visitor_id: this.context.userId, // filed by UI
-            },
-          ],
-        },
-      },
-      select: {
-        public_id: true,
-        created_at: true,
-        role: true,
-        content: true,
-      },
-      orderBy: {
-        created_at: 'asc',
-      },
-    });
-
-    return parseResponse(messages);
+    return getApiChatMessagesQuery(this.context, publicThreadId);
   }
 
-  private async prepareChainToRun(
-    publicThreadId: Thread['public_id'],
-    payload: ChatMessageDto,
-    controller?: ReadableStreamDefaultController
-  ) {
-    const rawSettings = await getAllSettings(this.context.orgId);
-    if (!rawSettings.apiKey) {
-      throw new ApiKeyError();
-    }
-    let runId = '';
-
-    if (controller) {
-      sendApiEvent(controller, 'find_thread');
-    }
-
-    const { threadRecord } = await findOrCreateThread(
-      publicThreadId,
-      this.context.userId
-    );
-
-    if (controller) {
-      sendApiEvent(controller, 'thread_found', {
-        id: threadRecord.public_id,
-      });
-
-      sendApiEvent(controller, 'save_user_message');
-    }
-
-    const threadMessage = await createAndStoreMessage({
-      prompt: payload.content,
-      threadId: threadRecord.id,
-      visitorId: this.context.userId,
-      messageType: payload.messageType,
-      voiceDurationSeconds: payload.voiceDurationSeconds,
-    });
-
-    if (controller) {
-      sendApiEvent(controller, 'user_message_saved', {
-        id: threadMessage.public_id,
-      });
-
-      sendApiEvent(controller, 'init_lmm');
-    }
-
-    const chainOutput = await initializePublicRagChain({
-      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
-      organizationId: this.context.orgId,
-      projectId: this.context.projectId,
-    });
-
-    if (controller) {
-      sendApiEvent(controller, 'get_thread_messages');
-    }
-
-    const threadMessages = await this.getChatMessages(publicThreadId);
-
-    if (controller) {
-      sendApiEvent(controller, 'add_thread_messages_to_lmm');
-    }
-
-    const conv_history = threadMessages
-      .map((msg) => `${msg.role.toLowerCase()}: ${msg.content}`)
-      .join('\n');
-
-    return {
-      chainOutput,
-      runId,
-      threadRecord,
-      threadMessage,
-      conv_history,
-    };
-  }
-
-  // TODO: moderation
   async createChatMessages(
     publicThreadId: Thread['public_id'],
     payload: ChatMessageDto
   ) {
-    const { chainOutput, threadRecord, threadMessage, runId, conv_history } =
-      await this.prepareChainToRun(publicThreadId, payload);
-
-    // for chat without streaming:
-    const streamResult = await chainOutput.stream({
-      question: payload.content,
-      chat_history: conv_history,
-    });
-
-    const chatResponse = await streamResult.text;
-
-    const dbMessage = await createMessageInDB({
-      threadId: threadRecord.id,
-      message: {
-        id: threadMessage.public_id,
-        content: chatResponse,
-        source: Source.API,
-      },
-      role: Role.ASSISTANT,
-      runId,
-    });
-
-    return {
-      id: dbMessage.public_id,
-      content: dbMessage.content,
-      role: dbMessage.role,
-      created_at: dbMessage.created_at,
-    };
+    return createApiChatMessagesCommand(this.context, publicThreadId, payload);
   }
 
   async streamChatMessages(
@@ -399,128 +115,37 @@ export class ApiDbService {
     payload: ChatMessageDto,
     controller: ReadableStreamDefaultController
   ) {
-    const { chainOutput, threadRecord, threadMessage, conv_history } =
-      await this.prepareChainToRun(publicThreadId, payload, controller);
-
-    const encoder = new TextEncoder();
-    controller.enqueue(encoder.encode(prepareApiSseMessage('start_lmm')));
-
-    const streamResult = await chainOutput.stream({
-      question: payload.content,
-      chat_history: conv_history,
-    });
-
-    return { streamResult, threadRecord, threadMessage };
+    return streamApiChatMessagesCommand(
+      this.context,
+      publicThreadId,
+      payload,
+      controller
+    );
   }
 
-  // FIXME: it takes a lot of time
   async query(payload: QueryDto) {
-    // TODO: code duplication
-    const rawSettings = await getAllSettings(this.context.orgId);
-    if (!rawSettings.apiKey) {
-      throw new ApiKeyError();
-    }
-
-    const chainOutput = await initializePublicRagChain({
-      settings: { ...rawSettings, apiKey: rawSettings.apiKey },
-      organizationId: this.context.orgId,
-      // projectId: this.context.projectId,
-    });
-
-    const streamResult = await chainOutput.stream({
-      question: payload.content,
-      chat_history: ' ', // FIXME: workaround
-    });
-
-    return await streamResult.text;
+    return apiRagQueryCommand(this.context, payload);
   }
 
-  // ======== PROJECTS / ASSISTANTS ========
   async getUserProject(publicId: Project['public_id']): Promise<ApiProject> {
-    const project = await db.project.findFirst({
-      where: {
-        public_id: publicId,
-        organization_id: this.context.orgId,
-        owner_id: this.context.userId,
-      },
-      select: {
-        public_id: true,
-        title: true,
-        source: true,
-        created_at: true,
-      },
-    });
-
-    return parseResponse(project);
+    return getApiUserProjectQuery(this.context, publicId);
   }
 
   async getUserProjects(): Promise<ApiProject[]> {
-    const projects = await db.project.findMany({
-      where: {
-        organization_id: this.context.orgId,
-        owner_id: this.context.userId,
-      },
-      select: {
-        public_id: true,
-        title: true,
-        created_at: true,
-        updated_at: true,
-        is_public: true,
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
-
-    return parseResponse(projects);
+    return getApiUserProjectsQuery(this.context);
   }
 
   async createUserProject({ title }: { title: Project['title'] }): Promise<{
     id: Project['public_id'];
     title: Project['title'];
   }> {
-    const projectRecord = await db.project.create({
-      data: {
-        organization_id: this.context.orgId,
-        owner_id: this.context.userId,
-        title,
-        source: Source.API,
-      },
-    });
-
-    return {
-      id: projectRecord.public_id,
-      title: projectRecord.title,
-    };
+    return createApiUserProjectCommand(this.context, { title });
   }
 
   async updateUserProject(
     publicId: Project['public_id'],
     payload: UpdateProjectDto
   ): Promise<ApiProject> {
-    const record = this.getUserProject(publicId);
-
-    if (!record) {
-      throw new NotFoundException();
-    }
-    // TODO: what about public threads which doesn't have organization_id or user_id?
-    const updatedProject = await this.db.project.update({
-      where: {
-        public_id: publicId,
-        organization_id: this.context.orgId,
-        owner_id: this.context.userId,
-      },
-      data: {
-        title: payload.title,
-      },
-      select: {
-        public_id: true,
-        title: true,
-        source: true,
-        created_at: true,
-      },
-    });
-
-    return parseResponse(updatedProject);
+    return updateApiUserProjectCommand(this.context, publicId, payload);
   }
 }

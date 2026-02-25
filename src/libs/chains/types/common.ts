@@ -25,7 +25,7 @@ export interface ChainConfig {
 export interface RagChainConfig extends ChainConfig {
   maxDocumentsToRetrieve?: number;
   metadataFilter?: object;
-  threadDocuments?: import('@/app/contracts/ThreadDocument').ThreadDocumentUI[];
+  threadDocuments?: import('@/features/documents/contracts/document.types').ThreadDocumentUI[];
 }
 
 export interface ChainStreamResult {
