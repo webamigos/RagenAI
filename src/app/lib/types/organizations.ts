@@ -1,17 +1,8 @@
-import { Organization } from '@/generated/prisma/client';
+// @deprecated — Import from @/features/organizations/contracts/organization.types instead
 
-export type OrganizationVectorStore = 'meilisearch' | 'supabase';
-
-export type ClerkOrganizationPrivateMetadata = {
-  ragen_org_id: Organization['id'];
-  vector_store: OrganizationVectorStore;
-};
-
-export type ClerkOrganizationPublicMetadata = {
-  hasKnowledge: boolean;
-};
-
-export type ClerkOrganizationMetadata = {
-  publicMetadata?: ClerkOrganizationPublicMetadata;
-  privateMetadata?: ClerkOrganizationPrivateMetadata;
-};
+export type {
+  OrganizationVectorStore,
+  ClerkOrganizationPrivateMetadata,
+  ClerkOrganizationPublicMetadata,
+  ClerkOrganizationMetadata,
+} from '@/features/organizations/contracts/organization.types';

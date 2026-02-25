@@ -1,9 +1,10 @@
 'use server';
 
-import { getAllSettings } from '@/app/lib/services/settings';
+import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
+/** @deprecated Use getAllSettings from @/features/organizations directly */
 export async function getOrganizationSettings() {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();

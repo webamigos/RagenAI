@@ -1,127 +1,19 @@
-import db from '@ragenai/prisma-client';
+// @deprecated — Import from @/features/organizations instead
 
-import {
-  ApiKey,
-  type InternalOrganization,
-  type Project,
-} from '@/generated/prisma/client';
+/** @deprecated Use getInternalOrganizationByProviderIdQuery from @/features/organizations instead */
+export { getInternalOrganizationByProviderIdQuery as fetchOrganizationByProviderId } from '@/features/organizations/services/queries/get-api-keys-query';
 
-export const fetchOrganizationByProviderId = async (
-  organizationProviderId: InternalOrganization['provider_id']
-) => {
-  return await db.internalOrganization.findUniqueOrThrow({
-    where: {
-      provider_id: organizationProviderId,
-    },
-  });
-};
+/** @deprecated Use getOrganizationDefaultProjectQuery from @/features/organizations instead */
+export { getOrganizationDefaultProjectQuery as fetchOrganizationDefaultProject } from '@/features/organizations/services/queries/get-api-keys-query';
 
-export const fetchOrganizationDefaultProject = async (
-  systemOrgId: InternalOrganization['id']
-) => {
-  return await db.project.findFirstOrThrow({
-    where: {
-      internal_organization_id: systemOrgId,
-    },
-  });
-};
+/** @deprecated Use createOrganizationWithDefaultProjectCommand from @/features/organizations instead */
+export { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 
-export const createOrganizationWithDefaultProject = async (
-  organizationProviderId: InternalOrganization['provider_id'],
-  userId: string
-) => {
-  const organization = await db.$transaction(async (tx) => {
-    const organization = await tx.internalOrganization.create({
-      data: {
-        provider_id: organizationProviderId,
-      },
-    });
+/** @deprecated Use getApiKeysQuery from @/features/organizations instead */
+export { getApiKeysQuery as fetchApiKeysFromDb } from '@/features/organizations/services/queries/get-api-keys-query';
 
-    // create default project within the same transaction
-    await tx.project.create({
-      data: {
-        title: 'Default',
-        internal_organization_id: organization.id,
-        organization_id: organizationProviderId,
-        owner_id: userId,
-      },
-    });
+/** @deprecated Use removeApiKeyCommand from @/features/organizations instead */
+export { removeApiKeyCommand as removeApiKeyFromDb } from '@/features/organizations/services/commands/remove-api-key-command';
 
-    return organization;
-  });
-
-  return {
-    id: organization.id,
-    publicId: organization.public_id,
-  };
-};
-
-export const fetchApiKeysFromDb = async (
-  organizationProviderId: InternalOrganization['provider_id']
-) => {
-  const organization = await fetchOrganizationByProviderId(
-    organizationProviderId
-  );
-
-  // TODO: not necessary now
-  // const defaultProject = await fetchOrganizationDefaultProject(
-  //   organization['id']
-  // );
-
-  return await db.apiKey.findMany({
-    where: {
-      organization_id: organization.id,
-    },
-    select: {
-      public_id: true,
-      name: true,
-      masked_value: true,
-      created_at: true,
-      project: {
-        select: {
-          public_id: true,
-          title: true,
-        },
-      },
-    },
-    orderBy: {
-      created_at: 'desc',
-    },
-  });
-};
-
-/**
- * Consider if it's safe to pass organizationId by argument
- * Maybe it'd be safer to fetch it from Better Auth session here? 🤔
- *
- * @param organizationProviderId
- * @param apiKeyId
- */
-export const removeApiKeyFromDb = async (
-  organizationProviderId: InternalOrganization['provider_id'],
-  publicApiKeyId: ApiKey['public_id']
-) => {
-  const organization = await fetchOrganizationByProviderId(
-    organizationProviderId
-  );
-
-  // check if combination of organization and key id exists
-  const apiKey = await db.apiKey.findUniqueOrThrow({
-    where: {
-      public_id: publicApiKeyId,
-      organization_id: organization.id,
-    },
-  });
-
-  return await db.apiKey.delete({
-    where: {
-      id: apiKey.id,
-    },
-  });
-};
-
-// TODO: in the future we should implement fetching the API key from the pool, now we accept the risk of using the same key for all users
-export const getApiKeyFromPool = () => {
-  const apiKey = process.env.OPENAI_API_KEY!;
-  return apiKey;
-};
+/** @deprecated Use getApiKeyFromPool from @/features/organizations instead */
+export { getApiKeyFromPool } from '@/features/organizations/services/queries/get-api-keys-query';

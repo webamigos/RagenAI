@@ -1,8 +1,5 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
-import { logger } from '../utils/logger';
-
 // --- Re-exports from @/features/projects ---
 
 /** @deprecated Use getDefaultProjectIdQuery from @/features/projects instead */
@@ -41,17 +38,5 @@ export { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/
 /** @deprecated Use deleteProjectFileFromDbCommand from @/features/documents instead */
 export { deleteProjectFileFromDbCommand as deleteProjectFile } from '@/features/documents/services/commands/delete-project-file-from-db-command';
 
-// --- Organization helper (will move to @/features/organizations in Phase 5) ---
-
-export const findOrganizationByProviderId = async (providerId: string) => {
-  try {
-    return await db.internalOrganization.findUnique({
-      where: {
-        provider_id: providerId,
-      },
-    });
-  } catch (error) {
-    logger.error({ err: error }, 'Error finding organization');
-    throw error;
-  }
-};
+/** @deprecated Use findInternalOrganizationQuery from @/features/organizations instead */
+export { findInternalOrganizationQuery as findOrganizationByProviderId } from '@/features/organizations/services/queries/find-internal-organization-query';

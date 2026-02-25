@@ -29,13 +29,14 @@ import { getUserThreadsQuery } from '@/features/threads/services/queries/get-use
 import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
 import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
 import {
-  ClerkOrganizationMetadata,
-  ClerkOrganizationPublicMetadata,
-} from '../lib/types/organizations';
+  saveOrganizationPublicMetadataCommand,
+  saveOrganizationInitialMetadataCommand,
+} from '@/features/organizations/services/commands/save-organization-metadata-command';
+import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
-import { getAccountSetupStatus } from '../lib/services/account-setup';
+import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import { Project, UserFile } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
@@ -280,92 +281,16 @@ export const saveUserMetadata = async (
   }
 };
 
-export const saveOrganizationPublicMetadata = async (
-  organizationId: string,
-  { hasKnowledge }: ClerkOrganizationPublicMetadata
-) => {
-  try {
-    await db.organization.update({
-      where: { id: organizationId },
-      data: { hasKnowledge },
-    });
+/** @deprecated Use saveOrganizationPublicMetadataCommand from @/features/organizations instead */
+export const saveOrganizationPublicMetadata =
+  saveOrganizationPublicMetadataCommand;
 
-    logger.info(
-      { organizationId, hasKnowledge },
-      'Organization metadata saved'
-    );
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error: cannot update public metadata for organization ${organizationId}:`
-    );
-  }
-};
+/** @deprecated Use saveOrganizationInitialMetadataCommand from @/features/organizations instead */
+export const saveOrganizationInitialMetadata =
+  saveOrganizationInitialMetadataCommand;
 
-export const saveOrganizationInitialMetadata = async (
-  organizationId: string,
-  { publicMetadata, privateMetadata }: ClerkOrganizationMetadata
-) => {
-  try {
-    await db.organization.update({
-      where: { id: organizationId },
-      data: {
-        hasKnowledge: publicMetadata?.hasKnowledge,
-        vectorStore: privateMetadata?.vector_store,
-        ragenOrgId: privateMetadata?.ragen_org_id?.toString(),
-      },
-    });
-
-    logger.info(
-      { organizationId, publicMetadata, privateMetadata },
-      'Organization initial metadata saved'
-    );
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error: cannot update private metadata for organization ${organizationId}:`
-    );
-  }
-};
-
-export const getOrganizationMetadata = async (
-  organizationId: string
-): Promise<ClerkOrganizationMetadata> => {
-  try {
-    const org = await db.organization.findUnique({
-      where: { id: organizationId },
-      select: {
-        hasKnowledge: true,
-        vectorStore: true,
-        ragenOrgId: true,
-      },
-    });
-
-    if (!org) {
-      throw new Error(`Organization ${organizationId} not found`);
-    }
-
-    logger.info({ organizationId }, 'Organization metadata retrieved');
-    return {
-      publicMetadata: {
-        hasKnowledge: org.hasKnowledge,
-      },
-      privateMetadata: {
-        vector_store: org.vectorStore || undefined,
-        ragen_org_id: org.ragenOrgId || undefined,
-      },
-    } as ClerkOrganizationMetadata;
-  } catch (error) {
-    logger.error(
-      { err: error },
-      `Error: cannot get private metadata for organization ${organizationId}:`
-    );
-    return {
-      publicMetadata: undefined,
-      privateMetadata: undefined,
-    };
-  }
-};
+/** @deprecated Use getOrganizationMetadataQuery from @/features/organizations instead */
+export const getOrganizationMetadata = getOrganizationMetadataQuery;
 
 /** @deprecated Use rateMessageCommand from @/features/messages instead */
 export const rateMessage = async (
