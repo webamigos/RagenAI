@@ -8,8 +8,6 @@ import { Logo } from '@/app/components/Logo';
 import { checkIfAdminExistsQuery } from '@/features/users/services/queries/initial-account-queries';
 import { InitialAccountForm } from './InitialAccountForm';
 
-export const dynamic = 'force-dynamic';
-
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Metadata' });
