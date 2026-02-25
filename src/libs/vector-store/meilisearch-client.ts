@@ -6,6 +6,9 @@ import { logger } from '@/app/lib/utils/logger';
 const EMBEDDER_NAME = 'custom';
 const BATCH_SIZE = 1000;
 
+/** Tracks indexes already configured in this process to avoid redundant API calls. */
+const configuredIndexes = new Set<string>();
+
 interface MeilisearchConfig {
   url: string;
   apiKey?: string;
@@ -133,6 +136,10 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
 
   private async ensureIndex(): Promise<void> {
     if (this.indexConfigured) return;
+    if (configuredIndexes.has(this.indexName)) {
+      this.indexConfigured = true;
+      return;
+    }
 
     const index = this.client.index(this.indexName);
 
@@ -153,6 +160,15 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
     ]);
     await this.client.waitForTask(filterableTask.taskUid);
 
+    // Restrict displayed attributes to avoid leaking internal IDs and vectors
+    const displayedTask = await index.updateDisplayedAttributes([
+      'id',
+      'content',
+      'pageContent',
+      'metadata',
+    ]);
+    await this.client.waitForTask(displayedTask.taskUid);
+
     // Configure embedder settings for vector/hybrid search
     // Must check current settings first — updating embedders fails if existing
     // documents lack vectors for the new embedder
@@ -170,9 +186,12 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
           { error: taskResult.error, index: this.indexName },
           'Failed to configure embedders — existing documents may lack vectors for this embedder'
         );
+        // Do not cache on failure so next request retries configuration
+        return;
       }
     }
 
+    configuredIndexes.add(this.indexName);
     this.indexConfigured = true;
   }
 }

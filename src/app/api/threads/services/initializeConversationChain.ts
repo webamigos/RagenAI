@@ -20,7 +20,7 @@ export const initializeConversationChain = async ({
 
     return await conversationChain({
       models: {
-        contentModerator: createModerationInstance({ apiKey }),
+        contentModerator: createModerationInstance(),
         answerGenerator: createChatCompletionInstance({
           apiKey,
           model,
