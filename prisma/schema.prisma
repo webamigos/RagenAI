@@ -157,10 +157,7 @@ model ThreadDocument {
   @@map("thread_documents")
 }
 
-// Organizations, Projects and ApiKeys ids will be used in Redis for store:
-// org:2143, org:2143:proj:6543, org:2143:proj:6543:key:9843 or key:9843, key:9843:usage
-// keys, stats and other informations. Other tables rather doesn't need this kind of ids
-// id - internal id, will be used in internal systems and for redis
+// id - internal id, used in internal systems and for Redis key references (rate limiting, API key cache)
 // public_id - id which will be used in routing in the app
 // provider_id - organization id from provider (e.g. Better Auth organization id)
 // NOTE: Prisma nukes custom sequences:
@@ -175,10 +172,35 @@ model InternalOrganization {
   updated_at  DateTime  @updatedAt @db.Timestamptz
   project     Project[]
   ApiKey      ApiKey[]
+  settings    OrganizationSettings?
 
   @@index([public_id])
   @@index([provider_id])
   @@map("internal_organizations")
+}
+
+model OrganizationSettings {
+  id                        String               @id @default(uuid()) @db.Uuid
+  organization_id           Int                   @unique
+  openai_api_key            String?
+  anthropic_api_key         String?
+  google_api_key            String?
+  bedrock_credentials       String?
+  ollama_host               String?
+  openrouter_api_key        String?
+  fireworks_api_key         String?
+  azure_openai_credentials  String?
+  model                     String?
+  temperature               Float?
+  prompt                    String?
+  max_documents_to_retrieve Int?
+  voice_id                  String?
+  created_at                DateTime             @default(now()) @db.Timestamptz
+  updated_at                DateTime             @updatedAt @db.Timestamptz
+
+  organization InternalOrganization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+
+  @@map("organization_settings")
 }
 
 model Subscription {
@@ -242,6 +264,7 @@ model Project {
   access_token             String?        @unique @default(cuid())
   chatbot_enabled          Boolean        @default(false)
   source                   Source         @default(UI)
+  settings                 ProjectSettings?
 
   @@index([public_id])
   @@index([organization_id])
@@ -249,6 +272,18 @@ model Project {
   @@index([access_token])
 
   @@map("projects")
+}
+
+model ProjectSettings {
+  id              String   @id @default(uuid()) @db.Uuid
+  project_id      Int      @unique
+  instructions    String?
+  created_at      DateTime @default(now()) @db.Timestamptz
+  updated_at      DateTime @updatedAt @db.Timestamptz
+
+  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("project_settings")
 }
 
 model ApiKey {

@@ -2,7 +2,6 @@ export const locales = ['en', 'pl'] as const;
 export type Locale = (typeof locales)[number];
 export const timezone = 'Europe/Warsaw';
 export const defaultLocale = 'en';
-export const redisChannelPrefix = 'assistant-messages-';
 export const dailyMessageLimit = 3;
 export const visitorCookieName = 'ragen-visitor';
 export const TRIAL_DAYS = 14;

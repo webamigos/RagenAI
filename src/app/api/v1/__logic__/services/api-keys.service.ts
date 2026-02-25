@@ -3,6 +3,8 @@ import { randomUUID } from 'crypto';
 import { RedisService } from '@/app/lib/services/redis';
 import { ApiKeyStorage } from './api-key-storage.service';
 import { HashingService } from './hashing.service';
+import { NotFoundException } from './api-errors.service';
+import { logger } from '@/app/lib/utils/logger';
 import {
   ApiKey,
   HashedKey,
@@ -24,6 +26,9 @@ export class ApiKeysService {
   constructor() {
     const redisService = RedisService.getInstance();
     this.hashingService = new HashingService();
+    // ApiKeyStorage intentionally uses Redis for hashed key lookups and invalidation.
+    // Prisma holds API key metadata (name, masked_value, last_used_at) while Redis
+    // provides fast O(1) lookup of hashed keys during request authentication.
     this.apiKeyStorage = new ApiKeyStorage(redisService);
   }
 
@@ -34,7 +39,15 @@ export class ApiKeysService {
     const keyId: KeyId = generateApiKeyDto.keyId;
     const hashedKey = await this.hashingService.hash(apiKey); // hashed key for storage
 
-    this.apiKeyStorage.insert(keyId, hashedKey);
+    try {
+      await this.apiKeyStorage.insert(keyId, hashedKey);
+    } catch (error) {
+      logger.error(
+        { err: error, keyId },
+        'Failed to store hashed API key in Redis'
+      );
+      throw new Error('Failed to persist API key', { cause: error });
+    }
 
     return { apiKey, hashedKey };
   }
@@ -44,7 +57,11 @@ export class ApiKeysService {
   }
 
   async loadApiKey(keyId: KeyId): Promise<HashedKey> {
-    return (await this.apiKeyStorage.getValue(keyId)) as HashedKey;
+    const hashedKey = await this.apiKeyStorage.getValue(keyId);
+    if (!hashedKey) {
+      throw new NotFoundException(`API key not found for keyId: ${keyId}`);
+    }
+    return hashedKey as HashedKey;
   }
 
   private generateApiKey(apiKeyDto: GenerateApiKeyDto): ApiKey {
