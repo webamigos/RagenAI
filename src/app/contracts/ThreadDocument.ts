@@ -1,7 +1,2 @@
-export interface ThreadDocumentUI {
-  name: string;
-  content: string;
-  size: number;
-  type: string;
-  userFileId?: string;
-}
+// @deprecated — Import from @/features/documents/contracts/document.types instead
+export { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';

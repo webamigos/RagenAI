@@ -1,112 +1,11 @@
-import db from '@ragenai/prisma-client';
-import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
+// @deprecated — Import from @/features/documents/ instead
 
-import { fetchOrganizationDefaultProjectId } from './project';
-import { FileType, UserFile } from '@/generated/prisma/client';
+export { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
 
-export const getFileDetailsByPublicId = async (
-  publicFileId: UserFile['public_id']
-) => {
-  const orgId = await getOrgIdOrThrow();
-  return await db.userFile.findFirst({
-    where: {
-      organization_id: orgId,
-      public_id: publicFileId,
-    },
-  });
-};
+export { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 
-export const createFileDetailsInDB = async (
-  file_name: string,
-  file_size: number,
-  organization_id: string,
-  file_type: FileType,
-  project_id: number
-) => {
-  return await db.userFile.create({
-    data: {
-      organization_id,
-      file_name,
-      file_size,
-      file_type,
-      project_id,
-    },
-  });
-};
+export { createFileCommand as createFileDetailsInDB } from '@/features/documents/services/commands/create-file-command';
 
-export const fetchFilesDetails = async (organizationId: string) => {
-  const defaultProjectId = await fetchOrganizationDefaultProjectId(
-    organizationId
-  );
+export { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 
-  return await db.userFile.findMany({
-    where: {
-      organization_id: organizationId,
-      project_id: defaultProjectId,
-    },
-    select: {
-      created_at: true,
-      file_name: true,
-      file_size: true,
-      file_type: true,
-      updated_at: true,
-      metadata: true,
-      organization_id: true,
-      public_id: true,
-      project_id: true,
-      embedding_status: true,
-      embedding_completed_at: true,
-      embedding_failed_at: true,
-      embedding_started_at: true,
-      document: {
-        select: {
-          public_id: true,
-        },
-      },
-      project: {
-        select: {
-          title: true,
-          id: true,
-        },
-      },
-    },
-    orderBy: {
-      created_at: 'desc',
-    },
-  });
-};
-
-export const getOrganizationFilesCount = async (
-  organizationId: string
-): Promise<number> => {
-  const count = await db.userFile.count({
-    where: {
-      organization_id: organizationId,
-    },
-  });
-  return count;
-};
-
-export const deleteFileFromDb = async (filePublicId: string) => {
-  const orgId = await getOrgIdOrThrow();
-  return await db.userFile.deleteMany({
-    where: {
-      public_id: filePublicId,
-      organization_id: orgId,
-    },
-  });
-};
-
-export const deleteProjectFile = async (
-  publicFileId: string,
-  projectId: number
-) => {
-  const orgId = await getOrgIdOrThrow();
-  return await db.userFile.deleteMany({
-    where: {
-      public_id: publicFileId,
-      organization_id: orgId,
-      project_id: projectId,
-    },
-  });
-};
+export { deleteFileFromDbCommand as deleteFileFromDb } from '@/features/documents/services/commands/delete-file-from-db-command';

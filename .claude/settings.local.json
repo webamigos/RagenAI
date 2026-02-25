@@ -25,7 +25,8 @@
       "Bash(tail:*)",
       "Bash(git status:*)",
       "WebFetch(domain:github.com)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)"
     ]
   },
   "enabledPlugins": {

@@ -8,42 +8,33 @@ import {
 
 import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
-  CreateMessageDto,
-  MessageDto,
+  type CreateMessageDto,
+  type MessageDto,
   ThreadHistoryResponse,
 } from '../contracts/Message';
-import { createMessageSchema } from '../contracts/Message';
 import { deleteFromS3 } from '../lib/services/aws';
-import {
-  deleteDocumentFromDb,
-  getDocumentByPublicId,
-} from '../lib/services/document';
-import { submitFeedbackDirectly } from '../lib/services/feedback';
-import {
-  deleteFileFromDb,
-  fetchFilesDetails,
-  getFileDetailsByPublicId,
-  getOrganizationFilesCount,
-} from '../lib/services/file';
-import {
-  fetchProjectFiles,
-  deleteProjectFile as deleteProjectFileFromService,
-  fetchOrganizationDefaultProjectPublicId,
-} from '../lib/services/project';
-import {
-  createAndStoreMessage,
-  deleteMessageByPublicId,
-} from '../lib/services/message';
-import { findOrCreateThread } from '../lib/services/thread';
-import { usageTracker } from '../lib/services/usage';
-import { getUserThreads } from '../lib/services/visitor';
+import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
+import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
+import { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
+import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
+import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
+import { deleteFileFromDbCommand as deleteFileFromDb } from '@/features/documents/services/commands/delete-file-from-db-command';
+import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
+import { deleteProjectFileFromDbCommand as deleteProjectFileFromService } from '@/features/documents/services/commands/delete-project-file-from-db-command';
+import { getDefaultProjectPublicIdQuery as fetchOrganizationDefaultProjectPublicId } from '@/features/projects/services/queries/get-default-project-query';
+import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
+import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
+import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
+import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
+import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
+import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
 import {
   ClerkOrganizationMetadata,
   ClerkOrganizationPublicMetadata,
 } from '../lib/types/organizations';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
-import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
+import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatus } from '../lib/services/account-setup';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import { Project, UserFile } from '@/generated/prisma/client';
@@ -61,56 +52,22 @@ type ResponseHistory = {
   error?: string;
 };
 
+/** @deprecated Use sendMessageCommand from @/features/messages instead */
 export const sendMessage = async (
   threadId: string,
   data: CreateMessageDto,
   visitorId: string
 ): Promise<ResponseMessage> => {
-  const requestData = await createMessageSchema().safeParseAsync(data);
-
-  if (!requestData.success) {
-    return {
-      error: 'Bad structure',
-      status: StatusCodes.BAD_REQUEST,
-    };
-  }
-
-  const threadPublicId = threadId;
-  const prompt = requestData.data.prompt;
-
-  // get or create thread
-  try {
-    const { threadRecord } = await findOrCreateThread(
-      threadPublicId,
-      visitorId
-    );
-
-    // create user message
-    const messageResponse = await createAndStoreMessage({
-      prompt,
-      threadId: threadRecord.id,
-      visitorId,
-      messageType: requestData.data.messageType,
-      voiceDurationSeconds: requestData.data.voiceDurationSeconds,
-    });
-
-    return { message: messageResponse, status: StatusCodes.CREATED };
-  } catch (e) {
-    logger.error({ err: e }, 'processing error');
-    return {
-      error: 'Problem during processing',
-      status: StatusCodes.BAD_REQUEST,
-    };
-  }
+  return sendMessageCommand(threadId, data, visitorId);
 };
-//get user threads
+/** @deprecated Use getUserThreadsQuery from @/features/threads instead */
 export const getUserMessages = async (
   visitorId: string,
   skip?: number,
   take?: number
 ): Promise<ResponseHistory> => {
   try {
-    const userThreads = await getUserThreads(visitorId, skip, take);
+    const userThreads = await getUserThreadsQuery(visitorId, skip, take);
 
     return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
@@ -410,49 +367,30 @@ export const getOrganizationMetadata = async (
   }
 };
 
-//send answer rate to assistant
+/** @deprecated Use rateMessageCommand from @/features/messages instead */
 export const rateMessage = async (
   messageId: string,
   feedback: 'up' | 'down'
 ) => {
-  try {
-    await submitFeedbackDirectly(messageId, feedback);
-    return { success: true };
-  } catch (error) {
-    logger.error({ err: error }, 'Error sending answer rate');
-    return { success: false };
-  }
+  return rateMessageCommand(messageId, feedback);
 };
 
+/** @deprecated Use deleteMessageCommand from @/features/messages instead */
 export async function deleteUserMessage(messagePublicId: string) {
-  try {
-    await deleteMessageByPublicId(messagePublicId);
-    return { success: true };
-  } catch (error) {
-    logger.error({ err: error }, 'Error deleting user message');
-    return { success: false };
-  }
+  return deleteMessageCommand(messagePublicId);
 }
 
-//autocomplete suggestions
+/** @deprecated Use searchThreadsQuery from @/features/threads instead */
 export async function fetchThreadSuggestions(
   visitorId: string,
   query: string
 ): Promise<{ id: string; title: string }[]> {
-  if (!visitorId || !query.trim() || query.trim().length < 3) {
-    return [];
-  }
-
-  const threads = await getUserThreads(visitorId, 0, 5, query);
-
-  return threads.map((thread) => ({
-    id: thread.public_id,
-    title: thread.messages[0]?.content.slice(0, 50) || 'No title',
-  }));
+  return searchThreadsQuery(visitorId, query);
 }
 
+/** @deprecated Use trackThreadCreatedCommand from @/features/threads instead */
 export const trackThreadCreated = async () => {
-  usageTracker.incThreadsCount();
+  return trackThreadCreatedCommand();
 };
 
 export const getDefaultProjectId = async () => {
