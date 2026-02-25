@@ -1,18 +1,14 @@
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '../utils/auth-helpers';
 import { logger } from '../utils/logger';
+import { NotFoundException } from '@/app/api/v1/__logic__/services/api-errors.service';
 
 async function getProjectInfo(projectId: string) {
   if (!projectId) {
-    logger.error('Project ID is empty or undefined');
-    return null;
+    throw new NotFoundException('Project ID is required');
   }
 
   const orgId = await getOrgIdFromAuthOrThrow();
-  if (!orgId) {
-    logger.error('User not authenticated or missing organization ID');
-    return null;
-  }
 
   const project = await db.project.findUnique({
     where: { public_id: projectId },
@@ -23,14 +19,16 @@ async function getProjectInfo(projectId: string) {
     },
   });
 
-  if (!project) return null;
+  if (!project) {
+    throw new NotFoundException('Project not found');
+  }
 
   if (project.organization_id !== orgId) {
     logger.error(
       { projectId, userOrgId: orgId, projectOrgId: project.organization_id },
       'Unauthorized: Project does not belong to user organization'
     );
-    return null;
+    throw new NotFoundException('Project not found');
   }
 
   return project;
@@ -40,14 +38,7 @@ export async function saveProjectInstruction(
   projectId: string,
   instruction: string
 ): Promise<void> {
-  if (!projectId) {
-    throw new Error('Project ID is required');
-  }
-
   const project = await getProjectInfo(projectId);
-  if (!project) {
-    throw new Error('Project not found');
-  }
 
   await db.projectSettings.upsert({
     where: { project_id: project.id },
@@ -64,9 +55,6 @@ export async function getProjectInstruction(
   }
 
   const project = await getProjectInfo(projectId);
-  if (!project) {
-    return null;
-  }
 
   const settings = await db.projectSettings.findUnique({
     where: { project_id: project.id },
