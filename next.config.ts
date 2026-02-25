@@ -82,7 +82,10 @@ const nextConfig = {
 
   transpilePackages: ['better-auth'],
 
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (
+    config: any,
+    { isServer, webpack }: { isServer: boolean; webpack: any }
+  ) => {
     // Handle Node.js protocol imports (node:stream, node:crypto, etc.) used by Better Auth and pino-pretty
     const nodeModules = [
       'stream',
@@ -126,7 +129,7 @@ const nextConfig = {
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /serverLogger/,
-          (resource) => {
+          (resource: any) => {
             resource.request = resource.request.replace(
               /serverLogger/,
               'clientLogger'
@@ -155,7 +158,7 @@ const nextConfig = {
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
           /generated\/prisma\/client/,
-          (resource) => {
+          (resource: any) => {
             resource.request = resource.request.replace(
               /generated\/prisma\/client/,
               'generated/prisma/browser'
