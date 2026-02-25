@@ -1,4 +1,4 @@
-import { MessageContentType } from '@/generated/prisma/client';
+import { MessageContentType } from '@/generated/prisma/browser';
 
 export type VoiceModeProps = {
   onClose: () => void;

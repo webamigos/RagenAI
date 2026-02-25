@@ -2,7 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
-import { EmbeddingStatus, FileType, UserFile } from '@/generated/prisma/client';
+import { EmbeddingStatus, FileType, UserFile } from '@/generated/prisma/browser';
 import { Text } from '@ragenai/common-ui/Text';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import {

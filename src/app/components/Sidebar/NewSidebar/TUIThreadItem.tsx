@@ -1,4 +1,4 @@
-import { ChatBubbleLeftIcon } from '@heroicons/react/20/solid';
+import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
 import type { ThreadItemProps } from '../Projects/types';
 import { getThreadTitle } from '../Projects/utils/threadUtils';

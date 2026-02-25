@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
-import { ApiKey, Project } from '@/generated/prisma/client';
+import { ApiKey, Project } from '@/generated/prisma/browser';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
 import { useRouter } from '@/i18n/routing';

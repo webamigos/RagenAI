@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role, MessageContentType } from '@/generated/prisma/client';
+import { Role, MessageContentType } from '@/generated/prisma/browser';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useVoiceInput } from '@/app/hooks/useAudioRecording';
 import { convertTextToSpeech } from '../../../elevenLabsTTS';

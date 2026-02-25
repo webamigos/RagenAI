@@ -157,20 +157,55 @@ export const NewChatInterface = ({
     setMentionedProjectInHook(project);
   };
 
+  const userName = user?.name?.split(' ')[0];
+
+  const suggestions = [
+    { key: 'suggestion-summarize', icon: '📄' },
+    { key: 'suggestion-explain', icon: '💡' },
+    { key: 'suggestion-analyze', icon: '📊' },
+    { key: 'suggestion-write', icon: '✏️' },
+  ] as const;
+
+  const handleSuggestionClick = (text: string) => {
+    handleInputChange(text);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
-      <div className="flex flex-col items-center justify-center text-center">
-        <h1 className="text-2xl font-semibold mb-4 sm:text-3xl">
+      <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
+        {userName && (
+          <p className="text-muted-foreground text-base mb-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {t('new-thread-greeting', { name: userName })}
+          </p>
+        )}
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
           {t('new-thread-header')}
         </h1>
-        <p className="text-muted-foreground mb-8 text-lg sm:mb-10">
+        <p className="text-muted-foreground mt-3 text-base sm:text-lg animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
           {projectTitle
             ? t('project-context', { projectTitle })
             : t('new-thread-description')}
         </p>
       </div>
 
-      <div className="relative">
+      {!projectTitle && (
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+          {suggestions.map(({ key, icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleSuggestionClick(t(key))}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground shadow-sm transition-all hover:bg-accent hover:text-foreground hover:shadow-md active:scale-[0.98]"
+            >
+              <span>{icon}</span>
+              <span>{t(key)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
         <MentionTextarea
           ref={inputRef}
           value={prompt}
@@ -178,7 +213,7 @@ export const NewChatInterface = ({
           onKeyDown={handleKeyDown}
           handleSubmit={handleSubmit}
           placeholder={t('new-thread-placeholder')}
-          className="w-full min-h-[100px]"
+          className="w-full min-h-[100px] !rounded-xl !shadow-lg !border-border/50 focus-within:!shadow-xl focus-within:!border-ring/30 transition-shadow"
           disabled={isLoading || isPending}
           showVoiceInput={!isPublicAccess}
           error={errors.prompt}

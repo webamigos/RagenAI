@@ -13,7 +13,7 @@ import {
   useProjectFiles,
   FileListState,
 } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/hooks/useProjectFiles';
-import { Project } from '@/generated/prisma/client';
+import { Project } from '@/generated/prisma/browser';
 type Props = {
   onFilesLoaded?: (hasFiles: boolean) => void;
   projectPublicId: Project['public_id'];

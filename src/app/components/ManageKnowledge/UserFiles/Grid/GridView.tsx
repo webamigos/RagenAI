@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Text } from '@ragenai/common-ui/Text';
-import { FileType, UserFile } from '@/generated/prisma/client';
+import { FileType, UserFile } from '@/generated/prisma/browser';
 
 import { FileCard } from './FileCard';
 import { DeleteFileModal } from '../DeleteFileModal';

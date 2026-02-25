@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FolderIcon, ChevronDownIcon } from '@heroicons/react/20/solid';
+import { FolderIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createThreadSchema = z.object({
-  public_id: z.uuid(),
+  public_id: z.string().uuid(),
   project_id: z.number().optional(),
 });
 

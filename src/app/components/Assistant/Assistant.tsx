@@ -209,7 +209,7 @@ export const Assistant = ({ threadId }: Props) => {
         </div>
       )}
 
-      <div className="min-h-full flex flex-col font-sans">
+      <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] flex-col font-sans -m-6 lg:-m-10">
         {responseType === ChatResponseType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
@@ -222,11 +222,25 @@ export const Assistant = ({ threadId }: Props) => {
           />
         )}
 
-        <div className="fixed top-4 left-4 lg:left-68 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2">
+        <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
           <BreadcrumbNavigation threadId={threadId} />
+          <div className="flex items-center gap-2">
+            <ProjectContextIndicator
+              threadId={threadId}
+              availableProjects={availableProjects}
+            />
+            {!isPublicAccess && (
+              <ModelSelector
+                currentModel={currentThreadModel || undefined}
+                organizationDefaultModel={organizationDefaultModel}
+                onChange={handleModelChange}
+                disabled={isGlobalLoading}
+              />
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6">
+        <div className="flex-1">
           <ChatOutput
             responseType={responseType}
             messages={messages}
@@ -236,44 +250,25 @@ export const Assistant = ({ threadId }: Props) => {
             isPublicAccess={isPublicAccess}
             voiceId={voiceId}
           />
-          <div ref={messagesEndDivRef} />
+          <div ref={messagesEndDivRef} className="h-4" />
         </div>
 
-        <div className="fixed top-16 right-4 md:top-6 md:right-6 z-50">
-          <ProjectContextIndicator
-            threadId={threadId}
-            availableProjects={availableProjects}
-          />
-        </div>
-
-        <div className="w-full fixed bottom-0 left-1/2 -translate-x-1/2 lg:left-[35%] lg:-translate-x-0">
+        <div className="sticky bottom-0 border-t border-border/40 bg-background">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && organizationDefaultModel !== null && (
-            <>
-              <PromptForm
-                handleResponseType={handleResponseType}
-                ref={promptFormRef}
-                isUserLogged={!!isSignedIn}
-                isLoading={isGlobalLoading}
-                onSubmit={onSubmit}
-                isPublicAccess={isPublicAccess}
-                responseType={responseType}
-                currentThreadModel={currentThreadModel || undefined}
-                organizationDefaultModel={organizationDefaultModel}
-                onChange={handleModelChange}
-                isGlobalLoading={isGlobalLoading}
-              />
-              {!isPublicAccess && (
-                <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
-                  <ModelSelector
-                    currentModel={currentThreadModel || undefined}
-                    organizationDefaultModel={organizationDefaultModel}
-                    onChange={handleModelChange}
-                    disabled={isGlobalLoading}
-                  />
-                </div>
-              )}
-            </>
+            <PromptForm
+              handleResponseType={handleResponseType}
+              ref={promptFormRef}
+              isUserLogged={!!isSignedIn}
+              isLoading={isGlobalLoading}
+              onSubmit={onSubmit}
+              isPublicAccess={isPublicAccess}
+              responseType={responseType}
+              currentThreadModel={currentThreadModel || undefined}
+              organizationDefaultModel={organizationDefaultModel}
+              onChange={handleModelChange}
+              isGlobalLoading={isGlobalLoading}
+            />
           )}
         </div>
       </div>

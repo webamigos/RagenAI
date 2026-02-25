@@ -13,7 +13,6 @@ import {
 } from '../../../contracts/Message';
 import { createMessageSchema } from '../../../contracts/Message';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
-import { ModelSelector } from '../ModelSelector';
 
 type Props = {
   isLoading: boolean;
@@ -145,40 +144,35 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     // const useKnowledge = watch('useKnowledge');
 
     return (
-      <div className="dark:bg-zinc-900 p-4 w-full">
+      <div className="w-full px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
-          className="flex flex-col max-w-2xl"
+          className="flex flex-col max-w-3xl mx-auto"
         >
-          <div className="flex w-full justify-center">
-            <AskQuestion
-              isUserLogged={isUserLogged}
-              disabled={isLoading}
-              error={errors?.prompt}
-              register={register}
-              onSend={handleSend}
-              value={promptValue}
-              handleResponseType={handleResponseType}
-              setPromptValue={(text: string) => setValue('prompt', text)}
-              showFileAttachment={true}
-              onFilesDrop={handleFilesDrop}
-              threadDocuments={threadDocuments}
-              onThreadDocumentRemove={handleThreadDocumentRemove}
-            />
-          </div>
+          <AskQuestion
+            isUserLogged={isUserLogged}
+            disabled={isLoading}
+            error={errors?.prompt}
+            register={register}
+            onSend={handleSend}
+            value={promptValue}
+            handleResponseType={handleResponseType}
+            setPromptValue={(text: string) => setValue('prompt', text)}
+            showFileAttachment={true}
+            onFilesDrop={handleFilesDrop}
+            threadDocuments={threadDocuments}
+            onThreadDocumentRemove={handleThreadDocumentRemove}
+          />
 
           {!isPublicAccess && (
-            <div className="flex w-full">
-              <label className="w-full md:w-11/12 mt-3 text-sm text-gray-400">
-                <input
-                  type="checkbox"
-                  {...register('useKnowledge')}
-                  className="mr-1"
-                />
-                {t('selected-mode')}
-                {/* {useKnowledge ? t(ChatType.RAG) : t(ChatType.CONVERSATION)} */}
-              </label>
-            </div>
+            <label className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                {...register('useKnowledge')}
+                className="rounded border-border"
+              />
+              {t('selected-mode')}
+            </label>
           )}
         </form>
       </div>

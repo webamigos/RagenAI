@@ -6,7 +6,7 @@ import { TrashIcon } from '@ragenai/common-ui/icons';
 import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
-import { FileType, UserFile } from '@/generated/prisma/client';
+import { FileType, UserFile } from '@/generated/prisma/browser';
 
 type FileItemProps = {
   file: {

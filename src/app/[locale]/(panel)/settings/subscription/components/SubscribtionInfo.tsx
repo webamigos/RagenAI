@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import type { SubscriptionDetails } from '../types';
-import { SubscriptionPlanType } from '@/generated/prisma/client';
+import { SubscriptionPlanType } from '@/generated/prisma/browser';
 import { Button } from '@ragenai/common-ui/Button';
 import { Link } from '@ragenai/common-ui/Link';
 import {
