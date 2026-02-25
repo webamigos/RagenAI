@@ -1,5 +1,5 @@
 import { setRequestLocale } from 'next-intl/server';
-import { getPublicProject } from '@/app/lib/services/project';
+import { getPublicProjectQuery as getPublicProject } from '@/features/projects/services/queries/get-project-query';
 import { notFound } from 'next/navigation';
 
 import { PublicStart } from '../../components/public-start';

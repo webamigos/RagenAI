@@ -10,8 +10,8 @@ import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
   type CreateMessageDto,
   type MessageDto,
-  ThreadHistoryResponse,
-} from '../contracts/Message';
+} from '@/features/messages/contracts/message.types';
+import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { deleteFromS3 } from '../lib/services/aws';
 import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';

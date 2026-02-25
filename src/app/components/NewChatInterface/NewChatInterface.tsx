@@ -12,8 +12,8 @@ import { useNewThreadInput } from './useNewThreadInput';
 import { MentionTextarea, type MentionedProject } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
 
-import { ChatResponseType } from '@/app/contracts/Message';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface NewChatInterfaceProps {
   className?: string;

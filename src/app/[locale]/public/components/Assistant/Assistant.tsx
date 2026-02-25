@@ -4,7 +4,7 @@ import { ChatOutput } from '@/app/components/Assistant/ChatOutput';
 
 import { usePublicAssistantLogic } from './usePublicAssistantLogic';
 import { PromptForm } from '@/app/components/Assistant/PromptForm';
-import { ChatResponseType } from '@/app/contracts/Message';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
 
 type Props = {
   threadId: string;

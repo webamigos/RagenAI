@@ -1,5 +1,5 @@
 import { api } from './config';
-import { MessagesWithContext } from '../../contracts/Message';
+import { MessagesWithContext } from '@/features/threads/contracts/thread.types';
 import { logger } from '@/app/lib/utils/logger';
 
 export const fetchMessagesFromApi = async (

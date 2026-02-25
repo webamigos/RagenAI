@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { disablePublicAccessForProject } from '@/app/lib/services/project';
+import { disablePublicAccessCommand as disablePublicAccessForProject } from '@/features/projects/services/commands/disable-public-access-command';
 
 export const useDisablePublicAccess = (projectId: number) => {
   const [isDisabling, setIsDisabling] = useState(false);

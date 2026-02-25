@@ -8,7 +8,7 @@ import {
 } from '@/libs/db/constants/vectorStore';
 import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
-import { getOpenaiAPIKey } from '@/app/lib/services/settings';
+import { getOpenaiAPIKey } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
@@ -19,7 +19,7 @@ import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { WebsiteDocumentLoader } from '@/libs/document-loaders/website-loader';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import {
   recursiveCharacterSplit,

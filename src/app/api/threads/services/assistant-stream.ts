@@ -1,26 +1,29 @@
 import { Role, Source } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import {
-  getThreadMessages,
-  getThreadDetails,
-} from '../../../lib/services/thread';
+  getThreadMessagesListQuery as getThreadMessages,
+  getThreadDetailsQuery as getThreadDetails,
+} from '@/features/threads/services/queries/get-thread-details-query';
 import {
-  createAndStoreMessage,
-  createMessageInDB,
-} from '../../../lib/services/message';
-import { ApiSseMessageEvent } from '../../../contracts/Events';
+  createAndStoreMessageCommand as createAndStoreMessage,
+  createMessageInDbCommand as createMessageInDB,
+} from '@/features/messages/services/commands/create-message-command';
+import { ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
 import { logger } from '../../../lib/utils/logger';
 import { initializeRagChain } from './initializeBasicRag';
 import { initializeConversationChain } from '../services/initializeConversationChain';
-import { getAllSettings } from '@/app/lib/services/settings';
+import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
-import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
+import {
+  ChatType,
+  CreateMessageDto,
+} from '@/features/messages/contracts/message.types';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
-import { AssistantMode } from '@/app/contracts/Assistant';
-import { getProjectInstruction } from '@/app/lib/services/projectInstructions';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
+import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 
 /**

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toggleChatbotEnabled } from '@/app/lib/services/project';
+import { toggleChatbotCommand as toggleChatbotEnabled } from '@/features/projects/services/commands/toggle-chatbot-command';
 
 export const useToggleChatbotEnabled = (projectId: number) => {
   const [isUpdating, setIsUpdating] = useState(false);

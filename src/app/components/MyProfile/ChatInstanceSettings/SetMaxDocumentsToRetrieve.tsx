@@ -13,7 +13,7 @@ import { SettingsType } from './types';
 import {
   defaultOrganizationSettings,
   organizationSettingsLimits,
-} from '@/app/lib/constants/settings';
+} from '@/features/organizations/constants/settings';
 
 export const SetMaxDocumentsToRetrieve = () => {
   const [maxDocuments, setMaxDocuments] = useState<number>(

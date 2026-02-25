@@ -8,7 +8,7 @@ import {
   ApiSseMessageDelta,
   ApiSseThreadFound,
   ApiSseMessageCreated,
-} from '@/app/contracts/Events';
+} from '@/features/threads/contracts/events.types';
 
 export const prepareSseMessage = (
   event: string,

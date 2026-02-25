@@ -1,6 +1,6 @@
 import { createContext, useReducer, useEffect } from 'react';
 import { getUserFiles } from '@/app/actions';
-import { type UserFileType } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { UserFile } from '@/generated/prisma/browser';
 
 type State = {

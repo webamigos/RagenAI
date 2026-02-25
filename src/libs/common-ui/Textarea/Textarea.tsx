@@ -26,7 +26,7 @@ import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
 import { FileBadge } from '../Badge/FileBadge';
 import { useVoiceInput } from '../../../app/hooks/useAudioRecording';
-import { ThreadDocumentUI } from '../../../app/contracts/ThreadDocument';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Props = {
   label?: string;

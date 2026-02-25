@@ -2,10 +2,8 @@ import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  updateThreadProjectContext,
-  removeThreadProjectContext,
-} from '@/app/lib/services/thread';
+import { updateThreadProjectContextCommand as updateThreadProjectContext } from '@/features/threads/services/commands/update-thread-context-command';
+import { removeThreadProjectContextCommand as removeThreadProjectContext } from '@/features/threads/services/commands/remove-thread-context-command';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 

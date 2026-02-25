@@ -10,9 +10,9 @@ import {
   ChatType,
   type CreateMessageDto,
   ChatResponseType,
-} from '../../../contracts/Message';
-import { createMessageSchema } from '../../../contracts/Message';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+  createMessageSchema,
+} from '@/features/messages/contracts/message.types';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Props = {
   isLoading: boolean;

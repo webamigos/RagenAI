@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ThreadHistoryResponse } from '@/app/contracts/Message';
+import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 
 export type ErrorState = {
   status: number | null;

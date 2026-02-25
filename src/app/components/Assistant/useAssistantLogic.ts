@@ -31,12 +31,12 @@ import {
   ChatType,
   type CreateMessageDto,
   ChatResponseType,
-} from '../../contracts/Message';
+} from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
 import { handleAssistantStream } from './handle-assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 
 const { errorToast } = statusToast();
 

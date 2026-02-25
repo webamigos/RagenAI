@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
-import { ChatType } from '@/app/contracts/Message';
+import { ChatType } from '@/features/messages/contracts/message.types';
 import { streamEvents } from '@/app/api/threads/services/assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
@@ -106,9 +106,7 @@ export async function POST(request: NextRequest, { params }: Params) {
               try {
                 const parsed = JSON.parse(data);
                 if (parsed.content) {
-                  controller.enqueue(
-                    new TextEncoder().encode(parsed.content)
-                  );
+                  controller.enqueue(new TextEncoder().encode(parsed.content));
                 }
               } catch {
                 // Skip unparseable data
@@ -134,9 +132,7 @@ export async function POST(request: NextRequest, { params }: Params) {
               try {
                 const parsed = JSON.parse(data);
                 if (parsed.content) {
-                  controller.enqueue(
-                    new TextEncoder().encode(parsed.content)
-                  );
+                  controller.enqueue(new TextEncoder().encode(parsed.content));
                 }
               } catch {
                 // Skip

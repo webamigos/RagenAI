@@ -6,7 +6,7 @@ import {
   ApiSseMessageDelta,
   ApiSseMessageEvent,
   SseMessageError,
-} from '@/app/contracts/Events';
+} from '@/features/threads/contracts/events.types';
 
 import { Thread } from '@/generated/prisma/browser';
 import {
@@ -15,8 +15,8 @@ import {
   CreateMessageDto,
   MessageDto,
   StreamedMessageDto,
-  ThreadHistoryResponse,
-} from '@/app/contracts/Message';
+} from '@/features/messages/contracts/message.types';
+import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import axios, { AxiosError } from 'axios';
 import {
   ApiEvent,
@@ -35,7 +35,7 @@ import { deleteUserMessage } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
 import { ToastProps } from '@/app/lib/utils/toast';
 import { PromptFormRef } from './PromptForm/PromptForm';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { StatusCodes } from 'http-status-codes';
 import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';

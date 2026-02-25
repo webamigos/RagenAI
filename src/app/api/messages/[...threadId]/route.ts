@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 // Auth is now handled via Better Auth in middleware
 
-import { createMessageSchema } from '../../../contracts/Message';
-import { fetchMessagesFromDb } from '../../../lib/services/message';
+import { createMessageSchema } from '@/features/messages/contracts/message.types';
+import { getThreadMessagesQuery as fetchMessagesFromDb } from '@/features/messages/services/queries/get-thread-messages-query';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';

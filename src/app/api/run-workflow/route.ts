@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 
 import { logger } from '@/app/lib/utils/logger';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
-import { Workflow } from '@/app/contracts/Workflows';
+import { Workflow } from '@/features/documents/contracts/document.types';
 
 export const dynamic = 'force-dynamic';
 

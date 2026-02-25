@@ -1,5 +1,5 @@
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { OrganizationSettings } from '@/app/lib/types/settings';
+import { OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import type { VectorStoreClient } from '@/libs/vector-store/types';

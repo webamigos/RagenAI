@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  fetchOrganizationDefaultProjectId,
-  getProjectByPublicIdOrThrow,
-} from '@/app/lib/services/project';
+import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
+import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { usageTracker } from '@/app/lib/services/usage';
@@ -13,7 +11,7 @@ import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 import db from '@ragenai/prisma-client';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
-import { Workflow } from '@/app/contracts/Workflows';
+import { Workflow } from '@/features/documents/contracts/document.types';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

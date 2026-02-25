@@ -4,15 +4,15 @@ import { randomUUID } from 'node:crypto';
 import { nanoid } from 'nanoid';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
+import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { usageTracker } from '@/app/lib/services/usage';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import {
   ScrapeWebsiteWorkflowPayload,
   Workflow,
-} from '@/app/contracts/Workflows';
+} from '@/features/documents/contracts/document.types';
 
 export type ProcessUrlResult = {
   success: boolean;

@@ -4,7 +4,7 @@ import type {
 } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import { logger } from '@/app/lib/utils/logger';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import db from '@ragenai/prisma-client';
 
 /**

@@ -1,9 +1,7 @@
 'use server';
 
-import {
-  saveProjectInstruction,
-  getProjectInstruction,
-} from '@/app/lib/services/projectInstructions';
+import { saveProjectInstructionCommand as saveProjectInstruction } from '@/features/projects/services/commands/save-project-instruction-command';
+import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { logger } from '@/app/lib/utils/logger';
 const serviceName = 'projectInstructions';
 

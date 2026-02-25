@@ -4,9 +4,9 @@ import {
   StreamedMessageDto,
   ChatResponseType,
   ChatType,
-  ThreadContext,
-} from '@/app/contracts/Message';
-import { AssistantMode } from '@/app/contracts/Assistant';
+} from '@/features/messages/contracts/message.types';
+import { ThreadContext } from '@/features/threads/contracts/thread.types';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import voiceReducer from '../voice/voiceSlice';
 
 export interface AssistantState {

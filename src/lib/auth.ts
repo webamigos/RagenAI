@@ -7,7 +7,7 @@ import { organization, openAPI } from 'better-auth/plugins';
 import { stripe } from '@better-auth/stripe';
 import Stripe from 'stripe';
 import db from '@ragenai/prisma-client';
-import { createOrganizationWithDefaultProject } from '@/app/lib/services/apiKeys';
+import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
