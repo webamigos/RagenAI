@@ -1,4 +1,2 @@
-export enum AssistantMode {
-  INTERNAL,
-  PUBLIC,
-}
+/** @deprecated Import from @/features/assistants/contracts/assistant.types instead */
+export { AssistantMode } from '@/features/assistants/contracts/assistant.types';

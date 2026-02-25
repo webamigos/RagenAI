@@ -1,6 +1,6 @@
-export type UserRole = 'admin' | 'user' | 'guest' | 'visitor' | 'superAdmin';
-export type OrgRole = 'org:member' | 'org:owner' | 'org:admin';
-
-export type OrganizationRoles = {
-  [key: string]: OrgRole;
-};
+/** @deprecated Import from @/features/organizations/contracts/organization.types instead */
+export type {
+  UserRole,
+  OrgRole,
+  OrganizationRoles,
+} from '@/features/organizations/contracts/organization.types';
