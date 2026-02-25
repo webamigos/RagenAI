@@ -1,4 +1,4 @@
-import { Message, Thread } from '@/generated/prisma/client';
+import { Message, Thread } from '@/generated/prisma/browser';
 import { ApiMessageDto, type MessageDto } from './Message';
 import type { ChainErrorCode } from '@/libs/chains/types/errors';
 

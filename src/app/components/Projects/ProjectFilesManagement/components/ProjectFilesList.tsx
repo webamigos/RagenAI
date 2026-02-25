@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Card, Text, LoadingSkeleton, FileUploader } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Text } from '@ragenai/common-ui/Text';
+import { LoadingSkeleton } from '@ragenai/common-ui/Skeleton';
+import { FileUploader } from '@ragenai/common-ui/FileUploader';
 
 import { FileItem } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/FileItem';
 import { DropZone } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/DropZone';
@@ -10,7 +13,7 @@ import {
   useProjectFiles,
   FileListState,
 } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/hooks/useProjectFiles';
-import { Project } from '@/generated/prisma/client';
+import { Project } from '@/generated/prisma/browser';
 type Props = {
   onFilesLoaded?: (hasFiles: boolean) => void;
   projectPublicId: Project['public_id'];

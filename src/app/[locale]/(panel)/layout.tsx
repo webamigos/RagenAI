@@ -33,11 +33,14 @@ import {
   ChevronDownIcon,
   Cog8ToothIcon,
   LightBulbIcon,
-  PlusIcon,
   ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/16/solid';
-import { InboxIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
+import { InboxIcon } from '@heroicons/react/20/solid';
+import {
+  PlusIcon as PlusIconOutline,
+  MagnifyingGlassIcon as MagnifyingGlassIconOutline,
+} from '@heroicons/react/24/outline';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
@@ -72,7 +75,7 @@ export default async function PanelLayout({ children }: Props) {
       <NavbarSpacer />
       <NavbarSection>
         <SearchButton variant="navbar" aria-label="Search">
-          <MagnifyingGlassIcon className="w-5 h-5" />
+          <MagnifyingGlassIconOutline className="w-5 h-5" />
         </SearchButton>
         <NavbarItem href="/inbox" aria-label="Inbox">
           <InboxIcon className="w-5 h-5" />
@@ -115,12 +118,12 @@ export default async function PanelLayout({ children }: Props) {
       <SidebarHeader>
         <SidebarSection className="max-lg:hidden">
           <NewChatButton variant="sidebar">
-            <PlusIcon className="w-6 h-6" />
-            <SidebarLabel>{t('new-chat')}</SidebarLabel>
+            <PlusIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+            <SidebarLabel className="font-normal">{t('new-chat')}</SidebarLabel>
           </NewChatButton>
           <SearchButton variant="sidebar">
-            <MagnifyingGlassIcon className="w-6 h-6" />
-            <SidebarLabel>Search</SidebarLabel>
+            <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+            <SidebarLabel className="font-normal">Search</SidebarLabel>
           </SearchButton>
         </SidebarSection>
       </SidebarHeader>

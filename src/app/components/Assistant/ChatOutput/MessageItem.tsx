@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 
-import { Text, ArrowIcon } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { ArrowIcon } from '@ragenai/common-ui/icons';
 import { MessageDto } from '@/app/contracts/Message';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';

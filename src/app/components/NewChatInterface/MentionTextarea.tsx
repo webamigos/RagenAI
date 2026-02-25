@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Textarea } from '@ragenai/common-ui';
+import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';

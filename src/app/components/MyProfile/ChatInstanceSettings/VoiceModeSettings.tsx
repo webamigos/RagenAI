@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { useOrganization } from '@/app/hooks/use-auth';
 
-import { Card } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
 import { fetchVoiceId, updateVoiceId } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { AudioPlayer } from './AudioPlayer';

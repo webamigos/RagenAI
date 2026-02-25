@@ -6,8 +6,9 @@ import { useRouter } from '@/i18n/routing';
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { StatusCodes } from 'http-status-codes';
 
-import { Dialog, DialogTitle } from '@ragenai/common-ui';
-import { Button, Input } from '@ragenai/common-ui';
+import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 

@@ -1,5 +1,10 @@
 import { Link } from '@/i18n/routing';
-import * as CommonUi from '@ragenai/common-ui';
+import {
+  PencilIcon,
+  OpenEyeIcon,
+  SpinnerSVG,
+  TrashIcon,
+} from '@ragenai/common-ui/icons';
 
 type ToolbarIconsProps = {
   filePublicId: string;
@@ -21,7 +26,7 @@ export const ToolbarActionsMenu = ({
           className="text-black dark:text-white"
           href={`/document/${documentPublicId}?edit=true`}
         >
-          <CommonUi.PencilIcon className="mt-0.5 cursor-pointer" />
+          <PencilIcon className="mt-0.5 cursor-pointer" />
         </Link>
       )}
 
@@ -30,7 +35,7 @@ export const ToolbarActionsMenu = ({
           className="text-black dark:text-white"
           href={`/document/${documentPublicId}`}
         >
-          <CommonUi.OpenEyeIcon className="cursor-pointer" />
+          <OpenEyeIcon className="cursor-pointer" />
         </Link>
       )}
 
@@ -40,9 +45,9 @@ export const ToolbarActionsMenu = ({
           className="cursor-pointer"
         >
           {isLoading ? (
-            <CommonUi.SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
+            <SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
           ) : (
-            <CommonUi.TrashIcon />
+            <TrashIcon />
           )}
         </div>
       )}

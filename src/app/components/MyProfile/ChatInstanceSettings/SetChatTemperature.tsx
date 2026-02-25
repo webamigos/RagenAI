@@ -5,7 +5,9 @@ import { useTranslations } from 'next-intl';
 
 import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { Input, Text, Card } from '@ragenai/common-ui';
+import { Input } from '@ragenai/common-ui/Input';
+import { Text } from '@ragenai/common-ui/Text';
+import { Card } from '@ragenai/common-ui/Card';
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
 

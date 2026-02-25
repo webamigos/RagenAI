@@ -1,4 +1,4 @@
-import { FileType } from '@/generated/prisma/client';
+import { FileType } from '@/generated/prisma/browser';
 
 export const getFileType = (fileName: string): FileType => {
   if (fileName.endsWith('.srt')) return 'SRT';

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role } from '@/generated/prisma/client';
+import { Role } from '@/generated/prisma/browser';
 import { usePathname } from '@/i18n/routing';
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '@/store/hooks';

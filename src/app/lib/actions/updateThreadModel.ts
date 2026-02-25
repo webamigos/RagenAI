@@ -1,5 +1,7 @@
 'use client';
 
+import { logger } from '@/app/lib/utils/logger';
+
 export async function updateThreadModel(
   threadId: string,
   model: string | null
@@ -21,9 +23,7 @@ export async function updateThreadModel(
 
     return data;
   } catch (error) {
-    // Note: In client-side code we use console.error since logger might not be available
-    // eslint-disable-next-line no-console
-    console.error('Error updating thread model:', error);
+    logger.error({ error }, 'Error updating thread model');
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

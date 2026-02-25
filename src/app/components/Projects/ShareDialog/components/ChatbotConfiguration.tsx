@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 import { memo } from 'react';
-import { Input } from '@ragenai/common-ui';
+import { Input } from '@ragenai/common-ui/Input';
 
 type ChatbotConfigurationProps = {
   chatbotTitle: string;

@@ -16,6 +16,11 @@
     "new-thread-header": "Masz pytanie?",
     "new-thread-description": "Po prostu mi je zadaj!",
     "new-thread-placeholder": "Wpisz swoją wiadomość tutaj...",
+    "new-thread-greeting": "Cześć, {name}",
+    "suggestion-summarize": "Podsumuj dokument",
+    "suggestion-explain": "Wyjaśnij zagadnienie",
+    "suggestion-analyze": "Przeanalizuj dane",
+    "suggestion-write": "Pomóż mi napisać",
     "project-context": "Pracujesz w ramach asystenta: {projectTitle}",
     "warning-messages": {
       "prompt-max-length": "Maksymalna długość wiadomości to 10000 znaków",
@@ -412,6 +417,8 @@
   "files-table": {
     "title": "Lista plików",
     "delete": "Usuń",
+    "edit": "Edytuj",
+    "view": "Podgląd",
     "file-name": "Nazwa pliku",
     "file-size": "Rozmiar pliku",
     "created": "Utworzono",

@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@ragenai/common-ui/Button';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogBody,
   DialogTitle,
-  Input,
-} from '@ragenai/common-ui';
+} from '@ragenai/common-ui/Dialog';
+import { Input } from '@ragenai/common-ui/Input';
 import { Clipboard, ClipboardChecked } from '@ragenai/common-ui/icons';
 
 type Props = {

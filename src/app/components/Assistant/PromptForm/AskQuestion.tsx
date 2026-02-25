@@ -1,7 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { FieldError, UseFormRegister } from 'react-hook-form';
 
-import { Textarea } from '@ragenai/common-ui';
+import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
 
 type Props = {
@@ -42,8 +42,8 @@ export const AskQuestion = ({
       autoFocus={true}
       value={value}
       onSend={onSend}
-      containerClassName="w-full max-w-full mt-3"
-      className="h-10 lg:mt-0 lg:-mb-0.5 shadow-lg"
+      containerClassName="w-full"
+      className="h-10 !rounded-xl !border-border/60 !shadow-md focus:!shadow-lg focus:!border-ring/40 transition-shadow dark:!bg-background"
       errorMessage={error?.message}
       error={error}
       disabled={disabled}

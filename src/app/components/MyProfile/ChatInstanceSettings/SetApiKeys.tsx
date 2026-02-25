@@ -6,13 +6,13 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { Input } from '@ragenai/common-ui/Input';
 import {
-  Input,
   LockClosedIcon,
   OpenLockIcon,
   WarningIcon,
-  Tooltip,
-} from '@ragenai/common-ui';
+} from '@ragenai/common-ui/icons';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';

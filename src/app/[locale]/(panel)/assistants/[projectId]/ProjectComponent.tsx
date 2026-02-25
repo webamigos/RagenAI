@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { PageSkeleton } from '@ragenai/common-ui';
+import { PageSkeleton } from '@ragenai/common-ui/Skeleton';
 
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';

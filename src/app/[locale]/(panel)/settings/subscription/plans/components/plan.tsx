@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
-import { Button } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
 import { createCheckoutSession } from '../actions/stripe';
 import { logger } from '@/app/lib/utils/logger';
-import type { SubscriptionPlan } from '@/generated/prisma/client';
+import type { SubscriptionPlan } from '@/generated/prisma/browser';
 
 type Props = {
   plan: SubscriptionPlan;

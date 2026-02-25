@@ -2,8 +2,8 @@ import {
   EmbeddingStatus,
   UserDocument,
   UserFile,
-} from '@/generated/prisma/client';
-import { Project } from '@/generated/prisma/client';
+} from '@/generated/prisma/browser';
+import { Project } from '@/generated/prisma/browser';
 
 export type ProjectType = {
   id: Project['id'];

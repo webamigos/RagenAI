@@ -1,5 +1,5 @@
-import { notFound } from 'next/navigation';
-import { Assistant } from '@/app/components/Assistant';
+import { ChatInterface } from '@/app/components/Chat';
+import { loadThreadMessages } from '@/app/components/Chat/actions';
 
 type Props = {
   params: Promise<{
@@ -9,6 +9,8 @@ type Props = {
 };
 
 export default async function ProjectThreadPage({ params }: Props) {
-  const { projectId, threadId } = await params;
-  return <Assistant threadId={threadId} />;
+  const { threadId } = await params;
+  const initialMessages = await loadThreadMessages(threadId);
+
+  return <ChatInterface threadId={threadId} initialMessages={initialMessages} />;
 }

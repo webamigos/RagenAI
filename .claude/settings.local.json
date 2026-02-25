@@ -12,23 +12,20 @@
       "mcp__chrome-devtools__list_console_messages",
       "WebSearch",
       "Bash(ls:*)",
-      "Bash(npm view:*)",
       "Bash(git show:*)",
-      "Bash(node -e:*)",
       "Bash(npm ls:*)",
       "Bash(npm run lint:*)",
       "Bash(npx vitest:*)",
-      "Bash(npm uninstall:*)",
       "Bash(find:*)",
-      "mcp__plugin_serena_serena__list_dir",
       "WebFetch(domain:zod.dev)",
-      "Bash(git fsck:*)",
       "Bash(head:*)",
       "Bash(grep:*)",
       "Bash(grep error TS:*)",
       "Bash(cat:*)",
       "Bash(tail:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx eslint:*)"
     ]
   },
   "enabledPlugins": {

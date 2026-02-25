@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 
-import { Alert } from '@ragenai/common-ui';
+import { Alert } from '@ragenai/common-ui/Alert';
 import { Link } from '@/i18n/routing';
 
 export const LimitReached = () => {

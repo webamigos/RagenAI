@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
 
-import { Link } from '@ragenai/common-ui';
+import { Link } from '@ragenai/common-ui/Link';
 
 export const NotFound = () => {
   const t = useTranslations('page404');

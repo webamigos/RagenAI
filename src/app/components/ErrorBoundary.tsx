@@ -1,7 +1,8 @@
 import React from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Text, Button } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Text } from '@ragenai/common-ui/Text';
 import { logger } from '../lib/utils/logger';
 
 interface ErrorBoundaryProps {

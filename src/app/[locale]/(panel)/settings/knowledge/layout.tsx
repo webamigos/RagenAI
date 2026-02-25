@@ -10,10 +10,10 @@ export default async function AdminLayout({
   const defaultPublicProjectId = await getDefaultProjectPublicId();
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col gap-6 px-4 pt-4 lg:px-6 lg:pt-6">
       <TabsWrapper />
       <ManageKnowledgeProviders>
-        <div className="grow mr-2">{children}</div>
+        <div className="grow">{children}</div>
       </ManageKnowledgeProviders>
     </div>
   );

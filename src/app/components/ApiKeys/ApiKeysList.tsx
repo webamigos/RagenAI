@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
-import { ApiKey, Project } from '@/generated/prisma/client';
+import { ApiKey, Project } from '@/generated/prisma/browser';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
 import { useRouter } from '@/i18n/routing';
@@ -14,11 +14,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Tooltip,
-  TrashIcon,
-} from '@ragenai/common-ui';
+} from '@ragenai/common-ui/Table';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import { TrashIcon } from '@ragenai/common-ui/icons';
 
-import { Button } from '@ragenai/tui';
+import { Button } from '@ragenai/tui/button';
 
 import { RemoveApiKeyDialog } from './RemoveApiKey/RemoveApiKeyDialog';
 import { removeApiKey } from './RemoveApiKey/actions';

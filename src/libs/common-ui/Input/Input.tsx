@@ -12,7 +12,8 @@ import {
 import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
-import { Input as TuiInput, Field, Label } from '@ragenai/tui';
+import { Input as TuiInput } from '@ragenai/tui/input';
+import { Field, Label } from '@ragenai/tui/fieldset';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -100,7 +101,7 @@ export const Input = forwardRef(
     return (
       <Field className={classMerge('pt-2', containerClassName)}>
         {label && (
-          <Label htmlFor={id}>
+          <Label htmlFor={id} className="font-medium">
             {label}
             {mandatory && <span className="text-red-600">*</span>}
           </Label>

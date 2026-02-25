@@ -80,7 +80,6 @@ const nextConfig = {
     // Note: better-auth removed from serverExternalPackages to allow client-side usage
   ],
 
-
   transpilePackages: ['better-auth'],
 
   webpack: (config, { isServer, webpack }) => {
@@ -128,7 +127,10 @@ const nextConfig = {
         new webpack.NormalModuleReplacementPlugin(
           /serverLogger/,
           (resource) => {
-            resource.request = resource.request.replace(/serverLogger/, 'clientLogger');
+            resource.request = resource.request.replace(
+              /serverLogger/,
+              'clientLogger'
+            );
           }
         )
       );
@@ -145,7 +147,8 @@ const nextConfig = {
       // Replace serverLogger with clientLogger on client-side
       config.resolve.alias = {
         ...config.resolve.alias,
-        '@/app/lib/utils/logger/serverLogger': '@/app/lib/utils/logger/clientLogger',
+        '@/app/lib/utils/logger/serverLogger':
+          '@/app/lib/utils/logger/clientLogger',
       };
 
       // Redirect Prisma generated client to browser-safe version (no Node.js imports)

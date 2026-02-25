@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, ReactNode, useMemo } from 'react';
-import { classMerge } from '@ragenai/common-ui';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 type SkeletonProps = {
   height?: string;

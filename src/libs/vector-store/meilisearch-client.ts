@@ -168,17 +168,8 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
       if (taskResult.status === 'failed') {
         logger.error(
           { error: taskResult.error, index: this.indexName },
-          'Failed to configure embedders — clearing documents and retrying'
+          'Failed to configure embedders — existing documents may lack vectors for this embedder'
         );
-        const deleteTask = await index.deleteAllDocuments();
-        await this.client.waitForTask(deleteTask.taskUid);
-        const retryTask = await index.updateEmbedders({
-          [EMBEDDER_NAME]: {
-            source: 'userProvided',
-            dimensions: (await this.embeddings.embedQuery('test')).length,
-          },
-        });
-        await this.client.waitForTask(retryTask.taskUid);
       }
     }
 

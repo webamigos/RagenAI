@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from '@/app/hooks/use-auth';
-import { Alert } from '@ragenai/common-ui';
+import { Alert } from '@ragenai/common-ui/Alert';
 import { useTranslations } from 'next-intl';
 
 import { useNewThread } from '@/app/hooks/useNewThread';

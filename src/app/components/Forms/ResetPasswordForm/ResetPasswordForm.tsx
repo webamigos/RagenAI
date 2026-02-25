@@ -7,7 +7,9 @@ import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useRouter } from '@/i18n/routing';
-import { Card, Input, Button } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Button } from '@ragenai/common-ui/Button';
 import { authClient } from '@/app/hooks/use-better-auth';
 
 import { type ResetPasswordData, ResetPasswordSchema } from './schema';

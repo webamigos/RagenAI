@@ -1,6 +1,6 @@
 import { useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role, MessageContentType } from '@/generated/prisma/client';
+import { Role, MessageContentType } from '@/generated/prisma/browser';
 import { useUser } from '@/app/hooks/use-auth';
 import { useDispatch } from 'react-redux';
 

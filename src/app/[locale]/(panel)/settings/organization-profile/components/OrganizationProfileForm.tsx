@@ -3,7 +3,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { updateOrganization } from '../actions/organization';
 import {

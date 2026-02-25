@@ -5,10 +5,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
-import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Link } from '@ragenai/common-ui/Link';
+import { Text } from '@ragenai/common-ui/Text';
 import { signIn } from '@/app/hooks/use-better-auth';
 import { finalizeUserOnboarding } from '@/app/lib/actions/onboarding';
 
+import { logger } from '@/app/lib/utils/logger';
 import { type LoginFormData, loginSchema } from './schema';
 
 export const LoginForm = () => {
@@ -46,10 +51,9 @@ export const LoginForm = () => {
       try {
         await finalizeUserOnboarding();
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          'Onboarding finalization failed, relying on fallback:',
-          err
+        logger.warn(
+          { error: err },
+          'Onboarding finalization failed, relying on fallback'
         );
         // Continue anyway - middleware/account-configuration will handle it
       }

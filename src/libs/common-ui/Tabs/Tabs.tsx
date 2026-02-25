@@ -71,7 +71,12 @@ const TabList = ({
   const childArray = React.Children.toArray(children);
 
   return (
-    <div className={classMerge('flex ml-[18px]', className)}>
+    <div
+      className={classMerge(
+        'inline-flex gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1',
+        className
+      )}
+    >
       {childArray.map((child, index) =>
         React.isValidElement(child)
           ? React.cloneElement(child as ReactElement<TabPropsInterface>, {
@@ -98,10 +103,10 @@ const Tab = ({
   <Link
     href={href ? href : '#'}
     className={classMerge(
-      'flex cursor-pointer px-2 mx-2 py-2 text-sm font-medium transition',
+      'flex cursor-pointer px-3 py-1.5 text-sm rounded-md transition-all',
       isActive
-        ? 'border-b-2 border-primary-blue-500 dark:border-gray-200 text-blue-600 dark:text-gray-100'
-        : 'text-gray-600',
+        ? 'bg-white text-zinc-900 font-semibold shadow-sm dark:bg-zinc-700 dark:text-white'
+        : 'font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
       className
     )}
     onClick={onClick}

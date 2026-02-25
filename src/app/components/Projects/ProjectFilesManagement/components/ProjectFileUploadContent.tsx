@@ -1,9 +1,6 @@
-import {
-  Text,
-  Skeleton,
-  DocumentIcon,
-  CloudArrowIcon,
-} from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { Skeleton } from '@ragenai/common-ui/Skeleton';
+import { DocumentIcon, CloudArrowIcon } from '@ragenai/common-ui/icons';
 
 export type FileStatus = {
   hasFiles: boolean;

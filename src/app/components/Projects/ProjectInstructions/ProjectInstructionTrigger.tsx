@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Card, Dialog, Text } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Dialog } from '@ragenai/common-ui/Dialog';
+import { Text } from '@ragenai/common-ui/Text';
 import { ProjectInstructionForm } from './ProjectInstructionForm';
 
 type ProjectInstructionTriggerProps = {

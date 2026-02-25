@@ -4,7 +4,9 @@ import { useState, useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@/app/hooks/use-auth';
 
-import { Dialog, Text, Switch } from '@ragenai/common-ui';
+import { Dialog } from '@ragenai/common-ui/Dialog';
+import { Text } from '@ragenai/common-ui/Text';
+import { Switch } from '@ragenai/common-ui/Switch';
 import { Collapse } from '@ragenai/common-ui/Collapse';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { statusToast } from '@/app/lib/utils/toast';

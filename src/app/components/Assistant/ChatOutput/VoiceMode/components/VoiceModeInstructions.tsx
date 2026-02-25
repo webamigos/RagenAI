@@ -1,5 +1,5 @@
 import { useTranslations } from 'next-intl';
-import { Text } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
 import { VoiceModeInstructionsProps } from '../types';
 
 export const VoiceModeInstructions = ({

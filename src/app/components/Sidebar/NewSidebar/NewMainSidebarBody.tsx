@@ -11,7 +11,7 @@ import {
   Cog6ToothIcon,
   HomeIcon,
   QuestionMarkCircleIcon,
-} from '@heroicons/react/20/solid';
+} from '@heroicons/react/24/outline';
 
 import { useAppSelector } from '@/store/hooks';
 import { usePathname } from '@/i18n/routing';
@@ -110,19 +110,19 @@ export const NewMainSidebarBody = () => {
           {/* Default navigation sections for non-main pages */}
           <SidebarSection>
             <SidebarItem href="/">
-              <HomeIcon className="w-5 h-5" />
-              <SidebarLabel>Home</SidebarLabel>
+              <HomeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+              <SidebarLabel className="font-normal">Home</SidebarLabel>
             </SidebarItem>
             <SidebarItem href="/settings">
-              <Cog6ToothIcon className="w-5 h-5" />
-              <SidebarLabel>Settings</SidebarLabel>
+              <Cog6ToothIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+              <SidebarLabel className="font-normal">Settings</SidebarLabel>
             </SidebarItem>
           </SidebarSection>
           <SidebarSpacer />
           <SidebarSection>
             <SidebarItem href="/support">
-              <QuestionMarkCircleIcon className="w-5 h-5" />
-              <SidebarLabel>Support</SidebarLabel>
+              <QuestionMarkCircleIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+              <SidebarLabel className="font-normal">Support</SidebarLabel>
             </SidebarItem>
           </SidebarSection>
         </>

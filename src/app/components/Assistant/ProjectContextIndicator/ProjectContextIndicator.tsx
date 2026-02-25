@@ -49,13 +49,11 @@ export const ProjectContextIndicator = ({
   // If threadId is available, show the full ProjectContextManager dropdown
   if (threadId && availableProjects.length >= 0) {
     return (
-      <div className="mb-4">
-        <ProjectContextManager
-          threadId={threadId}
-          availableProjects={availableProjects}
-          onContextChange={onContextChange}
-        />
-      </div>
+      <ProjectContextManager
+        threadId={threadId}
+        availableProjects={availableProjects}
+        onContextChange={onContextChange}
+      />
     );
   }
 

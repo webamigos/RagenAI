@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Card } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { useActiveOrganization } from '@/app/hooks/use-better-auth';

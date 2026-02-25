@@ -1,7 +1,7 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
 import TurndownService from 'turndown';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   createMarkdownDocument,
@@ -18,7 +18,7 @@ export async function saveMarkdownWithMeta(
   data: DocumentSchema,
   organizationId: string
 ) {
-  const uniqueFileId = uuidv4();
+  const uniqueFileId = randomUUID();
   const turndownService = new TurndownService();
   const markdownContent = turndownService.turndown(data.content);
   const markdownData = {

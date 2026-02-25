@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Button } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { cancelInvitation, resendInvitation } from '../actions/invitations';
 import type { Invitation } from '../types';

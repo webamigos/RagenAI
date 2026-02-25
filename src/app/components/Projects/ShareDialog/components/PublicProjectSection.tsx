@@ -2,7 +2,10 @@ import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { useState, useMemo, memo } from 'react';
 
-import { CopyButton, Text, ArrowPath, Dialog } from '@ragenai/common-ui';
+import { CopyButton } from '@ragenai/common-ui/CopyButton';
+import { Text } from '@ragenai/common-ui/Text';
+import { ArrowPath } from '@ragenai/common-ui/icons';
+import { Dialog } from '@ragenai/common-ui/Dialog';
 import {
   Table,
   TableHead,

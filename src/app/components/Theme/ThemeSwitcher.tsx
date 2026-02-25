@@ -4,7 +4,7 @@ import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
-import { classMerge } from '@ragenai/common-ui';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 type Props = {
   className?: string;
