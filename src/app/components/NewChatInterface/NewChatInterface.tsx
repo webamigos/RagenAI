@@ -53,10 +53,10 @@ export const NewChatInterface = ({
     setInternalOrganizationDefaultModel,
   ] = useState<string | null>(organizationDefaultModel || null);
   const [selectedModel, setSelectedModel] = useState<string>(
-    organizationDefaultModel || 'gemini-2.0-flash'
+    organizationDefaultModel || 'gemini-2.0-flash',
   );
   const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
-    []
+    [],
   );
 
   const {
@@ -102,7 +102,7 @@ export const NewChatInterface = ({
             setSelectedModel((prev) =>
               prev === (organizationDefaultModel || 'gemini-2.0-flash')
                 ? result.settings.model
-                : prev
+                : prev,
             );
           }
         } catch (error) {
@@ -190,7 +190,7 @@ export const NewChatInterface = ({
       </div>
 
       {!projectTitle && (
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+        <div className="flex flex-nowrap items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
           {suggestions.map(({ key, icon }) => (
             <button
               key={key}
@@ -215,7 +215,7 @@ export const NewChatInterface = ({
           placeholder={t('new-thread-placeholder')}
           className="w-full min-h-[100px] !rounded-xl !shadow-lg !border-border/50 focus-within:!shadow-xl focus-within:!border-ring/30 transition-shadow"
           disabled={isLoading || isPending}
-          showVoiceInput={!isPublicAccess}
+          showVoiceInput={false}
           error={errors.prompt}
           handleResponseType={handleVoiceModeActivation}
           onProjectMention={handleProjectMention}

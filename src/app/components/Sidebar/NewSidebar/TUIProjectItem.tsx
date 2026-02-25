@@ -54,7 +54,7 @@ export const TUIProjectItem = ({
           }
         >
           <FolderIcon data-slot="icon" className="w-6 h-6" />
-          <SidebarLabel>{project.title}</SidebarLabel>
+          <SidebarLabel className="font-normal">{project.title}</SidebarLabel>
         </SidebarItem>
         {hasThreads && (
           <>

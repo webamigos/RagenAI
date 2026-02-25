@@ -89,18 +89,16 @@ export const TUIThreadsSection = ({
                         aria-label={`Thread: ${contentPreview}`}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <ChatBubbleLeftIcon
-                          data-slot="icon"
-                          className="w-6 h-6"
-                        />
-                        <SidebarLabel>{contentPreview}</SidebarLabel>
+                        <SidebarLabel className="font-normal">
+                          {contentPreview}
+                        </SidebarLabel>
                       </SidebarItem>
                     </div>
                   );
                 })}
               </div>
             </div>
-          )
+          ),
       )}
     </div>
   );

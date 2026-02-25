@@ -17,8 +17,6 @@ import {
   ArrowRightStartOnRectangleIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
-  LightBulbIcon,
-  ShieldCheckIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations, useLocale } from 'next-intl';
@@ -55,11 +53,17 @@ export const NewSidebarFooter = () => {
         </DropdownButton>
         <DropdownMenu className="min-w-64" anchor="top start">
           <DropdownItem href="/user/profile">
-            <UserIcon data-slot="icon" />
+            <UserIcon
+              data-slot="icon"
+              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+            />
             <DropdownLabel>{t('my-profile')}</DropdownLabel>
           </DropdownItem>
           <DropdownItem href="/settings">
-            <Cog8ToothIcon data-slot="icon" />
+            <Cog8ToothIcon
+              data-slot="icon"
+              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+            />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
@@ -69,7 +73,10 @@ export const NewSidebarFooter = () => {
               window.location.href = `/${locale}/sign-in`;
             }}
           >
-            <ArrowRightStartOnRectangleIcon data-slot="icon" />
+            <ArrowRightStartOnRectangleIcon
+              data-slot="icon"
+              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+            />
             <DropdownLabel>{t('sign-out')}</DropdownLabel>
           </DropdownItem>
         </DropdownMenu>
