@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 
@@ -89,8 +89,8 @@ export const SupportForm = () => {
             accept="image/*"
             multiple
             {...register('file')}
-            error={errors.file}
-            errorMessage={errors.file?.message}
+            error={errors.file as FieldError | undefined}
+            errorMessage={(errors.file as FieldError | undefined)?.message}
           />
         </div>
         <Text color="gray-400" fontSize="sm">
