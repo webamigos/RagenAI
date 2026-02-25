@@ -1,5 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   readonly children: React.ReactNode;
   params: Promise<{

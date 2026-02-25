@@ -14,10 +14,21 @@ import db from '@ragenai/prisma-client';
 export class ThreadDocumentRetriever {
   private vectorStore: VectorStoreClient;
   private embeddings: EmbeddingsProvider;
+  private cachedDocumentEmbeddings: Map<string, number[]> = new Map();
 
   constructor(vectorStore: VectorStoreClient, embeddings: EmbeddingsProvider) {
     this.vectorStore = vectorStore;
     this.embeddings = embeddings;
+  }
+
+  /**
+   * Build a stable, unique cache key for a thread document.
+   * Documents with a userFileId use that; inline documents use name + content length
+   * to avoid collisions between documents sharing the same name.
+   */
+  private documentCacheKey(doc: ThreadDocumentUI): string {
+    if (doc.userFileId) return doc.userFileId;
+    return `${doc.name}:${doc.size}:${doc.content.length}`;
   }
 
   /**
@@ -172,7 +183,8 @@ export class ThreadDocumentRetriever {
   }
 
   /**
-   * Search using inline content with on-demand embeddings (immediate access)
+   * Search using inline content with on-demand embeddings (immediate access).
+   * Document embeddings are cached per instance to avoid re-computing on every query.
    */
   private async searchInlineContent(
     threadDocuments: ThreadDocumentUI[],
@@ -187,10 +199,29 @@ export class ThreadDocumentRetriever {
       // Generate query embedding
       const queryEmbedding = await this.embeddings.embedQuery(query);
 
-      // Generate embeddings for all document contents
-      const documentEmbeddings = await this.embeddings.embedDocuments(
-        threadDocuments.map((doc) => doc.content)
-      );
+      // Generate embeddings for documents, using cache when available
+      const uncachedDocs: { index: number; content: string }[] = [];
+      for (let i = 0; i < threadDocuments.length; i++) {
+        const cacheKey = this.documentCacheKey(threadDocuments[i]);
+        if (!this.cachedDocumentEmbeddings.has(cacheKey)) {
+          uncachedDocs.push({ index: i, content: threadDocuments[i].content });
+        }
+      }
+
+      if (uncachedDocs.length > 0) {
+        const newEmbeddings = await this.embeddings.embedDocuments(
+          uncachedDocs.map((d) => d.content)
+        );
+        uncachedDocs.forEach((doc, j) => {
+          const cacheKey = this.documentCacheKey(threadDocuments[doc.index]);
+          this.cachedDocumentEmbeddings.set(cacheKey, newEmbeddings[j]);
+        });
+      }
+
+      const documentEmbeddings = threadDocuments.map((doc) => {
+        const cacheKey = this.documentCacheKey(doc);
+        return this.cachedDocumentEmbeddings.get(cacheKey)!;
+      });
 
       // Calculate similarities and rank documents
       const similarities = documentEmbeddings.map((docEmbedding, index) => ({

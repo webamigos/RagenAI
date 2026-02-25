@@ -3,6 +3,8 @@ import {
   getDefaultProjectPublicId,
 } from '@/app/actions';
 
+export const dynamic = 'force-dynamic';
+
 import { redirect } from '@/i18n/routing';
 import { logger } from '@/app/lib/utils/logger';
 

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { PublicStart } from '../../components/public-start';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{
     locale: string;

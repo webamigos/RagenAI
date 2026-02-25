@@ -664,14 +664,22 @@ export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
 };
 
 // Content moderation using OpenAI Moderation API directly
+// Uses dedicated OPENAI_MODERATION_KEY with fallback to OPENAI_API_KEY
 export interface ModerationResult {
   flagged: boolean;
   categories: Record<string, boolean>;
 }
 
-export const createModerationInstance = ({ apiKey }: { apiKey: string }) => {
+export const createModerationInstance = (orgApiKey?: string) => {
+  const apiKey =
+    orgApiKey ||
+    process.env.OPENAI_MODERATION_KEY ||
+    process.env.OPENAI_API_KEY;
+
   if (!apiKey) {
-    throw new Error('Cannot create moderation instance, apiKey is required');
+    throw new Error(
+      'Cannot create moderation instance: set OPENAI_MODERATION_KEY or OPENAI_API_KEY'
+    );
   }
 
   const openaiClient = new OpenAI({ apiKey });

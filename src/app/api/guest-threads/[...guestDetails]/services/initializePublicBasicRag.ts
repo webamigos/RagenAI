@@ -44,7 +44,7 @@ export const initializePublicRagChain = async ({
     } = settings;
 
     const embeddingModel = createEmbeddingsInstance({ apiKey });
-    const contentModerator = createModerationInstance({ apiKey });
+    const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
       apiKey,
@@ -85,6 +85,12 @@ export const initializePublicRagChain = async ({
     const metadataFilter = isMeilisearch
       ? {
           must: [
+            {
+              key: 'metadata.organization_id',
+              match: {
+                value: organizationId,
+              },
+            },
             {
               key: 'metadata.project_id',
               match: {
