@@ -1,4 +1,4 @@
-import { Role, Source } from '@/generated/prisma/client';
+import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import type { ApiContext } from '../types/ApiContext';
 import type { ChatMessageDto } from '../dtos/chat.dto';
@@ -13,6 +13,8 @@ import {
   sendApiEvent,
 } from '@/libs/sse/prepare-sse-message';
 import { getApiChatMessagesQuery } from '../queries/api-threads.query';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { logger } from '@/app/lib/utils/logger';
 
 async function prepareChainToRun(
   context: ApiContext,
@@ -94,6 +96,7 @@ async function prepareChainToRun(
     threadRecord,
     threadMessage,
     conv_history,
+    rawSettings,
   };
 }
 
@@ -103,8 +106,14 @@ export async function createApiChatMessagesCommand(
   publicThreadId: string,
   payload: ChatMessageDto,
 ) {
-  const { chainOutput, threadRecord, threadMessage, runId, conv_history } =
-    await prepareChainToRun(context, publicThreadId, payload);
+  const {
+    chainOutput,
+    threadRecord,
+    threadMessage,
+    runId,
+    conv_history,
+    rawSettings,
+  } = await prepareChainToRun(context, publicThreadId, payload);
 
   // for chat without streaming:
   const streamResult = await chainOutput.stream({
@@ -113,6 +122,25 @@ export async function createApiChatMessagesCommand(
   });
 
   const chatResponse = await streamResult.text;
+
+  // Track AI usage (fire-and-forget)
+  try {
+    const usage = await streamResult.usage;
+    trackAiUsage({
+      organizationId: context.orgId,
+      projectId: context.projectId ?? null,
+      threadId: threadRecord.public_id,
+      userId: context.userId ?? null,
+      step: AiUsageStep.CHAT_COMPLETION,
+      provider: 'openrouter',
+      model: rawSettings.model || '',
+      inputTokens: usage.inputTokens ?? 0,
+      outputTokens: usage.outputTokens ?? 0,
+      totalTokens: usage.totalTokens ?? 0,
+    });
+  } catch (usageError) {
+    logger.error({ err: usageError }, 'Failed to track API AI usage');
+  }
 
   const dbMessage = await createMessageInDB({
     threadId: threadRecord.id,

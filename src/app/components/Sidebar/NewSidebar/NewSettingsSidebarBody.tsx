@@ -11,6 +11,7 @@ import {
   CreditCardIcon,
   KeyIcon,
   CircleStackIcon,
+  CpuChipIcon,
 } from '@heroicons/react/24/outline';
 
 import { useTranslations } from 'next-intl';
@@ -52,6 +53,12 @@ export const NewSidebarSettingsBody = () => {
           <KeyIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('api-keys')}</SidebarLabel>
         </SidebarItem>
+        {isAppAdmin && (
+          <SidebarItem href="/settings/ai-usage">
+            <CpuChipIcon className={iconClassName} />
+            <SidebarLabel className="font-normal">{t('ai-usage')}</SidebarLabel>
+          </SidebarItem>
+        )}
         {isAppAdmin && (
           <SidebarItem href="/settings/disk-usage">
             <CircleStackIcon className={iconClassName} />
