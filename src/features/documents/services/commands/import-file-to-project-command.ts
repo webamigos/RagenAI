@@ -7,9 +7,10 @@ import { getProjectByPublicIdOrThrowQuery } from '@/features/projects/services/q
 import { logger } from '@/app/lib/utils/logger';
 
 /**
- * Imports (copies) an existing file from one project to another.
- * Creates a new UserFile record in the target project pointing to the same content.
- * A Temporal workflow should be triggered afterward to re-embed.
+ * Imports a file from the global knowledge base into a project.
+ * Creates a lightweight UserFile record that references the source file via
+ * `source_file_id`. No re-embedding is needed — the RAG chain uses an OR
+ * filter to include the source file's existing Meilisearch embeddings.
  */
 export const importFileToProjectCommand = async (
   sourceFilePublicId: string,
@@ -31,12 +32,15 @@ export const importFileToProjectCommand = async (
     throw new Error('Source file not found');
   }
 
-  // Check if file already exists in target project (by name)
+  // Check if file already exists in target project (by source reference or name)
   const existingFile = await db.userFile.findFirst({
     where: {
       organization_id: orgId,
       project_id: targetProject.id,
-      file_name: sourceFile.file_name,
+      OR: [
+        { source_file_id: sourceFile.id },
+        { file_name: sourceFile.file_name },
+      ],
     },
   });
 
@@ -60,19 +64,23 @@ export const importFileToProjectCommand = async (
       is_binary_file: sourceFile.is_binary_file,
       file_extension: sourceFile.file_extension,
       file_mime_type: sourceFile.file_mime_type,
-      // Reset processing status — temporal workflow needed
-      parsing_status: 'NOT_STARTED',
-      embedding_status: 'NOT_STARTED',
+      source_file_id: sourceFile.id,
+      // Inherit source file's status — no re-embedding needed
+      parsing_status: sourceFile.parsing_status,
+      embedding_status: sourceFile.embedding_status,
+      parsing_completed_at: sourceFile.parsing_completed_at,
+      embedding_completed_at: sourceFile.embedding_completed_at,
     },
   });
 
   logger.info(
     {
-      sourceFileId: sourceFile.public_id,
+      sourceFileId: sourceFile.id,
+      sourceFilePublicId: sourceFile.public_id,
       newFileId: newPublicId,
       targetProjectId: targetProject.id,
     },
-    'File imported to project',
+    'File imported to project from knowledge base',
   );
 
   return { alreadyExists: false, file: newFile };

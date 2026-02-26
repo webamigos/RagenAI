@@ -58,7 +58,7 @@ export type ThreadAction =
       success: true;
       thread: {
         public_id: Thread['public_id'];
-        project_id?: number;
+        project_id: number | null;
       };
     }
   | {

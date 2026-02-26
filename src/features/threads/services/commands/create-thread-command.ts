@@ -2,7 +2,6 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { ThreadAction } from '../../contracts/thread.types';
 
@@ -28,18 +27,11 @@ export const createThreadCommand = async ({
       throw new Error('Organization ID is required');
     }
 
-    const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
-    const filteredProjectId = projectId ?? defaultProjectId;
-
-    if (!filteredProjectId) {
-      throw new Error('No project id');
-    }
-
     const threadRecord = await db.thread.create({
       data: {
         organization_id: orgId,
         user_id: userId,
-        project_id: projectId ?? defaultProjectId,
+        project_id: projectId ?? null,
         mentioned_project_id: mentionedProjectId,
         visitor_id: userId ? userId : visitorId,
         preferred_model: preferredModel,
@@ -48,12 +40,12 @@ export const createThreadCommand = async ({
 
     if (threadDocuments && threadDocuments.length > 0 && userId && orgId) {
       const documentsWithUserFileId = threadDocuments.filter(
-        (doc) => doc.userFileId
+        (doc) => doc.userFileId,
       );
 
       if (documentsWithUserFileId.length > 0) {
         const userFileIds = documentsWithUserFileId.map(
-          (doc) => doc.userFileId!
+          (doc) => doc.userFileId!,
         );
 
         const validFiles = await db.userFile.findMany({
@@ -66,7 +58,7 @@ export const createThreadCommand = async ({
 
         const validFileIds = new Set(validFiles.map((f) => f.public_id));
         const validDocuments = documentsWithUserFileId.filter((doc) =>
-          validFileIds.has(doc.userFileId!)
+          validFileIds.has(doc.userFileId!),
         );
 
         if (validDocuments.length > 0) {
@@ -88,13 +80,13 @@ export const createThreadCommand = async ({
           savedThreadDocumentsCount: documentsWithUserFileId.length,
           userFileIds: documentsWithUserFileId.map((doc) => doc.userFileId),
         },
-        'Created ThreadDocument relationships for uploaded files'
+        'Created ThreadDocument relationships for uploaded files',
       );
     }
 
     return {
       public_id: threadRecord.public_id,
-      project_id: filteredProjectId,
+      project_id: projectId ?? null,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create new thread');
@@ -108,7 +100,7 @@ export const createThreadAction = async (
   projectId?: number,
   mentionedProjectId?: number,
   preferredModel?: string,
-  threadDocuments?: ThreadDocumentUI[]
+  threadDocuments?: ThreadDocumentUI[],
 ): Promise<ThreadAction> => {
   try {
     const thread = await createThreadCommand({

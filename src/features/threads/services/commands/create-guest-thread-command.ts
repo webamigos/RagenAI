@@ -44,7 +44,7 @@ export const createGuestThreadCommand = async ({
       success: true,
       thread: {
         public_id: threadRecord.public_id,
-        project_id: projectId,
+        project_id: projectId ?? null,
       },
     };
   } catch (error) {

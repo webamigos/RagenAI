@@ -17,7 +17,9 @@ interface MeilisearchConfig {
 
 interface QdrantFilterCondition {
   key: string;
-  match: { value: string | number };
+  match?: { value: string | number };
+  match_any?: { values: (string | number)[] };
+  is_null?: boolean;
 }
 
 interface QdrantFilter {
@@ -154,6 +156,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
 
     // Configure filterable attributes for metadata-based filtering
     const filterableTask = await index.updateFilterableAttributes([
+      'metadata.project_id',
       'metadata.project_public_id',
       'metadata.file_id',
       'metadata.organization_id',
@@ -203,24 +206,32 @@ function formatFilterValue(value: string | number): string {
   return `'${value}'`;
 }
 
+function conditionToString(condition: QdrantFilterCondition): string {
+  if (condition.is_null) {
+    return `${condition.key} IS NULL`;
+  }
+  if (condition.match_any) {
+    const values = condition.match_any.values.map(formatFilterValue).join(', ');
+    return `${condition.key} IN [${values}]`;
+  }
+  if (condition.match) {
+    return `${condition.key} = ${formatFilterValue(condition.match.value)}`;
+  }
+  return '';
+}
+
 function convertQdrantFilterToMeilisearch(
   filter: QdrantFilter,
 ): string | undefined {
   const parts: string[] = [];
 
   if (filter.must && filter.must.length > 0) {
-    const mustParts = filter.must.map(
-      (condition) =>
-        `${condition.key} = ${formatFilterValue(condition.match.value)}`,
-    );
+    const mustParts = filter.must.map(conditionToString).filter(Boolean);
     parts.push(mustParts.join(' AND '));
   }
 
   if (filter.should && filter.should.length > 0) {
-    const shouldParts = filter.should.map(
-      (condition) =>
-        `${condition.key} = ${formatFilterValue(condition.match.value)}`,
-    );
+    const shouldParts = filter.should.map(conditionToString).filter(Boolean);
     parts.push(`(${shouldParts.join(' OR ')})`);
   }
 

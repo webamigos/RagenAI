@@ -16,11 +16,13 @@ import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-cl
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
-  projectPublicId: string;
+  projectId?: number | null;
+  projectPublicId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
 };
 
@@ -30,6 +32,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 export const initializeRagChain = async ({
   settings,
   projectInstruction,
+  projectId,
   projectPublicId,
   threadDocuments,
 }: InitializeRagChainParams) => {
@@ -71,34 +74,15 @@ export const initializeRagChain = async ({
         supabaseVectorStoreClient,
         embeddingModel,
         orgId,
-        projectPublicId,
+        projectPublicId ?? undefined,
       );
     } else {
       vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
       isMeilisearch = true;
     }
 
-    if (!projectPublicId) {
-      throw new Error('Project public ID is required');
-    }
-
     const filterOptions = isMeilisearch
-      ? {
-          must: [
-            {
-              key: 'metadata.organization_id',
-              match: {
-                value: orgId,
-              },
-            },
-            {
-              key: 'metadata.project_public_id',
-              match: {
-                value: projectPublicId,
-              },
-            },
-          ],
-        }
+      ? await buildMeilisearchFilter(orgId, projectId ?? null)
       : undefined;
 
     return await basicRagChain({
@@ -124,6 +108,53 @@ export const initializeRagChain = async ({
     throw error;
   }
 };
+
+/**
+ * Build Meilisearch filter based on project context:
+ * - Thread with project: org_id AND (project_id = X OR file_id IN [imported_kb_source_ids])
+ * - Thread without project (global KB): org_id AND project_id IS NULL
+ */
+async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
+  const orgCondition = {
+    key: 'metadata.organization_id',
+    match: { value: orgId },
+  };
+
+  if (!projectId) {
+    // Global KB: search files without a project
+    return {
+      must: [orgCondition, { key: 'metadata.project_id', is_null: true }],
+    };
+  }
+
+  // Project-scoped: search project files + imported KB files
+  const importedSourceFileIds = await getImportedKbFileIdsQuery(
+    projectId,
+    orgId,
+  );
+
+  if (importedSourceFileIds.length === 0) {
+    // No KB imports — simple project filter
+    return {
+      must: [
+        orgCondition,
+        { key: 'metadata.project_id', match: { value: projectId } },
+      ],
+    };
+  }
+
+  // Project files OR imported KB source file embeddings
+  return {
+    must: [orgCondition],
+    should: [
+      { key: 'metadata.project_id', match: { value: projectId } },
+      {
+        key: 'metadata.file_id',
+        match_any: { values: importedSourceFileIds },
+      },
+    ],
+  };
+}
 
 const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,

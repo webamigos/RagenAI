@@ -278,23 +278,11 @@ export async function streamEvents({
               projectInstruction,
             });
           } else {
-            // Use effective project public ID (mentioned project takes priority over thread project)
+            // Use effective project ID (mentioned project takes priority over thread project)
+            const projectIdToUse =
+              threadRecord.mentioned_project_id || threadRecord.project_id;
             const projectPublicIdToUse =
               effectiveProjectPublicId || threadRecord.project?.public_id;
-            if (!projectPublicIdToUse) {
-              logger.error(
-                {
-                  threadId: publicThreadId,
-                  effectiveProjectPublicId,
-                  threadProjectPublicId: threadRecord.project?.public_id,
-                  mentionedProjectId: threadRecord.mentioned_project_id,
-                },
-                'No project public ID available for RAG chain initialization',
-              );
-              throw new Error(
-                'Project public ID is required for knowledge base access',
-              );
-            }
 
             const threadDocuments = await loadThreadDocuments(threadRecord.id);
 
@@ -304,7 +292,8 @@ export async function streamEvents({
                 apiKey: effectiveSettings.apiKey,
               },
               projectInstruction,
-              projectPublicId: projectPublicIdToUse,
+              projectId: projectIdToUse ?? null,
+              projectPublicId: projectPublicIdToUse ?? null,
               threadDocuments,
             });
           }
