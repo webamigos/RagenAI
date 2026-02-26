@@ -21,6 +21,7 @@ export const InlineFileCard = memo(({ file, onRemove, isRemoving }: Props) => {
       <button
         onClick={() => onRemove(file.public_id)}
         disabled={isRemoving}
+        aria-label={`Remove ${file.file_name}`}
         className="absolute -top-2 -left-2 size-5 rounded-full bg-muted border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive hover:text-destructive-foreground hover:border-destructive"
       >
         {isRemoving ? (

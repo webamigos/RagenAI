@@ -53,18 +53,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Storage limit enforcement
-    const [storageLimits, orgUsage] = await Promise.all([
+    const [storageLimits, orgUsage, projectUsageResult] = await Promise.all([
       getStorageLimits(orgId),
       getStorageUsageQuery(orgId),
+      projectRecord
+        ? getProjectStorageUsageQuery(orgId, projectRecord.id)
+        : Promise.resolve(null),
     ]);
     let runningOrgUsage = orgUsage.totalBytes;
-
-    let projectUsage = 0;
-    if (projectRecord) {
-      const pUsage = await getProjectStorageUsageQuery(orgId, projectRecord.id);
-      projectUsage = pUsage.totalBytes;
-    }
-    let runningProjectUsage = projectUsage;
+    let runningProjectUsage = projectUsageResult?.totalBytes ?? 0;
 
     const processedFiles = [];
     const failedFiles: { fileName: string; error: string }[] = [];

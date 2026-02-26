@@ -43,32 +43,32 @@ export async function getAdminOrgStorageDetails(orgProviderId: string) {
   return { usage, limits };
 }
 
-export async function updateOrgStorageLimitAction(
+export async function updateOrgStorageLimitsAction(
   orgProviderId: string,
-  storageLimitMB: number,
+  limits: {
+    storageLimitMB: number;
+    projectLimitMB: number;
+    fileLimitMB: number;
+  },
 ) {
   await requireAppAdmin();
+
+  const { storageLimitMB, projectLimitMB, fileLimitMB } = limits;
+
+  if (
+    !Number.isFinite(storageLimitMB) ||
+    storageLimitMB < 1 ||
+    !Number.isFinite(projectLimitMB) ||
+    projectLimitMB < 1 ||
+    !Number.isFinite(fileLimitMB) ||
+    fileLimitMB < 1
+  ) {
+    throw new Error('All limits must be positive numbers (in MB)');
+  }
+
   await saveStorageLimits(orgProviderId, {
     storageLimitBytes: storageLimitMB * 1024 * 1024,
-  });
-}
-
-export async function updateOrgProjectLimitAction(
-  orgProviderId: string,
-  projectLimitMB: number,
-) {
-  await requireAppAdmin();
-  await saveStorageLimits(orgProviderId, {
     projectStorageLimitBytes: projectLimitMB * 1024 * 1024,
-  });
-}
-
-export async function updateOrgFileLimitAction(
-  orgProviderId: string,
-  fileLimitMB: number,
-) {
-  await requireAppAdmin();
-  await saveStorageLimits(orgProviderId, {
     singleFileLimitBytes: fileLimitMB * 1024 * 1024,
   });
 }

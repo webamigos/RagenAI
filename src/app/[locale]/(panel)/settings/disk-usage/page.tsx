@@ -1,17 +1,18 @@
-import { redirect } from 'next/navigation';
+import { redirect } from '@/i18n/routing';
+import { getLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { DiskUsageSettings } from './components/DiskUsageSettings';
 
 export default async function DiskUsagePage() {
-  const user = await getCurrentUser();
+  const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
 
   if (!user) {
-    redirect('/sign-in');
+    return redirect({ href: '/sign-in', locale });
   }
 
   // Only app admins can access this page
   if (user.role !== 'admin') {
-    redirect('/');
+    return redirect({ href: '/', locale });
   }
 
   return (

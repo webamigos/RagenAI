@@ -47,6 +47,7 @@ import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-he
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import type { Project, UserFile } from '@/generated/prisma/client';
 
@@ -148,8 +149,8 @@ export const getProjectStorageInfo = async (
   } catch {
     return {
       usedBytes: 0,
-      limitBytes: 20 * 1024 * 1024,
-      singleFileLimitBytes: 5 * 1024 * 1024,
+      limitBytes: defaultStorageLimits.projectStorageLimitBytes,
+      singleFileLimitBytes: defaultStorageLimits.singleFileLimitBytes,
     };
   }
 };

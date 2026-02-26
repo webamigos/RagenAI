@@ -1,23 +1,12 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import type {
+  OrgStorageSummary,
+  ProjectStorageSummary,
+} from '../../contracts/organization.types';
 
-export type OrgStorageSummary = {
-  orgId: string;
-  orgName: string;
-  internalOrgId: number;
-  totalBytes: number;
-  fileCount: number;
-  storageLimitBytes: number | null;
-};
-
-export type ProjectStorageSummary = {
-  projectId: number;
-  projectPublicId: string;
-  projectTitle: string;
-  totalBytes: number;
-  fileCount: number;
-};
+export type { OrgStorageSummary, ProjectStorageSummary };
 
 /**
  * Admin-only: get storage usage across all organizations
@@ -25,41 +14,50 @@ export type ProjectStorageSummary = {
 export async function getAdminAllOrgsStorageQuery(): Promise<
   OrgStorageSummary[]
 > {
-  const orgs = await db.internalOrganization.findMany({
-    select: {
-      id: true,
-      provider_id: true,
-      settings: {
-        select: { storage_limit_bytes: true },
+  const [orgs, betterAuthOrgs, fileAggs] = await Promise.all([
+    db.internalOrganization.findMany({
+      select: {
+        id: true,
+        provider_id: true,
+        settings: {
+          select: { storage_limit_bytes: true },
+        },
       },
-    },
-  });
-
-  const betterAuthOrgs = await db.organization.findMany({
-    select: { id: true, name: true },
-  });
-  const orgNameMap = new Map(betterAuthOrgs.map((o) => [o.id, o.name]));
-
-  const results: OrgStorageSummary[] = [];
-
-  for (const org of orgs) {
-    const agg = await db.userFile.aggregate({
-      where: { organization_id: org.provider_id },
+    }),
+    db.organization.findMany({
+      select: { id: true, name: true },
+    }),
+    db.userFile.groupBy({
+      by: ['organization_id'],
       _sum: { file_size: true },
       _count: { id: true },
-    });
+    }),
+  ]);
 
-    results.push({
+  const orgNameMap = new Map(betterAuthOrgs.map((o) => [o.id, o.name]));
+  const usageMap = new Map(
+    fileAggs.map((a) => [
+      a.organization_id,
+      { totalBytes: a._sum.file_size ?? 0, fileCount: a._count.id },
+    ]),
+  );
+
+  const results: OrgStorageSummary[] = orgs.map((org) => {
+    const usage = usageMap.get(org.provider_id) ?? {
+      totalBytes: 0,
+      fileCount: 0,
+    };
+    return {
       orgId: org.provider_id,
       orgName: orgNameMap.get(org.provider_id) ?? org.provider_id,
       internalOrgId: org.id,
-      totalBytes: agg._sum.file_size ?? 0,
-      fileCount: agg._count.id,
+      totalBytes: usage.totalBytes,
+      fileCount: usage.fileCount,
       storageLimitBytes: org.settings?.storage_limit_bytes
         ? Number(org.settings.storage_limit_bytes)
         : null,
-    });
-  }
+    };
+  });
 
   return results.sort((a, b) => b.totalBytes - a.totalBytes);
 }
@@ -77,31 +75,36 @@ export async function getAdminOrgProjectsStorageQuery(
 
   if (!org) return [];
 
-  const projects = await db.project.findMany({
-    where: { internal_organization_id: org.id },
-    select: { id: true, public_id: true, title: true },
-  });
-
-  const results: ProjectStorageSummary[] = [];
-
-  for (const project of projects) {
-    const agg = await db.userFile.aggregate({
-      where: {
-        organization_id: orgProviderId,
-        project_id: project.id,
-      },
+  const [projects, fileAggs] = await Promise.all([
+    db.project.findMany({
+      where: { internal_organization_id: org.id },
+      select: { id: true, public_id: true, title: true },
+    }),
+    db.userFile.groupBy({
+      by: ['project_id'],
+      where: { organization_id: orgProviderId },
       _sum: { file_size: true },
       _count: { id: true },
-    });
+    }),
+  ]);
 
-    results.push({
+  const usageMap = new Map(
+    fileAggs.map((a) => [
+      a.project_id,
+      { totalBytes: a._sum.file_size ?? 0, fileCount: a._count.id },
+    ]),
+  );
+
+  const results: ProjectStorageSummary[] = projects.map((project) => {
+    const usage = usageMap.get(project.id) ?? { totalBytes: 0, fileCount: 0 };
+    return {
       projectId: project.id,
       projectPublicId: project.public_id,
       projectTitle: project.title,
-      totalBytes: agg._sum.file_size ?? 0,
-      fileCount: agg._count.id,
-    });
-  }
+      totalBytes: usage.totalBytes,
+      fileCount: usage.fileCount,
+    };
+  });
 
   return results.sort((a, b) => b.totalBytes - a.totalBytes);
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { toast } from 'sonner';
 import {
@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
 
 import { Button } from '@ragenai/common-ui/Button';
 import { StorageProgressBarDetailed } from '@/app/components/Storage/StorageProgressBar';
@@ -22,8 +23,6 @@ import { defaultStorageLimits } from '@/features/organizations/constants/setting
 import type {
   OrgStorageSummary,
   ProjectStorageSummary,
-} from '@/features/organizations/services/queries/get-admin-storage-query';
-import type {
   StorageUsage,
   StorageLimits,
 } from '@/features/organizations/contracts/organization.types';
@@ -32,9 +31,7 @@ import {
   getAdminStorageOverview,
   getAdminOrgProjects,
   getAdminOrgStorageDetails,
-  updateOrgStorageLimitAction,
-  updateOrgProjectLimitAction,
-  updateOrgFileLimitAction,
+  updateOrgStorageLimitsAction,
 } from '../actions';
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -60,6 +57,9 @@ export function DiskUsageSettings() {
   const [editingFileLimit, setEditingFileLimit] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  // Stale async guard
+  const selectOrgRequestId = useRef(0);
+
   const loadOrgs = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -77,12 +77,17 @@ export function DiskUsageSettings() {
   }, [loadOrgs]);
 
   const handleSelectOrg = async (orgId: string) => {
+    const requestId = ++selectOrgRequestId.current;
     setSelectedOrg(orgId);
     try {
       const [details, projectData] = await Promise.all([
         getAdminOrgStorageDetails(orgId),
         getAdminOrgProjects(orgId),
       ]);
+
+      // Ignore stale response if user clicked another org
+      if (requestId !== selectOrgRequestId.current) return;
+
       setOrgDetails(details);
       setProjects(projectData);
 
@@ -115,21 +120,39 @@ export function DiskUsageSettings() {
         ),
       );
     } catch {
-      toast.error('Failed to load organization details');
+      if (requestId === selectOrgRequestId.current) {
+        toast.error('Failed to load organization details');
+      }
     }
   };
 
   const handleSaveLimits = async () => {
     if (!selectedOrg) return;
+
+    const orgMB = Number(editingOrgLimit);
+    const projMB = Number(editingProjectLimit);
+    const fileMB = Number(editingFileLimit);
+
+    if (
+      !Number.isFinite(orgMB) ||
+      orgMB < 1 ||
+      !Number.isFinite(projMB) ||
+      projMB < 1 ||
+      !Number.isFinite(fileMB) ||
+      fileMB < 1
+    ) {
+      toast.error('All limits must be positive numbers');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      await Promise.all([
-        updateOrgStorageLimitAction(selectedOrg, Number(editingOrgLimit)),
-        updateOrgProjectLimitAction(selectedOrg, Number(editingProjectLimit)),
-        updateOrgFileLimitAction(selectedOrg, Number(editingFileLimit)),
-      ]);
+      await updateOrgStorageLimitsAction(selectedOrg, {
+        storageLimitMB: orgMB,
+        projectLimitMB: projMB,
+        fileLimitMB: fileMB,
+      });
       toast.success('Storage limits updated');
-      // Reload details
       const details = await getAdminOrgStorageDetails(selectedOrg);
       setOrgDetails(details);
       loadOrgs();
@@ -183,7 +206,7 @@ export function DiskUsageSettings() {
                 }}
               />
               <RechartsTooltip
-                formatter={(value: number) => `${value.toFixed(2)} MB`}
+                formatter={(value) => `${Number(value).toFixed(2)} MB`}
               />
               <Legend />
               <Bar dataKey="usage" fill="#3b82f6" name="Used (MB)" />
@@ -222,10 +245,18 @@ export function DiskUsageSettings() {
                 return (
                   <tr
                     key={org.orgId}
+                    role="button"
+                    tabIndex={0}
                     className={`border-t hover:bg-muted/30 cursor-pointer transition-colors ${
                       selectedOrg === org.orgId ? 'bg-muted/50' : ''
                     }`}
                     onClick={() => handleSelectOrg(org.orgId)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelectOrg(org.orgId);
+                      }
+                    }}
                   >
                     <td className="p-3 font-medium">{org.orgName}</td>
                     <td className="p-3 text-right">{org.fileCount}</td>
@@ -297,41 +328,50 @@ export function DiskUsageSettings() {
             <div>
               <h3 className="text-sm font-semibold mb-3">Storage Breakdown</h3>
               {orgDetails.usage.totalBytes > 0 ? (
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        {
-                          name: 'Knowledge Base',
-                          value: orgDetails.usage.knowledgeBaseBytes,
-                        },
-                        {
-                          name: 'Project Files',
-                          value: orgDetails.usage.projectFilesBytes,
-                        },
-                        {
-                          name: 'Thread Files',
-                          value: orgDetails.usage.threadFilesBytes,
-                        },
-                      ].filter((d) => d.value > 0)}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
-                      label={({ name, percent }) =>
-                        `${name} ${(percent * 100).toFixed(0)}%`
-                      }
-                      labelLine={false}
-                    >
-                      <Cell fill={CATEGORY_COLORS.knowledgeBase} />
-                      <Cell fill={CATEGORY_COLORS.projectFiles} />
-                      <Cell fill={CATEGORY_COLORS.threadFiles} />
-                    </Pie>
-                    <RechartsTooltip
-                      formatter={(value: number) => prettyBytes(value)}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                (() => {
+                  const pieData = [
+                    {
+                      name: 'Knowledge Base',
+                      value: orgDetails.usage.knowledgeBaseBytes,
+                      color: CATEGORY_COLORS.knowledgeBase,
+                    },
+                    {
+                      name: 'Project Files',
+                      value: orgDetails.usage.projectFilesBytes,
+                      color: CATEGORY_COLORS.projectFiles,
+                    },
+                    {
+                      name: 'Thread Files',
+                      value: orgDetails.usage.threadFilesBytes,
+                      color: CATEGORY_COLORS.threadFiles,
+                    },
+                  ].filter((d) => d.value > 0);
+
+                  return (
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          dataKey="value"
+                          label={(props: PieLabelRenderProps) =>
+                            `${props.name} ${(((props.percent as number) ?? 0) * 100).toFixed(0)}%`
+                          }
+                          labelLine={false}
+                        >
+                          {pieData.map((entry) => (
+                            <Cell key={entry.name} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip
+                          formatter={(value) => prettyBytes(Number(value))}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  );
+                })()
               ) : (
                 <p className="text-sm text-muted-foreground">No files</p>
               )}

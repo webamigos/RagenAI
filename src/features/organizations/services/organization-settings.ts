@@ -359,9 +359,9 @@ export async function saveStorageLimits(
   await upsertSettings(internalOrgId, data);
 }
 
-export async function getStorageLimits(orgId: string): Promise<StorageLimits> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+function mapStorageLimits(
+  settings: Record<string, unknown> | null,
+): StorageLimits {
   return {
     storageLimitBytes: Number(
       settings?.storage_limit_bytes ?? defaultStorageLimits.storageLimitBytes,
@@ -377,23 +377,17 @@ export async function getStorageLimits(orgId: string): Promise<StorageLimits> {
   };
 }
 
+export async function getStorageLimits(orgId: string): Promise<StorageLimits> {
+  const internalOrgId = await resolveOrgId(orgId);
+  const settings = await getSettings(internalOrgId);
+  return mapStorageLimits(settings);
+}
+
 export async function getStorageLimitsByInternalOrgId(
   internalOrgId: number,
 ): Promise<StorageLimits> {
   const settings = await getSettings(internalOrgId);
-  return {
-    storageLimitBytes: Number(
-      settings?.storage_limit_bytes ?? defaultStorageLimits.storageLimitBytes,
-    ),
-    projectStorageLimitBytes: Number(
-      settings?.project_storage_limit_bytes ??
-        defaultStorageLimits.projectStorageLimitBytes,
-    ),
-    singleFileLimitBytes: Number(
-      settings?.single_file_limit_bytes ??
-        defaultStorageLimits.singleFileLimitBytes,
-    ),
-  };
+  return mapStorageLimits(settings);
 }
 
 // --- Get All Settings ---

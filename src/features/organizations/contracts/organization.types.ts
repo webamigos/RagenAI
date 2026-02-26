@@ -87,6 +87,25 @@ export type StorageUsage = {
   totalFileCount: number;
 };
 
+// --- Admin storage types ---
+
+export type OrgStorageSummary = {
+  orgId: string;
+  orgName: string;
+  internalOrgId: number;
+  totalBytes: number;
+  fileCount: number;
+  storageLimitBytes: number | null;
+};
+
+export type ProjectStorageSummary = {
+  projectId: number;
+  projectPublicId: string;
+  projectTitle: string;
+  totalBytes: number;
+  fileCount: number;
+};
+
 // --- User & organization role types (from contracts/User.ts) ---
 
 export type UserRole = 'admin' | 'user' | 'guest' | 'visitor' | 'superAdmin';

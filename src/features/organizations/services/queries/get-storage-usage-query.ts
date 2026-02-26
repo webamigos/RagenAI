@@ -1,5 +1,3 @@
-'use server';
-
 import db from '@ragenai/prisma-client';
 import { getDefaultProjectIdQuery } from '@/features/projects/services/queries/get-default-project-query';
 import type { StorageUsage } from '../../contracts/organization.types';
