@@ -1,6 +1,12 @@
 import db from '@ragenai/prisma-client';
-import { defaultOrganizationSettings } from '../constants/settings';
-import type { RawOrganizationSettings } from '../contracts/organization.types';
+import {
+  defaultOrganizationSettings,
+  defaultStorageLimits,
+} from '../constants/settings';
+import type {
+  RawOrganizationSettings,
+  StorageLimits,
+} from '../contracts/organization.types';
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
 import { getRedisInstance } from '@/app/lib/services/redis';
 import { logger } from '@/app/lib/utils/logger';
@@ -34,7 +40,7 @@ async function resolveOrgId(orgId: string): Promise<number> {
 
 async function upsertSettings(
   orgId: number,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<void> {
   await db.organizationSettings.upsert({
     where: { organization_id: orgId },
@@ -58,7 +64,7 @@ async function getSettings(orgId: number) {
     } catch (err) {
       logger.warn(
         { err, cacheKey: cacheKey(String(orgId)) },
-        'Cache write failed'
+        'Cache write failed',
       );
     }
   }
@@ -80,7 +86,7 @@ async function getCachedSettings(orgId: string) {
 
 export async function saveTemperatureSetting(
   orgId: string,
-  temperature: number
+  temperature: number,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   await upsertSettings(internalOrgId, { temperature });
@@ -96,7 +102,7 @@ export async function getTemperatureSetting(orgId: string): Promise<number> {
 
 export async function saveOpenaiAPIKey(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
@@ -114,7 +120,7 @@ export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
 
 export async function saveAnthropicAPIKey(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
@@ -122,7 +128,7 @@ export async function saveAnthropicAPIKey(
 }
 
 export async function getAnthropicAPIKey(
-  orgId: string
+  orgId: string,
 ): Promise<string | null> {
   const internalOrgId = await resolveOrgId(orgId);
   const settings = await getSettings(internalOrgId);
@@ -134,7 +140,7 @@ export async function getAnthropicAPIKey(
 
 export async function saveGoogleAPIKey(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
@@ -152,7 +158,7 @@ export async function getGoogleAPIKey(orgId: string): Promise<string | null> {
 
 export async function saveBedrockCredentials(
   orgId: string,
-  credentials: { region: string; accessKeyId: string; secretAccessKey: string }
+  credentials: { region: string; accessKeyId: string; secretAccessKey: string },
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(JSON.stringify(credentials));
@@ -180,7 +186,7 @@ export async function getBedrockCredentials(orgId: string): Promise<{
 
 export async function saveOllamaHost(
   orgId: string,
-  host: string
+  host: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   await upsertSettings(internalOrgId, { ollama_host: host });
@@ -196,7 +202,7 @@ export async function getOllamaHost(orgId: string): Promise<string | null> {
 
 export async function saveOpenrouterAPIKey(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
@@ -204,7 +210,7 @@ export async function saveOpenrouterAPIKey(
 }
 
 export async function getOpenrouterAPIKey(
-  orgId: string
+  orgId: string,
 ): Promise<string | null> {
   const internalOrgId = await resolveOrgId(orgId);
   const settings = await getSettings(internalOrgId);
@@ -216,7 +222,7 @@ export async function getOpenrouterAPIKey(
 
 export async function saveFireworksAPIKey(
   orgId: string,
-  apiKey: string
+  apiKey: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
@@ -224,7 +230,7 @@ export async function saveFireworksAPIKey(
 }
 
 export async function getFireworksAPIKey(
-  orgId: string
+  orgId: string,
 ): Promise<string | null> {
   const internalOrgId = await resolveOrgId(orgId);
   const settings = await getSettings(internalOrgId);
@@ -241,7 +247,7 @@ export async function saveAzureOpenAICredentials(
     instanceName: string;
     deploymentName: string;
     apiVersion: string;
-  }
+  },
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(JSON.stringify(credentials));
@@ -283,14 +289,14 @@ export async function getModel(orgId: string): Promise<string | null> {
 
 export async function saveAssistantPrompt(
   orgId: string,
-  prompt: string
+  prompt: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   await upsertSettings(internalOrgId, { prompt });
 }
 
 export async function getAssistantPrompt(
-  orgId: string
+  orgId: string,
 ): Promise<string | null> {
   const internalOrgId = await resolveOrgId(orgId);
   const settings = await getSettings(internalOrgId);
@@ -301,7 +307,7 @@ export async function getAssistantPrompt(
 
 export async function saveMaxDocumentsToRetrieve(
   orgId: string,
-  maxDocumentsToRetrieve: number
+  maxDocumentsToRetrieve: number,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   await upsertSettings(internalOrgId, {
@@ -310,7 +316,7 @@ export async function saveMaxDocumentsToRetrieve(
 }
 
 export async function getMaxDocumentsToRetrieve(
-  orgId: string
+  orgId: string,
 ): Promise<number> {
   const internalOrgId = await resolveOrgId(orgId);
   const settings = await getSettings(internalOrgId);
@@ -324,7 +330,7 @@ export async function getMaxDocumentsToRetrieve(
 
 export async function saveVoiceId(
   orgId: string,
-  voiceId: string
+  voiceId: string,
 ): Promise<void> {
   const internalOrgId = await resolveOrgId(orgId);
   await upsertSettings(internalOrgId, { voice_id: voiceId });
@@ -336,10 +342,64 @@ export async function getVoiceId(orgId: string): Promise<string> {
   return settings?.voice_id ?? 'JBFqnCBsd6RMkjVDRZzb';
 }
 
+// --- Storage Limits ---
+
+export async function saveStorageLimits(
+  orgId: string,
+  limits: Partial<StorageLimits>,
+): Promise<void> {
+  const internalOrgId = await resolveOrgId(orgId);
+  const data: Record<string, unknown> = {};
+  if (limits.storageLimitBytes !== undefined)
+    data.storage_limit_bytes = BigInt(limits.storageLimitBytes);
+  if (limits.projectStorageLimitBytes !== undefined)
+    data.project_storage_limit_bytes = BigInt(limits.projectStorageLimitBytes);
+  if (limits.singleFileLimitBytes !== undefined)
+    data.single_file_limit_bytes = BigInt(limits.singleFileLimitBytes);
+  await upsertSettings(internalOrgId, data);
+}
+
+export async function getStorageLimits(orgId: string): Promise<StorageLimits> {
+  const internalOrgId = await resolveOrgId(orgId);
+  const settings = await getSettings(internalOrgId);
+  return {
+    storageLimitBytes: Number(
+      settings?.storage_limit_bytes ?? defaultStorageLimits.storageLimitBytes,
+    ),
+    projectStorageLimitBytes: Number(
+      settings?.project_storage_limit_bytes ??
+        defaultStorageLimits.projectStorageLimitBytes,
+    ),
+    singleFileLimitBytes: Number(
+      settings?.single_file_limit_bytes ??
+        defaultStorageLimits.singleFileLimitBytes,
+    ),
+  };
+}
+
+export async function getStorageLimitsByInternalOrgId(
+  internalOrgId: number,
+): Promise<StorageLimits> {
+  const settings = await getSettings(internalOrgId);
+  return {
+    storageLimitBytes: Number(
+      settings?.storage_limit_bytes ?? defaultStorageLimits.storageLimitBytes,
+    ),
+    projectStorageLimitBytes: Number(
+      settings?.project_storage_limit_bytes ??
+        defaultStorageLimits.projectStorageLimitBytes,
+    ),
+    singleFileLimitBytes: Number(
+      settings?.single_file_limit_bytes ??
+        defaultStorageLimits.singleFileLimitBytes,
+    ),
+  };
+}
+
 // --- Get All Settings ---
 
 export async function getAllSettings(
-  orgId: string
+  orgId: string,
 ): Promise<RawOrganizationSettings> {
   const internalOrgId = await resolveOrgId(orgId);
   const settings = await getSettings(internalOrgId);
@@ -384,7 +444,7 @@ export async function getAllSettings(
   if (settings.bedrock_credentials) {
     try {
       bedrockCredentials = JSON.parse(
-        decryptApiKey(settings.bedrock_credentials)
+        decryptApiKey(settings.bedrock_credentials),
       );
     } catch {
       bedrockCredentials = null;
@@ -395,7 +455,7 @@ export async function getAllSettings(
   if (settings.azure_openai_credentials) {
     try {
       azureOpenaiCredentials = JSON.parse(
-        decryptApiKey(settings.azure_openai_credentials)
+        decryptApiKey(settings.azure_openai_credentials),
       );
     } catch {
       azureOpenaiCredentials = null;

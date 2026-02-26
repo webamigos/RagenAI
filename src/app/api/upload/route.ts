@@ -11,6 +11,12 @@ import { createFileDetailsInDB } from '@/app/lib/services/file';
 import db from '@ragenai/prisma-client';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
+import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import {
+  getStorageUsageQuery,
+  getProjectStorageUsageQuery,
+} from '@/features/organizations/services/queries/get-storage-usage-query';
+import prettyBytes from 'pretty-bytes';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -46,10 +52,53 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Storage limit enforcement
+    const [storageLimits, orgUsage] = await Promise.all([
+      getStorageLimits(orgId),
+      getStorageUsageQuery(orgId),
+    ]);
+    let runningOrgUsage = orgUsage.totalBytes;
+
+    let projectUsage = 0;
+    if (projectRecord) {
+      const pUsage = await getProjectStorageUsageQuery(orgId, projectRecord.id);
+      projectUsage = pUsage.totalBytes;
+    }
+    let runningProjectUsage = projectUsage;
+
     const processedFiles = [];
     const failedFiles: { fileName: string; error: string }[] = [];
 
     for (const file of files) {
+      // Check single file limit
+      if (file.size > storageLimits.singleFileLimitBytes) {
+        failedFiles.push({
+          fileName: file.name,
+          error: `File exceeds maximum size of ${prettyBytes(storageLimits.singleFileLimitBytes)}`,
+        });
+        continue;
+      }
+
+      // Check org-wide storage limit
+      if (runningOrgUsage + file.size > storageLimits.storageLimitBytes) {
+        failedFiles.push({
+          fileName: file.name,
+          error: `Organization storage limit of ${prettyBytes(storageLimits.storageLimitBytes)} would be exceeded`,
+        });
+        continue;
+      }
+
+      // Check project storage limit
+      if (
+        projectRecord &&
+        runningProjectUsage + file.size > storageLimits.projectStorageLimitBytes
+      ) {
+        failedFiles.push({
+          fileName: file.name,
+          error: `Project storage limit of ${prettyBytes(storageLimits.projectStorageLimitBytes)} would be exceeded`,
+        });
+        continue;
+      }
       try {
         const parsedFile = await parseFile(file, orgId);
         const fileType = getFileType(parsedFile.fileName);
@@ -112,6 +161,12 @@ export async function POST(request: NextRequest) {
 
         usageTracker.incUploadedFilesSize(file.size);
         usageTracker.incUploadedFilesCount();
+
+        // Update running totals for cumulative validation
+        runningOrgUsage += file.size;
+        if (projectRecord) {
+          runningProjectUsage += file.size;
+        }
       } catch (error) {
         logger.error({ err: error }, `Error processing file ${file.name}`);
         failedFiles.push({

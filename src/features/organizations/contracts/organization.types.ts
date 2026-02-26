@@ -70,6 +70,23 @@ export type OrganizationSettingsLimits = {
   maxDocumentsToRetrieve: LimitConfig;
 };
 
+export type StorageLimits = {
+  storageLimitBytes: number;
+  projectStorageLimitBytes: number;
+  singleFileLimitBytes: number;
+};
+
+export type StorageUsage = {
+  knowledgeBaseBytes: number;
+  knowledgeBaseFileCount: number;
+  projectFilesBytes: number;
+  projectFilesFileCount: number;
+  threadFilesBytes: number;
+  threadFilesFileCount: number;
+  totalBytes: number;
+  totalFileCount: number;
+};
+
 // --- User & organization role types (from contracts/User.ts) ---
 
 export type UserRole = 'admin' | 'user' | 'guest' | 'visitor' | 'superAdmin';

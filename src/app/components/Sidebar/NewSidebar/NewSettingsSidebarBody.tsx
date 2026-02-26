@@ -10,14 +10,18 @@ import {
   AdjustmentsHorizontalIcon,
   CreditCardIcon,
   KeyIcon,
+  CircleStackIcon,
 } from '@heroicons/react/24/outline';
 
 import { useTranslations } from 'next-intl';
+import { useUser } from '@/app/hooks/use-auth';
 
 const iconClassName = 'size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400';
 
 export const NewSidebarSettingsBody = () => {
   const t = useTranslations('sidebar');
+  const { user } = useUser();
+  const isAppAdmin = user?.role === 'admin';
 
   return (
     <SidebarBody>
@@ -48,6 +52,14 @@ export const NewSidebarSettingsBody = () => {
           <KeyIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('api-keys')}</SidebarLabel>
         </SidebarItem>
+        {isAppAdmin && (
+          <SidebarItem href="/settings/disk-usage">
+            <CircleStackIcon className={iconClassName} />
+            <SidebarLabel className="font-normal">
+              {t('disk-usage')}
+            </SidebarLabel>
+          </SidebarItem>
+        )}
       </SidebarSection>
     </SidebarBody>
   );

@@ -223,6 +223,7 @@
     "react-quill-new": "^3.3.3",
     "react-redux": "^9.2.0",
     "react-tooltip": "^5.28.0",
+    "recharts": "^3.7.0",
     "reflect-metadata": "^0.1.13",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",

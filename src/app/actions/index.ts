@@ -45,6 +45,9 @@ import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
+import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
+import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import type { Project, UserFile } from '@/generated/prisma/client';
 
 type ResponseMessage = {
@@ -122,6 +125,31 @@ export const getProjectFiles = async (
     return {
       error: 'Fetching project files failed',
       status: StatusCodes.BAD_REQUEST,
+    };
+  }
+};
+
+// Get project storage info (usage + limits)
+export const getProjectStorageInfo = async (
+  projectPublicId: Project['public_id'],
+) => {
+  try {
+    const orgId = await getOrgIdOrThrow();
+    const project = await getProjectByPublicIdOrThrow(projectPublicId);
+    const [usage, limits] = await Promise.all([
+      getProjectStorageUsageQuery(orgId, project.id),
+      getStorageLimits(orgId),
+    ]);
+    return {
+      usedBytes: usage.totalBytes,
+      limitBytes: limits.projectStorageLimitBytes,
+      singleFileLimitBytes: limits.singleFileLimitBytes,
+    };
+  } catch {
+    return {
+      usedBytes: 0,
+      limitBytes: 20 * 1024 * 1024,
+      singleFileLimitBytes: 5 * 1024 * 1024,
     };
   }
 };
