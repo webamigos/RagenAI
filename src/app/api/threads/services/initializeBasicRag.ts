@@ -73,7 +73,7 @@ export const initializeRagChain = async ({
     let vectorStore: VectorStoreClient;
     let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'supabase') {
+    if (orgMetadata.vectorStore === 'supabase') {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,

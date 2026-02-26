@@ -41,7 +41,6 @@ export const getProjectByPublicIdOrThrowQuery = async (
           },
         },
       },
-      internal_organization_id: true,
       organization_id: true,
       is_public: true,
       access_token: true,

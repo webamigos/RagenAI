@@ -180,14 +180,8 @@ export const auth = betterAuth({
               orgId: org.id,
             });
 
-            // Create internal org + default project
-            const ragenOrg = await createOrganizationWithDefaultProject(
-              org.id,
-              user.id
-            );
-            console.log('[AUTH] Internal organization created', {
-              ragenOrgId: ragenOrg.id,
-            });
+            // Create default project for organization
+            await createOrganizationWithDefaultProject(org.id, user.id);
 
             // Set default vector store (meilisearch for local dev, can be changed in settings)
             const defaultVectorStore =
@@ -224,7 +218,7 @@ export const auth = betterAuth({
               });
             } else {
               console.log(
-                '[AUTH] Skipping newsletter signup - RESEND_DEFAULT_AUDIENCE_ID not configured'
+                '[AUTH] Skipping newsletter signup - RESEND_DEFAULT_AUDIENCE_ID not configured',
               );
             }
           } catch (error) {

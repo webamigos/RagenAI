@@ -5,16 +5,14 @@ import { Source } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 
 export const createProjectCommand = async (
-  organizationInternalId: number,
   title: string,
   organizationId: string,
-  userId: string
+  userId: string,
 ) => {
   try {
     return await db.project.create({
       data: {
         title,
-        internal_organization_id: organizationInternalId,
         organization_id: organizationId,
         owner_id: userId,
         source: Source.UI,
@@ -24,7 +22,6 @@ export const createProjectCommand = async (
         title: true,
         created_at: true,
         updated_at: true,
-        internal_organization_id: true,
         organization_id: true,
         threads: true,
         owner_id: true,

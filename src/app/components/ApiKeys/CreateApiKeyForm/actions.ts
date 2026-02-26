@@ -10,7 +10,6 @@ import db from '@ragenai/prisma-client';
 
 import { type ApiKeyDto } from './types';
 import { logger } from '@/app/lib/utils/logger';
-import { getInternalOrganizationByProviderIdQuery as fetchOrganizationByProviderId } from '@/features/organizations/services/queries/get-api-keys-query';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
 import {
   type OrgId,
@@ -59,14 +58,12 @@ export const createApiKey = async (
       throw new Error('Not allowed!');
     }
 
-    const organization = await fetchOrganizationByProviderId(orgId);
-
     const keyRecord = await db.apiKey.create({
       data: {
         name: data.name,
         masked_value: 'pending_*********',
         project_id: userProject.id,
-        organization_id: organization.id,
+        organization_id: orgId,
       },
     });
 
@@ -81,19 +78,6 @@ export const createApiKey = async (
     };
 
     const hashResult = await apiKeysService.createAndHash(keyPayload);
-
-    // TODO: previous version with NestJS app
-    // const response = await fetch(`${apiBaseUrl}/v1/auth/generate-api-key`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     orgId: organization.id,
-    //     projectId: defaultProject.id,
-    //     keyId: keyRecord.id,
-    //   }),
-    // });
 
     const { apiKey } = hashResult;
     const maskedKey = maskApiKey(apiKey);

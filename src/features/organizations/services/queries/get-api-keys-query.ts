@@ -1,36 +1,19 @@
 import db from '@ragenai/prisma-client';
-import type { InternalOrganization } from '@/generated/prisma/client';
-
-export const getInternalOrganizationByProviderIdQuery = async (
-  organizationProviderId: InternalOrganization['provider_id'],
-) => {
-  return await db.internalOrganization.findUniqueOrThrow({
-    where: {
-      provider_id: organizationProviderId,
-    },
-  });
-};
 
 export const getOrganizationDefaultProjectQuery = async (
-  systemOrgId: InternalOrganization['id'],
+  organizationId: string,
 ) => {
   return await db.project.findFirstOrThrow({
     where: {
-      internal_organization_id: systemOrgId,
+      organization_id: organizationId,
     },
   });
 };
 
-export const getApiKeysQuery = async (
-  organizationProviderId: InternalOrganization['provider_id'],
-) => {
-  const organization = await getInternalOrganizationByProviderIdQuery(
-    organizationProviderId,
-  );
-
+export const getApiKeysQuery = async (organizationId: string) => {
   return await db.apiKey.findMany({
     where: {
-      organization_id: organization.id,
+      organization_id: organizationId,
     },
     select: {
       public_id: true,

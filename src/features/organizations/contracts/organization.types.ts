@@ -1,35 +1,25 @@
-import type { Organization } from '@/generated/prisma/client';
-
-// --- Organization metadata types (from lib/types/organizations.ts) ---
-
 export type OrganizationVectorStore = 'meilisearch' | 'supabase';
 
-export type ClerkOrganizationPrivateMetadata = {
-  ragen_org_id: Organization['id'];
-  vector_store: OrganizationVectorStore;
-};
-
-export type ClerkOrganizationPublicMetadata = {
+export type OrganizationPublicMetadata = {
   hasKnowledge: boolean;
 };
 
-export type ClerkOrganizationMetadata = {
-  publicMetadata?: ClerkOrganizationPublicMetadata;
-  privateMetadata?: ClerkOrganizationPrivateMetadata;
+export type OrganizationMetadata = {
+  publicMetadata?: OrganizationPublicMetadata;
+  vectorStore?: OrganizationVectorStore;
 };
 
-// --- Account setup types (from lib/types/account-setup.ts) ---
+// --- Account setup types ---
 
 export type AccountSetupStatus = {
-  clerkOrganizationExists: boolean;
-  internalOrganizationExists: boolean;
+  organizationExists: boolean;
   organizationHasSubscription: boolean;
   organizationHasDefaultProject: boolean;
   accountSetupComplete: boolean;
   organizationId: string | null;
 };
 
-// --- Organization settings types (from lib/types/settings.ts) ---
+// --- Organization settings types ---
 
 export type OrganizationSettings = {
   apiKey: string;
@@ -92,7 +82,6 @@ export type StorageUsage = {
 export type OrgStorageSummary = {
   orgId: string;
   orgName: string;
-  internalOrgId: number;
   totalBytes: number;
   fileCount: number;
   storageLimitBytes: number | null;
@@ -106,7 +95,7 @@ export type ProjectStorageSummary = {
   fileCount: number;
 };
 
-// --- User & organization role types (from contracts/User.ts) ---
+// --- User & organization role types ---
 
 export type UserRole = 'admin' | 'user' | 'guest' | 'visitor' | 'superAdmin';
 export type OrgRole = 'org:member' | 'org:owner' | 'org:admin';

@@ -38,7 +38,7 @@ export async function finalizeOnboardingCommand() {
     if (!firstOrg) {
       logger.info(
         { userId },
-        'No organization found, creating one in finalizeUserOnboarding'
+        'No organization found, creating one in finalizeUserOnboarding',
       );
 
       try {
@@ -53,7 +53,7 @@ export async function finalizeOnboardingCommand() {
 
         logger.info(
           { userId, orgResponse: JSON.stringify(org) },
-          'Organization API response'
+          'Organization API response',
         );
 
         // Extract org ID from response (may be org.id or org.data.id)
@@ -64,16 +64,15 @@ export async function finalizeOnboardingCommand() {
 
         logger.info(
           { userId, orgId },
-          'Organization created with owner membership'
+          'Organization created with owner membership',
         );
 
         // Note: createOrganization automatically adds creator as owner member
         // No need to call addMember separately
 
-        // Create internal org + default project
-        const { createOrganizationWithDefaultProjectCommand } = await import(
-          '@/features/organizations/services/commands/create-organization-command'
-        );
+        // Create default project for organization
+        const { createOrganizationWithDefaultProjectCommand } =
+          await import('@/features/organizations/services/commands/create-organization-command');
         await createOrganizationWithDefaultProjectCommand(orgId, userId);
 
         // Set default vector store (meilisearch for local dev, can be changed in settings)
@@ -92,7 +91,7 @@ export async function finalizeOnboardingCommand() {
 
         logger.info(
           { userId, orgId, vectorStore: defaultVectorStore },
-          'Set default vector store for new organization'
+          'Set default vector store for new organization',
         );
 
         // Set firstOrg to the created organization
@@ -100,7 +99,7 @@ export async function finalizeOnboardingCommand() {
       } catch (createError) {
         logger.error(
           { err: createError, userId },
-          'Failed to create organization in finalizeUserOnboarding'
+          'Failed to create organization in finalizeUserOnboarding',
         );
         throw new Error('Failed to create organization for user');
       }
@@ -123,12 +122,12 @@ export async function finalizeOnboardingCommand() {
 
       logger.info(
         { userId, orgId: firstOrg.id },
-        'Set activeOrganizationId via Better Auth API'
+        'Set activeOrganizationId via Better Auth API',
       );
     } catch (setActiveError) {
       logger.error(
         { err: setActiveError, userId, orgId: firstOrg.id },
-        'Failed to set active organization via API, trying direct update'
+        'Failed to set active organization via API, trying direct update',
       );
 
       // Fallback to direct Prisma update if Better Auth API fails
@@ -146,7 +145,7 @@ export async function finalizeOnboardingCommand() {
 
         logger.info(
           { userId, orgId: firstOrg.id, sessionId: userSessions[0].id },
-          'Set activeOrganizationId via direct Prisma update fallback'
+          'Set activeOrganizationId via direct Prisma update fallback',
         );
       } else {
         logger.error({ userId }, 'No session found for user');
@@ -172,7 +171,7 @@ export async function finalizeOnboardingCommand() {
 
     logger.info(
       { userId, orgId: firstOrg.id },
-      'User onboarding finalized successfully'
+      'User onboarding finalized successfully',
     );
 
     return { success: true, organizationId: firstOrg.id };

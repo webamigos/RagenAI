@@ -306,7 +306,7 @@ export const convertAndStoreDocument = async ({
     }
 
     const orgMetadata = await getOrganizationMetadata(orgId);
-    const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
+    const vectorStoreType = orgMetadata.vectorStore;
 
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {

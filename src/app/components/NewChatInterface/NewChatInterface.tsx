@@ -48,10 +48,9 @@ export const NewChatInterface = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
-  const [
-    internalOrganizationDefaultModel,
-    setInternalOrganizationDefaultModel,
-  ] = useState<string | null>(organizationDefaultModel || null);
+  const [resolvedDefaultModel, setResolvedDefaultModel] = useState<
+    string | null
+  >(organizationDefaultModel || null);
   const [selectedModel, setSelectedModel] = useState<string>(
     organizationDefaultModel || 'google/gemini-2.0-flash-001',
   );
@@ -97,7 +96,7 @@ export const NewChatInterface = ({
         try {
           const result = await getOrganizationSettings();
           if (result.success && result.settings) {
-            setInternalOrganizationDefaultModel(result.settings.model);
+            setResolvedDefaultModel(result.settings.model);
             // Only set selectedModel if it's still the default (hasn't been manually changed)
             setSelectedModel((prev) =>
               prev ===
@@ -122,7 +121,7 @@ export const NewChatInterface = ({
   // Only set the model once on mount, don't reset user's selection
   useEffect(() => {
     if (organizationDefaultModel) {
-      setInternalOrganizationDefaultModel(organizationDefaultModel);
+      setResolvedDefaultModel(organizationDefaultModel);
       // Don't reset selectedModel - user may have already chosen a different model
     }
   }, [organizationDefaultModel]);
@@ -135,7 +134,7 @@ export const NewChatInterface = ({
   if (
     !isPublicAccess &&
     !organizationDefaultModel &&
-    internalOrganizationDefaultModel === null
+    resolvedDefaultModel === null
   ) {
     return (
       <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
@@ -228,7 +227,7 @@ export const NewChatInterface = ({
               <ModelSelectorInline
                 selectedModel={selectedModel}
                 organizationDefaultModel={
-                  internalOrganizationDefaultModel || organizationDefaultModel
+                  resolvedDefaultModel || organizationDefaultModel
                 }
                 onChange={setSelectedModel}
                 disabled={isLoading || isPending}
