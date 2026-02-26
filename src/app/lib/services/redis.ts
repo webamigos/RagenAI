@@ -2,7 +2,8 @@ import Redis from 'ioredis';
 import { logger } from '../utils/logger';
 
 export class RedisService {
-  private static instance: RedisService;
+  private static instance: RedisService | null = null;
+  private static disabledLogged = false;
   private client: Redis;
 
   private constructor() {
@@ -10,7 +11,14 @@ export class RedisService {
     this.client = new Redis(process.env.REDIS_URL!);
   }
 
-  public static getInstance(): RedisService {
+  public static getInstance(): RedisService | null {
+    if (!process.env.REDIS_URL) {
+      if (!RedisService.disabledLogged) {
+        logger.info('REDIS_URL not set — Redis disabled');
+        RedisService.disabledLogged = true;
+      }
+      return null;
+    }
     if (!RedisService.instance) {
       RedisService.instance = new RedisService();
     }
@@ -23,7 +31,7 @@ export class RedisService {
     } catch (error) {
       logger.error(
         { err: error, key, field },
-        'Error retrieving hash field from Redis'
+        'Error retrieving hash field from Redis',
       );
       throw new Error('Failed to retrieve data from Redis');
     }

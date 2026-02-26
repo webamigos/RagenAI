@@ -20,7 +20,7 @@ npm run db:seed          # Seed database (uses .env.local)
 
 ## Local Development
 
-Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Redis on 6379, Meilisearch on 7700). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, optional Redis on 6379). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
@@ -29,7 +29,7 @@ DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 
 ## Architecture
 
-**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (Upstash) + Meilisearch (vector/hybrid search)
+**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search)
 
 **What it does**: RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
 
@@ -63,7 +63,7 @@ features/{feature}/
 - Queries return data directly; commands return results or `OperationResult<T>`
 - Import types from `@/features/{feature}/contracts/` (not from `@/app/contracts/` or `@/app/lib/types/`)
 - Import business logic from `@/features/{feature}/services/` (not from `@/app/lib/services/`)
-- Organization settings kept as single cohesive file (`organization-settings.ts`) due to shared Redis caching infrastructure
+- Organization settings kept as single cohesive file (`organization-settings.ts`) due to shared DB query infrastructure
 - Server actions in `src/app/actions/index.ts` delegate to feature commands/queries
 
 ### API

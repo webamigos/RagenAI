@@ -15,9 +15,9 @@ const envSchema = z.object({
   SUPABASE_ANON_KEY: z.string(),
   SUPABASE_PROJECT_ID: z.string(), // needed for vector store migrations migrations
 
-  // Redis for organization settings
-  REDIS_URL: z.string().url(),
-  SECRET_KEY: z.string(), // for hashing organization settings in Redis
+  // Redis (optional — used only for API rate limiting)
+  REDIS_URL: z.string().url().optional(),
+  SECRET_KEY: z.string(), // for encrypting organization API keys in DB
 
   // Target env
   TARGET_ENV: z.enum(TARGET_ENV),

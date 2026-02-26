@@ -8,22 +8,6 @@ import type {
   StorageLimits,
 } from '../contracts/organization.types';
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
-import { getRedisInstance } from '@/app/lib/services/redis';
-import { logger } from '@/app/lib/utils/logger';
-
-const redis = getRedisInstance();
-
-function cacheKey(orgId: string): string {
-  return `org-settings:${orgId}`;
-}
-
-async function invalidateCache(orgId: string): Promise<void> {
-  try {
-    await redis.del(cacheKey(orgId));
-  } catch (err) {
-    logger.warn({ err, cacheKey: cacheKey(orgId) }, 'Cache invalidate failed');
-  }
-}
 
 async function upsertSettings(
   orgId: string,
@@ -34,36 +18,12 @@ async function upsertSettings(
     update: data,
     create: { organization_id: orgId, ...data },
   });
-  await invalidateCache(orgId);
 }
 
 async function getSettings(orgId: string) {
-  const cached = await getCachedSettings(orgId);
-  if (cached) return cached;
-
-  const settings = await db.organizationSettings.findUnique({
+  return db.organizationSettings.findUnique({
     where: { organization_id: orgId },
   });
-
-  if (settings) {
-    try {
-      await redis.set(cacheKey(orgId), JSON.stringify(settings));
-    } catch (err) {
-      logger.warn({ err, cacheKey: cacheKey(orgId) }, 'Cache write failed');
-    }
-  }
-
-  return settings;
-}
-
-async function getCachedSettings(orgId: string) {
-  try {
-    const cached = await redis.get(cacheKey(orgId));
-    if (cached) return JSON.parse(cached);
-  } catch (err) {
-    logger.warn({ err, cacheKey: cacheKey(orgId) }, 'Cache read failed');
-  }
-  return null;
 }
 
 // --- Temperature ---
