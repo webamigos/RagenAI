@@ -308,7 +308,7 @@ export const Textarea = forwardRef(
                   'border border-gray-300 dark:border-gray-800':
                     !isDragOver && !error,
                 },
-                showFileAttachment ? 'pl-10' : 'pl-3',
+                'pl-3',
                 modelSelector ? 'pr-28' : 'pr-14',
                 className,
               )}
