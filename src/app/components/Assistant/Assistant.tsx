@@ -8,7 +8,7 @@ import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
-import { ModelSelector } from './ModelSelector';
+import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useState } from 'react';
@@ -19,11 +19,8 @@ import { logger } from '@/app/lib/utils/logger';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
 import { type RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
 import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
-import { updateThreadModel as updateThreadModelAction } from '@/store/threads/threadsSlice';
-import { updateThreadModel as updateSidebarThreadModelAction } from '@/store/sidebar/sidebarSlice';
 
 type ProjectForContext = {
   id: number;
@@ -184,23 +181,6 @@ export const Assistant = ({ threadId }: Props) => {
     fetchThreadModel();
   }, [threadId]);
 
-  const handleModelChange = async (model: string) => {
-    try {
-      const result = await updateThreadModel(threadId, model);
-
-      if (result.success) {
-        setCurrentThreadModel(model);
-        dispatch(updateThreadModelAction({ threadId, model }));
-        dispatch(updateSidebarThreadModelAction({ threadId, model }));
-      } else {
-        throw new Error(result.error || 'Failed to update thread model');
-      }
-    } catch (error) {
-      logger.error({ error }, 'Error updating thread model');
-      throw error;
-    }
-  };
-
   return (
     <>
       {isSearchOpen && (
@@ -230,11 +210,8 @@ export const Assistant = ({ threadId }: Props) => {
               availableProjects={availableProjects}
             />
             {!isPublicAccess && (
-              <ModelSelector
-                currentModel={currentThreadModel || undefined}
-                organizationDefaultModel={organizationDefaultModel}
-                onChange={handleModelChange}
-                disabled={isGlobalLoading}
+              <ThreadModelLabel
+                model={currentThreadModel || organizationDefaultModel}
               />
             )}
           </div>
@@ -263,10 +240,6 @@ export const Assistant = ({ threadId }: Props) => {
               onSubmit={onSubmit}
               isPublicAccess={isPublicAccess}
               responseType={responseType}
-              currentThreadModel={currentThreadModel || undefined}
-              organizationDefaultModel={organizationDefaultModel}
-              onChange={handleModelChange}
-              isGlobalLoading={isGlobalLoading}
             />
           )}
         </div>

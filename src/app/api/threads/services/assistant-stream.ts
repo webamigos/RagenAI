@@ -338,12 +338,26 @@ export async function streamEvents({
 
         let fullMessage = '';
 
-        for await (const textChunk of streamResult.textStream) {
-          fullMessage += textChunk;
-
-          sendApiEvent(controller, 'delta', {
-            content: textChunk,
-          });
+        for await (const part of streamResult.fullStream) {
+          switch (part.type) {
+            case 'text-delta':
+              fullMessage += part.textDelta;
+              sendApiEvent(controller, 'delta', {
+                content: part.textDelta,
+              });
+              break;
+            case 'reasoning-start':
+              sendApiEvent(controller, 'reasoning_start');
+              break;
+            case 'reasoning-delta':
+              sendApiEvent(controller, 'reasoning_delta', {
+                content: part.delta,
+              });
+              break;
+            case 'reasoning-end':
+              sendApiEvent(controller, 'reasoning_end');
+              break;
+          }
         }
 
         sendApiEvent(controller, 'llm_completed');

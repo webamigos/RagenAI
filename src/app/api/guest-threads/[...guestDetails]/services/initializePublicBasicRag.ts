@@ -23,7 +23,7 @@ type InitializePublicRagChainParams = {
   projectPublicId?: string;
 };
 
-const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
+const DEFAULT_REPHRASE_MODEL = 'openai/gpt-4o';
 const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 
 export const initializePublicRagChain = async ({

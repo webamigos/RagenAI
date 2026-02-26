@@ -4,6 +4,7 @@ export type BaseCompletionConfig = {
   maxTokens?: number;
   streaming?: boolean;
   verbose?: boolean;
+  reasoning?: boolean;
 };
 
 export type ChatCompletionOptions = {

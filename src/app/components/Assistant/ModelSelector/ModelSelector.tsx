@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 import {
-  AvailableModel,
-  groupModelsByProvider,
+  type AvailableModel,
+  groupModelsByOrigin,
   isReasoningModel,
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
@@ -29,7 +29,7 @@ export const ModelSelector = ({
   disabled = false,
 }: Props) => {
   const [selectedModel, setSelectedModel] = useState<string>(
-    currentModel || organizationDefaultModel || 'gemini-2.0-flash'
+    currentModel || organizationDefaultModel || 'google/gemini-2.0-flash-001',
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ export const ModelSelector = ({
 
   useEffect(() => {
     setSelectedModel(
-      currentModel || organizationDefaultModel || 'gemini-2.0-flash'
+      currentModel || organizationDefaultModel || 'google/gemini-2.0-flash-001',
     );
   }, [currentModel, organizationDefaultModel]);
 
@@ -100,7 +100,7 @@ export const ModelSelector = ({
     availableModels.find((m) => m.value === selectedModel)?.label ||
     selectedModel;
 
-  const groupedModels = groupModelsByProvider(availableModels);
+  const groupedModels = groupModelsByOrigin(availableModels);
   const isUsingDefault =
     !currentModel && selectedModel === organizationDefaultModel;
 
@@ -147,8 +147,8 @@ export const ModelSelector = ({
                   Loading models...
                 </div>
               ) : (
-                groupedModels.map(({ provider, displayName, models }) => (
-                  <div key={provider}>
+                groupedModels.map(({ origin, displayName, models }) => (
+                  <div key={origin}>
                     <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                       {displayName}
                     </div>

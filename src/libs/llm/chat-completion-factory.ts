@@ -23,7 +23,7 @@ import type {
 export class ChatCompletionFactory {
   private static createBedrockInstance(
     credentials: BedrockCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.credentials) {
       throw new Error('Credentials are required for Bedrock');
@@ -44,7 +44,7 @@ export class ChatCompletionFactory {
 
   private static createOpenAIInstance(
     credentials: OpenAICredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for OpenAI');
@@ -60,7 +60,7 @@ export class ChatCompletionFactory {
   // Ollama exposes an OpenAI-compatible API, so we use @ai-sdk/openai with a custom baseURL
   private static createOllamaInstance(
     credentials: OllamaCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     const baseUrl = credentials.baseUrl.endsWith('/')
       ? credentials.baseUrl.slice(0, -1)
@@ -76,7 +76,7 @@ export class ChatCompletionFactory {
 
   private static createAnthropicInstance(
     credentials: AnthropicCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Anthropic');
@@ -91,7 +91,7 @@ export class ChatCompletionFactory {
 
   private static createGoogleInstance(
     credentials: GoogleCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Google');
@@ -106,7 +106,7 @@ export class ChatCompletionFactory {
 
   private static createOpenRouterInstance(
     credentials: OpenRouterCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for OpenRouter');
@@ -114,14 +114,15 @@ export class ChatCompletionFactory {
 
     const openrouter = createOpenRouter({
       apiKey: credentials.apiKey,
+      ...(config.reasoning ? { reasoning: { effort: 'medium' as const } } : {}),
     });
 
-    return openrouter(config.model || 'meta-llama/llama-3.3-70b-instruct:free');
+    return openrouter(config.model || 'openai/gpt-4o');
   }
 
   private static createFireworksInstance(
     credentials: FireworksCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Fireworks');
@@ -132,13 +133,13 @@ export class ChatCompletionFactory {
     });
 
     return fireworks(
-      config.model || 'accounts/fireworks/models/llama-v3p2-3b-instruct'
+      config.model || 'accounts/fireworks/models/llama-v3p2-3b-instruct',
     );
   }
 
   private static createAzureOpenAIInstance(
     credentials: AzureOpenAICredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Azure OpenAI');
@@ -166,7 +167,7 @@ export class ChatCompletionFactory {
 
   static createInstance(
     credentials: ProviderCredentials,
-    config: BaseCompletionConfig
+    config: BaseCompletionConfig,
   ): LanguageModelV3 {
     switch (credentials.provider) {
       case 'bedrock':

@@ -31,7 +31,16 @@ export interface RagChainConfig extends ChainConfig {
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
   text: PromiseLike<string>;
+  fullStream: AsyncIterable<ChainStreamPart>;
+  reasoningText: PromiseLike<string | undefined>;
 }
+
+export type ChainStreamPart =
+  | { type: 'text-delta'; textDelta: string }
+  | { type: 'reasoning-start'; id: string }
+  | { type: 'reasoning-delta'; id: string; delta: string }
+  | { type: 'reasoning-end'; id: string }
+  | { type: 'other'; [key: string]: unknown };
 
 export interface BaseChatChainOutput {
   stream: (input: BaseChatChainInput) => Promise<ChainStreamResult>;

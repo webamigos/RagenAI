@@ -39,10 +39,6 @@ type Props = {
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
   responseType: ChatResponseType;
-  currentThreadModel: string | undefined;
-  organizationDefaultModel: string | null;
-  onChange: (model: string) => void;
-  isGlobalLoading: boolean;
 };
 
 export type PromptFormRef = {
@@ -58,10 +54,6 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       isPublicAccess,
       handleResponseType,
       responseType,
-      currentThreadModel: _currentThreadModel,
-      organizationDefaultModel: _organizationDefaultModel,
-      onChange: _onChange,
-      isGlobalLoading: _isGlobalLoading,
     },
     ref,
   ) => {

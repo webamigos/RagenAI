@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
@@ -8,6 +11,40 @@ import type {
   StreamedMessageDto,
 } from '@/features/messages/contracts/message.types';
 import './chat-response.css';
+
+const ReasoningBlock = ({
+  content,
+  isStreaming,
+}: {
+  content: string;
+  isStreaming?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 dark:bg-muted/20 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <svg
+          className={`size-3 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+          viewBox="0 0 12 12"
+          fill="currentColor"
+        >
+          <path d="M4.5 2l5 4-5 4V2z" />
+        </svg>
+        <span>Thinking{isStreaming ? '...' : ''}</span>
+      </button>
+      {isOpen && (
+        <div className="px-3 pb-2 text-xs text-muted-foreground/80 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
 
 type Props = {
   messages: MessageDto[];
@@ -99,6 +136,12 @@ export const ChatOutput = ({
         ))}
         {streamedMessage && (
           <div className="group relative mr-auto max-w-[85%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
+            {streamedMessage.reasoningContent && (
+              <ReasoningBlock
+                content={streamedMessage.reasoningContent}
+                isStreaming={streamedMessage.isReasoning}
+              />
+            )}
             <div className="chat-response">
               <div
                 dangerouslySetInnerHTML={{

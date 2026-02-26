@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Role, Message as MessageModel } from '@/generated/prisma/browser';
+import { type Role, type Message as MessageModel } from '@/generated/prisma/browser';
 
 export enum ChatType {
   CONVERSATION = 'conversation',
@@ -37,7 +37,7 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           size: z.number(),
           type: z.string(),
           userFileId: z.string().optional(),
-        })
+        }),
       )
       .optional(),
   });
@@ -70,6 +70,8 @@ export type StreamedMessageDto = {
   content: string;
   created_at: string;
   runId: string;
+  reasoningContent?: string;
+  isReasoning?: boolean;
 };
 
 export type DbMessageDto = {

@@ -4,7 +4,12 @@ import OpenAI from 'openai';
 import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
 import type { ChatCompletionOptions } from '@/libs/llm/types/chat-completion';
-import { getModelProvider, type ModelProvider } from '../../components/config';
+import {
+  getModelProvider,
+  isReasoningModel,
+  normalizeModelId,
+  type ModelProvider,
+} from '../../components/config';
 import {
   getOpenaiAPIKey,
   getAnthropicAPIKey,
@@ -19,18 +24,26 @@ import { usageTracker } from './usage';
 import { logger } from '../utils/logger';
 
 export const MODELS_MAP = {
+  // Legacy provider-specific entries (for backward compatibility with existing ENV vars)
   google: [
-    'gemini-2.5-flash-preview-04-17',
-    'gemini-2.5-pro-preview-03-25',
     'gemini-2.0-flash',
+    'google/gemini-3-flash-preview',
+    'google/gemini-2.0-flash-001',
   ],
-  openai: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o1-mini', 'o3-mini'],
+  openai: [
+    'gpt-4o',
+    'gpt-4o-mini',
+    'o3-mini',
+    'openai/gpt-5.2',
+    'openai/gpt-5.2-chat',
+    'openai/gpt-4o',
+    'openai/gpt-4o-mini',
+    'openai/o3-mini',
+  ],
   anthropic: [
-    'claude-3-7-sonnet-latest',
-    'claude-3-7-sonnet-2025021',
-    'claude-3-5-haiku-latest',
-    'claude-3-5-haiku-20241022',
     'claude-3-5-sonnet-20241022',
+    'anthropic/claude-haiku-4.5',
+    'anthropic/claude-3.7-sonnet',
   ],
   bedrock: [
     'anthropic.claude-3-7-sonnet-20250219-v1:0',
@@ -44,7 +57,18 @@ export const MODELS_MAP = {
     'claude-3-5-sonnet-v2@20241022',
   ],
   ollama: ['llama3.1'],
-  openrouter: ['meta-llama/llama-3.3-70b-instruct:free'],
+  openrouter: [
+    'openai/gpt-5.2',
+    'openai/gpt-5.2-chat',
+    'openai/gpt-4o',
+    'openai/gpt-4o-mini',
+    'openai/o3-mini',
+    'google/gemini-3-flash-preview',
+    'google/gemini-2.0-flash-001',
+    'anthropic/claude-haiku-4.5',
+    'anthropic/claude-3.7-sonnet',
+    'perplexity/sonar-pro',
+  ],
   fireworks: ['accounts/fireworks/models/llama-v3p2-3b-instruct'],
 } as const;
 
@@ -92,8 +116,8 @@ const modelConfig = modelsSchema.parse({
   model: process.env.DEFAULT_MODEL,
 });
 
-// Models that don't support temperature parameter
-const modelsWithoutTemperature = ['o1', 'o1-mini', 'o3-mini'];
+// Models that don't support temperature parameter (reasoning/thinking models)
+const modelsWithoutTemperature = ['openai/o3-mini', 'openai/gpt-5.2'];
 
 // Helper function to check if model supports temperature
 const supportsTemperature = (model: string): boolean => {
@@ -103,7 +127,7 @@ const supportsTemperature = (model: string): boolean => {
 
 // Function to create credentials for a specific provider
 const createCredentialsForProvider = (
-  provider: ModelProvider
+  provider: ModelProvider,
 ): ProviderCredentials | null => {
   switch (provider) {
     case 'openai':
@@ -202,7 +226,7 @@ const createCredentialsForProvider = (
 // Function to create credentials for a specific provider, checking organization settings first
 const createCredentialsForProviderWithOrg = async (
   provider: ModelProvider,
-  orgId: string
+  orgId: string,
 ): Promise<ProviderCredentials | null> => {
   switch (provider) {
     case 'openai': {
@@ -384,10 +408,10 @@ switch (modelConfig.provider) {
 
     if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
       logger.error(
-        `Specify values for env variables: AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY`
+        `Specify values for env variables: AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY`,
       );
       throw new Error(
-        `Specify values for env variables: AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY`
+        `Specify values for env variables: AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY`,
       );
     }
 
@@ -431,7 +455,7 @@ switch (modelConfig.provider) {
       provider: 'openrouter',
       apiKey: OPENROUTER_API_KEY,
     };
-    customChatModel = 'meta-llama/llama-3.3-70b-instruct:free';
+    customChatModel = 'openai/gpt-4o';
     break;
   }
 
@@ -496,10 +520,10 @@ switch (modelConfig.provider) {
       !AZURE_OPENAI_VERSION
     ) {
       logger.error(
-        `Specify values for env variables: AZURE_OPENAI_KEY, AZURE_OPENAI_INSTANCE, AZURE_OPENAI_DEPLOYMENT, AZURE_OPENAI_VERSION`
+        `Specify values for env variables: AZURE_OPENAI_KEY, AZURE_OPENAI_INSTANCE, AZURE_OPENAI_DEPLOYMENT, AZURE_OPENAI_VERSION`,
       );
       throw new Error(
-        `Specify values for env variables: AZURE_OPENAI_KEY, AZURE_OPENAI_INSTANCE, AZURE_OPENAI_DEPLOYMENT, AZURE_OPENAI_VERSION`
+        `Specify values for env variables: AZURE_OPENAI_KEY, AZURE_OPENAI_INSTANCE, AZURE_OPENAI_DEPLOYMENT, AZURE_OPENAI_VERSION`,
       );
     }
 
@@ -517,10 +541,11 @@ switch (modelConfig.provider) {
 
 export const createChatCompletionInstance = (
   options: ChatCompletionOptions,
-  streaming: boolean = true
+  streaming: boolean = true,
 ): LanguageModelV3 => {
-  const selectedModel =
+  const rawModel =
     options.model || options.modelName || customChatModel || undefined;
+  const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
 
   let credentials: ProviderCredentials;
 
@@ -532,16 +557,16 @@ export const createChatCompletionInstance = (
         credentials = providerCredentials;
       } else {
         logger.warn(
-          `No credentials found for provider ${modelProvider}, falling back to OpenAI`
+          `No credentials found for provider ${modelProvider}, falling back to OpenRouter`,
         );
-        credentials = {
+        credentials = createCredentialsForProvider('openrouter') || {
           provider: 'openai',
           apiKey: process.env.OPENAI_API_KEY!,
         };
       }
     } else {
       logger.warn(
-        `Unknown model ${selectedModel}, using environment provider fallback`
+        `Unknown model ${selectedModel}, using environment provider fallback`,
       );
       credentials = customCredentials || {
         provider: 'openai',
@@ -560,16 +585,19 @@ export const createChatCompletionInstance = (
     if (temperature !== undefined) {
       logger.info(
         { model: selectedModel, temperature },
-        'Temperature parameter excluded for model that does not support it'
+        'Temperature parameter excluded for model that does not support it',
       );
     }
     temperature = undefined;
   }
 
+  const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
+
   return ChatCompletionFactory.createInstance(credentials, {
     model: selectedModel,
     temperature,
     streaming,
+    reasoning,
   });
 };
 
@@ -577,10 +605,11 @@ export const createChatCompletionInstance = (
 export const createChatCompletionInstanceWithOrg = async (
   options: ChatCompletionOptions,
   orgId: string,
-  streaming: boolean = true
+  streaming: boolean = true,
 ): Promise<LanguageModelV3> => {
-  const selectedModel =
+  const rawModel =
     options.model || options.modelName || customChatModel || undefined;
+  const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
 
   let credentials: ProviderCredentials;
 
@@ -589,17 +618,17 @@ export const createChatCompletionInstanceWithOrg = async (
     if (modelProvider) {
       const providerCredentials = await createCredentialsForProviderWithOrg(
         modelProvider,
-        orgId
+        orgId,
       );
       if (providerCredentials) {
         credentials = providerCredentials;
       } else {
         logger.warn(
-          `No credentials found for provider ${modelProvider}, falling back to OpenAI`
+          `No credentials found for provider ${modelProvider}, falling back to OpenRouter`,
         );
         const fallbackCredentials = await createCredentialsForProviderWithOrg(
-          'openai',
-          orgId
+          'openrouter',
+          orgId,
         );
         credentials = fallbackCredentials || {
           provider: 'openai',
@@ -608,11 +637,11 @@ export const createChatCompletionInstanceWithOrg = async (
       }
     } else {
       logger.warn(
-        `Unknown model ${selectedModel}, using organization provider fallback`
+        `Unknown model ${selectedModel}, using organization provider fallback`,
       );
       const fallbackCredentials = await createCredentialsForProviderWithOrg(
-        'openai',
-        orgId
+        'openrouter',
+        orgId,
       );
       credentials = fallbackCredentials ||
         customCredentials || {
@@ -622,8 +651,8 @@ export const createChatCompletionInstanceWithOrg = async (
     }
   } else {
     const fallbackCredentials = await createCredentialsForProviderWithOrg(
-      'openai',
-      orgId
+      'openrouter',
+      orgId,
     );
     credentials = fallbackCredentials ||
       customCredentials || {
@@ -637,16 +666,19 @@ export const createChatCompletionInstanceWithOrg = async (
     if (temperature !== undefined) {
       logger.info(
         { model: selectedModel, temperature },
-        'Temperature parameter excluded for model that does not support it'
+        'Temperature parameter excluded for model that does not support it',
       );
     }
     temperature = undefined;
   }
 
+  const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
+
   return ChatCompletionFactory.createInstance(credentials, {
     model: selectedModel,
     temperature,
     streaming,
+    reasoning,
   });
 };
 
@@ -659,7 +691,7 @@ export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
   return EmbeddingsFactory.createInstance(
     { provider: 'openai', apiKey },
     { model: 'text-embedding-3-small' },
-    usageTracker
+    usageTracker,
   );
 };
 
@@ -678,7 +710,7 @@ export const createModerationInstance = (orgApiKey?: string) => {
 
   if (!apiKey) {
     throw new Error(
-      'Cannot create moderation instance: set OPENAI_MODERATION_KEY or OPENAI_API_KEY'
+      'Cannot create moderation instance: set OPENAI_MODERATION_KEY or OPENAI_API_KEY',
     );
   }
 

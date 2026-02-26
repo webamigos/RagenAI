@@ -53,7 +53,7 @@ export const NewChatInterface = ({
     setInternalOrganizationDefaultModel,
   ] = useState<string | null>(organizationDefaultModel || null);
   const [selectedModel, setSelectedModel] = useState<string>(
-    organizationDefaultModel || 'gemini-2.0-flash',
+    organizationDefaultModel || 'google/gemini-2.0-flash-001',
   );
   const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
     [],
@@ -100,7 +100,8 @@ export const NewChatInterface = ({
             setInternalOrganizationDefaultModel(result.settings.model);
             // Only set selectedModel if it's still the default (hasn't been manually changed)
             setSelectedModel((prev) =>
-              prev === (organizationDefaultModel || 'gemini-2.0-flash')
+              prev ===
+              (organizationDefaultModel || 'google/gemini-2.0-flash-001')
                 ? result.settings.model
                 : prev,
             );
