@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeftIcon,
@@ -21,11 +21,19 @@ import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
+import {
+  getProjectFiles,
+  getProjectStorageInfo,
+  deleteProjectFileAction,
+} from '@/app/actions';
 
 import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
-import { ProjectFileUpload } from '@/app/components/Projects/ProjectFilesManagement/components/ProjectFileUpload';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
+import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
+import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
+
+import type { FileType } from '@/generated/prisma/browser';
 
 type ProjectThread = {
   public_id: string;
@@ -44,6 +52,14 @@ type Project = {
   published_at: string;
   chatbot_enabled: boolean;
   threads: ProjectThread[];
+};
+
+type ProjectFile = {
+  public_id: string;
+  file_name: string;
+  file_size: number;
+  file_type: FileType;
+  created_at: Date | null;
 };
 
 type Props = {
@@ -79,16 +95,39 @@ export function ProjectComponent({ projectId }: Props) {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
-  const [showFiles, setShowFiles] = useState(false);
 
-  const { errorToast } = statusToast();
+  // File state
+  const [files, setFiles] = useState<ProjectFile[]>([]);
+  const [storageUsed, setStorageUsed] = useState(0);
+  const [storageLimit, setStorageLimit] = useState(20 * 1024 * 1024);
+  const [removingFileId, setRemovingFileId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
+
+  const loadFiles = useCallback(async (pubId: string) => {
+    try {
+      const [filesResult, storageInfo] = await Promise.all([
+        getProjectFiles(pubId),
+        getProjectStorageInfo(pubId),
+      ]);
+      if (filesResult.files) {
+        setFiles(filesResult.files as ProjectFile[]);
+      }
+      setStorageUsed(storageInfo.usedBytes);
+      setStorageLimit(storageInfo.limitBytes);
+    } catch {
+      // silent - files section is supplementary
+    }
+  }, []);
 
   useEffect(() => {
     async function loadProject() {
       try {
         const projectData = await fetchProject(projectId);
         setProject(projectData);
+        loadFiles(projectData.public_id);
       } catch (error) {
         logger.error('Error loading project:', { error: error });
         errorToast({ message: t('error.fetching-error') });
@@ -100,6 +139,47 @@ export function ProjectComponent({ projectId }: Props) {
     loadProject();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  const handleRemoveFile = async (publicFileId: string) => {
+    if (!project || removingFileId) return;
+    setRemovingFileId(publicFileId);
+    try {
+      const result = await deleteProjectFileAction(
+        publicFileId,
+        project.public_id,
+      );
+      if (result.error) throw new Error(result.error);
+      infoToast({ message: t('file-deleted') });
+      loadFiles(project.public_id);
+    } catch {
+      errorToast({ message: t('file-delete-fail') });
+    } finally {
+      setRemovingFileId(null);
+    }
+  };
+
+  const handleFileInputChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    if (!project) return;
+    const selectedFiles = Array.from(event.target.files || []);
+    if (selectedFiles.length === 0) return;
+
+    const { uploadProjectFiles } = await import('@/app/lib/services/api');
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append('files', file));
+    formData.append('projectId', project.public_id);
+
+    try {
+      await uploadProjectFiles(project.public_id, formData);
+      successToast({ message: t('file-uploaded') });
+      loadFiles(project.public_id);
+    } catch {
+      errorToast({ message: t('file-upload-fail') });
+    }
+
+    if (event.target) event.target.value = '';
+  };
 
   if (isLoading || !project || !isReady) {
     return <PageSkeleton />;
@@ -194,20 +274,50 @@ export function ProjectComponent({ projectId }: Props) {
             </p>
           </div>
 
-          {/* Files section */}
-          <div
-            className="rounded-xl border border-border/60 p-4 hover:bg-muted/30 transition-colors cursor-pointer"
-            onClick={() => setShowFiles(true)}
-          >
-            <div className="flex items-center justify-between mb-1">
+          {/* Files section - inline */}
+          <div className="rounded-xl border border-border/60 p-4">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">
                 {t('project-view.files')}
               </h3>
-              <PlusIcon className="size-4 text-muted-foreground" />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="p-0.5 rounded hover:bg-muted/50 transition-colors"
+              >
+                <PlusIcon className="size-4 text-muted-foreground" />
+              </button>
+              <input
+                ref={fileInputRef}
+                className="hidden"
+                type="file"
+                accept=".md,.epub,.srt,.pdf"
+                multiple
+                onChange={handleFileInputChange}
+              />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t('project-instructions.description')}
-            </p>
+
+            {/* Capacity bar */}
+            <StorageProgressBar
+              usedBytes={storageUsed}
+              limitBytes={storageLimit}
+              className="mb-3"
+            />
+
+            {/* File cards grid */}
+            {files.length > 0 ? (
+              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto">
+                {files.map((file) => (
+                  <InlineFileCard
+                    key={file.public_id}
+                    file={file}
+                    onRemove={handleRemoveFile}
+                    isRemoving={removingFileId === file.public_id}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t('no-files')}</p>
+            )}
           </div>
         </div>
       </div>
@@ -223,16 +333,6 @@ export function ProjectComponent({ projectId }: Props) {
             onSuccess={() => setShowInstructions(false)}
             onCancel={() => setShowInstructions(false)}
           />
-        </DialogContent>
-      </Dialog>
-
-      {/* Files dialog */}
-      <Dialog open={showFiles} onOpenChange={setShowFiles}>
-        <DialogContent className="max-w-2xl max-h-[600px] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t('project-files')}</DialogTitle>
-          </DialogHeader>
-          <ProjectFileUpload projectPublicId={project.public_id} />
         </DialogContent>
       </Dialog>
     </>
