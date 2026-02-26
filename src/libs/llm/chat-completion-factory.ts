@@ -114,10 +114,13 @@ export class ChatCompletionFactory {
 
     const openrouter = createOpenRouter({
       apiKey: credentials.apiKey,
-      ...(config.reasoning ? { reasoning: { effort: 'medium' as const } } : {}),
     });
 
-    return openrouter(config.model || 'openai/gpt-4o');
+    return openrouter(config.model || 'openai/gpt-4o', {
+      ...(config.reasoning
+        ? { reasoning: { enabled: true, max_tokens: 2048 } }
+        : {}),
+    });
   }
 
   private static createFireworksInstance(

@@ -27,7 +27,6 @@
       "WebFetch(domain:github.com)",
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
-      "Bash(git:*)",
       "WebFetch(domain:www.meilisearch.com)",
       "WebFetch(domain:openrouter.ai)"
     ]

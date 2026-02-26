@@ -247,7 +247,9 @@ export const useAssistantLogic = (threadId: string) => {
 
         onSubmit({
           prompt: initialMessage,
-          messageType: 'TEXT',
+          mode: ChatType.CONVERSATION,
+          messageType: MessageContentType.TEXT,
+          voiceDurationSeconds: 0,
           threadDocuments,
         });
       }

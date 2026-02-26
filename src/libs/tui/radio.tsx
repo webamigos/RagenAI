@@ -1,15 +1,19 @@
-import * as Headless from '@headlessui/react';
+import {
+  Field as HeadlessField,
+  type FieldProps as HeadlessFieldProps,
+  Radio as HeadlessRadio,
+  RadioGroup as HeadlessRadioGroup,
+  type RadioGroupProps as HeadlessRadioGroupProps,
+  type RadioProps as HeadlessRadioProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
 
 export function RadioGroup({
   className,
   ...props
-}: { className?: string } & Omit<
-  Headless.RadioGroupProps,
-  'as' | 'className'
->) {
+}: { className?: string } & Omit<HeadlessRadioGroupProps, 'as' | 'className'>) {
   return (
-    <Headless.RadioGroup
+    <HeadlessRadioGroup
       data-slot="control"
       {...props}
       className={clsx(
@@ -17,7 +21,7 @@ export function RadioGroup({
         // Basic groups
         'space-y-3 data-[slot=label]:**:font-normal',
         // With descriptions
-        'has-data-[slot=description]:space-y-6 data-[slot=label]:**:has-data-[slot=description]:font-medium'
+        'has-data-[slot=description]:space-y-6 data-[slot=label]:**:has-data-[slot=description]:font-medium',
       )}
     />
   );
@@ -26,9 +30,9 @@ export function RadioGroup({
 export function RadioField({
   className,
   ...props
-}: { className?: string } & Omit<Headless.FieldProps, 'as' | 'className'>) {
+}: { className?: string } & Omit<HeadlessFieldProps, 'as' | 'className'>) {
   return (
-    <Headless.Field
+    <HeadlessField
       data-slot="field"
       {...props}
       className={clsx(
@@ -42,7 +46,7 @@ export function RadioField({
         // Description layout
         'data-[slot=description]:*:col-start-2 data-[slot=description]:*:row-start-2',
         // With description
-        'data-[slot=label]:**:has-data-[slot=description]:font-medium'
+        'data-[slot=label]:**:has-data-[slot=description]:font-medium',
       )}
     />
   );
@@ -125,11 +129,11 @@ export function Radio({
   className,
   ...props
 }: { color?: Color; className?: string } & Omit<
-  Headless.RadioProps,
+  HeadlessRadioProps,
   'as' | 'className' | 'children'
 >) {
   return (
-    <Headless.Radio
+    <HeadlessRadio
       data-slot="control"
       {...props}
       className={clsx(className, 'group inline-flex focus:outline-hidden')}
@@ -139,10 +143,10 @@ export function Radio({
           className={clsx(
             'size-full rounded-full border-[4.5px] border-transparent bg-(--radio-indicator) bg-clip-padding',
             // Forced colors mode
-            'forced-colors:border-[Canvas] forced-colors:group-data-checked:border-[Highlight]'
+            'forced-colors:border-[Canvas] forced-colors:group-data-checked:border-[Highlight]',
           )}
         />
       </span>
-    </Headless.Radio>
+    </HeadlessRadio>
   );
 }

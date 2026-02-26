@@ -7,43 +7,34 @@ export async function register() {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   if (!endpoint) {
     console.warn(
-      '[otel] OTEL_EXPORTER_OTLP_ENDPOINT not set, skipping OpenTelemetry init'
+      '[otel] OTEL_EXPORTER_OTLP_ENDPOINT not set, skipping OpenTelemetry init',
     );
     return;
   }
 
   try {
-    const { NodeTracerProvider, BatchSpanProcessor } = await import(
-      '@opentelemetry/sdk-trace-node'
-    );
-    const { OTLPTraceExporter } = await import(
-      '@opentelemetry/exporter-trace-otlp-http'
-    );
-    const { OTLPMetricExporter } = await import(
-      '@opentelemetry/exporter-metrics-otlp-http'
-    );
-    const { OTLPLogExporter } = await import(
-      '@opentelemetry/exporter-logs-otlp-http'
-    );
-    const { MeterProvider, PeriodicExportingMetricReader } = await import(
-      '@opentelemetry/sdk-metrics'
-    );
-    const { LoggerProvider, BatchLogRecordProcessor } = await import(
-      '@opentelemetry/sdk-logs'
-    );
+    const { NodeTracerProvider, BatchSpanProcessor } =
+      await import('@opentelemetry/sdk-trace-node');
+    const { OTLPTraceExporter } =
+      await import('@opentelemetry/exporter-trace-otlp-http');
+    const { OTLPMetricExporter } =
+      await import('@opentelemetry/exporter-metrics-otlp-http');
+    const { OTLPLogExporter } =
+      await import('@opentelemetry/exporter-logs-otlp-http');
+    const { MeterProvider, PeriodicExportingMetricReader } =
+      await import('@opentelemetry/sdk-metrics');
+    const { LoggerProvider, BatchLogRecordProcessor } =
+      await import('@opentelemetry/sdk-logs');
     const { resourceFromAttributes } = await import('@opentelemetry/resources');
     const { metrics } = await import('@opentelemetry/api');
     const { logs } = await import('@opentelemetry/api-logs');
-    const { HttpInstrumentation } = await import(
-      '@opentelemetry/instrumentation-http'
-    );
-    const { PgInstrumentation } = await import(
-      '@opentelemetry/instrumentation-pg'
-    );
+    const { HttpInstrumentation } =
+      await import('@opentelemetry/instrumentation-http');
+    const { PgInstrumentation } =
+      await import('@opentelemetry/instrumentation-pg');
     const { PrismaInstrumentation } = await import('@prisma/instrumentation');
-    const { registerInstrumentations } = await import(
-      '@opentelemetry/instrumentation'
-    );
+    const { registerInstrumentations } =
+      await import('@opentelemetry/instrumentation');
 
     console.log('[otel] All modules imported successfully');
 
@@ -62,10 +53,7 @@ export async function register() {
       spanProcessors: [new BatchSpanProcessor(traceExporter)],
     });
     tracerProvider.register();
-    console.log(
-      '[otel] TracerProvider registered, exporting to',
-      `${endpoint}/v1/traces`
-    );
+    console.log('[otel] TracerProvider registered');
 
     // Metrics
     const metricExporter = new OTLPMetricExporter({
@@ -81,10 +69,7 @@ export async function register() {
       ],
     });
     metrics.setGlobalMeterProvider(meterProvider);
-    console.log(
-      '[otel] MeterProvider registered, exporting to',
-      `${endpoint}/v1/metrics`
-    );
+    console.log('[otel] MeterProvider registered');
 
     // Logs
     const logExporter = new OTLPLogExporter({ url: `${endpoint}/v1/logs` });
@@ -93,10 +78,7 @@ export async function register() {
       processors: [new BatchLogRecordProcessor(logExporter)],
     });
     logs.setGlobalLoggerProvider(loggerProvider);
-    console.log(
-      '[otel] LoggerProvider registered, exporting to',
-      `${endpoint}/v1/logs`
-    );
+    console.log('[otel] LoggerProvider registered');
 
     // Instrumentations
     registerInstrumentations({
@@ -143,7 +125,7 @@ export async function register() {
               ][index];
               console.error(
                 `[otel] ${providerName} shutdown failed:`,
-                result.reason
+                result.reason,
               );
             }
           });
@@ -156,9 +138,7 @@ export async function register() {
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
 
-    console.log(
-      `[otel] OpenTelemetry fully initialized, sending to ${endpoint}`
-    );
+    console.log('[otel] OpenTelemetry fully initialized, OTLP endpoint set');
   } catch (error) {
     console.error('[otel] Failed to initialize OpenTelemetry:', error);
   }

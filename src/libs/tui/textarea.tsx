@@ -1,4 +1,7 @@
-import * as Headless from '@headlessui/react';
+import {
+  Textarea as HeadlessTextarea,
+  type TextareaProps as HeadlessTextareaProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 
@@ -8,10 +11,10 @@ export const Textarea = forwardRef(function Textarea(
     resizable = true,
     ...props
   }: { className?: string; resizable?: boolean } & Omit<
-    Headless.TextareaProps,
+    HeadlessTextareaProps,
     'as' | 'className'
   >,
-  ref: React.ForwardedRef<HTMLTextAreaElement>
+  ref: React.ForwardedRef<HTMLTextAreaElement>,
 ) {
   return (
     <span
@@ -30,7 +33,7 @@ export const Textarea = forwardRef(function Textarea(
         'has-data-disabled:opacity-50 has-data-disabled:before:bg-zinc-950/5 has-data-disabled:before:shadow-none',
       ])}
     >
-      <Headless.Textarea
+      <HeadlessTextarea
         ref={ref}
         {...props}
         className={clsx([

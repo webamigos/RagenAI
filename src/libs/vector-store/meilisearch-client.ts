@@ -203,7 +203,8 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
 
 function formatFilterValue(value: string | number): string {
   if (typeof value === 'number') return String(value);
-  return `'${value}'`;
+  const escaped = value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  return `'${escaped}'`;
 }
 
 function conditionToString(condition: QdrantFilterCondition): string {
