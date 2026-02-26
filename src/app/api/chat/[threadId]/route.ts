@@ -89,7 +89,9 @@ export async function POST(request: NextRequest, { params }: Params) {
 
           for (const part of parts) {
             const trimmed = part.trim();
-            if (!trimmed) continue;
+            if (!trimmed) {
+              continue;
+            }
 
             let event: string | undefined;
             let data: string | undefined;

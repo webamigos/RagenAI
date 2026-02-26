@@ -74,7 +74,9 @@ export const JoyrideProvider = ({
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     if (action === ACTIONS.CLOSE || status === STATUS.SKIPPED) {
       await saveUserMetadata(user.id, metadata);
@@ -83,22 +85,32 @@ export const JoyrideProvider = ({
     }
 
     if (type === EVENTS.STEP_AFTER) {
-      if (index === 0)
-        openSidebar(); // Moving to step 1
-      else if (index === 1)
-        closeSidebar(); // Moving to step 2
-      else if (index === 3)
-        openSidebar(); // Moving to step 4
-      else if (index === 4)
-        closeSidebar(); // Moving to step 5
-      else if (index === 5)
-        openSidebar(); // Moving to step 6
-      else if (index === 6) closeSidebar(); // Moving to step 7
+      if (index === 0) {
+        openSidebar();
+      } // Moving to step 1
+      else if (index === 1) {
+        closeSidebar();
+      } // Moving to step 2
+      else if (index === 3) {
+        openSidebar();
+      } // Moving to step 4
+      else if (index === 4) {
+        closeSidebar();
+      } // Moving to step 5
+      else if (index === 5) {
+        openSidebar();
+      } // Moving to step 6
+      else if (index === 6) {
+        closeSidebar();
+      } // Moving to step 7
     }
     if (action === ACTIONS.PREV && type === EVENTS.STEP_AFTER) {
-      if (index === 2)
-        openSidebar(); // Moving back to step 1
-      else if (index === 7) openSidebar(); // Moving back to step 6
+      if (index === 2) {
+        openSidebar();
+      } // Moving back to step 1
+      else if (index === 7) {
+        openSidebar();
+      } // Moving back to step 6
     }
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.ERROR) {

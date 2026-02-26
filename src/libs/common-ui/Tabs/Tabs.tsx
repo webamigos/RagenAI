@@ -65,7 +65,9 @@ const TabList = ({
   activeTab,
   setActiveTab,
 }: TabListProps & ComponentProps<'div'>) => {
-  if (!children) return null;
+  if (!children) {
+    return null;
+  }
 
   const childArray = React.Children.toArray(children);
 

@@ -41,7 +41,9 @@ const logger: Logger = pino({
   level: isProductionTargetEnv ? 'info' : 'debug',
   browser: {
     write: (logObj: unknown) => {
-      if (isProductionTargetEnv) return;
+      if (isProductionTargetEnv) {
+        return;
+      }
 
       const { level, msg, time, ...extra } = logObj as Record<string, unknown>;
       const levelUpperCased = (level as string).toUpperCase();

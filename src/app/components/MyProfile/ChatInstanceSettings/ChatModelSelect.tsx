@@ -30,7 +30,9 @@ export const ChatModelSelect = ({}) => {
 
   useEffect(() => {
     const loadAvailableModels = async () => {
-      if (!activeOrg?.id) return;
+      if (!activeOrg?.id) {
+        return;
+      }
 
       try {
         setModelsLoading(true);

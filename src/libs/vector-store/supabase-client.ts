@@ -17,7 +17,7 @@ export class SupabaseVectorStoreClient implements VectorStoreClient {
       queryName: string;
       tableName?: string;
       filter?: Record<string, any>;
-    }
+    },
   ) {
     this.client = config.client;
     this.embeddings = embeddings;
@@ -29,7 +29,7 @@ export class SupabaseVectorStoreClient implements VectorStoreClient {
   async similaritySearch(
     query: string,
     k: number,
-    filter?: object
+    filter?: object,
   ): Promise<VectorStoreDocument[]> {
     const queryEmbedding = await this.embeddings.embedQuery(query);
 
@@ -53,7 +53,9 @@ export class SupabaseVectorStoreClient implements VectorStoreClient {
   }
 
   async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
-    if (documents.length === 0) return;
+    if (documents.length === 0) {
+      return;
+    }
 
     const texts = documents.map((doc) => doc.pageContent);
     const embeddings = await this.embeddings.embedDocuments(texts);
@@ -73,13 +75,13 @@ export class SupabaseVectorStoreClient implements VectorStoreClient {
 
     logger.info(
       { count: documents.length },
-      'Documents added to Supabase vector store'
+      'Documents added to Supabase vector store',
     );
   }
 
   async addVectors(
     vectors: number[][],
-    documents: VectorStoreDocument[]
+    documents: VectorStoreDocument[],
   ): Promise<void> {
     const rows = documents.map((doc, i) => ({
       content: doc.pageContent,

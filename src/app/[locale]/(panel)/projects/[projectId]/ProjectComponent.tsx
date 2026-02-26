@@ -74,15 +74,25 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) {
+    return 'just now';
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
   return date.toLocaleDateString();
 }
 
 function getThreadTitle(thread: ProjectThread): string {
-  if (thread.title) return thread.title;
+  if (thread.title) {
+    return thread.title;
+  }
   if (thread.messages.length > 0) {
     const content = thread.messages[0].content;
     return content.length > 60 ? content.slice(0, 60) + '...' : content;
@@ -141,14 +151,18 @@ export function ProjectComponent({ projectId }: Props) {
   }, [projectId]);
 
   const handleRemoveFile = async (publicFileId: string) => {
-    if (!project || removingFileId) return;
+    if (!project || removingFileId) {
+      return;
+    }
     setRemovingFileId(publicFileId);
     try {
       const result = await deleteProjectFileAction(
         publicFileId,
         project.public_id,
       );
-      if (result.error) throw new Error(result.error);
+      if (result.error) {
+        throw new Error(result.error);
+      }
       infoToast({ message: t('file-deleted') });
       loadFiles(project.public_id);
     } catch {
@@ -161,9 +175,13 @@ export function ProjectComponent({ projectId }: Props) {
   const handleFileInputChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    if (!project) return;
+    if (!project) {
+      return;
+    }
     const selectedFiles = Array.from(event.target.files || []);
-    if (selectedFiles.length === 0) return;
+    if (selectedFiles.length === 0) {
+      return;
+    }
 
     const { uploadProjectFiles } = await import('@/app/lib/services/api');
     const formData = new FormData();
@@ -178,7 +196,9 @@ export function ProjectComponent({ projectId }: Props) {
       errorToast({ message: t('file-upload-fail') });
     }
 
-    if (event.target) event.target.value = '';
+    if (event.target) {
+      event.target.value = '';
+    }
   };
 
   if (isLoading || !project || !isReady) {

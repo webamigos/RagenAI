@@ -8,7 +8,9 @@ export const useModalWithEscapeAndOutsideClick = <T extends HTMLElement>() => {
   const closeModal = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     const handleClickOutside = (event: MouseEvent) => {
       if (!modalRef.current) {
@@ -27,7 +29,9 @@ export const useModalWithEscapeAndOutsideClick = <T extends HTMLElement>() => {
   }, [isOpen, closeModal]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {

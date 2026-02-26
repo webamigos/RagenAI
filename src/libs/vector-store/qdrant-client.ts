@@ -14,7 +14,7 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
       url?: string;
       apiKey?: string;
       collectionName: string;
-    }
+    },
   ) {
     this.client = new QdrantClient({
       url: config.url,
@@ -27,7 +27,7 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
   async similaritySearch(
     query: string,
     k: number,
-    filter?: object
+    filter?: object,
   ): Promise<VectorStoreDocument[]> {
     const queryEmbedding = await this.embeddings.embedQuery(query);
 
@@ -49,7 +49,9 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
   }
 
   async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
-    if (documents.length === 0) return;
+    if (documents.length === 0) {
+      return;
+    }
 
     const texts = documents.map((doc) => doc.pageContent);
     const embeddings = await this.embeddings.embedDocuments(texts);
@@ -70,7 +72,7 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
 
     logger.info(
       { count: documents.length, collection: this.collectionName },
-      'Documents added to Qdrant'
+      'Documents added to Qdrant',
     );
   }
 
@@ -80,7 +82,7 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
       url?: string;
       apiKey?: string;
       collectionName: string;
-    }
+    },
   ): Promise<QdrantVectorStoreClient> {
     return new QdrantVectorStoreClient(embeddings, config);
   }

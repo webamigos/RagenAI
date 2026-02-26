@@ -10,7 +10,9 @@ import type {
 } from '../../contracts/ai-usage.types';
 
 function buildDateFilter(filters?: AiUsageFilters): Date | undefined {
-  if (!filters?.period || filters.period === 'custom') return undefined;
+  if (!filters?.period || filters.period === 'custom') {
+    return undefined;
+  }
 
   const now = new Date();
   const days: Record<string, number> = {
@@ -21,7 +23,9 @@ function buildDateFilter(filters?: AiUsageFilters): Date | undefined {
     '365d': 365,
   };
   const d = days[filters.period];
-  if (!d) return undefined;
+  if (!d) {
+    return undefined;
+  }
 
   return new Date(now.getTime() - d * 24 * 60 * 60 * 1000);
 }
@@ -46,13 +50,17 @@ function buildWhereClause(filters?: AiUsageFilters): Prisma.AiUsageWhereInput {
     where.created_at = { gte: dateFrom };
   } else if (filters?.period === 'custom') {
     const createdAt: Prisma.DateTimeFilter = {};
-    if (filters.dateFrom) createdAt.gte = new Date(filters.dateFrom);
+    if (filters.dateFrom) {
+      createdAt.gte = new Date(filters.dateFrom);
+    }
     if (filters.dateTo) {
       const endDate = new Date(filters.dateTo);
       endDate.setHours(23, 59, 59, 999);
       createdAt.lte = endDate;
     }
-    if (Object.keys(createdAt).length > 0) where.created_at = createdAt;
+    if (Object.keys(createdAt).length > 0) {
+      where.created_at = createdAt;
+    }
   }
 
   return where;
@@ -249,7 +257,9 @@ async function getDailyChartData(
 }
 
 async function getOrgNameMap(orgIds: string[]): Promise<Map<string, string>> {
-  if (orgIds.length === 0) return new Map();
+  if (orgIds.length === 0) {
+    return new Map();
+  }
 
   const orgs = await db.organization.findMany({
     where: { id: { in: orgIds } },

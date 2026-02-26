@@ -140,6 +140,7 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 
 ## Key Conventions
 
+- **Braces required**: Always use braces for control flow statements (`if`, `else`, `for`, `while`, etc.) — no single-line bodies. Write `if (x) { return; }` not `if (x) return`. Enforced by ESLint `curly` rule
 - **ESM**: `"type": "module"` in package.json — all `.js` files are ESM. CommonJS scripts use `.cjs` extension. `moduleResolution: "bundler"` — no deep internal imports (e.g., `langchain/dist/...`)
 - Server components by default; client components marked with `'use client'`
 - All API routes use `export const dynamic = 'force-dynamic'`

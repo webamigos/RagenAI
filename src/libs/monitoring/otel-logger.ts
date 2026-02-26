@@ -3,9 +3,11 @@ import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 const logger = logs.getLogger('ragen-app');
 
 function extractErrorAttrs(
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, unknown>,
 ): Record<string, string | number | boolean> {
-  if (!attrs) return {};
+  if (!attrs) {
+    return {};
+  }
 
   const result: Record<string, string | number | boolean> = {};
 
@@ -40,7 +42,7 @@ function emit(
   severity: SeverityNumber,
   severityText: string,
   message: string,
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, unknown>,
 ) {
   logger.emit({
     severityNumber: severity,

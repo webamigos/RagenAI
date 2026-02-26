@@ -92,8 +92,12 @@ function mergeThreadDocuments(
   dbDocs: ThreadDocumentUI[],
   inlineDocs: ThreadDocumentUI[],
 ): ThreadDocumentUI[] {
-  if (inlineDocs.length === 0) return dbDocs;
-  if (dbDocs.length === 0) return inlineDocs;
+  if (inlineDocs.length === 0) {
+    return dbDocs;
+  }
+  if (dbDocs.length === 0) {
+    return inlineDocs;
+  }
 
   // Build a map of inline docs by userFileId for quick lookup
   const inlineByFileId = new Map<string, ThreadDocumentUI>();
@@ -105,7 +109,9 @@ function mergeThreadDocuments(
 
   // For each DB doc, use inline content if DB content is empty
   const merged = dbDocs.map((dbDoc) => {
-    if (dbDoc.content) return dbDoc;
+    if (dbDoc.content) {
+      return dbDoc;
+    }
 
     const inlineDoc = dbDoc.userFileId
       ? inlineByFileId.get(dbDoc.userFileId)

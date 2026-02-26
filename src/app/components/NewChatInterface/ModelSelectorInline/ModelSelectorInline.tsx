@@ -47,7 +47,9 @@ export const ModelSelectorInline = ({
 
   useEffect(() => {
     const loadAvailableModels = async () => {
-      if (isLoadingModels.current) return;
+      if (isLoadingModels.current) {
+        return;
+      }
 
       const orgId = organization?.id || sessionOrgId;
 

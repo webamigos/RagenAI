@@ -40,7 +40,9 @@ export const ProjectContextManager = ({
   const currentProject = threadContext?.project;
 
   const handleProjectSelect = async (project: ProjectForContext | null) => {
-    if (isUpdating) return;
+    if (isUpdating) {
+      return;
+    }
 
     setIsUpdating(true);
     try {

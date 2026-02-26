@@ -16,8 +16,12 @@ import { logger } from '@/app/lib/utils/logger';
 const PAGE_SIZE = 20;
 
 function getThreadTitle(thread: AllThreadsItem): string {
-  if (thread.title) return thread.title;
-  if (thread.messages[0]?.content) return thread.messages[0].content;
+  if (thread.title) {
+    return thread.title;
+  }
+  if (thread.messages[0]?.content) {
+    return thread.messages[0].content;
+  }
   return 'New conversation';
 }
 
@@ -33,10 +37,18 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) {
+    return 'just now';
+  }
+  if (diffMins < 60) {
+    return `${diffMins}m ago`;
+  }
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+  if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  }
   return date.toLocaleDateString();
 }
 
@@ -53,7 +65,9 @@ export const ChatsPage = () => {
 
   const fetchThreads = useCallback(
     async (currentSkip: number, query: string, append = false) => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        return;
+      }
       setIsLoading(true);
       try {
         const result = await getAllThreads(
@@ -91,7 +105,9 @@ export const ChatsPage = () => {
   const handleSearch = (value: string) => {
     setSearchQuery(value);
     setSkip(0);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
     debounceRef.current = setTimeout(() => {
       fetchThreads(0, value);
     }, 300);

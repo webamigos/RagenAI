@@ -52,7 +52,9 @@ export async function saveOpenaiAPIKey(
 
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.openai_api_key) return defaultOrganizationSettings.apiKey;
+  if (!settings?.openai_api_key) {
+    return defaultOrganizationSettings.apiKey;
+  }
   return decryptApiKey(settings.openai_api_key);
 }
 
@@ -70,7 +72,9 @@ export async function getAnthropicAPIKey(
   orgId: string,
 ): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.anthropic_api_key) return null;
+  if (!settings?.anthropic_api_key) {
+    return null;
+  }
   return decryptApiKey(settings.anthropic_api_key);
 }
 
@@ -86,7 +90,9 @@ export async function saveGoogleAPIKey(
 
 export async function getGoogleAPIKey(orgId: string): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.google_api_key) return null;
+  if (!settings?.google_api_key) {
+    return null;
+  }
   return decryptApiKey(settings.google_api_key);
 }
 
@@ -108,7 +114,9 @@ export async function getBedrockCredentials(orgId: string): Promise<{
   secretAccessKey: string;
 } | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.bedrock_credentials) return null;
+  if (!settings?.bedrock_credentials) {
+    return null;
+  }
   try {
     return JSON.parse(decryptApiKey(settings.bedrock_credentials));
   } catch {
@@ -144,7 +152,9 @@ export async function getOpenrouterAPIKey(
   orgId: string,
 ): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.openrouter_api_key) return null;
+  if (!settings?.openrouter_api_key) {
+    return null;
+  }
   return decryptApiKey(settings.openrouter_api_key);
 }
 
@@ -162,7 +172,9 @@ export async function getFireworksAPIKey(
   orgId: string,
 ): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.fireworks_api_key) return null;
+  if (!settings?.fireworks_api_key) {
+    return null;
+  }
   return decryptApiKey(settings.fireworks_api_key);
 }
 
@@ -190,7 +202,9 @@ export async function getAzureOpenAICredentials(orgId: string): Promise<{
   apiVersion: string;
 } | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.azure_openai_credentials) return null;
+  if (!settings?.azure_openai_credentials) {
+    return null;
+  }
   try {
     return JSON.parse(decryptApiKey(settings.azure_openai_credentials));
   } catch {
@@ -267,12 +281,15 @@ export async function saveStorageLimits(
   limits: Partial<StorageLimits>,
 ): Promise<void> {
   const data: Record<string, unknown> = {};
-  if (limits.storageLimitBytes !== undefined)
+  if (limits.storageLimitBytes !== undefined) {
     data.storage_limit_bytes = BigInt(limits.storageLimitBytes);
-  if (limits.projectStorageLimitBytes !== undefined)
+  }
+  if (limits.projectStorageLimitBytes !== undefined) {
     data.project_storage_limit_bytes = BigInt(limits.projectStorageLimitBytes);
-  if (limits.singleFileLimitBytes !== undefined)
+  }
+  if (limits.singleFileLimitBytes !== undefined) {
     data.single_file_limit_bytes = BigInt(limits.singleFileLimitBytes);
+  }
   await upsertSettings(orgId, data);
 }
 

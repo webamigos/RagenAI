@@ -36,7 +36,9 @@ export const useSidebarThreads = () => {
 
   const fetchThreads = useCallback(
     async (skip = 0, append = false) => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        return;
+      }
       setIsLoading(true);
       try {
         const result = await getSidebarThreads(user.id, RECENT_LIMIT, skip);
@@ -72,8 +74,9 @@ export const useSidebarThreads = () => {
       if (event.type === 'thread-created') {
         setRecentThreads((prev) => {
           // Avoid duplicates
-          if (prev.some((t) => t.public_id === event.thread.public_id))
+          if (prev.some((t) => t.public_id === event.thread.public_id)) {
             return prev;
+          }
           return [event.thread, ...prev];
         });
       }

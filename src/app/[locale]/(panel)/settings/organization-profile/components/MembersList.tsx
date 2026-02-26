@@ -31,7 +31,9 @@ export function MembersList({
   const canManageMembers = ['admin', 'owner'].includes(currentUserRole);
 
   const handleRemoveMember = async (memberEmail: string) => {
-    if (!confirm(t('confirm-remove'))) return;
+    if (!confirm(t('confirm-remove'))) {
+      return;
+    }
 
     const result = await removeMember(memberEmail, organizationId);
     if (result.success) {
@@ -43,7 +45,7 @@ export function MembersList({
 
   const handleChangeRole = async (
     memberId: string,
-    newRole: 'admin' | 'member'
+    newRole: 'admin' | 'member',
   ) => {
     const result = await updateMemberRole(memberId, newRole, organizationId);
     if (result.success) {
@@ -152,8 +154,8 @@ export function MembersList({
                           member.role === 'owner'
                             ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                             : member.role === 'admin'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                         }`}
                       >
                         {t(`role-${member.role}`)}

@@ -28,9 +28,15 @@ function formatRelativeTime(date: Date): string {
   const diffMs = now.getTime() - new Date(date).getTime();
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffDays < 1) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 1) {
+    return 'Today';
+  }
+  if (diffDays === 1) {
+    return 'Yesterday';
+  }
+  if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  }
   return new Date(date).toLocaleDateString();
 }
 
@@ -46,7 +52,9 @@ export const AssistantsPage = () => {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      if (!organization?.id || !user?.id) return;
+      if (!organization?.id || !user?.id) {
+        return;
+      }
       setIsLoading(true);
       try {
         const result = await getProjects(organization.id, user.id);
@@ -66,7 +74,9 @@ export const AssistantsPage = () => {
     const nonDefault = projects.filter(
       (p) => p.public_id !== defaultProjectPublicId,
     );
-    if (!searchQuery.trim()) return nonDefault;
+    if (!searchQuery.trim()) {
+      return nonDefault;
+    }
     return nonDefault.filter((p) =>
       p.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );

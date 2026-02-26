@@ -49,7 +49,9 @@ export const ModelSelector = ({
 
   useEffect(() => {
     const loadAvailableModels = async () => {
-      if (isLoadingModels.current || !organization?.id) return;
+      if (isLoadingModels.current || !organization?.id) {
+        return;
+      }
 
       try {
         isLoadingModels.current = true;

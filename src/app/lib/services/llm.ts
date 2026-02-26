@@ -121,7 +121,9 @@ const modelsWithoutTemperature = ['openai/o3-mini', 'openai/gpt-5.2'];
 
 // Helper function to check if model supports temperature
 const supportsTemperature = (model: string): boolean => {
-  if (!model) return true;
+  if (!model) {
+    return true;
+  }
   return !modelsWithoutTemperature.includes(model);
 };
 
@@ -138,7 +140,9 @@ const createCredentialsForProvider = (
 
     case 'google': {
       const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-      if (!GOOGLE_API_KEY) return null;
+      if (!GOOGLE_API_KEY) {
+        return null;
+      }
       return {
         provider: 'google',
         apiKey: GOOGLE_API_KEY,
@@ -147,7 +151,9 @@ const createCredentialsForProvider = (
 
     case 'anthropic': {
       const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-      if (!ANTHROPIC_API_KEY) return null;
+      if (!ANTHROPIC_API_KEY) {
+        return null;
+      }
       return {
         provider: 'anthropic',
         apiKey: ANTHROPIC_API_KEY,
@@ -158,8 +164,9 @@ const createCredentialsForProvider = (
       const AWS_REGION = process.env.AWS_REGION;
       const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
       const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-      if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY)
+      if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
         return null;
+      }
       return {
         provider: 'bedrock',
         region: AWS_REGION,
@@ -172,7 +179,9 @@ const createCredentialsForProvider = (
 
     case 'ollama': {
       const OLLAMA_HOST = process.env.OLLAMA_HOST;
-      if (!OLLAMA_HOST) return null;
+      if (!OLLAMA_HOST) {
+        return null;
+      }
       return {
         provider: 'ollama',
         baseUrl: OLLAMA_HOST,
@@ -181,7 +190,9 @@ const createCredentialsForProvider = (
 
     case 'openrouter': {
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-      if (!OPENROUTER_API_KEY) return null;
+      if (!OPENROUTER_API_KEY) {
+        return null;
+      }
       return {
         provider: 'openrouter',
         apiKey: OPENROUTER_API_KEY,
@@ -190,7 +201,9 @@ const createCredentialsForProvider = (
 
     case 'fireworks': {
       const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY;
-      if (!FIREWORKS_API_KEY) return null;
+      if (!FIREWORKS_API_KEY) {
+        return null;
+      }
       return {
         provider: 'fireworks',
         apiKey: FIREWORKS_API_KEY,
@@ -207,8 +220,9 @@ const createCredentialsForProvider = (
         !AZURE_OPENAI_INSTANCE ||
         !AZURE_OPENAI_DEPLOYMENT ||
         !AZURE_OPENAI_VERSION
-      )
+      ) {
         return null;
+      }
       return {
         provider: 'azure-openai',
         apiKey: AZURE_OPENAI_KEY,

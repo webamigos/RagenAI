@@ -73,7 +73,9 @@ export const useNewThreadInput = ({
   };
 
   const createVoiceThread = useCallback(async () => {
-    if (threadHandler.isLoading || threadHandler.isPending) return;
+    if (threadHandler.isLoading || threadHandler.isPending) {
+      return;
+    }
 
     sessionStorage.setItem('response_type', ChatResponseType.VOICE);
 
@@ -98,7 +100,9 @@ export const useNewThreadInput = ({
 
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
-      if (threadHandler.isLoading || threadHandler.isPending) return;
+      if (threadHandler.isLoading || threadHandler.isPending) {
+        return;
+      }
 
       // Use mentioned project if available, otherwise use passed project
       const targetProjectId = mentionedProject?.id || projectId;

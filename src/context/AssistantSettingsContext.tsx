@@ -17,7 +17,7 @@ export type SettingsContextType = {
 };
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(
-  undefined
+  undefined,
 );
 export const SettingsProvider = ({
   children,
@@ -55,7 +55,9 @@ export const SettingsProvider = ({
     let intervalId: NodeJS.Timeout;
 
     const checkIfOrganizationHasApiKey = async () => {
-      if (!organization?.id) return;
+      if (!organization?.id) {
+        return;
+      }
 
       const settingsResponse = await checkIfApiKeyExists(organization.id);
 

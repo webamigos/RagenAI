@@ -23,7 +23,9 @@ export function ManageInvitationsSection({
   const canManageInvitations = ['admin', 'owner'].includes(currentUserRole);
 
   const handleCancelInvitation = async (invitationId: string) => {
-    if (!confirm(t('confirm-cancel'))) return;
+    if (!confirm(t('confirm-cancel'))) {
+      return;
+    }
 
     const result = await cancelInvitation(invitationId);
     if (result.success) {
@@ -37,7 +39,7 @@ export function ManageInvitationsSection({
     const result = await resendInvitation(
       invitation.email,
       invitation.role,
-      organizationId
+      organizationId,
     );
     if (result.success) {
       successToast({ message: t('resend-success') });
@@ -47,7 +49,7 @@ export function ManageInvitationsSection({
   };
 
   const pendingInvitations = invitations.filter(
-    (inv) => inv.status === 'pending'
+    (inv) => inv.status === 'pending',
   );
 
   return (
@@ -120,10 +122,10 @@ export function ManageInvitationsSection({
                         invitation.status === 'pending'
                           ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                           : invitation.status === 'accepted'
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : invitation.status === 'rejected'
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : invitation.status === 'rejected'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                       }`}
                     >
                       {t(`status-${invitation.status}`)}
@@ -138,7 +140,7 @@ export function ManageInvitationsSection({
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
-                      }
+                      },
                     )}
                   </td>
 

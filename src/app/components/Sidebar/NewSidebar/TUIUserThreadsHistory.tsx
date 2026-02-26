@@ -32,7 +32,9 @@ export const TUIUserThreadsHistory = ({
   const lastThreadElementRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore) {
+      return;
+    }
 
     if (typeof IntersectionObserver === 'undefined') {
       const handleScroll = () => {
@@ -50,7 +52,9 @@ export const TUIUserThreadsHistory = ({
       return () => window.removeEventListener('scroll', handleScroll);
     }
 
-    if (observerRef.current) observerRef.current.disconnect();
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {

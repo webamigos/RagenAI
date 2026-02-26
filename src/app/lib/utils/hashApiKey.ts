@@ -12,6 +12,8 @@ export function decryptApiKey(encryptedApiKey: string): string {
 }
 
 export const maskApiKey = (apiKey: string): string => {
-  if (apiKey.length <= 8) return apiKey;
+  if (apiKey.length <= 8) {
+    return apiKey;
+  }
   return `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`;
 };

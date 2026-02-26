@@ -12,7 +12,9 @@ type Props = {
 };
 
 export const ThreadModelLabel = ({ model }: Props) => {
-  if (!model) return null;
+  if (!model) {
+    return null;
+  }
 
   const normalized = normalizeModelId(model);
   const modelConfig = availableModels.find((m) => m.value === normalized);

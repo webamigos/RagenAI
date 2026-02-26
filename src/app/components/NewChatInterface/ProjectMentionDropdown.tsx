@@ -33,7 +33,9 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   useEffect(() => {
     const loadProjects = async () => {
-      if (!orgId || !userId) return;
+      if (!orgId || !userId) {
+        return;
+      }
 
       try {
         setLoading(true);
@@ -50,7 +52,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
   }, [orgId, userId]);
 
   const filteredProjects = projects.filter((project) =>
-    project.title.toLowerCase().includes(query.toLowerCase())
+    project.title.toLowerCase().includes(query.toLowerCase()),
   );
 
   useEffect(() => {
@@ -59,19 +61,21 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (filteredProjects.length === 0) return;
+      if (filteredProjects.length === 0) {
+        return;
+      }
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev < filteredProjects.length - 1 ? prev + 1 : 0
+            prev < filteredProjects.length - 1 ? prev + 1 : 0,
           );
           break;
         case 'ArrowUp':
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : filteredProjects.length - 1
+            prev > 0 ? prev - 1 : filteredProjects.length - 1,
           );
           break;
         case 'Enter':

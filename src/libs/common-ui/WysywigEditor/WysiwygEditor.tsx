@@ -57,7 +57,9 @@ function ToolbarDivider() {
 }
 
 function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
-  if (!editor) return null;
+  if (!editor) {
+    return null;
+  }
 
   return (
     <div className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1.5 flex flex-wrap gap-0.5 rounded-t-lg">
