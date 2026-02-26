@@ -1,7 +1,24 @@
-import { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
+import {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useCallback,
+  useRef,
+} from 'react';
 import { useTranslations } from 'next-intl';
-import { SubmitHandler, useForm } from 'react-hook-form';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
+import {
+  PlusIcon,
+  ArrowUpTrayIcon,
+  BookOpenIcon,
+} from '@heroicons/react/24/outline';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -9,10 +26,11 @@ import { AskQuestion } from './';
 import {
   ChatType,
   type CreateMessageDto,
-  ChatResponseType,
+  type ChatResponseType,
   createMessageSchema,
 } from '@/features/messages/contracts/message.types';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
 
 type Props = {
   isLoading: boolean;
@@ -40,17 +58,20 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       isPublicAccess,
       handleResponseType,
       responseType,
-      currentThreadModel,
-      organizationDefaultModel,
-      onChange,
-      isGlobalLoading,
+      currentThreadModel: _currentThreadModel,
+      organizationDefaultModel: _organizationDefaultModel,
+      onChange: _onChange,
+      isGlobalLoading: _isGlobalLoading,
     },
-    ref
+    ref,
   ) => {
     const t = useTranslations('form');
+    const tAttach = useTranslations('prompt-attachments');
     const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
-      []
+      [],
     );
+    const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const {
       register,
@@ -62,9 +83,6 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     } = useForm<CreateMessageDto>({
       resolver: zodResolver(createMessageSchema(t)),
       reValidateMode: 'onSubmit',
-      defaultValues: {
-        useKnowledge: true,
-      },
     });
 
     useImperativeHandle(ref, () => ({
@@ -95,12 +113,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         const validation = validateTextFile(file);
         if (validation.valid) {
           validFiles.push(file);
-        } else {
-          // TODO: Show error toast with validation.error
         }
       }
 
-      // Read file contents
       const newDocuments: ThreadDocumentUI[] = [];
       for (const file of validFiles) {
         try {
@@ -111,7 +126,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             size: file.size,
             type: file.type || 'text/plain',
           });
-        } catch (error) {
+        } catch {
           // TODO: Show error toast for file read error
         }
       }
@@ -123,11 +138,32 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
     }, []);
 
+    const handleKbFilesSelected = useCallback(
+      (
+        files: {
+          publicId: string;
+          name: string;
+          size: number;
+          type: string;
+        }[],
+      ) => {
+        const newDocs: ThreadDocumentUI[] = files.map((f) => ({
+          name: f.name,
+          content: '',
+          size: f.size,
+          type: f.type,
+          userFileId: f.publicId,
+        }));
+        setThreadDocuments((prev) => [...prev, ...newDocs]);
+      },
+      [],
+    );
+
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
       reset({ prompt: '' });
       onSubmit({
         ...data,
-        mode: data.useKnowledge ? ChatType.RAG : ChatType.CONVERSATION,
+        mode: ChatType.RAG,
         messageType: responseType,
         voiceDurationSeconds: data.voiceDurationSeconds,
         threadDocuments:
@@ -141,7 +177,18 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     };
 
     const promptValue = watch('prompt', '');
-    // const useKnowledge = watch('useKnowledge');
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) {
+        handleFilesDrop(files);
+      }
+      e.target.value = '';
+    };
+
+    const excludeFileIds = threadDocuments
+      .filter((d) => d.userFileId)
+      .map((d) => d.userFileId!);
 
     return (
       <div className="w-full px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
@@ -158,26 +205,59 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             value={promptValue}
             handleResponseType={handleResponseType}
             setPromptValue={(text: string) => setValue('prompt', text)}
-            showFileAttachment={true}
+            showFileAttachment={false}
             onFilesDrop={handleFilesDrop}
             threadDocuments={threadDocuments}
             onThreadDocumentRemove={handleThreadDocumentRemove}
           />
 
           {!isPublicAccess && (
-            <label className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer select-none">
-              <input
-                type="checkbox"
-                {...register('useKnowledge')}
-                className="rounded border-border"
-              />
-              {t('selected-mode')}
-            </label>
+            <div className="mt-2 flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="flex items-center justify-center size-8 rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    aria-label="Add attachment"
+                  >
+                    <PlusIcon className="size-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="top" className="w-52">
+                  <DropdownMenuItem
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ArrowUpTrayIcon className="size-4" />
+                    {tAttach('upload-file')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
+                    <BookOpenIcon className="size-4" />
+                    {tAttach('from-knowledge-base')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
         </form>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".md,.srt,.txt,.pdf,.epub"
+          multiple
+          className="hidden"
+          onChange={handleFileInputChange}
+        />
+
+        <KnowledgeBasePickerDialog
+          open={isKbPickerOpen}
+          onOpenChange={setIsKbPickerOpen}
+          onFilesSelected={handleKbFilesSelected}
+          excludeFileIds={excludeFileIds}
+        />
       </div>
     );
-  }
+  },
 );
 
 PromptForm.displayName = 'PromptForm';

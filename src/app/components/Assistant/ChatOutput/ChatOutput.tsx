@@ -6,15 +6,12 @@ import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
   StreamedMessageDto,
-  ChatResponseType,
 } from '@/features/messages/contracts/message.types';
 import './chat-response.css';
 
 type Props = {
   messages: MessageDto[];
   isLoading: boolean;
-  widgetMode?: boolean;
-  responseType: ChatResponseType;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
   isPublicAccess?: boolean;
@@ -26,20 +23,16 @@ const MessageContent = ({
   content,
   role,
   message,
-  streamedMessageRunId,
-  responseType,
   voiceId,
   isPublicAccess,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
-  streamedMessageRunId?: string;
-  responseType: ChatResponseType;
   voiceId?: string;
   isPublicAccess: boolean;
 }) => {
-  const { md, t } = useChatViewLogic(null);
+  const { md } = useChatViewLogic(null);
 
   return (
     <div
@@ -76,15 +69,12 @@ const MessageContent = ({
 export const ChatOutput = ({
   messages,
   isLoading,
-  widgetMode = false,
   loadingMessage = '',
   streamedMessage,
   isPublicAccess = false,
-  responseType,
   voiceId,
 }: Props) => {
-  const { t, streamedMessageRunId, renderedStreamedMessage } =
-    useChatViewLogic(streamedMessage);
+  const { renderedStreamedMessage } = useChatViewLogic(streamedMessage);
 
   return (
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
@@ -103,8 +93,6 @@ export const ChatOutput = ({
               role={message.role}
               message={message}
               isPublicAccess={isPublicAccess}
-              streamedMessageRunId={streamedMessageRunId}
-              responseType={responseType}
               voiceId={!isPublicAccess ? voiceId : undefined}
             />
           </div>
@@ -121,15 +109,12 @@ export const ChatOutput = ({
           </div>
         )}
         {isLoading && loadingMessage && (
-          <div className="mr-auto flex items-center gap-2 rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
+          <div className="mr-auto flex items-center rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
             <div className="flex gap-1">
               <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
               <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
               <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
             </div>
-            <span className="text-xs text-muted-foreground">
-              {loadingMessage}
-            </span>
           </div>
         )}
       </div>

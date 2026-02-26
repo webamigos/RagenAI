@@ -1,16 +1,12 @@
-import { ChatInterface } from '@/app/components/Chat';
-import { loadThreadMessages } from '@/app/components/Chat/actions';
+import { redirect } from '@/i18n/routing';
+import { getLocale } from 'next-intl/server';
 
 type Props = {
-  params: Promise<{
-    projectId: string;
-    threadId: string;
-  }>;
+  params: Promise<{ threadId: string }>;
 };
 
-export default async function ProjectThreadPage({ params }: Props) {
+export default async function ProjectThreadRedirect({ params }: Props) {
   const { threadId } = await params;
-  const initialMessages = await loadThreadMessages(threadId);
-
-  return <ChatInterface threadId={threadId} initialMessages={initialMessages} />;
+  const locale = await getLocale();
+  redirect({ href: `/chats/${threadId}`, locale });
 }

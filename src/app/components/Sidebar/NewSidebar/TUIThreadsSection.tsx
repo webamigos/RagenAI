@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 
@@ -10,7 +10,7 @@ import {
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
-import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 
 type Category = {
   title: string;
@@ -83,7 +83,7 @@ export const TUIThreadsSection = ({
                       role="listitem"
                     >
                       <SidebarItem
-                        href={`/threads/${thread.public_id}`}
+                        href={`/chats/${thread.public_id}`}
                         current={isActive}
                         onClick={() => closeSidebar()}
                         aria-label={`Thread: ${contentPreview}`}

@@ -1,7 +1,51 @@
 {
   "extends": ["next/core-web-vitals"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "storybook/story-exports": 0,
-    "no-console": "error"
-  }
+    "no-console": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+    "@typescript-eslint/consistent-type-imports": [
+      "warn",
+      {
+        "prefer": "type-imports",
+        "fixStyle": "inline-type-imports",
+        "disallowTypeAnnotations": false
+      }
+    ],
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "ImportDeclaration[source.value='@headlessui/react'] ImportNamespaceSpecifier",
+        "message": "Do not use `import *` from @headlessui/react. Use named imports for proper tree-shaking."
+      },
+      {
+        "selector": "ExportAllDeclaration:not([exported])",
+        "message": "Do not use `export * from './module'`. Use explicit named re-exports for better tree-shaking."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/instrumentation.ts",
+        "src/instrumentation-client.ts",
+        "src/app/lib/utils/logger.ts",
+        "next.config.ts",
+        "prisma/**"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
 }

@@ -73,7 +73,7 @@ export function CreateProject({
       const { status, error, project } = await createProject(
         organization.id,
         data.title,
-        user.id
+        user.id,
       );
 
       if (error || !project) {
@@ -89,7 +89,7 @@ export function CreateProject({
       successToast({ message: t('projects.success.created') });
       startTransition(async () => {
         await refreshProjects();
-        router.push(`/assistants/${project.public_id}`);
+        router.push(`/projects/${project.public_id}`);
         onClose();
         reset();
       });

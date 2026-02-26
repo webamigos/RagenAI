@@ -1,4 +1,5 @@
 import { Role, Source } from '@/generated/prisma/client';
+import db from '@ragenai/prisma-client';
 import type { ApiContext } from '../types/ApiContext';
 import type { ChatMessageDto } from '../dtos/chat.dto';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
@@ -17,7 +18,7 @@ async function prepareChainToRun(
   context: ApiContext,
   publicThreadId: string,
   payload: ChatMessageDto,
-  controller?: ReadableStreamDefaultController
+  controller?: ReadableStreamDefaultController,
 ) {
   const rawSettings = await getAllSettings(context.orgId);
   if (!rawSettings.apiKey) {
@@ -31,7 +32,7 @@ async function prepareChainToRun(
 
   const { threadRecord } = await findOrCreateThread(
     publicThreadId,
-    context.userId
+    context.userId,
   );
 
   if (controller) {
@@ -58,10 +59,19 @@ async function prepareChainToRun(
     sendApiEvent(controller, 'init_lmm');
   }
 
+  let projectPublicId: string | undefined;
+  if (context.projectId) {
+    const project = await db.project.findUnique({
+      where: { id: context.projectId },
+      select: { public_id: true },
+    });
+    projectPublicId = project?.public_id;
+  }
+
   const chainOutput = await initializePublicRagChain({
     settings: { ...rawSettings, apiKey: rawSettings.apiKey },
     organizationId: context.orgId,
-    projectId: context.projectId,
+    projectPublicId,
   });
 
   if (controller) {
@@ -91,7 +101,7 @@ async function prepareChainToRun(
 export async function createApiChatMessagesCommand(
   context: ApiContext,
   publicThreadId: string,
-  payload: ChatMessageDto
+  payload: ChatMessageDto,
 ) {
   const { chainOutput, threadRecord, threadMessage, runId, conv_history } =
     await prepareChainToRun(context, publicThreadId, payload);
@@ -127,7 +137,7 @@ export async function streamApiChatMessagesCommand(
   context: ApiContext,
   publicThreadId: string,
   payload: ChatMessageDto,
-  controller: ReadableStreamDefaultController
+  controller: ReadableStreamDefaultController,
 ) {
   const { chainOutput, threadRecord, threadMessage, conv_history } =
     await prepareChainToRun(context, publicThreadId, payload, controller);

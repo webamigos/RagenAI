@@ -1,7 +1,15 @@
 import type { Stripe } from 'stripe';
+import { getTranslations } from 'next-intl/server';
 import { stripe } from '@/libs/payments/stripe';
 import { getInvoiceUrl } from '../actions';
 import { CheckoutSuccess } from '../../components/CheckoutSuccess';
+import type { PropsWihLocale } from '@/app/lib/types/types';
+
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
+  return { title: t('checkout-success.title') };
+}
 
 export default async function ResultPage({
   searchParams,

@@ -51,6 +51,7 @@ export function ProjectComponent({ projectId }: Props) {
     }
 
     loadProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   if (isLoading || !project || !isReady) {

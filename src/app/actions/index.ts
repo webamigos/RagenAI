@@ -11,13 +11,14 @@ import {
   type CreateMessageDto,
   type MessageDto,
 } from '@/features/messages/contracts/message.types';
-import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { deleteFromS3 } from '../lib/services/aws';
 import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
+import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileFromDbCommand as deleteFileFromDb } from '@/features/documents/services/commands/delete-file-from-db-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { deleteProjectFileFromDbCommand as deleteProjectFileFromService } from '@/features/documents/services/commands/delete-project-file-from-db-command';
@@ -28,6 +29,11 @@ import { rateMessageCommand } from '@/features/messages/services/commands/rate-m
 import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
 import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
 import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
+import { toggleThreadStarredCommand } from '@/features/threads/services/commands/toggle-thread-starred-command';
+import { getSidebarThreadsQuery } from '@/features/threads/services/queries/get-sidebar-threads-query';
+import { getAllThreadsQuery } from '@/features/threads/services/queries/get-all-threads-query';
+import { renameThreadCommand } from '@/features/threads/services/commands/rename-thread-command';
+import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
 import {
   saveOrganizationPublicMetadataCommand,
   saveOrganizationInitialMetadataCommand,
@@ -39,8 +45,7 @@ import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
-import { Project, UserFile } from '@/generated/prisma/client';
-import db from '@ragenai/prisma-client';
+import type { Project, UserFile } from '@/generated/prisma/client';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -58,7 +63,7 @@ type ResponseHistory = {
 export const sendMessage = async (
   threadId: string,
   data: CreateMessageDto,
-  visitorId: string
+  visitorId: string,
 ): Promise<ResponseMessage> => {
   return sendMessageCommand(threadId, data, visitorId);
 };
@@ -66,7 +71,7 @@ export const sendMessage = async (
 export const getUserMessages = async (
   visitorId: string,
   skip?: number,
-  take?: number
+  take?: number,
 ): Promise<ResponseHistory> => {
   try {
     const userThreads = await getUserThreadsQuery(visitorId, skip, take);
@@ -94,9 +99,20 @@ export const getUserFiles = async () => {
   }
 };
 
+// Get all organization files (for knowledge base picker)
+export const getAllOrgFiles = async () => {
+  try {
+    const orgId = await getOrgIdOrThrow();
+    const files = await fetchAllOrgFiles(orgId);
+    return { files };
+  } catch {
+    return { files: [] };
+  }
+};
+
 // Get project files
 export const getProjectFiles = async (
-  projectPublicId: Project['public_id']
+  projectPublicId: Project['public_id'],
 ) => {
   try {
     const files = await fetchProjectFiles(projectPublicId);
@@ -108,6 +124,33 @@ export const getProjectFiles = async (
       status: StatusCodes.BAD_REQUEST,
     };
   }
+};
+
+// Import files from knowledge base to a project
+export const importFilesToProject = async (
+  filePublicIds: string[],
+  targetProjectPublicId: string,
+) => {
+  const { importFileToProjectCommand } =
+    await import('@/features/documents/services/commands/import-file-to-project-command');
+
+  const results = [];
+  for (const fileId of filePublicIds) {
+    try {
+      const result = await importFileToProjectCommand(
+        fileId,
+        targetProjectPublicId,
+      );
+      results.push({
+        fileId,
+        success: true,
+        alreadyExists: result.alreadyExists,
+      });
+    } catch {
+      results.push({ fileId, success: false, alreadyExists: false });
+    }
+  }
+  return { results };
 };
 
 // Get file details for download
@@ -136,7 +179,7 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 // Delete project file
 export const deleteProjectFileAction = async (
   filePublicId: UserFile['public_id'],
-  projectPublicId: Project['public_id']
+  projectPublicId: Project['public_id'],
 ) => {
   try {
     const fileRecord = await getFileDetailsByPublicId(filePublicId);
@@ -151,13 +194,13 @@ export const deleteProjectFileAction = async (
 
     const result = await deleteProjectFileFromService(
       filePublicId,
-      projectPublicId
+      projectPublicId,
     );
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
       const documentS3Path = `${fileRecord.public_id}.${getFileExtension(
-        fileRecord.file_name
+        fileRecord.file_name,
       )}`;
 
       try {
@@ -203,7 +246,7 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
 
     if (fileRecord) {
       const documentS3Path = `${filePublicId}.${getFileExtension(
-        fileRecord.file_name
+        fileRecord.file_name,
       )}`;
 
       await deleteFromS3(documentS3Path);
@@ -270,7 +313,7 @@ export const getOrganizationMetadata = getOrganizationMetadataQuery;
 /** @deprecated Use rateMessageCommand from @/features/messages instead */
 export const rateMessage = async (
   messageId: string,
-  feedback: 'up' | 'down'
+  feedback: 'up' | 'down',
 ) => {
   return rateMessageCommand(messageId, feedback);
 };
@@ -283,7 +326,7 @@ export async function deleteUserMessage(messagePublicId: string) {
 /** @deprecated Use searchThreadsQuery from @/features/threads instead */
 export async function fetchThreadSuggestions(
   visitorId: string,
-  query: string
+  query: string,
 ): Promise<{ id: string; title: string }[]> {
   return searchThreadsQuery(visitorId, query);
 }
@@ -309,7 +352,7 @@ export const getDefaultProjectPublicId = async () => {
 
   logger.info(
     { orgId },
-    'Organization ID retrieved in getDefaultProjectPublicId'
+    'Organization ID retrieved in getDefaultProjectPublicId',
   );
 
   try {
@@ -318,6 +361,38 @@ export const getDefaultProjectPublicId = async () => {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;
   }
+};
+
+export const toggleThreadStarred = async (
+  threadPublicId: string,
+  isStarred: boolean,
+) => {
+  return toggleThreadStarredCommand(threadPublicId, isStarred);
+};
+
+export const getSidebarThreads = async (
+  visitorId: string,
+  recentLimit?: number,
+  recentSkip?: number,
+) => {
+  return getSidebarThreadsQuery(visitorId, recentLimit, recentSkip);
+};
+
+export const getAllThreads = async (
+  visitorId: string,
+  skip?: number,
+  take?: number,
+  query?: string,
+) => {
+  return getAllThreadsQuery(visitorId, skip, take, query);
+};
+
+export const renameThread = async (threadPublicId: string, title: string) => {
+  return renameThreadCommand(threadPublicId, title);
+};
+
+export const deleteThread = async (threadPublicId: string) => {
+  return deleteThreadCommand(threadPublicId);
 };
 
 export const getAccountSetupStatusAction = async () => {

@@ -27,7 +27,7 @@ export const TUIProjectItem = ({
   }, [activeThread, project.threads]);
 
   const handleProjectClick = () => {
-    router.push(`/assistants/${project.public_id}`);
+    router.push(`/projects/${project.public_id}`);
   };
 
   const handleExpandClick = (e: React.MouseEvent<HTMLButtonElement>) => {

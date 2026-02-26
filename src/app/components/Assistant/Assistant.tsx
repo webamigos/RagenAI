@@ -17,7 +17,7 @@ import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
-import { RootState } from '@/store';
+import { type RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
@@ -59,7 +59,7 @@ export const Assistant = ({ threadId }: Props) => {
   } = useAssistantLogic(threadId);
 
   const { messages: reduxMessages, error: assistantError } = useSelector(
-    (state: RootState) => state.assistant
+    (state: RootState) => state.assistant,
   );
 
   const messages = reduxMessages.length > 0 ? reduxMessages : localMessages;
@@ -68,13 +68,13 @@ export const Assistant = ({ threadId }: Props) => {
   const { user } = useUser();
   const dispatch = useDispatch();
   const { voiceId, isRecording } = useSelector(
-    (state: RootState) => state.assistant.voice
+    (state: RootState) => state.assistant.voice,
   );
   const [availableProjects, setAvailableProjects] = useState<
     ProjectForContext[]
   >([]);
   const [currentThreadModel, setCurrentThreadModel] = useState<string | null>(
-    null
+    null,
   );
   const [organizationDefaultModel, setOrganizationDefaultModel] = useState<
     string | null
@@ -121,7 +121,7 @@ export const Assistant = ({ threadId }: Props) => {
               id: project.id,
               public_id: project.public_id,
               title: project.title,
-            })
+            }),
           );
 
           setAvailableProjects(mappedProjects);
@@ -148,13 +148,13 @@ export const Assistant = ({ threadId }: Props) => {
         } else {
           logger.error(
             { error: result.error },
-            'Failed to fetch organization settings'
+            'Failed to fetch organization settings',
           );
         }
       } catch (error) {
         logger.error(
           { error: error },
-          'Error fetching organization model settings'
+          'Error fetching organization model settings',
         );
       }
     };
@@ -171,7 +171,7 @@ export const Assistant = ({ threadId }: Props) => {
         } else {
           logger.error(
             { error: result.errorMessage },
-            'Error fetching thread model'
+            'Error fetching thread model',
           );
           setCurrentThreadModel(null);
         }
@@ -242,7 +242,6 @@ export const Assistant = ({ threadId }: Props) => {
 
         <div className="flex-1">
           <ChatOutput
-            responseType={responseType}
             messages={messages}
             isLoading={isGlobalLoading}
             loadingMessage={messageLoadingText}

@@ -1,3 +1,5 @@
+'use client';
+
 import {
   SidebarBody,
   SidebarHeading,
@@ -8,125 +10,139 @@ import {
   SidebarDivider,
 } from '@ragenai/tui/sidebar';
 import {
+  ChatBubbleLeftIcon,
   Cog6ToothIcon,
+  FolderIcon,
   HomeIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
-
-import { useAppSelector } from '@/store/hooks';
+import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
-import { useSettings } from '@/app/hooks/useSettings';
 
-import { TUIProjectsList } from './TUIProjectsList';
-import { TUIUserThreadsHistory } from './TUIUserThreadsHistory';
-import { useSidebarLogic } from '../useSidebarLogic';
+import { useSidebar } from '@/app/hooks/useSidebar';
+import { useSidebarThreads } from './useSidebarThreads';
+import { SidebarThreadItem } from './SidebarThreadItem';
 
 export const NewMainSidebarBody = () => {
   const pathname = usePathname();
-  const { hasKnowledge } = useSettings();
+  const t = useTranslations('sidebar');
+  const { closeSidebar } = useSidebar();
 
   const {
-    error,
-    hasMore,
-    projects,
+    starredThreads,
+    recentThreads,
     isLoading,
-    isSignedIn,
-    userThreads,
-    activeThread,
-    isThreadsLoaded,
-    isCreateModalOpen,
-    setIsCreateModalOpen,
-    loadMoreThreads,
-    refreshProjects,
-    refetchThreads,
-    getSidebarThreadsError,
-  } = useSidebarLogic();
+    hasMore,
+    loadMore,
+    toggleStar,
+    renameThread,
+    removeThread,
+  } = useSidebarThreads();
 
-  const { defaultProjectPublicId } = useAppSelector((state) => state.threads);
+  const activeThread = pathname.match(/\/chats\/([^/]+)/)?.[1] ?? '';
 
-  const projectsWithoutDefault = projects.filter(
-    (project) => project.public_id !== defaultProjectPublicId
-  );
-  const onboardingInProgress =
-    !hasKnowledge &&
-    projectsWithoutDefault.length === 0 &&
-    userThreads.length === 0;
+  const isSettingsPage = pathname.includes('/settings');
+  const isSupportPage = pathname.includes('/support');
 
-  const shouldShowMainContent =
-    pathname === '/' ||
-    pathname.includes('/threads') ||
-    pathname.includes('assistants');
+  if (isSettingsPage || isSupportPage) {
+    return (
+      <SidebarBody>
+        <SidebarSection>
+          <SidebarItem href="/new">
+            <HomeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+            <SidebarLabel className="font-normal">Home</SidebarLabel>
+          </SidebarItem>
+          <SidebarItem href="/settings">
+            <Cog6ToothIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+            <SidebarLabel className="font-normal">Settings</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+        <SidebarSpacer />
+        <SidebarSection>
+          <SidebarItem href="/support">
+            <QuestionMarkCircleIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+            <SidebarLabel className="font-normal">Support</SidebarLabel>
+          </SidebarItem>
+        </SidebarSection>
+      </SidebarBody>
+    );
+  }
 
   return (
     <SidebarBody>
-      {shouldShowMainContent ? (
-        <>
-          {/* Projects Section */}
-          {!error && (
-            <TUIProjectsList
-              isLoading={isLoading}
-              projects={projectsWithoutDefault}
-              setIsCreateModalOpen={setIsCreateModalOpen}
-              activeThread={activeThread}
-              isCreateModalOpen={isCreateModalOpen}
-              refreshProjects={refreshProjects}
-            />
-          )}
-          <SidebarDivider />
-          {/* Threads History Section */}
-          {!onboardingInProgress && !error && (
-            <TUIUserThreadsHistory
-              error={error}
-              hasMore={hasMore}
-              isLoading={isLoading}
-              isSignedIn={isSignedIn}
-              userThreads={userThreads}
-              activeThread={activeThread}
-              isThreadsLoaded={isThreadsLoaded}
-              loadMoreThreads={loadMoreThreads}
-            />
-          )}
+      {/* Navigation links */}
+      <SidebarSection>
+        <SidebarItem href="/chats" current={pathname === '/chats'}>
+          <ChatBubbleLeftIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <SidebarLabel className="font-normal">{t('nav.chats')}</SidebarLabel>
+        </SidebarItem>
+        <SidebarItem href="/projects" current={pathname === '/projects'}>
+          <FolderIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <SidebarLabel className="font-normal">
+            {t('nav.assistants')}
+          </SidebarLabel>
+        </SidebarItem>
+      </SidebarSection>
 
-          {/* Error State */}
-          {error && !isLoading && (
-            <SidebarSection>
-              <div className="flex flex-col items-center text-center p-4">
-                <div className="text-red-500 dark:text-red-400 text-sm mb-2">
-                  {getSidebarThreadsError(error)}
-                </div>
-                <button
-                  onClick={refetchThreads}
-                  disabled={isLoading}
-                  className="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-red-600 dark:hover:bg-red-700 text-white rounded-md transition-colors font-medium"
-                >
-                  {isLoading ? 'Retrying...' : 'Retry'}
-                </button>
-              </div>
-            </SidebarSection>
-          )}
-        </>
-      ) : (
-        <>
-          {/* Default navigation sections for non-main pages */}
-          <SidebarSection>
-            <SidebarItem href="/">
-              <HomeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-              <SidebarLabel className="font-normal">Home</SidebarLabel>
-            </SidebarItem>
-            <SidebarItem href="/settings">
-              <Cog6ToothIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-              <SidebarLabel className="font-normal">Settings</SidebarLabel>
-            </SidebarItem>
-          </SidebarSection>
-          <SidebarSpacer />
-          <SidebarSection>
-            <SidebarItem href="/support">
-              <QuestionMarkCircleIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-              <SidebarLabel className="font-normal">Support</SidebarLabel>
-            </SidebarItem>
-          </SidebarSection>
-        </>
+      <SidebarDivider />
+
+      {/* Starred threads */}
+      {starredThreads.length > 0 && (
+        <SidebarSection>
+          <SidebarHeading>{t('starred.title')}</SidebarHeading>
+          {starredThreads.map((thread) => (
+            <SidebarThreadItem
+              key={thread.public_id}
+              thread={thread}
+              isActive={thread.public_id === activeThread}
+              onClose={closeSidebar}
+              onToggleStar={toggleStar}
+              onRenamed={renameThread}
+              onDeleted={removeThread}
+            />
+          ))}
+        </SidebarSection>
       )}
+
+      {/* Recent threads */}
+      <SidebarSection>
+        <SidebarHeading>{t('recent.title')}</SidebarHeading>
+        {isLoading && recentThreads.length === 0 ? (
+          <div className="px-2 py-4 text-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400 mx-auto" />
+          </div>
+        ) : recentThreads.length === 0 && starredThreads.length === 0 ? (
+          <div className="px-2 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            {t('threads.no-threads')}
+          </div>
+        ) : (
+          <>
+            {recentThreads.map((thread) => (
+              <SidebarThreadItem
+                key={thread.public_id}
+                thread={thread}
+                isActive={thread.public_id === activeThread}
+                onClose={closeSidebar}
+                onToggleStar={toggleStar}
+                onRenamed={renameThread}
+                onDeleted={removeThread}
+              />
+            ))}
+            {hasMore && (
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={isLoading}
+                className="w-full px-2 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
+              >
+                {isLoading
+                  ? '...'
+                  : t('threads.load-more', { defaultMessage: 'Load more' })}
+              </button>
+            )}
+          </>
+        )}
+      </SidebarSection>
     </SidebarBody>
   );
 };

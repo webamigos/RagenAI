@@ -8,7 +8,7 @@ import {
   createAndStoreMessageCommand as createAndStoreMessage,
   createMessageInDbCommand as createMessageInDB,
 } from '@/features/messages/services/commands/create-message-command';
-import { ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
+import { type ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
 import { logger } from '../../../lib/utils/logger';
 import { initializeRagChain } from './initializeBasicRag';
 import { initializeConversationChain } from '../services/initializeConversationChain';
@@ -17,20 +17,20 @@ import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
 import {
   ChatType,
-  CreateMessageDto,
+  type CreateMessageDto,
 } from '@/features/messages/contracts/message.types';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 
 /**
  * Load thread documents from database for a specific thread
  */
 async function loadThreadDocuments(
-  threadId: string
+  threadId: string,
 ): Promise<ThreadDocumentUI[]> {
   try {
     const threadDocuments = await db.threadDocument.findMany({
@@ -59,7 +59,7 @@ async function loadThreadDocuments(
         userFileIds: threadDocuments.map((td) => td.userFile.public_id),
         fileNames: threadDocuments.map((td) => td.userFile.file_name),
       },
-      'loadThreadDocuments: Retrieved thread documents from database'
+      'loadThreadDocuments: Retrieved thread documents from database',
     );
 
     const threadDocumentsUI: ThreadDocumentUI[] = threadDocuments.map((td) => ({
@@ -74,7 +74,7 @@ async function loadThreadDocuments(
   } catch (error) {
     logger.error(
       { error, threadId },
-      'loadThreadDocuments: Error loading thread documents from database'
+      'loadThreadDocuments: Error loading thread documents from database',
     );
     return [];
   }
@@ -156,7 +156,7 @@ export async function streamEvents({
         // Determine project instructions with fallback hierarchy
         // Priority: mentioned_project_id > project_id > organization instructions (from effectiveSettings.prompt)
         let projectInstruction: string | null = null;
-        let effectiveProjectId: number | null = null;
+        let effectiveProjectPublicId: string | null = null;
 
         try {
           sendApiEvent(controller, 'init_lmm');
@@ -171,9 +171,9 @@ export async function streamEvents({
             if (mentionedProject) {
               try {
                 projectInstruction = await getProjectInstruction(
-                  mentionedProject.public_id
+                  mentionedProject.public_id,
                 );
-                effectiveProjectId = mentionedProject.id;
+                effectiveProjectPublicId = mentionedProject.public_id;
 
                 logger.info(
                   {
@@ -181,7 +181,7 @@ export async function streamEvents({
                     mentionedProjectPublicId: mentionedProject.public_id,
                     hasInstruction: Boolean(projectInstruction),
                   },
-                  'Using instructions from mentioned project (highest priority)'
+                  'Using instructions from mentioned project (highest priority)',
                 );
               } catch (error) {
                 logger.error(
@@ -190,14 +190,14 @@ export async function streamEvents({
                     mentionedProjectId: threadRecord.mentioned_project_id,
                     mentionedProjectPublicId: mentionedProject.public_id,
                   },
-                  'Error getting instructions from mentioned project, falling back to thread project'
+                  'Error getting instructions from mentioned project, falling back to thread project',
                 );
                 // Continue to fallback logic below
               }
             } else {
               logger.warn(
                 { mentionedProjectId: threadRecord.mentioned_project_id },
-                'Mentioned project not found, falling back to thread project'
+                'Mentioned project not found, falling back to thread project',
               );
               // Continue to fallback logic below
             }
@@ -211,9 +211,9 @@ export async function streamEvents({
           ) {
             try {
               projectInstruction = await getProjectInstruction(
-                threadRecord.project.public_id
+                threadRecord.project.public_id,
               );
-              effectiveProjectId = threadRecord.project.id;
+              effectiveProjectPublicId = threadRecord.project.public_id;
 
               logger.info(
                 {
@@ -221,7 +221,7 @@ export async function streamEvents({
                   publicProjectId: threadRecord.project.public_id,
                   hasInstruction: Boolean(projectInstruction),
                 },
-                'Using instructions from thread project (medium priority)'
+                'Using instructions from thread project (medium priority)',
               );
             } catch (error) {
               logger.error(
@@ -230,14 +230,14 @@ export async function streamEvents({
                   projectId: threadRecord.project_id,
                   publicProjectId: threadRecord.project?.public_id,
                 },
-                'Error getting instructions from thread project, will use organization instructions'
+                'Error getting instructions from thread project, will use organization instructions',
               );
               // Will fallback to organization instructions via effectiveSettings.prompt
             }
           } else if (!projectInstruction && threadRecord.project_id) {
             logger.warn(
               { projectId: threadRecord.project_id },
-              'Project associated with thread, but missing public_id'
+              'Project associated with thread, but missing public_id',
             );
           }
 
@@ -253,13 +253,13 @@ export async function streamEvents({
                 threadModel: threadRecord.preferred_model,
                 orgDefaultModel: rawSettings.model,
               },
-              'No project instructions found, will use organization instructions (lowest priority fallback)'
+              'No project instructions found, will use organization instructions (lowest priority fallback)',
             );
           }
         } catch (error) {
           logger.error(
             { err: error },
-            'Error in project instruction resolution, using organization fallback'
+            'Error in project instruction resolution, using organization fallback',
           );
           // projectInstruction stays null, chains will use organization instructions
         }
@@ -278,21 +278,21 @@ export async function streamEvents({
               projectInstruction,
             });
           } else {
-            // Use effective project ID (mentioned project takes priority over thread project)
-            const projectIdToUse =
-              effectiveProjectId || threadRecord.project?.id;
-            if (!projectIdToUse) {
+            // Use effective project public ID (mentioned project takes priority over thread project)
+            const projectPublicIdToUse =
+              effectiveProjectPublicId || threadRecord.project?.public_id;
+            if (!projectPublicIdToUse) {
               logger.error(
                 {
                   threadId: publicThreadId,
-                  effectiveProjectId,
-                  threadProjectId: threadRecord.project?.id,
+                  effectiveProjectPublicId,
+                  threadProjectPublicId: threadRecord.project?.public_id,
                   mentionedProjectId: threadRecord.mentioned_project_id,
                 },
-                'No project ID available for RAG chain initialization'
+                'No project public ID available for RAG chain initialization',
               );
               throw new Error(
-                'Project ID is required for knowledge base access'
+                'Project public ID is required for knowledge base access',
               );
             }
 
@@ -304,12 +304,13 @@ export async function streamEvents({
                 apiKey: effectiveSettings.apiKey,
               },
               projectInstruction,
-              internalProjectId: projectIdToUse,
+              projectPublicId: projectPublicIdToUse,
               threadDocuments,
             });
           }
         } else if (mode === AssistantMode.PUBLIC) {
-          const projectIdToUse = effectiveProjectId || threadRecord.project?.id;
+          const projectPublicIdToUse =
+            effectiveProjectPublicId || threadRecord.project?.public_id;
           chainOutput = await initializePublicRagChain({
             settings: {
               ...effectiveSettings,
@@ -317,7 +318,7 @@ export async function streamEvents({
             },
             organizationId: orgId,
             projectInstruction,
-            projectId: projectIdToUse,
+            projectPublicId: projectPublicIdToUse,
           });
         }
 
@@ -394,7 +395,7 @@ export async function streamEvents({
           } catch (finalResponseError) {
             logger.error(
               { err: finalResponseError },
-              'Error sending final_response after assistant_response_saved'
+              'Error sending final_response after assistant_response_saved',
             );
 
             try {
@@ -403,14 +404,14 @@ export async function streamEvents({
             } catch (closeError) {
               logger.error(
                 { err: closeError },
-                'Error closing stream after final_response error'
+                'Error closing stream after final_response error',
               );
             }
           }
         } catch (finalResponseError) {
           logger.error(
             { err: finalResponseError },
-            'Error sending final_response after assistant_response_saved'
+            'Error sending final_response after assistant_response_saved',
           );
         }
       } catch (error) {

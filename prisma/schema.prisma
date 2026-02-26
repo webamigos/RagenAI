@@ -18,7 +18,7 @@ model Settings {
 
 model Message {
   id                     String             @id @default(uuid())
-  public_id              String             @unique @default(cuid())
+  public_id              String             @unique @default(uuid()) @db.Uuid
   created_at             DateTime           @default(now()) @db.Timestamptz
   content                String
   role                   Role               @default(USER)
@@ -39,7 +39,7 @@ model Message {
 }
 
 model FlaggedMessage {
-  public_id  String   @unique @default(cuid())
+  public_id  String   @unique @default(uuid()) @db.Uuid
   created_at DateTime @default(now()) @db.Timestamptz
   content    String
   role       Role     @default(USER)
@@ -51,7 +51,7 @@ model FlaggedMessage {
 
 model Thread {
   id                           String                  @id @default(uuid())
-  public_id                    String                  @unique @default(cuid())
+  public_id                    String                  @unique @default(uuid()) @db.Uuid
   title                        String? // optional value displayed in sidebar
   visitor_id                   String? // -> owner_id
   messages                     Message[]
@@ -63,12 +63,14 @@ model Thread {
   project                      Project?                @relation(fields: [project_id], references: [id])
   project_id                   Int?
   mentioned_project_id         Int? // project mentioned via @ in thread context
+  is_starred                   Boolean                 @default(false)
   created_at                   DateTime                @default(now()) @db.Timestamptz
   threadDocuments              ThreadDocument[]
 
   @@index([public_id])
   @@index([organization_id])
   @@index([user_id])
+  @@index([visitor_id, is_starred, created_at])
   @@map("threads")
 }
 
@@ -86,7 +88,7 @@ model VisitorMessages {
 // Files uploaded by user
 model UserFile {
   id                     String          @id @default(uuid())
-  public_id              String          @unique @default(cuid())
+  public_id              String          @unique @default(uuid()) @db.Uuid
   organization_id        String
   file_name              String
   file_size              Int
@@ -124,7 +126,7 @@ model UserFile {
 // Documents from CMS
 model UserDocument {
   id              String    @id @default(uuid())
-  public_id       String    @unique @default(cuid())
+  public_id       String    @unique @default(uuid()) @db.Uuid
   organization_id String
   title           String
   content         String
@@ -145,7 +147,7 @@ model UserDocument {
 model ThreadDocument {
   id           String   @id @default(uuid())
   thread_id    String   // References Thread.id (internal UUID)
-  user_file_id String   // References UserFile.public_id (external cuid)
+  user_file_id String   @db.Uuid // References UserFile.public_id
   created_at   DateTime @default(now()) @db.Timestamptz
   thread       Thread   @relation(fields: [thread_id], references: [id], onDelete: Cascade)
   userFile     UserFile @relation(fields: [user_file_id], references: [public_id], onDelete: Cascade)
@@ -166,7 +168,7 @@ model ThreadDocument {
 model InternalOrganization {
   // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
   id          Int       @id @default(autoincrement())
-  public_id   String    @unique @default(cuid())
+  public_id   String    @unique @default(uuid()) @db.Uuid
   provider_id String    @unique
   created_at  DateTime  @default(now()) @db.Timestamptz
   updated_at  DateTime  @updatedAt @db.Timestamptz
@@ -226,7 +228,7 @@ model Subscription {
 }
 
 model SubscriptionPlan {
-  id           String                 @id @default(cuid())
+  id           String                 @id @default(uuid())
   name         String
   priceId      String                 @map("price_id")
   type         SubscriptionPlanType   @default(INTERNAL)
@@ -247,7 +249,7 @@ model SubscriptionPlan {
 
 model Project {
   id                       Int                       @id @default(autoincrement())
-  public_id                String                    @unique @default(cuid())
+  public_id                String                    @unique @default(uuid()) @db.Uuid
   title                    String
   organization             InternalOrganization? @relation(fields: [internal_organization_id], references: [id], onDelete: SetNull)
   created_at               DateTime                  @default(now()) @db.Timestamptz
@@ -261,7 +263,7 @@ model Project {
   owner_id                 String?
   is_public                Boolean        @default(false)
   published_at             DateTime?      @db.Timestamptz
-  access_token             String?        @unique @default(cuid())
+  access_token             String?        @unique @default(uuid()) @db.Uuid
   chatbot_enabled          Boolean        @default(false)
   source                   Source         @default(UI)
   settings                 ProjectSettings?
@@ -290,7 +292,7 @@ model ApiKey {
   // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
   id              Int                       @id @default(autoincrement())
   name            String
-  public_id       String                    @unique @default(cuid())
+  public_id       String                    @unique @default(uuid()) @db.Uuid
   masked_value    String
   last_used_at    DateTime?                 @db.Timestamptz
   created_at      DateTime                  @default(now()) @db.Timestamptz

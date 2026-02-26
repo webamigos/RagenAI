@@ -1,12 +1,13 @@
 import * as fs from 'node:fs';
 import path from 'path';
 import { randomUUID } from 'node:crypto';
+import db from '@ragenai/prisma-client';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
   VECTOR_STORE_TABLE_NAME,
 } from '@/libs/db/constants/vectorStore';
-import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
+import { type VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
 import { getOpenaiAPIKey } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
@@ -39,6 +40,7 @@ type ConvertAndStoreDocumentParams = {
   organizationId: string;
   fileId: string;
   projectId: number;
+  projectPublicId?: string;
   mimeType: string;
 };
 
@@ -67,7 +69,7 @@ const CHUNK_SETTINGS = {
 
 const saveBinaryToTempFile = async (
   content: string | Buffer,
-  extension: string
+  extension: string,
 ) => {
   const projectDir = process.cwd();
   const filePath = path.join(projectDir, `temp-${randomUUID()}.${extension}`);
@@ -93,7 +95,7 @@ const saveBinaryToTempFile = async (
 };
 
 async function loadEpubDocuments(
-  filePath: string
+  filePath: string,
 ): Promise<VectorStoreDocument[]> {
   const EPub = (await import('epub2')).default;
   const epub = await EPub.createAsync(filePath);
@@ -123,7 +125,7 @@ async function loadEpubDocuments(
     } catch (err) {
       logger.warn(
         { err, chapterId: chapter.id },
-        'Could not load epub chapter'
+        'Could not load epub chapter',
       );
     }
   }
@@ -132,7 +134,7 @@ async function loadEpubDocuments(
 }
 
 async function loadTextDocument(
-  filePath: string
+  filePath: string,
 ): Promise<VectorStoreDocument[]> {
   const content = await fs.promises.readFile(filePath, 'utf-8');
   return [
@@ -149,6 +151,7 @@ export const convertAndStoreDocument = async ({
   organizationId,
   fileId,
   projectId,
+  projectPublicId,
   mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
@@ -172,6 +175,16 @@ export const convertAndStoreDocument = async ({
 
     logger.info({ mimeType }, 'Detected MIME type');
 
+    // Resolve project public_id for Meilisearch metadata
+    let resolvedProjectPublicId = projectPublicId ?? null;
+    if (!resolvedProjectPublicId && projectId) {
+      const project = await db.project.findUnique({
+        where: { id: projectId },
+        select: { public_id: true },
+      });
+      resolvedProjectPublicId = project?.public_id ?? null;
+    }
+
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
 
     let fileExtension =
@@ -190,7 +203,7 @@ export const convertAndStoreDocument = async ({
     }
     const { filePath, message, success } = await saveBinaryToTempFile(
       fileContent,
-      fileExtension
+      fileExtension,
     );
     if (!success || !filePath) {
       return {
@@ -253,13 +266,13 @@ export const convertAndStoreDocument = async ({
         }
         default:
           throw new Error(
-            `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`
+            `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`,
           );
       }
     } catch (error) {
       logger.error(
         { err: error },
-        `Error loading ${fileExtension.toUpperCase()} file`
+        `Error loading ${fileExtension.toUpperCase()} file`,
       );
       return {
         success: false,
@@ -305,7 +318,7 @@ export const convertAndStoreDocument = async ({
           id: index,
           organization_id: organizationId,
           file_id: fileId,
-          project_id: projectId,
+          project_public_id: resolvedProjectPublicId,
           source_type: fileExtension,
           chunk_size: splitterSettings.chunkSize,
           chunk_overlap: splitterSettings.chunkOverlap,
@@ -317,37 +330,24 @@ export const convertAndStoreDocument = async ({
           embedding_model: embeddingModel.model,
         };
 
-        if (vectorStoreType === 'meilisearch') {
-          return {
-            pageContent: text,
-            metadata,
-            embedding: [] as number[],
-          };
-        } else {
+        if (vectorStoreType === 'supabase') {
           const embedding = await embeddingModel.embedQuery(text);
           return {
             pageContent: text,
             metadata,
             embedding,
           };
+        } else {
+          return {
+            pageContent: text,
+            metadata,
+            embedding: [] as number[],
+          };
         }
-      })
+      }),
     );
 
-    if (vectorStoreType === 'meilisearch') {
-      const vectorStore = new MeilisearchVectorStoreClient(embeddingModel, {
-        url: process.env.MEILISEARCH_URL!,
-        apiKey: process.env.MEILISEARCH_MASTER_KEY,
-        indexName: orgId,
-      });
-
-      await vectorStore.addDocuments(
-        updatedDocs.map((doc) => ({
-          pageContent: doc.pageContent,
-          metadata: doc.metadata,
-        }))
-      );
-    } else {
+    if (vectorStoreType === 'supabase') {
       const vectorStore = new SupabaseVectorStoreClient(embeddingModel, {
         client: supabaseVectorStoreClient,
         queryName: DOCUMENT_SEARCH_QUERY_NAME,
@@ -359,7 +359,20 @@ export const convertAndStoreDocument = async ({
         updatedDocs.map((doc) => ({
           pageContent: doc.pageContent,
           metadata: doc.metadata,
-        }))
+        })),
+      );
+    } else {
+      const vectorStore = new MeilisearchVectorStoreClient(embeddingModel, {
+        url: process.env.MEILISEARCH_URL!,
+        apiKey: process.env.MEILISEARCH_MASTER_KEY,
+        indexName: orgId,
+      });
+
+      await vectorStore.addDocuments(
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        })),
       );
     }
 

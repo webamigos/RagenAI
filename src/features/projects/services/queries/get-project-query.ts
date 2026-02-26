@@ -6,7 +6,7 @@ import { logger } from '@/app/lib/utils/logger';
 import type { PublicProjectDto } from '../../contracts/project.types';
 
 export const getProjectByPublicIdQuery = async (
-  publicId: Project['public_id']
+  publicId: Project['public_id'],
 ) => {
   try {
     return await getProjectByPublicIdOrThrowQuery(publicId);
@@ -17,7 +17,7 @@ export const getProjectByPublicIdQuery = async (
 };
 
 export const getProjectByPublicIdOrThrowQuery = async (
-  publicId: Project['public_id']
+  publicId: Project['public_id'],
 ) => {
   return await db.project.findUniqueOrThrow({
     where: {
@@ -27,7 +27,20 @@ export const getProjectByPublicIdOrThrowQuery = async (
       id: true,
       public_id: true,
       title: true,
-      threads: true,
+      threads: {
+        orderBy: { created_at: 'desc' },
+        select: {
+          public_id: true,
+          title: true,
+          created_at: true,
+          is_starred: true,
+          messages: {
+            orderBy: { created_at: 'asc' },
+            take: 1,
+            select: { content: true },
+          },
+        },
+      },
       internal_organization_id: true,
       organization_id: true,
       is_public: true,
@@ -40,7 +53,7 @@ export const getProjectByPublicIdOrThrowQuery = async (
 };
 
 export const getPublicProjectQuery = async (
-  publicAccessTokenId: string
+  publicAccessTokenId: string,
 ): Promise<PublicProjectDto | null> => {
   try {
     const project = await db.project.findFirst({

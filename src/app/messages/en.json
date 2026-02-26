@@ -29,6 +29,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Assistants",
+    "projects": "Projects",
     "mainThreads": "Main Threads",
     "conversation": "Conversation",
     "unknownProject": "Unknown Project"
@@ -192,6 +193,24 @@
     },
     "initial-account": {
       "title": "Create Admin Account | Ragen AI"
+    },
+    "chats": {
+      "title": "Chats | Ragen AI"
+    },
+    "projects": {
+      "title": "Projects | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Document | Ragen AI"
+    },
+    "subscription": {
+      "title": "Subscription | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Payment Successful | Ragen AI"
     }
   },
   "chat": {
@@ -367,7 +386,8 @@
     "return-to-home": "Threads",
     "threads": {
       "no-threads": "No conversations yet",
-      "no-threads-description": "Start a new conversation to see it here"
+      "no-threads-description": "Start a new conversation to see it here",
+      "load-more": "Load more"
     },
     "threads-categories": {
       "today": "Today",
@@ -395,6 +415,16 @@
       "create-new-project": "Create new assistant",
       "or": "or"
     },
+    "nav": {
+      "chats": "Chats",
+      "assistants": "Projects"
+    },
+    "starred": {
+      "title": "Starred"
+    },
+    "recent": {
+      "title": "Recent"
+    },
     "footer": {
       "my-profile": "My profile",
       "settings": "Settings",
@@ -402,6 +432,51 @@
       "share-feedback": "Your feedback",
       "sign-out": "Sign out"
     }
+  },
+  "chats-page": {
+    "title": "Chats",
+    "search-placeholder": "Search your chats...",
+    "load-more": "Load more",
+    "no-threads": "No conversations yet",
+    "no-threads-description": "Start a new conversation to see it here",
+    "new-chat": "New chat",
+    "thread-count": "{count} chats",
+    "star": "Star",
+    "unstar": "Unstar",
+    "last-message": "Last message {time}"
+  },
+  "knowledge-picker": {
+    "title": "Select from Knowledge Base",
+    "search-placeholder": "Search files...",
+    "no-results": "No files match your search",
+    "no-files": "No files in knowledge base",
+    "cancel": "Cancel",
+    "add-selected": "Add {count, plural, =0 {selected} =1 {1 file} other {# files}}"
+  },
+  "prompt-attachments": {
+    "upload-file": "Upload file",
+    "from-knowledge-base": "From Knowledge Base"
+  },
+  "thread-actions": {
+    "star": "Star",
+    "unstar": "Unstar",
+    "rename": "Rename",
+    "delete": "Delete",
+    "rename-placeholder": "Thread name",
+    "rename-title": "Rename thread",
+    "delete-title": "Delete thread",
+    "delete-confirm": "Are you sure you want to delete this thread? This action cannot be undone.",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "assistants-page": {
+    "title": "Assistants",
+    "search-placeholder": "Search assistants...",
+    "create": "New assistant",
+    "no-assistants": "No assistants yet",
+    "no-assistants-description": "Create your first assistant to get started",
+    "thread-count": "{count} threads",
+    "updated": "Updated {time}"
   },
   "search-threads": {
     "title": "Search in threads",
@@ -629,6 +704,7 @@
       "selected-files": "Selected files",
       "remove-file": "Remove file",
       "add-files": "Add files",
+      "from-knowledge-base": "From Knowledge Base",
       "drop-to-upload": "Drop files to upload",
       "uploading": "Uploading..."
     },
@@ -676,6 +752,14 @@
       "loading-files": "Failed to load assistant files",
       "file-delete": "Failed to delete file",
       "fetching-error": "An error occurred while fetching the assistant's files"
+    },
+    "project-view": {
+      "all-projects": "All projects",
+      "threads": "Conversations",
+      "no-threads": "No conversations yet",
+      "no-threads-description": "Start a new conversation above",
+      "instructions": "Instructions",
+      "files": "Files"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

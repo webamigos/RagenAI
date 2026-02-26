@@ -23,7 +23,7 @@ export const NewSidebarSettingsBody = () => {
   return (
     <SidebarBody>
       <SidebarSection>
-        <SidebarItem href="/">
+        <SidebarItem href="/new">
           <ArrowLeftIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('back')}</SidebarLabel>
         </SidebarItem>

@@ -13,7 +13,7 @@ import { MentionTextarea, type MentionedProject } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
 
 import { ChatResponseType } from '@/features/messages/contracts/message.types';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface NewChatInterfaceProps {
   className?: string;
@@ -173,21 +173,21 @@ export const NewChatInterface = ({
 
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
-      <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
-        {userName && (
-          <p className="text-muted-foreground text-base mb-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            {t('new-thread-greeting', { name: userName })}
+      {!projectTitle && (
+        <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
+          {userName && (
+            <p className="text-muted-foreground text-base mb-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {t('new-thread-greeting', { name: userName })}
+            </p>
+          )}
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
+            {t('new-thread-header')}
+          </h1>
+          <p className="text-muted-foreground mt-3 text-base sm:text-lg animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
+            {t('new-thread-description')}
           </p>
-        )}
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
-          {t('new-thread-header')}
-        </h1>
-        <p className="text-muted-foreground mt-3 text-base sm:text-lg animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
-          {projectTitle
-            ? t('project-context', { projectTitle })
-            : t('new-thread-description')}
-        </p>
-      </div>
+        </div>
+      )}
 
       {!projectTitle && (
         <div className="flex flex-nowrap items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">

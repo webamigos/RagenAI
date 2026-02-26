@@ -9,8 +9,8 @@ import {
 } from 'react';
 import { useUser, useOrganization, useAuth } from '@/app/hooks/use-auth';
 import { usePathname, useRouter } from '@/i18n/routing';
-import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { addThread } from '@/store/threads/threadsSlice';
 import { setProjects, addThreadToProject } from '@/store/sidebar/sidebarSlice';
@@ -26,6 +26,7 @@ import { trackThreadCreated } from '../actions';
 import { createThreadAction } from '@/features/threads/services/commands/create-thread-command';
 import { createGuestThreadCommand as createGuestThreadAction } from '@/features/threads/services/commands/create-guest-thread-command';
 import { getVisitorIdFromBrowserCookie } from '../lib/services/cookies.browser';
+import { sidebarThreadEvents } from '../components/Sidebar/NewSidebar/useSidebarThreads';
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -64,7 +65,7 @@ export const useNewThread = () => {
 
   const reduxDispatch = useAppDispatch();
   const defaultProjectPublicId = useAppSelector(
-    (state) => state.threads.defaultProjectPublicId
+    (state) => state.threads.defaultProjectPublicId,
   );
   const { organization } = useOrganization();
   const { user } = useUser();
@@ -85,13 +86,13 @@ export const useNewThread = () => {
     if (!visitorId) {
       return;
     }
-    if (pathname.includes('/threads') || pathname.includes('/assistants')) {
+    if (pathname.includes('/chats') || pathname.includes('/projects')) {
       return;
     }
 
     try {
       const localStorageThreadId = localStorage.getItem(
-        LOCAL_STORAGE_THREAD_KEY
+        LOCAL_STORAGE_THREAD_KEY,
       );
 
       if (!user) {
@@ -104,10 +105,10 @@ export const useNewThread = () => {
 
       if (
         localStorageThreadId &&
-        !pathname.includes('/threads') &&
-        !pathname.includes('/assistants')
+        !pathname.includes('/chats') &&
+        !pathname.includes('/projects')
       ) {
-        push(`/threads/${localStorageThreadId}`);
+        push(`/chats/${localStorageThreadId}`);
       }
     } catch (err) {
       dispatch({
@@ -123,7 +124,7 @@ export const useNewThread = () => {
 
   useEffect(() => {
     try {
-      if (!pathname.includes('/threads') && !pathname.includes('/assistants')) {
+      if (!pathname.includes('/chats') && !pathname.includes('/projects')) {
         localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
       }
     } catch (err) {
@@ -137,7 +138,7 @@ export const useNewThread = () => {
     projectPublicId?: string,
     mentionedProjectId?: number,
     preferredModel?: string,
-    threadDocuments?: ThreadDocumentUI[]
+    threadDocuments?: ThreadDocumentUI[],
   ) => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
@@ -156,7 +157,7 @@ export const useNewThread = () => {
               projectId,
               mentionedProjectId,
               preferredModel,
-              threadDocuments
+              threadDocuments,
             )
           : await createGuestThreadAction({
               mentionedProjectId,
@@ -197,7 +198,7 @@ export const useNewThread = () => {
             if (organization?.id && user?.id) {
               const fetchedProjects = await getProjects(
                 organization.id,
-                user.id
+                user.id,
               );
               if (fetchedProjects.projects) {
                 reduxDispatch(setProjects(fetchedProjects.projects));
@@ -216,21 +217,35 @@ export const useNewThread = () => {
               addThreadToProject({
                 projectId: result.thread.project_id,
                 thread: threadForProject,
-              })
+              }),
             );
           }
         }
 
+        // Notify sidebar about the new thread
+        if (user) {
+          sidebarThreadEvents.emit({
+            type: 'thread-created',
+            thread: {
+              public_id: threadId,
+              created_at: new Date().toISOString(),
+              is_starred: false,
+              title: null,
+              project_id: result.thread.project_id ?? null,
+              project: null,
+              messages: initialMessage ? [{ content: initialMessage }] : [],
+            },
+          });
+        }
+
         startTransition(() => {
-          const route = projectPublicId
-            ? `/assistants/${projectPublicId}/threads/${threadId}`
-            : `/threads/${threadId}`;
+          const route = `/chats/${threadId}`;
 
           // Store the initial message in localStorage to be picked up by the thread view
           if (initialMessage) {
             localStorage.setItem(
               `thread_${threadId}_initial_message`,
-              initialMessage
+              initialMessage,
             );
           }
 

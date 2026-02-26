@@ -3,7 +3,7 @@ import type { Thread } from '@/generated/prisma/browser';
 import type { MessageDtoWithoutPublicId } from '@/features/messages/contracts/message.types';
 
 export const createThreadSchema = z.object({
-  public_id: z.string().uuid(),
+  public_id: z.string().min(1),
   project_id: z.number().optional(),
 });
 
@@ -15,7 +15,26 @@ export type ThreadHistoryResponse = {
   messages: MessageDtoWithoutPublicId[];
   project_id?: number | null;
   preferred_model?: string | null;
+  is_starred?: boolean;
 };
+
+export type SidebarThreadItem = {
+  public_id: string;
+  created_at: string;
+  is_starred: boolean;
+  title: string | null;
+  project_id: number | null;
+  project: { public_id: string; title: string } | null;
+  messages: { content: string }[];
+};
+
+export type AllThreadsItem = SidebarThreadItem & {
+  organization_id: string | null;
+};
+
+export type ToggleStarredResult =
+  | { success: true; public_id: string; is_starred: boolean }
+  | { success: false; errorMessage: string };
 
 export type ProjectContext = {
   id: number;
