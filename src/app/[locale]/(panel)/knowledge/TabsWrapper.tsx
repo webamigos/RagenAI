@@ -6,10 +6,10 @@ import { useTranslations } from 'next-intl';
 import { Tabs, Tab, TabList } from '@ragenai/common-ui/Tabs';
 
 const tabRoutes = [
-  { label: 'documents-list', path: '/settings/knowledge/documents-list' },
-  { label: 'upload-files', path: '/settings/knowledge/upload-files' },
-  { label: 'create-document', path: '/settings/knowledge/create-document' },
-  { label: 'add-from-url', path: '/settings/knowledge/add-from-url' },
+  { label: 'documents-list', path: '/knowledge/documents-list' },
+  { label: 'upload-files', path: '/knowledge/upload-files' },
+  { label: 'create-document', path: '/knowledge/create-document' },
+  { label: 'add-from-url', path: '/knowledge/add-from-url' },
 ];
 
 export default function TabsWrapper() {

@@ -8,7 +8,7 @@ export const createFileCommand = async (
   file_size: number,
   organization_id: string,
   file_type: FileType,
-  project_id: number
+  project_id: number | null,
 ) => {
   return await db.userFile.create({
     data: {

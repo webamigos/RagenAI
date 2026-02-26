@@ -17,7 +17,9 @@ interface MeilisearchConfig {
 
 interface QdrantFilterCondition {
   key: string;
-  match: { value: string | number };
+  match?: { value: string | number };
+  match_any?: { values: (string | number)[] };
+  is_null?: boolean;
 }
 
 interface QdrantFilter {
@@ -43,7 +45,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
   async similaritySearch(
     query: string,
     k: number,
-    filter?: object
+    filter?: object,
   ): Promise<VectorStoreDocument[]> {
     await this.ensureIndex();
 
@@ -98,7 +100,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
 
     logger.info(
       { count: documents.length, index: this.indexName },
-      'Documents added to Meilisearch'
+      'Documents added to Meilisearch',
     );
   }
 
@@ -110,7 +112,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
     await this.ensureIndex();
 
     const filterString = convertQdrantFilterToMeilisearch(
-      filter as QdrantFilter
+      filter as QdrantFilter,
     );
     if (!filterString) {
       logger.warn('deleteDocuments called with empty filter, skipping');
@@ -123,13 +125,13 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
 
     logger.info(
       { filter: filterString, index: this.indexName },
-      'Documents deleted from Meilisearch'
+      'Documents deleted from Meilisearch',
     );
   }
 
   static async fromExistingIndex(
     embeddings: EmbeddingsProvider,
-    config: MeilisearchConfig
+    config: MeilisearchConfig,
   ): Promise<MeilisearchVectorStoreClient> {
     return new MeilisearchVectorStoreClient(embeddings, config);
   }
@@ -155,6 +157,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
     // Configure filterable attributes for metadata-based filtering
     const filterableTask = await index.updateFilterableAttributes([
       'metadata.project_id',
+      'metadata.project_public_id',
       'metadata.file_id',
       'metadata.organization_id',
     ]);
@@ -187,7 +190,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
         }": ${taskResult.error?.message ?? JSON.stringify(taskResult.error)}`;
         logger.error(
           { error: taskResult.error, index: this.indexName },
-          errorMsg
+          errorMsg,
         );
         throw new Error(errorMsg);
       }
@@ -198,22 +201,37 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
   }
 }
 
+function formatFilterValue(value: string | number): string {
+  if (typeof value === 'number') return String(value);
+  return `'${value}'`;
+}
+
+function conditionToString(condition: QdrantFilterCondition): string {
+  if (condition.is_null) {
+    return `${condition.key} IS NULL`;
+  }
+  if (condition.match_any) {
+    const values = condition.match_any.values.map(formatFilterValue).join(', ');
+    return `${condition.key} IN [${values}]`;
+  }
+  if (condition.match) {
+    return `${condition.key} = ${formatFilterValue(condition.match.value)}`;
+  }
+  return '';
+}
+
 function convertQdrantFilterToMeilisearch(
-  filter: QdrantFilter
+  filter: QdrantFilter,
 ): string | undefined {
   const parts: string[] = [];
 
   if (filter.must && filter.must.length > 0) {
-    const mustParts = filter.must.map(
-      (condition) => `${condition.key} = '${String(condition.match.value)}'`
-    );
+    const mustParts = filter.must.map(conditionToString).filter(Boolean);
     parts.push(mustParts.join(' AND '));
   }
 
   if (filter.should && filter.should.length > 0) {
-    const shouldParts = filter.should.map(
-      (condition) => `${condition.key} = '${String(condition.match.value)}'`
-    );
+    const shouldParts = filter.should.map(conditionToString).filter(Boolean);
     parts.push(`(${shouldParts.join(' OR ')})`);
   }
 

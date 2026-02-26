@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function KnowledgePage() {
-  redirect('knowledge/documents-list');
+  redirect('/knowledge/documents-list');
 }

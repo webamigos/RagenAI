@@ -9,7 +9,7 @@ export const getUserThreadsQuery = async (
   visitorId: string,
   skip?: number,
   take?: number,
-  query?: string
+  query?: string,
 ) => {
   //Remove the restriction to the last 30 days in the future if it is no longer required.
   //the constraint is only supported when query is defined
@@ -54,6 +54,7 @@ export const getUserThreadsQuery = async (
       created_at: true,
       visitor_id: true,
       project_id: true,
+      is_starred: true,
       messages: {
         select: {
           content: true,

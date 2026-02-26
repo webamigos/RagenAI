@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
@@ -32,14 +31,8 @@ export async function POST(request: NextRequest) {
     if (!files || files.length === 0) {
       return NextResponse.json(
         { message: 'No file to process' },
-        { status: 400 }
+        { status: 400 },
       );
-    }
-
-    const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
-
-    if (!defaultProjectId) {
-      throw new Error('Default project ID is missing');
     }
 
     let projectRecord = undefined;
@@ -48,13 +41,9 @@ export async function POST(request: NextRequest) {
       if (projectRecord.organization_id !== orgId) {
         return NextResponse.json(
           { message: 'Project does not belong to this organization' },
-          { status: 403 }
+          { status: 403 },
         );
       }
-    }
-
-    if (!projectRecord && !defaultProjectId) {
-      throw new Error('Project ID is missing');
     }
 
     const processedFiles = [];
@@ -72,13 +61,13 @@ export async function POST(request: NextRequest) {
           file.size,
           orgId,
           fileType,
-          projectRecord?.id ?? defaultProjectId
+          projectRecord?.id ?? null,
         );
 
         // Step 2: upload to S3
         const uploadResult = await uploadToS3(
           `${fileRecord.public_id}.${fileExtension}`,
-          parsedFile.content as Buffer
+          parsedFile.content as Buffer,
         );
 
         await db.userFile.update({
@@ -101,12 +90,17 @@ export async function POST(request: NextRequest) {
         await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
           taskQueue: TASK_QUEUE_NAME,
           workflowId: embeddingWorkflowId,
-          args: [{ ...fileRecord }],
+          args: [
+            {
+              ...fileRecord,
+              project_public_id: projectRecord?.public_id ?? null,
+            },
+          ],
         });
 
         logger.info(
           { workflowId: embeddingWorkflowId, fileName: parsedFile.fileName },
-          'Started embedding workflow'
+          'Started embedding workflow',
         );
 
         // Only count as processed after workflow start succeeds
@@ -137,7 +131,7 @@ export async function POST(request: NextRequest) {
     if (processedFiles.length === 0 && failedFiles.length > 0) {
       return NextResponse.json(
         { message: 'All files failed to process', failedFiles },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -157,7 +151,7 @@ export async function POST(request: NextRequest) {
         message:
           error instanceof Error ? error.message : 'Internal Server Error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

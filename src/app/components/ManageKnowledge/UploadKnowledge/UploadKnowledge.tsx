@@ -70,7 +70,7 @@ export const UploadKnowledge = () => {
         setFiles([]);
         // refreshFiles();
         startTransition(() => {
-          push('/settings/knowledge/documents-list');
+          push('/knowledge/documents-list');
         });
         refreshSettings();
       } else {

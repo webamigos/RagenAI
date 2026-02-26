@@ -1,13 +1,12 @@
-import { ProjectComponent } from './ProjectComponent';
+import { redirect } from '@/i18n/routing';
+import { getLocale } from 'next-intl/server';
 
 type Props = {
-  params: Promise<{
-    projectId: string;
-  }>;
+  params: Promise<{ projectId: string }>;
 };
 
-export default async function ProjectPage({ params }: Props) {
+export default async function ProjectRedirect({ params }: Props) {
   const { projectId } = await params;
-
-  return <ProjectComponent projectId={projectId} />;
+  const locale = await getLocale();
+  redirect({ href: `/projects/${projectId}`, locale });
 }

@@ -3,6 +3,7 @@
 import { useUser } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
+import { CollapsedSidebarRail } from '@/app/components/Sidebar/CollapsedSidebarRail';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -13,7 +14,7 @@ type Props = {
 };
 
 export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const params = useParams();
   const locale = params?.locale || 'pl';
@@ -36,7 +37,11 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
   }
 
   return (
-    <SidebarLayout navbar={navbar} sidebar={sidebar}>
+    <SidebarLayout
+      navbar={navbar}
+      sidebar={sidebar}
+      collapsedSidebar={<CollapsedSidebarRail />}
+    >
       {children}
     </SidebarLayout>
   );

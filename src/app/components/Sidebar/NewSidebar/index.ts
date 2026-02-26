@@ -1,9 +1,4 @@
-export { TUIProjectsList } from './TUIProjectsList';
-export { TUIProjectItem } from './TUIProjectItem';
-export { TUIThreadsList } from './TUIThreadsList';
-export { TUIThreadItem } from './TUIThreadItem';
-export { TUIThreadsSection } from './TUIThreadsSection';
-export { TUIUserThreadsHistory } from './TUIUserThreadsHistory';
+export { SidebarThreadItem } from './SidebarThreadItem';
 export { NewMainSidebarBody } from './NewMainSidebarBody';
 export { NewSidebarSettingsBody } from './NewSettingsSidebarBody';
 export { NewSidebarBody } from './NewSidebarBody';

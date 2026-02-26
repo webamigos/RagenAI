@@ -27,7 +27,7 @@ export const TUIProjectItem = ({
   }, [activeThread, project.threads]);
 
   const handleProjectClick = () => {
-    router.push(`/assistants/${project.public_id}`);
+    router.push(`/projects/${project.public_id}`);
   };
 
   const handleExpandClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -54,7 +54,7 @@ export const TUIProjectItem = ({
           }
         >
           <FolderIcon data-slot="icon" className="w-6 h-6" />
-          <SidebarLabel>{project.title}</SidebarLabel>
+          <SidebarLabel className="font-normal">{project.title}</SidebarLabel>
         </SidebarItem>
         {hasThreads && (
           <>

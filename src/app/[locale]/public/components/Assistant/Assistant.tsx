@@ -32,8 +32,6 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
-          widgetMode={true}
-          responseType={ChatResponseType.TEXT}
           isPublicAccess={isPublicAccess}
         />
         <div ref={messagesEndDivRef} />

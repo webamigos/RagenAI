@@ -121,7 +121,7 @@ export function DocumentComponent({ publicId }: Props) {
       'files',
       new File([markdownContent], `${documentTitle}`, {
         type: 'text/markdown',
-      })
+      }),
     );
     formData.append('organizationId', organization!.id);
 
@@ -230,7 +230,7 @@ export function DocumentComponent({ publicId }: Props) {
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
-              onClick={() => push('/settings/knowledge/documents-list')}
+              onClick={() => push('/knowledge/documents-list')}
               className="h-8 w-8 cursor-pointer mr-2"
             />
           )}

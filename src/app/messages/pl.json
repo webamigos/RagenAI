@@ -29,6 +29,7 @@
   },
   "Breadcrumbs": {
     "assistants": "Asystenci",
+    "projects": "Projekty",
     "mainThreads": "Główne wątki",
     "conversation": "Konwersacja",
     "unknownProject": "Nieznany projekt"
@@ -193,6 +194,24 @@
     },
     "initial-account": {
       "title": "Utwórz konto administratora | Ragen AI"
+    },
+    "chats": {
+      "title": "Czaty | Ragen AI"
+    },
+    "projects": {
+      "title": "Projekty | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Dokument | Ragen AI"
+    },
+    "subscription": {
+      "title": "Subskrypcja | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Płatność zakończona | Ragen AI"
     }
   },
   "chat": {
@@ -371,7 +390,8 @@
     "return-to-home": "Lista wątków",
     "threads": {
       "no-threads": "Brak wątków",
-      "no-threads-description": "Rozpocznij nową konwersację, aby zobaczyć ją tutaj"
+      "no-threads-description": "Rozpocznij nową konwersację, aby zobaczyć ją tutaj",
+      "load-more": "Załaduj więcej"
     },
     "threads-categories": {
       "today": "Dzisiaj",
@@ -398,6 +418,16 @@
       "create-new-project": "Stwórz nowego asystenta",
       "or": "lub"
     },
+    "nav": {
+      "chats": "Wątki",
+      "assistants": "Asystenci"
+    },
+    "starred": {
+      "title": "Przypięte"
+    },
+    "recent": {
+      "title": "Ostatnie"
+    },
     "footer": {
       "my-profile": "Mój profil",
       "settings": "Ustawienia",
@@ -405,6 +435,51 @@
       "share-feedback": "Twój feedback",
       "sign-out": "Wyloguj się"
     }
+  },
+  "chats-page": {
+    "title": "Wątki",
+    "search-placeholder": "Szukaj w wątkach...",
+    "load-more": "Załaduj więcej",
+    "no-threads": "Brak rozmów",
+    "no-threads-description": "Rozpocznij nową rozmowę, aby zobaczyć ją tutaj",
+    "new-chat": "Nowy wątek",
+    "thread-count": "{count} wątków",
+    "star": "Przypnij",
+    "unstar": "Odepnij",
+    "last-message": "Ostatnia wiadomość {time}"
+  },
+  "knowledge-picker": {
+    "title": "Wybierz z Bazy Wiedzy",
+    "search-placeholder": "Szukaj plików...",
+    "no-results": "Brak plików pasujących do wyszukiwania",
+    "no-files": "Brak plików w bazie wiedzy",
+    "cancel": "Anuluj",
+    "add-selected": "Dodaj {count, plural, =0 {wybrane} =1 {1 plik} few {# pliki} other {# plików}}"
+  },
+  "prompt-attachments": {
+    "upload-file": "Wgraj plik",
+    "from-knowledge-base": "Z Bazy Wiedzy"
+  },
+  "thread-actions": {
+    "star": "Przypnij",
+    "unstar": "Odepnij",
+    "rename": "Zmień nazwę",
+    "delete": "Usuń",
+    "rename-placeholder": "Nazwa wątku",
+    "rename-title": "Zmień nazwę wątku",
+    "delete-title": "Usuń wątek",
+    "delete-confirm": "Czy na pewno chcesz usunąć ten wątek? Tej operacji nie można cofnąć.",
+    "cancel": "Anuluj",
+    "save": "Zapisz"
+  },
+  "assistants-page": {
+    "title": "Asystenci",
+    "search-placeholder": "Szukaj asystentów...",
+    "create": "Nowy asystent",
+    "no-assistants": "Brak asystentów",
+    "no-assistants-description": "Stwórz pierwszego asystenta, aby rozpocząć",
+    "thread-count": "{count} wątków",
+    "updated": "Zaktualizowany {time}"
   },
   "search-threads": {
     "title": "Szukaj w wątkach",
@@ -632,8 +707,17 @@
       "selected-files": "Wybrane pliki",
       "remove-file": "Usuń plik",
       "add-files": "Dodaj pliki",
+      "from-knowledge-base": "Z Bazy Wiedzy",
       "drop-to-upload": "Upuść pliki, aby je wgrać",
       "uploading": "Przesyłanie..."
+    },
+    "project-view": {
+      "all-projects": "Wszystkie projekty",
+      "threads": "Konwersacje",
+      "no-threads": "Brak konwersacji",
+      "no-threads-description": "Rozpocznij nową rozmowę powyżej",
+      "instructions": "Instrukcje",
+      "files": "Pliki"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

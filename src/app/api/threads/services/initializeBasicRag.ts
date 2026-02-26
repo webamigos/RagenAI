@@ -1,6 +1,6 @@
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { OrganizationSettings } from '@/features/organizations/contracts/organization.types';
+import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import type { VectorStoreClient } from '@/libs/vector-store/types';
@@ -15,12 +15,14 @@ import { logger } from '@/app/lib/utils/logger';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
-  internalProjectId: number;
+  projectId?: number | null;
+  projectPublicId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
 };
 
@@ -30,7 +32,8 @@ const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
 export const initializeRagChain = async ({
   settings,
   projectInstruction,
-  internalProjectId,
+  projectId,
+  projectPublicId,
   threadDocuments,
 }: InitializeRagChainParams) => {
   try {
@@ -66,40 +69,20 @@ export const initializeRagChain = async ({
     let vectorStore: VectorStoreClient;
     let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'meilisearch') {
-      vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
-      isMeilisearch = true;
-    } else {
+    if (orgMetadata.privateMetadata?.vector_store === 'supabase') {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
         orgId,
-        internalProjectId
+        projectPublicId ?? undefined,
       );
-    }
-
-    //DOCUMENT FILTERING BY PROJECT_ID
-    if (!internalProjectId) {
-      throw new Error('Internal project ID is required');
+    } else {
+      vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
+      isMeilisearch = true;
     }
 
     const filterOptions = isMeilisearch
-      ? {
-          must: [
-            {
-              key: 'metadata.organization_id',
-              match: {
-                value: orgId,
-              },
-            },
-            {
-              key: 'metadata.project_id',
-              match: {
-                value: internalProjectId,
-              },
-            },
-          ],
-        }
+      ? await buildMeilisearchFilter(orgId, projectId ?? null)
       : undefined;
 
     return await basicRagChain({
@@ -126,9 +109,56 @@ export const initializeRagChain = async ({
   }
 };
 
+/**
+ * Build Meilisearch filter based on project context:
+ * - Thread with project: org_id AND (project_id = X OR file_id IN [imported_kb_source_ids])
+ * - Thread without project (global KB): org_id AND project_id IS NULL
+ */
+async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
+  const orgCondition = {
+    key: 'metadata.organization_id',
+    match: { value: orgId },
+  };
+
+  if (!projectId) {
+    // Global KB: search files without a project
+    return {
+      must: [orgCondition, { key: 'metadata.project_id', is_null: true }],
+    };
+  }
+
+  // Project-scoped: search project files + imported KB files
+  const importedSourceFileIds = await getImportedKbFileIdsQuery(
+    projectId,
+    orgId,
+  );
+
+  if (importedSourceFileIds.length === 0) {
+    // No KB imports — simple project filter
+    return {
+      must: [
+        orgCondition,
+        { key: 'metadata.project_id', match: { value: projectId } },
+      ],
+    };
+  }
+
+  // Project files OR imported KB source file embeddings
+  return {
+    must: [orgCondition],
+    should: [
+      { key: 'metadata.project_id', match: { value: projectId } },
+      {
+        key: 'metadata.file_id',
+        match_any: { values: importedSourceFileIds },
+      },
+    ],
+  };
+}
+
 const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
-  indexName: string
+  indexName: string,
 ): VectorStoreClient => {
   logger.info('creating meilisearch vector store', {
     url: process.env.MEILISEARCH_URL,
@@ -146,7 +176,7 @@ const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: EmbeddingsProvider,
   organizationId: string,
-  projectId?: number
+  projectPublicId?: string,
 ): VectorStoreClient => {
   try {
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary
@@ -157,8 +187,8 @@ const createSupabaseVectorStore = (
       organization_id: organizationId,
     };
 
-    if (projectId) {
-      metadataFilter.project_id = projectId;
+    if (projectPublicId) {
+      metadataFilter.project_public_id = projectPublicId;
     }
 
     return new SupabaseVectorStoreClient(embeddingModel, {

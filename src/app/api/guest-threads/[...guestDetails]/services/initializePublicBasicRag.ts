@@ -1,5 +1,5 @@
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { OrganizationSettings } from '@/features/organizations/contracts/organization.types';
+import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
 import type { VectorStoreClient } from '@/libs/vector-store/types';
@@ -16,13 +16,11 @@ import { getOrganizationMetadata } from '@/app/actions';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 
-const serviceName = 'initializeBasicRag';
-
 type InitializePublicRagChainParams = {
   settings: OrganizationSettings;
   organizationId: string;
   projectInstruction?: string | null;
-  projectId?: number;
+  projectPublicId?: string;
 };
 
 const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
@@ -32,7 +30,7 @@ export const initializePublicRagChain = async ({
   settings,
   organizationId,
   projectInstruction,
-  projectId,
+  projectPublicId,
 }: InitializePublicRagChainParams) => {
   try {
     const {
@@ -64,14 +62,14 @@ export const initializePublicRagChain = async ({
     if (orgMetadata.privateMetadata?.vector_store === 'meilisearch') {
       vectorStore = createMeilisearchVectorStore(
         embeddingModel,
-        organizationId
+        organizationId,
       );
       isMeilisearch = true;
     } else {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
-        organizationId
+        organizationId,
       );
     }
 
@@ -92,9 +90,9 @@ export const initializePublicRagChain = async ({
               },
             },
             {
-              key: 'metadata.project_id',
+              key: 'metadata.project_public_id',
               match: {
-                value: projectId,
+                value: projectPublicId,
               },
             },
           ],
@@ -123,7 +121,7 @@ export const initializePublicRagChain = async ({
 
 const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
-  indexName: string
+  indexName: string,
 ): VectorStoreClient => {
   logger.info('creating meilisearch vector store', {
     url: process.env.MEILISEARCH_URL,
@@ -140,7 +138,7 @@ const createMeilisearchVectorStore = (
 const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: EmbeddingsProvider,
-  organizationId: string
+  organizationId: string,
 ): VectorStoreClient => {
   try {
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary

@@ -16,84 +16,82 @@ export const useBreadcrumbs = (threadId?: string) => {
   const t = useTranslations('Breadcrumbs');
   const { projects } = useAppSelector((state) => state.sidebar);
   const { userThreads } = useAppSelector((state) => state.threads);
+  const threadContext = useAppSelector(
+    (state) => state.assistant.threadContext,
+  );
 
   const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
     const items: BreadcrumbItem[] = [];
 
-    const pathSegments = pathname.split('/').filter(Boolean);
+    if (pathname.includes('/chats/') && threadId) {
+      // Thread view - check if thread belongs to a project via threadContext
+      if (threadContext?.project) {
+        items.push({
+          label: t('projects'),
+          href: '/projects',
+        });
+        items.push({
+          label: threadContext.project.title,
+          href: `/projects/${threadContext.project.public_id}`,
+        });
+      } else {
+        items.push({
+          label: t('mainThreads'),
+          href: '/new',
+        });
+      }
 
-    if (pathSegments.includes('assistants')) {
-      const projectIndex = pathSegments.indexOf('assistants');
-      const projectId = pathSegments[projectIndex + 1];
-      const isInThread = pathSegments.includes('threads') && threadId;
+      // Thread title
+      let threadTitle = t('conversation');
+
+      // Try to find title from sidebar projects or userThreads
+      if (threadContext?.project) {
+        const project = projects.find(
+          (p) => p.public_id === threadContext.project!.public_id,
+        );
+        if (project) {
+          const thread = project.threads?.find((t) => t.public_id === threadId);
+          if (thread?.messages?.[0]?.content?.trim()) {
+            const content = thread.messages[0].content;
+            threadTitle =
+              content.length > 50 ? content.substring(0, 50) + '...' : content;
+          }
+        }
+      } else {
+        const thread = userThreads.find((t) => t.public_id === threadId);
+        if (thread?.messages?.[0]?.content?.trim()) {
+          const content = thread.messages[0].content;
+          threadTitle =
+            content.length > 50 ? content.substring(0, 50) + '...' : content;
+        }
+      }
 
       items.push({
-        label: t('assistants'),
-        href: '/',
+        label: threadTitle,
+        current: true,
+      });
+    } else if (pathname.includes('/projects')) {
+      const pathSegments = pathname.split('/').filter(Boolean);
+      const projectIndex = pathSegments.indexOf('projects');
+      const projectId = pathSegments[projectIndex + 1];
+
+      items.push({
+        label: t('projects'),
+        href: projectId ? '/projects' : undefined,
       });
 
       if (projectId) {
         const project = projects.find((p) => p.public_id === projectId);
         const projectTitle = project?.title || t('unknownProject');
-
         items.push({
           label: projectTitle,
-          href: isInThread ? `/assistants/${projectId}` : undefined,
-        });
-
-        if (isInThread) {
-          let threadTitle = t('conversation');
-
-          if (project && threadId) {
-            const thread = project.threads?.find(
-              (t) => t.public_id === threadId
-            );
-            if (thread && thread.messages && thread.messages.length > 0) {
-              const firstMessage = thread.messages[0]?.content;
-              if (firstMessage && firstMessage.trim()) {
-                threadTitle =
-                  firstMessage.length > 50
-                    ? firstMessage.substring(0, 50) + '...'
-                    : firstMessage;
-              }
-            }
-          }
-
-          items.push({
-            label: threadTitle,
-            current: true,
-          });
-        }
-      }
-    } else if (pathSegments.includes('threads')) {
-      items.push({
-        label: t('mainThreads'),
-        href: '/',
-      });
-
-      if (threadId) {
-        const thread = userThreads.find((t) => t.public_id === threadId);
-        let threadTitle = t('conversation');
-
-        if (thread && thread.messages && thread.messages.length > 0) {
-          const firstMessage = thread.messages[0]?.content;
-          if (firstMessage && firstMessage.trim()) {
-            threadTitle =
-              firstMessage.length > 50
-                ? firstMessage.substring(0, 50) + '...'
-                : firstMessage;
-          }
-        }
-
-        items.push({
-          label: threadTitle,
           current: true,
         });
       }
     }
 
     return items;
-  }, [pathname, threadId, projects, userThreads, t]);
+  }, [pathname, threadId, projects, userThreads, threadContext, t]);
 
   return breadcrumbs;
 };
