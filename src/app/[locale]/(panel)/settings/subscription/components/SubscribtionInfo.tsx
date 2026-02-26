@@ -12,7 +12,7 @@ import {
   activateInternalFreePlan,
   getSubscriptionData,
 } from '../actions';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useRouter } from '@/i18n/routing';
 import {
   DescriptionDetails,

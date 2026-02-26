@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
 import { type ApiKey, type Project } from '@/generated/prisma/browser';
 import { useTranslations } from 'next-intl';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useRouter } from '@/i18n/routing';
 
 import {

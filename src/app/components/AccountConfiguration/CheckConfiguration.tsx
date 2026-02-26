@@ -1,7 +1,7 @@
 'use client';
 
 import { useAccountSetupStatus } from '@/app/hooks/useAccountConfigurationStatus';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
