@@ -1,4 +1,4 @@
-import { Role, Source } from '@/generated/prisma/client';
+import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import {
   getThreadMessagesListQuery as getThreadMessages,
@@ -25,6 +25,9 @@ import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
+import { getModelProvider, normalizeModelId } from '@/app/components/config';
 
 /**
  * Load thread documents from database for a specific thread
@@ -417,6 +420,30 @@ export async function streamEvents({
         }
 
         sendApiEvent(controller, 'llm_completed');
+
+        // Track AI usage (fire-and-forget)
+        try {
+          const usage = await streamResult.usage;
+          const modelId = effectiveSettings.model || '';
+          const provider =
+            getModelProvider(normalizeModelId(modelId)) || 'openrouter';
+          const userId = await getCurrentUserId().catch(() => null);
+
+          trackAiUsage({
+            organizationId: orgId,
+            projectId: threadRecord.project_id ?? null,
+            threadId: threadRecord.public_id,
+            userId,
+            step: AiUsageStep.CHAT_COMPLETION,
+            provider,
+            model: modelId,
+            inputTokens: usage.inputTokens ?? 0,
+            outputTokens: usage.outputTokens ?? 0,
+            totalTokens: usage.totalTokens ?? 0,
+          });
+        } catch (usageError) {
+          logger.error({ err: usageError }, 'Failed to track AI usage');
+        }
 
         sendApiEvent(controller, 'save_assistant_response');
 

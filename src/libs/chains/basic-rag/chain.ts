@@ -73,6 +73,7 @@ export const basicRagChain = async ({
         text: result.text,
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
+        usage: result.usage,
       };
     },
   };

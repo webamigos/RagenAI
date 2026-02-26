@@ -44,6 +44,7 @@ export const conversationChain = async ({
         text: result.text,
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
+        usage: result.usage,
       };
     },
   };

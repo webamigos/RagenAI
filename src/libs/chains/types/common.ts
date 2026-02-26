@@ -28,11 +28,18 @@ export interface RagChainConfig extends ChainConfig {
   threadDocuments?: import('@/features/documents/contracts/document.types').ThreadDocumentUI[];
 }
 
+export interface ChainUsage {
+  inputTokens: number | undefined;
+  outputTokens: number | undefined;
+  totalTokens: number | undefined;
+}
+
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
   text: PromiseLike<string>;
   fullStream: AsyncIterable<ChainStreamPart>;
   reasoningText: PromiseLike<string | undefined>;
+  usage: PromiseLike<ChainUsage>;
 }
 
 export type ChainStreamPart =
