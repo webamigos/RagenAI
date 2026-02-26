@@ -7,8 +7,6 @@ import { findInternalOrganizationQuery as findOrganizationByProviderId } from '@
 import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
 import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 
-const serviceName = 'assistants/actions';
-
 type CreateProjectResponse = {
   status: StatusCodes;
   project?: Omit<Project, 'id'>;
@@ -18,7 +16,7 @@ type CreateProjectResponse = {
 export const createProject = async (
   providerOrgId: string,
   title: string,
-  userId: string
+  userId: string,
 ): Promise<CreateProjectResponse> => {
   try {
     const organization = await findOrganizationByProviderId(providerOrgId);
@@ -26,7 +24,7 @@ export const createProject = async (
     if (!organization) {
       logger.error(
         { providerOrgId },
-        'Organization not found when creating project'
+        'Organization not found when creating project',
       );
       return {
         error: 'Organization not found',
@@ -38,12 +36,12 @@ export const createProject = async (
       organization.id,
       title,
       providerOrgId,
-      userId
+      userId,
     );
 
     logger.info(
       { projectPublicId: project.public_id },
-      'Project created successfully'
+      'Project created successfully',
     );
 
     return {
@@ -53,7 +51,7 @@ export const createProject = async (
   } catch (error) {
     logger.error(
       { err: error, providerOrgId, title, userId },
-      'Error creating project'
+      'Error creating project',
     );
     return {
       error: 'Failed to create project',
@@ -66,7 +64,7 @@ export const getProjects = async (organizationId: string, userId: string) => {
   try {
     logger.info(
       { organizationId, userId },
-      'Getting projects from Clerk organization'
+      'Getting projects from Clerk organization',
     );
 
     const projects = await fetchProjectsForUser(organizationId, userId);
@@ -80,7 +78,7 @@ export const getProjects = async (organizationId: string, userId: string) => {
   } catch (error) {
     logger.error(
       { err: error, organizationId, userId },
-      'Error fetching assistants'
+      'Error fetching assistants',
     );
     return {
       error: 'Failed to fetch assistant',

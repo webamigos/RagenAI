@@ -1,10 +1,10 @@
 import { api } from './config';
-import { MessagesWithContext } from '@/features/threads/contracts/thread.types';
+import { type MessagesWithContext } from '@/features/threads/contracts/thread.types';
 import { logger } from '@/app/lib/utils/logger';
 
 export const fetchMessagesFromApi = async (
   threadId: string,
-  visitorId: string
+  visitorId: string,
 ) => {
   if (!threadId) {
     return undefined;
@@ -28,7 +28,7 @@ export const fetchProject = async (projectId: string) => {
 export const submitFeedback = async (
   messageId: string,
   feedback: 'up' | 'down',
-  runId: string
+  runId: string,
 ) => {
   return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
 };
@@ -57,7 +57,7 @@ type UploadResponse = {
 
 export const uploadProjectFiles = async (
   projectPublicId: string,
-  data: FormData
+  data: FormData,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(`/upload`, data, {
     headers: {
@@ -89,7 +89,7 @@ type SupportResponse = {
 
 export const sendSupportRequest = async (
   data: SupportRequestPayload,
-  file?: File
+  file?: File,
 ): Promise<SupportResponse> => {
   const formData = new FormData();
   formData.append('type', 'contact');

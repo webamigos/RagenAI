@@ -87,7 +87,7 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
         lang: recognition.lang,
         maxAlternatives: recognition.maxAlternatives,
       },
-      'Speech recognition configuration'
+      'Speech recognition configuration',
     );
 
     recognition.onstart = () => {
@@ -102,10 +102,6 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
       let interimTranscript = '';
-
-      // Get the last result
-      const lastResultIndex = event.results.length - 1;
-      const lastResult = event.results[lastResultIndex];
 
       // Process all results
       for (let i = 0; i < event.results.length; i++) {
@@ -161,7 +157,7 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
             event: e,
           },
         },
-        'Recognition error'
+        'Recognition error',
       );
 
       cleanupRecognition();

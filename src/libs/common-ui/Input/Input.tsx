@@ -6,7 +6,7 @@ import {
   forwardRef,
   type ComponentPropsWithRef,
   type Ref,
-  HTMLProps,
+  type HTMLProps,
   useState,
 } from 'react';
 import type { FieldError } from 'react-hook-form';
@@ -57,26 +57,28 @@ export const Input = forwardRef(
       iconRight,
       ...rest
     }: Props,
-    ref: Ref<HTMLInputElement>
+    ref: Ref<HTMLInputElement>,
   ) => {
     const id = useId();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [OpenEyeIcon, setOpenEyeIcon] = useState<React.ComponentType | null>(
-      null
+      null,
     );
     const [EyeOffIcon, setEyeOffIcon] = useState<React.ComponentType | null>(
-      null
+      null,
     );
     const t = useTranslations();
 
     useEffect(() => {
       const loadIcons = async () => {
-        const { OpenEyeIcon } = await import(
-          '@ragenai/common-ui/icons/OpenEyeIcon'
-        ).then((module) => ({ OpenEyeIcon: module.OpenEyeIcon }));
-        const { EyeOffIcon } = await import(
-          '@ragenai/common-ui/icons/EyeOffIcon'
-        ).then((module) => ({ EyeOffIcon: module.EyeOffIcon }));
+        const { OpenEyeIcon } =
+          await import('@ragenai/common-ui/icons/OpenEyeIcon').then(
+            (module) => ({ OpenEyeIcon: module.OpenEyeIcon }),
+          );
+        const { EyeOffIcon } =
+          await import('@ragenai/common-ui/icons/EyeOffIcon').then(
+            (module) => ({ EyeOffIcon: module.EyeOffIcon }),
+          );
         setOpenEyeIcon(() => OpenEyeIcon);
         setEyeOffIcon(() => EyeOffIcon);
       };
@@ -95,7 +97,7 @@ export const Input = forwardRef(
       (min === undefined || max === undefined || step === undefined)
     ) {
       throw new Error(
-        'Props "min", "max" and "step" are required for input type "range".'
+        'Props "min", "max" and "step" are required for input type "range".',
       );
     }
     return (
@@ -114,7 +116,7 @@ export const Input = forwardRef(
                 className={classMerge(
                   'animate-pulse bg-gray-300 dark:bg-slate-700 rounded-md',
                   skeletonHeight,
-                  skeletonWidth
+                  skeletonWidth,
                 )}
               />
             ) : (
@@ -164,7 +166,7 @@ export const Input = forwardRef(
         )}
       </Field>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';

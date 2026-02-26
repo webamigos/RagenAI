@@ -81,7 +81,7 @@ export function DialogTitle({
 }
 
 export function DialogDescription({
-  className,
+  className: _className,
   ...props
 }: { className?: string } & Omit<
   HeadlessDescriptionProps<typeof Text>,

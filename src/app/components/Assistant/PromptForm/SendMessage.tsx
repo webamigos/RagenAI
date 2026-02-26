@@ -1,5 +1,3 @@
-import { useTranslations } from 'next-intl';
-
 import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { Button } from '@ragenai/common-ui/Button';
 
@@ -8,8 +6,6 @@ type Props = {
 };
 
 export const SendMessage = ({ disabled }: Props) => {
-  const t = useTranslations('form');
-
   return (
     <Button
       type="submit"

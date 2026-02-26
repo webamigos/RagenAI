@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Database } from './vectorStoreDatabase.types';
+import { type Database } from './vectorStoreDatabase.types';
 
 const apiKey = process.env.SUPABASE_ANON_KEY;
 const url = process.env.SUPABASE_API_URL;

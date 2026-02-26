@@ -4,7 +4,7 @@ import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
 import { MeiliSearch } from 'meilisearch';
-import { UserFile } from '@/generated/prisma/client';
+import { type UserFile } from '@/generated/prisma/client';
 
 export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
   try {

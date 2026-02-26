@@ -11,7 +11,6 @@ import { useRouter } from '@/i18n/routing';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
-import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { Card } from '@ragenai/common-ui/Card';
 import { Input } from '@ragenai/common-ui/Input';
 import { Tabs, TabList, Tab, TabPanel } from '@ragenai/common-ui/Tabs';

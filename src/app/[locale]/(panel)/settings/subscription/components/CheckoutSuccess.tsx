@@ -1,4 +1,4 @@
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
 import { Card } from '@ragenai/common-ui/Card';
 import { Link } from '@ragenai/common-ui/Link';
 import { useTranslations } from 'next-intl';

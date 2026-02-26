@@ -12,7 +12,7 @@ export async function createApiUserThreadCommand(context: ApiContext) {
   const openai = new OpenAI();
 
   // TODO: move creation of Open AI thread to first message
-  const thread = await openai.beta.threads.create();
+  await openai.beta.threads.create();
 
   const threadRecord = await db.thread.create({
     data: {
@@ -31,7 +31,7 @@ export async function createApiUserThreadCommand(context: ApiContext) {
 export async function updateApiUserThreadCommand(
   context: ApiContext,
   publicId: string,
-  payload: UpdateThreadDto
+  payload: UpdateThreadDto,
 ) {
   const record = await getApiUserThreadQuery(context, publicId);
 
@@ -62,7 +62,7 @@ export async function updateApiUserThreadCommand(
 
 export async function deleteApiUserThreadCommand(
   context: ApiContext,
-  publicId: string
+  publicId: string,
 ) {
   const record = await getApiUserThreadQuery(context, publicId);
 

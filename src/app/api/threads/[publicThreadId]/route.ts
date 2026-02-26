@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
 import { auth } from '@/lib/auth';
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (error) {
     logger.error(
       { err: error },
-      'Unexpected error in thread stream GET handler'
+      'Unexpected error in thread stream GET handler',
     );
     if (stream) {
       stream.cancel();

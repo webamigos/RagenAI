@@ -5,7 +5,6 @@ import { Alert } from '@ragenai/common-ui/Alert';
 import { useTranslations } from 'next-intl';
 
 import { useNewThread } from '@/app/hooks/useNewThread';
-import { useSettings } from '@/app/hooks/useSettings';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 
 import { ValidationBoard } from './ValidationBoard';
@@ -16,8 +15,7 @@ import { NewChatInterface } from '../NewChatInterface';
 export const Start = () => {
   const { isSignedIn, user } = useUser();
   const t = useTranslations('Index');
-  const { isPending, isLimitLock } = useNewThread();
-  const { hasApiKey, belongsToOrganization, hasKnowledge } = useSettings();
+  const { isLimitLock } = useNewThread();
   const { isSearchOpen, closeSearch } = useSearchThreads();
   const { modalRef } = useModalWithEscapeAndOutsideClick<HTMLDivElement>();
 

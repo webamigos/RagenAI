@@ -1,6 +1,6 @@
-import { RedisService } from '@/app/lib/services/redis';
-import { KeyId } from '../types/brand';
-import { HashedKey } from './hashing.service';
+import { type RedisService } from '@/app/lib/services/redis';
+import { type KeyId } from '../types/brand';
+import { type HashedKey } from './hashing.service';
 
 export class ApiKeyStorage {
   constructor(private readonly redisService: RedisService) {}

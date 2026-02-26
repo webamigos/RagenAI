@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { getApiContext } from '../../../../__logic__/context/api.context';
 import { ApiDbService } from '../../../../__logic__/services/api-db.service';
@@ -8,7 +8,7 @@ import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { createMessageInDbCommand as createMessageInDB } from '@/features/messages/services/commands/create-message-command';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
-import { ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
+import { type ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
 import { Role, Source } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
               await apiDbService.streamChatMessages(
                 publicId,
                 parsedData,
-                controller
+                controller,
               );
 
             // streaming part
@@ -83,7 +83,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
             } catch (finalResponseError) {
               logger.error(
                 { err: finalResponseError },
-                'Error sending final_response after assistant_response_saved'
+                'Error sending final_response after assistant_response_saved',
               );
 
               try {
@@ -92,7 +92,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
               } catch (closeError) {
                 logger.error(
                   { err: closeError },
-                  'Error closing stream after final_response error'
+                  'Error closing stream after final_response error',
                 );
               }
             }
@@ -117,7 +117,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
           'Cache-Control': 'no-cache, no-transform',
           'Content-Type': 'text/event-stream; charset=utf-8',
         },
-      }
+      },
     );
   } catch (err) {
     return ApiErrorService.handleErrors(err);

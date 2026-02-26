@@ -1,9 +1,9 @@
 'use server';
 
 import {
-  ModelProvider,
+  type ModelProvider,
   availableModels,
-  AvailableModel,
+  type AvailableModel,
 } from '../../components/config';
 import {
   getOpenaiAPIKey,
@@ -29,7 +29,7 @@ type ProviderStatus = {
 };
 
 export async function checkAvailableProviders(
-  orgId: string
+  orgId: string,
 ): Promise<ProviderStatus[]> {
   if (!orgId) {
     throw new Error('Organization ID is required');
@@ -154,7 +154,7 @@ export async function checkAvailableProviders(
 }
 
 export async function getAvailableModelsForOrganization(
-  orgId: string
+  orgId: string,
 ): Promise<AvailableModel[]> {
   const providerStatuses = await checkAvailableProviders(orgId);
   const availableProviders = providerStatuses
@@ -162,6 +162,6 @@ export async function getAvailableModelsForOrganization(
     .map((status) => status.provider);
 
   return availableModels.filter((model) =>
-    availableProviders.includes(model.provider)
+    availableProviders.includes(model.provider),
   );
 }

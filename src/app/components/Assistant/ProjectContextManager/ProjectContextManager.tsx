@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { type RootState } from '@/store';
 import {
   FolderIcon,
   ChevronDownIcon,
@@ -46,7 +46,7 @@ export const ProjectContextManager = ({
     try {
       const result = await updateThreadContextAction(
         threadId,
-        project?.id || null
+        project?.id || null,
       );
 
       if (result.success) {
@@ -192,8 +192,8 @@ export const ProjectContextManager = ({
                     {isSelected
                       ? 'Wymieniony projekt (@)'
                       : isCurrentThreadProject
-                      ? 'Projekt wątku (domyślny)'
-                      : `ID: ${project.public_id}`}
+                        ? 'Projekt wątku (domyślny)'
+                        : `ID: ${project.public_id}`}
                   </div>
                 </div>
                 {(isSelected || isCurrentThreadProject) && (

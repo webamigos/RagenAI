@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
-import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { authClient } from '@/app/hooks/use-better-auth';
@@ -18,7 +17,6 @@ export const ForgotPasswordForm = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const t = useTranslations('Forgot-password');
-  const { push } = useRouter();
 
   const {
     register,
@@ -36,12 +34,10 @@ export const ForgotPasswordForm = () => {
     try {
       // Better Auth forget password endpoint
       // @ts-ignore - forgetPassword exists but is not properly typed in Better Auth client
-      const { data: result, error: apiError } = await authClient.forgetPassword(
-        {
-          email,
-          redirectTo: '/reset-password',
-        }
-      );
+      const { error: apiError } = await authClient.forgetPassword({
+        email,
+        redirectTo: '/reset-password',
+      });
 
       if (apiError) {
         setError(apiError.message || 'Failed to send reset email');

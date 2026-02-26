@@ -7,7 +7,6 @@ import {
   type ComponentPropsWithRef,
   useEffect,
   useRef,
-  type MouseEventHandler,
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
@@ -75,7 +74,7 @@ export const Textarea = forwardRef(
       onSend,
       setValue,
       value,
-      handleSubmit,
+      handleSubmit: _handleSubmit,
       modelSelector,
       ...rest
     }: Props,
@@ -131,14 +130,6 @@ export const Textarea = forwardRef(
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        onSend?.();
-      }
-    };
-
-    const handleIconClick: MouseEventHandler<HTMLButtonElement> = () => {
-      if (handleSubmit) {
-        handleSubmit();
-      } else {
         onSend?.();
       }
     };

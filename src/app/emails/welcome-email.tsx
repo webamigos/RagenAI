@@ -92,20 +92,6 @@ const paragraph = {
   textAlign: 'left' as const,
 };
 
-const paragraphStrong = {
-  ...paragraph,
-  fontWeight: 'bold',
-};
-
-const anchor = {
-  color: '#4f46e5',
-};
-
-const anchorStrong = {
-  ...anchor,
-  fontWeight: 'bold',
-};
-
 const button = {
   backgroundColor: '#4f46e5',
   borderRadius: '5px',

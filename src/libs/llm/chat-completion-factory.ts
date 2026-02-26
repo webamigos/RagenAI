@@ -142,7 +142,7 @@ export class ChatCompletionFactory {
 
   private static createAzureOpenAIInstance(
     credentials: AzureOpenAICredentials,
-    config: BaseCompletionConfig,
+    _config: BaseCompletionConfig,
   ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Azure OpenAI');

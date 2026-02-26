@@ -19,7 +19,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 
 import { useApi } from '@/app/hooks/useApi';
-import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
+import { type PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
 import { handleAssistantStream } from '@/app/components/Assistant/handle-assistant-stream';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
@@ -36,7 +36,7 @@ const { errorToast } = statusToast();
 
 export const usePublicAssistantLogic = (
   threadId: string,
-  organizationId: string
+  organizationId: string,
 ) => {
   const pathname = usePathname();
   const [visitorId, setVisitorId] = useState('');
@@ -80,7 +80,7 @@ export const usePublicAssistantLogic = (
 
         // Check if we have a temporary message to process
         const tempMessage = sessionStorage.getItem(
-          SESSION_STORAGE_TEMP_MESSAGE_KEY
+          SESSION_STORAGE_TEMP_MESSAGE_KEY,
         );
         if (tempMessage) {
           const userMessage = {

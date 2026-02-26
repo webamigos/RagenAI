@@ -1,4 +1,4 @@
-import { useCallback, KeyboardEvent, useState } from 'react';
+import { useCallback, type KeyboardEvent, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNewThread as usePrivateNewThread } from '@/app/hooks/useNewThread';
 import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/useNewThread';
 import { ChatResponseType } from '@/features/messages/contracts/message.types';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { MentionedProject } from './MentionTextarea';
 
 const threadSchema = (t: (key: string) => string) =>
@@ -32,7 +32,7 @@ type Props = {
 };
 
 export const useNewThreadInput = ({
-  organizationId,
+  organizationId: _organizationId,
   isPublicAccess,
   widgetMode,
   projectId,
@@ -86,7 +86,7 @@ export const useNewThreadInput = ({
       targetProjectId,
       targetProjectPublicId,
       mentionedProjectIdForThread,
-      preferredModel
+      preferredModel,
     );
   }, [
     threadHandler,
@@ -111,7 +111,7 @@ export const useNewThreadInput = ({
         targetProjectPublicId,
         mentionedProjectIdForThread,
         preferredModel,
-        threadDocuments
+        threadDocuments,
       );
       reset();
     },
@@ -123,7 +123,7 @@ export const useNewThreadInput = ({
       mentionedProject,
       preferredModel,
       threadDocuments,
-    ]
+    ],
   );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

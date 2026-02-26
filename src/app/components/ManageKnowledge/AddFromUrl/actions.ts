@@ -7,10 +7,10 @@ import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { usageTracker } from '@/app/lib/services/usage';
-import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
+import { type WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import {
-  ScrapeWebsiteWorkflowPayload,
+  type ScrapeWebsiteWorkflowPayload,
   Workflow,
 } from '@/features/documents/contracts/document.types';
 
@@ -23,7 +23,7 @@ export type ProcessUrlResult = {
 
 export async function processUrl(
   url: string,
-  mode: WebsiteLoaderMode
+  mode: WebsiteLoaderMode,
 ): Promise<ProcessUrlResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
 
@@ -63,7 +63,7 @@ export async function processUrl(
         taskQueue: TASK_QUEUE_NAME,
         workflowId: websiteWorkflowId,
         args: [websiteWorkflowPayload],
-      }
+      },
     );
 
     logger.info('embeddingsHandle: %j', embeddingsHandle, 2);

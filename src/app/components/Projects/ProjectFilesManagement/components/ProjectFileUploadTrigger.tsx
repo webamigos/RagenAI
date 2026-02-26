@@ -10,7 +10,7 @@ import { getProjectFiles } from '@/app/actions';
 import { ProjectFileUpload } from './ProjectFileUpload';
 import {
   ProjectFileUploadContent,
-  FileStatus,
+  type FileStatus,
 } from './ProjectFileUploadContent';
 
 type Props = {

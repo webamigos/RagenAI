@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 import { classMerge } from '../utils/cn';
 
 export const UserCircleIcon = ({ className }: ComponentProps<'svg'>) => {

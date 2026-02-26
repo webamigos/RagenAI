@@ -1,4 +1,4 @@
-import type { Project, Source } from '@/generated/prisma/client';
+import type { Project } from '@/generated/prisma/client';
 
 export type ProjectPublicFields = Pick<
   Project,

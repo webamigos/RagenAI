@@ -1,13 +1,10 @@
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
 import { Suspense } from 'react';
 
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 import { AcceptInvitationForm } from '@/app/components/Forms/AcceptInvitationForm';
 
-export async function generateMetadata({ params }: PropsWihLocale) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Metadata' });
-
+export async function generateMetadata() {
   return {
     title: 'Accept Invitation - Ragen AI',
   };

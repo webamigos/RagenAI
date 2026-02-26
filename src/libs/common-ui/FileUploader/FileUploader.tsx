@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, ComponentPropsWithRef } from 'react';
+import { useRef, type ComponentPropsWithRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 
@@ -20,7 +20,7 @@ export const FileUploader = ({
   className,
   ...props
 }: FileUploaderProps) => {
-  const { isOver, setNodeRef } = useDroppable({ id: 'droppable' });
+  const { setNodeRef } = useDroppable({ id: 'droppable' });
   const t = useTranslations('admin-panel');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,7 +28,7 @@ export const FileUploader = ({
     event.preventDefault();
     if (disabled) return;
     const droppedFiles = Array.from(event.dataTransfer.files).filter(
-      isSupportedFile
+      isSupportedFile,
     );
     onFilesAdded(droppedFiles);
   };
@@ -39,7 +39,7 @@ export const FileUploader = ({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) return;
     const selectedFiles = Array.from(event.target.files || []).filter(
-      isSupportedFile
+      isSupportedFile,
     );
     onFilesAdded(selectedFiles);
 
@@ -61,7 +61,7 @@ export const FileUploader = ({
         className={classMerge(
           'mb-5 p-5 text-center border-2 border-dashed dark:border-gray-600 rounded-md',
           { 'bg-gray-100 dark:bg-gray-800': true }, // TODO: change after file is over this box
-          className
+          className,
         )}
         {...props}
       >

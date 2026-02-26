@@ -17,10 +17,6 @@ export default function TabsWrapper() {
   const pathname = usePathname();
   const t = useTranslations('manage-knowledge');
 
-  const prefetchTab = (path: string) => {
-    router.prefetch(path);
-  };
-
   const activeTab = tabRoutes.findIndex((tab) => pathname.startsWith(tab.path));
 
   return (

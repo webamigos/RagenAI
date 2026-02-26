@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     const updatedThread = await updateThreadProjectContext(
       publicThreadId,
-      mentionedProjectId
+      mentionedProjectId,
     );
 
     logger.info(
@@ -77,7 +77,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         mentionedProjectId,
         orgId,
       },
-      'Thread project context updated'
+      'Thread project context updated',
     );
 
     return Response.json({
@@ -126,7 +126,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         threadId: publicThreadId,
         orgId,
       },
-      'Thread project context removed'
+      'Thread project context removed',
     );
 
     return Response.json({

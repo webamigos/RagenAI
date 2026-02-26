@@ -1,16 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import {
-  FolderIcon,
-  XMarkIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/20/solid';
-import { setThreadContext } from '@/store/assistant/assistantSlice';
-import { removeThreadContextCommand as removeThreadContextAction } from '@/features/threads/services/commands/remove-thread-context-command';
-import { statusToast } from '@/app/lib/utils/toast';
+import { useSelector } from 'react-redux';
+import { type RootState } from '@/store';
+import { FolderIcon } from '@heroicons/react/20/solid';
 import { ProjectContextManager } from '../ProjectContextManager';
 // Simplified Project type for context management
 type ProjectForContext = {
@@ -30,10 +22,7 @@ export const ProjectContextIndicator = ({
   onContextChange,
   availableProjects = [],
 }: ProjectContextIndicatorProps) => {
-  const dispatch = useDispatch();
   const { threadContext } = useSelector((state: RootState) => state.assistant);
-  const [isRemoving, setIsRemoving] = useState(false);
-  const { successToast, errorToast } = statusToast();
 
   // Show organization fallback indicator if no mentioned project but threadContext exists
   const showOrgFallback = threadContext && !threadContext.mentionedProject;
@@ -56,42 +45,6 @@ export const ProjectContextIndicator = ({
       />
     );
   }
-
-  // Fallback: show read-only indicators when no threadId (shouldn't happen in practice)
-  const handleRemoveContext = async () => {
-    if (!threadId || isRemoving) return;
-
-    setIsRemoving(true);
-    try {
-      const result = await removeThreadContextAction(threadId);
-
-      if (result.success) {
-        // Update local state - context becomes null (organization fallback)
-        const updatedContext = {
-          ...threadContext,
-          mentionedProject: null,
-          mentionedProjectId: null,
-        };
-
-        dispatch(setThreadContext(updatedContext));
-        onContextChange?.(updatedContext);
-
-        successToast({
-          message:
-            'Kontekst projektu usunięty. Używane są instrukcje organizacji.',
-        });
-      } else {
-        errorToast({
-          message:
-            result.errorMessage || 'Nie udało się usunąć kontekstu projektu',
-        });
-      }
-    } catch (error) {
-      errorToast({ message: 'Wystąpił błąd podczas usuwania kontekstu' });
-    } finally {
-      setIsRemoving(false);
-    }
-  };
 
   // Show project context indicator (read-only fallback)
   if (showProjectContext && threadContext.mentionedProject?.title) {

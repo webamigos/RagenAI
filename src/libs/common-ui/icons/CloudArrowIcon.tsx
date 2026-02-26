@@ -1,5 +1,5 @@
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
 

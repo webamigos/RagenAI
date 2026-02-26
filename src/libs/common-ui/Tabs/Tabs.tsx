@@ -2,8 +2,7 @@ import React, {
   type ReactNode,
   type ReactElement,
   type ComponentProps,
-  type ComponentPropsWithRef,
-  ComponentPropsWithoutRef,
+  type ComponentPropsWithoutRef,
 } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -43,7 +42,7 @@ const Tabs = ({
               activeTab,
               setActiveTab,
             })
-          : null
+          : null,
       )}
       <AnimatePresence mode="wait">
         {childArray.map((child, index) =>
@@ -53,7 +52,7 @@ const Tabs = ({
             ? React.cloneElement(child as ReactElement<TabPanelProps>, {
                 key: `tabpanel-${index}`,
               })
-            : null
+            : null,
         )}
       </AnimatePresence>
     </div>
@@ -74,7 +73,7 @@ const TabList = ({
     <div
       className={classMerge(
         'inline-flex gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1',
-        className
+        className,
       )}
     >
       {childArray.map((child, index) =>
@@ -86,7 +85,7 @@ const TabList = ({
                 setActiveTab(index);
               },
             })
-          : null
+          : null,
       )}
     </div>
   );
@@ -107,7 +106,7 @@ const Tab = ({
       isActive
         ? 'bg-white text-zinc-900 font-semibold shadow-sm dark:bg-zinc-700 dark:text-white'
         : 'font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
-      className
+      className,
     )}
     onClick={onClick}
     {...props}

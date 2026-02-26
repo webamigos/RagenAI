@@ -1,11 +1,11 @@
 import { getFileType } from '@/app/lib/utils/getFileType';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
-import { FileType } from '@/generated/prisma/client';
+import { type FileType } from '@/generated/prisma/client';
 import type { ParsedFile } from '../contracts/document.types';
 
 type FileParser = (
   file: File,
-  organizationId?: string
+  organizationId?: string,
 ) => Promise<string | Buffer>;
 
 const fileParsers: Record<FileType, FileParser> = {
@@ -23,7 +23,7 @@ const fileParsers: Record<FileType, FileParser> = {
 
 export async function parseFile(
   file: File,
-  organizationId?: string
+  organizationId?: string,
 ): Promise<ParsedFile> {
   if (file.size === 0) {
     throw new Error(`The file ${file.name} is empty`);

@@ -8,20 +8,16 @@ import { revalidatePath } from 'next/cache';
 
 import db from '@ragenai/prisma-client';
 
-import { ApiKeyDto } from './types';
+import { type ApiKeyDto } from './types';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  getInternalOrganizationByProviderIdQuery as fetchOrganizationByProviderId,
-  getOrganizationDefaultProjectQuery as fetchOrganizationDefaultProject,
-} from '@/features/organizations/services/queries/get-api-keys-query';
+import { getInternalOrganizationByProviderIdQuery as fetchOrganizationByProviderId } from '@/features/organizations/services/queries/get-api-keys-query';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
 import {
-  OrgId,
-  UserId,
-  ProjectId,
-  KeyId,
+  type OrgId,
+  type UserId,
+  type ProjectId,
+  type KeyId,
 } from '@/app/api/v1/__logic__/types/brand';
-import { fetchProject } from '@/app/lib/services/api';
 import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 
 type SuccessResponse = {
@@ -42,10 +38,8 @@ type ActionResponse =
       success: true;
     } & SuccessResponse);
 
-const serviceName = 'createKeyActions';
-
 export const createApiKey = async (
-  data: ApiKeyDto
+  data: ApiKeyDto,
 ): Promise<ActionResponse> => {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();

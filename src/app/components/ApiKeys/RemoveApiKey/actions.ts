@@ -5,9 +5,7 @@ import {
   getCurrentUser,
 } from '@/app/lib/utils/auth-helpers';
 import { removeApiKeyCommand as removeApiKeyFromDb } from '@/features/organizations/services/commands/remove-api-key-command';
-import { ApiKey } from '@/generated/prisma/client';
-
-const serviceName = 'removeApiKey';
+import { type ApiKey } from '@/generated/prisma/client';
 
 export const removeApiKey = async (publicKeyId: ApiKey['public_id']) => {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -24,8 +22,6 @@ export const removeApiKey = async (publicKeyId: ApiKey['public_id']) => {
       message: 'Key not found',
     };
   }
-
-  const userId = user.id;
 
   try {
     await removeApiKeyFromDb(orgId, publicKeyId);

@@ -1,5 +1,5 @@
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { VoiceModeHeaderProps } from '../types';
+import { type VoiceModeHeaderProps } from '../types';
 
 export const VoiceModeHeader = ({
   onClose,

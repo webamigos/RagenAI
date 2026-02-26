@@ -1,17 +1,10 @@
-import { CreateContactOptions, Resend } from 'resend';
+import { type CreateContactOptions, Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-const emailConfig = {
-  // from: 'Acme <onboarding@resend.dev>', // for testing
-  from: 'Ragen <noreply@updates.ragen.ai>', // for testing
-  to: ['delivered@resend.dev'], // for testing
-  replyTo: ['patryk@webamigos.pl'], // to specify
-};
 
 export const sendWelcomeEmail = async ({
   to,
@@ -75,7 +68,7 @@ export const sendContactEmail = async ({
 };
 
 export const addEmailToAudience = async (
-  resendContactDetails: CreateContactOptions
+  resendContactDetails: CreateContactOptions,
 ) => {
   return await resend.contacts.create(resendContactDetails);
 };
@@ -98,7 +91,7 @@ export const sendInvitationEmail = async ({
   try {
     logger.info(
       { to, organizationName, invitationId },
-      'Attempting to send invitation email'
+      'Attempting to send invitation email',
     );
 
     const response = await resend.emails.send({
@@ -117,14 +110,14 @@ export const sendInvitationEmail = async ({
 
     logger.info(
       { to, organizationName, invitationId, resendResponse: response },
-      'Invitation email sent successfully via Resend'
+      'Invitation email sent successfully via Resend',
     );
 
     return { data: response };
   } catch (error) {
     logger.error(
       { error, to, organizationName, invitationId },
-      'Failed to send invitation email'
+      'Failed to send invitation email',
     );
     return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
   }

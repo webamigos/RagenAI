@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { isLocalTargetEnv } from '@/libs/utils/env';
 import { getRedisInstance } from '@/app/lib/services/redis';
 import { logger } from '@/app/lib/utils/logger';
-import { ApiContext } from '../types/ApiContext';
+import { type ApiContext } from '../types/ApiContext';
 
 export class LimitExceededException extends Error {}
 
@@ -13,7 +13,7 @@ const DURATION = 60; // seconds
 
 export const rateLimit = async (
   request: NextRequest,
-  apiContext?: ApiContext
+  apiContext?: ApiContext,
 ) => {
   const url = request.nextUrl.pathname;
   const isApiUrl = url.startsWith('/api/v1');
@@ -33,7 +33,7 @@ export const rateLimit = async (
     if (error instanceof LimitExceededException) throw error;
     logger.warn(
       { err: error, ip },
-      'Redis rate-limit check failed for IP, allowing request'
+      'Redis rate-limit check failed for IP, allowing request',
     );
   }
 
@@ -49,7 +49,7 @@ export const rateLimit = async (
       if (error instanceof LimitExceededException) throw error;
       logger.warn(
         { err: error, keyId: apiContext.keyId },
-        'Redis rate-limit check failed for API key, allowing request'
+        'Redis rate-limit check failed for API key, allowing request',
       );
     }
   }

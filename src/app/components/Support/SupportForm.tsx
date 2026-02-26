@@ -13,7 +13,7 @@ import { Text } from '@ragenai/common-ui/Text';
 import { Textarea } from '@ragenai/common-ui/Textarea';
 import { sendSupportRequest } from '@/app/lib/services/api';
 
-import { getSupportFormSchema, SupportFormData } from './types';
+import { getSupportFormSchema, type SupportFormData } from './types';
 
 export const SupportForm = () => {
   const t = useTranslations('support-page');
@@ -42,7 +42,7 @@ export const SupportForm = () => {
           title: data.title,
           message: data.message,
         },
-        data.file
+        data.file,
       );
 
       successToast({ message: t('send-success') });

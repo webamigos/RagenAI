@@ -1,5 +1,5 @@
 import { type FieldError } from 'react-hook-form';
-import { ComponentPropsWithRef, useId } from 'react';
+import { type ComponentPropsWithRef, useId } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Field, Label } from '@ragenai/tui/fieldset';

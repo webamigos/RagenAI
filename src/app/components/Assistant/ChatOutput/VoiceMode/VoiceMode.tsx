@@ -5,7 +5,7 @@ import { VoiceModeHeader } from './components/VoiceModeHeader';
 import { VoiceModeStatus } from './components/VoiceModeStatus';
 import { VoiceModeTranscript } from './components/VoiceModeTranscript';
 import { VoiceModeInstructions } from './components/VoiceModeInstructions';
-import { VoiceModeProps } from './types';
+import { type VoiceModeProps } from './types';
 
 export const VoiceMode = ({
   onClose,

@@ -31,7 +31,7 @@ export const AcceptInvitationForm = () => {
   const { push } = useRouter();
   const locale = useLocale();
   const { data: session, isPending: sessionLoading } = useSession();
-  const { successToast, errorToast } = statusToast();
+  const { successToast } = statusToast();
 
   const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
   const [loading, setLoading] = useState(true);

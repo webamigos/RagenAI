@@ -1,5 +1,5 @@
-import { modelsSchema } from '@/app/lib/services/llm';
-import { z } from 'zod';
+import { type modelsSchema } from '@/app/lib/services/llm';
+import { type z } from 'zod';
 
 export type ModelConfig = z.infer<typeof modelsSchema>;
 export type ModelProvider = ModelConfig['provider'];

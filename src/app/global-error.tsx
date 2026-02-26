@@ -4,7 +4,7 @@ import './[locale]/global.css';
 
 import Error from 'next/error';
 
-export default function GlobalError({ error }: { error: Error }) {
+export default function GlobalError({ error: _error }: { error: Error }) {
   return (
     <html>
       <body>

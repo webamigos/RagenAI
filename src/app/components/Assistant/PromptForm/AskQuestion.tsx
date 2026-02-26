@@ -1,8 +1,8 @@
 import { useTranslations } from 'next-intl';
-import { FieldError, UseFormRegister } from 'react-hook-form';
+import { type FieldError, type UseFormRegister } from 'react-hook-form';
 
 import { Textarea } from '@ragenai/common-ui/Textarea';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Props = {
   disabled: boolean;
@@ -29,7 +29,7 @@ export const AskQuestion = ({
   setPromptValue,
   register,
   onSend,
-  isUserLogged,
+  isUserLogged: _isUserLogged,
   showFileAttachment,
   onFilesDrop,
   threadDocuments,

@@ -7,7 +7,7 @@ import { Link } from '@/i18n/routing';
 
 import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 
 export async function generateMetadata({ params }: PropsWihLocale) {

@@ -11,8 +11,7 @@ import {
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
-import { logger } from '@/app/lib/utils/logger';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Message = {
   type: 'user' | 'assistant';
@@ -42,7 +41,7 @@ function formatChatHistory(chatHistory: string): Message[] {
 
 export async function rephraseQuestion(
   model: LanguageModelV3,
-  input: BaseChatChainInput
+  input: BaseChatChainInput,
 ): Promise<string> {
   if (!model) {
     throw new Error('Error rephrasing question: No model instance');
@@ -62,7 +61,7 @@ export async function rephraseQuestion(
 
   const humanMessage = humanTemplates.rephraseQuestion.replace(
     '{question}',
-    input.question
+    input.question,
   );
   messages.push({ role: 'user', content: humanMessage });
 
@@ -79,7 +78,7 @@ export async function retrieveRelevantDocuments(
   vectorStore: VectorStoreClient,
   standaloneQuestion: string,
   maxDocuments = 4,
-  metadataFilter?: object
+  metadataFilter?: object,
 ): Promise<string> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -93,7 +92,7 @@ export async function retrieveRelevantDocuments(
   const docs = await vectorStore.similaritySearch(
     standaloneQuestion,
     maxDocuments,
-    filter
+    filter,
   );
 
   return combineDocuments(docs);
@@ -104,7 +103,7 @@ export async function retrieveThreadDocuments(
   vectorStore: VectorStoreClient,
   embeddings: EmbeddingsProvider,
   standaloneQuestion: string,
-  maxChunks: number = 3
+  maxChunks: number = 3,
 ): Promise<string> {
   if (!threadDocuments || threadDocuments.length === 0) {
     return '[Brak dokumentow watku - uzytkownik nie wgral zadnych plikow]';
@@ -114,7 +113,7 @@ export async function retrieveThreadDocuments(
   const relevantChunks = await retriever.retrieveRelevantChunks(
     threadDocuments,
     standaloneQuestion,
-    maxChunks
+    maxChunks,
   );
 
   return combineDocuments(relevantChunks);
@@ -126,7 +125,7 @@ export function buildRagMessages(
   context: string,
   threadContext: string,
   answerInstructions?: string | null,
-  projectInstructions?: string
+  projectInstructions?: string,
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
@@ -152,7 +151,7 @@ export function buildRagMessages(
 
   const humanMessage = humanTemplates.answerChain.replace(
     '{standalone_question}',
-    standaloneQuestion
+    standaloneQuestion,
   );
   messages.push({ role: 'user', content: humanMessage });
 

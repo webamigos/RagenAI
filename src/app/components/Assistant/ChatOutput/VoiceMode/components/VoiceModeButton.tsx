@@ -1,4 +1,4 @@
-import { VoiceModeButtonProps } from '../types';
+import { type VoiceModeButtonProps } from '../types';
 import { VoiceModeButtonIcon } from './VoiceModeButtonIcon';
 
 export const VoiceModeButton = ({

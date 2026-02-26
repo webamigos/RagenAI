@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { MessageDto } from '@/features/messages/contracts/message.types';
+import { type MessageDto } from '@/features/messages/contracts/message.types';
 import { CopyButton } from '@ragenai/common-ui/CopyButton/CopyButton';
 
 type CopyToClipboardButtonProps = {
@@ -10,7 +10,7 @@ type CopyToClipboardButtonProps = {
 export const CopyToClipboardButton = memo(
   ({ message, className }: CopyToClipboardButtonProps) => {
     return <CopyButton textToCopy={message.content} className={className} />;
-  }
+  },
 );
 
 CopyToClipboardButton.displayName = 'CopyToClipboardButton';

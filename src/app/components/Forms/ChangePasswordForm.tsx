@@ -43,19 +43,18 @@ type FormData = z.infer<typeof schema>;
 export const ChangePasswordForm = () => {
   const [apiErrors, setApiErrors] = useState<APIError[]>([]);
 
-  const { successToast, errorToast } = statusToast();
-  const { user } = useUser();
+  const { errorToast } = statusToast();
+  const { user: _user } = useUser();
   const t = useTranslations('change-password');
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (_data: FormData) => {
     try {
       // TODO: Implement password change with Better Auth
       // Better Auth uses different API for password changes
