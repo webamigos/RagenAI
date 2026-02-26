@@ -70,6 +70,7 @@ const MessageContent = ({
   isPublicAccess: boolean;
 }) => {
   const { md } = useChatViewLogic(null);
+  const renderedHtml = md.render(content);
 
   return (
     <div
@@ -79,7 +80,7 @@ const MessageContent = ({
     >
       <div
         dangerouslySetInnerHTML={{
-          __html: md.render(content),
+          __html: renderedHtml,
         }}
       />
       {role === 'ASSISTANT' && message && (
@@ -88,7 +89,7 @@ const MessageContent = ({
             initialRated={message.rate}
             publicId={message.public_id}
           />
-          <CopyToClipboardButton message={message} />
+          <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
           {!isPublicAccess && (
             <ReadAnswer content={content} voiceId={voiceId!} />
           )}
@@ -134,24 +135,25 @@ export const ChatOutput = ({
             />
           </div>
         ))}
-        {streamedMessage && (
-          <div className="group relative mr-auto max-w-[85%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
-            {streamedMessage.reasoningContent && (
-              <ReasoningBlock
-                content={streamedMessage.reasoningContent}
-                isStreaming={streamedMessage.isReasoning}
-              />
-            )}
-            <div className="chat-response">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: renderedStreamedMessage,
-                }}
-              />
+        {streamedMessage &&
+          (streamedMessage.content || streamedMessage.reasoningContent) && (
+            <div className="group relative mr-auto max-w-[85%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
+              {streamedMessage.reasoningContent && (
+                <ReasoningBlock
+                  content={streamedMessage.reasoningContent}
+                  isStreaming={streamedMessage.isReasoning}
+                />
+              )}
+              <div className="chat-response">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: renderedStreamedMessage,
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
-        {isLoading && loadingMessage && (
+          )}
+        {isLoading && !streamedMessage && loadingMessage && (
           <div className="mr-auto flex items-center rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
             <div className="flex gap-1">
               <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />

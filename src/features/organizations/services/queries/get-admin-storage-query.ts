@@ -6,8 +6,6 @@ import type {
   ProjectStorageSummary,
 } from '../../contracts/organization.types';
 
-export type { OrgStorageSummary, ProjectStorageSummary };
-
 /**
  * Admin-only: get storage usage across all organizations
  */

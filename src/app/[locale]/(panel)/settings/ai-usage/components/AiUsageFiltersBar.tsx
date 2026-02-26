@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AiUsageStep } from '@/generated/prisma/client';
+import { AiUsageStep } from '@/generated/prisma/enums';
 import type { AiUsageFilters } from '@/features/ai-usage/contracts/ai-usage.types';
 import { getOrganizationsForFilter, getProjectsForFilter } from '../actions';
 

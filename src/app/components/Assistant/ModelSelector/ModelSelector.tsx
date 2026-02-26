@@ -29,7 +29,7 @@ export const ModelSelector = ({
   disabled = false,
 }: Props) => {
   const [selectedModel, setSelectedModel] = useState<string>(
-    currentModel || organizationDefaultModel || 'google/gemini-2.0-flash-001',
+    currentModel || organizationDefaultModel || 'google/gemini-3-flash-preview',
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,9 @@ export const ModelSelector = ({
 
   useEffect(() => {
     setSelectedModel(
-      currentModel || organizationDefaultModel || 'google/gemini-2.0-flash-001',
+      currentModel ||
+        organizationDefaultModel ||
+        'google/gemini-3-flash-preview',
     );
   }, [currentModel, organizationDefaultModel]);
 

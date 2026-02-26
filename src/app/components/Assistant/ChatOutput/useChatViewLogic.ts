@@ -1,7 +1,10 @@
 import { useUser } from '@/app/hooks/use-auth';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import MarkdownIt from 'markdown-it';
+// Use the pre-built UMD bundle — Turbopack has a bug with markdown-it's ESM
+// build where named re-exports (isSpace) are lost during bundling.
+// @ts-expect-error -- UMD bundle has no type declarations
+import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import hljs from 'highlight.js';
 import texmath from 'markdown-it-texmath';
 import katex from 'katex';
@@ -40,7 +43,7 @@ const createMarkdownRenderer = () => {
 };
 
 export const useChatViewLogic = (
-  streamedMessage: StreamedMessageDto | null
+  streamedMessage: StreamedMessageDto | null,
 ) => {
   const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
   const [streamedMessageRunId, setStreamedMessageRunId] = useState<string>();

@@ -3,6 +3,7 @@ import {
   defaultOrganizationSettings,
   defaultStorageLimits,
 } from '../constants/settings';
+import { getApiKeyFromPool } from './queries/get-api-keys-query';
 import type {
   RawOrganizationSettings,
   StorageLimits,
@@ -53,7 +54,7 @@ export async function saveOpenaiAPIKey(
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
   const settings = await getSettings(orgId);
   if (!settings?.openai_api_key) {
-    return defaultOrganizationSettings.apiKey;
+    return getApiKeyFromPool();
   }
   return decryptApiKey(settings.openai_api_key);
 }
@@ -328,7 +329,7 @@ export async function getAllSettings(
 
   if (!settings) {
     return {
-      apiKey: defaultOrganizationSettings.apiKey,
+      apiKey: getApiKeyFromPool(),
       anthropicApiKey: null,
       googleApiKey: null,
       bedrockCredentials: null,
@@ -347,7 +348,7 @@ export async function getAllSettings(
 
   const apiKey = settings.openai_api_key
     ? decryptApiKey(settings.openai_api_key)
-    : defaultOrganizationSettings.apiKey;
+    : getApiKeyFromPool();
 
   const anthropicApiKey = settings.anthropic_api_key
     ? decryptApiKey(settings.anthropic_api_key)

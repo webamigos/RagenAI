@@ -461,13 +461,11 @@ export function DiskUsageSettings() {
                 onChange={setEditingFileLimit}
               />
             </div>
-            <Button
-              onClick={handleSaveLimits}
-              isLoading={isSaving}
-              className="mt-4"
-            >
-              Save Limits
-            </Button>
+            <div className="flex justify-end mt-4">
+              <Button onClick={handleSaveLimits} isLoading={isSaving}>
+                Save Limits
+              </Button>
+            </div>
           </div>
         </section>
       )}

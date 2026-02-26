@@ -21,11 +21,11 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'claude-3-5-sonnet-20241022': { input: 3, output: 15 },
     'claude-3.7-sonnet': { input: 3, output: 15 },
     'claude-haiku-4.5': { input: 0.8, output: 4 },
+    'claude-sonnet-4.6': { input: 3, output: 15 },
   },
   google: {
     'gemini-2.0-flash': { input: 0.1, output: 0.4 },
-    'gemini-2.0-flash-001': { input: 0.1, output: 0.4 },
-    'gemini-3-flash-preview': { input: 0.15, output: 0.6 },
+    'gemini-3-flash-preview': { input: 0.5, output: 3.0 },
   },
   bedrock: {
     'anthropic.claude-3-7-sonnet-20250219-v1:0': { input: 3, output: 15 },
@@ -39,10 +39,10 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'openai/o3-mini': { input: 1.1, output: 4.4 },
     'openai/gpt-5.2': { input: 2.0, output: 8.0 },
     'openai/gpt-5.2-chat': { input: 2.0, output: 8.0 },
-    'google/gemini-2.0-flash-001': { input: 0.1, output: 0.4 },
-    'google/gemini-3-flash-preview': { input: 0.15, output: 0.6 },
+    'google/gemini-3-flash-preview': { input: 0.5, output: 3.0 },
     'anthropic/claude-haiku-4.5': { input: 0.8, output: 4 },
     'anthropic/claude-3.7-sonnet': { input: 3, output: 15 },
+    'anthropic/claude-sonnet-4.6': { input: 3, output: 15 },
     'perplexity/sonar-pro': { input: 3, output: 15 },
   },
 };

@@ -1,4 +1,3 @@
-import { getApiKeyFromPool } from '../services/queries/get-api-keys-query';
 import type {
   OrganizationSettingsLimits,
   RawOrganizationSettings,
@@ -6,9 +5,9 @@ import type {
 } from '../contracts/organization.types';
 
 export const defaultOrganizationSettings: RawOrganizationSettings = {
-  apiKey: getApiKeyFromPool(),
+  apiKey: null,
   prompt: '',
-  model: 'openai/gpt-4o',
+  model: 'google/gemini-3-flash-preview',
   temperature: 0.8,
   maxDocumentsToRetrieve: 5,
   voiceId: 'JBFqnCBsd6RMkjVDRZzb',
