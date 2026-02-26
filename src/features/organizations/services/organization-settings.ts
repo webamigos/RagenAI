@@ -25,21 +25,8 @@ async function invalidateCache(orgId: string): Promise<void> {
   }
 }
 
-async function resolveOrgId(orgId: string): Promise<number> {
-  const org = await db.internalOrganization.findUnique({
-    where: { provider_id: orgId },
-    select: { id: true },
-  });
-
-  if (!org) {
-    throw new Error(`InternalOrganization not found for provider_id: ${orgId}`);
-  }
-
-  return org.id;
-}
-
 async function upsertSettings(
-  orgId: number,
+  orgId: string,
   data: Record<string, unknown>,
 ): Promise<void> {
   await db.organizationSettings.upsert({
@@ -47,11 +34,11 @@ async function upsertSettings(
     update: data,
     create: { organization_id: orgId, ...data },
   });
-  await invalidateCache(String(orgId));
+  await invalidateCache(orgId);
 }
 
-async function getSettings(orgId: number) {
-  const cached = await getCachedSettings(String(orgId));
+async function getSettings(orgId: string) {
+  const cached = await getCachedSettings(orgId);
   if (cached) return cached;
 
   const settings = await db.organizationSettings.findUnique({
@@ -60,12 +47,9 @@ async function getSettings(orgId: number) {
 
   if (settings) {
     try {
-      await redis.set(cacheKey(String(orgId)), JSON.stringify(settings));
+      await redis.set(cacheKey(orgId), JSON.stringify(settings));
     } catch (err) {
-      logger.warn(
-        { err, cacheKey: cacheKey(String(orgId)) },
-        'Cache write failed',
-      );
+      logger.warn({ err, cacheKey: cacheKey(orgId) }, 'Cache write failed');
     }
   }
 
@@ -88,13 +72,11 @@ export async function saveTemperatureSetting(
   orgId: string,
   temperature: number,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
-  await upsertSettings(internalOrgId, { temperature });
+  await upsertSettings(orgId, { temperature });
 }
 
 export async function getTemperatureSetting(orgId: string): Promise<number> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return settings?.temperature ?? defaultOrganizationSettings.temperature;
 }
 
@@ -104,14 +86,12 @@ export async function saveOpenaiAPIKey(
   orgId: string,
   apiKey: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(internalOrgId, { openai_api_key: encrypted });
+  await upsertSettings(orgId, { openai_api_key: encrypted });
 }
 
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.openai_api_key) return defaultOrganizationSettings.apiKey;
   return decryptApiKey(settings.openai_api_key);
 }
@@ -122,16 +102,14 @@ export async function saveAnthropicAPIKey(
   orgId: string,
   apiKey: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(internalOrgId, { anthropic_api_key: encrypted });
+  await upsertSettings(orgId, { anthropic_api_key: encrypted });
 }
 
 export async function getAnthropicAPIKey(
   orgId: string,
 ): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.anthropic_api_key) return null;
   return decryptApiKey(settings.anthropic_api_key);
 }
@@ -142,14 +120,12 @@ export async function saveGoogleAPIKey(
   orgId: string,
   apiKey: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(internalOrgId, { google_api_key: encrypted });
+  await upsertSettings(orgId, { google_api_key: encrypted });
 }
 
 export async function getGoogleAPIKey(orgId: string): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.google_api_key) return null;
   return decryptApiKey(settings.google_api_key);
 }
@@ -160,9 +136,8 @@ export async function saveBedrockCredentials(
   orgId: string,
   credentials: { region: string; accessKeyId: string; secretAccessKey: string },
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(JSON.stringify(credentials));
-  await upsertSettings(internalOrgId, {
+  await upsertSettings(orgId, {
     bedrock_credentials: encrypted,
   });
 }
@@ -172,8 +147,7 @@ export async function getBedrockCredentials(orgId: string): Promise<{
   accessKeyId: string;
   secretAccessKey: string;
 } | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.bedrock_credentials) return null;
   try {
     return JSON.parse(decryptApiKey(settings.bedrock_credentials));
@@ -188,13 +162,11 @@ export async function saveOllamaHost(
   orgId: string,
   host: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
-  await upsertSettings(internalOrgId, { ollama_host: host });
+  await upsertSettings(orgId, { ollama_host: host });
 }
 
 export async function getOllamaHost(orgId: string): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return settings?.ollama_host ?? null;
 }
 
@@ -204,16 +176,14 @@ export async function saveOpenrouterAPIKey(
   orgId: string,
   apiKey: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(internalOrgId, { openrouter_api_key: encrypted });
+  await upsertSettings(orgId, { openrouter_api_key: encrypted });
 }
 
 export async function getOpenrouterAPIKey(
   orgId: string,
 ): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.openrouter_api_key) return null;
   return decryptApiKey(settings.openrouter_api_key);
 }
@@ -224,16 +194,14 @@ export async function saveFireworksAPIKey(
   orgId: string,
   apiKey: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(internalOrgId, { fireworks_api_key: encrypted });
+  await upsertSettings(orgId, { fireworks_api_key: encrypted });
 }
 
 export async function getFireworksAPIKey(
   orgId: string,
 ): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.fireworks_api_key) return null;
   return decryptApiKey(settings.fireworks_api_key);
 }
@@ -249,9 +217,8 @@ export async function saveAzureOpenAICredentials(
     apiVersion: string;
   },
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const encrypted = encryptApiKey(JSON.stringify(credentials));
-  await upsertSettings(internalOrgId, {
+  await upsertSettings(orgId, {
     azure_openai_credentials: encrypted,
   });
 }
@@ -262,8 +229,7 @@ export async function getAzureOpenAICredentials(orgId: string): Promise<{
   deploymentName: string;
   apiVersion: string;
 } | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   if (!settings?.azure_openai_credentials) return null;
   try {
     return JSON.parse(decryptApiKey(settings.azure_openai_credentials));
@@ -275,13 +241,11 @@ export async function getAzureOpenAICredentials(orgId: string): Promise<{
 // --- Model ---
 
 export async function saveModel(orgId: string, model: string): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
-  await upsertSettings(internalOrgId, { model });
+  await upsertSettings(orgId, { model });
 }
 
 export async function getModel(orgId: string): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return settings?.model ?? defaultOrganizationSettings.model;
 }
 
@@ -291,15 +255,13 @@ export async function saveAssistantPrompt(
   orgId: string,
   prompt: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
-  await upsertSettings(internalOrgId, { prompt });
+  await upsertSettings(orgId, { prompt });
 }
 
 export async function getAssistantPrompt(
   orgId: string,
 ): Promise<string | null> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return settings?.prompt ?? null;
 }
 
@@ -309,8 +271,7 @@ export async function saveMaxDocumentsToRetrieve(
   orgId: string,
   maxDocumentsToRetrieve: number,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
-  await upsertSettings(internalOrgId, {
+  await upsertSettings(orgId, {
     max_documents_to_retrieve: maxDocumentsToRetrieve,
   });
 }
@@ -318,8 +279,7 @@ export async function saveMaxDocumentsToRetrieve(
 export async function getMaxDocumentsToRetrieve(
   orgId: string,
 ): Promise<number> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return (
     settings?.max_documents_to_retrieve ??
     defaultOrganizationSettings.maxDocumentsToRetrieve
@@ -332,13 +292,11 @@ export async function saveVoiceId(
   orgId: string,
   voiceId: string,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
-  await upsertSettings(internalOrgId, { voice_id: voiceId });
+  await upsertSettings(orgId, { voice_id: voiceId });
 }
 
 export async function getVoiceId(orgId: string): Promise<string> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return settings?.voice_id ?? 'JBFqnCBsd6RMkjVDRZzb';
 }
 
@@ -348,7 +306,6 @@ export async function saveStorageLimits(
   orgId: string,
   limits: Partial<StorageLimits>,
 ): Promise<void> {
-  const internalOrgId = await resolveOrgId(orgId);
   const data: Record<string, unknown> = {};
   if (limits.storageLimitBytes !== undefined)
     data.storage_limit_bytes = BigInt(limits.storageLimitBytes);
@@ -356,7 +313,7 @@ export async function saveStorageLimits(
     data.project_storage_limit_bytes = BigInt(limits.projectStorageLimitBytes);
   if (limits.singleFileLimitBytes !== undefined)
     data.single_file_limit_bytes = BigInt(limits.singleFileLimitBytes);
-  await upsertSettings(internalOrgId, data);
+  await upsertSettings(orgId, data);
 }
 
 function mapStorageLimits(
@@ -378,25 +335,19 @@ function mapStorageLimits(
 }
 
 export async function getStorageLimits(orgId: string): Promise<StorageLimits> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
   return mapStorageLimits(settings);
 }
 
-export async function getStorageLimitsByInternalOrgId(
-  internalOrgId: number,
-): Promise<StorageLimits> {
-  const settings = await getSettings(internalOrgId);
-  return mapStorageLimits(settings);
-}
+/** @deprecated Use getStorageLimits instead */
+export const getStorageLimitsByOrgId = getStorageLimits;
 
 // --- Get All Settings ---
 
 export async function getAllSettings(
   orgId: string,
 ): Promise<RawOrganizationSettings> {
-  const internalOrgId = await resolveOrgId(orgId);
-  const settings = await getSettings(internalOrgId);
+  const settings = await getSettings(orgId);
 
   if (!settings) {
     return {

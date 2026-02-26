@@ -8,7 +8,7 @@ import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 const DEFAULT_PROJECT_TITLE = 'Default';
 
 export async function getAccountSetupStatusQuery(
-  userId?: string
+  userId?: string,
 ): Promise<AccountSetupStatus> {
   try {
     logger.info('Starting account setup status check');
@@ -35,8 +35,7 @@ export async function getAccountSetupStatusQuery(
     if (!orgId) {
       logger.warn('No Better Auth organization found for user');
       return {
-        clerkOrganizationExists: false,
-        internalOrganizationExists: false,
+        organizationExists: false,
         organizationHasSubscription: false,
         organizationHasDefaultProject: false,
         accountSetupComplete: false,
@@ -44,19 +43,13 @@ export async function getAccountSetupStatusQuery(
       };
     }
 
-    const internalOrganization = await getInternalOrganization(orgId);
-    const subscription = await getSubscription(orgId);
-
-    logger.info(
-      {
-        internalOrgId: internalOrganization?.id,
-        hasSubscription: !!subscription,
-        projectCount: internalOrganization?.project?.length,
-      },
-      'Internal organization data'
-    );
-
-    const internalOrganizationExists = !!internalOrganization;
+    const [defaultProject, subscription] = await Promise.all([
+      db.project.findFirst({
+        where: { organization_id: orgId, title: DEFAULT_PROJECT_TITLE },
+        select: { id: true },
+      }),
+      getSubscription(orgId),
+    ]);
 
     const organizationHasSubscription =
       !!subscription && subscription.status === 'active';
@@ -65,25 +58,18 @@ export async function getAccountSetupStatusQuery(
         organizationHasSubscription,
         subscriptionStatus: subscription?.status,
       },
-      'Check: Organization has active subscription'
+      'Check: Organization has active subscription',
     );
 
-    const organizationHasDefaultProject = Boolean(
-      internalOrganization?.project.some(
-        (project) => project.title === DEFAULT_PROJECT_TITLE
-      )
-    );
+    const organizationHasDefaultProject = !!defaultProject;
 
     const accountSetupComplete =
-      internalOrganizationExists &&
-      organizationHasSubscription &&
-      organizationHasDefaultProject;
+      organizationHasSubscription && organizationHasDefaultProject;
 
     logger.info({ accountSetupComplete }, 'Final account setup status');
 
     return {
-      clerkOrganizationExists: true,
-      internalOrganizationExists,
+      organizationExists: true,
       organizationHasSubscription,
       organizationHasDefaultProject,
       accountSetupComplete,
@@ -97,7 +83,7 @@ export async function getAccountSetupStatusQuery(
 
 //Our system takes the first organization as a default
 async function getBetterAuthOrganizationId(
-  userId: string
+  userId: string,
 ): Promise<string | null> {
   try {
     logger.info({ userId }, 'Fetching Better Auth organization memberships');
@@ -112,30 +98,12 @@ async function getBetterAuthOrganizationId(
         membershipCount: memberships?.length,
         firstOrgId: memberships?.[0]?.id,
       },
-      'Better Auth memberships retrieved'
+      'Better Auth memberships retrieved',
     );
 
     return memberships?.[0]?.id || null;
   } catch (error) {
     logger.error({ err: error }, 'Error getting organization ID');
-    throw error;
-  }
-}
-
-async function getInternalOrganization(orgId: string) {
-  try {
-    const org = await db.internalOrganization.findFirst({
-      where: { provider_id: orgId },
-      select: {
-        id: true,
-        provider_id: true,
-        project: true,
-      },
-    });
-
-    return org;
-  } catch (error) {
-    logger.error({ err: error }, 'Error getting internal organization');
     throw error;
   }
 }

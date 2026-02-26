@@ -3,7 +3,6 @@
 import { type Project } from '@/generated/prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
-import { findInternalOrganizationQuery as findOrganizationByProviderId } from '@/features/organizations/services/queries/find-internal-organization-query';
 import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
 import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 
@@ -19,21 +18,7 @@ export const createProject = async (
   userId: string,
 ): Promise<CreateProjectResponse> => {
   try {
-    const organization = await findOrganizationByProviderId(providerOrgId);
-
-    if (!organization) {
-      logger.error(
-        { providerOrgId },
-        'Organization not found when creating project',
-      );
-      return {
-        error: 'Organization not found',
-        status: StatusCodes.NOT_FOUND,
-      };
-    }
-
     const project = await createProjectForOrganization(
-      organization.id,
       title,
       providerOrgId,
       userId,
@@ -64,7 +49,7 @@ export const getProjects = async (organizationId: string, userId: string) => {
   try {
     logger.info(
       { organizationId, userId },
-      'Getting projects from Clerk organization',
+      'Getting projects for organization',
     );
 
     const projects = await fetchProjectsForUser(organizationId, userId);

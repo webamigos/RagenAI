@@ -14,7 +14,7 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
     }
 
     const orgMetadata = await getOrganizationMetadata(orgId);
-    const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
+    const vectorStoreType = orgMetadata.vectorStore;
 
     if (vectorStoreType === 'meilisearch') {
       const client = new MeiliSearch({

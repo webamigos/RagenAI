@@ -1,6 +1,5 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { saveStorageLimits } from '@/features/organizations/services/organization-settings';
 import {
@@ -8,7 +7,7 @@ import {
   getAdminOrgProjectsStorageQuery,
 } from '@/features/organizations/services/queries/get-admin-storage-query';
 import { getStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
-import { getStorageLimitsByInternalOrgId } from '@/features/organizations/services/organization-settings';
+import { getStorageLimitsByOrgId } from '@/features/organizations/services/organization-settings';
 
 async function requireAppAdmin() {
   const user = await getCurrentUser();
@@ -23,28 +22,24 @@ export async function getAdminStorageOverview() {
   return getAdminAllOrgsStorageQuery();
 }
 
-export async function getAdminOrgProjects(orgProviderId: string) {
+export async function getAdminOrgProjects(orgId: string) {
   await requireAppAdmin();
-  return getAdminOrgProjectsStorageQuery(orgProviderId);
+  return getAdminOrgProjectsStorageQuery(orgId);
 }
 
-export async function getAdminOrgStorageDetails(orgProviderId: string) {
+export async function getAdminOrgStorageDetails(orgId: string) {
   await requireAppAdmin();
 
-  const usage = await getStorageUsageQuery(orgProviderId);
-
-  const org = await db.internalOrganization.findUnique({
-    where: { provider_id: orgProviderId },
-    select: { id: true },
-  });
-
-  const limits = org ? await getStorageLimitsByInternalOrgId(org.id) : null;
+  const [usage, limits] = await Promise.all([
+    getStorageUsageQuery(orgId),
+    getStorageLimitsByOrgId(orgId),
+  ]);
 
   return { usage, limits };
 }
 
 export async function updateOrgStorageLimitsAction(
-  orgProviderId: string,
+  orgId: string,
   limits: {
     storageLimitMB: number;
     projectLimitMB: number;
@@ -66,7 +61,7 @@ export async function updateOrgStorageLimitsAction(
     throw new Error('All limits must be positive numbers (in MB)');
   }
 
-  await saveStorageLimits(orgProviderId, {
+  await saveStorageLimits(orgId, {
     storageLimitBytes: storageLimitMB * 1024 * 1024,
     projectStorageLimitBytes: projectLimitMB * 1024 * 1024,
     singleFileLimitBytes: fileLimitMB * 1024 * 1024,

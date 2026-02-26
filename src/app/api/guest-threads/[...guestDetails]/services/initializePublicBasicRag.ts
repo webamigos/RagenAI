@@ -63,7 +63,7 @@ export const initializePublicRagChain = async ({
     let vectorStore: VectorStoreClient;
     let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'meilisearch') {
+    if (orgMetadata.vectorStore === 'meilisearch') {
       vectorStore = createMeilisearchVectorStore(
         embeddingModel,
         organizationId,

@@ -14,22 +14,19 @@ CREATE TYPE "EmbeddingStatus" AS ENUM ('NOT_STARTED', 'STARTED', 'COMPLETED', 'F
 CREATE TYPE "ParsingStatus" AS ENUM ('NOT_STARTED', 'STARTED', 'COMPLETED', 'FAILED');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionPlan" AS ENUM ('TRIAL', 'FREE', 'BASIC', 'TEAM');
+CREATE TYPE "SubscriptionPlanType" AS ENUM ('INTERNAL', 'STRIPE');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('TRIALING', 'ACTIVE', 'INCOMPLETE', 'INCOMPLETE_EXPIRED', 'PAST_DUE', 'CANCELED', 'UNPAID', 'PAUSED');
-
--- CreateEnum
-CREATE TYPE "PlanType" AS ENUM ('INTERNAL', 'STRIPE');
-
--- CreateEnum
-CREATE TYPE "PlanStatus" AS ENUM ('ACTIVE', 'ARCHIVED', 'DELETED');
+CREATE TYPE "SubscriptionPlanStatus" AS ENUM ('ACTIVE', 'ARCHIVED', 'DELETED');
 
 -- CreateEnum
 CREATE TYPE "ThreadCommunicationType" AS ENUM ('TEXT', 'VOICE');
 
 -- CreateEnum
 CREATE TYPE "MessageContentType" AS ENUM ('TEXT', 'VOICE');
+
+-- CreateEnum
+CREATE TYPE "AiUsageStep" AS ENUM ('MODERATION', 'CHAT_COMPLETION', 'REPHRASING', 'EMBEDDINGS');
 
 -- CreateTable
 CREATE TABLE "settings" (
@@ -42,7 +39,7 @@ CREATE TABLE "settings" (
 -- CreateTable
 CREATE TABLE "messages" (
     "id" TEXT NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "content" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
@@ -60,7 +57,7 @@ CREATE TABLE "messages" (
 
 -- CreateTable
 CREATE TABLE "flagged_messages" (
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "content" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
@@ -72,7 +69,7 @@ CREATE TABLE "flagged_messages" (
 -- CreateTable
 CREATE TABLE "threads" (
     "id" TEXT NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "title" TEXT,
     "visitor_id" TEXT,
     "organization_id" TEXT,
@@ -82,6 +79,7 @@ CREATE TABLE "threads" (
     "source" "Source" NOT NULL DEFAULT 'UI',
     "project_id" INTEGER,
     "mentioned_project_id" INTEGER,
+    "is_starred" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "threads_pkey" PRIMARY KEY ("id")
@@ -100,7 +98,7 @@ CREATE TABLE "visitor_messages" (
 -- CreateTable
 CREATE TABLE "user_files" (
     "id" TEXT NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "organization_id" TEXT NOT NULL,
     "file_name" TEXT NOT NULL,
     "file_size" INTEGER NOT NULL,
@@ -123,6 +121,7 @@ CREATE TABLE "user_files" (
     "is_binary_file" BOOLEAN NOT NULL DEFAULT true,
     "file_extension" TEXT,
     "file_mime_type" TEXT,
+    "source_file_id" TEXT,
 
     CONSTRAINT "user_files_pkey" PRIMARY KEY ("id")
 );
@@ -130,7 +129,7 @@ CREATE TABLE "user_files" (
 -- CreateTable
 CREATE TABLE "user_documents" (
     "id" TEXT NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "organization_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
@@ -146,85 +145,87 @@ CREATE TABLE "user_documents" (
 CREATE TABLE "thread_documents" (
     "id" TEXT NOT NULL,
     "thread_id" TEXT NOT NULL,
-    "user_file_id" TEXT NOT NULL,
+    "user_file_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "thread_documents_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "internal_organizations" (
-    "id" SERIAL NOT NULL,
-    "public_id" TEXT NOT NULL,
-    "provider_id" TEXT NOT NULL,
+CREATE TABLE "organization_settings" (
+    "id" UUID NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "openai_api_key" TEXT,
+    "anthropic_api_key" TEXT,
+    "google_api_key" TEXT,
+    "bedrock_credentials" TEXT,
+    "ollama_host" TEXT,
+    "openrouter_api_key" TEXT,
+    "fireworks_api_key" TEXT,
+    "azure_openai_credentials" TEXT,
+    "model" TEXT,
+    "temperature" DOUBLE PRECISION,
+    "prompt" TEXT,
+    "max_documents_to_retrieve" INTEGER,
+    "voice_id" TEXT,
+    "storage_limit_bytes" BIGINT,
+    "project_storage_limit_bytes" BIGINT,
+    "single_file_limit_bytes" BIGINT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
 
-    CONSTRAINT "internal_organizations_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "organization_settings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "subscriptions" (
-    "id" SERIAL NOT NULL,
-    "organization_id" INTEGER NOT NULL,
-    "plan_id" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "plan" TEXT NOT NULL,
+    "reference_id" TEXT NOT NULL,
     "stripe_customer_id" TEXT,
     "stripe_subscription_id" TEXT,
-    "status" "SubscriptionStatus" NOT NULL DEFAULT 'ACTIVE',
-    "current_period_start" TIMESTAMPTZ NOT NULL,
-    "current_period_end" TIMESTAMPTZ NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "period_start" TIMESTAMPTZ,
+    "period_end" TIMESTAMPTZ,
+    "cancel_at_period_end" BOOLEAN NOT NULL DEFAULT false,
+    "seats" INTEGER NOT NULL DEFAULT 1,
+    "trial_start" TIMESTAMPTZ,
     "trial_end" TIMESTAMPTZ,
-    "canceled_at" TIMESTAMPTZ,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "subscriptions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "plans" (
-    "id" SERIAL NOT NULL,
+CREATE TABLE "subscription_plans" (
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "type" "PlanType" NOT NULL DEFAULT 'INTERNAL',
-    "stripe_price_id" TEXT,
-    "stripe_product_id" TEXT,
-    "stripe_metadata" JSONB,
-    "status" "PlanStatus" NOT NULL DEFAULT 'ACTIVE',
-    "features" JSONB NOT NULL,
+    "price_id" TEXT NOT NULL,
+    "type" "SubscriptionPlanType" NOT NULL DEFAULT 'INTERNAL',
+    "status" "SubscriptionPlanStatus" NOT NULL DEFAULT 'ACTIVE',
+    "features" JSONB,
     "limits" JSONB NOT NULL,
     "last_synced_at" TIMESTAMPTZ,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
+    "metadata" JSONB,
+    "product_id" TEXT,
+    "public_id" UUID NOT NULL,
 
-    CONSTRAINT "plans_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "usage_periods" (
-    "id" SERIAL NOT NULL,
-    "subscription_id" INTEGER NOT NULL,
-    "start_date" TIMESTAMPTZ NOT NULL,
-    "end_date" TIMESTAMPTZ NOT NULL,
-    "metrics" JSONB NOT NULL,
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL,
-
-    CONSTRAINT "usage_periods_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "subscription_plans_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "projects" (
     "id" SERIAL NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "title" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
-    "internal_organization_id" INTEGER,
     "organization_id" TEXT,
     "owner_id" TEXT,
     "is_public" BOOLEAN NOT NULL DEFAULT false,
     "published_at" TIMESTAMPTZ,
-    "access_token" TEXT,
+    "access_token" UUID,
     "chatbot_enabled" BOOLEAN NOT NULL DEFAULT false,
     "source" "Source" NOT NULL DEFAULT 'UI',
 
@@ -232,16 +233,27 @@ CREATE TABLE "projects" (
 );
 
 -- CreateTable
+CREATE TABLE "project_settings" (
+    "id" UUID NOT NULL,
+    "project_id" INTEGER NOT NULL,
+    "instructions" TEXT,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "project_settings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "api_keys" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "public_id" TEXT NOT NULL,
+    "public_id" UUID NOT NULL,
     "masked_value" TEXT NOT NULL,
     "last_used_at" TIMESTAMPTZ,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "created_by" TEXT,
     "updated_at" TIMESTAMPTZ NOT NULL,
-    "organization_id" INTEGER,
+    "organization_id" TEXT,
     "project_id" INTEGER,
 
     CONSTRAINT "api_keys_pkey" PRIMARY KEY ("id")
@@ -259,6 +271,7 @@ CREATE TABLE "users" (
     "onboarding_complete" BOOLEAN NOT NULL DEFAULT false,
     "view_mode" TEXT NOT NULL DEFAULT 'list',
     "role" TEXT NOT NULL DEFAULT 'user',
+    "stripe_customer_id" TEXT,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -307,7 +320,7 @@ CREATE TABLE "organizations" (
     "metadata" JSONB,
     "has_knowledge" BOOLEAN NOT NULL DEFAULT false,
     "vector_store" TEXT,
-    "ragen_org_id" TEXT,
+    "public_id" UUID NOT NULL,
 
     CONSTRAINT "organizations_pkey" PRIMARY KEY ("id")
 );
@@ -351,6 +364,28 @@ CREATE TABLE "verifications" (
     CONSTRAINT "verifications_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ai_usages" (
+    "id" SERIAL NOT NULL,
+    "public_id" UUID NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "project_id" INTEGER,
+    "thread_id" UUID,
+    "user_id" TEXT,
+    "step" "AiUsageStep" NOT NULL,
+    "provider" TEXT NOT NULL,
+    "model" TEXT NOT NULL,
+    "input_tokens" INTEGER NOT NULL DEFAULT 0,
+    "output_tokens" INTEGER NOT NULL DEFAULT 0,
+    "total_tokens" INTEGER NOT NULL DEFAULT 0,
+    "estimated_cost" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "duration_ms" INTEGER,
+    "metadata" JSONB,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ai_usages_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "settings_key_key" ON "settings"("key");
 
@@ -385,6 +420,9 @@ CREATE INDEX "threads_organization_id_idx" ON "threads"("organization_id");
 CREATE INDEX "threads_user_id_idx" ON "threads"("user_id");
 
 -- CreateIndex
+CREATE INDEX "threads_visitor_id_is_starred_created_at_idx" ON "threads"("visitor_id", "is_starred", "created_at");
+
+-- CreateIndex
 CREATE INDEX "visitor_messages_visitor_id_idx" ON "visitor_messages"("visitor_id");
 
 -- CreateIndex
@@ -401,6 +439,9 @@ CREATE INDEX "user_files_public_id_idx" ON "user_files"("public_id");
 
 -- CreateIndex
 CREATE INDEX "user_files_project_id_idx" ON "user_files"("project_id");
+
+-- CreateIndex
+CREATE INDEX "user_files_source_file_id_idx" ON "user_files"("source_file_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_files_id_organization_id_key" ON "user_files"("id", "organization_id");
@@ -427,40 +468,34 @@ CREATE INDEX "thread_documents_user_file_id_idx" ON "thread_documents"("user_fil
 CREATE UNIQUE INDEX "thread_documents_thread_id_user_file_id_key" ON "thread_documents"("thread_id", "user_file_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "internal_organizations_public_id_key" ON "internal_organizations"("public_id");
+CREATE UNIQUE INDEX "organization_settings_organization_id_key" ON "organization_settings"("organization_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "internal_organizations_provider_id_key" ON "internal_organizations"("provider_id");
+CREATE INDEX "subscriptions_plan_idx" ON "subscriptions"("plan");
 
 -- CreateIndex
-CREATE INDEX "internal_organizations_public_id_idx" ON "internal_organizations"("public_id");
+CREATE INDEX "subscriptions_reference_id_idx" ON "subscriptions"("reference_id");
 
 -- CreateIndex
-CREATE INDEX "internal_organizations_provider_id_idx" ON "internal_organizations"("provider_id");
+CREATE INDEX "subscriptions_stripe_customer_id_idx" ON "subscriptions"("stripe_customer_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "subscriptions_organization_id_key" ON "subscriptions"("organization_id");
+CREATE INDEX "subscriptions_stripe_subscription_id_idx" ON "subscriptions"("stripe_subscription_id");
 
 -- CreateIndex
 CREATE INDEX "subscriptions_status_idx" ON "subscriptions"("status");
 
 -- CreateIndex
-CREATE INDEX "subscriptions_current_period_end_idx" ON "subscriptions"("current_period_end");
+CREATE UNIQUE INDEX "subscription_plans_product_id_key" ON "subscription_plans"("product_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "plans_stripe_price_id_key" ON "plans"("stripe_price_id");
+CREATE UNIQUE INDEX "subscription_plans_public_id_key" ON "subscription_plans"("public_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "plans_stripe_product_id_key" ON "plans"("stripe_product_id");
+CREATE INDEX "subscription_plans_price_id_idx" ON "subscription_plans"("price_id");
 
 -- CreateIndex
-CREATE INDEX "plans_stripe_price_id_idx" ON "plans"("stripe_price_id");
-
--- CreateIndex
-CREATE INDEX "plans_status_idx" ON "plans"("status");
-
--- CreateIndex
-CREATE INDEX "usage_periods_subscription_id_end_date_idx" ON "usage_periods"("subscription_id", "end_date");
+CREATE INDEX "subscription_plans_name_idx" ON "subscription_plans"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "projects_public_id_key" ON "projects"("public_id");
@@ -479,6 +514,9 @@ CREATE INDEX "projects_owner_id_idx" ON "projects"("owner_id");
 
 -- CreateIndex
 CREATE INDEX "projects_access_token_idx" ON "projects"("access_token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "project_settings_project_id_key" ON "project_settings"("project_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "api_keys_public_id_key" ON "api_keys"("public_id");
@@ -508,6 +546,12 @@ CREATE UNIQUE INDEX "accounts_provider_id_account_id_key" ON "accounts"("provide
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "organizations_public_id_key" ON "organizations"("public_id");
+
+-- CreateIndex
+CREATE INDEX "organizations_public_id_idx" ON "organizations"("public_id");
+
+-- CreateIndex
 CREATE INDEX "members_user_id_idx" ON "members"("user_id");
 
 -- CreateIndex
@@ -519,6 +563,24 @@ CREATE UNIQUE INDEX "invitations_organization_id_email_key" ON "invitations"("or
 -- CreateIndex
 CREATE UNIQUE INDEX "verifications_identifier_value_key" ON "verifications"("identifier", "value");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "ai_usages_public_id_key" ON "ai_usages"("public_id");
+
+-- CreateIndex
+CREATE INDEX "ai_usages_organization_id_idx" ON "ai_usages"("organization_id");
+
+-- CreateIndex
+CREATE INDEX "ai_usages_project_id_idx" ON "ai_usages"("project_id");
+
+-- CreateIndex
+CREATE INDEX "ai_usages_user_id_idx" ON "ai_usages"("user_id");
+
+-- CreateIndex
+CREATE INDEX "ai_usages_created_at_idx" ON "ai_usages"("created_at");
+
+-- CreateIndex
+CREATE INDEX "ai_usages_step_idx" ON "ai_usages"("step");
+
 -- AddForeignKey
 ALTER TABLE "messages" ADD CONSTRAINT "messages_thread_id_fkey" FOREIGN KEY ("thread_id") REFERENCES "threads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -527,6 +589,9 @@ ALTER TABLE "threads" ADD CONSTRAINT "threads_project_id_fkey" FOREIGN KEY ("pro
 
 -- AddForeignKey
 ALTER TABLE "user_files" ADD CONSTRAINT "user_files_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_files" ADD CONSTRAINT "user_files_source_file_id_fkey" FOREIGN KEY ("source_file_id") REFERENCES "user_files"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "user_documents" ADD CONSTRAINT "user_documents_file_id_fkey" FOREIGN KEY ("file_id") REFERENCES "user_files"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -541,19 +606,16 @@ ALTER TABLE "thread_documents" ADD CONSTRAINT "thread_documents_thread_id_fkey" 
 ALTER TABLE "thread_documents" ADD CONSTRAINT "thread_documents_user_file_id_fkey" FOREIGN KEY ("user_file_id") REFERENCES "user_files"("public_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "internal_organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "organization_settings" ADD CONSTRAINT "organization_settings_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_plan_id_fkey" FOREIGN KEY ("plan_id") REFERENCES "plans"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "projects" ADD CONSTRAINT "projects_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "usage_periods" ADD CONSTRAINT "usage_periods_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "project_settings" ADD CONSTRAINT "project_settings_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "projects" ADD CONSTRAINT "projects_internal_organization_id_fkey" FOREIGN KEY ("internal_organization_id") REFERENCES "internal_organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "internal_organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "api_keys" ADD CONSTRAINT "api_keys_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -569,3 +631,12 @@ ALTER TABLE "members" ADD CONSTRAINT "members_organization_id_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "members" ADD CONSTRAINT "members_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ai_usages" ADD CONSTRAINT "ai_usages_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ai_usages" ADD CONSTRAINT "ai_usages_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ai_usages" ADD CONSTRAINT "ai_usages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

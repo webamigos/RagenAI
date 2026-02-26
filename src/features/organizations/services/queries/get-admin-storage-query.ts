@@ -14,18 +14,15 @@ export type { OrgStorageSummary, ProjectStorageSummary };
 export async function getAdminAllOrgsStorageQuery(): Promise<
   OrgStorageSummary[]
 > {
-  const [orgs, betterAuthOrgs, fileAggs] = await Promise.all([
-    db.internalOrganization.findMany({
+  const [orgs, fileAggs] = await Promise.all([
+    db.organization.findMany({
       select: {
         id: true,
-        provider_id: true,
+        name: true,
         settings: {
           select: { storage_limit_bytes: true },
         },
       },
-    }),
-    db.organization.findMany({
-      select: { id: true, name: true },
     }),
     db.userFile.groupBy({
       by: ['organization_id'],
@@ -34,7 +31,6 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
     }),
   ]);
 
-  const orgNameMap = new Map(betterAuthOrgs.map((o) => [o.id, o.name]));
   const usageMap = new Map(
     fileAggs.map((a) => [
       a.organization_id,
@@ -43,14 +39,13 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
   );
 
   const results: OrgStorageSummary[] = orgs.map((org) => {
-    const usage = usageMap.get(org.provider_id) ?? {
+    const usage = usageMap.get(org.id) ?? {
       totalBytes: 0,
       fileCount: 0,
     };
     return {
-      orgId: org.provider_id,
-      orgName: orgNameMap.get(org.provider_id) ?? org.provider_id,
-      internalOrgId: org.id,
+      orgId: org.id,
+      orgName: org.name,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,
       storageLimitBytes: org.settings?.storage_limit_bytes
@@ -66,23 +61,16 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
  * Admin-only: get per-project breakdown for an organization
  */
 export async function getAdminOrgProjectsStorageQuery(
-  orgProviderId: string,
+  orgId: string,
 ): Promise<ProjectStorageSummary[]> {
-  const org = await db.internalOrganization.findUnique({
-    where: { provider_id: orgProviderId },
-    select: { id: true },
-  });
-
-  if (!org) return [];
-
   const [projects, fileAggs] = await Promise.all([
     db.project.findMany({
-      where: { internal_organization_id: org.id },
+      where: { organization_id: orgId },
       select: { id: true, public_id: true, title: true },
     }),
     db.userFile.groupBy({
       by: ['project_id'],
-      where: { organization_id: orgProviderId },
+      where: { organization_id: orgId },
       _sum: { file_size: true },
       _count: { id: true },
     }),

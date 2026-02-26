@@ -2,18 +2,17 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import type { ClerkOrganizationMetadata } from '../../contracts/organization.types';
+import type { OrganizationMetadata } from '../../contracts/organization.types';
 
 export const getOrganizationMetadataQuery = async (
-  organizationId: string
-): Promise<ClerkOrganizationMetadata> => {
+  organizationId: string,
+): Promise<OrganizationMetadata> => {
   try {
     const org = await db.organization.findUnique({
       where: { id: organizationId },
       select: {
         hasKnowledge: true,
         vectorStore: true,
-        ragenOrgId: true,
       },
     });
 
@@ -26,19 +25,16 @@ export const getOrganizationMetadataQuery = async (
       publicMetadata: {
         hasKnowledge: org.hasKnowledge,
       },
-      privateMetadata: {
-        vector_store: org.vectorStore || undefined,
-        ragen_org_id: org.ragenOrgId || undefined,
-      },
-    } as ClerkOrganizationMetadata;
+      vectorStore: org.vectorStore || undefined,
+    } as OrganizationMetadata;
   } catch (error) {
     logger.error(
       { err: error },
-      `Error: cannot get private metadata for organization ${organizationId}:`
+      `Error: cannot get private metadata for organization ${organizationId}:`,
     );
     return {
       publicMetadata: undefined,
-      privateMetadata: undefined,
+      vectorStore: undefined,
     };
   }
 };

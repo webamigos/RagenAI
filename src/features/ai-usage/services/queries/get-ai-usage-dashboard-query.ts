@@ -70,11 +70,6 @@ export async function getAiUsageDashboardQuery(
         orderBy: { created_at: 'desc' },
         take: 500,
         include: {
-          organization: {
-            select: {
-              provider_id: true,
-            },
-          },
           project: {
             select: { public_id: true, title: true },
           },
@@ -253,13 +248,11 @@ async function getDailyChartData(
   }));
 }
 
-async function getOrgNameMap(
-  orgProviderIds: string[],
-): Promise<Map<string, string>> {
-  if (orgProviderIds.length === 0) return new Map();
+async function getOrgNameMap(orgIds: string[]): Promise<Map<string, string>> {
+  if (orgIds.length === 0) return new Map();
 
   const orgs = await db.organization.findMany({
-    where: { id: { in: orgProviderIds } },
+    where: { id: { in: orgIds } },
     select: { id: true, name: true },
   });
 

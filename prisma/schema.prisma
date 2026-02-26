@@ -163,32 +163,9 @@ model ThreadDocument {
   @@map("thread_documents")
 }
 
-// id - internal id, used in internal systems and for Redis key references (rate limiting, API key cache)
-// public_id - id which will be used in routing in the app
-// provider_id - organization id from provider (e.g. Better Auth organization id)
-// NOTE: Prisma nukes custom sequences:
-// - https://github.com/prisma/prisma/issues/24677
-// - https://github.com/prisma/prisma/issues/25060
-model InternalOrganization {
-  // id          Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
-  id          Int       @id @default(autoincrement())
-  public_id   String    @unique @default(uuid()) @db.Uuid
-  provider_id String    @unique
-  created_at  DateTime  @default(now()) @db.Timestamptz
-  updated_at  DateTime  @updatedAt @db.Timestamptz
-  project     Project[]
-  ApiKey      ApiKey[]
-  settings    OrganizationSettings?
-  aiUsages    AiUsage[]
-
-  @@index([public_id])
-  @@index([provider_id])
-  @@map("internal_organizations")
-}
-
 model OrganizationSettings {
   id                        String               @id @default(uuid()) @db.Uuid
-  organization_id           Int                   @unique
+  organization_id           String               @unique
   openai_api_key            String?
   anthropic_api_key         String?
   google_api_key            String?
@@ -208,7 +185,7 @@ model OrganizationSettings {
   created_at                  DateTime             @default(now()) @db.Timestamptz
   updated_at                  DateTime             @updatedAt @db.Timestamptz
 
-  organization InternalOrganization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
 
   @@map("organization_settings")
 }
@@ -259,15 +236,14 @@ model Project {
   id                       Int                       @id @default(autoincrement())
   public_id                String                    @unique @default(uuid()) @db.Uuid
   title                    String
-  organization             InternalOrganization? @relation(fields: [internal_organization_id], references: [id], onDelete: SetNull)
   created_at               DateTime                  @default(now()) @db.Timestamptz
   updated_at               DateTime       @updatedAt @db.Timestamptz
-  internal_organization_id Int?
   api_key                  ApiKey[]
   threads                  Thread[]
   files                    UserFile[]
   documents                UserDocument[]
   organization_id          String?
+  organization             Organization?  @relation(fields: [organization_id], references: [id])
   owner_id                 String?
   is_public                Boolean        @default(false)
   published_at             DateTime?      @db.Timestamptz
@@ -298,7 +274,6 @@ model ProjectSettings {
 }
 
 model ApiKey {
-  // id           Int       @id @default(dbgenerated("nextval('custom_id_seq')"))
   id              Int                       @id @default(autoincrement())
   name            String
   public_id       String                    @unique @default(uuid()) @db.Uuid
@@ -307,8 +282,8 @@ model ApiKey {
   created_at      DateTime                  @default(now()) @db.Timestamptz
   created_by      String?
   updated_at      DateTime                  @updatedAt @db.Timestamptz
-  organization    InternalOrganization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
-  organization_id Int?
+  organization    Organization? @relation(fields: [organization_id], references: [id], onDelete: SetNull)
+  organization_id String?
   project         Project?      @relation(fields: [project_id], references: [id], onDelete: SetNull)
   project_id      Int?
 
@@ -389,13 +364,18 @@ model Organization {
   updatedAt DateTime @updatedAt @db.Timestamptz @map("updated_at")
   metadata  Json?
 
-  // Metadata fields from Clerk migration
-  hasKnowledge  Boolean @default(false) @map("has_knowledge")
-  vectorStore   String? @map("vector_store")
-  ragenOrgId    String? @map("ragen_org_id")
+  // Custom app fields
+  hasKnowledge Boolean @default(false) @map("has_knowledge")
+  vectorStore  String? @map("vector_store")
+  publicId     String  @unique @default(uuid()) @map("public_id") @db.Uuid
 
-  members Member[]
+  members  Member[]
+  settings OrganizationSettings?
+  projects Project[]
+  apiKeys  ApiKey[]
+  aiUsages AiUsage[]
 
+  @@index([publicId])
   @@map("organizations")
 }
 
@@ -523,9 +503,9 @@ model AiUsage {
   metadata         Json?
   created_at       DateTime     @default(now()) @db.Timestamptz
 
-  organization InternalOrganization @relation(fields: [organization_id], references: [provider_id])
-  project      Project?             @relation(fields: [project_id], references: [id])
-  user         User?                @relation(fields: [user_id], references: [id])
+  organization Organization @relation(fields: [organization_id], references: [id])
+  project      Project?    @relation(fields: [project_id], references: [id])
+  user         User?       @relation(fields: [user_id], references: [id])
 
   @@index([organization_id])
   @@index([project_id])

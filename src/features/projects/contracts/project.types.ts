@@ -6,7 +6,6 @@ export type ProjectPublicFields = Pick<
   | 'title'
   | 'created_at'
   | 'updated_at'
-  | 'internal_organization_id'
   | 'organization_id'
   | 'owner_id'
   | 'is_public'

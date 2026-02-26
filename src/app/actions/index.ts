@@ -34,10 +34,7 @@ import { getSidebarThreadsQuery } from '@/features/threads/services/queries/get-
 import { getAllThreadsQuery } from '@/features/threads/services/queries/get-all-threads-query';
 import { renameThreadCommand } from '@/features/threads/services/commands/rename-thread-command';
 import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
-import {
-  saveOrganizationPublicMetadataCommand,
-  saveOrganizationInitialMetadataCommand,
-} from '@/features/organizations/services/commands/save-organization-metadata-command';
+import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
@@ -331,10 +328,6 @@ export const saveUserMetadata = saveUserMetadataCommand;
 /** @deprecated Use saveOrganizationPublicMetadataCommand from @/features/organizations instead */
 export const saveOrganizationPublicMetadata =
   saveOrganizationPublicMetadataCommand;
-
-/** @deprecated Use saveOrganizationInitialMetadataCommand from @/features/organizations instead */
-export const saveOrganizationInitialMetadata =
-  saveOrganizationInitialMetadataCommand;
 
 /** @deprecated Use getOrganizationMetadataQuery from @/features/organizations instead */
 export const getOrganizationMetadata = getOrganizationMetadataQuery;
