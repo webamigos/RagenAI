@@ -20,21 +20,6 @@ services:
     networks:
       - ragen-network
 
-  redis:
-    image: redis:7-alpine
-    container_name: ragen-redis
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ragen-network
-
   meilisearch:
     image: getmeili/meilisearch:v1.36
     container_name: ragen-meilisearch
@@ -55,6 +40,22 @@ services:
       retries: 5
     networks:
       - ragen-network
+
+  # Optional — only needed for API rate limiting
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: ragen-redis
+  #   ports:
+  #     - "${REDIS_PORT:-6379}:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - ragen-network
 
 volumes:
   postgres_data:
