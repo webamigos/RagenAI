@@ -39,6 +39,7 @@ const envSchema = z.object({
 
   // OpenAI
   OPENAI_API_KEY: z.string(),
+  OPENAI_MODERATION_KEY: z.string(),
 
   // AWS
   AWS_ENDPOINT_URL: z.string().url(),

@@ -690,7 +690,7 @@ export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
 
   return EmbeddingsFactory.createInstance(
     { provider: 'openai', apiKey },
-    { model: 'text-embedding-3-small' },
+    { model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small' },
     usageTracker,
   );
 };

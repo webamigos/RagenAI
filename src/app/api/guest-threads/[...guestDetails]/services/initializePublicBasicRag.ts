@@ -23,8 +23,12 @@ type InitializePublicRagChainParams = {
   projectPublicId?: string;
 };
 
-const DEFAULT_REPHRASE_MODEL = 'openai/gpt-4o';
-const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
+const DEFAULT_REPHRASE_MODEL =
+  process.env.REPHRASE_MODEL || 'google/gemini-2.0-flash-001';
+const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
+const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
+  ? 0.5
+  : parsedRephraseTemp;
 
 export const initializePublicRagChain = async ({
   settings,
