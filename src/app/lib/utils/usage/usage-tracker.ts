@@ -1,5 +1,5 @@
 import { logger } from '../logger';
-import { UsageMetricsCore } from './usage-metrics-core';
+import { type UsageMetricsCore } from './usage-metrics-core';
 import { Role } from '@/generated/prisma/client';
 import type { VercelAIUsage, UsageMetrics } from './types';
 
@@ -25,7 +25,7 @@ export class UsageTracker {
     this.safeTrack(async () => {
       if (!usage) {
         logger.warn(
-          'No usage metadata found, cannot track chat completion tokens'
+          'No usage metadata found, cannot track chat completion tokens',
         );
         return;
       }

@@ -1,12 +1,12 @@
 'use server';
 
-import { Thread } from '@/generated/prisma/client';
+import { type Thread } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
 export const getThreadMessagesQuery = async (
   threadPublicId: Thread['public_id'],
-  visitorId: Thread['visitor_id']
+  visitorId: Thread['visitor_id'],
 ) => {
   try {
     const thread = await db.thread.findUnique({
@@ -66,7 +66,7 @@ export const getThreadMessagesQuery = async (
               threadId: thread.id,
               mentionedProjectId: thread.mentioned_project_id,
             },
-            'Mentioned project not found, will fallback to regular thread project'
+            'Mentioned project not found, will fallback to regular thread project',
           );
         }
       } catch (error) {
@@ -76,7 +76,7 @@ export const getThreadMessagesQuery = async (
             threadId: thread.id,
             mentionedProjectId: thread.mentioned_project_id,
           },
-          'Error fetching mentioned project, will fallback to regular thread project'
+          'Error fetching mentioned project, will fallback to regular thread project',
         );
         // mentionedProject stays null, system will use regular project
       }

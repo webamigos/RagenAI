@@ -1,6 +1,9 @@
 'use client';
 
-import * as Headless from '@headlessui/react';
+import {
+  Button as HeadlessButton,
+  type ButtonProps as HeadlessButtonProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
 import { LayoutGroup, motion } from 'framer-motion';
 import React, { forwardRef, useId } from 'react';
@@ -65,10 +68,10 @@ export const NavbarItem = forwardRef(function NavbarItem(
     children,
     ...props
   }: { current?: boolean; className?: string; children: React.ReactNode } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className'>
+    | Omit<HeadlessButtonProps, 'as' | 'className'>
     | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
   ),
-  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
+  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>,
 ) {
   let classes = clsx(
     // Base
@@ -86,7 +89,7 @@ export const NavbarItem = forwardRef(function NavbarItem(
     // Dark mode
     'dark:text-white dark:data-[slot=icon]:*:fill-zinc-400',
     'dark:data-hover:bg-white/5 dark:data-[slot=icon]:*:data-hover:fill-white',
-    'dark:data-active:bg-white/5 dark:data-[slot=icon]:*:data-active:fill-white'
+    'dark:data-active:bg-white/5 dark:data-[slot=icon]:*:data-active:fill-white',
   );
 
   return (
@@ -107,14 +110,14 @@ export const NavbarItem = forwardRef(function NavbarItem(
           <TouchTarget>{children}</TouchTarget>
         </Link>
       ) : (
-        <Headless.Button
+        <HeadlessButton
           {...props}
           className={clsx('cursor-default', classes)}
           data-current={current ? 'true' : undefined}
           ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
-        </Headless.Button>
+        </HeadlessButton>
       )}
     </span>
   );

@@ -1,4 +1,4 @@
-import pino, { Logger } from 'pino';
+import pino, { type Logger } from 'pino';
 import { otelLogger } from '@/libs/monitoring/otel-logger';
 
 const isProductionTargetEnv =
@@ -53,7 +53,7 @@ const logger: Logger = pino({
           minute: '2-digit',
           second: '2-digit',
           fractionalSecondDigits: 3,
-        }
+        },
       );
       const levelColor = getLevelColor(levelUpperCased);
 

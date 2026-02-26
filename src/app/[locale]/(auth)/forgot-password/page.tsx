@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 
 import { ForgotPasswordForm } from '@/app/components/Forms/ForgotPasswordForm';
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
 
 export async function generateMetadata({ params }: PropsWihLocale) {

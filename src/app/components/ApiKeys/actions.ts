@@ -8,8 +8,6 @@ import {
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { getApiKeysQuery as fetchApiKeysFromDb } from '@/features/organizations/services/queries/get-api-keys-query';
 
-const serviceName = 'apiKeysList';
-
 export const fetchApiKeys = async () => {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();

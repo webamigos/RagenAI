@@ -31,7 +31,7 @@ function sendMetric(metric: Metric) {
                   dataPoints: [
                     {
                       asDouble: metric.value,
-                      timeUnixNano: String(Date.now() * 1_000_000),
+                      timeUnixNano: String(BigInt(Date.now()) * 1_000_000n),
                       attributes: [
                         {
                           key: 'web_vitals.id',
@@ -62,7 +62,7 @@ function sendMetric(metric: Metric) {
   if (typeof navigator.sendBeacon === 'function') {
     const sent = navigator.sendBeacon(
       url,
-      new Blob([body], { type: 'application/json' })
+      new Blob([body], { type: 'application/json' }),
     );
     if (!sent) {
       fetch(url, {

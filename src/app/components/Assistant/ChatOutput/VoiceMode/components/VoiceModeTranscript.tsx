@@ -1,5 +1,5 @@
 import { Text } from '@ragenai/common-ui/Text';
-import { VoiceModeTranscriptProps } from '../types';
+import { type VoiceModeTranscriptProps } from '../types';
 
 export const VoiceModeTranscript = ({ text }: VoiceModeTranscriptProps) => {
   return (

@@ -61,7 +61,7 @@ export async function getInvitationDetails(invitationId: string) {
   } catch (error) {
     logger.error(
       { err: error, invitationId },
-      'Error getting invitation details'
+      'Error getting invitation details',
     );
     return {
       success: false,
@@ -129,7 +129,7 @@ export async function acceptInvitation(invitationId: string) {
     }
 
     // Use Better Auth API to accept invitation
-    const result = await auth.api.acceptInvitation({
+    await auth.api.acceptInvitation({
       body: {
         invitationId,
       },
@@ -142,7 +142,7 @@ export async function acceptInvitation(invitationId: string) {
         userId: session.user.id,
         organizationId: invitation.organizationId,
       },
-      'Invitation accepted successfully'
+      'Invitation accepted successfully',
     );
 
     return {
@@ -200,7 +200,7 @@ export async function rejectInvitation(invitationId: string) {
 
     logger.info(
       { invitationId, userId: session.user.id },
-      'Invitation rejected'
+      'Invitation rejected',
     );
 
     return { success: true };

@@ -1,7 +1,7 @@
 // Visitor-specific infrastructure functions stay here
 // getUserThreads moved to @/features/threads/
 
-import { Message } from '@/generated/prisma/client';
+import { type Message } from '@/generated/prisma/client';
 import { startOfDay, setHours } from 'date-fns';
 
 import db from '@ragenai/prisma-client';
@@ -11,7 +11,7 @@ const midnightToday = setHours(startOfDay(today), 0);
 
 export const createVisitorEntry = async (
   message: Message,
-  visitorId: string
+  visitorId: string,
 ) => {
   return await db.visitorMessages.create({
     data: {
@@ -22,7 +22,7 @@ export const createVisitorEntry = async (
 };
 
 export const getLast24hVisitorMessages = async (
-  visitorId: string
+  visitorId: string,
 ): Promise<number> => {
   return await db.visitorMessages.count({
     where: {

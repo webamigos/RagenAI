@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
 import { ChatType } from '@/features/messages/contracts/message.types';
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest, { params }: Params) {
             }
           }
         },
-      })
+      }),
     );
 
     return new Response(textStream, {

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 
 import { logger } from '@/app/lib/utils/logger';
@@ -13,10 +13,7 @@ export const dynamic = 'force-dynamic';
  * @returns
  */
 export const GET = async (request: NextRequest) => {
-  const personWorkflowId = `person-${nanoid()}`;
-  const documentWorkflowId = `doc-${nanoid()}`;
   const embeddingWorkflowId = `embd-${nanoid()}`;
-  const itemId = `654321`; // TODO: in real implementation replace with real id
 
   try {
     const client = getTemporalClient();
@@ -39,7 +36,7 @@ export const GET = async (request: NextRequest) => {
             projectId: '789',
           },
         ],
-      }
+      },
     );
 
     logger.info('embeddingsHandle: %j', embeddingsHandle, 2);

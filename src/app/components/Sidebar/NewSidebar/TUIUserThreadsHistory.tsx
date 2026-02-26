@@ -1,9 +1,9 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { SidebarSection, SidebarHeading } from '@ragenai/tui/sidebar';
+import { SidebarSection } from '@ragenai/tui/sidebar';
 import { TUIThreadsSection } from './TUIThreadsSection';
-import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 
 type Props = {
@@ -58,7 +58,7 @@ export const TUIUserThreadsHistory = ({
           loadMoreThreads();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 1.0 },
     );
 
     const currentLastElement = lastThreadElementRef.current;

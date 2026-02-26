@@ -6,10 +6,7 @@ import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
 import { Button } from '@ragenai/common-ui/Button';
-import { Card } from '@ragenai/common-ui/Card';
 import { Input } from '@ragenai/common-ui/Input';
-import { Link } from '@ragenai/common-ui/Link';
-import { Text } from '@ragenai/common-ui/Text';
 import { signIn } from '@/app/hooks/use-better-auth';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
@@ -53,7 +50,7 @@ export const LoginForm = () => {
       } catch (err) {
         logger.warn(
           { error: err },
-          'Onboarding finalization failed, relying on fallback'
+          'Onboarding finalization failed, relying on fallback',
         );
         // Continue anyway - middleware/account-configuration will handle it
       }

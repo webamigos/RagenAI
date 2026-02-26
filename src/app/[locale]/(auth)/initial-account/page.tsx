@@ -3,7 +3,7 @@ import { redirect as nextRedirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
 
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
 import { checkIfAdminExistsQuery } from '@/features/users/services/queries/initial-account-queries';
 import { InitialAccountForm } from './InitialAccountForm';

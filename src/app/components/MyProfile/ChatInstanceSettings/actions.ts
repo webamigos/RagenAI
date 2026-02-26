@@ -1,8 +1,5 @@
 'use server';
-import {
-  getOrgIdFromAuthOrThrow,
-  getCurrentUser,
-} from '@/app/lib/utils/auth-helpers';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 import {
   getAssistantPrompt,
@@ -21,8 +18,6 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';
-
-const serviceName = 'ChatInstanceSettings';
 
 type SaveSettingsActionResponse = { success: boolean; message: string };
 
@@ -53,7 +48,7 @@ const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
 ////
 
 export const checkIfApiKeyExists = async (
-  orgId: string
+  orgId: string,
 ): Promise<ActionResponse<ApiKeyData>> => {
   const apiKey = await getOpenaiAPIKey(orgId!);
   const apiKeyExists = Boolean(apiKey);
@@ -67,7 +62,6 @@ export const fetchSettings = async (): Promise<
   ActionResponse<SettingsData>
 > => {
   const orgId = await getOrgIdFromAuthOrThrow();
-  const user = await getCurrentUser();
 
   if (!orgId) {
     return {
@@ -100,10 +94,9 @@ export const fetchSettings = async (): Promise<
 
 export const saveSetting = async (
   type: SettingsType,
-  value: string | number
+  value: string | number,
 ): Promise<SaveSettingsActionResponse> => {
   const orgId = await getOrgIdFromAuthOrThrow();
-  const user = await getCurrentUser();
 
   if (!orgId) {
     return { success: false, message: 'Unauthorized' };

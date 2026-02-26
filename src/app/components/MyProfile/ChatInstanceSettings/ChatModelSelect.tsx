@@ -9,8 +9,8 @@ import { fetchSettings, saveSetting } from './actions';
 import { useActiveOrganization } from '@/app/hooks/use-better-auth';
 
 import {
-  AvailableModel,
-  groupModelsByProvider,
+  type AvailableModel,
+  groupModelsByOrigin,
   isReasoningModel,
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
@@ -70,7 +70,7 @@ export const ChatModelSelect = ({}) => {
   }, []);
 
   const handleModelChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const newModel = event.target.value;
     setModel(newModel);
@@ -88,7 +88,7 @@ export const ChatModelSelect = ({}) => {
     }
   };
 
-  const groupedModels = groupModelsByProvider(availableModels);
+  const groupedModels = groupModelsByOrigin(availableModels);
 
   return (
     <Card title={t('title')} size="full">
@@ -108,8 +108,8 @@ export const ChatModelSelect = ({}) => {
             {availableModels.length === 0 ? (
               <option value="">No models available</option>
             ) : (
-              groupedModels.map(({ provider, displayName, models }) => (
-                <optgroup key={provider} label={displayName}>
+              groupedModels.map(({ origin, displayName, models }) => (
+                <optgroup key={origin} label={displayName}>
                   {models.map(({ value, label }) => (
                     <option key={value} value={value}>
                       {isReasoningModel(value) ? `🧠 ${label}` : label}

@@ -249,6 +249,19 @@ export const useNewThread = () => {
             );
           }
 
+          // Store thread documents so the initial message can include them
+          if (threadDocuments && threadDocuments.length > 0) {
+            try {
+              sessionStorage.setItem(
+                `thread_${threadId}_initial_documents`,
+                JSON.stringify(threadDocuments),
+              );
+            } catch {
+              // sessionStorage may be full for large files — documents will still
+              // be loaded from DB once async processing completes
+            }
+          }
+
           push(route);
         });
       }

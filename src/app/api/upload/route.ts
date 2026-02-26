@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Step 2: upload to S3
-        const uploadResult = await uploadToS3(
+        await uploadToS3(
           `${fileRecord.public_id}.${fileExtension}`,
           parsedFile.content as Buffer,
         );

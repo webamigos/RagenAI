@@ -34,7 +34,7 @@ import {
 } from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
-import { PromptFormRef } from './PromptForm/PromptForm';
+import { type PromptFormRef } from './PromptForm/PromptForm';
 import { handleAssistantStream } from './handle-assistant-stream';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 
@@ -114,18 +114,33 @@ export const useAssistantLogic = (threadId: string) => {
     const initialMessageKey = `thread_${threadId}_initial_message`;
     const initialMessage = localStorage.getItem(initialMessageKey);
     const initialMessageType = sessionStorage.getItem(
-      'initial_message_type'
+      'initial_message_type',
     ) as MessageContentType;
 
     if (initialMessage) {
       localStorage.removeItem(initialMessageKey);
       sessionStorage.removeItem('initial_message_type');
 
+      // Retrieve thread documents stored during thread creation
+      let threadDocuments;
+      try {
+        const storedDocs = sessionStorage.getItem(
+          `thread_${threadId}_initial_documents`,
+        );
+        if (storedDocs) {
+          threadDocuments = JSON.parse(storedDocs);
+          sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+
       onSubmit({
         prompt: initialMessage,
         mode: ChatType.CONVERSATION,
         messageType: initialMessageType || MessageContentType.TEXT,
         voiceDurationSeconds: 0,
+        threadDocuments,
       });
     }
   };
@@ -153,7 +168,7 @@ export const useAssistantLogic = (threadId: string) => {
     // ugly workaround to satisfied Clerk UserResourceTypes
 
     dispatch(
-      setMode(modeMap[data.mode as keyof typeof modeMap] ?? ChatType.RAG)
+      setMode(modeMap[data.mode as keyof typeof modeMap] ?? ChatType.RAG),
     );
 
     try {
@@ -213,10 +228,30 @@ export const useAssistantLogic = (threadId: string) => {
     if (isLoaded && userVisitorId) {
       fetchData();
       const initialMessage = localStorage.getItem(
-        `thread_${threadId}_initial_message`
+        `thread_${threadId}_initial_message`,
       );
       if (initialMessage) {
-        onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
+        // Retrieve thread documents stored during thread creation
+        let threadDocuments;
+        try {
+          const storedDocs = sessionStorage.getItem(
+            `thread_${threadId}_initial_documents`,
+          );
+          if (storedDocs) {
+            threadDocuments = JSON.parse(storedDocs);
+            sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
+          }
+        } catch {
+          // Ignore parse errors
+        }
+
+        onSubmit({
+          prompt: initialMessage,
+          mode: ChatType.CONVERSATION,
+          messageType: MessageContentType.TEXT,
+          voiceDurationSeconds: 0,
+          threadDocuments,
+        });
       }
       localStorage.removeItem(`thread_${threadId}_initial_message`);
     }

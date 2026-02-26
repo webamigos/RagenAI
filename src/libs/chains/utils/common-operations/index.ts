@@ -1,2 +1,2 @@
-export * from './sanitize-and-validate-input';
-export * from './moderate-content';
+export { sanitizeAndValidateInput } from './sanitize-and-validate-input';
+export { moderateContent } from './moderate-content';

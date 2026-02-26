@@ -1,22 +1,15 @@
 import Image from 'next/image';
-import { getTranslations } from 'next-intl/server';
 
 import { VerifyEmailForm } from '@/app/components/Forms/VerifyEmailForm/VerifyEmailForm';
 import { Logo } from '@/app/components/Logo';
-import { PropsWihLocale } from '@/app/lib/types/types';
 
-export async function generateMetadata({ params }: PropsWihLocale) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Metadata' });
-
+export async function generateMetadata() {
   return {
     title: 'Verify Email - Ragen AI',
   };
 }
 
 export default async function VerifyEmailPage() {
-  const t = await getTranslations('sign-up');
-
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">

@@ -6,15 +6,15 @@ import { HashingService } from './hashing.service';
 import { NotFoundException } from './api-errors.service';
 import { logger } from '@/app/lib/utils/logger';
 import {
-  ApiKey,
-  HashedKey,
-  OrgId,
-  UserId,
-  ProjectId,
-  KeyId,
+  type ApiKey,
+  type HashedKey,
+  type OrgId,
+  type UserId,
+  type ProjectId,
+  type KeyId,
 } from '../types/brand';
-import { GenerateApiKeyDto } from '../dtos/generate-api-key.dto';
-import { GeneratedApiKeyPayload } from '../dtos/generate-api-key.payload';
+import { type GenerateApiKeyDto } from '../dtos/generate-api-key.dto';
+import { type GeneratedApiKeyPayload } from '../dtos/generate-api-key.payload';
 
 export class ApiKeysService {
   private readonly hashingService: HashingService;
@@ -33,7 +33,7 @@ export class ApiKeysService {
   }
 
   async createAndHash(
-    generateApiKeyDto: GenerateApiKeyDto
+    generateApiKeyDto: GenerateApiKeyDto,
   ): Promise<GeneratedApiKeyPayload> {
     const apiKey = this.generateApiKey(generateApiKeyDto); // generated orgId key
     const keyId: KeyId = generateApiKeyDto.keyId;
@@ -44,7 +44,7 @@ export class ApiKeysService {
     } catch (error) {
       logger.error(
         { err: error, keyId },
-        'Failed to store hashed API key in Redis'
+        'Failed to store hashed API key in Redis',
       );
       throw new Error('Failed to persist API key', { cause: error });
     }
@@ -70,19 +70,18 @@ export class ApiKeysService {
     // after removing it we can regenerate key (deactivate and activate). Activate will generate then the same value as before
     const content = `${randomUUID().substring(
       0,
-      this.randomPartLength
+      this.randomPartLength,
     )} ${orgId} ${userId} ${projectId} ${keyId}`;
     return `${this.keyPrefix}${Buffer.from(content).toString(
-      this.encoding
+      this.encoding,
     )}` as ApiKey;
   }
 
   extractDataFromApiKey(apiKey: ApiKey): GenerateApiKeyDto {
     // key format: sk-YTdlNDlkIDU1NSA2NiA3Nw
     const plainKey = apiKey.replace(this.keyPrefix, '');
-    // eslint-disable-next-line
     const [
-      randomPart,
+      _randomPart,
       extractedOrgId,
       extractedUserId,
       extractedProjectId,

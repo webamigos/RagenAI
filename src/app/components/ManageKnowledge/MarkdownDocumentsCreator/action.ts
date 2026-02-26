@@ -12,11 +12,9 @@ import {
 import { type DocumentSchema } from './DocumentCreator';
 import { logger } from '@/app/lib/utils/logger';
 
-const serviceName = 'MarkdownDocumentsCreator';
-
 export async function saveMarkdownWithMeta(
   data: DocumentSchema,
-  organizationId: string
+  organizationId: string,
 ) {
   const uniqueFileId = randomUUID();
   const turndownService = new TurndownService();
@@ -28,7 +26,7 @@ export async function saveMarkdownWithMeta(
     organization_id: organizationId,
   };
   const markdownDataSize = new TextEncoder().encode(
-    JSON.stringify(markdownData.content)
+    JSON.stringify(markdownData.content),
   ).length;
 
   try {
@@ -65,7 +63,7 @@ type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
 
 export async function fetchDocumentByOrganization(
   organizationId: string,
-  documentPublicId: string
+  documentPublicId: string,
 ): Promise<DocumentResponse> {
   try {
     const response: { content: string; title: string }[] =

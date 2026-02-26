@@ -7,7 +7,7 @@ import { convertTextToSpeech } from '../../../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
 import { updateMessagePlayedCommand as updateMessagePlayedStatus } from '@/features/messages/services/commands/update-message-played-command';
 import { voiceModeReducer, initialState } from '../voiceModeReducer';
-import { VoiceModeProps, VoiceModeHandlers } from '../types';
+import { type VoiceModeProps, type VoiceModeHandlers } from '../types';
 
 interface UseVoiceModeProps {
   audioRef: React.RefObject<HTMLAudioElement>;
@@ -114,7 +114,7 @@ export const useVoiceMode = ({
   }, [assistantError]);
 
   const playAssistantResponse = async (
-    message: VoiceModeProps['messages'][0]
+    message: VoiceModeProps['messages'][0],
   ) => {
     dispatch({ type: 'SET_WAITING_FOR_RESPONSE', payload: true });
     dispatch({ type: 'SET_GENERATING_AUDIO', payload: true });

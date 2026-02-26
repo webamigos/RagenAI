@@ -1,4 +1,4 @@
-import { ApiKey, HashedKey } from '../types/brand';
+import { type ApiKey, type HashedKey } from '../types/brand';
 
 export type GeneratedApiKeyPayload = {
   apiKey: ApiKey;

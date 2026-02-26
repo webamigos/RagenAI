@@ -1,12 +1,12 @@
 import { headers } from 'next/headers';
-import { Subscription } from '@/generated/prisma/client';
+import { type Subscription } from '@/generated/prisma/client';
 
 import { getOrgIdFromAuthOrThrow } from '../auth-helpers';
-import { PrismaClient } from '@/generated/prisma/client';
+import { type PrismaClient } from '@/generated/prisma/client';
 import { logger } from '../logger';
-import { UsageMetrics } from './types';
+import { type UsageMetrics } from './types';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
-import { ApiKey } from '@/app/api/v1/__logic__/types/brand';
+import { type ApiKey } from '@/app/api/v1/__logic__/types/brand';
 import { API_HEADER } from '@/app/api/v1/__logic__/guards/api-key.guard';
 
 // TODO: Reimplement usage period tracking — the UsagePeriod model was removed
@@ -64,7 +64,7 @@ export class UsageMetricsCore {
     if (!subscription) {
       logger.warn(
         { organizationId },
-        'Subscription not found for usage tracking'
+        'Subscription not found for usage tracking',
       );
       return;
     }
@@ -72,7 +72,7 @@ export class UsageMetricsCore {
     // TODO: Implement usage period tracking with new storage approach
     logger.debug(
       { subscriptionId: subscription.id, metric, increment },
-      'Usage metric tracked (storage pending reimplementation)'
+      'Usage metric tracked (storage pending reimplementation)',
     );
   }
 

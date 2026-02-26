@@ -1,6 +1,15 @@
-import * as Headless from '@headlessui/react';
+import {
+  Description as HeadlessDescription,
+  type DescriptionProps as HeadlessDescriptionProps,
+  Dialog as HeadlessDialog,
+  DialogBackdrop as HeadlessDialogBackdrop,
+  DialogPanel as HeadlessDialogPanel,
+  type DialogProps as HeadlessDialogProps,
+  DialogTitle as HeadlessDialogTitle,
+  type DialogTitleProps as HeadlessDialogTitleProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
-import type React from 'react';
+import React from 'react';
 import { Text } from '../Text';
 
 const sizes = {
@@ -24,32 +33,32 @@ export function Dialog({
   size?: keyof typeof sizes;
   className?: string;
   children: React.ReactNode;
-} & Omit<Headless.DialogProps, 'as' | 'className'>) {
+} & Omit<HeadlessDialogProps, 'as' | 'className'>) {
   // TODO: there is a problem with bg-zinc-500-25 looks like ignored
 
   return (
-    <Headless.Dialog {...props} className="relative z-10">
-      <Headless.DialogBackdrop
+    <HeadlessDialog {...props} className="relative z-10">
+      <HeadlessDialogBackdrop
         transition
         className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in"
       />
       {/*
        */}
       <div className="fixed inset-0 w-screen overflow-y-auto flex items-center justify-center p-4">
-        <Headless.DialogPanel
+        <HeadlessDialogPanel
           transition
           className={clsx(
             className,
             sizes[size],
             'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-zinc-950/10 dark:bg-secondary-dark dark:ring-white/10 forced-colors:outline',
             'transition duration-100 will-change-transform',
-            'data-closed:scale-95 data-closed:opacity-0 data-enter:ease-out data-leave:ease-in'
+            'data-closed:scale-95 data-closed:opacity-0 data-enter:ease-out data-leave:ease-in',
           )}
         >
           {children}
-        </Headless.DialogPanel>
+        </HeadlessDialogPanel>
       </div>
-    </Headless.Dialog>
+    </HeadlessDialog>
   );
 }
 
@@ -57,28 +66,28 @@ export function DialogTitle({
   className,
   ...props
 }: { className?: string } & Omit<
-  Headless.DialogTitleProps,
+  HeadlessDialogTitleProps,
   'as' | 'className'
 >) {
   return (
-    <Headless.DialogTitle
+    <HeadlessDialogTitle
       {...props}
       className={clsx(
         className,
-        'text-balance text-lg/6 font-semibold text-zinc-950 sm:text-base/6 dark:text-white'
+        'text-balance text-lg/6 font-semibold text-zinc-950 sm:text-base/6 dark:text-white',
       )}
     />
   );
 }
 
 export function DialogDescription({
-  className,
+  className: _className,
   ...props
 }: { className?: string } & Omit<
-  Headless.DescriptionProps<typeof Text>,
+  HeadlessDescriptionProps<typeof Text>,
   'as' | 'className'
 >) {
-  return <Headless.Description as={Text} {...props} />;
+  return <HeadlessDescription as={Text} {...props} />;
 }
 
 export function DialogBody({
@@ -97,7 +106,7 @@ export function DialogActions({
       {...props}
       className={clsx(
         className,
-        'mt-8 flex flex-col-reverse items-center justify-end gap-3 *:w-full sm:flex-row sm:*:w-auto'
+        'mt-8 flex flex-col-reverse items-center justify-end gap-3 *:w-full sm:flex-row sm:*:w-auto',
       )}
     />
   );

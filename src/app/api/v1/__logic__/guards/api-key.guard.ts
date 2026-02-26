@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { ApiKeysService } from '../services/api-keys.service';
-import { ApiKey } from '../types/brand';
-import { ApiContext } from '../types/ApiContext';
+import { type ApiKey } from '../types/brand';
+import { type ApiContext } from '../types/ApiContext';
 
 export const API_HEADER = 'x-api-key';
 

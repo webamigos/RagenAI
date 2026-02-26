@@ -9,11 +9,11 @@ import type {
   Project,
 } from '@/generated/prisma/client';
 
-import { ApiContext } from '../types/ApiContext';
-import { UpdateThreadDto } from '../dtos/update-thread.dto';
-import { ChatMessageDto } from '../dtos/chat.dto';
-import { QueryDto } from '../dtos/query.dto';
-import { UpdateProjectDto } from '../dtos/project.dto';
+import { type ApiContext } from '../types/ApiContext';
+import { type UpdateThreadDto } from '../dtos/update-thread.dto';
+import { type ChatMessageDto } from '../dtos/chat.dto';
+import { type QueryDto } from '../dtos/query.dto';
+import { type UpdateProjectDto } from '../dtos/project.dto';
 
 import {
   getApiDocumentsQuery,
@@ -69,7 +69,7 @@ export class ApiDbService {
   }
 
   async getDocument(
-    publicId: UserDocument['public_id']
+    publicId: UserDocument['public_id'],
   ): Promise<ApiUserDocument> {
     return getApiDocumentQuery(this.context, publicId);
   }
@@ -84,7 +84,7 @@ export class ApiDbService {
 
   async updateUserThread(
     publicId: Thread['public_id'],
-    payload: UpdateThreadDto
+    payload: UpdateThreadDto,
   ): Promise<ApiThread> {
     return updateApiUserThreadCommand(this.context, publicId, payload);
   }
@@ -98,14 +98,14 @@ export class ApiDbService {
   }
 
   async getChatMessages(
-    publicThreadId: Thread['public_id']
+    publicThreadId: Thread['public_id'],
   ): Promise<ApiMessage[]> {
     return getApiChatMessagesQuery(this.context, publicThreadId);
   }
 
   async createChatMessages(
     publicThreadId: Thread['public_id'],
-    payload: ChatMessageDto
+    payload: ChatMessageDto,
   ) {
     return createApiChatMessagesCommand(this.context, publicThreadId, payload);
   }
@@ -113,13 +113,13 @@ export class ApiDbService {
   async streamChatMessages(
     publicThreadId: Thread['public_id'],
     payload: ChatMessageDto,
-    controller: ReadableStreamDefaultController
+    controller: ReadableStreamDefaultController,
   ) {
     return streamApiChatMessagesCommand(
       this.context,
       publicThreadId,
       payload,
-      controller
+      controller,
     );
   }
 
@@ -144,7 +144,7 @@ export class ApiDbService {
 
   async updateUserProject(
     publicId: Project['public_id'],
-    payload: UpdateProjectDto
+    payload: UpdateProjectDto,
   ): Promise<ApiProject> {
     return updateApiUserProjectCommand(this.context, publicId, payload);
   }

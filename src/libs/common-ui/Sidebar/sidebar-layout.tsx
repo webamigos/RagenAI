@@ -1,7 +1,12 @@
 'use client';
 
-import React, { ComponentProps } from 'react';
-import * as Headless from '@headlessui/react';
+import React, { type ComponentProps } from 'react';
+import {
+  CloseButton as HeadlessCloseButton,
+  Dialog as HeadlessDialog,
+  DialogBackdrop as HeadlessDialogBackdrop,
+  DialogPanel as HeadlessDialogPanel,
+} from '@headlessui/react';
 
 import { usePathname } from '@/i18n/routing';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -59,32 +64,32 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
   ];
 
   return (
-    <Headless.Dialog
+    <HeadlessDialog
       open={isOpen}
       onClose={() => dispatch(closeSidebar())}
       className="lg:hidden"
     >
-      <Headless.DialogBackdrop
+      <HeadlessDialogBackdrop
         transition
         className="fixed inset-0 bg-black/30 transition data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in"
       />
-      <Headless.DialogPanel
+      <HeadlessDialogPanel
         transition
         className="fixed inset-y-0 w-full sm:w-1/2 max-w-80 p-2 transition duration-300 ease-in-out data-closed:-translate-x-full"
       >
         <div className="flex h-full flex-col rounded-3xl bg-white dark:bg-secondary-dark shadow-xs dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
-            <Headless.CloseButton as={NavbarItem} aria-label="Close navigation">
+            <HeadlessCloseButton as={NavbarItem} aria-label="Close navigation">
               <CloseMenuIcon />
-            </Headless.CloseButton>
+            </HeadlessCloseButton>
           </div>
           {tabClasses.map((tabClass, index) => (
             <div key={index} className={tabClass} />
           ))}
           {children}
         </div>
-      </Headless.DialogPanel>
-    </Headless.Dialog>
+      </HeadlessDialogPanel>
+    </HeadlessDialog>
   );
 }
 

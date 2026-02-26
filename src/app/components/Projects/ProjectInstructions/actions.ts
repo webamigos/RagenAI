@@ -3,11 +3,10 @@
 import { saveProjectInstructionCommand as saveProjectInstruction } from '@/features/projects/services/commands/save-project-instruction-command';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { logger } from '@/app/lib/utils/logger';
-const serviceName = 'projectInstructions';
 
 export async function saveProjectInstructionAction(
   projectId: string,
-  instruction: string
+  instruction: string,
 ): Promise<{ success: boolean; message: string }> {
   try {
     await saveProjectInstruction(projectId, instruction);
@@ -19,7 +18,7 @@ export async function saveProjectInstructionAction(
 }
 
 export async function getProjectInstructionAction(
-  projectId: string
+  projectId: string,
 ): Promise<{ success: boolean; instruction: string | null; message?: string }> {
   try {
     const instruction = await getProjectInstruction(projectId);

@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useState, ButtonHTMLAttributes } from 'react';
+import { memo, useState, type ButtonHTMLAttributes } from 'react';
 import { Clipboard, ClipboardChecked } from '@ragenai/common-ui/icons';
 import { useTranslations } from 'next-intl';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -41,7 +41,7 @@ export const CopyButton = memo(
         )}
       </button>
     );
-  }
+  },
 );
 
 CopyButton.displayName = 'CopyButton';

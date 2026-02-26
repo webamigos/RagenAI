@@ -21,14 +21,14 @@ type Params = {
 export const POST = async (request: Request) => {
   try {
     const requestData = await createMessageSchema().safeParseAsync(
-      await request.json()
+      await request.json(),
     );
 
     if (!requestData.success) {
       return NextResponse.json(requestData.error.format(), { status: 400 });
     }
 
-    const prompt = requestData.data.prompt;
+    const _prompt = requestData.data.prompt;
   } catch (e) {
     logger.error({ err: e }, 'Error sending message');
     return NextResponse.json(
@@ -37,7 +37,7 @@ export const POST = async (request: Request) => {
         message: 'Failed to process message',
         code: 'message-processing-error',
       },
-      { status: StatusCodes.INTERNAL_SERVER_ERROR }
+      { status: StatusCodes.INTERNAL_SERVER_ERROR },
     );
   }
 };
@@ -51,7 +51,7 @@ export const GET = async (_request: Request, { params }: Params) => {
     // Validate threadId array
     if (!threadId || threadId.length < 2) {
       throw new Error(
-        'Invalid thread ID format: expected [threadId, visitorId]'
+        'Invalid thread ID format: expected [threadId, visitorId]',
       );
     }
 
@@ -66,7 +66,7 @@ export const GET = async (_request: Request, { params }: Params) => {
     logger.error({ err: e }, 'Failed fetching messages');
     return NextResponse.json(
       { error: 'Failed fetching messages' },
-      { status: StatusCodes.BAD_REQUEST }
+      { status: StatusCodes.BAD_REQUEST },
     );
   }
 };

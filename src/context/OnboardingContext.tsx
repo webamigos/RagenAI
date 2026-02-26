@@ -5,8 +5,8 @@ import Joyride, {
   ACTIONS,
   STATUS,
   EVENTS,
-  Step,
-  CallBackProps,
+  type Step,
+  type CallBackProps,
 } from 'react-joyride';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
@@ -30,7 +30,7 @@ interface JoyrideContextProps {
 }
 
 export const JoyrideContext = createContext<JoyrideContextProps | undefined>(
-  undefined
+  undefined,
 );
 
 export const JoyrideProvider = ({
@@ -83,15 +83,21 @@ export const JoyrideProvider = ({
     }
 
     if (type === EVENTS.STEP_AFTER) {
-      if (index === 0) openSidebar(); // Moving to step 1
-      else if (index === 1) closeSidebar(); // Moving to step 2
-      else if (index === 3) openSidebar(); // Moving to step 4
-      else if (index === 4) closeSidebar(); // Moving to step 5
-      else if (index === 5) openSidebar(); // Moving to step 6
+      if (index === 0)
+        openSidebar(); // Moving to step 1
+      else if (index === 1)
+        closeSidebar(); // Moving to step 2
+      else if (index === 3)
+        openSidebar(); // Moving to step 4
+      else if (index === 4)
+        closeSidebar(); // Moving to step 5
+      else if (index === 5)
+        openSidebar(); // Moving to step 6
       else if (index === 6) closeSidebar(); // Moving to step 7
     }
     if (action === ACTIONS.PREV && type === EVENTS.STEP_AFTER) {
-      if (index === 2) openSidebar(); // Moving back to step 1
+      if (index === 2)
+        openSidebar(); // Moving back to step 1
       else if (index === 7) openSidebar(); // Moving back to step 6
     }
 

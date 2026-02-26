@@ -15,7 +15,7 @@
     "start-tour": "Start tour",
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
-    "new-thread-placeholder": "Type your message here...",
+    "new-thread-placeholder": "Type your question...",
     "new-thread-greeting": "Hi, {name}",
     "suggestion-summarize": "Summarize a document",
     "suggestion-explain": "Explain a concept",

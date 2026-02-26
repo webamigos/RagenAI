@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { getApiContext } from '../../__logic__/context/api.context';
 import { ApiDbService } from '../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../__logic__/services/api-errors.service';
-import { updateThreadSchema } from '../../__logic__/dtos/update-thread.dto';
 import { StatusCodes } from 'http-status-codes';
 import { updateProjectSchema } from '../../__logic__/dtos/project.dto';
 

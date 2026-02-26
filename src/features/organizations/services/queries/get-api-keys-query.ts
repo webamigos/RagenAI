@@ -1,8 +1,8 @@
 import db from '@ragenai/prisma-client';
-import type { ApiKey, InternalOrganization } from '@/generated/prisma/client';
+import type { InternalOrganization } from '@/generated/prisma/client';
 
 export const getInternalOrganizationByProviderIdQuery = async (
-  organizationProviderId: InternalOrganization['provider_id']
+  organizationProviderId: InternalOrganization['provider_id'],
 ) => {
   return await db.internalOrganization.findUniqueOrThrow({
     where: {
@@ -12,7 +12,7 @@ export const getInternalOrganizationByProviderIdQuery = async (
 };
 
 export const getOrganizationDefaultProjectQuery = async (
-  systemOrgId: InternalOrganization['id']
+  systemOrgId: InternalOrganization['id'],
 ) => {
   return await db.project.findFirstOrThrow({
     where: {
@@ -22,10 +22,10 @@ export const getOrganizationDefaultProjectQuery = async (
 };
 
 export const getApiKeysQuery = async (
-  organizationProviderId: InternalOrganization['provider_id']
+  organizationProviderId: InternalOrganization['provider_id'],
 ) => {
   const organization = await getInternalOrganizationByProviderIdQuery(
-    organizationProviderId
+    organizationProviderId,
   );
 
   return await db.apiKey.findMany({

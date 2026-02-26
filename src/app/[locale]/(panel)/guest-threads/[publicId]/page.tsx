@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Assistant } from '../../../../components/Assistant';
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;

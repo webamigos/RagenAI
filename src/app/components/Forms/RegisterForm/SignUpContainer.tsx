@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { RegisterForm } from './RegisterForm';
 import { ForgotPasswordLink } from '../ForgotPasswordLink';
 

@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import {
   type ProjectType,
@@ -48,13 +48,13 @@ export const sidebarSlice = createSlice({
     },
     addThreadToProject: (
       state,
-      action: PayloadAction<{ projectId: number; thread: ThreadType }>
+      action: PayloadAction<{ projectId: number; thread: ThreadType }>,
     ) => {
       const { projectId, thread } = action.payload;
       const project = state.projects.find((p) => (p as any).id === projectId);
       if (project) {
         const existingThreadIndex = project.threads.findIndex(
-          (t) => t.public_id === thread.public_id
+          (t) => t.public_id === thread.public_id,
         );
         if (existingThreadIndex === -1) {
           project.threads.unshift(thread);
@@ -63,7 +63,7 @@ export const sidebarSlice = createSlice({
     },
     updateThreadModel: (
       state,
-      action: PayloadAction<{ threadId: string; model: string | null }>
+      action: PayloadAction<{ threadId: string; model: string | null }>,
     ) => {
       const { threadId, model } = action.payload;
       state.projects.forEach((project) => {

@@ -4,7 +4,7 @@ import { getThreadTitle } from '../Projects/utils/threadUtils';
 
 export const TUIThreadItem = ({
   thread,
-  projectPublicId,
+  projectPublicId: _projectPublicId,
   isActive,
   onClose,
 }: ThreadItemProps) => (

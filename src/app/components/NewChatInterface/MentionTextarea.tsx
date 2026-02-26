@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -70,7 +70,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         onProjectMention?.(null);
       }
     },
-    [onChange, mentionedProject, onProjectMention]
+    [onChange, mentionedProject, onProjectMention],
   );
 
   const handleProjectSelect = useCallback(
@@ -112,7 +112,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
       setShowDropdown(false);
       setMentionQuery('');
     },
-    [cursorPosition, onChange, onProjectMention, mentionQuery]
+    [cursorPosition, onChange, onProjectMention, mentionQuery],
   );
 
   // File handling
@@ -183,14 +183,14 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         errorToast({ message: 'Błąd podczas wgrywania plików' });
       }
     },
-    [threadDocuments, setThreadDocuments]
+    [threadDocuments, setThreadDocuments],
   );
 
   const handleThreadDocumentRemove = useCallback(
     (index: number) => {
       setThreadDocuments(threadDocuments.filter((_, i) => i !== index));
     },
-    [threadDocuments, setThreadDocuments]
+    [threadDocuments, setThreadDocuments],
   );
 
   const handleKeyDown = useCallback(
@@ -211,7 +211,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
 
       textareaProps.onKeyDown?.(e);
     },
-    [showDropdown, textareaProps]
+    [showDropdown, textareaProps],
   );
 
   useEffect(() => {

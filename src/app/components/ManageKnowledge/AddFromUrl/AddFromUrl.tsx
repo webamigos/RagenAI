@@ -7,23 +7,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Card } from '@ragenai/common-ui/Card';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
-import {
-  Dropdown,
-  DropdownButton,
-  DropdownItem,
-  DropdownMenu,
-} from '@ragenai/common-ui/Dropdown';
 import { statusToast } from '@/app/lib/utils/toast';
 import { processUrl } from './actions';
 import { logger } from '@/app/lib/utils/logger';
 import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
-import { getAddFromUrlSchema, AddFromUrlFormData } from './schema';
+import { getAddFromUrlSchema, type AddFromUrlFormData } from './schema';
 
 export const AddFromUrl = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedMode, setSelectedMode] = useState<WebsiteLoaderMode>(
-    WebsiteLoaderMode.SCRAPE
-  );
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('add-from-url');
@@ -33,7 +24,6 @@ export const AddFromUrl = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
     reset,
   } = useForm<AddFromUrlFormData>({
     resolver: zodResolver(schema),
@@ -42,11 +32,6 @@ export const AddFromUrl = () => {
       mode: WebsiteLoaderMode.SCRAPE,
     },
   });
-
-  const handleModeChange = (newMode: WebsiteLoaderMode) => {
-    setSelectedMode(newMode);
-    setValue('mode', newMode);
-  };
 
   const onSubmit = async (data: AddFromUrlFormData) => {
     setIsLoading(true);

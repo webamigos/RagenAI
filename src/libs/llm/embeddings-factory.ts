@@ -2,7 +2,7 @@ import { embed, embedMany } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
 import type { EmbeddingModelV3 } from '@ai-sdk/provider';
-import { UsageTracker } from '@/app/lib/utils/usage/usage-tracker';
+import { type UsageTracker } from '@/app/lib/utils/usage/usage-tracker';
 import type {
   BedrockCredentials,
   OpenAICredentials,
@@ -23,7 +23,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   constructor(
     embeddingModel: EmbeddingModelV3,
     modelName: string,
-    usageTracker?: UsageTracker
+    usageTracker?: UsageTracker,
   ) {
     this.embeddingModel = embeddingModel;
     this.model = modelName;
@@ -67,7 +67,7 @@ export class EmbeddingsFactory {
   private static createBedrockInstance(
     credentials: BedrockCredentials,
     config: BaseEmbeddingsConfig,
-    usageTracker?: UsageTracker
+    usageTracker?: UsageTracker,
   ): EmbeddingsProvider {
     if (!credentials.credentials) {
       throw new Error('Credentials are required for Bedrock');
@@ -87,14 +87,14 @@ export class EmbeddingsFactory {
     return new TrackedEmbeddingsProvider(
       bedrock.textEmbeddingModel(modelName),
       modelName,
-      usageTracker
+      usageTracker,
     );
   }
 
   private static createOpenAIInstance(
     credentials: OpenAICredentials,
     config: BaseEmbeddingsConfig,
-    usageTracker?: UsageTracker
+    usageTracker?: UsageTracker,
   ): EmbeddingsProvider {
     if (!credentials.apiKey) {
       throw new Error('API key is required for OpenAI');
@@ -108,14 +108,14 @@ export class EmbeddingsFactory {
     return new TrackedEmbeddingsProvider(
       openai.textEmbeddingModel(modelName),
       modelName,
-      usageTracker
+      usageTracker,
     );
   }
 
   static createInstance(
     credentials: ProviderCredentials,
     config: BaseEmbeddingsConfig,
-    usageTracker?: UsageTracker
+    usageTracker?: UsageTracker,
   ): EmbeddingsProvider {
     switch (credentials.provider) {
       case 'bedrock':

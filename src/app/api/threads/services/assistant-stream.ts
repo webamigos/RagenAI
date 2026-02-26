@@ -80,6 +80,51 @@ async function loadThreadDocuments(
   }
 }
 
+/**
+ * Merge DB-loaded thread documents with inline documents from the request body.
+ * Inline documents take priority for content when DB documents have empty content
+ * (e.g., async Temporal processing hasn't completed yet).
+ */
+function mergeThreadDocuments(
+  dbDocs: ThreadDocumentUI[],
+  inlineDocs: ThreadDocumentUI[],
+): ThreadDocumentUI[] {
+  if (inlineDocs.length === 0) return dbDocs;
+  if (dbDocs.length === 0) return inlineDocs;
+
+  // Build a map of inline docs by userFileId for quick lookup
+  const inlineByFileId = new Map<string, ThreadDocumentUI>();
+  for (const doc of inlineDocs) {
+    if (doc.userFileId) {
+      inlineByFileId.set(doc.userFileId, doc);
+    }
+  }
+
+  // For each DB doc, use inline content if DB content is empty
+  const merged = dbDocs.map((dbDoc) => {
+    if (dbDoc.content) return dbDoc;
+
+    const inlineDoc = dbDoc.userFileId
+      ? inlineByFileId.get(dbDoc.userFileId)
+      : undefined;
+
+    if (inlineDoc?.content) {
+      return { ...dbDoc, content: inlineDoc.content };
+    }
+    return dbDoc;
+  });
+
+  // Add any inline docs not present in DB (e.g., docs without userFileId)
+  const dbFileIds = new Set(dbDocs.map((d) => d.userFileId).filter(Boolean));
+  for (const doc of inlineDocs) {
+    if (!doc.userFileId || !dbFileIds.has(doc.userFileId)) {
+      merged.push(doc);
+    }
+  }
+
+  return merged;
+}
+
 type Config = {
   publicThreadId: string;
   userMessage: CreateMessageDto;
@@ -284,7 +329,18 @@ export async function streamEvents({
             const projectPublicIdToUse =
               effectiveProjectPublicId || threadRecord.project?.public_id;
 
-            const threadDocuments = await loadThreadDocuments(threadRecord.id);
+            // Load thread documents from DB and merge with inline documents from the request.
+            // Inline documents (from request body) have content immediately available,
+            // while DB documents may have empty content if async processing hasn't completed yet.
+            const dbThreadDocuments = await loadThreadDocuments(
+              threadRecord.id,
+            );
+            const inlineThreadDocuments = userMessage.threadDocuments || [];
+
+            const threadDocuments = mergeThreadDocuments(
+              dbThreadDocuments,
+              inlineThreadDocuments,
+            );
 
             chainOutput = await initializeRagChain({
               settings: {
@@ -338,12 +394,26 @@ export async function streamEvents({
 
         let fullMessage = '';
 
-        for await (const textChunk of streamResult.textStream) {
-          fullMessage += textChunk;
-
-          sendApiEvent(controller, 'delta', {
-            content: textChunk,
-          });
+        for await (const part of streamResult.fullStream) {
+          switch (part.type) {
+            case 'text-delta':
+              fullMessage += part.textDelta;
+              sendApiEvent(controller, 'delta', {
+                content: part.textDelta,
+              });
+              break;
+            case 'reasoning-start':
+              sendApiEvent(controller, 'reasoning_start');
+              break;
+            case 'reasoning-delta':
+              sendApiEvent(controller, 'reasoning_delta', {
+                content: part.delta,
+              });
+              break;
+            case 'reasoning-end':
+              sendApiEvent(controller, 'reasoning_end');
+              break;
+          }
         }
 
         sendApiEvent(controller, 'llm_completed');

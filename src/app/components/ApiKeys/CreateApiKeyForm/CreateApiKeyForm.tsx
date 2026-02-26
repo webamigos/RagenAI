@@ -12,7 +12,7 @@ import { validationSchema, type ApiKeyDto } from './types';
 import { createApiKey } from './actions';
 import { ApiKeyModal } from './ApiKeyModal';
 import { statusToast } from '@/app/lib/utils/toast';
-import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
+import { type getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import { Button } from '@ragenai/common-ui/Button';
 import { Select } from '@ragenai/common-ui/Select';
 
@@ -39,7 +39,7 @@ export const CreateApiKeyForm = ({
   });
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { errorToast, successToast } = statusToast();
+  const { errorToast } = statusToast();
 
   const handleCreateKey: SubmitHandler<ApiKeyDto> = async (data) => {
     const result = await createApiKey(data);

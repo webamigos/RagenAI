@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { sendContactEmail } from '@/app/emails/services/mailer';
 import { logger } from '@/app/lib/utils/logger';
@@ -17,19 +17,17 @@ export async function POST(req: NextRequest) {
     const email = user.email;
     const title = formData.get('title') as string;
     const message = formData.get('message') as string;
-    const file = formData.get('file') as File | null;
-
     if (type !== 'contact') {
       return NextResponse.json(
         { error: 'Nieznany typ wiadomości' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!email || !title || !message) {
       return NextResponse.json(
         { error: 'Brak wymaganych pól do wysyłki kontaktowej' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,7 +59,7 @@ export async function POST(req: NextRequest) {
     logger.error({ err: error }, 'Błąd podczas przetwarzania żądania');
     return NextResponse.json(
       { error: 'Błąd podczas przetwarzania żądania' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

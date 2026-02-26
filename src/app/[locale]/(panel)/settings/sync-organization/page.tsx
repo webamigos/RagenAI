@@ -1,14 +1,9 @@
-import { getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { redirect } from 'next/navigation';
 
-import { PropsWihLocale } from '@/app/lib/types/types';
 import { Card } from '@ragenai/common-ui/Card';
 
-export async function generateMetadata({ params }: PropsWihLocale) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Metadata' });
-
+export async function generateMetadata() {
   return {
     title: 'Sync organization',
   };

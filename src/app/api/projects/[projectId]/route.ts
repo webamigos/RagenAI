@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
     const { projectId } = await params;
@@ -13,7 +13,7 @@ export async function GET(
     if (!projectId) {
       return NextResponse.json(
         { error: 'Project ID is required' },
-        { status: StatusCodes.BAD_REQUEST }
+        { status: StatusCodes.BAD_REQUEST },
       );
     }
 
@@ -22,7 +22,7 @@ export async function GET(
     if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },
-        { status: StatusCodes.NOT_FOUND }
+        { status: StatusCodes.NOT_FOUND },
       );
     }
 
@@ -31,7 +31,7 @@ export async function GET(
     logger.error({ err: error }, 'Error fetching project');
     return NextResponse.json(
       { error: 'Failed to fetch project' },
-      { status: StatusCodes.INTERNAL_SERVER_ERROR }
+      { status: StatusCodes.INTERNAL_SERVER_ERROR },
     );
   }
 }

@@ -1,6 +1,11 @@
-import * as Headless from '@headlessui/react';
+import {
+  Checkbox as HeadlessCheckbox,
+  type CheckboxProps as HeadlessCheckboxProps,
+  Field as HeadlessField,
+  type FieldProps as HeadlessFieldProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
-import type React from 'react';
+import React from 'react';
 
 export function CheckboxGroup({
   className,
@@ -15,7 +20,7 @@ export function CheckboxGroup({
         // Basic groups
         'space-y-3',
         // With descriptions
-        'has-data-[slot=description]:space-y-6 data-[slot=label]:**:has-data-[slot=description]:font-medium'
+        'has-data-[slot=description]:space-y-6 data-[slot=label]:**:has-data-[slot=description]:font-medium',
       )}
     />
   );
@@ -24,9 +29,9 @@ export function CheckboxGroup({
 export function CheckboxField({
   className,
   ...props
-}: { className?: string } & Omit<Headless.FieldProps, 'as' | 'className'>) {
+}: { className?: string } & Omit<HeadlessFieldProps, 'as' | 'className'>) {
   return (
-    <Headless.Field
+    <HeadlessField
       data-slot="field"
       {...props}
       className={clsx(
@@ -40,7 +45,7 @@ export function CheckboxField({
         // Description layout
         'data-[slot=description]:*:col-start-2 data-[slot=description]:*:row-start-2',
         // With description
-        'data-[slot=label]:**:has-data-[slot=description]:font-medium'
+        'data-[slot=label]:**:has-data-[slot=description]:font-medium',
       )}
     />
   );
@@ -124,9 +129,9 @@ export function Checkbox({
 }: {
   color?: Color;
   className?: string;
-} & Omit<Headless.CheckboxProps, 'as' | 'className'>) {
+} & Omit<HeadlessCheckboxProps, 'as' | 'className'>) {
   return (
-    <Headless.Checkbox
+    <HeadlessCheckbox
       data-slot="control"
       {...props}
       className={clsx(className, 'group inline-flex focus:outline-hidden')}
@@ -155,6 +160,6 @@ export function Checkbox({
           />
         </svg>
       </span>
-    </Headless.Checkbox>
+    </HeadlessCheckbox>
   );
 }

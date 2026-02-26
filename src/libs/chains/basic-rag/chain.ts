@@ -12,6 +12,7 @@ import {
 } from '../utils/common-operations';
 import type { BasicRagChainParams } from '../types/basic-rag';
 import type { BaseChatChainOutput } from '../types/common';
+import { mapFullStream } from '../utils/stream-mapper';
 
 export const basicRagChain = async ({
   vectorStore,
@@ -31,7 +32,7 @@ export const basicRagChain = async ({
       // Step 3: Rephrase the question
       const standaloneQuestion = await rephraseQuestion(
         models.questionRephraser,
-        sanitizedInput
+        sanitizedInput,
       );
 
       // Step 4: Retrieve relevant documents from vector store
@@ -39,7 +40,7 @@ export const basicRagChain = async ({
         vectorStore,
         standaloneQuestion,
         config?.maxDocumentsToRetrieve,
-        config?.metadataFilter
+        config?.metadataFilter,
       );
 
       // Step 5: Retrieve thread-specific documents
@@ -48,7 +49,7 @@ export const basicRagChain = async ({
         vectorStore,
         models.embeddings,
         standaloneQuestion,
-        config?.maxDocumentsToRetrieve || 3
+        config?.maxDocumentsToRetrieve || 3,
       );
 
       // Step 6: Build messages and stream the answer
@@ -58,14 +59,21 @@ export const basicRagChain = async ({
         context,
         threadContext,
         config?.answerInstructions,
-        config?.projectInstruction
+        config?.projectInstruction,
       );
 
-      return streamText({
+      const result = streamText({
         model: models.answerGenerator,
         system,
         messages,
       });
+
+      return {
+        textStream: result.textStream,
+        text: result.text,
+        fullStream: mapFullStream(result.fullStream),
+        reasoningText: result.reasoningText,
+      };
     },
   };
 };

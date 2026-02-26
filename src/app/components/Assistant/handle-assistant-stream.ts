@@ -1,26 +1,27 @@
 'use client';
 
-import { RefObject } from 'react';
+import { type RefObject } from 'react';
 
 import {
-  ApiSseMessageDelta,
-  ApiSseMessageEvent,
-  SseMessageError,
+  type ApiSseMessageDelta,
+  type ApiSseMessageEvent,
+  type ApiSseReasoningDelta,
+  type SseMessageError,
 } from '@/features/threads/contracts/events.types';
 
-import { Thread } from '@/generated/prisma/browser';
+import { type Thread } from '@/generated/prisma/browser';
 import {
-  ChatResponseType,
-  ChatType,
-  CreateMessageDto,
-  MessageDto,
-  StreamedMessageDto,
+  type ChatResponseType,
+  type ChatType,
+  type CreateMessageDto,
+  type MessageDto,
+  type StreamedMessageDto,
 } from '@/features/messages/contracts/message.types';
-import { ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import axios, { AxiosError } from 'axios';
 import {
-  ApiEvent,
-  ApiEventData,
+  type ApiEvent,
+  type ApiEventData,
   parseSseString,
 } from '@/libs/sse/prepare-sse-message';
 
@@ -33,13 +34,13 @@ type User = {
 };
 import { deleteUserMessage } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
-import { ToastProps } from '@/app/lib/utils/toast';
-import { PromptFormRef } from './PromptForm/PromptForm';
+import { type ToastProps } from '@/app/lib/utils/toast';
+import { type PromptFormRef } from './PromptForm/PromptForm';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { StatusCodes } from 'http-status-codes';
 import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';
-import { AppDispatch } from '@/store';
+import { type AppDispatch } from '@/store';
 import {
   setMessages,
   setStreamedMessage,
@@ -101,7 +102,7 @@ const handleStreamError = async ({
 
     const updatedMessages = messages.filter(
       (message) =>
-        message.public_id !== (lastUserMessageId || userMessage.public_id)
+        message.public_id !== (lastUserMessageId || userMessage.public_id),
     );
     reduxDispatch(setMessages(updatedMessages));
     promptFormRef.current?.reset(userMessage.content || '');
@@ -132,7 +133,7 @@ const getStreamUrl = (
   threadId: string,
   chatType?: ChatType,
   user?: User,
-  organizationId?: string
+  organizationId?: string,
 ): string => {
   if (mode === AssistantMode.INTERNAL) {
     return user
@@ -184,7 +185,7 @@ export const handleAssistantStream = async ({
       threadId,
       chatType,
       user || undefined,
-      organizationId
+      organizationId,
     );
     const apiStream = await axios.post<ReadableStream>(streamUrl, data, {
       responseType: 'stream',
@@ -204,6 +205,8 @@ export const handleAssistantStream = async ({
 
     let buffer = ''; // Initialize a buffer to accumulate chunks
     let accumulatingMessage = '';
+    let accumulatingReasoning = '';
+    let isCurrentlyReasoning = false;
     let runId = '';
     let lastUserMessageId: string | null = null;
 
@@ -233,12 +236,57 @@ export const handleAssistantStream = async ({
               const { id } = messageData as { id: string };
               lastUserMessageId = id;
               reduxDispatch(
-                setMessages([...messages, { ...userMessage, public_id: id }])
+                setMessages([...messages, { ...userMessage, public_id: id }]),
               );
             }
             break;
 
-          case 'delta':
+          case 'reasoning_start':
+            isCurrentlyReasoning = true;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+                reasoningContent: accumulatingReasoning,
+                isReasoning: true,
+              }),
+            );
+            break;
+
+          case 'reasoning_delta': {
+            const { content: reasoningChunk } =
+              messageData as ApiSseReasoningDelta;
+            accumulatingReasoning += reasoningChunk;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+                reasoningContent: accumulatingReasoning,
+                isReasoning: true,
+              }),
+            );
+            if (accumulatingReasoning.length % 100 === 0) {
+              scrollFn();
+            }
+            break;
+          }
+
+          case 'reasoning_end':
+            isCurrentlyReasoning = false;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+                reasoningContent: accumulatingReasoning,
+                isReasoning: false,
+              }),
+            );
+            break;
+
+          case 'delta': {
             const { content: textChunk } = messageData as ApiSseMessageDelta;
             accumulatingMessage += textChunk;
             reduxDispatch(
@@ -246,12 +294,15 @@ export const handleAssistantStream = async ({
                 content: accumulatingMessage,
                 runId,
                 created_at: new Date().toISOString(),
-              })
+                reasoningContent: accumulatingReasoning || undefined,
+                isReasoning: isCurrentlyReasoning,
+              }),
             );
             if (accumulatingMessage.length % 100 === 0) {
               scrollFn();
             }
             break;
+          }
 
           case 'final_response':
             if (messageData) {
@@ -277,7 +328,7 @@ export const handleAssistantStream = async ({
               ].filter(
                 (message, index, self) =>
                   index ===
-                  self.findIndex((m) => m.public_id === message.public_id)
+                  self.findIndex((m) => m.public_id === message.public_id),
               );
 
               reduxDispatch(setMessages(uniqueMessages));
@@ -292,7 +343,7 @@ export const handleAssistantStream = async ({
             if (messageData) {
               const errorMessage = getErrorMessage(
                 messageData as SseMessageError,
-                tChainErrors
+                tChainErrors,
               );
               if (!errorMessage && !streamedMessage) {
                 return;

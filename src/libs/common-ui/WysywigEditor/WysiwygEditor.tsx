@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
-import { FieldError } from 'react-hook-form';
+import { type FieldError } from 'react-hook-form';
 import { Text } from '../Text';
 import { classMerge } from '../utils/cn';
 
@@ -44,7 +44,7 @@ function ToolbarButton({
         'disabled:opacity-40 disabled:cursor-not-allowed',
         isActive
           ? 'bg-zinc-200 dark:bg-zinc-600 text-zinc-900 dark:text-white'
-          : 'text-zinc-600 dark:text-zinc-300'
+          : 'text-zinc-600 dark:text-zinc-300',
       )}
     >
       {children}

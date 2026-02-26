@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 import clsx from 'clsx';
 
 export const WarningIcon = ({ className }: ComponentProps<'svg'>) => {

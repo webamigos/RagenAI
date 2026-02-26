@@ -9,6 +9,7 @@ import {
   sanitizeAndValidateInput,
   moderateContent,
 } from '../utils/common-operations';
+import { mapFullStream } from '../utils/stream-mapper';
 
 export const conversationChain = async ({
   models,
@@ -29,14 +30,21 @@ export const conversationChain = async ({
         sanitizedInput.question,
         sanitizedInput.chat_history,
         config?.answerInstructions,
-        config?.projectInstruction
+        config?.projectInstruction,
       );
 
-      return streamText({
+      const result = streamText({
         model: models.answerGenerator,
         system,
         messages,
       });
+
+      return {
+        textStream: result.textStream,
+        text: result.text,
+        fullStream: mapFullStream(result.fullStream),
+        reasoningText: result.reasoningText,
+      };
     },
   };
 };

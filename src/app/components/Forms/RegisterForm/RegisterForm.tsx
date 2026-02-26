@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { signUp } from '@/app/hooks/use-better-auth';
@@ -20,7 +19,6 @@ export const RegisterForm = () => {
   const locale = useLocale();
 
   const t = useTranslations('sign-up');
-  const { push } = useRouter();
 
   const {
     register,
@@ -60,9 +58,8 @@ export const RegisterForm = () => {
       if (invitationId) {
         // Auto-accept invitation after registration
         try {
-          const { acceptInvitation } = await import(
-            '@/app/[locale]/(auth)/accept-invitation/actions'
-          );
+          const { acceptInvitation } =
+            await import('@/app/[locale]/(auth)/accept-invitation/actions');
           const acceptResult = await acceptInvitation(invitationId);
 
           if (acceptResult.success) {
@@ -73,14 +70,14 @@ export const RegisterForm = () => {
           } else {
             logger.warn(
               { error: acceptResult.error },
-              'Failed to auto-accept invitation'
+              'Failed to auto-accept invitation',
             );
             // Continue with normal onboarding
           }
         } catch (inviteError) {
           logger.error(
             { error: inviteError },
-            'Error auto-accepting invitation'
+            'Error auto-accepting invitation',
           );
           // Continue with normal onboarding
         }
@@ -94,7 +91,7 @@ export const RegisterForm = () => {
       } catch (err) {
         logger.warn(
           { error: err },
-          'Onboarding finalization failed, relying on fallback'
+          'Onboarding finalization failed, relying on fallback',
         );
         // Continue anyway - middleware/account-configuration will handle it
       }

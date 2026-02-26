@@ -1,5 +1,8 @@
 /* eslint-disable prefer-const */
-import * as Headless from '@headlessui/react';
+import {
+  Button as HeadlessButton,
+  type ButtonProps as HeadlessButtonProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 import { TouchTarget } from '../Navbar';
@@ -38,7 +41,7 @@ export function Avatar({
         square
           ? 'rounded-(--avatar-radius) *:rounded-(--avatar-radius)'
           : 'rounded-full *:rounded-full',
-        className
+        className,
       )}
     >
       {initials && (
@@ -83,15 +86,15 @@ export const AvatarButton = forwardRef(function AvatarButton(
     ...props
   }: AvatarProps &
     (
-      | Omit<Headless.ButtonProps, 'as' | 'className'>
+      | Omit<HeadlessButtonProps, 'as' | 'className'>
       | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
     ),
-  ref: React.ForwardedRef<HTMLElement>
+  ref: React.ForwardedRef<HTMLElement>,
 ) {
   let classes = clsx(
     className,
     square ? 'rounded-[20%]' : 'rounded-full',
-    'relative inline-grid focus:outline-hidden data-focus:outline data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500'
+    'relative inline-grid focus:outline-hidden data-focus:outline data-focus:outline-2 data-focus:outline-offset-2 data-focus:outline-blue-500',
   );
 
   return 'href' in props ? (
@@ -105,10 +108,10 @@ export const AvatarButton = forwardRef(function AvatarButton(
       </TouchTarget>
     </Link>
   ) : (
-    <Headless.Button {...props} className={classes} ref={ref}>
+    <HeadlessButton {...props} className={classes} ref={ref}>
       <TouchTarget>
         <Avatar src={src} square={square} initials={initials} alt={alt} />
       </TouchTarget>
-    </Headless.Button>
+    </HeadlessButton>
   );
 });

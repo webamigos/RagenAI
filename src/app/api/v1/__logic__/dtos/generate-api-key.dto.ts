@@ -1,4 +1,9 @@
-import { KeyId, UserId, OrgId, ProjectId } from '../types/brand';
+import {
+  type KeyId,
+  type UserId,
+  type OrgId,
+  type ProjectId,
+} from '../types/brand';
 
 export type GenerateApiKeyDto = {
   orgId: OrgId;

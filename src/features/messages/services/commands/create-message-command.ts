@@ -1,9 +1,9 @@
 'use server';
 
 import {
-  Thread,
+  type Thread,
   Role,
-  MessageContentType,
+  type MessageContentType,
   Source,
 } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';

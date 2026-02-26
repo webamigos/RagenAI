@@ -1,8 +1,8 @@
 import {
-  UserDocument,
-  UserFile,
-  Project,
-  FileType,
+  type UserDocument,
+  type UserFile,
+  type Project,
+  type FileType,
 } from '@/generated/prisma/browser';
 
 export type ProjectType = {

@@ -4,8 +4,8 @@ import { useTranslations } from 'next-intl';
 
 import {
   EmbeddingStatus,
-  FileType,
-  UserFile,
+  type FileType,
+  type UserFile,
 } from '@/generated/prisma/browser';
 import { Text } from '@ragenai/common-ui/Text';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
@@ -34,7 +34,7 @@ type Props = {
   onRemoveFile: (filePublicId: UserFile['public_id']) => void;
   handleDelete: (
     filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name']
+    fileName: UserFile['file_name'],
   ) => void;
 };
 
@@ -67,7 +67,7 @@ const FileRow = ({
   toggleModal,
   handleDelete,
 }: FileRowProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   const {
     created_at,
@@ -83,16 +83,15 @@ const FileRow = ({
 
   const {
     created_at: formattedCreatedAt,
-    updated_at: formattedUpdatedAt,
     embedding_completed_at: formattedEmbeddingCompletedAt,
   } = useMemo(
     () => formatDates({ created_at, updated_at, embedding_completed_at }),
-    [created_at, updated_at, embedding_completed_at]
+    [created_at, updated_at, embedding_completed_at],
   );
 
   const truncatedFileName = useMemo(
     () => truncateFileName(file_name, 40),
-    [file_name]
+    [file_name],
   );
 
   return (
@@ -149,7 +148,7 @@ export const UserFilesTable = ({
   onRemoveFile,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
     if (!searchValue) {
@@ -159,7 +158,7 @@ export const UserFilesTable = ({
     return files.filter(
       (file) =>
         file.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
-        file.project?.title === 'Default'
+        file.project?.title === 'Default',
     ) as UserFileTypeSafe[];
   }, [files, searchValue]);
 

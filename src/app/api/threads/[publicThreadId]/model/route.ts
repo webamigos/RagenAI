@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
@@ -31,7 +31,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     if (!orgId) {
       return NextResponse.json(
         { error: 'Organization not found' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -70,12 +70,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         success: true,
         thread: updatedThread,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     logger.error(
       { err: error, threadId: publicThreadId },
-      'Error updating thread model'
+      'Error updating thread model',
     );
 
     return NextResponse.json(
@@ -83,7 +83,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

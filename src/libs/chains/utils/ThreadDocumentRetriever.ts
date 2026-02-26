@@ -4,7 +4,7 @@ import type {
 } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import { logger } from '@/app/lib/utils/logger';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import db from '@ragenai/prisma-client';
 
 /**
@@ -39,7 +39,7 @@ export class ThreadDocumentRetriever {
   async retrieveRelevantChunks(
     threadDocuments: ThreadDocumentUI[],
     query: string,
-    maxChunks: number = 3
+    maxChunks: number = 3,
   ): Promise<VectorStoreDocument[]> {
     if (!threadDocuments || threadDocuments.length === 0) {
       logger.info('ThreadDocumentRetriever: No ThreadDocuments provided');
@@ -52,17 +52,17 @@ export class ThreadDocumentRetriever {
           threadDocumentsCount: threadDocuments.length,
           userFileIds: threadDocuments.map((doc) => doc.userFileId),
           documentsWithUserFileId: threadDocuments.filter(
-            (doc) => doc.userFileId
+            (doc) => doc.userFileId,
           ).length,
           maxChunks,
           query: query.substring(0, 100),
         },
-        'ThreadDocumentRetriever: Starting dual retrieval strategy'
+        'ThreadDocumentRetriever: Starting dual retrieval strategy',
       );
 
       // Filter documents that have userFileId for vectorstore search
       const documentsWithUserFileId = threadDocuments.filter(
-        (doc) => doc.userFileId
+        (doc) => doc.userFileId,
       );
 
       // Strategy 1: Try vectorstore search with pre-computed embeddings (only for uploaded files)
@@ -71,19 +71,19 @@ export class ThreadDocumentRetriever {
         vectorstoreResults = await this.searchVectorstore(
           documentsWithUserFileId,
           query,
-          maxChunks
+          maxChunks,
         );
       }
 
       // Strategy 2: If vectorstore has no results, use immediate access with inline content
       if (vectorstoreResults.length === 0) {
         logger.info(
-          'ThreadDocumentRetriever: No vectorstore results, using immediate access'
+          'ThreadDocumentRetriever: No vectorstore results, using immediate access',
         );
         return await this.searchInlineContent(
           threadDocuments,
           query,
-          maxChunks
+          maxChunks,
         );
       }
 
@@ -91,10 +91,10 @@ export class ThreadDocumentRetriever {
         {
           vectorstoreResultsCount: vectorstoreResults.length,
           retrievedSources: vectorstoreResults.map(
-            (doc) => doc.metadata?.file_name
+            (doc) => doc.metadata?.file_name,
           ),
         },
-        'ThreadDocumentRetriever: Using vectorstore results'
+        'ThreadDocumentRetriever: Using vectorstore results',
       );
 
       return vectorstoreResults;
@@ -105,7 +105,7 @@ export class ThreadDocumentRetriever {
           threadDocumentsCount: threadDocuments.length,
           userFileIds: threadDocuments.map((doc) => doc.userFileId),
         },
-        'ThreadDocumentRetriever: Error during search, fallback to inline content'
+        'ThreadDocumentRetriever: Error during search, fallback to inline content',
       );
 
       // Fallback: Use inline content if vectorstore fails
@@ -119,7 +119,7 @@ export class ThreadDocumentRetriever {
   private async searchVectorstore(
     threadDocuments: ThreadDocumentUI[],
     query: string,
-    maxChunks: number
+    maxChunks: number,
   ): Promise<VectorStoreDocument[]> {
     try {
       // Lookup internal UserFile.id from UserFile.public_id
@@ -141,7 +141,7 @@ export class ThreadDocumentRetriever {
       if (userFiles.length === 0) {
         logger.warn(
           { userFilePublicIds },
-          'ThreadDocumentRetriever: No UserFiles found for vectorstore search'
+          'ThreadDocumentRetriever: No UserFiles found for vectorstore search',
         );
         return [];
       }
@@ -161,7 +161,7 @@ export class ThreadDocumentRetriever {
       const searchResults = await this.vectorStore.similaritySearch(
         query,
         maxChunks * 2, // Get more results for better filtering
-        meilisearchFilter
+        meilisearchFilter,
       );
 
       // Additional filtering to ensure results match our files
@@ -176,7 +176,7 @@ export class ThreadDocumentRetriever {
     } catch (error) {
       logger.error(
         { error },
-        'ThreadDocumentRetriever: Vectorstore search failed'
+        'ThreadDocumentRetriever: Vectorstore search failed',
       );
       return [];
     }
@@ -189,11 +189,11 @@ export class ThreadDocumentRetriever {
   private async searchInlineContent(
     threadDocuments: ThreadDocumentUI[],
     query: string,
-    maxChunks: number
+    maxChunks: number,
   ): Promise<VectorStoreDocument[]> {
     try {
       logger.info(
-        'ThreadDocumentRetriever: Using immediate access with inline content'
+        'ThreadDocumentRetriever: Using immediate access with inline content',
       );
 
       // Generate query embedding
@@ -210,7 +210,7 @@ export class ThreadDocumentRetriever {
 
       if (uncachedDocs.length > 0) {
         const newEmbeddings = await this.embeddings.embedDocuments(
-          uncachedDocs.map((d) => d.content)
+          uncachedDocs.map((d) => d.content),
         );
         uncachedDocs.forEach((doc, j) => {
           const cacheKey = this.documentCacheKey(threadDocuments[doc.index]);
@@ -251,14 +251,14 @@ export class ThreadDocumentRetriever {
           inlineResultsCount: results.length,
           topSimilarities: topResults.map((r) => r.similarity),
         },
-        'ThreadDocumentRetriever: Generated inline content results'
+        'ThreadDocumentRetriever: Generated inline content results',
       );
 
       return results;
     } catch (error) {
       logger.error(
         { error },
-        'ThreadDocumentRetriever: Inline content search failed'
+        'ThreadDocumentRetriever: Inline content search failed',
       );
       return [];
     }

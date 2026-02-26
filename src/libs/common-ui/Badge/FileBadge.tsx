@@ -2,7 +2,7 @@
 
 import { XMarkIcon } from '@heroicons/react/20/solid';
 import { classMerge } from '../utils/cn';
-import { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface FileBadgeProps {
   document: ThreadDocumentUI;
@@ -33,7 +33,7 @@ export const FileBadge = ({
         'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
         'border border-blue-200 dark:border-blue-800',
         'transition-colors hover:bg-blue-200 dark:hover:bg-blue-900/50',
-        className
+        className,
       )}
     >
       <span className="flex items-center gap-1">
@@ -57,7 +57,7 @@ export const FileBadge = ({
           'text-blue-600 dark:text-blue-400',
           'hover:bg-blue-200 dark:hover:bg-blue-800',
           'focus:outline-none focus:ring-2 focus:ring-blue-500',
-          'transition-colors'
+          'transition-colors',
         )}
         aria-label={`Remove ${document.name}`}
       >

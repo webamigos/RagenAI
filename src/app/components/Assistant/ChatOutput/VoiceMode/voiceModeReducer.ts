@@ -1,4 +1,4 @@
-import { VoiceModeState } from './types';
+import { type VoiceModeState } from './types';
 
 export const initialState: VoiceModeState = {
   currentMessages: [],
@@ -27,7 +27,7 @@ type VoiceModeAction =
 
 export const voiceModeReducer = (
   state: VoiceModeState,
-  action: VoiceModeAction
+  action: VoiceModeAction,
 ): VoiceModeState => {
   switch (action.type) {
     case 'UPDATE_MESSAGES':
@@ -73,7 +73,7 @@ export const voiceModeReducer = (
         currentMessages: state.currentMessages.map((message) =>
           message.public_id === action.payload
             ? { ...message, voice_played: true }
-            : message
+            : message,
         ),
       };
     case 'SET_LOCAL_RECORDING':

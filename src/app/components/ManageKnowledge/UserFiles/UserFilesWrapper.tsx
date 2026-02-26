@@ -14,7 +14,7 @@ import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
 import { LayoutToggle } from './LayoutToggle';
-import { UserFile } from '@/generated/prisma/browser';
+import { type UserFile } from '@/generated/prisma/browser';
 
 export type ModalStateProps = {
   isOpen: boolean;
@@ -71,13 +71,13 @@ export const FileListWrapper = () => {
 
   const defaultProjectFiles = useMemo(() => {
     return files.filter((file) =>
-      file.file_name.toLowerCase().includes(searchValue.toLowerCase())
+      file.file_name.toLowerCase().includes(searchValue.toLowerCase()),
     );
   }, [files, searchValue]);
 
   const handleDelete = async (
     filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name']
+    fileName: UserFile['file_name'],
   ) => {
     try {
       setDeleteLoading(true);

@@ -1,6 +1,6 @@
 declare module 'markdown-it-texmath' {
-  import MarkdownIt from 'markdown-it';
-  import { KatexOptions } from 'katex';
+  import type MarkdownIt from 'markdown-it';
+  import { type KatexOptions } from 'katex';
 
   interface TexmathOptions {
     engine: any;

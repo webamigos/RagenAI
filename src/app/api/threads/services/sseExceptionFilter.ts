@@ -3,7 +3,7 @@ import {
   LLMApiError,
   UnknownChainError,
 } from '@/libs/chains/errors';
-import { SseMessageError } from '@/features/threads/contracts/events.types';
+import { type SseMessageError } from '@/features/threads/contracts/events.types';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 
 export class SseExceptionFilter {
@@ -15,7 +15,7 @@ export class SseExceptionFilter {
     } else if (error?.status) {
       chainError = new LLMApiError(
         'LLM API request failed',
-        `${error?.message}`
+        `${error?.message}`,
       );
     } else {
       chainError = new UnknownChainError();

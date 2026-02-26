@@ -1,4 +1,4 @@
-import { AppLogger } from './interface';
+import { type AppLogger } from './interface';
 
 // for better DX - developer doesn't
 // need to think which logger choose on server or client side

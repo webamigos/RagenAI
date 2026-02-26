@@ -21,6 +21,10 @@ export const importFileToProjectCommand = async (
     targetProjectPublicId,
   );
 
+  if (targetProject.organization_id !== orgId) {
+    throw new Error('Cannot import file to a project in another organization');
+  }
+
   const sourceFile = await db.userFile.findFirst({
     where: {
       public_id: sourceFilePublicId,

@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
 
@@ -12,7 +12,7 @@ export const AnimatedArrow = ({ className }: ComponentProps<'svg'>) => {
       stroke="currentColor"
       className={classMerge(
         'w-3 h-3 transform opacity-0 -translate-x-2 transition-all duration-300 ease-out group-hover:translate-x-0 group-hover:opacity-50',
-        className
+        className,
       )}
     >
       <path

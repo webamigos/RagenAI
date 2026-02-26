@@ -1,6 +1,6 @@
-import { Message, Thread } from '@/generated/prisma/browser';
+import { type Message, type Thread } from '@/generated/prisma/browser';
 import {
-  ApiMessageDto,
+  type ApiMessageDto,
   type MessageDto,
 } from '@/features/messages/contracts/message.types';
 import type { ChainErrorCode } from '@/libs/chains/types/errors';
@@ -24,6 +24,10 @@ export type SseMessageDelta = {
 };
 
 export type ApiSseMessageDelta = {
+  content: string;
+};
+
+export type ApiSseReasoningDelta = {
   content: string;
 };
 

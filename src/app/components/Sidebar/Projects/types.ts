@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ThreadCommunicationType } from '@/generated/prisma/browser';
+import { type ThreadCommunicationType } from '@/generated/prisma/browser';
 
 export type ThreadType = {
   created_at: string;

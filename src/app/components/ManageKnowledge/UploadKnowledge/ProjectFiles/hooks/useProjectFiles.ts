@@ -1,9 +1,9 @@
-import { useState, useCallback, useRef, useTransition } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { statusToast } from '@/app/lib/utils/toast';
 import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
 import { uploadProjectFiles } from '@/app/lib/services/api';
-import { FileType, UserFile } from '@/generated/prisma/browser';
+import { type FileType, type UserFile } from '@/generated/prisma/browser';
 import { useTranslations } from 'next-intl';
 
 export enum FileListState {
@@ -25,11 +25,11 @@ type ProjectFile = {
 
 export const useProjectFiles = (
   projectPublicId: string,
-  onFilesLoaded?: (hasFiles: boolean) => void
+  onFilesLoaded?: (hasFiles: boolean) => void,
 ) => {
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [listState, setListState] = useState<FileListState>(
-    FileListState.LOADING
+    FileListState.LOADING,
   );
   const [error, setError] = useState<string | null>(null);
   const t = useTranslations('projects');
@@ -56,7 +56,9 @@ export const useProjectFiles = (
         const loadedFiles = result.files || [];
         setFiles(loadedFiles);
         setListState(
-          loadedFiles.length > 0 ? FileListState.HAS_FILES : FileListState.EMPTY
+          loadedFiles.length > 0
+            ? FileListState.HAS_FILES
+            : FileListState.EMPTY,
         );
         initialLoadComplete.current = true;
 
@@ -81,7 +83,7 @@ export const useProjectFiles = (
         setDeletingFileId(publicFileId);
         const result = await deleteProjectFileAction(
           publicFileId,
-          projectPublicId
+          projectPublicId,
         );
 
         if (result.error) {
@@ -97,7 +99,7 @@ export const useProjectFiles = (
         setDeletingFileId(null);
       }
     },
-    [deletingFileId, infoToast, errorToast, loadFiles, router]
+    [deletingFileId, infoToast, errorToast, loadFiles, router],
   );
 
   const handleUploadFiles = useCallback(
@@ -121,7 +123,7 @@ export const useProjectFiles = (
         setIsUploading(false);
       }
     },
-    [projectPublicId, isUploading, infoToast, loadFiles, router, errorToast]
+    [projectPublicId, isUploading, infoToast, loadFiles, router, errorToast],
   );
 
   return {
