@@ -165,8 +165,12 @@ export const getProviderRequirements = (
 };
 
 const isProviderConfigured = (provider: ModelProvider): boolean => {
-  if (provider === 'openrouter') return !!process.env.OPENROUTER_API_KEY;
-  if (provider === 'openai') return true;
+  if (provider === 'openrouter') {
+    return !!process.env.OPENROUTER_API_KEY;
+  }
+  if (provider === 'openai') {
+    return true;
+  }
 
   const requirements = getProviderRequirements(provider);
   return requirements.envVars.every((envVar) => process.env[envVar]);

@@ -37,8 +37,12 @@ type Props = {
 };
 
 function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
@@ -73,8 +77,12 @@ export const KnowledgeBasePickerDialog = ({
   }, [open, loadFiles]);
 
   const filteredFiles = files.filter((file) => {
-    if (excludeFileIds.includes(file.public_id)) return false;
-    if (!search) return true;
+    if (excludeFileIds.includes(file.public_id)) {
+      return false;
+    }
+    if (!search) {
+      return true;
+    }
     return file.file_name.toLowerCase().includes(search.toLowerCase());
   });
 

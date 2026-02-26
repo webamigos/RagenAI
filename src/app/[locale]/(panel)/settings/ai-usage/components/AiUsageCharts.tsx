@@ -44,8 +44,12 @@ function formatCost(value: number): string {
 }
 
 function formatTokensShort(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  if (n >= 1_000_000) {
+    return `${(n / 1_000_000).toFixed(1)}M`;
+  }
+  if (n >= 1_000) {
+    return `${(n / 1_000).toFixed(1)}K`;
+  }
   return String(n);
 }
 
@@ -56,7 +60,9 @@ export function AiUsageCharts({ charts }: Props) {
     charts.byModel.length > 0 ||
     charts.byOrg.length > 0;
 
-  if (!hasData) return null;
+  if (!hasData) {
+    return null;
+  }
 
   return (
     <div className="space-y-8">

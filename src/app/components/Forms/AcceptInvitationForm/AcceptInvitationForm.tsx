@@ -74,7 +74,9 @@ export const AcceptInvitationForm = () => {
   }, [token, session, sessionLoading, push, t]);
 
   const handleAccept = async () => {
-    if (!token) return;
+    if (!token) {
+      return;
+    }
 
     setIsAccepting(true);
     setError(null);
@@ -105,7 +107,9 @@ export const AcceptInvitationForm = () => {
   };
 
   const handleReject = async () => {
-    if (!token || !confirm(t('confirm-reject'))) return;
+    if (!token || !confirm(t('confirm-reject'))) {
+      return;
+    }
 
     setIsRejecting(true);
     setError(null);

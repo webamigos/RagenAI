@@ -2,7 +2,9 @@
 
 export async function register() {
   // OpenTelemetry init (any env with OTEL_EXPORTER_OTLP_ENDPOINT set)
-  if (process.env.NEXT_RUNTIME !== 'nodejs') return;
+  if (process.env.NEXT_RUNTIME !== 'nodejs') {
+    return;
+  }
 
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   if (!endpoint) {

@@ -26,7 +26,9 @@ export const FileUploader = ({
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const droppedFiles = Array.from(event.dataTransfer.files).filter(
       isSupportedFile,
     );
@@ -37,7 +39,9 @@ export const FileUploader = ({
     event.preventDefault();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const selectedFiles = Array.from(event.target.files || []).filter(
       isSupportedFile,
     );
@@ -47,7 +51,9 @@ export const FileUploader = ({
   };
 
   const handleClick = () => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     fileInputRef.current?.click();
   };
 

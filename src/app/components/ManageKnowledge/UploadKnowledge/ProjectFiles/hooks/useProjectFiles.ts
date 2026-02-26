@@ -77,7 +77,9 @@ export const useProjectFiles = (
 
   const handleDeleteFile = useCallback(
     async (publicFileId: UserFile['public_id']) => {
-      if (deletingFileId) return;
+      if (deletingFileId) {
+        return;
+      }
 
       try {
         setDeletingFileId(publicFileId);
@@ -104,7 +106,9 @@ export const useProjectFiles = (
 
   const handleUploadFiles = useCallback(
     async (filesToUpload: File[]) => {
-      if (!projectPublicId || isUploading) return;
+      if (!projectPublicId || isUploading) {
+        return;
+      }
 
       setIsUploading(true);
 

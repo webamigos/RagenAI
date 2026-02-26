@@ -38,7 +38,7 @@ if (COLLECTOR_URL) {
     spanProcessors: [
       new UserContextSpanProcessor(),
       new BatchSpanProcessor(
-        new OTLPTraceExporter({ url: `${COLLECTOR_URL}/v1/traces` })
+        new OTLPTraceExporter({ url: `${COLLECTOR_URL}/v1/traces` }),
       ),
     ],
   });
@@ -50,7 +50,7 @@ if (COLLECTOR_URL) {
     resource,
     processors: [
       new BatchLogRecordProcessor(
-        new OTLPLogExporter({ url: `${COLLECTOR_URL}/v1/logs` })
+        new OTLPLogExporter({ url: `${COLLECTOR_URL}/v1/logs` }),
       ),
     ],
   });
@@ -70,9 +70,11 @@ if (COLLECTOR_URL) {
 
 export function onRouterTransitionStart(
   url: string,
-  navigationType: 'push' | 'replace' | 'traverse'
+  navigationType: 'push' | 'replace' | 'traverse',
 ) {
-  if (!COLLECTOR_URL) return;
+  if (!COLLECTOR_URL) {
+    return;
+  }
 
   const tracer = trace.getTracer('ragen-app-client');
   const span = tracer.startSpan('navigation', {
@@ -88,7 +90,7 @@ export function onRouterTransitionStart(
     if (entries.length > 0) {
       span.setAttribute(
         'navigation.duration_ms',
-        entries[entries.length - 1].startTime
+        entries[entries.length - 1].startTime,
       );
     }
     span.end();

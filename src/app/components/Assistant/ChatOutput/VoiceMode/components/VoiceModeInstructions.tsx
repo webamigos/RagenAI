@@ -9,8 +9,12 @@ export const VoiceModeInstructions = ({
   const t = useTranslations('voice-mode');
 
   const getInstructionText = () => {
-    if (hasApiError) return t('api-error-instructions');
-    if (voiceError) return t('voice-error-instructions');
+    if (hasApiError) {
+      return t('api-error-instructions');
+    }
+    if (voiceError) {
+      return t('voice-error-instructions');
+    }
     return t('instructions');
   };
 

@@ -28,7 +28,7 @@ export const getThreadTitle = (thread: ThreadType): string => {
 };
 
 export const categorizeThreadsByDate = <T extends BaseThreadType>(
-  threads: T[]
+  threads: T[],
 ): ThreadCategories<T> => {
   const now = new Date();
   const todayDate = format(now, 'EEE MMM dd yyyy');
@@ -38,9 +38,13 @@ export const categorizeThreadsByDate = <T extends BaseThreadType>(
     (acc, thread) => {
       const threadDate = format(new Date(thread.created_at), 'EEE MMM dd yyyy');
 
-      if (threadDate === todayDate) acc.today.push(thread);
-      else if (threadDate === yesterdayDate) acc.yesterday.push(thread);
-      else acc.older.push(thread);
+      if (threadDate === todayDate) {
+        acc.today.push(thread);
+      } else if (threadDate === yesterdayDate) {
+        acc.yesterday.push(thread);
+      } else {
+        acc.older.push(thread);
+      }
 
       return acc;
     },
@@ -48,13 +52,13 @@ export const categorizeThreadsByDate = <T extends BaseThreadType>(
       today: [] as T[],
       yesterday: [] as T[],
       older: [] as T[],
-    }
+    },
   );
 };
 
 export const getThreadCategories = <T extends BaseThreadType>(
   threads: T[],
-  t: (key: string) => string
+  t: (key: string) => string,
 ) => {
   const { today, yesterday, older } = categorizeThreadsByDate(threads);
 

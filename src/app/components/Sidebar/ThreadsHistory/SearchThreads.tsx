@@ -59,7 +59,9 @@ export const SearchThreads = React.forwardRef<
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
 
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_HAS_SEARCHED', payload: true });

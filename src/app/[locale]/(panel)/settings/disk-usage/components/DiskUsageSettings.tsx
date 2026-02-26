@@ -86,7 +86,9 @@ export function DiskUsageSettings() {
       ]);
 
       // Ignore stale response if user clicked another org
-      if (requestId !== selectOrgRequestId.current) return;
+      if (requestId !== selectOrgRequestId.current) {
+        return;
+      }
 
       setOrgDetails(details);
       setProjects(projectData);
@@ -127,7 +129,9 @@ export function DiskUsageSettings() {
   };
 
   const handleSaveLimits = async () => {
-    if (!selectedOrg) return;
+    if (!selectedOrg) {
+      return;
+    }
 
     const orgMB = Number(editingOrgLimit);
     const projMB = Number(editingProjectLimit);

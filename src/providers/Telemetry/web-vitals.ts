@@ -4,7 +4,9 @@ const COLLECTOR_URL = process.env.NEXT_PUBLIC_OTEL_COLLECTOR_URL;
 const TARGET_ENV = process.env.NEXT_PUBLIC_TARGET_ENV || '';
 
 function sendMetric(metric: Metric) {
-  if (!COLLECTOR_URL) return;
+  if (!COLLECTOR_URL) {
+    return;
+  }
 
   const resourceAttributes = [
     { key: 'service.name', value: { stringValue: 'ragen-app-client' } },
@@ -81,7 +83,9 @@ function sendMetric(metric: Metric) {
 }
 
 export function initWebVitals() {
-  if (!COLLECTOR_URL) return;
+  if (!COLLECTOR_URL) {
+    return;
+  }
 
   import('web-vitals').then(({ onLCP, onCLS, onINP, onFCP, onTTFB }) => {
     onLCP(sendMetric);

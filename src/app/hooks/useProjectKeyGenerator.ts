@@ -6,7 +6,9 @@ export const useProjectKeyGenerator = (projectId: number) => {
   const [error, setError] = useState<Error | null>(null);
 
   const generateKey = async () => {
-    if (!projectId) return null;
+    if (!projectId) {
+      return null;
+    }
 
     try {
       setIsGenerating(true);
@@ -15,7 +17,7 @@ export const useProjectKeyGenerator = (projectId: number) => {
       return accessToken;
     } catch (err) {
       setError(
-        err instanceof Error ? err : new Error('Failed to generate key')
+        err instanceof Error ? err : new Error('Failed to generate key'),
       );
       return null;
     } finally {

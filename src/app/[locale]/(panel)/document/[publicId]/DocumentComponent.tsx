@@ -104,7 +104,9 @@ export function DocumentComponent({ publicId }: Props) {
   };
 
   const onSubmit = async (data: { content: string }) => {
-    if (!orgId) return;
+    if (!orgId) {
+      return;
+    }
     dispatch({ type: 'SET_IS_SAVING', payload: true });
 
     const markdownContent = turndownService.turndown(data.content);
@@ -139,7 +141,9 @@ export function DocumentComponent({ publicId }: Props) {
   };
 
   const onTitleSubmit = async (data: { title: string }) => {
-    if (!orgId) return;
+    if (!orgId) {
+      return;
+    }
     dispatch({ type: 'SET_IS_SAVING', payload: true });
 
     const response = await updateDocument({

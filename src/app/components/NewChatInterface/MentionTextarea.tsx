@@ -76,7 +76,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const handleProjectSelect = useCallback(
     (project: MentionedProject) => {
       const textarea = textareaRef.current;
-      if (!textarea) return;
+      if (!textarea) {
+        return;
+      }
 
       const currentValue = textarea.value;
       let currentCursorPos = textarea.selectionStart ?? cursorPosition;
@@ -85,7 +87,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
       }
 
       const mentionStartIndex = mentionStartRef.current;
-      if (mentionStartIndex === null) return;
+      if (mentionStartIndex === null) {
+        return;
+      }
 
       const mentionEndIndex = mentionStartIndex + 1 + mentionQuery.length;
 
@@ -217,8 +221,12 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (textareaRef.current?.contains(target)) return;
-      if (target.closest('[data-project-dropdown]')) return;
+      if (textareaRef.current?.contains(target)) {
+        return;
+      }
+      if (target.closest('[data-project-dropdown]')) {
+        return;
+      }
       setShowDropdown(false);
     };
     document.addEventListener('mousedown', handleClickOutside);

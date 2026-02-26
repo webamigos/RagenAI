@@ -40,12 +40,16 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
 
     getOrganizationsForFilter()
       .then((data) => {
-        if (!ignore) setOrgs(data);
+        if (!ignore) {
+          setOrgs(data);
+        }
       })
       .catch(() => {});
     getProjectsForFilter(filters.organizationId)
       .then((data) => {
-        if (!ignore) setProjects(data);
+        if (!ignore) {
+          setProjects(data);
+        }
       })
       .catch(() => {});
 

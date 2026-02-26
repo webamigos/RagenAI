@@ -16,10 +16,14 @@ export const rateLimit = async (
 ) => {
   const url = request.nextUrl.pathname;
   const isApiUrl = url.startsWith('/api/v1');
-  if (!isApiUrl) return;
+  if (!isApiUrl) {
+    return;
+  }
 
   const redis = RedisService.getInstance();
-  if (!redis) return;
+  if (!redis) {
+    return;
+  }
 
   const forwarded = request.headers.get('x-forwarded-for');
   const ip = forwarded?.split(',')[0]?.trim() || '127.0.0.1';
@@ -32,7 +36,9 @@ export const rateLimit = async (
       throw new LimitExceededException();
     }
   } catch (error) {
-    if (error instanceof LimitExceededException) throw error;
+    if (error instanceof LimitExceededException) {
+      throw error;
+    }
     logger.warn(
       { err: error, ip },
       'Redis rate-limit check failed for IP, allowing request',
@@ -48,7 +54,9 @@ export const rateLimit = async (
         throw new LimitExceededException();
       }
     } catch (error) {
-      if (error instanceof LimitExceededException) throw error;
+      if (error instanceof LimitExceededException) {
+        throw error;
+      }
       logger.warn(
         { err: error, keyId: apiContext.keyId },
         'Redis rate-limit check failed for API key, allowing request',

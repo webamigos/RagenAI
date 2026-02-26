@@ -101,7 +101,9 @@ export function SidebarLayout({
 }>) {
   let [showSidebar, setShowSidebar] = useState(false);
   let [isCollapsed, setIsCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false;
+    if (typeof window === 'undefined') {
+      return false;
+    }
     try {
       return localStorage.getItem('sidebar-collapsed') === 'true';
     } catch {

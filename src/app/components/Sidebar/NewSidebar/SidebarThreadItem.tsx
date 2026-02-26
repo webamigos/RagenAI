@@ -15,7 +15,9 @@ type Props = {
 };
 
 function getThreadDisplayTitle(thread: SidebarThreadItemType): string {
-  if (thread.title) return thread.title;
+  if (thread.title) {
+    return thread.title;
+  }
   if (thread.messages[0]?.content) {
     return truncateFileName(thread.messages[0].content, 30);
   }

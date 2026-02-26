@@ -23,10 +23,14 @@ export function AiUsageDashboard() {
     setIsLoading(true);
     try {
       const result = await getAiUsageDashboard(f);
-      if (requestId !== latestRequestIdRef.current) return;
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
       setData(result);
     } catch {
-      if (requestId !== latestRequestIdRef.current) return;
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
       toast.error('Failed to load AI usage data');
     } finally {
       if (requestId === latestRequestIdRef.current) {

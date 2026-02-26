@@ -72,7 +72,9 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
   }
 
   async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
-    if (documents.length === 0) return;
+    if (documents.length === 0) {
+      return;
+    }
 
     await this.ensureIndex();
 
@@ -137,7 +139,9 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
   }
 
   private async ensureIndex(): Promise<void> {
-    if (this.indexConfigured) return;
+    if (this.indexConfigured) {
+      return;
+    }
     if (configuredIndexes.has(this.indexName)) {
       this.indexConfigured = true;
       return;
@@ -202,7 +206,9 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
 }
 
 function formatFilterValue(value: string | number): string {
-  if (typeof value === 'number') return String(value);
+  if (typeof value === 'number') {
+    return String(value);
+  }
   const escaped = value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   return `'${escaped}'`;
 }
@@ -236,6 +242,8 @@ function convertQdrantFilterToMeilisearch(
     parts.push(`(${shouldParts.join(' OR ')})`);
   }
 
-  if (parts.length === 0) return undefined;
+  if (parts.length === 0) {
+    return undefined;
+  }
   return parts.join(' AND ');
 }

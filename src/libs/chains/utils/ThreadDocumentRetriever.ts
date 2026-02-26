@@ -27,7 +27,9 @@ export class ThreadDocumentRetriever {
    * to avoid collisions between documents sharing the same name.
    */
   private documentCacheKey(doc: ThreadDocumentUI): string {
-    if (doc.userFileId) return doc.userFileId;
+    if (doc.userFileId) {
+      return doc.userFileId;
+    }
     return `${doc.name}:${doc.size}:${doc.content.length}`;
   }
 

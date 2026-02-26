@@ -74,7 +74,9 @@ export const ThreadDropdownMenu = ({
   };
 
   const handleRenameSubmit = async () => {
-    if (!renameValue.trim()) return;
+    if (!renameValue.trim()) {
+      return;
+    }
     setIsRenameOpen(false);
     onRenamed?.(thread.public_id, renameValue.trim());
     await renameThread(thread.public_id, renameValue.trim());
@@ -94,7 +96,9 @@ export const ThreadDropdownMenu = ({
     <>
       <DropdownMenu
         onOpenChange={(open) => {
-          if (!open) setIsConfirmingDelete(false);
+          if (!open) {
+            setIsConfirmingDelete(false);
+          }
         }}
       >
         <DropdownMenuTrigger asChild>
@@ -139,7 +143,9 @@ export const ThreadDropdownMenu = ({
             value={renameValue}
             onChange={(e) => setRenameValue(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') handleRenameSubmit();
+              if (e.key === 'Enter') {
+                handleRenameSubmit();
+              }
             }}
             onFocus={(e) => e.target.select()}
             className="selection:bg-blue-200 selection:text-zinc-900 dark:selection:bg-blue-800 dark:selection:text-white"
