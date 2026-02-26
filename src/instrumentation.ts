@@ -1,11 +1,8 @@
 /* eslint-disable no-console -- console is intentional here: the logger depends on OTL being initialised first, so we must use console during bootstrap */
 
-export async function register() {
-  // OpenTelemetry init (any env with OTEL_EXPORTER_OTLP_ENDPOINT set)
-  if (process.env.NEXT_RUNTIME !== 'nodejs') {
-    return;
-  }
+export const runtime = 'nodejs';
 
+export async function register() {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   if (!endpoint) {
     console.warn(
@@ -15,6 +12,15 @@ export async function register() {
   }
 
   try {
+    // OTLP HTTP exporters internally reference `navigator.userAgent` for
+    // environment detection.  Next.js does not expose `navigator` in the
+    // Node.js instrumentation context, so we provide a minimal shim to
+    // prevent the ReferenceError.
+    if (typeof globalThis.navigator === 'undefined') {
+      // @ts-expect-error -- intentional minimal shim for OTLP exporters
+      globalThis.navigator = { userAgent: '' };
+    }
+
     const { NodeTracerProvider, BatchSpanProcessor } =
       await import('@opentelemetry/sdk-trace-node');
     const { OTLPTraceExporter } =

@@ -3,7 +3,6 @@
  * This ensures all links across the application maintain the current locale.
  */
 
-import { DataInteractive as HeadlessDataInteractive } from '@headlessui/react';
 import React, { forwardRef } from 'react';
 import { Link as I18nLink } from '@/i18n/routing';
 import type { ComponentProps } from 'react';
@@ -14,9 +13,5 @@ export const Link = forwardRef(function Link(
   props: I18nLinkProps,
   ref: React.ForwardedRef<HTMLAnchorElement>,
 ) {
-  return (
-    <HeadlessDataInteractive>
-      <I18nLink {...props} ref={ref} />
-    </HeadlessDataInteractive>
-  );
+  return <I18nLink {...props} ref={ref} />;
 });

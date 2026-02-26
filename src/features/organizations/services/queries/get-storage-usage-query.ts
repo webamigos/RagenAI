@@ -1,28 +1,26 @@
 import db from '@ragenai/prisma-client';
-import { getDefaultProjectIdQuery } from '@/features/projects/services/queries/get-default-project-query';
 import type { StorageUsage } from '../../contracts/organization.types';
 
 export async function getStorageUsageQuery(
   organizationId: string,
 ): Promise<StorageUsage> {
-  const defaultProjectId = await getDefaultProjectIdQuery(organizationId);
-
   const [totalAgg, kbAgg, threadAgg] = await Promise.all([
     db.userFile.aggregate({
       where: { organization_id: organizationId },
       _sum: { file_size: true },
       _count: { id: true },
     }),
-    defaultProjectId
-      ? db.userFile.aggregate({
-          where: {
-            organization_id: organizationId,
-            project_id: defaultProjectId,
-          },
-          _sum: { file_size: true },
-          _count: { id: true },
-        })
-      : Promise.resolve({ _sum: { file_size: null }, _count: { id: 0 } }),
+    // Knowledge Base: files not assigned to any project and not attached to threads
+    db.userFile.aggregate({
+      where: {
+        organization_id: organizationId,
+        project_id: null,
+        threadDocuments: { none: {} },
+      },
+      _sum: { file_size: true },
+      _count: { id: true },
+    }),
+    // Thread files: files attached to at least one thread
     db.userFile.aggregate({
       where: {
         organization_id: organizationId,
@@ -39,6 +37,7 @@ export async function getStorageUsageQuery(
   const kbFileCount = kbAgg._count.id;
   const threadBytes = threadAgg._sum.file_size ?? 0;
   const threadFileCount = threadAgg._count.id;
+  // Project files: everything else (has project_id, regardless of thread status)
   const projectFilesBytes = Math.max(0, totalBytes - kbBytes - threadBytes);
   const projectFilesFileCount = Math.max(
     0,

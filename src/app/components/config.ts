@@ -39,25 +39,6 @@ export const availableModels: AvailableModel[] = [
     provider: 'openrouter',
     origin: 'openai',
   },
-  {
-    value: 'openai/gpt-4o',
-    label: 'GPT-4o',
-    provider: 'openrouter',
-    origin: 'openai',
-  },
-  {
-    value: 'openai/gpt-4o-mini',
-    label: 'GPT-4o mini',
-    provider: 'openrouter',
-    origin: 'openai',
-  },
-  {
-    value: 'openai/o3-mini',
-    label: 'OpenAI o3-mini',
-    provider: 'openrouter',
-    origin: 'openai',
-    reasoning: true,
-  },
 
   // Google Gemini Models
   {
@@ -67,23 +48,11 @@ export const availableModels: AvailableModel[] = [
     origin: 'google',
     reasoning: true,
   },
-  {
-    value: 'google/gemini-2.0-flash-001',
-    label: 'Gemini 2.0 Flash',
-    provider: 'openrouter',
-    origin: 'google',
-  },
 
   // Anthropic Claude Models
   {
-    value: 'anthropic/claude-haiku-4.5',
-    label: 'Claude Haiku 4.5',
-    provider: 'openrouter',
-    origin: 'anthropic',
-  },
-  {
-    value: 'anthropic/claude-3.7-sonnet',
-    label: 'Claude 3.7 Sonnet',
+    value: 'anthropic/claude-sonnet-4.6',
+    label: 'Claude Sonnet 4.6',
     provider: 'openrouter',
     origin: 'anthropic',
     reasoning: true,
@@ -102,13 +71,20 @@ export const availableModels: AvailableModel[] = [
 const legacyModelIdMap: Record<string, string> = {
   'gpt-5.2': 'openai/gpt-5.2',
   'gpt-5.2-chat-latest': 'openai/gpt-5.2-chat',
-  'gpt-4o': 'openai/gpt-4o',
-  'gpt-4o-mini': 'openai/gpt-4o-mini',
-  'o3-mini': 'openai/o3-mini',
+  'gpt-4o': 'openai/gpt-5.2-chat',
+  'gpt-4o-mini': 'openai/gpt-5.2-chat',
+  'o3-mini': 'openai/gpt-5.2',
+  'openai/gpt-4o': 'openai/gpt-5.2-chat',
+  'openai/gpt-4o-mini': 'openai/gpt-5.2-chat',
+  'openai/o3-mini': 'openai/gpt-5.2',
   'gemini-3-flash-preview': 'google/gemini-3-flash-preview',
-  'gemini-2.0-flash': 'google/gemini-2.0-flash-001',
-  'claude-haiku-4-5-20251001': 'anthropic/claude-haiku-4.5',
-  'claude-3-7-sonnet-latest': 'anthropic/claude-3.7-sonnet',
+  'gemini-2.0-flash': 'google/gemini-3-flash-preview',
+  'claude-sonnet-4-6': 'anthropic/claude-sonnet-4.6',
+  'claude-haiku-4-5-20251001': 'anthropic/claude-sonnet-4.6',
+  'claude-3-7-sonnet-latest': 'anthropic/claude-sonnet-4.6',
+  'claude-haiku-4.5': 'anthropic/claude-sonnet-4.6',
+  'anthropic/claude-haiku-4.5': 'anthropic/claude-sonnet-4.6',
+  'anthropic/claude-3.7-sonnet': 'anthropic/claude-sonnet-4.6',
 };
 
 /** Normalize a model ID, converting legacy IDs to current OpenRouter IDs */
@@ -120,7 +96,17 @@ export const getModelProvider = (
   modelValue: string,
 ): ModelProvider | undefined => {
   const normalized = normalizeModelId(modelValue);
-  return availableModels.find((model) => model.value === normalized)?.provider;
+  const found = availableModels.find((model) => model.value === normalized);
+  if (found) {
+    return found.provider;
+  }
+
+  // Infer provider from OpenRouter-style prefix (e.g. "google/gemini-..." → openrouter)
+  if (normalized.includes('/')) {
+    return 'openrouter';
+  }
+
+  return undefined;
 };
 
 export const isReasoningModel = (modelValue: string): boolean => {

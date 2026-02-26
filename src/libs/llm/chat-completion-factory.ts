@@ -86,7 +86,7 @@ export class ChatCompletionFactory {
       apiKey: credentials.apiKey,
     });
 
-    return anthropic(config.model || 'claude-3-5-sonnet-20241022');
+    return anthropic(config.model || 'claude-sonnet-4-6');
   }
 
   private static createGoogleInstance(
@@ -101,7 +101,7 @@ export class ChatCompletionFactory {
       apiKey: credentials.apiKey,
     });
 
-    return google(config.model || 'gemini-2.0-flash');
+    return google(config.model || 'gemini-3-flash-preview');
   }
 
   private static createOpenRouterInstance(

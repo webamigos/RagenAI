@@ -38,7 +38,7 @@ env:
   FEATURE_FLAG_SHOW_MODEL_API_KEY: 1
   FEATURE_FLAG_MODEL_SELECT: 1
   DEFAULT_MODEL_PROVIDER: 'google'
-  DEFAULT_MODEL: 'gemini-2.0-flash'
+  DEFAULT_MODEL: 'gemini-3-flash-preview'
   GOOGLE_API_KEY: 'dummy'
   PUSHER_APP_ID: 'dummy'
   PUSHER_KEY: 'dummy'

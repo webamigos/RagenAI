@@ -1,21 +1,11 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 
 export const getUserFilesQuery = async (organizationId: string) => {
-  const defaultProjectId = await fetchOrganizationDefaultProjectId(
-    organizationId
-  );
-
-  if (!defaultProjectId) {
-    return [];
-  }
-
   return await db.userFile.findMany({
     where: {
       organization_id: organizationId,
-      project_id: defaultProjectId,
     },
     select: {
       created_at: true,

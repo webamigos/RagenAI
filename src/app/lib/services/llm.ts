@@ -27,8 +27,8 @@ export const MODELS_MAP = {
   // Legacy provider-specific entries (for backward compatibility with existing ENV vars)
   google: [
     'gemini-2.0-flash',
+    'gemini-3-flash-preview',
     'google/gemini-3-flash-preview',
-    'google/gemini-2.0-flash-001',
   ],
   openai: [
     'gpt-4o',
@@ -42,6 +42,9 @@ export const MODELS_MAP = {
   ],
   anthropic: [
     'claude-3-5-sonnet-20241022',
+    'claude-sonnet-4-6',
+    'claude-sonnet-4.6',
+    'anthropic/claude-sonnet-4.6',
     'anthropic/claude-haiku-4.5',
     'anthropic/claude-3.7-sonnet',
   ],
@@ -65,8 +68,7 @@ export const MODELS_MAP = {
     'openai/o3-mini',
     'google/gemini-3-flash-preview',
     'google/gemini-2.0-flash-001',
-    'anthropic/claude-haiku-4.5',
-    'anthropic/claude-3.7-sonnet',
+    'anthropic/claude-sonnet-4.6',
     'perplexity/sonar-pro',
   ],
   fireworks: ['accounts/fireworks/models/llama-v3p2-3b-instruct'],
@@ -485,7 +487,7 @@ switch (modelConfig.provider) {
       provider: 'anthropic',
       apiKey: ANTHROPIC_API_KEY,
     };
-    customChatModel = 'claude-3-5-sonnet-20241022';
+    customChatModel = 'claude-sonnet-4-6';
     break;
   }
 
@@ -501,7 +503,7 @@ switch (modelConfig.provider) {
       provider: 'google',
       apiKey: GOOGLE_API_KEY,
     };
-    customChatModel = 'gemini-2.0-flash';
+    customChatModel = 'gemini-3-flash-preview';
     break;
   }
 

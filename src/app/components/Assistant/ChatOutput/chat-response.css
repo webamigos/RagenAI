@@ -25,7 +25,8 @@
   margin-top: 0;
 }
 
-.chat-response p:last-child {
+.chat-response p:last-child,
+.chat-response > :last-child > p:last-child {
   margin-bottom: 0;
 }
 
