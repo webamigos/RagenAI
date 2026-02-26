@@ -7,9 +7,6 @@ import type {
   AiUsageSummary,
   AiUsageChartData,
   AiUsageDailyDataPoint,
-  AiUsageByStepDataPoint,
-  AiUsageByModelDataPoint,
-  AiUsageByOrgDataPoint,
 } from '../../contracts/ai-usage.types';
 
 function buildDateFilter(filters?: AiUsageFilters): Date | undefined {
@@ -66,40 +63,62 @@ export async function getAiUsageDashboardQuery(
 ): Promise<AiUsageDashboardData> {
   const where = buildWhereClause(filters);
 
-  const [items, aggregates] = await Promise.all([
-    db.aiUsage.findMany({
-      where,
-      orderBy: { created_at: 'desc' },
-      take: 500,
-      include: {
-        organization: {
-          select: {
-            provider_id: true,
+  const [items, aggregates, byStepRaw, byModelRaw, byOrgRaw, dailyData] =
+    await Promise.all([
+      db.aiUsage.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        take: 500,
+        include: {
+          organization: {
+            select: {
+              provider_id: true,
+            },
+          },
+          project: {
+            select: { public_id: true, title: true },
+          },
+          user: {
+            select: { id: true, name: true, email: true },
           },
         },
-        project: {
-          select: { public_id: true, title: true },
+      }),
+      db.aiUsage.aggregate({
+        where,
+        _count: true,
+        _sum: {
+          input_tokens: true,
+          output_tokens: true,
+          total_tokens: true,
+          estimated_cost: true,
         },
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-    }),
-    db.aiUsage.aggregate({
-      where,
-      _count: true,
-      _sum: {
-        input_tokens: true,
-        output_tokens: true,
-        total_tokens: true,
-        estimated_cost: true,
-      },
-    }),
-  ]);
+      }),
+      db.aiUsage.groupBy({
+        by: ['step'],
+        where,
+        _count: true,
+        _sum: { total_tokens: true, estimated_cost: true },
+      }),
+      db.aiUsage.groupBy({
+        by: ['model'],
+        where,
+        _count: true,
+        _sum: { total_tokens: true, estimated_cost: true },
+      }),
+      db.aiUsage.groupBy({
+        by: ['organization_id'],
+        where,
+        _count: true,
+        _sum: { total_tokens: true, estimated_cost: true },
+      }),
+      getDailyChartData(filters),
+    ]);
 
-  // Fetch org names for all org IDs in the result set
-  const orgIds = [...new Set(items.map((i) => i.organization_id))];
-  const orgNames = await getOrgNameMap(orgIds);
+  // Collect all org IDs from items + chart data for name resolution
+  const itemOrgIds = items.map((i) => i.organization_id);
+  const chartOrgIds = byOrgRaw.map((r) => r.organization_id);
+  const allOrgIds = [...new Set([...itemOrgIds, ...chartOrgIds])];
+  const orgNames = await getOrgNameMap(allOrgIds);
 
   const summary: AiUsageSummary = {
     totalCalls: aggregates._count,
@@ -131,9 +150,107 @@ export async function getAiUsageDashboardQuery(
       : null,
   }));
 
-  const charts = buildChartData(mappedItems);
+  const charts: AiUsageChartData = {
+    daily: dailyData,
+    byStep: byStepRaw
+      .map((r) => ({
+        step: r.step,
+        calls: r._count,
+        tokens: r._sum.total_tokens ?? 0,
+        cost: r._sum.estimated_cost ?? 0,
+      }))
+      .sort((a, b) => b.cost - a.cost),
+    byModel: byModelRaw
+      .map((r) => ({
+        model: r.model,
+        calls: r._count,
+        tokens: r._sum.total_tokens ?? 0,
+        cost: r._sum.estimated_cost ?? 0,
+      }))
+      .sort((a, b) => b.cost - a.cost),
+    byOrg: byOrgRaw
+      .map((r) => ({
+        organizationName: orgNames.get(r.organization_id) ?? r.organization_id,
+        calls: r._count,
+        tokens: r._sum.total_tokens ?? 0,
+        cost: r._sum.estimated_cost ?? 0,
+      }))
+      .sort((a, b) => b.cost - a.cost),
+  };
 
   return { summary, items: mappedItems, charts };
+}
+
+type DailyRawRow = {
+  date: Date;
+  calls: bigint;
+  tokens: bigint;
+  cost: number;
+};
+
+async function getDailyChartData(
+  filters?: AiUsageFilters,
+): Promise<AiUsageDailyDataPoint[]> {
+  const conditions: string[] = ['TRUE'];
+  const params: unknown[] = [];
+  let idx = 1;
+
+  if (filters?.organizationId) {
+    conditions.push(`organization_id = $${idx++}`);
+    params.push(filters.organizationId);
+  }
+
+  if (filters?.projectPublicId) {
+    conditions.push(
+      `project_id IN (SELECT id FROM projects WHERE public_id = $${idx++})`,
+    );
+    params.push(filters.projectPublicId);
+  }
+
+  if (filters?.step) {
+    conditions.push(`step::text = $${idx++}`);
+    params.push(filters.step);
+  }
+
+  const dateFrom = buildDateFilter(filters);
+  if (dateFrom) {
+    conditions.push(`created_at >= $${idx++}`);
+    params.push(dateFrom);
+  } else if (filters?.period === 'custom') {
+    if (filters.dateFrom) {
+      conditions.push(`created_at >= $${idx++}`);
+      params.push(new Date(filters.dateFrom));
+    }
+    if (filters.dateTo) {
+      const endDate = new Date(filters.dateTo);
+      endDate.setHours(23, 59, 59, 999);
+      conditions.push(`created_at <= $${idx++}`);
+      params.push(endDate);
+    }
+  }
+
+  const rows = await db.$queryRawUnsafe<DailyRawRow[]>(
+    `SELECT
+       DATE(created_at AT TIME ZONE 'UTC') AS date,
+       COUNT(*)::bigint AS calls,
+       COALESCE(SUM(total_tokens), 0)::bigint AS tokens,
+       COALESCE(SUM(estimated_cost), 0)::float8 AS cost
+     FROM ai_usages
+     WHERE ${conditions.join(' AND ')}
+     GROUP BY DATE(created_at AT TIME ZONE 'UTC')
+     ORDER BY date ASC`,
+    ...params,
+  );
+
+  return rows.map((r) => ({
+    date:
+      r.date instanceof Date
+        ? r.date.toISOString().split('T')[0]!
+        : String(r.date),
+    calls: Number(r.calls),
+    tokens: Number(r.tokens),
+    cost: r.cost,
+  }));
 }
 
 async function getOrgNameMap(
@@ -147,72 +264,6 @@ async function getOrgNameMap(
   });
 
   return new Map(orgs.map((o) => [o.id, o.name]));
-}
-
-function buildChartData(items: AiUsageListItem[]): AiUsageChartData {
-  // Daily aggregation
-  const dailyMap = new Map<string, AiUsageDailyDataPoint>();
-  const stepMap = new Map<string, AiUsageByStepDataPoint>();
-  const modelMap = new Map<string, AiUsageByModelDataPoint>();
-  const orgMap = new Map<string, AiUsageByOrgDataPoint>();
-
-  for (const item of items) {
-    // Daily
-    const dateKey = item.createdAt.toISOString().split('T')[0]!;
-    const daily = dailyMap.get(dateKey) ?? {
-      date: dateKey,
-      calls: 0,
-      tokens: 0,
-      cost: 0,
-    };
-    daily.calls++;
-    daily.tokens += item.totalTokens;
-    daily.cost += item.estimatedCost;
-    dailyMap.set(dateKey, daily);
-
-    // By step
-    const step = stepMap.get(item.step) ?? {
-      step: item.step,
-      calls: 0,
-      tokens: 0,
-      cost: 0,
-    };
-    step.calls++;
-    step.tokens += item.totalTokens;
-    step.cost += item.estimatedCost;
-    stepMap.set(item.step, step);
-
-    // By model
-    const model = modelMap.get(item.model) ?? {
-      model: item.model,
-      calls: 0,
-      tokens: 0,
-      cost: 0,
-    };
-    model.calls++;
-    model.tokens += item.totalTokens;
-    model.cost += item.estimatedCost;
-    modelMap.set(item.model, model);
-
-    // By org
-    const org = orgMap.get(item.organizationName) ?? {
-      organizationName: item.organizationName,
-      calls: 0,
-      tokens: 0,
-      cost: 0,
-    };
-    org.calls++;
-    org.tokens += item.totalTokens;
-    org.cost += item.estimatedCost;
-    orgMap.set(item.organizationName, org);
-  }
-
-  return {
-    daily: [...dailyMap.values()].sort((a, b) => a.date.localeCompare(b.date)),
-    byStep: [...stepMap.values()].sort((a, b) => b.cost - a.cost),
-    byModel: [...modelMap.values()].sort((a, b) => b.cost - a.cost),
-    byOrg: [...orgMap.values()].sort((a, b) => b.cost - a.cost),
-  };
 }
 
 export async function getOrganizationsForFilterQuery(): Promise<

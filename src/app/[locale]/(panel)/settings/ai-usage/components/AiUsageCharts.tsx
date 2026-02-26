@@ -53,7 +53,8 @@ export function AiUsageCharts({ charts }: Props) {
   const hasData =
     charts.daily.length > 0 ||
     charts.byStep.length > 0 ||
-    charts.byModel.length > 0;
+    charts.byModel.length > 0 ||
+    charts.byOrg.length > 0;
 
   if (!hasData) return null;
 

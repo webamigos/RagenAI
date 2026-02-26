@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AiUsageListItem } from '@/features/ai-usage/contracts/ai-usage.types';
 
 type Props = {
@@ -37,6 +37,10 @@ function formatTokens(n: number): string {
 
 export function AiUsageTable({ items }: Props) {
   const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    setPage(0);
+  }, [items]);
 
   if (items.length === 0) return null;
 

@@ -1,3 +1,5 @@
+import { logger } from '@/app/lib/utils/logger';
+
 type ModelPricing = {
   input: number; // per 1M tokens
   output: number; // per 1M tokens
@@ -51,9 +53,13 @@ export function calculateCost(
   inputTokens: number,
   outputTokens: number,
 ): number {
-  // Normalize provider from model string (e.g., "openai/gpt-4o" -> provider "openrouter")
   const pricing = PRICING[provider]?.[model];
-  if (!pricing) return 0;
+  if (!pricing) {
+    logger.warn(
+      `[ai-pricing] No pricing found for provider="${provider}" model="${model}". Cost will be 0.`,
+    );
+    return 0;
+  }
 
   return (
     (inputTokens / 1_000_000) * pricing.input +

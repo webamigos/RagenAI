@@ -36,12 +36,22 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
   const [customTo, setCustomTo] = useState(filters.dateTo ?? '');
 
   useEffect(() => {
+    let ignore = false;
+
     getOrganizationsForFilter()
-      .then(setOrgs)
+      .then((data) => {
+        if (!ignore) setOrgs(data);
+      })
       .catch(() => {});
     getProjectsForFilter(filters.organizationId)
-      .then(setProjects)
+      .then((data) => {
+        if (!ignore) setProjects(data);
+      })
       .catch(() => {});
+
+    return () => {
+      ignore = true;
+    };
   }, [filters.organizationId]);
 
   const handlePeriodChange = (period: AiUsageFilters['period']) => {

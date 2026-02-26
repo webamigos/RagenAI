@@ -35,6 +35,7 @@ export async function createAiUsageCommand(
     });
   } catch (error) {
     logger.error({ err: error, input }, 'Failed to create AI usage record');
+    throw error;
   }
 }
 

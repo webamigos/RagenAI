@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import type {
   AiUsageDashboardData,
@@ -16,16 +16,22 @@ export function AiUsageDashboard() {
   const [data, setData] = useState<AiUsageDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<AiUsageFilters>({ period: '30d' });
+  const latestRequestIdRef = useRef(0);
 
   const loadData = useCallback(async (f: AiUsageFilters) => {
+    const requestId = ++latestRequestIdRef.current;
     setIsLoading(true);
     try {
       const result = await getAiUsageDashboard(f);
+      if (requestId !== latestRequestIdRef.current) return;
       setData(result);
     } catch {
+      if (requestId !== latestRequestIdRef.current) return;
       toast.error('Failed to load AI usage data');
     } finally {
-      setIsLoading(false);
+      if (requestId === latestRequestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
