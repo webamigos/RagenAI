@@ -6,6 +6,7 @@ export const getAllOrgFilesQuery = async (organizationId: string) => {
   return await db.userFile.findMany({
     where: {
       organization_id: organizationId,
+      embedding_status: 'COMPLETED',
     },
     select: {
       public_id: true,

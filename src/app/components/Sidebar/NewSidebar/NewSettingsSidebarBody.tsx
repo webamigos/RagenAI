@@ -6,7 +6,6 @@ import {
 } from '@ragenai/tui/sidebar';
 import {
   ArrowLeftIcon,
-  BookOpenIcon,
   BuildingOfficeIcon,
   AdjustmentsHorizontalIcon,
   CreditCardIcon,
@@ -26,12 +25,6 @@ export const NewSidebarSettingsBody = () => {
         <SidebarItem href="/new">
           <ArrowLeftIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('back')}</SidebarLabel>
-        </SidebarItem>
-        <SidebarItem href="/settings/knowledge/documents-list">
-          <BookOpenIcon className={iconClassName} />
-          <SidebarLabel className="font-normal">
-            {t('manage-knowledge')}
-          </SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/organization-profile">
           <BuildingOfficeIcon className={iconClassName} />

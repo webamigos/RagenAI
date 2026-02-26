@@ -4,12 +4,14 @@ import { Navbar, NavbarSection, NavbarSpacer } from '@ragenai/tui/navbar';
 import {
   Sidebar,
   SidebarHeader,
+  SidebarItem,
   SidebarLabel,
   SidebarSection,
 } from '@ragenai/tui/sidebar';
 import {
   PlusIcon as PlusIconOutline,
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
+  BookOpenIcon as BookOpenIconOutline,
 } from '@heroicons/react/24/outline';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
@@ -55,6 +57,12 @@ export default async function PanelLayout({ children }: Props) {
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">Search</SidebarLabel>
           </SearchButton>
+          <SidebarItem href="/knowledge/documents-list">
+            <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+            <SidebarLabel className="font-normal">
+              {t('manage-knowledge')}
+            </SidebarLabel>
+          </SidebarItem>
         </SidebarSection>
       </SidebarHeader>
 
