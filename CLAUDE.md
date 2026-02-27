@@ -78,7 +78,27 @@ The app can run in API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/ap
 
 ### Auth
 
-Better Auth (`src/lib/auth.ts`) with Prisma adapter. On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership management + Ragen `InternalOrganization` for app-specific data (projects, API keys, subscriptions).
+Better Auth (`src/lib/auth.ts`) with Prisma adapter + `admin` and `organization` plugins. On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership management + Ragen `InternalOrganization` for app-specific data (projects, API keys, subscriptions).
+
+### Role-Based Access Control
+
+Two distinct role hierarchies exist — **never confuse them**:
+
+| Level | Field | Values | Purpose |
+|-------|-------|--------|---------|
+| **App-level** | `User.role` | `'admin'` (superadmin), `'user'` | Platform-wide admin access (disk usage, AI usage dashboards) |
+| **Org-level** | `Member.role` | `'owner'`, `'admin'`, `'member'` | Per-organization permissions (manage members, edit profile) |
+
+**Key files**:
+- `src/lib/auth-access-control.ts` — **Client-safe**. Role constants (`APP_ADMIN_ROLE`, `APP_USER_ROLE`), types (`AppRole`, `OrgRole`), pure check functions (`isAppAdmin()`, `isOrgAdmin()`, `hasOrgRole()`), and Better Auth `createAccessControl` + `orgRoles` definitions
+- `src/lib/auth-guards.ts` — **Server-only**. Async guards (`requireAppAdmin()`, `requireOrgAdmin()`, `requireOrgOwner()`), cached session/member lookups (`getSession()`, `getActiveMember()`)
+
+**Conventions**:
+- Use `isAppAdmin(user)` not `user.role === 'admin'`
+- Use `isOrgAdmin(member.role)` not `['admin', 'owner'].includes(member.role)`
+- Import pure checks from `@/lib/auth-access-control` (works in client and server)
+- Import async guards from `@/lib/auth-guards` (server-only)
+- Do NOT duplicate `getActiveMember` logic in action files — import it from `auth-guards`
 
 ### State Management
 

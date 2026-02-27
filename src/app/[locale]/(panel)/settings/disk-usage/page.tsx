@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { isAppAdmin } from '@/lib/auth-access-control';
 import { DiskUsageSettings } from './components/DiskUsageSettings';
 
 export const metadata: Metadata = {
@@ -15,8 +16,7 @@ export default async function DiskUsagePage() {
     return redirect({ href: '/sign-in', locale });
   }
 
-  // Only app admins can access this page
-  if (user.role !== 'admin') {
+  if (!isAppAdmin(user)) {
     return redirect({ href: '/', locale });
   }
 

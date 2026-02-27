@@ -1,6 +1,10 @@
 'use client';
 
 import { useSession, useActiveOrganization } from './use-better-auth';
+import {
+  isAppAdmin as checkAppAdmin,
+  isOrgAdmin as checkOrgAdmin,
+} from '@/lib/auth-access-control';
 
 /**
  * Replacement for Clerk's useUser hook
@@ -14,6 +18,7 @@ export function useUser() {
     user: session?.user || null,
     isLoaded: !isPending,
     isSignedIn: !!session?.user,
+    isAppAdmin: checkAppAdmin(session?.user),
   };
 }
 
@@ -42,17 +47,19 @@ export function useAuth() {
  */
 export function useOrganization() {
   const { data: org, isPending } = useActiveOrganization();
+  // @ts-ignore - Better Auth types don't expose role/permissions yet
+  const role = (org as any)?.role as string | undefined;
 
   return {
     organization: org || null,
     isLoaded: !isPending,
     membership: org
       ? {
-          // @ts-ignore - Better Auth types don't expose role/permissions yet
-          role: (org as any).role,
+          role: role,
           // @ts-ignore
           permissions: (org as any).permissions || [],
         }
       : null,
+    isOrgAdmin: checkOrgAdmin(role),
   };
 }

@@ -1,6 +1,6 @@
 'use server';
 
-import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { requireAppAdmin } from '@/lib/auth-guards';
 import { saveStorageLimits } from '@/features/organizations/services/organization-settings';
 import {
   getAdminAllOrgsStorageQuery,
@@ -8,14 +8,6 @@ import {
 } from '@/features/organizations/services/queries/get-admin-storage-query';
 import { getStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { getStorageLimitsByOrgId } from '@/features/organizations/services/organization-settings';
-
-async function requireAppAdmin() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== 'admin') {
-    throw new Error('Unauthorized: app admin role required');
-  }
-  return user;
-}
 
 export async function getAdminStorageOverview() {
   await requireAppAdmin();

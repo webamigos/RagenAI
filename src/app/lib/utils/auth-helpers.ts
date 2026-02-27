@@ -3,6 +3,16 @@ import { headers } from 'next/headers';
 import { cache } from 'react';
 import { logger } from './logger';
 
+// Re-export centralized guards for convenience
+export {
+  isAppAdmin,
+  isOrgAdmin,
+  getActiveMember,
+  requireAppAdmin,
+  requireOrgAdmin,
+  requireOrgOwner,
+} from '@/lib/auth-guards';
+
 /**
  * Get organization ID from Better Auth session
  *
@@ -85,48 +95,3 @@ export const getCurrentUserId = cache(async (): Promise<string | null> => {
   const user = await getCurrentUser();
   return user?.id || null;
 });
-
-/**
- * Check if user has specific role in organization
- */
-export async function hasOrganizationRole(
-  userId: string,
-  organizationId: string,
-  role: 'owner' | 'admin' | 'member'
-): Promise<boolean> {
-  try {
-    // @ts-ignore - Better Auth types don't expose getFullOrganization yet
-    const org = await (auth.api as any).getFullOrganization({
-      headers: await headers(),
-      query: { organizationId },
-    });
-
-    const member = org?.members?.find((m: any) => m.userId === userId);
-    return member?.role === role;
-  } catch (error) {
-    logger.error({ err: error }, 'Error checking organization role');
-    return false;
-  }
-}
-
-/**
- * Check if user is admin or owner
- */
-export async function isOrganizationAdmin(
-  userId: string,
-  organizationId: string
-): Promise<boolean> {
-  try {
-    // @ts-ignore - Better Auth types don't expose getFullOrganization yet
-    const org = await (auth.api as any).getFullOrganization({
-      headers: await headers(),
-      query: { organizationId },
-    });
-
-    const member = org?.members?.find((m: any) => m.userId === userId);
-    return member?.role === 'admin' || member?.role === 'owner';
-  } catch (error) {
-    logger.error({ err: error }, 'Error checking admin role');
-    return false;
-  }
-}

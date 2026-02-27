@@ -7,6 +7,7 @@ import { InviteMemberDialog } from './InviteMemberDialog';
 import { MemberActionsDropdown } from './MemberActionsDropdown';
 import { statusToast } from '@/app/lib/utils/toast';
 import { removeMember, updateMemberRole } from '../actions/members';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import type { Member } from '../types';
 
 type Props = {
@@ -28,7 +29,7 @@ export function MembersList({
   const { successToast, errorToast } = statusToast();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
-  const canManageMembers = ['admin', 'owner'].includes(currentUserRole);
+  const canManageMembers = isOrgAdmin(currentUserRole);
 
   const handleRemoveMember = async (memberEmail: string) => {
     if (!confirm(t('confirm-remove'))) {

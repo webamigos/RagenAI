@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { isAppAdmin } from '@/lib/auth-access-control';
 import { AiUsageDashboard } from './components/AiUsageDashboard';
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ export default async function AiUsagePage() {
     return redirect({ href: '/sign-in', locale });
   }
 
-  if (user.role !== 'admin') {
+  if (!isAppAdmin(user)) {
     return redirect({ href: '/', locale });
   }
 

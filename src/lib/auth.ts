@@ -3,8 +3,9 @@
 // which would cause webpack bundling issues in middleware (Edge Runtime)
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { organization, openAPI } from 'better-auth/plugins';
+import { organization, openAPI, admin } from 'better-auth/plugins';
 import { stripe } from '@better-auth/stripe';
+import { orgAccessControl, orgRoles } from './auth-access-control';
 import Stripe from 'stripe';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
@@ -83,9 +84,13 @@ export const auth = betterAuth({
 
   plugins: [
     openAPI(),
-    // TODO: Add custom roles configuration using createAccessControl API
-    // For now using default roles: owner, admin, member
+    admin({
+      defaultRole: 'user',
+      adminRoles: ['admin'],
+    }),
     organization({
+      ac: orgAccessControl,
+      roles: orgRoles,
       async sendInvitationEmail(data) {
         await sendOrganizationInvite(data);
       },
