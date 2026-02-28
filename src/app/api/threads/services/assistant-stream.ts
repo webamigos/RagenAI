@@ -165,7 +165,7 @@ export async function streamEvents({
         // TODO: to optimize we can move database queries after chain run
         sendApiEvent(controller, 'find_thread');
 
-        const threadRecord = await getThreadDetails(publicThreadId);
+        const threadRecord = await getThreadDetails(publicThreadId, orgId);
 
         sendApiEvent(controller, 'thread_found', {
           id: threadRecord.public_id,

@@ -79,12 +79,12 @@ export const createApiKey = async (
 
     const hashResult = await apiKeysService.createAndHash(keyPayload);
 
-    const { apiKey } = hashResult;
+    const { apiKey, hashedKey } = hashResult;
     const maskedKey = maskApiKey(apiKey);
 
     await db.apiKey.update({
       where: { id: keyRecord.id },
-      data: { masked_value: maskedKey },
+      data: { masked_value: maskedKey, hashed_value: hashedKey },
     });
 
     revalidatePath('/my-profile/api-keys');

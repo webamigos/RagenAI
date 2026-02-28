@@ -1,4 +1,5 @@
 import { format } from 'date-fns';
+import DOMPurify from 'dompurify';
 
 import { Text } from '@ragenai/common-ui/Text';
 import { ArrowIcon } from '@ragenai/common-ui/icons';
@@ -42,7 +43,17 @@ export const MessageItem = ({
       >
         <div
           dangerouslySetInnerHTML={{
-            __html: md.render(message.content),
+            __html: DOMPurify.sanitize(md.render(message.content), {
+              FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+              FORBID_ATTR: [
+                'onerror',
+                'onclick',
+                'onload',
+                'onmouseover',
+                'onfocus',
+                'onblur',
+              ],
+            }),
           }}
         />
         <div className="flex items-center justify-end">

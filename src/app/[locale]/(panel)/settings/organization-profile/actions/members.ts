@@ -186,8 +186,8 @@ export async function removeMember(
       }
     } else {
       // To jest member ID
-      memberToRemove = await db.member.findUnique({
-        where: { id: memberIdOrEmail },
+      memberToRemove = await db.member.findFirst({
+        where: { id: memberIdOrEmail, organizationId },
       });
     }
 
@@ -257,8 +257,8 @@ export async function updateMemberRole(
     }
 
     // 2. Znajdź członka i sprawdź czy nie jest właścicielem
-    const targetMember = await db.member.findUnique({
-      where: { id: memberId },
+    const targetMember = await db.member.findFirst({
+      where: { id: memberId, organizationId },
     });
 
     if (!targetMember) {
@@ -277,7 +277,7 @@ export async function updateMemberRole(
 
     // 3. Zmień rolę
     await db.member.update({
-      where: { id: memberId },
+      where: { id: targetMember.id },
       data: { role },
     });
 

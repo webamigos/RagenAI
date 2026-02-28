@@ -2,6 +2,7 @@
 
 import { logger } from '../utils/logger';
 import { getThreadDetailsQuery } from '@/features/threads/services/queries/get-thread-details-query';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 type ThreadDetailsAction =
   | {
@@ -14,10 +15,11 @@ type ThreadDetailsAction =
     };
 
 export const getThreadDetailsAction = async (
-  threadId: string
+  threadId: string,
 ): Promise<ThreadDetailsAction> => {
   try {
-    const threadRecord = await getThreadDetailsQuery(threadId);
+    const orgId = await getOrgIdFromAuthOrThrow();
+    const threadRecord = await getThreadDetailsQuery(threadId, orgId);
 
     return {
       success: true,

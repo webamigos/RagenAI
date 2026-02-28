@@ -69,8 +69,8 @@ const MessageContent = ({
   voiceId?: string;
   isPublicAccess: boolean;
 }) => {
-  const { md } = useChatViewLogic(null);
-  const renderedHtml = md.render(content);
+  const { renderAndSanitize } = useChatViewLogic(null);
+  const renderedHtml = renderAndSanitize(content);
 
   return (
     <div

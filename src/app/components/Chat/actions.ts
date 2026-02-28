@@ -3,16 +3,22 @@
 import db from '@ragenai/prisma-client';
 import type { UIMessage } from '@ai-sdk/react';
 import { logger } from '@/app/lib/utils/logger';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 /**
  * Load existing thread messages and convert to AI SDK UIMessage format.
  */
 export async function loadThreadMessages(
-  threadId: string
+  threadId: string,
 ): Promise<UIMessage[]> {
   try {
-    const thread = await db.thread.findUnique({
-      where: { public_id: threadId },
+    const orgId = await getOrgIdFromAuthOrThrow();
+
+    const thread = await db.thread.findFirst({
+      where: {
+        public_id: threadId,
+        project: { organization_id: orgId },
+      },
       select: { id: true },
     });
 

@@ -48,9 +48,10 @@ const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
 ////
 
 export const checkIfApiKeyExists = async (
-  orgId: string,
+  _orgId: string,
 ): Promise<ActionResponse<ApiKeyData>> => {
-  const apiKey = await getOpenaiAPIKey(orgId!);
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const apiKey = await getOpenaiAPIKey(orgId);
   const apiKeyExists = Boolean(apiKey);
   return {
     success: true,
@@ -142,18 +143,20 @@ export const saveSetting = async (
   }
 };
 
-export async function fetchVoiceId(organizationId: string) {
+export async function fetchVoiceId(_organizationId: string) {
   try {
-    const voiceId = await getVoiceId(organizationId);
+    const orgId = await getOrgIdFromAuthOrThrow();
+    const voiceId = await getVoiceId(orgId);
     return { success: true, data: { voiceId } };
   } catch (error) {
     return { success: false, error: 'Failed to fetch voice ID' };
   }
 }
 
-export async function updateVoiceId(organizationId: string, voiceId: string) {
+export async function updateVoiceId(_organizationId: string, voiceId: string) {
   try {
-    await saveVoiceId(organizationId, voiceId);
+    const orgId = await getOrgIdFromAuthOrThrow();
+    await saveVoiceId(orgId, voiceId);
     return { success: true };
   } catch (error) {
     return { success: false, error: 'Failed to update voice ID' };

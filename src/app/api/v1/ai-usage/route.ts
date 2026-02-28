@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { createAiUsageCommand } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import { logger } from '@/app/lib/utils/logger';
@@ -16,7 +17,16 @@ export async function POST(request: NextRequest) {
     const secretKey = request.headers.get('x-worker-secret');
     const expectedKey = process.env.WORKER_SECRET_KEY;
 
-    if (!expectedKey || secretKey !== expectedKey) {
+    if (!expectedKey || !secretKey) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const secretBuf = Buffer.from(secretKey);
+    const expectedBuf = Buffer.from(expectedKey);
+    if (
+      secretBuf.length !== expectedBuf.length ||
+      !timingSafeEqual(secretBuf, expectedBuf)
+    ) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

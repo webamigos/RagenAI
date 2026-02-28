@@ -23,7 +23,14 @@ async function sendPasswordResetEmail({
   to: string;
   resetUrl: string;
 }) {
-  console.log('[AUTH] Password reset email would be sent', { to, resetUrl });
+  try {
+    const { sendPasswordResetEmailViaMailer } =
+      await import('@/app/emails/services/mailer');
+    await sendPasswordResetEmailViaMailer({ to, resetUrl });
+    console.log('[AUTH] Password reset email sent', { to });
+  } catch (error) {
+    console.error('[AUTH] Failed to send password reset email', { to, error });
+  }
 }
 
 async function sendOrganizationInvite(data: any) {

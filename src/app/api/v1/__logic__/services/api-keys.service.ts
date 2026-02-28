@@ -30,7 +30,7 @@ export class ApiKeysService {
     return { apiKey, hashedKey };
   }
 
-  async validate(apiKey: ApiKey, hashedKey: HashedKey): Promise<boolean> {
+  async validate(apiKey: ApiKey, hashedKey: string): Promise<boolean> {
     return this.hashingService.compare(apiKey, hashedKey);
   }
 

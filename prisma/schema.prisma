@@ -278,6 +278,7 @@ model ApiKey {
   name            String
   public_id       String                    @unique @default(uuid()) @db.Uuid
   masked_value    String
+  hashed_value    String?
   last_used_at    DateTime?                 @db.Timestamptz
   created_at      DateTime                  @default(now()) @db.Timestamptz
   created_by      String?
