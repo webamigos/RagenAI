@@ -11,7 +11,7 @@ export const getThreadDetailsQuery = async (
     const thread = await db.thread.findFirstOrThrow({
       where: {
         public_id: publicThreadId,
-        ...(orgId ? { project: { organization_id: orgId } } : {}),
+        ...(orgId ? { organization_id: orgId } : {}),
       },
       select: {
         id: true,
@@ -22,11 +22,18 @@ export const getThreadDetailsQuery = async (
         preferred_model: true,
         project_id: true,
         mentioned_project_id: true,
+        team_id: true,
         project: {
           select: {
             public_id: true,
             id: true,
             title: true,
+          },
+        },
+        team: {
+          select: {
+            id: true,
+            name: true,
           },
         },
       },
@@ -51,7 +58,7 @@ export const getThreadMessagesListQuery = async (
     const thread = await db.thread.findFirst({
       where: {
         public_id: publicThreadId,
-        ...(orgId ? { project: { organization_id: orgId } } : {}),
+        ...(orgId ? { organization_id: orgId } : {}),
       },
       select: {
         messages: {

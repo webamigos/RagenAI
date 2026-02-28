@@ -232,7 +232,9 @@ export const useNewThread = () => {
               is_starred: false,
               title: null,
               project_id: result.thread.project_id ?? null,
+              team_id: null,
               project: null,
+              team: null,
               messages: initialMessage ? [{ content: initialMessage }] : [],
             },
           });

@@ -24,7 +24,9 @@ export type SidebarThreadItem = {
   is_starred: boolean;
   title: string | null;
   project_id: number | null;
+  team_id: string | null;
   project: { public_id: string; title: string } | null;
+  team: { id: string; name: string } | null;
   messages: { content: string }[];
 };
 

@@ -2,10 +2,20 @@
 
 import db from '@ragenai/prisma-client';
 
-export const getUserFilesQuery = async (organizationId: string) => {
+export const getUserFilesQuery = async (
+  organizationId: string,
+  userTeamIds: string[] = [],
+) => {
   return await db.userFile.findMany({
     where: {
       organization_id: organizationId,
+      OR: [
+        { folder_id: null },
+        { folder: { teamId: null } },
+        ...(userTeamIds.length > 0
+          ? [{ folder: { teamId: { in: userTeamIds } } }]
+          : []),
+      ],
     },
     select: {
       created_at: true,
@@ -17,6 +27,7 @@ export const getUserFilesQuery = async (organizationId: string) => {
       organization_id: true,
       public_id: true,
       project_id: true,
+      folder_id: true,
       embedding_status: true,
       embedding_completed_at: true,
       embedding_failed_at: true,
@@ -30,6 +41,13 @@ export const getUserFilesQuery = async (organizationId: string) => {
         select: {
           title: true,
           id: true,
+        },
+      },
+      folder: {
+        select: {
+          id: true,
+          name: true,
+          teamId: true,
         },
       },
     },

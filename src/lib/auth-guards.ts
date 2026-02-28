@@ -78,3 +78,42 @@ export async function requireOrgOwner(organizationId: string) {
   }
   return member;
 }
+
+// ---------------------------------------------------------------------------
+// Team-level guards
+// ---------------------------------------------------------------------------
+
+export const getUserTeamIds = cache(
+  async (organizationId: string, userId: string): Promise<string[]> => {
+    const memberships = await db.teamMember.findMany({
+      where: {
+        userId,
+        team: { organizationId },
+      },
+      select: { teamId: true },
+    });
+
+    return memberships.map((m) => m.teamId);
+  },
+);
+
+export async function requireTeamMember(
+  teamId: string,
+  organizationId: string,
+) {
+  const session = await getSessionOrThrow();
+
+  const membership = await db.teamMember.findFirst({
+    where: {
+      teamId,
+      userId: session.user.id,
+      team: { organizationId },
+    },
+  });
+
+  if (!membership) {
+    throw new Error('Unauthorized: team membership required');
+  }
+
+  return membership;
+}
