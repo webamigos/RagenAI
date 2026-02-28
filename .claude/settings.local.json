@@ -31,8 +31,7 @@
       "WebFetch(domain:openrouter.ai)",
       "Bash(coderabbit auth:*)",
       "Bash(coderabbit review:*)",
-      "WebFetch(domain:www.better-auth.com)",
-      "Bash(npm run:*)"
+      "WebFetch(domain:www.better-auth.com)"
     ]
   },
   "enabledPlugins": {
