@@ -6,7 +6,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
 import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import {
-  getOrgIdFromAuthOrThrow,
+  getOrgIdFromAuth,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 
@@ -22,10 +22,10 @@ export const createProject = async (
   _userId: string,
 ): Promise<CreateProjectResponse> => {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
+    const orgId = await getOrgIdFromAuth();
     const userId = await getCurrentUserId();
 
-    if (!userId) {
+    if (!orgId || !userId) {
       return {
         error: 'Unauthorized',
         status: StatusCodes.UNAUTHORIZED,
@@ -54,10 +54,10 @@ export const createProject = async (
 
 export const getProjects = async (_organizationId: string, _userId: string) => {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
+    const orgId = await getOrgIdFromAuth();
     const userId = await getCurrentUserId();
 
-    if (!userId) {
+    if (!orgId || !userId) {
       return {
         error: 'Unauthorized',
         status: StatusCodes.UNAUTHORIZED,

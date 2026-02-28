@@ -45,14 +45,6 @@ export const MessageItem = ({
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(md.render(message.content), {
               FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
-              FORBID_ATTR: [
-                'onerror',
-                'onclick',
-                'onload',
-                'onmouseover',
-                'onfocus',
-                'onblur',
-              ],
             }),
           }}
         />

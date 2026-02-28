@@ -72,7 +72,7 @@ REST API at `src/app/api/v1/` with route handlers. Key subdirectories:
 - `__logic__/` — Cross-cutting concerns: `guards/`, `context/`, `dtos/`, `types/`, `filters/`, plus `queries/` and `commands/` for API-specific data operations
 - `threads/`, `assistants/`, `documents/`, `auth/`, `healthcheck/`, `query/`
 
-API authentication uses `x-api-key` header → `apiKeyGuard()` → returns `ApiContext` with `orgId`, `userId`, `projectId`.
+API authentication uses `x-api-key` header → `apiKeyGuard()` (async) → validates key against database (bcrypt hash comparison) → returns `ApiContext` with `orgId`, `userId`, `projectId`. API keys store a `hashed_value` column for verification; keys without a stored hash are rejected.
 
 The app can run in API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1`.
 
@@ -147,6 +147,13 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 ### Server Actions
 
 `src/app/actions/index.ts` provides auth-wrapped server actions that delegate to feature module queries/commands. Component-level actions are co-located with their components (e.g., `src/app/components/ApiKeys/actions.ts`). New domain logic should go in `src/features/`, not in actions files.
+
+**Security conventions for server actions**:
+- **Never trust client-supplied `orgId` or `userId`** — always derive from session via `getOrgIdFromAuthOrThrow()` or `getOrgIdFromAuth()` + `getCurrentUserId()`
+- All database queries that return user data must be **scoped by `organization_id`** to prevent IDOR (Insecure Direct Object Reference)
+- Use `dangerouslySetInnerHTML` only with DOMPurify sanitization (import from `dompurify`)
+- Never expose API keys via `NEXT_PUBLIC_` prefix — use server-side API routes for third-party service calls
+- Use `crypto.timingSafeEqual()` for secret comparisons (not `===`)
 
 ## Path Aliases
 

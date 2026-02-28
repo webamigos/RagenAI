@@ -42,14 +42,16 @@ export const apiKeyGuard = async (
     throw new UnauthorizedException();
   }
 
-  if (apiKeyRecord.hashed_value) {
-    const isValid = await apiKeysService.validate(
-      apiKeyHeaderValue,
-      apiKeyRecord.hashed_value,
-    );
-    if (!isValid) {
-      throw new UnauthorizedException();
-    }
+  if (!apiKeyRecord.hashed_value) {
+    throw new UnauthorizedException();
+  }
+
+  const isValid = await apiKeysService.validate(
+    apiKeyHeaderValue,
+    apiKeyRecord.hashed_value,
+  );
+  if (!isValid) {
+    throw new UnauthorizedException();
   }
 
   return { orgId, userId, projectId, keyId };

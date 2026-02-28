@@ -80,14 +80,19 @@ export const sendPasswordResetEmailViaMailer = async ({
   to: string;
   resetUrl: string;
 }) => {
-  const response = await resend.emails.send({
-    from: 'Ragen <noreply@updates.ragen.ai>',
-    to: [to],
-    subject: 'Reset your Ragen password',
-    text: `Click the following link to reset your password: ${resetUrl}\n\nIf you did not request a password reset, please ignore this email.\n\nThis link will expire in 1 hour.`,
-  });
+  try {
+    const response = await resend.emails.send({
+      from: 'Ragen <noreply@updates.ragen.ai>',
+      to: [to],
+      subject: 'Reset your Ragen password',
+      text: `Click the following link to reset your password: ${resetUrl}\n\nIf you did not request a password reset, please ignore this email.\n\nThis link will expire in 1 hour.`,
+    });
 
-  return { data: response };
+    return { data: response };
+  } catch (error) {
+    logger.error({ error, to }, 'Failed to send password reset email');
+    return { error: 'Failed to send password reset email' };
+  }
 };
 
 export const sendInvitationEmail = async ({

@@ -118,7 +118,7 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware ha
 
 ### API
 
-REST API at `/api/v1/` authenticated via `x-api-key` header. The app supports API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1` for deployment at `api.ragen.io`.
+REST API at `/api/v1/` authenticated via `x-api-key` header. Keys are validated against the database with bcrypt hash comparison. The app supports API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1` for deployment at `api.ragen.io`.
 
 ### Auth
 

@@ -46,14 +46,6 @@ const createMarkdownRenderer = () => {
 const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, {
     FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
-    FORBID_ATTR: [
-      'onerror',
-      'onclick',
-      'onload',
-      'onmouseover',
-      'onfocus',
-      'onblur',
-    ],
     ALLOW_ARIA_ATTR: true,
     ALLOW_DATA_ATTR: false,
   });
