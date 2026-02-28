@@ -23,6 +23,7 @@ export type AiUsageFilters = {
   dateTo?: string;
   organizationId?: string;
   projectPublicId?: string;
+  userId?: string;
   step?: AiUsageStep;
 };
 

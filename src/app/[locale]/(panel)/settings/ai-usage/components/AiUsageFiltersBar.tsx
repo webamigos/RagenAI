@@ -3,7 +3,11 @@
 import { useState, useEffect } from 'react';
 import { AiUsageStep } from '@/generated/prisma/enums';
 import type { AiUsageFilters } from '@/features/ai-usage/contracts/ai-usage.types';
-import { getOrganizationsForFilter, getProjectsForFilter } from '../actions';
+import {
+  getOrganizationsForFilter,
+  getProjectsForFilter,
+  getUsersForFilter,
+} from '../actions';
 
 type Props = {
   filters: AiUsageFilters;
@@ -32,6 +36,9 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
   const [projects, setProjects] = useState<
     { publicId: string; title: string; orgName: string }[]
   >([]);
+  const [users, setUsers] = useState<
+    { id: string; name: string | null; email: string }[]
+  >([]);
   const [customFrom, setCustomFrom] = useState(filters.dateFrom ?? '');
   const [customTo, setCustomTo] = useState(filters.dateTo ?? '');
 
@@ -49,6 +56,13 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
       .then((data) => {
         if (!ignore) {
           setProjects(data);
+        }
+      })
+      .catch(() => {});
+    getUsersForFilter(filters.organizationId)
+      .then((data) => {
+        if (!ignore) {
+          setUsers(data);
         }
       })
       .catch(() => {});
@@ -126,6 +140,7 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
               ...filters,
               organizationId: e.target.value || undefined,
               projectPublicId: undefined,
+              userId: undefined,
             })
           }
           className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
@@ -153,6 +168,25 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
           {projects.map((p) => (
             <option key={p.publicId} value={p.publicId}>
               {p.title} ({p.orgName})
+            </option>
+          ))}
+        </select>
+
+        {/* User filter */}
+        <select
+          value={filters.userId ?? ''}
+          onChange={(e) =>
+            onChange({
+              ...filters,
+              userId: e.target.value || undefined,
+            })
+          }
+          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
+        >
+          <option value="">All users</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.name ?? u.email}
             </option>
           ))}
         </select>

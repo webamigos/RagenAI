@@ -6,6 +6,7 @@ import {
   getAiUsageDashboardQuery,
   getOrganizationsForFilterQuery,
   getProjectsForFilterQuery,
+  getUsersForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
 
 export async function getAiUsageDashboard(filters?: AiUsageFilters) {
@@ -21,4 +22,9 @@ export async function getOrganizationsForFilter() {
 export async function getProjectsForFilter(orgId?: string) {
   await requireAppAdmin();
   return getProjectsForFilterQuery(orgId);
+}
+
+export async function getUsersForFilter(orgId?: string) {
+  await requireAppAdmin();
+  return getUsersForFilterQuery(orgId);
 }

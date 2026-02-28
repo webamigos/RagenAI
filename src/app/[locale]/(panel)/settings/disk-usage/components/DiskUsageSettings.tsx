@@ -32,6 +32,8 @@ import {
   getAdminOrgProjects,
   getAdminOrgStorageDetails,
   updateOrgStorageLimitsAction,
+  getDiskOrganizationsForFilter,
+  getDiskProjectsForFilter,
 } from '../actions';
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
@@ -50,6 +52,16 @@ export function DiskUsageSettings() {
   } | null>(null);
   const [projects, setProjects] = useState<ProjectStorageSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Filter state
+  const [filterOrgs, setFilterOrgs] = useState<{ id: string; name: string }[]>(
+    [],
+  );
+  const [filterProjects, setFilterProjects] = useState<
+    { publicId: string; title: string; orgName: string }[]
+  >([]);
+  const [filterOrgId, setFilterOrgId] = useState<string>('');
+  const [filterProjectId, setFilterProjectId] = useState<string>('');
 
   // Limit edit state
   const [editingOrgLimit, setEditingOrgLimit] = useState('');
@@ -74,7 +86,16 @@ export function DiskUsageSettings() {
 
   useEffect(() => {
     loadOrgs();
+    getDiskOrganizationsForFilter()
+      .then(setFilterOrgs)
+      .catch(() => toast.error('Failed to load organization filters'));
   }, [loadOrgs]);
+
+  useEffect(() => {
+    getDiskProjectsForFilter(filterOrgId || undefined)
+      .then(setFilterProjects)
+      .catch(() => toast.error('Failed to load project filters'));
+  }, [filterOrgId]);
 
   const handleSelectOrg = async (orgId: string) => {
     const requestId = ++selectOrgRequestId.current;
@@ -178,8 +199,21 @@ export function DiskUsageSettings() {
 
   const selectedOrgData = orgs.find((o) => o.orgId === selectedOrg);
 
-  // Prepare bar chart data for all orgs
-  const barChartData = orgs
+  // Apply filters to displayed orgs
+  const filteredOrgs = orgs.filter((o) => {
+    if (filterOrgId && o.orgId !== filterOrgId) {
+      return false;
+    }
+    return true;
+  });
+
+  // Filter projects in detail view when a project filter is selected
+  const filteredProjects = filterProjectId
+    ? projects.filter((p) => p.projectPublicId === filterProjectId)
+    : projects;
+
+  // Prepare bar chart data for filtered orgs
+  const barChartData = filteredOrgs
     .filter((o) => o.totalBytes > 0)
     .map((o) => ({
       name: o.orgName.length > 20 ? o.orgName.slice(0, 20) + '...' : o.orgName,
@@ -191,6 +225,45 @@ export function DiskUsageSettings() {
 
   return (
     <div className="space-y-8">
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3">
+        <select
+          value={filterOrgId}
+          onChange={(e) => {
+            setFilterOrgId(e.target.value);
+            setFilterProjectId('');
+            if (e.target.value) {
+              handleSelectOrg(e.target.value);
+            } else {
+              setSelectedOrg(null);
+              setOrgDetails(null);
+            }
+          }}
+          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
+        >
+          <option value="">All organizations</option>
+          {filterOrgs.map((org) => (
+            <option key={org.id} value={org.id}>
+              {org.name}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={filterProjectId}
+          onChange={(e) => setFilterProjectId(e.target.value)}
+          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
+        >
+          <option value="">All projects</option>
+          {filterProjects.map((p) => (
+            <option key={p.publicId} value={p.publicId}>
+              {p.title}
+              {!filterOrgId && p.orgName ? ` (${p.orgName})` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Overview: all orgs bar chart */}
       <section>
         <h2 className="text-lg font-semibold mb-4">
@@ -240,7 +313,7 @@ export function DiskUsageSettings() {
               </tr>
             </thead>
             <tbody>
-              {orgs.map((org) => {
+              {filteredOrgs.map((org) => {
                 const limit =
                   org.storageLimitBytes ??
                   defaultStorageLimits.storageLimitBytes;
@@ -287,7 +360,7 @@ export function DiskUsageSettings() {
                   </tr>
                 );
               })}
-              {orgs.length === 0 && (
+              {filteredOrgs.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
@@ -413,7 +486,7 @@ export function DiskUsageSettings() {
           </div>
 
           {/* Per-project breakdown */}
-          {projects.length > 0 && (
+          {filteredProjects.length > 0 && (
             <div>
               <h3 className="text-sm font-semibold mb-3">By Project</h3>
               <div className="border rounded-lg overflow-hidden">
@@ -426,7 +499,7 @@ export function DiskUsageSettings() {
                     </tr>
                   </thead>
                   <tbody>
-                    {projects.map((p) => (
+                    {filteredProjects.map((p) => (
                       <tr key={p.projectId} className="border-t">
                         <td className="p-2">{p.projectTitle}</td>
                         <td className="p-2 text-right">{p.fileCount}</td>
