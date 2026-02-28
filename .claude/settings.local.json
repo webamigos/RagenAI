@@ -30,7 +30,8 @@
       "WebFetch(domain:www.meilisearch.com)",
       "WebFetch(domain:openrouter.ai)",
       "Bash(coderabbit auth:*)",
-      "Bash(coderabbit review:*)"
+      "Bash(coderabbit review:*)",
+      "WebFetch(domain:www.better-auth.com)"
     ]
   },
   "enabledPlugins": {

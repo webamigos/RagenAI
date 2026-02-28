@@ -59,6 +59,14 @@ export type ParsedFile = {
   fileExtension?: string;
 };
 
+export type DocumentFolderItem = {
+  id: string;
+  name: string;
+  teamId: string | null;
+  teamName: string | null;
+  fileCount: number;
+};
+
 export type CreateMarkdownDocumentInput = {
   public_id: string;
   title: string;

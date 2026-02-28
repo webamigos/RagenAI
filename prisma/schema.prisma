@@ -66,11 +66,14 @@ model Thread {
   is_starred                   Boolean                 @default(false)
   created_at                   DateTime                @default(now()) @db.Timestamptz
   threadDocuments              ThreadDocument[]
+  team_id                      String?
+  team                         Team?                   @relation(fields: [team_id], references: [id], onDelete: SetNull)
 
   @@index([public_id])
   @@index([organization_id])
   @@index([user_id])
   @@index([visitor_id, is_starred, created_at])
+  @@index([team_id])
   @@map("threads")
 }
 
@@ -117,12 +120,15 @@ model UserFile {
   source_file            UserFile?       @relation("FileImport", fields: [source_file_id], references: [id])
   imported_copies        UserFile[]      @relation("FileImport")
   threadDocuments        ThreadDocument[]
+  folder_id              String?         @db.Uuid
+  folder                 DocumentFolder? @relation(fields: [folder_id], references: [id], onDelete: SetNull)
 
   @@unique([id, organization_id])
   @@index([organization_id])
   @@index([public_id])
   @@index([project_id])
   @@index([source_file_id])
+  @@index([folder_id])
 
   @@map("user_files")
 }
@@ -311,10 +317,11 @@ model User {
   banExpires         DateTime? @map("ban_expires") @db.Timestamptz
   stripeCustomerId   String?  @map("stripe_customer_id")
 
-  sessions Session[]
-  accounts Account[]
-  members  Member[]
-  aiUsages AiUsage[]
+  sessions    Session[]
+  accounts    Account[]
+  members     Member[]
+  aiUsages    AiUsage[]
+  teamMembers TeamMember[]
 
   @@map("users")
 }
@@ -381,6 +388,8 @@ model Organization {
   projects Project[]
   apiKeys  ApiKey[]
   aiUsages AiUsage[]
+  teams    Team[]
+  folders  DocumentFolder[]
 
   @@index([publicId])
   @@map("organizations")
@@ -410,10 +419,14 @@ model Invitation {
   status         String
   expiresAt      DateTime @db.Timestamptz @map("expires_at")
   inviterId      String?  @map("inviter_id")
+  teamId         String?  @map("team_id")
   createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
   updatedAt      DateTime @updatedAt @db.Timestamptz @map("updated_at")
 
+  team Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
   @@unique([organizationId, email])
+  @@index([teamId])
   @@map("invitations")
 }
 
@@ -427,6 +440,54 @@ model Verification {
 
   @@unique([identifier, value])
   @@map("verifications")
+}
+
+model Team {
+  id             String   @id
+  name           String
+  organizationId String   @map("organization_id")
+  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime @updatedAt @db.Timestamptz @map("updated_at")
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      TeamMember[]
+  threads      Thread[]
+  folders      DocumentFolder[]
+  invitations  Invitation[]
+
+  @@index([organizationId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String   @id
+  teamId    String   @map("team_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @db.Timestamptz @map("created_at")
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+model DocumentFolder {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  organizationId String   @map("organization_id")
+  teamId         String?  @map("team_id")
+  createdAt      DateTime @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt      DateTime @updatedAt @db.Timestamptz @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  team         Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  files        UserFile[]
+
+  @@index([organizationId])
+  @@index([teamId])
+  @@map("document_folders")
 }
 
 enum Source {

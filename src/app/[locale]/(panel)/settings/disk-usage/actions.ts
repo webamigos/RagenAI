@@ -8,6 +8,10 @@ import {
 } from '@/features/organizations/services/queries/get-admin-storage-query';
 import { getStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { getStorageLimitsByOrgId } from '@/features/organizations/services/organization-settings';
+import {
+  getOrganizationsForFilterQuery,
+  getProjectsForFilterQuery,
+} from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
 
 export async function getAdminStorageOverview() {
   await requireAppAdmin();
@@ -28,6 +32,16 @@ export async function getAdminOrgStorageDetails(orgId: string) {
   ]);
 
   return { usage, limits };
+}
+
+export async function getDiskOrganizationsForFilter() {
+  await requireAppAdmin();
+  return getOrganizationsForFilterQuery();
+}
+
+export async function getDiskProjectsForFilter(orgId?: string) {
+  await requireAppAdmin();
+  return getProjectsForFilterQuery(orgId);
 }
 
 export async function updateOrgStorageLimitsAction(

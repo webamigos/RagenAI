@@ -11,7 +11,9 @@ const THREAD_SELECT = {
   title: true,
   project_id: true,
   organization_id: true,
+  team_id: true,
   project: { select: { public_id: true, title: true } },
+  team: { select: { id: true, name: true } },
   messages: {
     select: { content: true },
     take: 1,
@@ -24,6 +26,7 @@ export const getAllThreadsQuery = async (
   skip = 0,
   take = 20,
   query?: string,
+  userTeamIds: string[] = [],
 ) => {
   const orgId = await getOrgIdFromAuthOrThrow();
 
@@ -33,7 +36,6 @@ export const getAllThreadsQuery = async (
   }
 
   const where = {
-    visitor_id: visitorId,
     organization_id: orgId,
     messages: query
       ? {
@@ -42,6 +44,10 @@ export const getAllThreadsQuery = async (
           },
         }
       : { some: {} },
+    OR: [
+      { visitor_id: visitorId },
+      ...(userTeamIds.length > 0 ? [{ team_id: { in: userTeamIds } }] : []),
+    ],
   };
 
   const [threads, total] = await Promise.all([

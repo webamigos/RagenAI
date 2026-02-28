@@ -10,7 +10,9 @@ const THREAD_SELECT = {
   is_starred: true,
   title: true,
   project_id: true,
+  team_id: true,
   project: { select: { public_id: true, title: true } },
+  team: { select: { id: true, name: true } },
   messages: {
     select: { content: true },
     take: 1,
@@ -22,6 +24,7 @@ export const getSidebarThreadsQuery = async (
   visitorId: string,
   recentLimit = 20,
   recentSkip = 0,
+  userTeamIds: string[] = [],
 ) => {
   const orgId = await getOrgIdFromAuthOrThrow();
 
@@ -31,9 +34,12 @@ export const getSidebarThreadsQuery = async (
   }
 
   const baseWhere = {
-    visitor_id: visitorId,
     organization_id: orgId,
     messages: { some: {} },
+    OR: [
+      { visitor_id: visitorId },
+      ...(userTeamIds.length > 0 ? [{ team_id: { in: userTeamIds } }] : []),
+    ],
   };
 
   const [starred, recent, _totalRecent] = await Promise.all([

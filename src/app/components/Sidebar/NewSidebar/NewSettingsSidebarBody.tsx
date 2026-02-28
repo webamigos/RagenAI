@@ -14,6 +14,7 @@ import {
   KeyIcon,
   CircleStackIcon,
   CpuChipIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 
 import { useTranslations } from 'next-intl';
@@ -49,6 +50,10 @@ export const NewSidebarSettingsBody = () => {
           <SidebarLabel className="font-normal">
             {t('subscription-management')}
           </SidebarLabel>
+        </SidebarItem>
+        <SidebarItem href="/settings/teams">
+          <UserGroupIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">{t('teams')}</SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/api-keys">
           <KeyIcon className={iconClassName} />

@@ -41,6 +41,10 @@ function buildWhereClause(filters?: AiUsageFilters): Prisma.AiUsageWhereInput {
     where.project = { public_id: filters.projectPublicId };
   }
 
+  if (filters?.userId) {
+    where.user_id = filters.userId;
+  }
+
   if (filters?.step) {
     where.step = filters.step;
   }
@@ -210,6 +214,11 @@ async function getDailyChartData(
     params.push(filters.projectPublicId);
   }
 
+  if (filters?.userId) {
+    conditions.push(`user_id = $${idx++}`);
+    params.push(filters.userId);
+  }
+
   if (filters?.step) {
     conditions.push(`step::text = $${idx++}`);
     params.push(filters.step);
@@ -277,6 +286,37 @@ export async function getOrganizationsForFilterQuery(): Promise<
     orderBy: { name: 'asc' },
   });
   return orgs;
+}
+
+export async function getUsersForFilterQuery(
+  orgId?: string,
+): Promise<{ id: string; name: string | null; email: string }[]> {
+  const where: Prisma.AiUsageWhereInput = {};
+  if (orgId) {
+    where.organization_id = orgId;
+  }
+
+  const usageRecords = await db.aiUsage.findMany({
+    where: { ...where, user_id: { not: null } },
+    select: { user_id: true },
+    distinct: ['user_id'],
+  });
+
+  const userIds = usageRecords
+    .map((r) => r.user_id)
+    .filter((id): id is string => id != null);
+
+  if (userIds.length === 0) {
+    return [];
+  }
+
+  const users = await db.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, name: true, email: true },
+    orderBy: { email: 'asc' },
+  });
+
+  return users;
 }
 
 export async function getProjectsForFilterQuery(
