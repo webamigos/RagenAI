@@ -3,11 +3,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 // Use the pre-built UMD bundle — Turbopack has a bug with markdown-it's ESM
 // build where named re-exports (isSpace) are lost during bundling.
-// @ts-expect-error -- UMD bundle has no type declarations
+// @ts-ignore -- UMD bundle has no type declarations
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import hljs from 'highlight.js';
 import texmath from 'markdown-it-texmath';
 import katex from 'katex';
+import DOMPurify from 'dompurify';
 
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
@@ -42,6 +43,14 @@ const createMarkdownRenderer = () => {
   return md;
 };
 
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+    ALLOW_ARIA_ATTR: true,
+    ALLOW_DATA_ATTR: false,
+  });
+};
+
 export const useChatViewLogic = (
   streamedMessage: StreamedMessageDto | null,
 ) => {
@@ -54,18 +63,23 @@ export const useChatViewLogic = (
 
   const md = useMemo(() => createMarkdownRenderer(), []);
 
+  const renderAndSanitize = useMemo(() => {
+    return (content: string) => sanitizeHtml(md.render(content));
+  }, [md]);
+
   useEffect(() => {
     if (streamedMessage) {
-      const rendered = md.render(streamedMessage.content);
+      const rendered = renderAndSanitize(streamedMessage.content);
       const runId = streamedMessage.runId;
       setRenderedStreamedMessage(rendered);
       setStreamedMessageRunId(runId);
     }
-  }, [streamedMessage, md]);
+  }, [streamedMessage, md, renderAndSanitize]);
 
   return {
     t,
     md,
+    renderAndSanitize,
     userAvatar,
     streamedMessageRunId,
     renderedStreamedMessage,

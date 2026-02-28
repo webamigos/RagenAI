@@ -96,10 +96,5 @@ export type ProjectStorageSummary = {
 };
 
 // --- User & organization role types ---
-
-export type UserRole = 'admin' | 'user' | 'guest' | 'visitor' | 'superAdmin';
-export type OrgRole = 'org:member' | 'org:owner' | 'org:admin';
-
-export type OrganizationRoles = {
-  [key: string]: OrgRole;
-};
+// Canonical role types live in @/lib/auth-access-control — re-export for convenience
+export type { AppRole, OrgRole } from '@/lib/auth-access-control';

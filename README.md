@@ -118,11 +118,17 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware ha
 
 ### API
 
-REST API at `/api/v1/` authenticated via `x-api-key` header. The app supports API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1` for deployment at `api.ragen.io`.
+REST API at `/api/v1/` authenticated via `x-api-key` header. Keys are validated against the database with bcrypt hash comparison. The app supports API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1` for deployment at `api.ragen.io`.
 
 ### Auth
 
-Better Auth with Prisma adapter. On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership + Ragen `InternalOrganization` for app data (projects, API keys, subscriptions).
+Better Auth with Prisma adapter + `admin` and `organization` plugins (with `createAccessControl`). On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership + Ragen `InternalOrganization` for app data (projects, API keys, subscriptions).
+
+Two role hierarchies:
+- **App-level** (`User.role`): `'admin'` (superadmin) vs `'user'` — platform-wide access
+- **Org-level** (`Member.role`): `'owner'`, `'admin'`, `'member'` — per-organization permissions
+
+Centralized in `src/lib/auth-access-control.ts` (client-safe checks) and `src/lib/auth-guards.ts` (server-side guards).
 
 ### Document Processing
 

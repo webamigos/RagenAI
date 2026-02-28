@@ -5,25 +5,8 @@ import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
-
-/**
- * Helper function to get active member from current session
- */
-async function getActiveMemberFromSession(organizationId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) {
-    return null;
-  }
-
-  const member = await db.member.findFirst({
-    where: {
-      organizationId,
-      userId: session.user.id,
-    },
-  });
-
-  return member;
-}
+import { getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 
 /**
  * Anulowanie zaproszenia
@@ -43,11 +26,9 @@ export async function cancelInvitation(invitationId: string) {
     }
 
     // Sprawdź permissions
-    const activeMember = await getActiveMemberFromSession(
-      invitation.organizationId
-    );
+    const activeMember = await getActiveMember(invitation.organizationId);
 
-    if (!activeMember || !['admin', 'owner'].includes(activeMember.role)) {
+    if (!activeMember || !isOrgAdmin(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do anulowania zaproszeń',
@@ -79,13 +60,13 @@ export async function cancelInvitation(invitationId: string) {
 export async function resendInvitation(
   email: string,
   role: string,
-  organizationId: string
+  organizationId: string,
 ) {
   try {
     // Sprawdź permissions
-    const activeMember = await getActiveMemberFromSession(organizationId);
+    const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !['admin', 'owner'].includes(activeMember.role)) {
+    if (!activeMember || !isOrgAdmin(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do wysyłania zaproszeń',
@@ -131,9 +112,8 @@ export async function resendInvitation(
     const inviter = session?.user?.name;
 
     // Send invitation email
-    const { sendInvitationEmail } = await import(
-      '@/app/emails/services/mailer'
-    );
+    const { sendInvitationEmail } =
+      await import('@/app/emails/services/mailer');
     const emailResult = await sendInvitationEmail({
       to: email,
       organizationName: organization?.name || 'Organization',
@@ -146,14 +126,14 @@ export async function resendInvitation(
     if (emailResult.error) {
       logger.error(
         { email, organizationId, error: emailResult.error },
-        'Failed to send invitation email'
+        'Failed to send invitation email',
       );
       // Don't fail the whole operation - invitation is updated
     }
 
     logger.info(
       { email, role, organizationId, invitationId: invitation.id },
-      'Invitation resent successfully'
+      'Invitation resent successfully',
     );
 
     revalidatePath('/settings/organization-profile');

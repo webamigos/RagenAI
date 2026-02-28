@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { MembersList } from './MembersList';
 import { ManageInvitationsSection } from './ManageInvitationsSection';
 import { OrganizationProfileForm } from './OrganizationProfileForm';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import type { Member, Invitation } from '../types';
 
 type Organization = {
@@ -33,7 +34,7 @@ export function OrganizationTabs({
   const t = useTranslations('organization');
 
   const pendingInvitationsCount = invitations.filter(
-    (inv) => inv.status === 'pending'
+    (inv) => inv.status === 'pending',
   ).length;
 
   return (
@@ -64,7 +65,7 @@ export function OrganizationTabs({
             </h3>
             <OrganizationProfileForm
               organization={organization}
-              canEdit={['admin', 'owner'].includes(currentUserRole)}
+              canEdit={isOrgAdmin(currentUserRole)}
             />
           </div>
         </TabPanel>

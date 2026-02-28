@@ -278,6 +278,7 @@ model ApiKey {
   name            String
   public_id       String                    @unique @default(uuid()) @db.Uuid
   masked_value    String
+  hashed_value    String?
   last_used_at    DateTime?                 @db.Timestamptz
   created_at      DateTime                  @default(now()) @db.Timestamptz
   created_by      String?
@@ -305,6 +306,9 @@ model User {
   onboardingComplete Boolean  @default(false) @map("onboarding_complete")
   viewMode           String   @default("list") @map("view_mode")
   role               String   @default("user")
+  banned             Boolean? @default(false)
+  banReason          String?  @map("ban_reason")
+  banExpires         DateTime? @map("ban_expires") @db.Timestamptz
   stripeCustomerId   String?  @map("stripe_customer_id")
 
   sessions Session[]
@@ -328,6 +332,9 @@ model Session {
   // Better Auth organization plugin fields
   activeOrganizationId String? @map("active_organization_id")
   activeTeamId         String? @map("active_team_id")
+
+  // Better Auth admin plugin fields
+  impersonatedBy String? @map("impersonated_by")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

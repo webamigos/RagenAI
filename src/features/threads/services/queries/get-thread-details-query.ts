@@ -3,10 +3,16 @@
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
-export const getThreadDetailsQuery = async (publicThreadId: string) => {
+export const getThreadDetailsQuery = async (
+  publicThreadId: string,
+  orgId?: string,
+) => {
   try {
-    const thread = await db.thread.findUniqueOrThrow({
-      where: { public_id: publicThreadId },
+    const thread = await db.thread.findFirstOrThrow({
+      where: {
+        public_id: publicThreadId,
+        ...(orgId ? { project: { organization_id: orgId } } : {}),
+      },
       select: {
         id: true,
         public_id: true,
@@ -37,11 +43,15 @@ export const getThreadDetailsQuery = async (publicThreadId: string) => {
   }
 };
 
-export const getThreadMessagesListQuery = async (publicThreadId: string) => {
+export const getThreadMessagesListQuery = async (
+  publicThreadId: string,
+  orgId?: string,
+) => {
   try {
-    const thread = await db.thread.findUnique({
+    const thread = await db.thread.findFirst({
       where: {
         public_id: publicThreadId,
+        ...(orgId ? { project: { organization_id: orgId } } : {}),
       },
       select: {
         messages: {

@@ -1,7 +1,5 @@
 'use server';
 
-import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
@@ -9,25 +7,8 @@ import {
   UpdateOrganizationSchema,
   type UpdateOrganizationFormData,
 } from '../types';
-
-/**
- * Helper function to get active member from current session
- */
-async function getActiveMemberFromSession(organizationId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) {
-    return null;
-  }
-
-  const member = await db.member.findFirst({
-    where: {
-      organizationId,
-      userId: session.user.id,
-    },
-  });
-
-  return member;
-}
+import { getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 
 /**
  * Update organization profile
@@ -35,7 +16,7 @@ async function getActiveMemberFromSession(organizationId: string) {
  */
 export async function updateOrganization(
   organizationId: string,
-  data: UpdateOrganizationFormData
+  data: UpdateOrganizationFormData,
 ) {
   try {
     // 1. Validate input
@@ -48,9 +29,9 @@ export async function updateOrganization(
     }
 
     // 2. Check permissions
-    const activeMember = await getActiveMemberFromSession(organizationId);
+    const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !['admin', 'owner'].includes(activeMember.role)) {
+    if (!activeMember || !isOrgAdmin(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do edycji profilu organizacji',
@@ -86,7 +67,7 @@ export async function updateOrganization(
     });
 
     logger.info(
-      `Organization ${organizationId} updated by member ${activeMember.id}`
+      `Organization ${organizationId} updated by member ${activeMember.id}`,
     );
 
     // 5. Revalidate cache

@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { cancelInvitation, resendInvitation } from '../actions/invitations';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import type { Invitation } from '../types';
 
 type Props = {
@@ -20,7 +21,7 @@ export function ManageInvitationsSection({
   const t = useTranslations('organization.invitations');
   const { successToast, errorToast } = statusToast();
 
-  const canManageInvitations = ['admin', 'owner'].includes(currentUserRole);
+  const canManageInvitations = isOrgAdmin(currentUserRole);
 
   const handleCancelInvitation = async (invitationId: string) => {
     if (!confirm(t('confirm-cancel'))) {

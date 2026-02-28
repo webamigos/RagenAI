@@ -72,13 +72,33 @@ REST API at `src/app/api/v1/` with route handlers. Key subdirectories:
 - `__logic__/` — Cross-cutting concerns: `guards/`, `context/`, `dtos/`, `types/`, `filters/`, plus `queries/` and `commands/` for API-specific data operations
 - `threads/`, `assistants/`, `documents/`, `auth/`, `healthcheck/`, `query/`
 
-API authentication uses `x-api-key` header → `apiKeyGuard()` → returns `ApiContext` with `orgId`, `userId`, `projectId`.
+API authentication uses `x-api-key` header → `apiKeyGuard()` (async) → validates key against database (bcrypt hash comparison) → returns `ApiContext` with `orgId`, `userId`, `projectId`. API keys store a `hashed_value` column for verification; keys without a stored hash are rejected.
 
 The app can run in API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1`.
 
 ### Auth
 
-Better Auth (`src/lib/auth.ts`) with Prisma adapter. On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership management + Ragen `InternalOrganization` for app-specific data (projects, API keys, subscriptions).
+Better Auth (`src/lib/auth.ts`) with Prisma adapter + `admin` and `organization` plugins. On user creation, a hook auto-creates an organization, internal organization, and default project. Dual org system: Better Auth `Organization` for membership management + Ragen `InternalOrganization` for app-specific data (projects, API keys, subscriptions).
+
+### Role-Based Access Control
+
+Two distinct role hierarchies exist — **never confuse them**:
+
+| Level | Field | Values | Purpose |
+|-------|-------|--------|---------|
+| **App-level** | `User.role` | `'admin'` (superadmin), `'user'` | Platform-wide admin access (disk usage, AI usage dashboards) |
+| **Org-level** | `Member.role` | `'owner'`, `'admin'`, `'member'` | Per-organization permissions (manage members, edit profile) |
+
+**Key files**:
+- `src/lib/auth-access-control.ts` — **Client-safe**. Role constants (`APP_ADMIN_ROLE`, `APP_USER_ROLE`), types (`AppRole`, `OrgRole`), pure check functions (`isAppAdmin()`, `isOrgAdmin()`, `hasOrgRole()`), and Better Auth `createAccessControl` + `orgRoles` definitions
+- `src/lib/auth-guards.ts` — **Server-only**. Async guards (`requireAppAdmin()`, `requireOrgAdmin()`, `requireOrgOwner()`), cached session/member lookups (`getSession()`, `getActiveMember()`)
+
+**Conventions**:
+- Use `isAppAdmin(user)` not `user.role === 'admin'`
+- Use `isOrgAdmin(member.role)` not `['admin', 'owner'].includes(member.role)`
+- Import pure checks from `@/lib/auth-access-control` (works in client and server)
+- Import async guards from `@/lib/auth-guards` (server-only)
+- Do NOT duplicate `getActiveMember` logic in action files — import it from `auth-guards`
 
 ### State Management
 
@@ -127,6 +147,13 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 ### Server Actions
 
 `src/app/actions/index.ts` provides auth-wrapped server actions that delegate to feature module queries/commands. Component-level actions are co-located with their components (e.g., `src/app/components/ApiKeys/actions.ts`). New domain logic should go in `src/features/`, not in actions files.
+
+**Security conventions for server actions**:
+- **Never trust client-supplied `orgId` or `userId`** — always derive from session via `getOrgIdFromAuthOrThrow()` or `getOrgIdFromAuth()` + `getCurrentUserId()`
+- All database queries that return user data must be **scoped by `organization_id`** to prevent IDOR (Insecure Direct Object Reference)
+- Use `dangerouslySetInnerHTML` only with DOMPurify sanitization (import from `dompurify`)
+- Never expose API keys via `NEXT_PUBLIC_` prefix — use server-side API routes for third-party service calls
+- Use `crypto.timingSafeEqual()` for secret comparisons (not `===`)
 
 ## Path Aliases
 

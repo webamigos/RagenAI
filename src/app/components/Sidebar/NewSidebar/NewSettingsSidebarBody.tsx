@@ -1,3 +1,5 @@
+'use client';
+
 import {
   SidebarBody,
   SidebarItem,
@@ -21,8 +23,7 @@ const iconClassName = 'size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400';
 
 export const NewSidebarSettingsBody = () => {
   const t = useTranslations('sidebar');
-  const { user } = useUser();
-  const isAppAdmin = user?.role === 'admin';
+  const { isAppAdmin } = useUser();
 
   return (
     <SidebarBody>

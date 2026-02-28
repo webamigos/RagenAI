@@ -28,7 +28,9 @@
       "Bash(npx eslint:*)",
       "Bash(npx tsc:*)",
       "WebFetch(domain:www.meilisearch.com)",
-      "WebFetch(domain:openrouter.ai)"
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(coderabbit auth:*)",
+      "Bash(coderabbit review:*)"
     ]
   },
   "enabledPlugins": {

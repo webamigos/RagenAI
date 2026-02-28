@@ -6,28 +6,11 @@ import { getSubscriptionData } from '../../subscription/actions';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
+import { getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 
 const TRIAL_PLAN_NAME = 'Trial';
 const FREE_PLAN_NAME = 'Free';
-
-/**
- * Helper function to get active member from current session
- */
-async function getActiveMemberFromSession(organizationId: string) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) {
-    return null;
-  }
-
-  const member = await db.member.findFirst({
-    where: {
-      organizationId,
-      userId: session.user.id,
-    },
-  });
-
-  return member;
-}
 
 /**
  * Zapraszanie nowego członka do organizacji
@@ -36,13 +19,13 @@ async function getActiveMemberFromSession(organizationId: string) {
 export async function inviteMember(
   email: string,
   role: 'admin' | 'member',
-  organizationId: string
+  organizationId: string,
 ) {
   try {
     // 1. Sprawdź permissions
-    const activeMember = await getActiveMemberFromSession(organizationId);
+    const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !['admin', 'owner'].includes(activeMember.role)) {
+    if (!activeMember || !isOrgAdmin(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do zapraszania członków',
@@ -134,9 +117,8 @@ export async function inviteMember(
     const inviter = session?.user?.name;
 
     // Send invitation email
-    const { sendInvitationEmail } = await import(
-      '@/app/emails/services/mailer'
-    );
+    const { sendInvitationEmail } =
+      await import('@/app/emails/services/mailer');
     const emailResult = await sendInvitationEmail({
       to: email,
       organizationName: organization?.name || 'Organization',
@@ -149,14 +131,14 @@ export async function inviteMember(
     if (emailResult.error) {
       logger.error(
         { email, organizationId, error: emailResult.error },
-        'Failed to send invitation email'
+        'Failed to send invitation email',
       );
       // Don't fail the whole operation - invitation is created
     }
 
     logger.info(
       { email, role, organizationId, invitationId },
-      'Invitation created and email sent successfully'
+      'Invitation created and email sent successfully',
     );
 
     revalidatePath('/settings/organization-profile');
@@ -176,13 +158,13 @@ export async function inviteMember(
  */
 export async function removeMember(
   memberIdOrEmail: string,
-  organizationId: string
+  organizationId: string,
 ) {
   try {
     // 1. Sprawdź permissions
-    const activeMember = await getActiveMemberFromSession(organizationId);
+    const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !['admin', 'owner'].includes(activeMember.role)) {
+    if (!activeMember || !isOrgAdmin(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do usuwania członków',
@@ -204,8 +186,8 @@ export async function removeMember(
       }
     } else {
       // To jest member ID
-      memberToRemove = await db.member.findUnique({
-        where: { id: memberIdOrEmail },
+      memberToRemove = await db.member.findFirst({
+        where: { id: memberIdOrEmail, organizationId },
       });
     }
 
@@ -240,7 +222,7 @@ export async function removeMember(
 
     logger.info(
       { memberIdOrEmail, organizationId },
-      'Member removed successfully'
+      'Member removed successfully',
     );
 
     revalidatePath('/settings/organization-profile');
@@ -261,13 +243,13 @@ export async function removeMember(
 export async function updateMemberRole(
   memberId: string,
   role: 'admin' | 'member',
-  organizationId: string
+  organizationId: string,
 ) {
   try {
     // 1. Sprawdź permissions
-    const activeMember = await getActiveMemberFromSession(organizationId);
+    const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !['admin', 'owner'].includes(activeMember.role)) {
+    if (!activeMember || !isOrgAdmin(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do zmiany ról',
@@ -275,8 +257,8 @@ export async function updateMemberRole(
     }
 
     // 2. Znajdź członka i sprawdź czy nie jest właścicielem
-    const targetMember = await db.member.findUnique({
-      where: { id: memberId },
+    const targetMember = await db.member.findFirst({
+      where: { id: memberId, organizationId },
     });
 
     if (!targetMember) {
@@ -295,13 +277,13 @@ export async function updateMemberRole(
 
     // 3. Zmień rolę
     await db.member.update({
-      where: { id: memberId },
+      where: { id: targetMember.id },
       data: { role },
     });
 
     logger.info(
       { memberId, role, organizationId },
-      'Role updated successfully'
+      'Role updated successfully',
     );
 
     revalidatePath('/settings/organization-profile');
