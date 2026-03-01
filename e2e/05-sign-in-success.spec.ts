@@ -1,13 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-import { login } from './commands/login';
-
-test.beforeEach(async ({ page }) => {
-  await page.goto('/en');
-});
+import { login, LABELS } from './helpers';
 
 test('sign in success', async ({ page }) => {
   await login(page);
-
-  await expect(page.getByText(/new thread/i)).toBeVisible();
+  await expect(page.getByText(LABELS.newThread)).toBeVisible();
 });

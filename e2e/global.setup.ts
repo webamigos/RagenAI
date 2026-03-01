@@ -1,9 +1,16 @@
-import { test as setup } from '@playwright/test';
+import { execSync } from 'child_process';
 
-setup('global setup', async () => {
-  if (!process.env.TEST_USER_EMAIL || !process.env.TEST_USER_PASSWORD) {
+export default function globalSetup() {
+  if (!process.env.DATABASE_URL) {
     throw new Error(
-      'Please provide TEST_USER_EMAIL and TEST_USER_PASSWORD environment variables.'
+      'DATABASE_URL environment variable is required for E2E tests.',
     );
   }
-});
+
+  console.log('[global-setup] Running E2E seed script...');
+  execSync('npx tsx e2e/seed/e2e-seed.ts', {
+    stdio: 'inherit',
+    env: { ...process.env },
+  });
+  console.log('[global-setup] Done.');
+}

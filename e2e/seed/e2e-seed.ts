@@ -1,0 +1,175 @@
+import { PrismaClient } from '../../src/generated/prisma/client';
+import {
+  SubscriptionPlanStatus,
+  SubscriptionPlanType,
+} from '../../src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { hashPassword } from 'better-auth/crypto';
+
+import {
+  TEST_USER_ID,
+  TEST_USER_EMAIL,
+  TEST_USER_PASSWORD,
+  TEST_USER_NAME,
+  TEST_ORG_ID,
+  TEST_ORG_SLUG,
+  TEST_MEMBER_ID,
+  TEST_ACCOUNT_ID,
+  TEST_PROJECT_TITLE,
+  TEST_PROJECT_PUBLIC_ID,
+} from '../constants.js';
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not set');
+}
+
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
+
+async function cleanup() {
+  console.log('Cleaning up existing E2E test data...');
+
+  // Delete in order respecting foreign key constraints
+  await prisma.project.deleteMany({
+    where: { public_id: TEST_PROJECT_PUBLIC_ID },
+  });
+  await prisma.subscription.deleteMany({
+    where: { referenceId: TEST_ORG_ID },
+  });
+  await prisma.organizationSettings.deleteMany({
+    where: { organization_id: TEST_ORG_ID },
+  });
+  await prisma.member.deleteMany({
+    where: { id: TEST_MEMBER_ID },
+  });
+  await prisma.account.deleteMany({
+    where: { id: TEST_ACCOUNT_ID },
+  });
+  await prisma.session.deleteMany({
+    where: { userId: TEST_USER_ID },
+  });
+  await prisma.organization.deleteMany({
+    where: { id: TEST_ORG_ID },
+  });
+  await prisma.user.deleteMany({
+    where: { id: TEST_USER_ID },
+  });
+
+  console.log('Cleanup complete.');
+}
+
+async function seed() {
+  console.log('Seeding E2E test data...');
+
+  // 1. Create user
+  await prisma.user.create({
+    data: {
+      id: TEST_USER_ID,
+      email: TEST_USER_EMAIL,
+      name: TEST_USER_NAME,
+      emailVerified: true,
+      onboardingComplete: true,
+      role: 'user',
+    },
+  });
+  console.log(`Created user: ${TEST_USER_EMAIL}`);
+
+  // 2. Create account with hashed password
+  const hashedPassword = await hashPassword(TEST_USER_PASSWORD);
+  await prisma.account.create({
+    data: {
+      id: TEST_ACCOUNT_ID,
+      userId: TEST_USER_ID,
+      providerId: 'credential',
+      accountId: TEST_USER_EMAIL,
+      password: hashedPassword,
+    },
+  });
+  console.log('Created account with credential provider');
+
+  // 3. Create organization
+  await prisma.organization.create({
+    data: {
+      id: TEST_ORG_ID,
+      name: `${TEST_USER_NAME}'s Organization`,
+      slug: TEST_ORG_SLUG,
+      vectorStore: 'meilisearch',
+    },
+  });
+  console.log(`Created organization: ${TEST_ORG_SLUG}`);
+
+  // 4. Create member (user as owner)
+  await prisma.member.create({
+    data: {
+      id: TEST_MEMBER_ID,
+      organizationId: TEST_ORG_ID,
+      userId: TEST_USER_ID,
+      role: 'owner',
+    },
+  });
+  console.log('Created member with owner role');
+
+  // 5. Create organization settings (required for upload storage limit checks)
+  await prisma.organizationSettings.create({
+    data: {
+      organization_id: TEST_ORG_ID,
+    },
+  });
+  console.log('Created organization settings');
+
+  // 6. Ensure "Trial" subscription plan exists
+  const trialPlan = await prisma.subscriptionPlan.findFirst({
+    where: { name: 'Trial', type: SubscriptionPlanType.INTERNAL },
+  });
+  if (!trialPlan) {
+    await prisma.subscriptionPlan.create({
+      data: {
+        name: 'Trial',
+        type: SubscriptionPlanType.INTERNAL,
+        status: SubscriptionPlanStatus.ACTIVE,
+        limits: {},
+        priceId: 'internal_trial',
+      },
+    });
+    console.log('Created Trial subscription plan');
+  }
+
+  // 7. Create subscription
+  await prisma.subscription.create({
+    data: {
+      id: `e2e-subscription-0000-0001`,
+      plan: 'Trial',
+      referenceId: TEST_ORG_ID,
+      status: 'trialing',
+    },
+  });
+  console.log('Created Trial subscription');
+
+  // 8. Create project
+  await prisma.project.create({
+    data: {
+      public_id: TEST_PROJECT_PUBLIC_ID,
+      title: TEST_PROJECT_TITLE,
+      organization_id: TEST_ORG_ID,
+      owner_id: TEST_USER_ID,
+    },
+  });
+  console.log(`Created project: ${TEST_PROJECT_TITLE}`);
+
+  console.log('E2E seed complete.');
+}
+
+async function main() {
+  await cleanup();
+  await seed();
+}
+
+main()
+  .catch((e) => {
+    console.error('E2E seed failed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

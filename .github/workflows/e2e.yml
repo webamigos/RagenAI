@@ -1,30 +1,27 @@
 name: E2E Tests
 
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
 env:
-  NEXT_PUBLIC_API_URL: 'http://example.com'
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  API_BASE_URL: ${{ secrets.API_BASE_URL }}
-  DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
-  SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
-  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-  CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
-  CLERK_WEBHOOK_SIGNING_SECRET: ${{ secrets.CLERK_WEBHOOK_SIGNING_SECRET }}
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-  NEXT_PUBLIC_CLERK_SIGN_IN_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_IN_URL }}
-  NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ vars.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
-  REDIS_URL: ${{ secrets.REDIS_URL }}
+  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
+  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
+  BETTER_AUTH_SECRET: 'e2e-test-secret-key-min-32-chars-long'
+  BETTER_AUTH_URL: 'http://localhost:3000'
+  NEXT_PUBLIC_API_URL: 'http://localhost:3000'
+  TEST_USER_EMAIL: 'e2e-test@ragen.ai'
+  TEST_USER_PASSWORD: 'E2eTestPassword123!'
   SECRET_KEY: 'dummy'
   TARGET_ENV: 'test'
   TEMPORAL_SERVER_ADDRESS: 'http://example.com'
   TEMPORAL_NAMESPACE: 'ci'
   TEMPORAL_CERT: 'dummy'
   TEMPORAL_KEY: 'dummy'
-  TESTS_CLERK_USER_EMAIL: ${{ vars.TESTS_CLERK_USER_EMAIL }}
-  TESTS_CLERK_USER_PASSWORD: ${{ vars.TESTS_CLERK_USER_PASSWORD }}
-  TESTS_CLERK_USER_USERNAME: ${{ vars.TESTS_CLERK_USER_USERNAME }}
   MEILISEARCH_URL: 'http://example.com'
+  MEILISEARCH_MASTER_KEY: 'dummy'
   RESEND_API_KEY: 'dummy'
   RESEND_DEFAULT_AUDIENCE_ID: 'dummy'
   AWS_REGION: 'dummy'
@@ -40,20 +37,31 @@ env:
   DEFAULT_MODEL_PROVIDER: 'google'
   DEFAULT_MODEL: 'gemini-3-flash-preview'
   GOOGLE_API_KEY: 'dummy'
+  OPENAI_API_KEY: 'dummy'
   PUSHER_APP_ID: 'dummy'
   PUSHER_KEY: 'dummy'
   PUSHER_SECRET: 'dummy'
   NEXT_PUBLIC_PUSHER_KEY: 'dummy'
 
-on:
-  push:
-    branches: [main, dev]
-  pull_request:
-    branches: [main, dev]
 jobs:
   test-e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ragen_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -79,6 +87,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+
       - name: Build Next.js app
         run: npm run build
 
@@ -91,10 +105,6 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
-        env:
-          NEXT_PUBLIC_ENABLE_MSW_MOCKING: 'enabled'
-          NEXT_PUBLIC_TEST_ENV: 'enabled'
-          CLERK_JWT_KEY: 'dummy'
 
       - name: Publish report
         uses: actions/upload-artifact@v4
