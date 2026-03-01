@@ -1,11 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { type Database } from './vectorStoreDatabase.types';
 
-const apiKey = process.env.SUPABASE_ANON_KEY;
-const url = process.env.SUPABASE_API_URL;
+let _client: SupabaseClient<Database> | null = null;
 
-if (!url || !apiKey) {
-  throw new Error('Supabase Vector Store apiKey and url is required.');
+export function getSupabaseVectorStoreClient(): SupabaseClient<Database> {
+  if (!_client) {
+    const apiKey = process.env.SUPABASE_ANON_KEY;
+    const url = process.env.SUPABASE_API_URL;
+
+    if (!url || !apiKey) {
+      throw new Error('Supabase Vector Store apiKey and url is required.');
+    }
+
+    _client = createClient<Database>(url, apiKey);
+  }
+  return _client;
 }
 
-export const supabaseVectorStoreClient = createClient<Database>(url, apiKey);
+/** @deprecated Use getSupabaseVectorStoreClient() instead */
+export const supabaseVectorStoreClient = new Proxy(
+  {} as SupabaseClient<Database>,
+  {
+    get(_, prop) {
+      return (getSupabaseVectorStoreClient() as any)[prop];
+    },
+  },
+);
