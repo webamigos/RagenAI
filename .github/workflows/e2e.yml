@@ -109,7 +109,7 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
 
-      - name: Publish report
+      - name: Publish HTML report
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -118,4 +118,12 @@ jobs:
           retention-days: 30
 
       - name: Publish Test Summary Results
-        run: npx github-actions-ctrf ctrf/ctrf-report.json
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: './ctrf/*.json'
+          summary-delta-report: true
+          flaky-rate-report: true
+          fail-rate-report: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: always()
