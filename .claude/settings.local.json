@@ -32,7 +32,8 @@
       "Bash(coderabbit auth:*)",
       "Bash(coderabbit review:*)",
       "WebFetch(domain:www.better-auth.com)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(curl:*)"
     ]
   },
   "enabledPlugins": {
