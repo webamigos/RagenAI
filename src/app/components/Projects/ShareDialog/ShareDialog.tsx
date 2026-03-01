@@ -28,7 +28,13 @@ type ShareDialogProps = {
   onChatbotEnabledChange?: (enabled: boolean) => Promise<boolean>;
 };
 
-const BASE_URL = `${window.location.origin}/pl/public/assistants`;
+function getOrigin() {
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
+function getBaseUrl() {
+  return `${getOrigin()}/pl/public/assistants`;
+}
 
 export const ShareDialog = ({
   open,
@@ -41,7 +47,7 @@ export const ShareDialog = ({
   onChatbotEnabledChange,
 }: ShareDialogProps) => {
   const [isSharedLinkPublicly, setIsSharedLinkPublicly] = useState(
-    isPublicProject || false
+    isPublicProject || false,
   );
   const [shareUrl, setShareUrl] = useState('');
   const wasPublicLinkKeyGenerated = useRef<boolean>(false);
@@ -51,7 +57,7 @@ export const ShareDialog = ({
   const [currentPublishedAt, setCurrentPublishedAt] = useState(publishedAt);
 
   const [isChatbotEnabled, setIsChatbotEnabled] = useState(
-    initialChatbotEnabled
+    initialChatbotEnabled,
   );
   const [isChatbotCustomized, setIsChatbotCustomized] = useState(false);
   const [accessKey, setAccessKey] = useState('');
@@ -73,12 +79,12 @@ export const ShareDialog = ({
       return;
     }
 
-    return `<script src='${
-      window.location.origin
-    }/api/embed/${accessKey}?${new URLSearchParams({
-      title: chatbotTitle,
-      message: chatbotName,
-    }).toString()}'></script>`;
+    return `<script src='${getOrigin()}/api/embed/${accessKey}?${new URLSearchParams(
+      {
+        title: chatbotTitle,
+        message: chatbotName,
+      },
+    ).toString()}'></script>`;
   }, [accessKey, chatbotTitle, chatbotName]);
 
   const generateTokenAndSetUrl = async (forChatbot = false) => {
@@ -113,7 +119,7 @@ export const ShareDialog = ({
       if (!shareUrl) {
         const accessToken = await generateTokenAndSetUrl(false);
         if (accessToken) {
-          setShareUrl(`${BASE_URL}/${accessToken}`);
+          setShareUrl(`${getBaseUrl()}/${accessToken}`);
         } else {
           setIsSharedLinkPublicly(false);
         }
@@ -224,7 +230,7 @@ export const ShareDialog = ({
             shareUrl={shareUrl}
             isGeneratingKey={isGeneratingKey}
             wasKeyGenerated={wasPublicLinkKeyGenerated.current}
-            linkToPublicProject={`${BASE_URL}/${currentLinkToPublicProject}`}
+            linkToPublicProject={`${getBaseUrl()}/${currentLinkToPublicProject}`}
             publishedAt={currentPublishedAt}
             projectId={projectId}
             onToggle={handleShareToggle}

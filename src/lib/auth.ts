@@ -81,6 +81,10 @@ export const auth = betterAuth({
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
   ],
 
+  advanced: {
+    cookiePrefix: 'better-auth',
+  },
+
   database: prismaAdapter(db, {
     provider: 'postgresql',
   }),
