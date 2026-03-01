@@ -51,7 +51,10 @@ export default async function middleware(request: NextRequest) {
   }
 
   // Check if session cookie exists (lightweight check without DB query)
-  const sessionCookie = request.cookies.get('better-auth.session_token');
+  // Better Auth uses __Secure- prefix when baseURL is HTTPS
+  const sessionCookie =
+    request.cookies.get('better-auth.session_token') ||
+    request.cookies.get('__Secure-better-auth.session_token');
 
   // Public routes whitelist - allow unauthenticated access
   const publicRoutes = [
