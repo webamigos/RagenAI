@@ -6,7 +6,11 @@ test('sign out success', async ({ page }) => {
   await login(page);
   await expect(page).toHaveURL(/\/pl\//, { timeout: 15_000 });
 
-  await page.getByTestId('avatar-icon').last().click();
+  // Wait for the panel to fully load (avatar in sidebar)
+  const avatar = page.getByTestId('avatar-icon').last();
+  await expect(avatar).toBeVisible({ timeout: 15_000 });
+  await avatar.click();
+
   await page.getByText(LABELS.signOut).click();
 
   await expect(page.getByRole('button', { name: LABELS.signIn })).toBeVisible({
