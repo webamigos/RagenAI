@@ -81,6 +81,19 @@ export const auth = betterAuth({
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
   ],
 
+  advanced: {
+    // Railway terminates SSL at the edge (Fastly CDN). The __Secure- cookie
+    // name prefix doesn't survive the proxy, so we disable it. We still keep
+    // Secure/HttpOnly/SameSite flags for full cookie security.
+    useSecureCookies: false,
+    cookiePrefix: 'better-auth',
+    defaultCookieAttributes: {
+      secure: true,
+      httpOnly: true,
+      sameSite: 'lax' as const,
+    },
+  },
+
   database: prismaAdapter(db, {
     provider: 'postgresql',
   }),

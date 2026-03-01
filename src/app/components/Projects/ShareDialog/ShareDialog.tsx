@@ -28,8 +28,12 @@ type ShareDialogProps = {
   onChatbotEnabledChange?: (enabled: boolean) => Promise<boolean>;
 };
 
+function getOrigin() {
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
 function getBaseUrl() {
-  return `${window.location.origin}/pl/public/assistants`;
+  return `${getOrigin()}/pl/public/assistants`;
 }
 
 export const ShareDialog = ({
@@ -75,12 +79,12 @@ export const ShareDialog = ({
       return;
     }
 
-    return `<script src='${
-      window.location.origin
-    }/api/embed/${accessKey}?${new URLSearchParams({
-      title: chatbotTitle,
-      message: chatbotName,
-    }).toString()}'></script>`;
+    return `<script src='${getOrigin()}/api/embed/${accessKey}?${new URLSearchParams(
+      {
+        title: chatbotTitle,
+        message: chatbotName,
+      },
+    ).toString()}'></script>`;
   }, [accessKey, chatbotTitle, chatbotName]);
 
   const generateTokenAndSetUrl = async (forChatbot = false) => {
