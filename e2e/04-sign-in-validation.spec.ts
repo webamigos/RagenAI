@@ -3,10 +3,7 @@ import { test, expect } from '@playwright/test';
 import { ROUTES, LABELS } from './helpers';
 
 test('sign in validation', async ({ page }) => {
-  await page.goto(ROUTES.home);
-  await page.getByRole('button', { name: LABELS.signIn }).click();
-
-  await page.waitForURL('**/sign-in');
+  await page.goto(ROUTES.signIn);
 
   await page.getByRole('button', { name: LABELS.signIn }).click();
 
