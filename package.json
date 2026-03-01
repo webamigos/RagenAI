@@ -178,7 +178,6 @@
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "dompurify": "^3.1.7",
-    "dotenv-flow": "^4.1.0",
     "elevenlabs": "^1.50.2",
     "embla-carousel-react": "^8.6.0",
     "epub": "^1.2.1",

@@ -42,7 +42,8 @@
         "src/instrumentation-client.ts",
         "src/app/lib/utils/logger.ts",
         "next.config.ts",
-        "prisma/**"
+        "prisma/**",
+        "e2e/**"
       ],
       "rules": {
         "no-console": "off"
