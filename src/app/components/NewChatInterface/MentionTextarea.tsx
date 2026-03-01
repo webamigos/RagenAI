@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Textarea } from '@ragenai/common-ui';
+import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -70,13 +70,15 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         onProjectMention?.(null);
       }
     },
-    [onChange, mentionedProject, onProjectMention]
+    [onChange, mentionedProject, onProjectMention],
   );
 
   const handleProjectSelect = useCallback(
     (project: MentionedProject) => {
       const textarea = textareaRef.current;
-      if (!textarea) return;
+      if (!textarea) {
+        return;
+      }
 
       const currentValue = textarea.value;
       let currentCursorPos = textarea.selectionStart ?? cursorPosition;
@@ -85,7 +87,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
       }
 
       const mentionStartIndex = mentionStartRef.current;
-      if (mentionStartIndex === null) return;
+      if (mentionStartIndex === null) {
+        return;
+      }
 
       const mentionEndIndex = mentionStartIndex + 1 + mentionQuery.length;
 
@@ -112,7 +116,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
       setShowDropdown(false);
       setMentionQuery('');
     },
-    [cursorPosition, onChange, onProjectMention, mentionQuery]
+    [cursorPosition, onChange, onProjectMention, mentionQuery],
   );
 
   // File handling
@@ -183,14 +187,14 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         errorToast({ message: 'Błąd podczas wgrywania plików' });
       }
     },
-    [threadDocuments, setThreadDocuments]
+    [threadDocuments, setThreadDocuments],
   );
 
   const handleThreadDocumentRemove = useCallback(
     (index: number) => {
       setThreadDocuments(threadDocuments.filter((_, i) => i !== index));
     },
-    [threadDocuments, setThreadDocuments]
+    [threadDocuments, setThreadDocuments],
   );
 
   const handleKeyDown = useCallback(
@@ -211,14 +215,18 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
 
       textareaProps.onKeyDown?.(e);
     },
-    [showDropdown, textareaProps]
+    [showDropdown, textareaProps],
   );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (textareaRef.current?.contains(target)) return;
-      if (target.closest('[data-project-dropdown]')) return;
+      if (textareaRef.current?.contains(target)) {
+        return;
+      }
+      if (target.closest('[data-project-dropdown]')) {
+        return;
+      }
       setShowDropdown(false);
     };
     document.addEventListener('mousedown', handleClickOutside);

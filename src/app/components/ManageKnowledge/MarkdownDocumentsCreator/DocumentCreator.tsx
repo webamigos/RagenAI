@@ -7,21 +7,15 @@ import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 import TurndownService from 'turndown';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { statusToast } from '@/app/lib/utils/toast';
-import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
-import {
-  Card,
-  Input,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-  WysiwygEditor,
-  Button,
-} from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Tabs, TabList, Tab, TabPanel } from '@ragenai/common-ui/Tabs';
+import { WysiwygEditor } from '@ragenai/common-ui/WysywigEditor';
+import { Button } from '@ragenai/common-ui/Button';
 import { uploadFiles } from '@/app/lib/services/api';
 
 const turndownService = new TurndownService();
@@ -80,7 +74,7 @@ export const DocumentCreator = () => {
         'files',
         new File([markdownContent], `${data.title}.md`, {
           type: 'text/markdown',
-        })
+        }),
       );
 
       const response = await uploadFiles(formData);
@@ -99,7 +93,7 @@ export const DocumentCreator = () => {
         //   project: { id: projectId, title: document.fileName },
         // } as UserFileType); // TODO: temporary, will be refactored
         reset();
-        router.push('/settings/knowledge/documents-list');
+        router.push('/knowledge/documents-list');
 
         infoToast({ message: t('created-successful') });
       } else if (response.message) {
@@ -121,18 +115,19 @@ export const DocumentCreator = () => {
             <Tab>{t('edit')}</Tab>
             <Tab>{t('preview')}</Tab>
           </TabList>
-          <TabPanel className="h-full">
+          <TabPanel className="h-full !px-0 !pt-3 !pb-0">
             <Input
               mandatory={true}
               label={t('input-label')}
               type="text"
               placeholder={t('input-placeholder')}
               {...register('title')}
-              className="mb-2 w-full p-2 border-gray-300"
+              className="w-full"
+              containerClassName="pt-0 mb-2"
               error={touchedFields.title ? errors.title : undefined}
               errorMessage={errors.title?.message}
             />
-            <div className="h-[25.2rem] flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col">
               <WysiwygEditor
                 label={t('content')}
                 mandatory={true}
@@ -140,12 +135,21 @@ export const DocumentCreator = () => {
                 value={editorContent || ''}
                 error={touchedFields.content ? errors.content : undefined}
                 errorMessage={errors.content?.message}
-                className="flex-1 max-h-[20.5rem] overflow-auto"
+                className="flex-1 max-h-[22rem] overflow-auto"
               />
             </div>
+            <div className="mt-3 flex justify-end">
+              <Button
+                className="w-full md:w-auto"
+                isSubmit
+                isLoading={isLoading}
+              >
+                {t('send')}
+              </Button>
+            </div>
           </TabPanel>
-          <TabPanel className="h-full flex-1">
-            <div className="flex-1 preview-content h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-2xl bg-gray-50 dark:bg-accent-dark-300">
+          <TabPanel className="h-full flex-1 !px-0 !pt-3 !pb-0">
+            <div className="flex-1 preview-content h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-lg bg-gray-50 dark:bg-accent-dark-300">
               <h2 className="text-xl font-semibold mb-4">{watch('title')}</h2>
               <div className="h-full flex-1 prose prose-lg dark:prose-invert">
                 {parse(sanitizedContent)}
@@ -153,15 +157,6 @@ export const DocumentCreator = () => {
             </div>
           </TabPanel>
         </Tabs>
-        <div className="mt-auto">
-          <Button
-            className="w-full flex justify-center md:block md:w-auto"
-            isSubmit
-            isLoading={isLoading}
-          >
-            {t('send')}
-          </Button>
-        </div>
       </form>
     </Card>
   );

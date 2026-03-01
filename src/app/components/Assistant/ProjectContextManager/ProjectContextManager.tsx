@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { type RootState } from '@/store';
 import {
   FolderIcon,
   ChevronDownIcon,
@@ -10,7 +10,7 @@ import {
   CheckIcon,
 } from '@heroicons/react/20/solid';
 import { setThreadContext } from '@/store/assistant/assistantSlice';
-import { updateThreadContextAction } from '@/app/lib/actions/threads';
+import { updateThreadContextCommand as updateThreadContextAction } from '@/features/threads/services/commands/update-thread-context-command';
 import { statusToast } from '@/app/lib/utils/toast';
 
 type ProjectForContext = {
@@ -40,13 +40,15 @@ export const ProjectContextManager = ({
   const currentProject = threadContext?.project;
 
   const handleProjectSelect = async (project: ProjectForContext | null) => {
-    if (isUpdating) return;
+    if (isUpdating) {
+      return;
+    }
 
     setIsUpdating(true);
     try {
       const result = await updateThreadContextAction(
         threadId,
-        project?.id || null
+        project?.id || null,
       );
 
       if (result.success) {
@@ -192,8 +194,8 @@ export const ProjectContextManager = ({
                     {isSelected
                       ? 'Wymieniony projekt (@)'
                       : isCurrentThreadProject
-                      ? 'Projekt wątku (domyślny)'
-                      : `ID: ${project.public_id}`}
+                        ? 'Projekt wątku (domyślny)'
+                        : `ID: ${project.public_id}`}
                   </div>
                 </div>
                 {(isSelected || isCurrentThreadProject) && (

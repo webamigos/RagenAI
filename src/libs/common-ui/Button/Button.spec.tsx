@@ -5,10 +5,10 @@ import { Button } from './Button';
 describe('Button component', () => {
   // TODO: do not write tests like below
   it('should renders correctly', () => {
-    const { debug, rerender, unmount } = render(
+    render(
       <Button label="Click me" plain>
         Test
-      </Button>
+      </Button>,
     );
     const button = screen.getByText('Click me');
 
@@ -23,7 +23,7 @@ describe('Button component', () => {
     const { container } = render(
       <Button label="Click me" plain>
         Test
-      </Button>
+      </Button>,
     );
     const result = await axe(container);
     expect(result).toHaveNoViolations();

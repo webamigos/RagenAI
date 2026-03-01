@@ -5,15 +5,16 @@ import { useTranslations } from 'next-intl';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 
 import { useRouter } from '@/i18n/routing';
-import { Input } from '@ragenai/common-ui';
+import { Input } from '@ragenai/common-ui/Input';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { validationSchema, type ApiKeyDto } from './types';
 import { createApiKey } from './actions';
 import { ApiKeyModal } from './ApiKeyModal';
 import { statusToast } from '@/app/lib/utils/toast';
-import { fetchProjectsForUser } from '@/app/lib/services/project';
-import { Button, Select } from '@ragenai/common-ui';
+import { type getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
+import { Button } from '@ragenai/common-ui/Button';
+import { Select } from '@ragenai/common-ui/Select';
 
 type ClientProject = Awaited<ReturnType<typeof fetchProjectsForUser>>;
 
@@ -38,7 +39,7 @@ export const CreateApiKeyForm = ({
   });
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { errorToast, successToast } = statusToast();
+  const { errorToast } = statusToast();
 
   const handleCreateKey: SubmitHandler<ApiKeyDto> = async (data) => {
     const result = await createApiKey(data);

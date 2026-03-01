@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { PageSkeleton } from '@ragenai/common-ui';
+import { PageSkeleton } from '@ragenai/common-ui/Skeleton';
 
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
@@ -51,6 +51,7 @@ export function ProjectComponent({ projectId }: Props) {
     }
 
     loadProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   if (isLoading || !project || !isReady) {

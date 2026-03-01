@@ -1,13 +1,13 @@
 import { useEffect, useReducer } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role, MessageContentType } from '@prisma/client';
+import { Role, MessageContentType } from '@/generated/prisma/browser';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useVoiceInput } from '@/app/hooks/useAudioRecording';
 import { convertTextToSpeech } from '../../../elevenLabsTTS';
 import { logger } from '@/app/lib/utils/logger';
-import { updateMessagePlayedStatus } from '@/app/lib/services/message';
+import { updateMessagePlayedCommand as updateMessagePlayedStatus } from '@/features/messages/services/commands/update-message-played-command';
 import { voiceModeReducer, initialState } from '../voiceModeReducer';
-import { VoiceModeProps, VoiceModeHandlers } from '../types';
+import { type VoiceModeProps, type VoiceModeHandlers } from '../types';
 
 interface UseVoiceModeProps {
   audioRef: React.RefObject<HTMLAudioElement>;
@@ -114,7 +114,7 @@ export const useVoiceMode = ({
   }, [assistantError]);
 
   const playAssistantResponse = async (
-    message: VoiceModeProps['messages'][0]
+    message: VoiceModeProps['messages'][0],
   ) => {
     dispatch({ type: 'SET_WAITING_FOR_RESPONSE', payload: true });
     dispatch({ type: 'SET_GENERATING_AUDIO', payload: true });

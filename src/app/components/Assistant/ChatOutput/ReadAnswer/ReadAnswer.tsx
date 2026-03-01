@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SpinnerSVG, SoundWave } from '@ragenai/common-ui';
+import { SpinnerSVG, SoundWave } from '@ragenai/common-ui/icons';
 import { logger } from '@/app/lib/utils/logger';
 
 import { convertTextToSpeech } from '../../elevenLabsTTS';

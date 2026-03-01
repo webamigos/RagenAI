@@ -1,7 +1,9 @@
 import { format } from 'date-fns';
+import DOMPurify from 'dompurify';
 
-import { Text, ArrowIcon } from '@ragenai/common-ui';
-import { MessageDto } from '@/app/contracts/Message';
+import { Text } from '@ragenai/common-ui/Text';
+import { ArrowIcon } from '@ragenai/common-ui/icons';
+import { type MessageDto } from '@/features/messages/contracts/message.types';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
@@ -21,7 +23,7 @@ export const MessageItem = ({
   t,
   showMessageDetails,
   handleMessageDetails,
-  streamedMessageRunId,
+  streamedMessageRunId: _streamedMessageRunId,
 }: MessageItemProps) => {
   return (
     <div
@@ -41,7 +43,9 @@ export const MessageItem = ({
       >
         <div
           dangerouslySetInnerHTML={{
-            __html: md.render(message.content),
+            __html: DOMPurify.sanitize(md.render(message.content), {
+              FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+            }),
           }}
         />
         <div className="flex items-center justify-end">
@@ -61,7 +65,6 @@ export const MessageItem = ({
             <RateAnswer
               initialRated={message.rate}
               publicId={message.public_id}
-              runId={streamedMessageRunId || message.run_id}
             />
             <CopyToClipboardButton message={message} />
           </div>

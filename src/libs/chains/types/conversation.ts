@@ -1,15 +1,8 @@
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { BaseChain } from 'langchain/chains';
+import type { BaseChatChainModels, ChainConfig } from './common';
 
 export interface ConversationChainParams {
-  models: {
-    contentModerator: BaseChain;
-    answerGenerator: BaseChatModel;
-  };
+  models: BaseChatChainModels;
   config?: ConversationChainConfig;
 }
 
-export interface ConversationChainConfig {
-  answerInstructions?: string | null;
-  projectInstruction?: string;
-}
+export interface ConversationChainConfig extends ChainConfig {}

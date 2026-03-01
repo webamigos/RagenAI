@@ -1,11 +1,12 @@
 import { memo, useState } from 'react';
 import prettyBytes from 'pretty-bytes';
 
-import { Text, TrashIcon } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { TrashIcon } from '@ragenai/common-ui/icons';
 import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
-import { FileType, UserFile } from '@prisma/client';
+import { type FileType, type UserFile } from '@/generated/prisma/browser';
 
 type FileItemProps = {
   file: {
@@ -42,7 +43,7 @@ export const FileItem = memo(
     // Create a handler to manage deletion and modal closing
     const handleConfirmDelete = (
       filePublicId: UserFile['public_id'],
-      fileName: UserFile['file_name']
+      _fileName: UserFile['file_name'],
     ) => {
       onDelete(filePublicId);
       toggleModal(null);
@@ -91,7 +92,7 @@ export const FileItem = memo(
         </div>
       </>
     );
-  }
+  },
 );
 
 FileItem.displayName = 'FileItem';

@@ -4,10 +4,9 @@ import {
   useId,
   forwardRef,
   type ForwardedRef,
-  ComponentPropsWithRef,
+  type ComponentPropsWithRef,
   useEffect,
   useRef,
-  MouseEventHandler,
   useState,
 } from 'react';
 import { useTranslations } from 'next-intl';
@@ -26,7 +25,7 @@ import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
 import { FileBadge } from '../Badge/FileBadge';
 import { useVoiceInput } from '../../../app/hooks/useAudioRecording';
-import { ThreadDocumentUI } from '../../../app/contracts/ThreadDocument';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Props = {
   label?: string;
@@ -75,11 +74,11 @@ export const Textarea = forwardRef(
       onSend,
       setValue,
       value,
-      handleSubmit,
+      handleSubmit: _handleSubmit,
       modelSelector,
       ...rest
     }: Props,
-    ref: ForwardedRef<HTMLTextAreaElement>
+    ref: ForwardedRef<HTMLTextAreaElement>,
   ) => {
     const id = useId();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -117,7 +116,7 @@ export const Textarea = forwardRef(
         textarea.style.height = 'auto';
         textarea.style.height = `${Math.min(
           textarea.scrollHeight,
-          maxHeight
+          maxHeight,
         )}px`;
       }
     };
@@ -131,14 +130,6 @@ export const Textarea = forwardRef(
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        onSend?.();
-      }
-    };
-
-    const handleIconClick: MouseEventHandler<HTMLButtonElement> = () => {
-      if (handleSubmit) {
-        handleSubmit();
-      } else {
         onSend?.();
       }
     };
@@ -203,8 +194,8 @@ export const Textarea = forwardRef(
     const attachmentIcon = showFileAttachment ? (
       <PaperClipIcon
         className={classMerge(
-          'h-6 w-6',
-          'text-gray-600 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer'
+          'size-5',
+          'text-foreground/70 hover:text-foreground cursor-pointer transition-colors',
         )}
         aria-hidden="true"
       />
@@ -228,7 +219,7 @@ export const Textarea = forwardRef(
               'h-9 w-9',
               disabled
                 ? 'text-gray-300 dark:text-gray-600'
-                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
+                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300',
             )}
             aria-hidden="true"
           />
@@ -239,7 +230,7 @@ export const Textarea = forwardRef(
           <MicrophoneIcon
             className={classMerge(
               'h-7 w-7 mb-1.5',
-              'text-gray-600 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300'
+              'text-gray-600 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300',
             )}
             aria-hidden="true"
           />
@@ -254,7 +245,7 @@ export const Textarea = forwardRef(
               'h-9 w-9',
               value?.trim()
                 ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
-                : 'text-gray-300 dark:text-gray-600'
+                : 'text-gray-300 dark:text-gray-600',
             )}
             aria-hidden="true"
           />
@@ -308,14 +299,9 @@ export const Textarea = forwardRef(
                   'border border-gray-300 dark:border-gray-800':
                     !isDragOver && !error,
                 },
-                modelSelector && showFileAttachment
-                  ? 'px-2.5 pr-28'
-                  : modelSelector
-                  ? 'px-2.5 pr-24'
-                  : showFileAttachment
-                  ? 'px-2.5 pr-20'
-                  : 'px-2.5 pr-12',
-                className
+                'pl-3',
+                modelSelector ? 'pr-28' : 'pr-14',
+                className,
               )}
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
@@ -325,7 +311,7 @@ export const Textarea = forwardRef(
             />
 
             {modelSelector && (
-              <div className="absolute bottom-1.5 right-21 flex items-center">
+              <div className="absolute bottom-1.5 right-14 flex items-center">
                 {modelSelector}
               </div>
             )}
@@ -343,7 +329,7 @@ export const Textarea = forwardRef(
               <button
                 type="button"
                 onClick={onFileIconClick || handleFileIconClick}
-                className="absolute bottom-3.5 right-12 flex items-center"
+                className="absolute bottom-2.5 left-3 flex items-center"
               >
                 {attachmentIcon}
               </button>
@@ -352,8 +338,8 @@ export const Textarea = forwardRef(
             {icon && (
               <button
                 type="button"
-                onClick={handleIconClick}
-                className="absolute bottom-1.5 right-2 flex items-center"
+                onClick={onClick}
+                className="absolute bottom-1.5 right-3 flex items-center"
               >
                 {icon}
               </button>
@@ -417,7 +403,7 @@ export const Textarea = forwardRef(
         )}
       </div>
     );
-  }
+  },
 );
 
 Textarea.displayName = 'Textarea';

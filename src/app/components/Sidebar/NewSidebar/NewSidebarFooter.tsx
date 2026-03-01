@@ -1,6 +1,7 @@
 'use client';
 
-import { SignOutButton, useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
+import { signOut } from '@/app/hooks/use-better-auth';
 
 import { Avatar } from '@ragenai/tui/avatar';
 import {
@@ -16,18 +17,17 @@ import {
   ArrowRightStartOnRectangleIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
-  LightBulbIcon,
-  ShieldCheckIcon,
   UserIcon,
-} from '@heroicons/react/16/solid';
-import { useTranslations } from 'next-intl';
+} from '@heroicons/react/24/outline';
+import { useTranslations, useLocale } from 'next-intl';
 
 export const NewSidebarFooter = () => {
   const { user } = useUser();
   const t = useTranslations('sidebar.footer');
-  const userAvatar = user?.imageUrl;
-  const userEmail = user?.emailAddresses[0].emailAddress;
-  const userFirstName = user?.firstName;
+  const locale = useLocale();
+  const userAvatar = user?.image;
+  const userEmail = user?.email; // Better Auth: email is a direct string property
+  const userFirstName = user?.name; // Better Auth: uses 'name' instead of 'firstName'
 
   return (
     <SidebarFooter>
@@ -49,24 +49,36 @@ export const NewSidebarFooter = () => {
               </span>
             </span>
           </span>
-          <ChevronUpIcon className="w-5 h-5" />
+          <ChevronUpIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
         </DropdownButton>
         <DropdownMenu className="min-w-64" anchor="top start">
           <DropdownItem href="/user/profile">
-            <UserIcon className="w-6 h-6" />
+            <UserIcon
+              data-slot="icon"
+              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+            />
             <DropdownLabel>{t('my-profile')}</DropdownLabel>
           </DropdownItem>
           <DropdownItem href="/settings">
-            <Cog8ToothIcon className="w-6 h-6" />
+            <Cog8ToothIcon
+              data-slot="icon"
+              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+            />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
-          <SignOutButton>
-            <DropdownItem>
-              <ArrowRightStartOnRectangleIcon className="w-6 h-6 mr-2" />
-              <DropdownLabel>{t('sign-out')}</DropdownLabel>
-            </DropdownItem>
-          </SignOutButton>
+          <DropdownItem
+            onClick={async () => {
+              await signOut();
+              window.location.href = `/${locale}/sign-in`;
+            }}
+          >
+            <ArrowRightStartOnRectangleIcon
+              data-slot="icon"
+              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+            />
+            <DropdownLabel>{t('sign-out')}</DropdownLabel>
+          </DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </SidebarFooter>

@@ -1,15 +1,19 @@
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import MarkdownIt from 'markdown-it';
+// Use the pre-built UMD bundle — Turbopack has a bug with markdown-it's ESM
+// build where named re-exports (isSpace) are lost during bundling.
+// @ts-ignore -- UMD bundle has no type declarations
+import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import hljs from 'highlight.js';
 import texmath from 'markdown-it-texmath';
 import katex from 'katex';
+import DOMPurify from 'dompurify';
 
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
-import type { StreamedMessageDto } from '@/app/contracts/Message';
+import type { StreamedMessageDto } from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 
 const createMarkdownRenderer = () => {
@@ -39,30 +43,43 @@ const createMarkdownRenderer = () => {
   return md;
 };
 
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+    ALLOW_ARIA_ATTR: true,
+    ALLOW_DATA_ATTR: false,
+  });
+};
+
 export const useChatViewLogic = (
-  streamedMessage: StreamedMessageDto | null
+  streamedMessage: StreamedMessageDto | null,
 ) => {
   const [renderedStreamedMessage, setRenderedStreamedMessage] = useState('');
   const [streamedMessageRunId, setStreamedMessageRunId] = useState<string>();
 
   const { user } = useUser();
-  const userAvatar = user?.imageUrl;
+  const userAvatar = user?.image;
   const t = useTranslations('chat');
 
   const md = useMemo(() => createMarkdownRenderer(), []);
 
+  const renderAndSanitize = useMemo(() => {
+    return (content: string) => sanitizeHtml(md.render(content));
+  }, [md]);
+
   useEffect(() => {
     if (streamedMessage) {
-      const rendered = md.render(streamedMessage.content);
+      const rendered = renderAndSanitize(streamedMessage.content);
       const runId = streamedMessage.runId;
       setRenderedStreamedMessage(rendered);
       setStreamedMessageRunId(runId);
     }
-  }, [streamedMessage, md]);
+  }, [streamedMessage, md, renderAndSanitize]);
 
   return {
     t,
     md,
+    renderAndSanitize,
     userAvatar,
     streamedMessageRunId,
     renderedStreamedMessage,

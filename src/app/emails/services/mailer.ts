@@ -1,16 +1,10 @@
-import { CreateContactOptions, Resend } from 'resend';
+import { type CreateContactOptions, Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
+import { InvitationEmail } from '../invitation-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
-const emailConfig = {
-  // from: 'Acme <onboarding@resend.dev>', // for testing
-  from: 'Ragen <noreply@updates.ragen.ai>', // for testing
-  to: ['delivered@resend.dev'], // for testing
-  replyTo: ['patryk@webamigos.pl'], // to specify
-};
 
 export const sendWelcomeEmail = async ({
   to,
@@ -74,7 +68,79 @@ export const sendContactEmail = async ({
 };
 
 export const addEmailToAudience = async (
-  resendContactDetails: CreateContactOptions
+  resendContactDetails: CreateContactOptions,
 ) => {
   return await resend.contacts.create(resendContactDetails);
+};
+
+export const sendPasswordResetEmailViaMailer = async ({
+  to,
+  resetUrl,
+}: {
+  to: string;
+  resetUrl: string;
+}) => {
+  try {
+    const response = await resend.emails.send({
+      from: 'Ragen <noreply@updates.ragen.ai>',
+      to: [to],
+      subject: 'Reset your Ragen password',
+      text: `Click the following link to reset your password: ${resetUrl}\n\nIf you did not request a password reset, please ignore this email.\n\nThis link will expire in 1 hour.`,
+    });
+
+    return { data: response };
+  } catch (error) {
+    logger.error({ error, to }, 'Failed to send password reset email');
+    return { error: 'Failed to send password reset email' };
+  }
+};
+
+export const sendInvitationEmail = async ({
+  to,
+  organizationName,
+  inviterName,
+  role,
+  invitationId,
+  expiresAt,
+}: {
+  to: string;
+  organizationName: string;
+  inviterName?: string;
+  role: string;
+  invitationId: string;
+  expiresAt: Date;
+}) => {
+  try {
+    logger.info(
+      { to, organizationName, invitationId },
+      'Attempting to send invitation email',
+    );
+
+    const response = await resend.emails.send({
+      from: 'Acme <onboarding@resend.dev>', // Zmieniono na zweryfikowaną domenę testową
+      to: [to],
+      subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
+      react: InvitationEmail({
+        invitedEmail: to,
+        organizationName,
+        inviterName,
+        role,
+        invitationId,
+        expiresAt,
+      }),
+    });
+
+    logger.info(
+      { to, organizationName, invitationId, resendResponse: response },
+      'Invitation email sent successfully via Resend',
+    );
+
+    return { data: response };
+  } catch (error) {
+    logger.error(
+      { error, to, organizationName, invitationId },
+      'Failed to send invitation email',
+    );
+    return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
+  }
 };

@@ -1,5 +1,6 @@
-import { SpinnerSVG, Text } from '@ragenai/common-ui';
+'use client';
 
+import { useState } from 'react';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
@@ -8,15 +9,46 @@ import { useChatViewLogic } from './useChatViewLogic';
 import type {
   MessageDto,
   StreamedMessageDto,
-  ChatResponseType,
-} from '../../../contracts/Message';
+} from '@/features/messages/contracts/message.types';
 import './chat-response.css';
+
+const ReasoningBlock = ({
+  content,
+  isStreaming,
+}: {
+  content: string;
+  isStreaming?: boolean;
+}) => {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 dark:bg-muted/20 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <svg
+          className={`size-3 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+          viewBox="0 0 12 12"
+          fill="currentColor"
+        >
+          <path d="M4.5 2l5 4-5 4V2z" />
+        </svg>
+        <span>Thinking{isStreaming ? '...' : ''}</span>
+      </button>
+      {isOpen && (
+        <div className="px-3 pb-2 text-xs text-muted-foreground/80 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
+          {content}
+        </div>
+      )}
+    </div>
+  );
+};
 
 type Props = {
   messages: MessageDto[];
   isLoading: boolean;
-  widgetMode?: boolean;
-  responseType: ChatResponseType;
   loadingMessage: string;
   streamedMessage: StreamedMessageDto | null;
   isPublicAccess?: boolean;
@@ -28,89 +60,70 @@ const MessageContent = ({
   content,
   role,
   message,
-  streamedMessageRunId,
-  responseType,
   voiceId,
   isPublicAccess,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
-  streamedMessageRunId?: string;
-  responseType: ChatResponseType;
   voiceId?: string;
   isPublicAccess: boolean;
 }) => {
-  const { md, t } = useChatViewLogic(null);
+  const { renderAndSanitize } = useChatViewLogic(null);
+  const renderedHtml = renderAndSanitize(content);
 
   return (
-    <>
-      {role === 'ASSISTANT' && (
-        <Text fontSize="sm" fontWeight="bold">
-          {t(role)}
-        </Text>
-      )}
+    <div
+      className={`chat-response relative ${
+        role === 'USER' ? 'user-message' : 'assistant-message'
+      }`}
+    >
       <div
-        className={`chat-response relative ${
-          role === 'USER' ? 'user-message' : 'assistant-message'
-        }`}
-      >
-        <div
-          dangerouslySetInnerHTML={{
-            __html: md.render(content),
-          }}
-        />
-        {role === 'ASSISTANT' && message && (
-          <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <RateAnswer
-              initialRated={message.rate}
-              publicId={message.public_id}
-              runId={streamedMessageRunId || message.run_id}
-            />
-            <div className="flex items-center gap-2">
-              <CopyToClipboardButton message={message} />
-              {/* voice read also should be enabled for public threads */}
-              {!isPublicAccess && (
-                <ReadAnswer content={content} voiceId={voiceId!} />
-              )}
-            </div>
-          </div>
-        )}
-        {role === 'USER' &&
-          message?.message_type === 'VOICE' &&
-          message.voice_duration_seconds && (
-            <DurationTime
-              messageDurationTime={message.voice_duration_seconds}
-            />
+        dangerouslySetInnerHTML={{
+          __html: renderedHtml,
+        }}
+      />
+      {role === 'ASSISTANT' && message && (
+        <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <RateAnswer
+            initialRated={message.rate}
+            publicId={message.public_id}
+          />
+          <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
+          {!isPublicAccess && (
+            <ReadAnswer content={content} voiceId={voiceId!} />
           )}
-      </div>
-    </>
+        </div>
+      )}
+      {role === 'USER' &&
+        message?.message_type === 'VOICE' &&
+        message.voice_duration_seconds && (
+          <DurationTime messageDurationTime={message.voice_duration_seconds} />
+        )}
+    </div>
   );
 };
 
 export const ChatOutput = ({
   messages,
   isLoading,
-  widgetMode = false,
   loadingMessage = '',
   streamedMessage,
   isPublicAccess = false,
-  responseType,
   voiceId,
 }: Props) => {
-  const { t, streamedMessageRunId, renderedStreamedMessage } =
-    useChatViewLogic(streamedMessage);
+  const { renderedStreamedMessage } = useChatViewLogic(streamedMessage);
 
   return (
-    <div className="px-5 pt-5 mr-3 lg:px-8">
-      <div className="flex flex-col">
+    <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
+      <div className="flex flex-col gap-2">
         {messages.map((message, messageIndex) => (
           <div
             key={`message-${message.public_id}-${messageIndex}`}
-            className={`group mb-6 px-4 rounded-2xl text-gray-600 dark:text-gray-200 shadow-lg shadow-slate-200 dark:shadow-none ${
+            className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
               message.role === 'USER'
-                ? 'text-right ml-auto mr-4 max-w-[75%] border border-slate-100 dark:border-gray-800 bg-white dark:bg-secondary-dark'
-                : 'pt-4 text-left max-w-[85%] text-base shadow-none bg-primary-light dark:bg-primary-dark'
+                ? 'ml-auto max-w-[80%] bg-foreground text-background rounded-br-md'
+                : 'mr-auto max-w-[85%] bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
             }`}
           >
             <MessageContent
@@ -118,40 +131,35 @@ export const ChatOutput = ({
               role={message.role}
               message={message}
               isPublicAccess={isPublicAccess}
-              streamedMessageRunId={streamedMessageRunId}
-              responseType={responseType}
               voiceId={!isPublicAccess ? voiceId : undefined}
             />
           </div>
         ))}
-        {streamedMessage && (
-          <div className="group mb-6 rounded-2xl -mt-3 px-4 text-gray-600 max-w-[85%] shadow-lg shadow-slate-200 text-left text-base dark:shadow-none dark:text-gray-200">
-            <div className="chat-response">
-              <div>
-                <Text fontSize="sm" fontWeight="semibold">
-                  {t('ASSISTANT')}
-                </Text>
+        {streamedMessage &&
+          (streamedMessage.content || streamedMessage.reasoningContent) && (
+            <div className="group relative mr-auto max-w-[85%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
+              {streamedMessage.reasoningContent && (
+                <ReasoningBlock
+                  content={streamedMessage.reasoningContent}
+                  isStreaming={streamedMessage.isReasoning}
+                />
+              )}
+              <div className="chat-response">
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: renderedStreamedMessage,
+                  }}
+                />
               </div>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: renderedStreamedMessage,
-                }}
-              />
             </div>
-          </div>
-        )}
-        {isLoading && (
-          <div
-            className={`absolute ${
-              isPublicAccess
-                ? 'bottom-[90px] md:left-[71px]'
-                : 'bottom-[120px] md:left-14'
-            } flex items-center justify-center pointer-events-none dark:text-gray-300 text-gray-600 text-md`}
-          >
-            {/* <SpinnerSVG /> */}
-            {loadingMessage && (
-              <span className="ml-2 text-xs">{loadingMessage}...</span>
-            )}
+          )}
+        {isLoading && !streamedMessage && loadingMessage && (
+          <div className="mr-auto flex items-center rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
+            <div className="flex gap-1">
+              <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
+              <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
+              <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
+            </div>
           </div>
         )}
       </div>

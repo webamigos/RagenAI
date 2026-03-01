@@ -1,22 +1,22 @@
 export const CHAIN_FINAL_ANSWER_RUN_NAME = 'final_answer';
 
 export const DEFAULT_ANSWER_INSTRUCTIONS =
-  'Jesteś ekspertem w interpretowaniu i odpowiadaniu na pytania.';
+  'You are an expert at interpreting and answering questions.';
 
 export const systemTemplates = {
   answerChain: `
       {answer_instructions}
       {project_instructions}
-      Korzystając z historii czatu, odpowiedz na pytanie użytkownika najlepiej jak potrafisz, jednocześnie dokładnie przestrzegając zasad.
+      Using the chat history, answer the user's question to the best of your ability while strictly following the rules.
 
-      <zasady>
-      - Zawsze odpowiadaj w języku polskim.
-      - Jeśli nie znasz odpowiedzi, wyraźnie powiedz, że nie wiesz.
-      - Jeśli pytanie jest niejednoznaczne lub ma wiele możliwych interpretacji, poproś użytkownika o wyjaśnienie.
-      - Zwracaj odpowiedzi w formacie Markdown.
-      </zasady>`,
+      <rules>
+      - Always respond in the same language the user is writing in.
+      - If you do not know the answer, clearly say so.
+      - If the question is ambiguous or has multiple possible interpretations, ask the user for clarification.
+      - Respond concisely and directly, without using XML tags in your response.
+      </rules>`,
 } as const;
 
 export const humanTemplates = {
-  answerChain: `Odpowiedz na moje pytanie: {question}`,
+  answerChain: `Answer my question: {question}`,
 } as const;

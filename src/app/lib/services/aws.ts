@@ -4,11 +4,12 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
-import { getOrgIdOrThrow } from './clerk';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
 
 export const getAwsClient = () => {
   return new S3Client({
-    region: process.env.AWS_REGION,
+    endpoint: process.env.AWS_ENDPOINT_URL,
+    region: process.env.AWS_DEFAULT_REGION,
     credentials: {
       accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
@@ -18,12 +19,12 @@ export const getAwsClient = () => {
 
 // function uses AWS SDK v3 and we can use parallelUploads and streaming in the future
 export async function uploadToS3(fileName: string, fileContent: Buffer) {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
 
   const parallelUploads3 = new Upload({
     client: getAwsClient(),
     params: {
-      Bucket: process.env.AWS_DOCUMENTS_BUCKET,
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: `${orgId}/${fileName}`,
       Body: fileContent,
     },
@@ -33,10 +34,10 @@ export async function uploadToS3(fileName: string, fileContent: Buffer) {
 }
 
 export async function deleteFromS3(fileName: string) {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
   await getAwsClient().send(
     new DeleteObjectCommand({
-      Bucket: process.env.AWS_DOCUMENTS_BUCKET,
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: `${orgId}/${fileName}`,
     })
   );
@@ -48,10 +49,10 @@ export async function deleteFromS3(fileName: string) {
  * @returns A promise that resolves to the file content as a Buffer
  */
 export async function getFileFromS3(fileName: string): Promise<Buffer> {
-  const orgId = getOrgIdOrThrow();
+  const orgId = await getOrgIdOrThrow();
 
   const command = new GetObjectCommand({
-    Bucket: process.env.AWS_DOCUMENTS_BUCKET,
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: `${orgId}/${fileName}`,
   });
 

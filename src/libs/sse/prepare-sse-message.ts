@@ -1,14 +1,15 @@
 import {
-  SseEndEvent,
-  SseInitEvent,
-  SseMessageDelta,
-  SseMessageError,
-  SseMessageEvent,
-  ApiSseMessageEvent,
-  ApiSseMessageDelta,
-  ApiSseThreadFound,
-  ApiSseMessageCreated,
-} from '@/app/contracts/Events';
+  type SseEndEvent,
+  type SseInitEvent,
+  type SseMessageDelta,
+  type SseMessageError,
+  type SseMessageEvent,
+  type ApiSseMessageEvent,
+  type ApiSseMessageDelta,
+  type ApiSseReasoningDelta,
+  type ApiSseThreadFound,
+  type ApiSseMessageCreated,
+} from '@/features/threads/contracts/events.types';
 
 export const prepareSseMessage = (
   event: string,
@@ -17,7 +18,7 @@ export const prepareSseMessage = (
     | SseMessageEvent
     | SseMessageDelta
     | SseMessageError
-    | SseEndEvent
+    | SseEndEvent,
 ): string => {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 };
@@ -25,6 +26,9 @@ export const prepareSseMessage = (
 export type ApiEvent =
   | 'init'
   | 'delta'
+  | 'reasoning_delta'
+  | 'reasoning_start'
+  | 'reasoning_end'
   | 'find_thread'
   | 'thread_found'
   | 'save_user_message'
@@ -44,12 +48,13 @@ export type ApiEvent =
 export type ApiEventData =
   | ApiSseMessageEvent
   | ApiSseMessageDelta
+  | ApiSseReasoningDelta
   | ApiSseThreadFound
   | ApiSseMessageCreated;
 
 export const prepareApiSseMessage = (
   event: ApiEvent,
-  data?: ApiEventData | SseMessageError
+  data?: ApiEventData | SseMessageError,
 ) => {
   return `event: ${event}\ndata: ${JSON.stringify(data ?? {})}\n\n`;
 };
@@ -85,7 +90,7 @@ const encoder = new TextEncoder();
 export const sendApiEvent = (
   controller: ReadableStreamDefaultController,
   event: ApiEvent,
-  data?: ApiEventData | SseMessageError
+  data?: ApiEventData | SseMessageError,
 ) => {
   controller.enqueue(encoder.encode(prepareApiSseMessage(event, data)));
 };

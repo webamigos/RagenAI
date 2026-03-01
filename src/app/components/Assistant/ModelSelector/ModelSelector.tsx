@@ -5,14 +5,15 @@ import { useTranslations } from 'next-intl';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 import {
-  AvailableModel,
-  groupModelsByProvider,
+  type AvailableModel,
+  groupModelsByOrigin,
   isReasoningModel,
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { statusToast } from '@/app/lib/utils/toast';
 import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
 import { logger } from '@/app/lib/utils/logger';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 type Props = {
   currentModel?: string;
@@ -28,7 +29,7 @@ export const ModelSelector = ({
   disabled = false,
 }: Props) => {
   const [selectedModel, setSelectedModel] = useState<string>(
-    currentModel || organizationDefaultModel || 'gemini-2.0-flash'
+    currentModel || organizationDefaultModel || 'google/gemini-3-flash-preview',
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,21 +39,26 @@ export const ModelSelector = ({
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant.model-selector');
+  const { organization } = useOrganization();
 
   useEffect(() => {
     setSelectedModel(
-      currentModel || organizationDefaultModel || 'gemini-2.0-flash'
+      currentModel ||
+        organizationDefaultModel ||
+        'google/gemini-3-flash-preview',
     );
   }, [currentModel, organizationDefaultModel]);
 
   useEffect(() => {
     const loadAvailableModels = async () => {
-      if (isLoadingModels.current) return;
+      if (isLoadingModels.current || !organization?.id) {
+        return;
+      }
 
       try {
         isLoadingModels.current = true;
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(organization.id);
         setAvailableModels(models);
       } catch (error) {
         logger.error('Failed to load available models');
@@ -66,10 +72,12 @@ export const ModelSelector = ({
     };
 
     loadAvailableModels();
-  }, []);
+  }, [organization?.id]);
 
   const handleModelChange = async (newModel: string) => {
-    if (newModel === selectedModel || isLoading || disabled) return;
+    if (newModel === selectedModel || isLoading || disabled) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -96,7 +104,7 @@ export const ModelSelector = ({
     availableModels.find((m) => m.value === selectedModel)?.label ||
     selectedModel;
 
-  const groupedModels = groupModelsByProvider(availableModels);
+  const groupedModels = groupModelsByOrigin(availableModels);
   const isUsingDefault =
     !currentModel && selectedModel === organizationDefaultModel;
 
@@ -143,8 +151,8 @@ export const ModelSelector = ({
                   Loading models...
                 </div>
               ) : (
-                groupedModels.map(({ provider, displayName, models }) => (
-                  <div key={provider}>
+                groupedModels.map(({ origin, displayName, models }) => (
+                  <div key={origin}>
                     <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                       {displayName}
                     </div>

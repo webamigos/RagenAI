@@ -1,7 +1,12 @@
 /* eslint-disable no-console */
 
 import Stripe from 'stripe';
-import { PlanStatus, PlanType, PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../src/generated/prisma/client';
+import {
+  SubscriptionPlanStatus,
+  SubscriptionPlanType,
+} from '../src/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) {
@@ -9,36 +14,37 @@ if (!stripeSecretKey) {
 }
 const stripe = new Stripe(stripeSecretKey);
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 const internalPlans = [
   {
     name: 'Free',
-    type: PlanType.INTERNAL,
-    status: PlanStatus.ACTIVE,
-    features: {},
+    type: SubscriptionPlanType.INTERNAL,
+    status: SubscriptionPlanStatus.ACTIVE,
     limits: {},
+    priceId: 'internal_free',
   },
   {
     name: 'Trial',
-    type: PlanType.INTERNAL,
-    status: PlanStatus.ACTIVE,
-    features: {},
+    type: SubscriptionPlanType.INTERNAL,
+    status: SubscriptionPlanStatus.ACTIVE,
     limits: {},
+    priceId: 'internal_trial',
   },
   {
     name: 'Enterprise',
-    type: PlanType.INTERNAL,
-    status: PlanStatus.ACTIVE,
-    features: {},
+    type: SubscriptionPlanType.INTERNAL,
+    status: SubscriptionPlanStatus.ACTIVE,
     limits: {},
+    priceId: 'internal_enterprise',
   },
   {
     name: 'Amigos',
-    type: PlanType.INTERNAL,
-    status: PlanStatus.ACTIVE,
-    features: {},
+    type: SubscriptionPlanType.INTERNAL,
+    status: SubscriptionPlanStatus.ACTIVE,
     limits: {},
+    priceId: 'internal_amigos',
   },
 ];
 
@@ -46,7 +52,7 @@ async function syncInternalPlans() {
   try {
     console.log('Syncing internal plans...');
     for (const plan of internalPlans) {
-      const existingPlan = await prisma.plan.findFirst({
+      const existingPlan = await prisma.subscriptionPlan.findFirst({
         where: {
           name: plan.name,
           type: plan.type,
@@ -54,7 +60,7 @@ async function syncInternalPlans() {
       });
 
       if (!existingPlan) {
-        await prisma.plan.create({
+        await prisma.subscriptionPlan.create({
           data: plan,
         });
         console.log(`Created plan: ${plan.name}`);
@@ -77,16 +83,16 @@ async function syncStripePlans() {
     });
 
     // Get all active Stripe plans from database
-    const existingStripePlans = await prisma.plan.findMany({
+    const existingStripePlans = await prisma.subscriptionPlan.findMany({
       where: {
-        type: PlanType.STRIPE,
-        status: PlanStatus.ACTIVE,
+        type: SubscriptionPlanType.STRIPE,
+        status: SubscriptionPlanStatus.ACTIVE,
       },
     });
 
     const processedProductIds = new Set<string>();
 
-    // Group prices by product ID to handle multiple prices for the same product, multiple prices not supported for now
+    // Group prices by product ID to handle multiple prices for the same product
     const productPrices = new Map<string, Stripe.Price[]>();
     for (const price of stripePrices.data) {
       const product = price.product as Stripe.Product;
@@ -104,19 +110,19 @@ async function syncStripePlans() {
       const product = prices[0].product as Stripe.Product;
       const defaultPrice = prices[0]; // Use first price as default
 
-      const existingPlan = await prisma.plan.findFirst({
+      const existingPlan = await prisma.subscriptionPlan.findFirst({
         where: {
-          stripe_product_id: product.id,
+          productId: product.id,
         },
       });
 
       const planData = {
         name: product.name,
-        type: PlanType.STRIPE,
-        status: PlanStatus.ACTIVE,
-        stripe_product_id: product.id,
-        stripe_price_id: defaultPrice.id,
-        stripe_metadata: {
+        type: SubscriptionPlanType.STRIPE,
+        status: SubscriptionPlanStatus.ACTIVE,
+        productId: product.id,
+        priceId: defaultPrice.id,
+        metadata: {
           price_type: defaultPrice.type,
           price_recurring: defaultPrice.recurring,
           available_prices: prices.map((p) => ({
@@ -128,14 +134,14 @@ async function syncStripePlans() {
         } as object,
         features: product.metadata.features ?? {},
         limits: product.metadata.limits ?? {},
-        last_synced_at: new Date(),
+        lastSyncedAt: new Date(),
       };
 
       if (!existingPlan) {
-        await prisma.plan.create({ data: planData });
+        await prisma.subscriptionPlan.create({ data: planData });
         console.log(`Created Stripe plan: ${planData.name}`);
       } else {
-        await prisma.plan.update({
+        await prisma.subscriptionPlan.update({
           where: { id: existingPlan.id },
           data: planData,
         });
@@ -145,13 +151,10 @@ async function syncStripePlans() {
 
     // Mark plans as deleted if they no longer exist in Stripe
     for (const plan of existingStripePlans) {
-      if (
-        plan.stripe_product_id &&
-        !processedProductIds.has(plan.stripe_product_id)
-      ) {
-        await prisma.plan.update({
+      if (plan.productId && !processedProductIds.has(plan.productId)) {
+        await prisma.subscriptionPlan.update({
           where: { id: plan.id },
-          data: { status: PlanStatus.DELETED },
+          data: { status: SubscriptionPlanStatus.DELETED },
         });
         console.log(`Marked plan as deleted: ${plan.name}`);
       }

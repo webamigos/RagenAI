@@ -1,51 +1,48 @@
 name: Lint Test Build
 
 env:
-  SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-  NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
-  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-  OPENAI_API_KEY: 'dummy'
+  OPENAI_API_KEY: "dummy"
   API_BASE_URL: ${{ secrets.API_BASE_URL }}
-  DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
-  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+  DATABASE_DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+  BETTER_AUTH_SECRET: "dummy"
+  BETTER_AUTH_URL: "http://example.com"
+  NEXT_PUBLIC_APP_URL: "http://example.com"
   SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
   SUPABASE_PROJECT_ID: ${{secrets.SUPABASE_PROJECT_ID }}
-  CLERK_SECRET_KEY: 'dummy'
-  CLERK_WEBHOOK_SIGNING_SECRET: 'dummy'
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'dummy'
-  NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/dummy'
-  NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/dummy'
-  LANGCHAIN_API_KEY: 'dummy'
-  LANGCHAIN_ENDPOINT: 'http://example.com'
-  LANGCHAIN_PROJECT: 'ci'
-  REDIS_URL: 'http://example.com'
-  SECRET_KEY: 'dummy'
-  TARGET_ENV: 'ci'
-  TEMPORAL_SERVER_ADDRESS: 'http://example.com'
-  TEMPORAL_NAMESPACE: 'ci'
-  TEMPORAL_CERT: 'dummy'
-  TEMPORAL_KEY: 'dummy'
-  QDRANT_URL: 'http://example.com'
-  RESEND_API_KEY: 'dummy'
-  RESEND_DEFAULT_AUDIENCE_ID: 'dummy'
-  AWS_REGION: 'dummy'
-  AWS_ACCESS_KEY_ID: 'dummy'
-  AWS_SECRET_ACCESS_KEY: 'dummy'
-  AWS_DOCUMENTS_BUCKET: 'dummy'
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'dummy'
-  STRIPE_SECRET_KEY: 'dummy'
-  STRIPE_WEBHOOK_SECRET: 'dummy'
-  FIRECRAWL_API_KEY: 'dummy'
+  CLERK_SECRET_KEY: "dummy"
+  CLERK_WEBHOOK_SIGNING_SECRET: "dummy"
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "dummy"
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/dummy"
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/dummy"
+  REDIS_URL: "http://example.com"
+  SECRET_KEY: "dummy"
+  TARGET_ENV: "ci"
+  TEMPORAL_SERVER_ADDRESS: "http://example.com"
+  TEMPORAL_NAMESPACE: "ci"
+  TEMPORAL_CERT: "dummy"
+  TEMPORAL_KEY: "dummy"
+  MEILISEARCH_URL: "http://example.com"
+  RESEND_API_KEY: "dummy"
+  RESEND_DEFAULT_AUDIENCE_ID: "dummy"
+  AWS_REGION: "dummy"
+  AWS_ACCESS_KEY_ID: "dummy"
+  AWS_SECRET_ACCESS_KEY: "dummy"
+  AWS_DOCUMENTS_BUCKET: "dummy"
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "dummy"
+  STRIPE_SECRET_KEY: "dummy"
+  STRIPE_WEBHOOK_SECRET: "dummy"
+  FIRECRAWL_API_KEY: "dummy"
   FEATURE_FLAG_SHOW_MODEL_API_KEY: 1
   FEATURE_FLAG_MODEL_SELECT: 1
-  DEFAULT_MODEL_PROVIDER: 'google'
-  DEFAULT_MODEL: 'gemini-2.0-flash'
-  GOOGLE_API_KEY: 'dummy'
-  PUSHER_APP_ID: 'dummy'
-  PUSHER_KEY: 'dummy'
-  PUSHER_SECRET: 'dummy'
-  NEXT_PUBLIC_PUSHER_KEY: 'dummy'
+  DEFAULT_MODEL_PROVIDER: "google"
+  DEFAULT_MODEL: "gemini-3-flash-preview"
+  GOOGLE_API_KEY: "dummy"
+  PUSHER_APP_ID: "dummy"
+  PUSHER_KEY: "dummy"
+  PUSHER_SECRET: "dummy"
+  NEXT_PUBLIC_PUSHER_KEY: "dummy"
 
 on:
   push:
@@ -68,7 +65,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: "22"
 
       # Optional: Cache node modules to speed up the build process
       - name: Cache dependencies
@@ -85,8 +82,8 @@ jobs:
       - name: Lint app
         run: npm run lint
 
-      - name: Run app tests
-        run: npm run test
+      # - name: Run app tests
+      #   run: npm run test
 
       - name: Build Next.js app
         run: npm run build

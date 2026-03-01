@@ -1,0 +1,41 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__press_key",
+      "mcp__chrome-devtools__list_console_messages",
+      "WebSearch",
+      "Bash(ls:*)",
+      "Bash(git show:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npx vitest:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:zod.dev)",
+      "Bash(head:*)",
+      "Bash(grep:*)",
+      "Bash(grep error TS:*)",
+      "Bash(cat:*)",
+      "Bash(tail:*)",
+      "Bash(git status:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:www.meilisearch.com)",
+      "WebFetch(domain:openrouter.ai)",
+      "Bash(coderabbit auth:*)",
+      "Bash(coderabbit review:*)",
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(node:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true
+  }
+}

@@ -4,6 +4,13 @@ import { SubscriptionInfo } from './components/SubscribtionInfo';
 import { getTranslations } from 'next-intl/server';
 import { Container } from '@ragenai/common-ui/Container';
 import { Header } from '@ragenai/common-ui/Header';
+import type { PropsWihLocale } from '@/app/lib/types/types';
+
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
+  return { title: t('subscription.title') };
+}
 
 export default async function SubscriptionPage() {
   const subscription = await getSubscriptionData();

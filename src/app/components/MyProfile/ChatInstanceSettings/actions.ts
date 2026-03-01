@@ -1,5 +1,5 @@
 'use server';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 import {
   getAssistantPrompt,
@@ -14,17 +14,10 @@ import {
   saveTemperatureSetting,
   getVoiceId,
   saveVoiceId,
-} from '@/app/lib/services/settings';
+} from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 import { SettingsType } from './types';
-import {
-  setSentryClerkContext,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';
-
-const serviceName = 'ChatInstanceSettings';
 
 type SaveSettingsActionResponse = { success: boolean; message: string };
 
@@ -55,9 +48,10 @@ const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
 ////
 
 export const checkIfApiKeyExists = async (
-  orgId: string
+  _orgId: string,
 ): Promise<ActionResponse<ApiKeyData>> => {
-  const apiKey = await getOpenaiAPIKey(orgId!);
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const apiKey = await getOpenaiAPIKey(orgId);
   const apiKeyExists = Boolean(apiKey);
   return {
     success: true,
@@ -68,7 +62,7 @@ export const checkIfApiKeyExists = async (
 export const fetchSettings = async (): Promise<
   ActionResponse<SettingsData>
 > => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return {
@@ -76,9 +70,6 @@ export const fetchSettings = async (): Promise<
       message: 'Unauthorized',
     };
   }
-
-  setSentryServiceTag(serviceName);
-  setSentryClerkContext({ orgId, userId, sessionId });
 
   try {
     const unmaskedApiKey = await getOpenaiAPIKey(orgId);
@@ -104,17 +95,13 @@ export const fetchSettings = async (): Promise<
 
 export const saveSetting = async (
   type: SettingsType,
-  value: string | number
+  value: string | number,
 ): Promise<SaveSettingsActionResponse> => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return { success: false, message: 'Unauthorized' };
   }
-
-  setSentryServiceTag(serviceName);
-  setSentryClerkContext({ orgId, userId, sessionId });
-  setSentryContext('EXTRA_DATA', { type });
 
   try {
     switch (type) {
@@ -156,18 +143,20 @@ export const saveSetting = async (
   }
 };
 
-export async function fetchVoiceId(organizationId: string) {
+export async function fetchVoiceId(_organizationId: string) {
   try {
-    const voiceId = await getVoiceId(organizationId);
+    const orgId = await getOrgIdFromAuthOrThrow();
+    const voiceId = await getVoiceId(orgId);
     return { success: true, data: { voiceId } };
   } catch (error) {
     return { success: false, error: 'Failed to fetch voice ID' };
   }
 }
 
-export async function updateVoiceId(organizationId: string, voiceId: string) {
+export async function updateVoiceId(_organizationId: string, voiceId: string) {
   try {
-    await saveVoiceId(organizationId, voiceId);
+    const orgId = await getOrgIdFromAuthOrThrow();
+    await saveVoiceId(orgId, voiceId);
     return { success: true };
   } catch (error) {
     return { success: false, error: 'Failed to update voice ID' };

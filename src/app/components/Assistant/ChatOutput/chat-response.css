@@ -2,22 +2,32 @@
   font-weight: 400;
   text-align: left;
   align-self: flex-start;
-  font-size: 1rem;
-  min-height: 2.5rem;
-  line-height: 1.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.625rem;
 }
 
 .chat-response h3 {
-  font-size: 16px;
-  margin: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 10px 0;
 }
 
 .chat-response h4 {
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .chat-response p {
-  margin: 14px 0;
+  margin: 8px 0;
+}
+
+.chat-response p:first-child {
+  margin-top: 0;
+}
+
+.chat-response p:last-child,
+.chat-response > :last-child > p:last-child {
+  margin-bottom: 0;
 }
 
 .chat-response ul {
@@ -34,22 +44,34 @@
   list-style-type: decimal;
 }
 
-/* CODE WRAPPER/ */
+/* CODE BLOCKS */
 pre.hljs {
-  background-color: #11212d;
-  color: #abb2bf;
+  background-color: #1a1b26;
+  color: #c0caf5;
   padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid #444;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   overflow-x: auto;
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  margin: 8px 0;
 }
 
 code.hljs {
-  font-family: 'Fira Code', monospace;
+  font-family: 'Fira Code', 'JetBrains Mono', ui-monospace, monospace;
 }
-/* CODE WRAPPER/ */
+
+.chat-response :not(pre) > code {
+  background-color: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.875em;
+}
+
+html.dark .chat-response :not(pre) > code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+/* CODE BLOCKS */
 
 /* MATH FORMULAS */
 .katex-display {
@@ -75,11 +97,11 @@ code.hljs {
 }
 
 /* MATH FORMULAS */
-:global(.dark) .katex {
+html.dark .katex {
   color: #e4e4e7;
 }
 
-:global(.dark) .katex-error {
+html.dark .katex-error {
   background-color: #4a0000;
 }
 

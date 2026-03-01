@@ -17,7 +17,7 @@ type SearchThreadsProps = {
 export const SearchThreads = React.forwardRef<
   HTMLDivElement,
   SearchThreadsProps
->(({ visitorId }) => {
+>(({ visitorId }, _ref) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { query, results, suggestions, isLoading, hasSearched } = state;
   const { closeSearch, isSearchOpen } = useSearchThreads();
@@ -35,7 +35,7 @@ export const SearchThreads = React.forwardRef<
         try {
           const fetchedSuggestions = await fetchThreadSuggestions(
             visitorId,
-            value
+            value,
           );
           dispatch({ type: 'SET_SUGGESTIONS', payload: fetchedSuggestions });
         } catch (error) {
@@ -48,7 +48,7 @@ export const SearchThreads = React.forwardRef<
         dispatch({ type: 'SET_HAS_SEARCHED', payload: false });
       }
     },
-    300
+    300,
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,7 +59,9 @@ export const SearchThreads = React.forwardRef<
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
 
     dispatch({ type: 'SET_LOADING', payload: true });
     dispatch({ type: 'SET_HAS_SEARCHED', payload: true });
@@ -118,7 +120,7 @@ export const SearchThreads = React.forwardRef<
             {suggestions.map((suggestion) => (
               <SidebarItem
                 key={suggestion.id}
-                href={`/threads/${suggestion.id}`}
+                href={`/chats/${suggestion.id}`}
                 onClick={() => handleSuggestionClick(suggestion.id)}
               >
                 {suggestion.title}

@@ -1,31 +1,31 @@
 'use server';
 
-import { auth, clerkClient } from '@clerk/nextjs/server';
-import { logger } from '@/app/lib/utils/logger';
-import { createCheckout } from '@/app/lib/services/stripe';
-import { headers } from 'next/headers';
 import {
-  setSentryClerkContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
+  getCurrentUser,
+  getOrgIdFromAuthOrThrow,
+} from '@/app/lib/utils/auth-helpers';
+import { logger } from '@/app/lib/utils/logger';
+import { stripe } from '@/libs/payments/stripe';
+import { headers } from 'next/headers';
 import { checkIfStripeSubscriptionIsActive } from './plans';
 
 export async function createCheckoutSession(priceId: string) {
   try {
-    setSentryServiceTag('stripe:createCheckoutSession');
-
     if (!priceId?.trim()) {
       throw new Error('Price ID is required');
     }
 
-    const { orgId, userId, sessionId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error(
         'Cannot create checkout session, no organization id found'
       );
     }
 
-    setSentryClerkContext({ orgId, userId, sessionId });
+    const user = await getCurrentUser();
+    if (!user || !user.email) {
+      throw new Error('Cannot create checkout session, user not found');
+    }
 
     const subscriptionIsActive = await checkIfStripeSubscriptionIsActive();
 
@@ -33,15 +33,23 @@ export async function createCheckoutSession(priceId: string) {
       throw new Error('Cannot create checkout session, subscription is active');
     }
 
-    const user = await clerkClient.users.getUser(userId);
-    const email = user.emailAddresses[0].emailAddress;
+    const email = user.email;
     const origin: string = (await headers()).get('origin') as string;
 
-    const checkoutSession = await createCheckout({
-      priceId,
-      orgId,
-      email,
-      origin,
+    const checkoutSession = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${origin}/settings/subscription/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/settings/subscription/plans`,
+      payment_method_types: ['card'],
+      client_reference_id: orgId,
+      customer_email: email,
+      tax_id_collection: { enabled: true },
     });
 
     return {

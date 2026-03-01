@@ -2,14 +2,27 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 
-import { EmbeddingStatus, FileType, UserFile } from '@prisma/client';
-import * as CommonUi from '@ragenai/common-ui';
+import {
+  EmbeddingStatus,
+  type FileType,
+  type UserFile,
+} from '@/generated/prisma/browser';
+import { Text } from '@ragenai/common-ui/Text';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHeader,
+} from '@ragenai/common-ui/Table';
 import { formatDates } from '@/app/lib/utils/formatDate';
 import { truncateFileName } from '../../../../lib/utils/truncateFileName';
 import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 
-import { type UserFileType } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
 
 type Props = {
@@ -21,7 +34,7 @@ type Props = {
   onRemoveFile: (filePublicId: UserFile['public_id']) => void;
   handleDelete: (
     filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name']
+    fileName: UserFile['file_name'],
   ) => void;
 };
 
@@ -54,7 +67,7 @@ const FileRow = ({
   toggleModal,
   handleDelete,
 }: FileRowProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   const {
     created_at,
@@ -70,16 +83,15 @@ const FileRow = ({
 
   const {
     created_at: formattedCreatedAt,
-    updated_at: formattedUpdatedAt,
     embedding_completed_at: formattedEmbeddingCompletedAt,
   } = useMemo(
     () => formatDates({ created_at, updated_at, embedding_completed_at }),
-    [created_at, updated_at, embedding_completed_at]
+    [created_at, updated_at, embedding_completed_at],
   );
 
   const truncatedFileName = useMemo(
     () => truncateFileName(file_name, 40),
-    [file_name]
+    [file_name],
   );
 
   return (
@@ -93,31 +105,27 @@ const FileRow = ({
           isLoading={deleteLoading}
         />
       )}
-      <CommonUi.TableRow className="relative text-sm overflow-x-hidden">
-        <CommonUi.TableCell className="flex">
+      <TableRow className="relative text-sm overflow-x-hidden">
+        <TableCell className="flex">
           <span className="w-6 h-6 -mb-2 mr-1">{fileIcon}</span>
-          <CommonUi.Tooltip
+          <Tooltip
             delayShow={1000}
             place="top"
             content={file_name}
             id={`tooltip-${public_id}`}
           >
-            <CommonUi.Text className="hidden lg:flex">
-              {truncatedFileName}
-            </CommonUi.Text>
-          </CommonUi.Tooltip>
-          <CommonUi.Text className="lg:hidden">
-            {truncatedFileName}
-          </CommonUi.Text>
-        </CommonUi.TableCell>
-        <CommonUi.TableCell>{prettyBytes(file_size)}</CommonUi.TableCell>
-        <CommonUi.TableCell>{formattedCreatedAt}</CommonUi.TableCell>
-        <CommonUi.TableCell>
+            <Text className="hidden lg:flex">{truncatedFileName}</Text>
+          </Tooltip>
+          <Text className="lg:hidden">{truncatedFileName}</Text>
+        </TableCell>
+        <TableCell>{prettyBytes(file_size)}</TableCell>
+        <TableCell>{formattedCreatedAt}</TableCell>
+        <TableCell>
           {embedding_status === EmbeddingStatus.COMPLETED
             ? formattedEmbeddingCompletedAt
             : '-'}
-        </CommonUi.TableCell>
-        <CommonUi.TableCell className="relative -mx-3 mr-10 -my-1.5 sm:-mx-2.5">
+        </TableCell>
+        <TableCell className="text-right">
           <ToolbarActions
             filePublicId={public_id!}
             documentPublicId={file.document?.public_id}
@@ -125,8 +133,8 @@ const FileRow = ({
             toggleModal={toggleModal}
             isLoading={isLoading}
           />
-        </CommonUi.TableCell>
-      </CommonUi.TableRow>
+        </TableCell>
+      </TableRow>
     </>
   );
 };
@@ -140,7 +148,7 @@ export const UserFilesTable = ({
   onRemoveFile,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
     if (!searchValue) {
@@ -150,25 +158,25 @@ export const UserFilesTable = ({
     return files.filter(
       (file) =>
         file.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
-        file.project?.title === 'Default'
+        file.project?.title === 'Default',
     ) as UserFileTypeSafe[];
   }, [files, searchValue]);
 
   return (
     <div className="relative mt-6">
-      <CommonUi.Table className="overflow-x-auto">
-        <CommonUi.TableHead>
-          <CommonUi.TableRow className="text-base">
-            <CommonUi.TableHeader>{t('file-name')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('file-size')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('created')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>{t('processed')}</CommonUi.TableHeader>
-            <CommonUi.TableHeader>
+      <Table className="overflow-x-auto">
+        <TableHead>
+          <TableRow className="text-base">
+            <TableHeader>{t('file-name')}</TableHeader>
+            <TableHeader>{t('file-size')}</TableHeader>
+            <TableHeader>{t('created')}</TableHeader>
+            <TableHeader>{t('processed')}</TableHeader>
+            <TableHeader>
               <span className="sr-only">Actions</span>
-            </CommonUi.TableHeader>
-          </CommonUi.TableRow>
-        </CommonUi.TableHead>
-        <CommonUi.TableBody>
+            </TableHeader>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {filteredDocuments.length > 0 ? (
             filteredDocuments.map((file) => (
               <FileRow
@@ -182,17 +190,17 @@ export const UserFilesTable = ({
               />
             ))
           ) : (
-            <CommonUi.TableRow>
-              <CommonUi.TableCell
+            <TableRow>
+              <TableCell
                 colSpan={5}
                 className="text-center text-sm text-gray-500"
               >
                 {t('no-files')}
-              </CommonUi.TableCell>
-            </CommonUi.TableRow>
+              </TableCell>
+            </TableRow>
           )}
-        </CommonUi.TableBody>
-      </CommonUi.Table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

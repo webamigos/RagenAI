@@ -1,10 +1,11 @@
-import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai';
-import { BedrockChat } from '@langchain/community/chat_models/bedrock';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { ChatOllama } from '@langchain/ollama';
-import { ChatAnthropic } from '@langchain/anthropic';
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { ChatFireworks } from '@langchain/community/chat_models/fireworks';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
+import { createAzure } from '@ai-sdk/azure';
+import { createFireworks } from '@ai-sdk/fireworks';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
 
 import type {
   BedrockCredentials,
@@ -22,8 +23,8 @@ import type {
 export class ChatCompletionFactory {
   private static createBedrockInstance(
     credentials: BedrockCredentials,
-    config: BaseCompletionConfig
-  ): BedrockChat {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.credentials) {
       throw new Error('Credentials are required for Bedrock');
     }
@@ -32,103 +33,117 @@ export class ChatCompletionFactory {
       throw new Error('Region is required for Bedrock');
     }
 
-    return new BedrockChat({
-      ...config,
+    const bedrock = createAmazonBedrock({
       region: credentials.region,
-      credentials: credentials.credentials,
+      accessKeyId: credentials.credentials.accessKeyId,
+      secretAccessKey: credentials.credentials.secretAccessKey,
     });
+
+    return bedrock(config.model || 'anthropic.claude-3-haiku-20240307-v1:0');
   }
 
   private static createOpenAIInstance(
     credentials: OpenAICredentials,
-    config: BaseCompletionConfig
-  ): ChatOpenAI {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for OpenAI');
     }
 
-    return new ChatOpenAI({
-      ...config,
+    const openai = createOpenAI({
       apiKey: credentials.apiKey,
     });
+
+    return openai(config.model || 'gpt-4o');
   }
 
+  // Ollama exposes an OpenAI-compatible API, so we use @ai-sdk/openai with a custom baseURL
   private static createOllamaInstance(
     credentials: OllamaCredentials,
-    config: BaseCompletionConfig
-  ): ChatOllama {
-    return new ChatOllama({
-      ...config,
-      checkOrPullModel: true,
-      baseUrl: credentials.baseUrl,
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
+    const baseUrl = credentials.baseUrl.endsWith('/')
+      ? credentials.baseUrl.slice(0, -1)
+      : credentials.baseUrl;
+
+    const ollama = createOpenAI({
+      baseURL: `${baseUrl}/v1`,
+      apiKey: 'ollama', // Ollama doesn't require a real API key
     });
+
+    return ollama(config.model || 'llama3.1');
   }
 
   private static createAnthropicInstance(
     credentials: AnthropicCredentials,
-    config: BaseCompletionConfig
-  ): ChatAnthropic {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Anthropic');
     }
 
-    return new ChatAnthropic({
-      ...config,
+    const anthropic = createAnthropic({
       apiKey: credentials.apiKey,
     });
+
+    return anthropic(config.model || 'claude-sonnet-4-6');
   }
 
   private static createGoogleInstance(
     credentials: GoogleCredentials,
-    config: BaseCompletionConfig
-  ): any {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Google');
     }
 
-    return new ChatGoogleGenerativeAI({
-      ...config,
+    const google = createGoogleGenerativeAI({
       apiKey: credentials.apiKey,
     });
+
+    return google(config.model || 'gemini-3-flash-preview');
   }
 
-  // OpenAI SDK is officially recommended for OpenRouter
-  //https://openrouter.ai/docs/quickstart
   private static createOpenRouterInstance(
     credentials: OpenRouterCredentials,
-    config: BaseCompletionConfig
-  ): ChatOpenAI {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for OpenRouter');
     }
 
-    return new ChatOpenAI({
-      ...config,
+    const openrouter = createOpenRouter({
       apiKey: credentials.apiKey,
-      configuration: {
-        baseURL: 'https://openrouter.ai/api/v1',
-      },
+    });
+
+    return openrouter(config.model || 'openai/gpt-4o', {
+      ...(config.reasoning
+        ? { reasoning: { enabled: true, max_tokens: 2048 } }
+        : {}),
     });
   }
 
   private static createFireworksInstance(
     credentials: FireworksCredentials,
-    config: BaseCompletionConfig
-  ): ChatFireworks {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Fireworks');
     }
 
-    return new ChatFireworks({
-      ...config,
+    const fireworks = createFireworks({
       apiKey: credentials.apiKey,
     });
+
+    return fireworks(
+      config.model || 'accounts/fireworks/models/llama-v3p2-3b-instruct',
+    );
   }
 
   private static createAzureOpenAIInstance(
     credentials: AzureOpenAICredentials,
-    config: BaseCompletionConfig
-  ): AzureChatOpenAI {
+    _config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     if (!credentials.apiKey) {
       throw new Error('API key is required for Azure OpenAI');
     }
@@ -145,19 +160,18 @@ export class ChatCompletionFactory {
       throw new Error('API version is required for Azure OpenAI');
     }
 
-    return new AzureChatOpenAI({
-      ...config,
-      azureOpenAIApiKey: credentials.apiKey,
-      azureOpenAIApiInstanceName: credentials.instanceName,
-      azureOpenAIApiDeploymentName: credentials.deploymentName,
-      azureOpenAIApiVersion: credentials.apiVersion,
+    const azure = createAzure({
+      apiKey: credentials.apiKey,
+      resourceName: credentials.instanceName,
     });
+
+    return azure(credentials.deploymentName);
   }
 
   static createInstance(
     credentials: ProviderCredentials,
-    config: BaseCompletionConfig
-  ): BaseChatModel {
+    config: BaseCompletionConfig,
+  ): LanguageModelV3 {
     switch (credentials.provider) {
       case 'bedrock':
         return this.createBedrockInstance(credentials, config);

@@ -1,5 +1,5 @@
-import { ComponentProps } from 'react';
-import { ChatBubbleLeftIcon } from '@heroicons/react/20/solid';
+import { type ComponentProps } from 'react';
+import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 
 import {
@@ -10,7 +10,7 @@ import {
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
-import { ThreadHistoryResponse } from '../../../contracts/Message';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 
 type Category = {
   title: string;
@@ -30,7 +30,6 @@ export const TUIThreadsSection = ({
   lastThreadElementRef,
 }: Props & ComponentProps<'div'>) => {
   const { closeSidebar } = useSidebar();
-
   const t = useTranslations('sidebar.threads');
   const nonEmptyCategories = threadCategories.filter((c) => c.threads?.length);
 
@@ -84,24 +83,22 @@ export const TUIThreadsSection = ({
                       role="listitem"
                     >
                       <SidebarItem
-                        href={`/threads/${thread.public_id}`}
+                        href={`/chats/${thread.public_id}`}
                         current={isActive}
                         onClick={() => closeSidebar()}
                         aria-label={`Thread: ${contentPreview}`}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        <ChatBubbleLeftIcon
-                          data-slot="icon"
-                          className="w-6 h-6"
-                        />
-                        <SidebarLabel>{contentPreview}</SidebarLabel>
+                        <SidebarLabel className="font-normal">
+                          {contentPreview}
+                        </SidebarLabel>
                       </SidebarItem>
                     </div>
                   );
                 })}
               </div>
             </div>
-          )
+          ),
       )}
     </div>
   );

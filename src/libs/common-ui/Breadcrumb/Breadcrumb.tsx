@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/20/solid';
-import { Link } from '@ragenai/tui';
+import { Link } from '@ragenai/tui/link';
 
 export function Breadcrumb({
   className,

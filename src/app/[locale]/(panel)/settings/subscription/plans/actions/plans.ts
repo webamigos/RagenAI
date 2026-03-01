@@ -1,54 +1,28 @@
 'use server';
 
-import { PlanStatus, PlanType, SubscriptionStatus } from '@prisma/client';
-import prisma from '@ragenai/prisma-client';
-import { fetchStripePlans } from '@/app/lib/services/stripe';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import { getAvailablePlansQuery } from '@/features/subscriptions/services/queries/get-available-plans';
+import { checkActiveSubscriptionQuery } from '@/features/subscriptions/services/queries/check-active-subscription';
+import type { SubscriptionPlan } from '@/generated/prisma/client';
 
-export async function fetchAvailablePlans() {
-  const plans = await prisma.plan.findMany({
-    where: {
-      status: PlanStatus.ACTIVE,
-      type: PlanType.STRIPE,
-    },
-  });
+export async function fetchAvailablePlans(): Promise<SubscriptionPlan[]> {
+  const result = await getAvailablePlansQuery();
 
-  const stripePlans = await fetchStripePlans();
+  if (!result.success || !result.data) {
+    return [];
+  }
 
-  const filteredStripePlans = stripePlans.filter((stripePlan) =>
-    plans.some((plan) => plan.stripe_price_id === stripePlan.id)
-  );
-
-  return filteredStripePlans;
+  return result.data;
 }
 
 export async function checkIfStripeSubscriptionIsActive() {
-  const { orgId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return false;
   }
 
-  const organization = await prisma.organization.findUnique({
-    where: { provider_id: orgId },
-    select: {
-      subscription: {
-        include: {
-          plan: true,
-        },
-      },
-    },
-  });
+  const result = await checkActiveSubscriptionQuery(orgId);
 
-  const organizationSubscription = organization?.subscription;
-
-  if (!organizationSubscription) {
-    return false;
-  }
-
-  const subscriptionIsActive =
-    organizationSubscription.status === SubscriptionStatus.ACTIVE &&
-    organizationSubscription.plan.type === PlanType.STRIPE;
-
-  return subscriptionIsActive;
+  return result.success && result.data === true;
 }

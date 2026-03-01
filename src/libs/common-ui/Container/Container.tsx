@@ -8,7 +8,7 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Container = forwardRef<HTMLDivElement, Props>(
-  ({ children, title, size = 'lg', className, ...rest }, ref) => {
+  ({ children, title: _title, size = 'lg', className, ...rest }, ref) => {
     const sizeClass =
       {
         sm: 'max-w-sm w-full',
@@ -25,14 +25,14 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         className={clsx(
           sizeClass,
           'space-y-4 bg-white  dark:bg-secondary-dark font-sans mx-auto',
-          className
+          className,
         )}
         {...rest}
       >
         <div className="mt-2">{children}</div>
       </div>
     );
-  }
+  },
 );
 
 Container.displayName = 'Container';

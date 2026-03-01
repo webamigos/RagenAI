@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Card, Text, LoadingSkeleton, FileUploader } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Text } from '@ragenai/common-ui/Text';
+import { LoadingSkeleton } from '@ragenai/common-ui/Skeleton';
+import { FileUploader } from '@ragenai/common-ui/FileUploader';
 
 import { FileItem } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/FileItem';
 import { DropZone } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/components/DropZone';
@@ -10,7 +13,9 @@ import {
   useProjectFiles,
   FileListState,
 } from '../../../ManageKnowledge/UploadKnowledge/ProjectFiles/hooks/useProjectFiles';
-import { Project } from '@prisma/client';
+import type { Project } from '@/generated/prisma/browser';
+import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
+import { importFilesToProject } from '@/app/actions';
 type Props = {
   onFilesLoaded?: (hasFiles: boolean) => void;
   projectPublicId: Project['public_id'];
@@ -21,6 +26,7 @@ export const ProjectFilesList = memo(
   ({ onFilesLoaded, projectPublicId, initialFileCount = 0 }: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const t = useTranslations('projects');
+    const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
 
     const {
       files,
@@ -33,6 +39,19 @@ export const ProjectFilesList = memo(
       handleUploadFiles,
     } = useProjectFiles(projectPublicId, onFilesLoaded);
 
+    const handleKbFilesSelected = async (
+      selected: {
+        publicId: string;
+        name: string;
+        size: number;
+        type: string;
+      }[],
+    ) => {
+      const fileIds = selected.map((f) => f.publicId);
+      await importFilesToProject(fileIds, projectPublicId);
+      loadFiles();
+    };
+
     useEffect(() => {
       loadFiles();
     }, [loadFiles]);
@@ -42,7 +61,7 @@ export const ProjectFilesList = memo(
     };
 
     const handleFileInputChange = (
-      event: React.ChangeEvent<HTMLInputElement>
+      event: React.ChangeEvent<HTMLInputElement>,
     ) => {
       const selectedFiles = Array.from(event.target.files || []);
       if (selectedFiles.length > 0) {
@@ -77,13 +96,24 @@ export const ProjectFilesList = memo(
             <Text className="text-lg font-medium text-gray-700 dark:text-gray-200">
               {t('project-files')}
             </Text>
-            <button
-              onClick={handleFileSelect}
-              className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors"
-              title={t('upload.add-files')}
-            >
-              + {t('upload.add-files')}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsKbPickerOpen(true)}
+                className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors"
+              >
+                +{' '}
+                {t('upload.from-knowledge-base', {
+                  defaultMessage: 'From Knowledge Base',
+                })}
+              </button>
+              <button
+                onClick={handleFileSelect}
+                className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors"
+                title={t('upload.add-files')}
+              >
+                + {t('upload.add-files')}
+              </button>
+            </div>
             <input
               ref={fileInputRef}
               className="hidden"
@@ -117,9 +147,14 @@ export const ProjectFilesList = memo(
             ))}
           </div>
         </div>
+        <KnowledgeBasePickerDialog
+          open={isKbPickerOpen}
+          onOpenChange={setIsKbPickerOpen}
+          onFilesSelected={handleKbFilesSelected}
+        />
       </DropZone>
     );
-  }
+  },
 );
 
 ProjectFilesList.displayName = 'ProjectFilesList';

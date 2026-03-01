@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { useAuth } from '@/app/hooks/use-auth';
 import { FolderIcon } from '@heroicons/react/20/solid';
-import { fetchProjectsForUser } from '@/app/lib/services/project';
+import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import type { MentionedProject } from './MentionTextarea';
 
 interface Project {
   id: number;
   public_id: string;
   title: string;
-  created_at: Date;
+  created_at: string;
   organization_id: string | null;
 }
 
@@ -33,7 +33,9 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   useEffect(() => {
     const loadProjects = async () => {
-      if (!orgId || !userId) return;
+      if (!orgId || !userId) {
+        return;
+      }
 
       try {
         setLoading(true);
@@ -50,7 +52,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
   }, [orgId, userId]);
 
   const filteredProjects = projects.filter((project) =>
-    project.title.toLowerCase().includes(query.toLowerCase())
+    project.title.toLowerCase().includes(query.toLowerCase()),
   );
 
   useEffect(() => {
@@ -59,19 +61,21 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (filteredProjects.length === 0) return;
+      if (filteredProjects.length === 0) {
+        return;
+      }
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev < filteredProjects.length - 1 ? prev + 1 : 0
+            prev < filteredProjects.length - 1 ? prev + 1 : 0,
           );
           break;
         case 'ArrowUp':
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : filteredProjects.length - 1
+            prev > 0 ? prev - 1 : filteredProjects.length - 1,
           );
           break;
         case 'Enter':

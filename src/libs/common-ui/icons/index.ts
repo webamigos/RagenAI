@@ -1,4 +1,3 @@
-import { Grid } from './../Table/Table.stories';
 export { SpinnerSVG } from './SpinnerSVG';
 export { CursorSVG } from './CursorSVG';
 export { DownIcon } from './DownIcon';

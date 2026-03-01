@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization, useUser, useAuth } from '@/app/hooks/use-auth';
 
 import { classMerge } from '@ragenai/common-ui/index';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
@@ -12,8 +12,8 @@ import { useNewThreadInput } from './useNewThreadInput';
 import { MentionTextarea, type MentionedProject } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
 
-import { ChatResponseType } from '@/app/contracts/Message';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface NewChatInterfaceProps {
   className?: string;
@@ -43,18 +43,19 @@ export const NewChatInterface = ({
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const { organization } = useOrganization();
+  const { user } = useUser();
+  const { orgId: sessionOrgId } = useAuth(); // Get orgId from session.activeOrganizationId
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
-  const [
-    internalOrganizationDefaultModel,
-    setInternalOrganizationDefaultModel,
-  ] = useState<string | null>(organizationDefaultModel || null);
+  const [resolvedDefaultModel, setResolvedDefaultModel] = useState<
+    string | null
+  >(organizationDefaultModel || null);
   const [selectedModel, setSelectedModel] = useState<string>(
-    organizationDefaultModel || 'gemini-2.0-flash'
+    organizationDefaultModel || 'google/gemini-3-flash-preview',
   );
   const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
-    []
+    [],
   );
 
   const {
@@ -87,28 +88,41 @@ export const NewChatInterface = ({
 
   useEffect(() => {
     const getOrganizationModel = async () => {
-      if (!organizationDefaultModel && organization?.id && !isPublicAccess) {
+      // Get orgId from organization hook or session.activeOrganizationId
+      // (activeOrganizationId is set by finalizeUserOnboarding during login/registration)
+      const orgId = organization?.id || sessionOrgId;
+
+      if (!organizationDefaultModel && orgId && !isPublicAccess) {
         try {
           const result = await getOrganizationSettings();
           if (result.success && result.settings) {
-            setInternalOrganizationDefaultModel(result.settings.model);
-            setSelectedModel(result.settings.model);
+            setResolvedDefaultModel(result.settings.model);
+            // Only set selectedModel if it's still the default (hasn't been manually changed)
+            setSelectedModel((prev) =>
+              prev ===
+              (organizationDefaultModel || 'google/gemini-3-flash-preview')
+                ? result.settings.model
+                : prev,
+            );
           }
         } catch (error) {
-          logger.error(
-            { error },
-            'Error fetching organization model in NewChatInterface'
-          );
+          logger.error('Error fetching organization model', error);
         }
       }
     };
     getOrganizationModel();
-  }, [organizationDefaultModel, organization?.id, isPublicAccess]);
+  }, [
+    organizationDefaultModel,
+    organization?.id,
+    sessionOrgId,
+    isPublicAccess,
+  ]);
 
+  // Only set the model once on mount, don't reset user's selection
   useEffect(() => {
     if (organizationDefaultModel) {
-      setInternalOrganizationDefaultModel(organizationDefaultModel);
-      setSelectedModel(organizationDefaultModel);
+      setResolvedDefaultModel(organizationDefaultModel);
+      // Don't reset selectedModel - user may have already chosen a different model
     }
   }, [organizationDefaultModel]);
 
@@ -116,12 +130,20 @@ export const NewChatInterface = ({
     return null;
   }
 
+  // Show loading state while fetching organization settings
   if (
     !isPublicAccess &&
     !organizationDefaultModel &&
-    internalOrganizationDefaultModel === null
+    resolvedDefaultModel === null
   ) {
-    return null;
+    return (
+      <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   const handleVoiceModeActivation = async () => {
@@ -135,20 +157,55 @@ export const NewChatInterface = ({
     setMentionedProjectInHook(project);
   };
 
+  const userName = user?.name?.split(' ')[0];
+
+  const suggestions = [
+    { key: 'suggestion-summarize', icon: '📄' },
+    { key: 'suggestion-explain', icon: '💡' },
+    { key: 'suggestion-analyze', icon: '📊' },
+    { key: 'suggestion-write', icon: '✏️' },
+  ] as const;
+
+  const handleSuggestionClick = (text: string) => {
+    handleInputChange(text);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
-      <div className="flex flex-col items-center justify-center text-center">
-        <h1 className="text-2xl font-semibold mb-4 sm:text-3xl">
-          {t('new-thread-header')}
-        </h1>
-        <p className="text-muted-foreground mb-8 text-lg sm:mb-10">
-          {projectTitle
-            ? t('project-context', { projectTitle })
-            : t('new-thread-description')}
-        </p>
-      </div>
+      {!projectTitle && (
+        <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
+          {userName && (
+            <p className="text-muted-foreground text-base mb-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {t('new-thread-greeting', { name: userName })}
+            </p>
+          )}
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
+            {t('new-thread-header')}
+          </h1>
+          <p className="text-muted-foreground mt-3 text-base sm:text-lg animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
+            {t('new-thread-description')}
+          </p>
+        </div>
+      )}
 
-      <div className="relative">
+      {!projectTitle && (
+        <div className="flex flex-nowrap items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+          {suggestions.map(({ key, icon }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleSuggestionClick(t(key))}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground shadow-sm transition-all hover:bg-accent hover:text-foreground hover:shadow-md active:scale-[0.98]"
+            >
+              <span>{icon}</span>
+              <span>{t(key)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
         <MentionTextarea
           ref={inputRef}
           value={prompt}
@@ -156,9 +213,9 @@ export const NewChatInterface = ({
           onKeyDown={handleKeyDown}
           handleSubmit={handleSubmit}
           placeholder={t('new-thread-placeholder')}
-          className="w-full min-h-[100px]"
+          className="w-full min-h-[100px] !rounded-xl !shadow-lg !border-border/50 focus-within:!shadow-xl focus-within:!border-ring/30 transition-shadow"
           disabled={isLoading || isPending}
-          showVoiceInput={!isPublicAccess}
+          showVoiceInput={false}
           error={errors.prompt}
           handleResponseType={handleVoiceModeActivation}
           onProjectMention={handleProjectMention}
@@ -170,7 +227,7 @@ export const NewChatInterface = ({
               <ModelSelectorInline
                 selectedModel={selectedModel}
                 organizationDefaultModel={
-                  internalOrganizationDefaultModel || organizationDefaultModel
+                  resolvedDefaultModel || organizationDefaultModel
                 }
                 onChange={setSelectedModel}
                 disabled={isLoading || isPending}

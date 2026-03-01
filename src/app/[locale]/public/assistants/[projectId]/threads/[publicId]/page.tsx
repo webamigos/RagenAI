@@ -11,8 +11,7 @@ type Props = {
   }>;
 };
 
-export async function generateMetadata({ params }: Props) {
-  const { locale } = await params;
+export async function generateMetadata() {
   return {
     title: 'Wątek publicznego chatbota',
   };

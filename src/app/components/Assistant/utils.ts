@@ -1,9 +1,9 @@
 import { type TranslationFn } from './types';
-import { SseMessageError } from '@/app/contracts/Events';
+import { type SseMessageError } from '@/features/threads/contracts/events.types';
 
 export function getErrorMessage(
   event: SseMessageError,
-  t: TranslationFn
+  t: TranslationFn,
 ): string {
   if (!event.code) {
     return event.message || t('unknown-error');

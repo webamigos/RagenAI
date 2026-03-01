@@ -1,30 +1,23 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
-import { auth } from '@clerk/nextjs/server';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 import { revalidatePath } from 'next/cache';
 
 import db from '@ragenai/prisma-client';
 
-import { ApiKeyDto } from './types';
-import {
-  setSentryServiceTag,
-  setSentryTagsAndContextForClerk,
-} from '@/app/lib/services/sentry';
+import { type ApiKeyDto } from './types';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  fetchOrganizationByProviderId,
-  fetchOrganizationDefaultProject,
-} from '@/app/lib/services/apiKeys';
 import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
 import {
-  OrgId,
-  UserId,
-  ProjectId,
-  KeyId,
+  type OrgId,
+  type UserId,
+  type ProjectId,
+  type KeyId,
 } from '@/app/api/v1/__logic__/types/brand';
-import { fetchProject } from '@/app/lib/services/api';
-import { getProjectByPublicId } from '@/app/lib/services/project';
+import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 
 type SuccessResponse = {
   payload: {
@@ -44,37 +37,33 @@ type ActionResponse =
       success: true;
     } & SuccessResponse);
 
-const serviceName = 'createKeyActions';
-
 export const createApiKey = async (
-  data: ApiKeyDto
+  data: ApiKeyDto,
 ): Promise<ActionResponse> => {
-  const { orgId, userId, sessionId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
 
-  if (!orgId) {
+  if (!orgId || !user?.id) {
     return {
       success: false,
-      message: 'Organization not found',
+      message: 'Organization or user not found',
     };
   }
 
-  try {
-    setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+  const userId = user.id;
 
+  try {
     const userProject = await getProjectByPublicId(data.project_id);
     if (!userProject || userProject.owner_id !== userId) {
       throw new Error('Not allowed!');
     }
-
-    const organization = await fetchOrganizationByProviderId(orgId);
 
     const keyRecord = await db.apiKey.create({
       data: {
         name: data.name,
         masked_value: 'pending_*********',
         project_id: userProject.id,
-        organization_id: organization.id,
+        organization_id: orgId,
       },
     });
 
@@ -90,25 +79,12 @@ export const createApiKey = async (
 
     const hashResult = await apiKeysService.createAndHash(keyPayload);
 
-    // TODO: previous version with NestJS app
-    // const response = await fetch(`${apiBaseUrl}/v1/auth/generate-api-key`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     orgId: organization.id,
-    //     projectId: defaultProject.id,
-    //     keyId: keyRecord.id,
-    //   }),
-    // });
-
-    const { apiKey } = hashResult;
+    const { apiKey, hashedKey } = hashResult;
     const maskedKey = maskApiKey(apiKey);
 
     await db.apiKey.update({
       where: { id: keyRecord.id },
-      data: { masked_value: maskedKey },
+      data: { masked_value: maskedKey, hashed_value: hashedKey },
     });
 
     revalidatePath('/my-profile/api-keys');
@@ -120,7 +96,6 @@ export const createApiKey = async (
       },
     };
   } catch (error) {
-    Sentry.captureException(error);
     logger.error({ err: error }, 'Failed to create API key');
 
     return {

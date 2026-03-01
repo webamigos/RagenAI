@@ -1,5 +1,5 @@
 import { SupportForm } from '@/app/components/Support/SupportForm';
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 import { getTranslations } from 'next-intl/server';
 
 import { CTA } from '@/app/components/Support/CTA';

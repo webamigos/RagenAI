@@ -1,9 +1,16 @@
 import { useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role, MessageContentType } from '@prisma/client';
-import { useUser } from '@clerk/nextjs';
-import { type UserResource } from '@clerk/types';
+import { Role, MessageContentType } from '@/generated/prisma/browser';
+import { useUser } from '@/app/hooks/use-auth';
 import { useDispatch } from 'react-redux';
+
+// Better Auth user type (simplified)
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+};
 import { setRecording } from '@/store/voice/voiceSlice';
 import {
   setMessages,
@@ -24,12 +31,12 @@ import {
   ChatType,
   type CreateMessageDto,
   ChatResponseType,
-} from '../../contracts/Message';
+} from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
-import { PromptFormRef } from './PromptForm/PromptForm';
+import { type PromptFormRef } from './PromptForm/PromptForm';
 import { handleAssistantStream } from './handle-assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 
 const { errorToast } = statusToast();
 
@@ -80,13 +87,16 @@ export const useAssistantLogic = (threadId: string) => {
     messagesEndDivRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   const fetchData = async () => {
+    logger.info({ threadId, userVisitorId, isLoaded }, 'fetchData called');
     if (!userVisitorId) {
+      logger.warn({}, 'No userVisitorId, redirecting to sign-in');
       startTransition(() => router.push('/sign-in'));
       return;
     }
 
     dispatch(setInitialLoad(true));
     try {
+      logger.info({ threadId, userVisitorId }, 'Fetching messages from API');
       const response = await fetchMessagesFromApi(threadId, userVisitorId);
       if (response) {
         dispatch(setInitialLoad(false));
@@ -104,18 +114,33 @@ export const useAssistantLogic = (threadId: string) => {
     const initialMessageKey = `thread_${threadId}_initial_message`;
     const initialMessage = localStorage.getItem(initialMessageKey);
     const initialMessageType = sessionStorage.getItem(
-      'initial_message_type'
+      'initial_message_type',
     ) as MessageContentType;
 
     if (initialMessage) {
       localStorage.removeItem(initialMessageKey);
       sessionStorage.removeItem('initial_message_type');
 
+      // Retrieve thread documents stored during thread creation
+      let threadDocuments;
+      try {
+        const storedDocs = sessionStorage.getItem(
+          `thread_${threadId}_initial_documents`,
+        );
+        if (storedDocs) {
+          threadDocuments = JSON.parse(storedDocs);
+          sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+
       onSubmit({
         prompt: initialMessage,
         mode: ChatType.CONVERSATION,
         messageType: initialMessageType || MessageContentType.TEXT,
         voiceDurationSeconds: 0,
+        threadDocuments,
       });
     }
   };
@@ -133,7 +158,7 @@ export const useAssistantLogic = (threadId: string) => {
       public_id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       mode: data.mode,
       message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,
@@ -143,7 +168,7 @@ export const useAssistantLogic = (threadId: string) => {
     // ugly workaround to satisfied Clerk UserResourceTypes
 
     dispatch(
-      setMode(modeMap[data.mode as keyof typeof modeMap] ?? ChatType.RAG)
+      setMode(modeMap[data.mode as keyof typeof modeMap] ?? ChatType.RAG),
     );
 
     try {
@@ -165,7 +190,7 @@ export const useAssistantLogic = (threadId: string) => {
         data,
         chatType:
           data.mode === 'conversation' ? ChatType.CONVERSATION : ChatType.RAG,
-        user: user as unknown as UserResource,
+        user: user as unknown as User,
         reduxDispatch: dispatch,
       });
     } catch {
@@ -203,10 +228,30 @@ export const useAssistantLogic = (threadId: string) => {
     if (isLoaded && userVisitorId) {
       fetchData();
       const initialMessage = localStorage.getItem(
-        `thread_${threadId}_initial_message`
+        `thread_${threadId}_initial_message`,
       );
       if (initialMessage) {
-        onSubmit({ prompt: initialMessage, messageType: 'TEXT' });
+        // Retrieve thread documents stored during thread creation
+        let threadDocuments;
+        try {
+          const storedDocs = sessionStorage.getItem(
+            `thread_${threadId}_initial_documents`,
+          );
+          if (storedDocs) {
+            threadDocuments = JSON.parse(storedDocs);
+            sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
+          }
+        } catch {
+          // Ignore parse errors
+        }
+
+        onSubmit({
+          prompt: initialMessage,
+          mode: ChatType.CONVERSATION,
+          messageType: MessageContentType.TEXT,
+          voiceDurationSeconds: 0,
+          threadDocuments,
+        });
       }
       localStorage.removeItem(`thread_${threadId}_initial_message`);
     }

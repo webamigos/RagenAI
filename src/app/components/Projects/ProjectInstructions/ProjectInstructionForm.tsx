@@ -6,7 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
 
-import { Button, Textarea } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Textarea } from '@ragenai/common-ui/Textarea';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import {
@@ -19,7 +20,7 @@ const getProjectInstructionSchema = (t: (key: string) => string) =>
     description: z
       .string()
       .refine((val) => val.length === 0 || val.length >= 10, {
-        message: t('description-min-length'),
+        error: t('description-min-length'),
       }),
   });
 

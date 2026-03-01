@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ThreadHistoryResponse } from '@/app/contracts/Message';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 
 export type ErrorState = {
   status: number | null;
@@ -60,8 +60,9 @@ export const threadsSlice = createSlice({
       const newThreads = action.payload.filter(
         (newThread) =>
           !state.userThreads.some(
-            (existingThread) => existingThread.public_id === newThread.public_id
-          )
+            (existingThread) =>
+              existingThread.public_id === newThread.public_id,
+          ),
       );
       state.isLoading = false;
       state.userThreads = [...state.userThreads, ...newThreads];
@@ -69,7 +70,7 @@ export const threadsSlice = createSlice({
     },
     addThread: (state, action: PayloadAction<ThreadHistoryResponse>) => {
       const existingThreadIndex = state.userThreads.findIndex(
-        (thread) => thread.public_id === action.payload.public_id
+        (thread) => thread.public_id === action.payload.public_id,
       );
 
       if (existingThreadIndex !== -1) {
@@ -104,13 +105,13 @@ export const threadsSlice = createSlice({
     },
     setDefaultProjectPublicId: (
       state,
-      action: PayloadAction<string | null>
+      action: PayloadAction<string | null>,
     ) => {
       state.defaultProjectPublicId = action.payload;
     },
     updateThreadModel: (
       state,
-      action: PayloadAction<{ threadId: string; model: string | null }>
+      action: PayloadAction<{ threadId: string; model: string | null }>,
     ) => {
       const { threadId, model } = action.payload;
       const thread = state.userThreads.find((t) => t.public_id === threadId);

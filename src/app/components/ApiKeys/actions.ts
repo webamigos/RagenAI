@@ -1,32 +1,27 @@
 'use server';
 
-import * as Sentry from '@sentry/nextjs';
-import { auth } from '@clerk/nextjs/server';
-
 import {
-  createOrganizationWithDefaultProject,
-  fetchApiKeysFromDb,
-} from '@/app/lib/services/apiKeys';
-import {
-  setSentryServiceTag,
-  setSentryTagsAndContextForClerk,
-} from '@/app/lib/services/sentry';
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 
-const serviceName = 'apiKeysList';
+import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
+import { getApiKeysQuery as fetchApiKeysFromDb } from '@/features/organizations/services/queries/get-api-keys-query';
 
 export const fetchApiKeys = async () => {
-  const { orgId, userId, sessionId } = auth();
-  if (!orgId) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
+
+  if (!orgId || !user?.id) {
     return {
       success: false,
-      message: 'Organization not found',
+      message: 'Organization or user not found',
     };
   }
 
-  try {
-    setSentryServiceTag(serviceName);
-    setSentryTagsAndContextForClerk({ sessionId, orgId, userId });
+  const userId = user.id;
 
+  try {
     const keys = await fetchApiKeysFromDb(orgId);
 
     return {
@@ -34,8 +29,6 @@ export const fetchApiKeys = async () => {
       payload: keys,
     };
   } catch (error) {
-    Sentry.captureException(error);
-
     await createOrganizationWithDefaultProject(orgId, userId);
 
     return {

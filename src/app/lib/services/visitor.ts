@@ -1,16 +1,17 @@
-import { Message } from '@prisma/client';
+// Visitor-specific infrastructure functions stay here
+// getUserThreads moved to @/features/threads/
+
+import { type Message } from '@/generated/prisma/client';
 import { startOfDay, setHours } from 'date-fns';
 
 import db from '@ragenai/prisma-client';
-import { auth } from '@clerk/nextjs/server';
-import { fetchOrganizationDefaultProjectId } from './project';
 
 const today = new Date();
 const midnightToday = setHours(startOfDay(today), 0);
 
 export const createVisitorEntry = async (
   message: Message,
-  visitorId: string
+  visitorId: string,
 ) => {
   return await db.visitorMessages.create({
     data: {
@@ -21,7 +22,7 @@ export const createVisitorEntry = async (
 };
 
 export const getLast24hVisitorMessages = async (
-  visitorId: string
+  visitorId: string,
 ): Promise<number> => {
   return await db.visitorMessages.count({
     where: {
@@ -49,66 +50,5 @@ export const clearVisitorMessages = async () => {
   });
 };
 
-export const getUserThreads = async (
-  visitorId: string,
-  skip?: number,
-  take?: number,
-  query?: string
-) => {
-  //Remove the restriction to the last 30 days in the future if it is no longer required.
-  //the constraint is only supported when query is defined
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  const { orgId } = auth();
-
-  if (!orgId) {
-    throw new Error('Organization id is not found');
-  }
-
-  const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
-
-  if (!defaultProjectId) {
-    throw new Error('Default project ID does not exist!');
-  }
-
-  return await db.thread.findMany({
-    where: {
-      visitor_id: visitorId,
-      project_id: defaultProjectId,
-      messages: query
-        ? {
-            some: {
-              created_at: {
-                gte: thirtyDaysAgo,
-              },
-              content: {
-                contains: query,
-                mode: 'insensitive',
-              },
-            },
-          }
-        : {
-            some: {},
-          },
-    },
-    orderBy: {
-      created_at: 'desc',
-    },
-    skip: skip,
-    take: take,
-    select: {
-      public_id: true,
-      created_at: true,
-      visitor_id: true,
-      project_id: true,
-      messages: {
-        select: {
-          content: true,
-          created_at: true,
-          role: true,
-        },
-      },
-    },
-  });
-};
+/** @deprecated Use getUserThreadsQuery from @/features/threads instead */
+export { getUserThreadsQuery as getUserThreads } from '@/features/threads/services/queries/get-user-threads-query';

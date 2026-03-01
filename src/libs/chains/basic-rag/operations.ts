@@ -1,17 +1,8 @@
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import {
-  ChatPromptTemplate,
-  MessagesPlaceholder,
-} from '@langchain/core/prompts';
-import {
-  Runnable,
-  RunnablePassthrough,
-  RunnableSequence,
-  RunnableLambda,
-} from '@langchain/core/runnables';
-import { VectorStore } from '@langchain/core/vectorstores';
-import { Embeddings } from '@langchain/core/embeddings';
+import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { ModelMessage } from 'ai';
+import { generateText } from 'ai';
+import type { VectorStoreClient } from '@/libs/vector-store/types';
+import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { BaseChatChainInput } from '../types/common';
 import { combineDocuments } from '../utils/chain-utils';
 import {
@@ -20,114 +11,155 @@ import {
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
-import { logger } from '@/app/lib/utils/logger';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
-export const rephraseQuestion = (
-  model: BaseChatModel
-): Runnable<BaseChatChainInput, string> => {
+type Message = {
+  type: 'user' | 'assistant';
+  content: string;
+};
+
+function formatChatHistory(chatHistory: string): Message[] {
+  const lines = chatHistory.split('\n').filter((line) => line.trim());
+  const messages: Message[] = [];
+
+  lines.forEach((line) => {
+    if (line.startsWith('USER: ')) {
+      messages.push({
+        type: 'user',
+        content: line.replace('USER: ', '').trim(),
+      });
+    } else if (line.startsWith('ASSISTANT: ')) {
+      messages.push({
+        type: 'assistant',
+        content: line.replace('ASSISTANT: ', '').trim(),
+      });
+    }
+  });
+
+  return messages;
+}
+
+export async function rephraseQuestion(
+  model: LanguageModelV3,
+  input: BaseChatChainInput,
+): Promise<string> {
   if (!model) {
     throw new Error('Error rephrasing question: No model instance');
   }
 
-  const promptTemplate = ChatPromptTemplate.fromMessages([
-    ['system', systemTemplates.rephraseQuestion],
-    new MessagesPlaceholder('chat_history'),
-    ['human', humanTemplates.rephraseQuestion],
-  ]);
+  const messages: ModelMessage[] = [];
 
-  return RunnableSequence.from([
-    promptTemplate,
+  if (input.chat_history) {
+    const formattedHistory = formatChatHistory(input.chat_history);
+    for (const msg of formattedHistory) {
+      messages.push({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+      });
+    }
+  }
+
+  const humanMessage = humanTemplates.rephraseQuestion.replace(
+    '{question}',
+    input.question,
+  );
+  messages.push({ role: 'user', content: humanMessage });
+
+  const result = await generateText({
     model,
-    new StringOutputParser(),
-  ]).withConfig({
-    runName: 'Rephrase question',
+    system: systemTemplates.rephraseQuestion,
+    messages,
   });
-};
 
-export const retrieveRelevantDocuments = async (
-  vectorStore: VectorStore,
+  return result.text;
+}
+
+export async function retrieveRelevantDocuments(
+  vectorStore: VectorStoreClient,
+  standaloneQuestion: string,
   maxDocuments = 4,
-  metadataFilter?: object
-) => {
+  metadataFilter?: object,
+): Promise<string> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
-  return RunnableSequence.from([
-    (input) => input.standalone_question,
-    vectorStore.asRetriever({ k: maxDocuments, filter: metadataFilter }),
-    combineDocuments,
-  ]).withConfig({
-    runName: 'Retrieve relevant documents',
-  });
-};
+  const filter =
+    metadataFilter && Object.keys(metadataFilter).length > 0
+      ? metadataFilter
+      : undefined;
 
-/**
- * Retrieve thread-specific documents using dual strategy:
- * 1. Vectorstore search (optimized with pre-computed embeddings)
- * 2. Inline content search (immediate access with on-demand embeddings)
- */
-export const retrieveThreadDocuments = (
+  const docs = await vectorStore.similaritySearch(
+    standaloneQuestion,
+    maxDocuments,
+    filter,
+  );
+
+  return combineDocuments(docs);
+}
+
+export async function retrieveThreadDocuments(
   threadDocuments: ThreadDocumentUI[],
-  vectorStore: VectorStore,
-  embeddings: Embeddings,
-  maxChunks: number = 3
-) => {
+  vectorStore: VectorStoreClient,
+  embeddings: EmbeddingsProvider,
+  standaloneQuestion: string,
+  maxChunks: number = 3,
+): Promise<string> {
   if (!threadDocuments || threadDocuments.length === 0) {
-    return RunnableLambda.from(
-      () => '[Brak dokumentów wątku - użytkownik nie wgrał żadnych plików]'
-    ).withConfig({
-      runName: 'Retrieve thread documents (empty)',
-    });
+    return '[Brak dokumentow watku - uzytkownik nie wgral zadnych plikow]';
   }
 
   const retriever = new ThreadDocumentRetriever(vectorStore, embeddings);
+  const relevantChunks = await retriever.retrieveRelevantChunks(
+    threadDocuments,
+    standaloneQuestion,
+    maxChunks,
+  );
 
-  return RunnableLambda.from(async (input: any) => {
-    const relevantChunks = await retriever.retrieveRelevantChunks(
-      threadDocuments,
-      input.standalone_question || input.question,
-      maxChunks
-    );
+  return combineDocuments(relevantChunks);
+}
 
-    const combinedResult = combineDocuments(relevantChunks);
-
-    return combinedResult;
-  }).withConfig({
-    runName: 'Retrieve thread documents',
-  });
-};
-
-export const generateFinalAnswer = (
-  model: BaseChatModel,
-  runName: string,
+export function buildRagMessages(
+  standaloneQuestion: string,
+  chatHistory: string | undefined,
+  context: string,
+  threadContext: string,
   answerInstructions?: string | null,
-  projectInstructions?: string
-) => {
+  projectInstructions?: string,
+): { system: string; messages: ModelMessage[] } {
+  const effectiveAnswerInstructions =
+    answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
+  const effectiveProjectInstructions = projectInstructions || '';
+
+  const systemMessage = systemTemplates.answerChain
+    .replace('{answer_instructions}', effectiveAnswerInstructions)
+    .replace('{project_instructions}', effectiveProjectInstructions)
+    .replace('{context}', context)
+    .replace('{thread_context}', threadContext);
+
+  const messages: ModelMessage[] = [];
+
+  if (chatHistory) {
+    const formattedHistory = formatChatHistory(chatHistory);
+    for (const msg of formattedHistory) {
+      messages.push({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+      });
+    }
+  }
+
+  const humanMessage = humanTemplates.answerChain.replace(
+    '{standalone_question}',
+    standaloneQuestion,
+  );
+  messages.push({ role: 'user', content: humanMessage });
+
+  return { system: systemMessage, messages };
+}
+
+export function validateAnswerGenerator(model: LanguageModelV3): void {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
   }
-
-  const promptTemplate = ChatPromptTemplate.fromMessages([
-    ['system', systemTemplates.answerChain],
-    new MessagesPlaceholder('chat_history'),
-    ['human', humanTemplates.answerChain],
-  ]);
-
-  return RunnableSequence.from([
-    RunnablePassthrough.assign({
-      answer_instructions: () =>
-        answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS,
-      project_instructions: () =>
-        projectInstructions ? projectInstructions : '',
-    }),
-    promptTemplate,
-    model,
-    new StringOutputParser().withConfig({
-      runName,
-    }),
-  ]).withConfig({
-    runName: 'Generate final answer',
-  });
-};
+}

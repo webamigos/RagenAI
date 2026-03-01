@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Card, Link } from '@ragenai/common-ui';
+import { Link } from '@ragenai/common-ui/Link';
 import {
   checkIfStripeSubscriptionIsActive,
   fetchAvailablePlans,

@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 import { useLocale } from 'next-intl';
 
 import { usePathname, useRouter } from '@/i18n/routing';
-import { classMerge } from '@ragenai/common-ui';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 import 'flag-icons/css/flag-icons.min.css';
 

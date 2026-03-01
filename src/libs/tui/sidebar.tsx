@@ -1,6 +1,10 @@
 'use client';
 
-import * as Headless from '@headlessui/react';
+import {
+  Button as HeadlessButton,
+  type ButtonProps as HeadlessButtonProps,
+  CloseButton as HeadlessCloseButton,
+} from '@headlessui/react';
 import clsx from 'clsx';
 import { LayoutGroup, motion } from 'framer-motion';
 import React, { forwardRef, useId } from 'react';
@@ -28,7 +32,7 @@ export function SidebarHeader({
       {...props}
       className={clsx(
         className,
-        'flex flex-col border-b border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col border-b border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5',
       )}
     />
   );
@@ -43,7 +47,7 @@ export function SidebarBody({
       {...props}
       className={clsx(
         className,
-        'flex flex-1 flex-col overflow-y-auto p-4 [&>[data-slot=section]+[data-slot=section]]:mt-8'
+        'flex flex-1 flex-col overflow-y-auto p-4 [&>[data-slot=section]+[data-slot=section]]:mt-8',
       )}
     />
   );
@@ -58,7 +62,7 @@ export function SidebarFooter({
       {...props}
       className={clsx(
         className,
-        'flex flex-col border-t border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5'
+        'flex flex-col border-t border-zinc-950/5 p-4 dark:border-white/5 [&>[data-slot=section]+[data-slot=section]]:mt-2.5',
       )}
     />
   );
@@ -90,7 +94,7 @@ export function SidebarDivider({
       {...props}
       className={clsx(
         className,
-        'my-4 border-t border-zinc-950/5 lg:-mx-4 dark:border-white/5'
+        'my-4 border-t border-zinc-950/5 lg:-mx-4 dark:border-white/5',
       )}
     />
   );
@@ -118,7 +122,7 @@ export function SidebarHeading({
       {...props}
       className={clsx(
         className,
-        'mb-1 px-2 text-xs/6 font-medium text-zinc-500 dark:text-zinc-400'
+        'mb-1 px-2 text-xs/6 font-medium text-zinc-500 dark:text-zinc-400',
       )}
     />
   );
@@ -131,10 +135,10 @@ export const SidebarItem = forwardRef(function SidebarItem(
     children,
     ...props
   }: { current?: boolean; className?: string; children: React.ReactNode } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className'>
-    | Omit<Headless.ButtonProps<typeof Link>, 'as' | 'className'>
+    | Omit<HeadlessButtonProps, 'as' | 'className'>
+    | Omit<HeadlessButtonProps<typeof Link>, 'as' | 'className'>
   ),
-  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>
+  ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>,
 ) {
   let classes = clsx(
     // Base
@@ -155,7 +159,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
     'dark:text-white dark:data-[slot=icon]:*:fill-zinc-400',
     'dark:data-hover:bg-white/5 dark:data-[slot=icon]:*:data-hover:fill-white',
     'dark:data-active:bg-white/5 dark:data-[slot=icon]:*:data-active:fill-white',
-    'dark:data-[slot=icon]:*:data-current:fill-white'
+    'dark:data-[slot=icon]:*:data-current:fill-white',
   );
 
   return (
@@ -167,7 +171,7 @@ export const SidebarItem = forwardRef(function SidebarItem(
         />
       )}
       {'href' in props ? (
-        <Headless.CloseButton
+        <HeadlessCloseButton
           as={Link}
           {...props}
           className={classes}
@@ -175,16 +179,16 @@ export const SidebarItem = forwardRef(function SidebarItem(
           ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
-        </Headless.CloseButton>
+        </HeadlessCloseButton>
       ) : (
-        <Headless.Button
+        <HeadlessButton
           {...props}
           className={clsx('cursor-default', classes)}
           data-current={current ? 'true' : undefined}
           ref={ref}
         >
           <TouchTarget>{children}</TouchTarget>
-        </Headless.Button>
+        </HeadlessButton>
       )}
     </span>
   );

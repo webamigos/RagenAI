@@ -25,7 +25,7 @@ export const NewChatButton = ({
   const Component = variant === 'navbar' ? NavbarItem : SidebarItem;
 
   return (
-    <Component href="/" onClick={handleNewChat} {...props}>
+    <Component href="/new" onClick={handleNewChat} {...props}>
       {children}
     </Component>
   );

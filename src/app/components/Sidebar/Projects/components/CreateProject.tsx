@@ -2,12 +2,13 @@ import { useEffect, useRef, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useRouter } from '@/i18n/routing';
+import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { StatusCodes } from 'http-status-codes';
 
-import { Dialog, DialogTitle } from '@ragenai/common-ui';
-import { Button, Input } from '@ragenai/common-ui';
+import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -72,7 +73,7 @@ export function CreateProject({
       const { status, error, project } = await createProject(
         organization.id,
         data.title,
-        user.id
+        user.id,
       );
 
       if (error || !project) {
@@ -88,7 +89,7 @@ export function CreateProject({
       successToast({ message: t('projects.success.created') });
       startTransition(async () => {
         await refreshProjects();
-        router.push(`/assistants/${project.public_id}`);
+        router.push(`/projects/${project.public_id}`);
         onClose();
         reset();
       });

@@ -6,7 +6,7 @@ import {
 } from 'react';
 import { classMerge } from '../utils/cn';
 import { SpinnerSVG, ArrowPath } from '../icons';
-import { Button as TuiButton, type ButtonProps } from '@ragenai/tui';
+import { Button as TuiButton, type ButtonProps } from '@ragenai/tui/button';
 
 type Props = Readonly<{
   label?: string;
@@ -26,7 +26,7 @@ const ButtonComponent = forwardRef(
     {
       label,
       iconRight,
-      iconLeft,
+      iconLeft: _iconLeft,
       className,
       isLoading = false,
       isError = false,
@@ -36,7 +36,7 @@ const ButtonComponent = forwardRef(
       children,
       ...rest
     }: Props,
-    ref: ForwardedRef<HTMLElement>
+    ref: ForwardedRef<HTMLElement>,
   ) => {
     // const baseClasses =
     //   'text-sm/6 text-white font-semibold cursor-pointer rounded-md px-4 py-2 font-semibold shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-transform duration-200';
@@ -59,6 +59,7 @@ const ButtonComponent = forwardRef(
         color="indigo"
         disabled={disabled || isLoading || isError}
         {...tuiButtonProps}
+        type={isSubmit ? 'submit' : tuiButtonProps.type}
         className={
           isLink
             ? classMerge(linkClasses, className)
@@ -66,7 +67,7 @@ const ButtonComponent = forwardRef(
                 baseClasses,
                 isError ? errorClasses : normalClasses,
                 (disabled || isLoading) && disabledClasses,
-                className
+                className,
               )
         }
       >
@@ -79,7 +80,7 @@ const ButtonComponent = forwardRef(
         </span>
       </TuiButton>
     );
-  }
+  },
 );
 
 export const Button = memo(ButtonComponent);

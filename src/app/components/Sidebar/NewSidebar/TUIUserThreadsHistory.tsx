@@ -1,9 +1,9 @@
 import { useRef, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { SidebarSection, SidebarHeading } from '@ragenai/tui/sidebar';
+import { SidebarSection } from '@ragenai/tui/sidebar';
 import { TUIThreadsSection } from './TUIThreadsSection';
-import { ThreadHistoryResponse } from '../../../contracts/Message';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 
 type Props = {
@@ -32,7 +32,9 @@ export const TUIUserThreadsHistory = ({
   const lastThreadElementRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore) {
+      return;
+    }
 
     if (typeof IntersectionObserver === 'undefined') {
       const handleScroll = () => {
@@ -50,7 +52,9 @@ export const TUIUserThreadsHistory = ({
       return () => window.removeEventListener('scroll', handleScroll);
     }
 
-    if (observerRef.current) observerRef.current.disconnect();
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -58,7 +62,7 @@ export const TUIUserThreadsHistory = ({
           loadMoreThreads();
         }
       },
-      { threshold: 1.0 }
+      { threshold: 1.0 },
     );
 
     const currentLastElement = lastThreadElementRef.current;

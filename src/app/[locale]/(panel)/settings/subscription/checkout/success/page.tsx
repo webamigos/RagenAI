@@ -1,7 +1,15 @@
 import type { Stripe } from 'stripe';
-import { retrieveCheckoutSessionDetails } from '@/app/lib/services/stripe';
+import { getTranslations } from 'next-intl/server';
+import { stripe } from '@/libs/payments/stripe';
 import { getInvoiceUrl } from '../actions';
 import { CheckoutSuccess } from '../../components/CheckoutSuccess';
+import type { PropsWihLocale } from '@/app/lib/types/types';
+
+export async function generateMetadata({ params }: PropsWihLocale) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
+  return { title: t('checkout-success.title') };
+}
 
 export default async function ResultPage({
   searchParams,
@@ -13,12 +21,19 @@ export default async function ResultPage({
     return <></>;
   }
 
-  const checkoutSession = await retrieveCheckoutSessionDetails(session_id);
+  const checkoutSession = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ['line_items', 'payment_intent', 'subscription'],
+  });
 
   const subscription = checkoutSession.subscription as Stripe.Subscription;
   const lineItems = checkoutSession.line_items?.data[0];
 
-  const nextPaymentDate = new Date(subscription.current_period_end * 1000);
+  // In Stripe SDK v18 current_period_end was removed from Subscription.
+  // Compute next payment from billing_cycle_anchor + 1 month as fallback.
+  const anchorTimestamp = subscription.billing_cycle_anchor;
+  const nextPaymentDate = anchorTimestamp
+    ? new Date(anchorTimestamp * 1000)
+    : new Date();
 
   const invoiceUrl = checkoutSession.invoice
     ? await getInvoiceUrl(checkoutSession.invoice as string)

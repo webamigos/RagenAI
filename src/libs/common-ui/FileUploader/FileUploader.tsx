@@ -1,10 +1,12 @@
 'use client';
 
-import { useRef, ComponentPropsWithRef } from 'react';
+import { useRef, type ComponentPropsWithRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 
-import { UploadInboxIcon, Text, classMerge } from '@ragenai/common-ui';
+import { UploadInboxIcon } from '@ragenai/common-ui/icons';
+import { Text } from '@ragenai/common-ui/Text';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 import { isSupportedFile } from '@/app/lib/utils/fileValidation';
 interface FileUploaderProps extends ComponentPropsWithRef<'div'> {
@@ -18,15 +20,17 @@ export const FileUploader = ({
   className,
   ...props
 }: FileUploaderProps) => {
-  const { isOver, setNodeRef } = useDroppable({ id: 'droppable' });
+  const { setNodeRef } = useDroppable({ id: 'droppable' });
   const t = useTranslations('admin-panel');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const droppedFiles = Array.from(event.dataTransfer.files).filter(
-      isSupportedFile
+      isSupportedFile,
     );
     onFilesAdded(droppedFiles);
   };
@@ -35,9 +39,11 @@ export const FileUploader = ({
     event.preventDefault();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const selectedFiles = Array.from(event.target.files || []).filter(
-      isSupportedFile
+      isSupportedFile,
     );
     onFilesAdded(selectedFiles);
 
@@ -45,7 +51,9 @@ export const FileUploader = ({
   };
 
   const handleClick = () => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -59,7 +67,7 @@ export const FileUploader = ({
         className={classMerge(
           'mb-5 p-5 text-center border-2 border-dashed dark:border-gray-600 rounded-md',
           { 'bg-gray-100 dark:bg-gray-800': true }, // TODO: change after file is over this box
-          className
+          className,
         )}
         {...props}
       >

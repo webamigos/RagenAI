@@ -1,21 +1,15 @@
-import { NextRequest } from 'next/server';
-
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
+import { type NextRequest } from 'next/server';
 
 import { getApiContext } from '../../../../__logic__/context/api.context';
 import { ApiDbService } from '../../../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../../../__logic__/services/api-errors.service';
 import { chatMessagesSchema } from '../../../../__logic__/dtos/chat.dto';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
-import { createMessageInDB } from '@/app/lib/services/message';
+import { createMessageInDbCommand as createMessageInDB } from '@/features/messages/services/commands/create-message-command';
 import { logger } from '@/app/lib/utils/logger';
 import { SseExceptionFilter } from '@/app/api/threads/services/sseExceptionFilter';
-import { ApiSseMessageEvent } from '@/app/contracts/Events';
-import { Role, Source } from '@prisma/client';
+import { type ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
+import { Role, Source } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,17 +20,12 @@ export type Params = {
 export const POST = async (request: NextRequest, { params }: Params) => {
   const { publicId } = await params;
   try {
-    setSentryServiceTag('api.threads.threadId.messages.stream.get');
     const body = await request.json();
     const parsedData = chatMessagesSchema.parse(body);
 
     const apiContext = await getApiContext(request);
 
-    setSentryClerkOrganizationTag(apiContext.orgId);
-
     const apiDbService = new ApiDbService(apiContext);
-
-    let runId: string;
 
     return new Response(
       new ReadableStream({
@@ -44,92 +33,67 @@ export const POST = async (request: NextRequest, { params }: Params) => {
           sendApiEvent(controller, 'init');
 
           try {
-            const {
-              eventStream,
-              finalAnswerRunName,
-              threadRecord,
-              threadMessage,
-            } = await apiDbService.streamChatMessages(
-              publicId,
-              parsedData,
-              controller
-            );
-
-            setSentryContext('EXTRA_DATA', {
-              userQuestion: parsedData,
-              threadPublicId: publicId,
-            });
+            const { streamResult, threadRecord, threadMessage } =
+              await apiDbService.streamChatMessages(
+                publicId,
+                parsedData,
+                controller,
+              );
 
             // streaming part
             let fullMessage = '';
-            let chainRunIds = [];
 
-            for await (const event of eventStream) {
-              if (event.event === 'on_chain_start') {
-                chainRunIds.push(event.run_id);
-                runId = chainRunIds[0];
-              }
+            for await (const textChunk of streamResult.textStream) {
+              fullMessage += textChunk;
+              sendApiEvent(controller, 'delta', { content: textChunk });
+            }
 
-              if (
-                event.event === 'on_parser_stream' &&
-                event.name === finalAnswerRunName
-              ) {
-                const textChunk = event.data.chunk || '';
-                fullMessage += textChunk;
-                sendApiEvent(controller, 'delta', { content: textChunk });
-              } else if (
-                event.event === 'on_parser_end' &&
-                event.name === finalAnswerRunName
-              ) {
-                sendApiEvent(controller, 'llm_completed');
+            sendApiEvent(controller, 'llm_completed');
 
-                sendApiEvent(controller, 'save_assistant_response');
+            sendApiEvent(controller, 'save_assistant_response');
 
-                const dbMessage = await createMessageInDB({
-                  threadId: threadRecord.id,
-                  message: {
-                    id: threadMessage.public_id,
-                    content: event.data.output,
-                    source: Source.API,
-                  },
-                  role: Role.ASSISTANT,
-                  runId,
-                });
+            const dbMessage = await createMessageInDB({
+              threadId: threadRecord.id,
+              message: {
+                id: threadMessage.public_id,
+                content: fullMessage,
+                source: Source.API,
+              },
+              role: Role.ASSISTANT,
+              runId: '',
+            });
 
-                sendApiEvent(controller, 'assistant_response_saved');
+            sendApiEvent(controller, 'assistant_response_saved');
 
-                try {
-                  // TODO: replace to: { messaage: {}, response: {}}
-                  const messageToSend: ApiSseMessageEvent = {
-                    id: dbMessage.public_id,
-                    content: '', // We clear the content – the client already has the full message from the delta events
-                    role: dbMessage.role,
-                    created_at: dbMessage.created_at.toISOString(),
-                    run_id: runId,
-                  };
+            try {
+              const messageToSend: ApiSseMessageEvent = {
+                id: dbMessage.public_id,
+                content: '', // We clear the content - the client already has the full message from the delta events
+                role: dbMessage.role,
+                created_at: dbMessage.created_at.toISOString(),
+                run_id: '',
+              };
 
-                  sendApiEvent(controller, 'final_response', messageToSend);
+              sendApiEvent(controller, 'final_response', messageToSend);
 
-                  // close stream
-                  sendApiEvent(controller, 'close');
+              // close stream
+              sendApiEvent(controller, 'close');
 
-                  controller.close();
-                } catch (finalResponseError) {
-                  logger.error(
-                    { err: finalResponseError },
-                    'Error sending final_response after assistant_response_saved'
-                  );
+              controller.close();
+            } catch (finalResponseError) {
+              logger.error(
+                { err: finalResponseError },
+                'Error sending final_response after assistant_response_saved',
+              );
 
-                  try {
-                    sendApiEvent(controller, 'close');
-                    controller.close();
-                  } catch (closeError) {
-                    logger.error(
-                      { err: closeError },
-                      'Error closing stream after final_response error'
-                    );
-                  }
-                }
+              try {
+                sendApiEvent(controller, 'close');
+                controller.close();
+              } catch (closeError) {
+                logger.error(
+                  { err: closeError },
+                  'Error closing stream after final_response error',
+                );
               }
             }
           } catch (error) {
@@ -153,7 +117,7 @@ export const POST = async (request: NextRequest, { params }: Params) => {
           'Cache-Control': 'no-cache, no-transform',
           'Content-Type': 'text/event-stream; charset=utf-8',
         },
-      }
+      },
     );
   } catch (err) {
     return ApiErrorService.handleErrors(err);

@@ -1,7 +1,7 @@
 'use client';
 
-import { memo, ReactNode, useMemo } from 'react';
-import { classMerge } from '@ragenai/common-ui';
+import { memo, type ReactNode, useMemo } from 'react';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 type SkeletonProps = {
   height?: string;
@@ -38,7 +38,7 @@ export const Skeleton = ({
       animation,
       bgColor,
       borderRadius,
-      className
+      className,
     );
   }, [height, width, borderRadius, className, card]);
 
@@ -51,7 +51,7 @@ export const Skeleton = ({
       <div
         className={classMerge(
           'p-4 border border-gray-200 dark:border-none  rounded-md',
-          width
+          width,
         )}
       >
         <div className={skeletonClass} />

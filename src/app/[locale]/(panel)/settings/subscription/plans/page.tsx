@@ -6,7 +6,7 @@ import { Container } from '@ragenai/common-ui/Container';
 import { Header } from '@ragenai/common-ui/Header';
 import { Link } from '@/i18n/routing';
 import { ArrowLeftIcon } from '@heroicons/react/20/solid';
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;

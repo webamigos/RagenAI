@@ -4,7 +4,7 @@ import { useReducer, useTransition, useCallback, useEffect } from 'react';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useSessionStorage } from './useSessionStorage';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
-import { createGuestThreadAction } from '@/app/lib/actions/threads';
+import { createGuestThreadCommand as createGuestThreadAction } from '@/features/threads/services/commands/create-guest-thread-command';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { useDispatch } from 'react-redux';

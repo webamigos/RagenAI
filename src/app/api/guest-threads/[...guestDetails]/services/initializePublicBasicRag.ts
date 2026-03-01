@@ -1,20 +1,11 @@
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { QdrantVectorStore } from '@langchain/qdrant';
-
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
-import { OrganizationSettings } from '@/app/lib/types/settings';
+import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
-import { Embeddings } from '@langchain/core/embeddings';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { VectorStore } from '@langchain/core/vectorstores';
+import type { VectorStoreClient } from '@/libs/vector-store/types';
+import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import {
   createChatCompletionInstance,
@@ -22,28 +13,30 @@ import {
   createModerationInstance,
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadata } from '@/app/actions';
-
-const serviceName = 'initializeBasicRag';
+import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 
 type InitializePublicRagChainParams = {
   settings: OrganizationSettings;
   organizationId: string;
   projectInstruction?: string | null;
-  projectId?: number;
+  projectPublicId?: string;
 };
 
-const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
-const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
+const DEFAULT_REPHRASE_MODEL =
+  process.env.REPHRASE_MODEL || 'google/gemini-2.0-flash-001';
+const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
+const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
+  ? 0.5
+  : parsedRephraseTemp;
 
 export const initializePublicRagChain = async ({
   settings,
   organizationId,
   projectInstruction,
-  projectId,
+  projectPublicId,
 }: InitializePublicRagChainParams) => {
   try {
-    setSentryServiceTag(serviceName);
-
     const {
       apiKey,
       model: answerModel,
@@ -52,16 +45,8 @@ export const initializePublicRagChain = async ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    setSentryContext('CHAIN_DATA', {
-      answerModel,
-      answerTemperature,
-      answerInstructions,
-      maxDocumentsToRetrieve,
-      hasProjectInstruction: !!projectInstruction,
-    });
-
     const embeddingModel = createEmbeddingsInstance({ apiKey });
-    const contentModerator = createModerationInstance({ apiKey });
+    const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
       apiKey,
@@ -75,25 +60,20 @@ export const initializePublicRagChain = async ({
     });
 
     const orgMetadata = await getOrganizationMetadata(organizationId);
-    let vectorStore: VectorStore | undefined = undefined;
+    let vectorStore: VectorStoreClient;
+    let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(
+    if (orgMetadata.vectorStore === 'meilisearch') {
+      vectorStore = createMeilisearchVectorStore(
         embeddingModel,
-        organizationId
+        organizationId,
       );
+      isMeilisearch = true;
     } else {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
-        organizationId
-      );
-    }
-
-    if (typeof vectorStore === 'undefined') {
-      logger.error('Error initializing basic RAG chain');
-      throw new Error(
-        'Cannot determine VectorStore - use one of Supabase or Qdrant'
+        organizationId,
       );
     }
 
@@ -102,19 +82,26 @@ export const initializePublicRagChain = async ({
     if (projectInstruction) {
       finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
     }
-    const isSupabaseVectorStore = vectorStore instanceof SupabaseVectorStore;
 
     // Configure metadata filter for project-level access control
-    const metadataFilter = {
-      must: [
-        {
-          key: 'metadata.project_id',
-          match: {
-            value: projectId,
-          },
-        },
-      ],
-    };
+    const metadataFilter = isMeilisearch
+      ? {
+          must: [
+            {
+              key: 'metadata.organization_id',
+              match: {
+                value: organizationId,
+              },
+            },
+            {
+              key: 'metadata.project_public_id',
+              match: {
+                value: projectPublicId,
+              },
+            },
+          ],
+        }
+      : {};
 
     return await basicRagChain({
       models: {
@@ -124,7 +111,7 @@ export const initializePublicRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        metadataFilter: isSupabaseVectorStore ? {} : metadataFilter,
+        metadataFilter: isMeilisearch ? metadataFilter : undefined,
         maxDocumentsToRetrieve,
         answerInstructions: finalInstructions,
       },
@@ -136,45 +123,37 @@ export const initializePublicRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (
-  embeddingModel: Embeddings,
-  organizationId: string
-) => {
-  logger.info('creating qdrant vector store', {
-    url: process.env.QDRANT_URL,
-    apiKey: process.env.QDRANT_API_KEY, // staging and prod
-    collectionName: organizationId,
+const createMeilisearchVectorStore = (
+  embeddingModel: EmbeddingsProvider,
+  indexName: string,
+): VectorStoreClient => {
+  logger.info('creating meilisearch vector store', {
+    url: process.env.MEILISEARCH_URL,
+    indexName,
   });
-  const vectorStore = await QdrantVectorStore.fromExistingCollection(
-    embeddingModel,
-    {
-      url: process.env.QDRANT_URL,
-      apiKey: process.env.QDRANT_API_KEY, // staging and prod
-      collectionName: organizationId,
-    }
-  );
 
-  return vectorStore;
+  return new MeilisearchVectorStoreClient(embeddingModel, {
+    url: process.env.MEILISEARCH_URL!,
+    apiKey: process.env.MEILISEARCH_MASTER_KEY,
+    indexName,
+  });
 };
 
 const createSupabaseVectorStore = (
   client: SupabaseClient,
-  embeddingModel: Embeddings,
-  organizationId: string
-): SupabaseVectorStore => {
+  embeddingModel: EmbeddingsProvider,
+  organizationId: string,
+): VectorStoreClient => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.
-    const metadataFilter: VectorStoreMetadataFilter = {
+    const metadataFilter: Record<string, any> = {
       organization_id: organizationId,
     };
 
-    return new SupabaseVectorStore(embeddingModel, {
+    return new SupabaseVectorStoreClient(embeddingModel, {
       client,
       queryName: DOCUMENT_SEARCH_QUERY_NAME,
       filter: metadataFilter,

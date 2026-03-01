@@ -4,7 +4,7 @@ import { ChatOutput } from '@/app/components/Assistant/ChatOutput';
 
 import { usePublicAssistantLogic } from './usePublicAssistantLogic';
 import { PromptForm } from '@/app/components/Assistant/PromptForm';
-import { ChatResponseType } from '@/app/contracts/Message';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
 
 type Props = {
   threadId: string;
@@ -32,8 +32,6 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
           isLoading={isGlobalLoading}
           loadingMessage={messageLoadingText}
           streamedMessage={streamedMessage}
-          widgetMode={true}
-          responseType={ChatResponseType.TEXT}
           isPublicAccess={isPublicAccess}
         />
         <div ref={messagesEndDivRef} />
@@ -47,10 +45,6 @@ export const PublicAssistant = ({ threadId, accessToken }: Props) => {
             isLoading={isGlobalLoading}
             onSubmit={onSubmit}
             responseType={ChatResponseType.TEXT}
-            currentThreadModel={undefined}
-            organizationDefaultModel=""
-            onChange={() => {}}
-            isGlobalLoading={isGlobalLoading}
           />
         )}
       </div>

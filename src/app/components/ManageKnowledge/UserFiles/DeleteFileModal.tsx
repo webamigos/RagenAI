@@ -1,7 +1,10 @@
 import { useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Button, Card, Text, classMerge } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Card } from '@ragenai/common-ui/Card';
+import { Text } from '@ragenai/common-ui/Text';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 type Props = {
   className?: string;

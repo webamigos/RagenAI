@@ -8,22 +8,19 @@ import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
-import { ModelSelector } from './ModelSelector';
+import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
 
-import { useOrganization, useUser } from '@clerk/nextjs';
+import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
-import { ChatResponseType } from '@/app/contracts/Message';
+import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
 import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
-import { RootState } from '@/store';
+import { type RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
-import { updateThreadModel } from '@/app/lib/actions/updateThreadModel';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
-import { getThreadDetailsAction } from '@/app/lib/actions/threads';
-import { updateThreadModel as updateThreadModelAction } from '@/store/threads/threadsSlice';
-import { updateThreadModel as updateSidebarThreadModelAction } from '@/store/sidebar/sidebarSlice';
+import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
 
 type ProjectForContext = {
   id: number;
@@ -59,7 +56,7 @@ export const Assistant = ({ threadId }: Props) => {
   } = useAssistantLogic(threadId);
 
   const { messages: reduxMessages, error: assistantError } = useSelector(
-    (state: RootState) => state.assistant
+    (state: RootState) => state.assistant,
   );
 
   const messages = reduxMessages.length > 0 ? reduxMessages : localMessages;
@@ -68,13 +65,13 @@ export const Assistant = ({ threadId }: Props) => {
   const { user } = useUser();
   const dispatch = useDispatch();
   const { voiceId, isRecording } = useSelector(
-    (state: RootState) => state.assistant.voice
+    (state: RootState) => state.assistant.voice,
   );
   const [availableProjects, setAvailableProjects] = useState<
     ProjectForContext[]
   >([]);
   const [currentThreadModel, setCurrentThreadModel] = useState<string | null>(
-    null
+    null,
   );
   const [organizationDefaultModel, setOrganizationDefaultModel] = useState<
     string | null
@@ -121,7 +118,7 @@ export const Assistant = ({ threadId }: Props) => {
               id: project.id,
               public_id: project.public_id,
               title: project.title,
-            })
+            }),
           );
 
           setAvailableProjects(mappedProjects);
@@ -136,20 +133,31 @@ export const Assistant = ({ threadId }: Props) => {
 
   useEffect(() => {
     const getOrganizationModel = async () => {
+      // Only fetch if user is signed in
+      if (!user?.id) {
+        return;
+      }
+
       try {
         const result = await getOrganizationSettings();
         if (result.success && result.settings) {
           setOrganizationDefaultModel(result.settings.model);
+        } else {
+          logger.error(
+            { error: result.error },
+            'Failed to fetch organization settings',
+          );
         }
       } catch (error) {
         logger.error(
           { error: error },
-          'Error fetching organization model settings'
+          'Error fetching organization model settings',
         );
       }
     };
     getOrganizationModel();
-  }, [organization?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   useEffect(() => {
     const fetchThreadModel = async () => {
@@ -160,7 +168,7 @@ export const Assistant = ({ threadId }: Props) => {
         } else {
           logger.error(
             { error: result.errorMessage },
-            'Error fetching thread model'
+            'Error fetching thread model',
           );
           setCurrentThreadModel(null);
         }
@@ -173,23 +181,6 @@ export const Assistant = ({ threadId }: Props) => {
     fetchThreadModel();
   }, [threadId]);
 
-  const handleModelChange = async (model: string) => {
-    try {
-      const result = await updateThreadModel(threadId, model);
-      if (result.success) {
-        setCurrentThreadModel(model);
-
-        dispatch(updateThreadModelAction({ threadId, model }));
-        dispatch(updateSidebarThreadModelAction({ threadId, model }));
-      } else {
-        throw new Error(result.error || 'Failed to update thread model');
-      }
-    } catch (error) {
-      logger.error({ error }, 'Error updating thread model');
-      throw error;
-    }
-  };
-
   return (
     <>
       {isSearchOpen && (
@@ -198,7 +189,7 @@ export const Assistant = ({ threadId }: Props) => {
         </div>
       )}
 
-      <div className="min-h-full flex flex-col font-sans">
+      <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] flex-col font-sans -m-6 lg:-m-10">
         {responseType === ChatResponseType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
@@ -211,13 +202,23 @@ export const Assistant = ({ threadId }: Props) => {
           />
         )}
 
-        <div className="fixed top-4 left-4 lg:left-68 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2">
+        <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
           <BreadcrumbNavigation threadId={threadId} />
+          <div className="flex items-center gap-2">
+            <ProjectContextIndicator
+              threadId={threadId}
+              availableProjects={availableProjects}
+            />
+            {!isPublicAccess && (
+              <ThreadModelLabel
+                model={currentThreadModel || organizationDefaultModel}
+              />
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6">
+        <div className="flex-1">
           <ChatOutput
-            responseType={responseType}
             messages={messages}
             isLoading={isGlobalLoading}
             loadingMessage={messageLoadingText}
@@ -225,45 +226,21 @@ export const Assistant = ({ threadId }: Props) => {
             isPublicAccess={isPublicAccess}
             voiceId={voiceId}
           />
-          <div ref={messagesEndDivRef} />
+          <div ref={messagesEndDivRef} className="h-4" />
         </div>
 
-        <div className="fixed top-16 right-4 md:top-6 md:right-6 z-50">
-          <ProjectContextIndicator
-            threadId={threadId}
-            availableProjects={availableProjects}
-          />
-        </div>
-
-        <div className="w-full fixed bottom-0 left-1/2 -translate-x-1/2 lg:left-[35%] lg:-translate-x-0">
+        <div className="sticky bottom-0 border-t border-border/40 bg-background">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && organizationDefaultModel !== null && (
-            <>
-              <PromptForm
-                handleResponseType={handleResponseType}
-                ref={promptFormRef}
-                isUserLogged={!!isSignedIn}
-                isLoading={isGlobalLoading}
-                onSubmit={onSubmit}
-                isPublicAccess={isPublicAccess}
-                responseType={responseType}
-                currentThreadModel={currentThreadModel || undefined}
-                organizationDefaultModel={organizationDefaultModel}
-                onChange={handleModelChange}
-                isGlobalLoading={isGlobalLoading}
-              />
-              {/* {!isPublicAccess && (
-                <div className="fixed bottom-20 right-4 lg:right-[calc(50%-20rem)] z-10">
-                  <ModelSelector
-                    threadId={threadId}
-                    currentModel={currentThreadModel || undefined}
-                    organizationDefaultModel={organizationDefaultModel}
-                    onChange={handleModelChange}
-                    disabled={isGlobalLoading}
-                  />
-                </div>
-              )} */}
-            </>
+            <PromptForm
+              handleResponseType={handleResponseType}
+              ref={promptFormRef}
+              isUserLogged={!!isSignedIn}
+              isLoading={isGlobalLoading}
+              onSubmit={onSubmit}
+              isPublicAccess={isPublicAccess}
+              responseType={responseType}
+            />
           )}
         </div>
       </div>

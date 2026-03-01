@@ -2,11 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
+import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/20/solid';
+import { useOrganization, useAuth } from '@/app/hooks/use-auth';
 
 import {
-  AvailableModel,
-  groupModelsByProvider,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover';
+
+import {
+  type AvailableModel,
+  groupModelsByOrigin,
   isReasoningModel,
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
@@ -35,18 +42,30 @@ export const ModelSelectorInline = ({
   const isLoadingModels = useRef(false);
   const t = useTranslations('assistant.model-selector');
   const { errorToast } = statusToast();
+  const { organization } = useOrganization();
+  const { orgId: sessionOrgId } = useAuth();
 
   useEffect(() => {
     const loadAvailableModels = async () => {
-      if (isLoadingModels.current) return;
+      if (isLoadingModels.current) {
+        return;
+      }
+
+      const orgId = organization?.id || sessionOrgId;
+
+      if (!orgId) {
+        logger.warn('No organization ID available, cannot load models');
+        setModelsLoading(false);
+        return;
+      }
 
       try {
         isLoadingModels.current = true;
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(orgId);
         setAvailableModels(models);
       } catch (error) {
-        logger.error('Failed to load available models');
+        logger.error('Failed to load available models', error);
         errorToast({
           message: 'Failed to load available models',
         });
@@ -57,35 +76,31 @@ export const ModelSelectorInline = ({
     };
 
     loadAvailableModels();
-  }, []);
+  }, [organization?.id, sessionOrgId]);
 
   useEffect(() => {
     if (!modelsLoading && availableModels.length > 0) {
       let modelToUse = selectedModel;
       let shouldUpdateModel = false;
 
-      if (
-        organizationDefaultModel &&
-        availableModels.some((m) => m.value === organizationDefaultModel)
-      ) {
-        modelToUse = organizationDefaultModel;
-        shouldUpdateModel = true;
-      } else if (!organizationDefaultModel) {
-        try {
-          const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
-          if (
-            savedModel &&
-            availableModels.some((m) => m.value === savedModel)
-          ) {
-            modelToUse = savedModel;
-            shouldUpdateModel = modelToUse !== selectedModel;
-          }
-        } catch (error) {
-          logger.error('Failed to load model from localStorage');
-          errorToast({
-            message: 'Failed to load model from localStorage',
-          });
+      try {
+        const savedModel = localStorage.getItem(MODEL_STORAGE_KEY);
+        if (savedModel && availableModels.some((m) => m.value === savedModel)) {
+          modelToUse = savedModel;
+          shouldUpdateModel = modelToUse !== selectedModel;
+        } else if (
+          organizationDefaultModel &&
+          availableModels.some((m) => m.value === organizationDefaultModel) &&
+          selectedModel !== organizationDefaultModel
+        ) {
+          modelToUse = organizationDefaultModel;
+          shouldUpdateModel = true;
         }
+      } catch (error) {
+        logger.error('Failed to load model from localStorage');
+        errorToast({
+          message: 'Failed to load model from localStorage',
+        });
       }
 
       if (modelToUse && shouldUpdateModel) {
@@ -101,7 +116,9 @@ export const ModelSelectorInline = ({
   ]);
 
   const handleModelChange = (newModel: string) => {
-    if (newModel === selectedModel || disabled) return;
+    if (newModel === selectedModel || disabled) {
+      return;
+    }
 
     onChange(newModel);
     setIsOpen(false);
@@ -120,99 +137,91 @@ export const ModelSelectorInline = ({
     availableModels.find((m) => m.value === selectedModel)?.label ||
     selectedModel;
 
-  const getShortLabel = (label: string) => {
-    return label
-      .replace('GPT-', '')
-      .replace(' (32k context)', '-32k')
-      .replace(' Turbo', '');
-  };
-
-  const shortLabel = getShortLabel(selectedModelLabel);
-  const groupedModels = groupModelsByProvider(availableModels);
+  const groupedModels = groupModelsByOrigin(availableModels);
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-        className={`
-          inline-flex items-center mb-1 px-3 py-1.5 text-sm font-medium rounded border
-          ${
-            disabled
-              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'bg-white/90 dark:bg-gray-800/90 text-gray-600 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:bg-white dark:hover:bg-gray-700 cursor-pointer'
-          }
-          transition-colors duration-200 backdrop-blur-sm shadow-sm
-        `}
-        title={selectedModelLabel}
-        aria-label={t('select-model')}
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          className={`
+            inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs
+            transition-colors duration-150
+            ${
+              disabled
+                ? 'text-muted-foreground/50 cursor-not-allowed'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer'
+            }
+          `}
+          title={selectedModelLabel}
+          aria-label={t('select-model')}
+        >
+          {isReasoningModel(selectedModel) && (
+            <BrainIcon className="size-3 shrink-0" />
+          )}
+          <span className="truncate max-w-[120px]">{selectedModelLabel}</span>
+          <ChevronUpDownIcon className="size-3 shrink-0 opacity-60" />
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        side="top"
+        align="start"
+        className="w-56 p-0 overflow-hidden"
       >
-        <span className="text-sm font-mono truncate max-w-[70px]">
-          {shortLabel}
-        </span>
-        <ChevronDownIcon
-          className={`ml-1 h-4 w-4 transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-
-          <div className="absolute bottom-full left-0 mb-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20">
-            <div className="py-1">
-              {modelsLoading ? (
-                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                  Loading models...
-                </div>
-              ) : (
-                groupedModels.map(({ provider, displayName, models }) => (
-                  <div key={provider}>
-                    {/* Provider header */}
-                    <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                      {displayName}
-                    </div>
-                    {/* Models in this provider */}
-                    {models.map(({ value, label }) => (
-                      <button
-                        key={value}
-                        onClick={() => handleModelChange(value)}
-                        className={`
-                          w-full text-left px-4 py-2 text-sm transition-colors duration-200
-                          ${
-                            value === selectedModel
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
-                          }
-                        `}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-1">
-                            <span className="font-medium">{label}</span>
-                            {isReasoningModel(value) && (
-                              <BrainIcon className="h-3 w-3 text-gray-500" />
-                            )}
-                          </div>
-                          {value === organizationDefaultModel && (
-                            <span className="text-xs text-gray-400">
-                              (default)
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ))
-              )}
-            </div>
+        {modelsLoading ? (
+          <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+            <div className="size-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+            <span className="ml-2">Loading...</span>
           </div>
-        </>
-      )}
-    </div>
+        ) : (
+          <div className="py-1">
+            {groupedModels.map(({ origin, displayName, models }) => (
+              <div key={origin}>
+                <div className="px-3 py-1.5 text-[0.6875rem] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  {displayName}
+                </div>
+                {models.map(({ value, label }) => {
+                  const isSelected = value === selectedModel;
+                  const isDefault = value === organizationDefaultModel;
+
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => handleModelChange(value)}
+                      className={`
+                        flex w-full items-center gap-2 px-3 py-1.5 text-sm transition-colors
+                        ${
+                          isSelected
+                            ? 'bg-accent text-accent-foreground'
+                            : 'text-foreground hover:bg-muted'
+                        }
+                      `}
+                    >
+                      <span className="flex size-4 shrink-0 items-center justify-center">
+                        {isSelected && <CheckIcon className="size-3.5" />}
+                      </span>
+                      <span className="flex-1 truncate text-left">{label}</span>
+                      <span className="flex items-center gap-1 shrink-0">
+                        {isReasoningModel(value) && (
+                          <BrainIcon className="size-3 text-muted-foreground" />
+                        )}
+                        {isDefault && (
+                          <span className="rounded bg-muted px-1 py-0.5 text-[0.625rem] text-muted-foreground">
+                            default
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 };

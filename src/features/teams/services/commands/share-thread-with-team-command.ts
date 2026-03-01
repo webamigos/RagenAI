@@ -1,0 +1,57 @@
+'use server';
+
+import db from '@ragenai/prisma-client';
+
+type OperationResult = { success: true } | { success: false; error: string };
+
+export async function shareThreadWithTeamCommand(
+  threadPublicId: string,
+  teamId: string | null,
+  organizationId: string,
+  userId: string,
+): Promise<OperationResult> {
+  const thread = await db.thread.findFirst({
+    where: {
+      public_id: threadPublicId,
+      organization_id: organizationId,
+    },
+    select: { id: true, visitor_id: true },
+  });
+
+  if (!thread) {
+    return { success: false, error: 'Thread not found' };
+  }
+
+  if (thread.visitor_id !== userId) {
+    return { success: false, error: 'Only the thread creator can share it' };
+  }
+
+  if (teamId !== null) {
+    if (!teamId) {
+      return { success: false, error: 'Invalid team ID' };
+    }
+
+    // Verify the team exists in this org and the user is a member
+    const membership = await db.teamMember.findFirst({
+      where: {
+        teamId,
+        userId,
+        team: { organizationId },
+      },
+    });
+
+    if (!membership) {
+      return {
+        success: false,
+        error: 'You must be a member of the team to share with it',
+      };
+    }
+  }
+
+  await db.thread.update({
+    where: { id: thread.id },
+    data: { team_id: teamId },
+  });
+
+  return { success: true };
+}

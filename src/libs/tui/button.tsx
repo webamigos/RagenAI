@@ -1,4 +1,7 @@
-import * as Headless from '@headlessui/react';
+import {
+  Button as HeadlessButton,
+  type ButtonProps as HeadlessButtonProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 import { Link } from './link';
@@ -163,13 +166,13 @@ export type ButtonProps = (
   | { color?: never; outline: true; plain?: never }
   | { color?: never; outline?: never; plain: true }
 ) & { className?: string; children: React.ReactNode } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className'>
+    | Omit<HeadlessButtonProps, 'as' | 'className'>
     | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
   );
 
 export const Button = forwardRef(function Button(
   { color, outline, plain, className, children, ...props }: ButtonProps,
-  ref: React.ForwardedRef<HTMLElement>
+  ref: React.ForwardedRef<HTMLElement>,
 ) {
   let classes = clsx(
     className,
@@ -177,8 +180,8 @@ export const Button = forwardRef(function Button(
     outline
       ? styles.outline
       : plain
-      ? styles.plain
-      : clsx(styles.solid, styles.colors[color ?? 'dark/zinc'])
+        ? styles.plain
+        : clsx(styles.solid, styles.colors[color ?? 'dark/zinc']),
   );
 
   return 'href' in props ? (
@@ -190,13 +193,13 @@ export const Button = forwardRef(function Button(
       <TouchTarget>{children}</TouchTarget>
     </Link>
   ) : (
-    <Headless.Button
+    <HeadlessButton
       {...props}
       className={clsx(classes, 'cursor-default')}
       ref={ref}
     >
       <TouchTarget>{children}</TouchTarget>
-    </Headless.Button>
+    </HeadlessButton>
   );
 });
 

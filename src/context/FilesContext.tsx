@@ -1,7 +1,7 @@
 import { createContext, useReducer, useEffect } from 'react';
 import { getUserFiles } from '@/app/actions';
-import { type UserFileType } from '@/app/contracts/Documents';
-import { UserFile } from '@prisma/client';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
+import { type UserFile } from '@/generated/prisma/browser';
 
 type State = {
   files: UserFileType[];
@@ -61,7 +61,7 @@ type Props = {
 };
 
 export const FilesContext = createContext<FilesContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const FilesProvider = ({ children }: Props) => {

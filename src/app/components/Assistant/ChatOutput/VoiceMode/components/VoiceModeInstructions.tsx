@@ -1,6 +1,6 @@
 import { useTranslations } from 'next-intl';
-import { Text } from '@ragenai/common-ui';
-import { VoiceModeInstructionsProps } from '../types';
+import { Text } from '@ragenai/common-ui/Text';
+import { type VoiceModeInstructionsProps } from '../types';
 
 export const VoiceModeInstructions = ({
   hasApiError,
@@ -9,8 +9,12 @@ export const VoiceModeInstructions = ({
   const t = useTranslations('voice-mode');
 
   const getInstructionText = () => {
-    if (hasApiError) return t('api-error-instructions');
-    if (voiceError) return t('voice-error-instructions');
+    if (hasApiError) {
+      return t('api-error-instructions');
+    }
+    if (voiceError) {
+      return t('voice-error-instructions');
+    }
     return t('instructions');
   };
 

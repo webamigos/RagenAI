@@ -1,57 +1,52 @@
 'use server';
 
-import { auth, clerkClient } from '@clerk/nextjs/server';
 import { StatusCodes } from 'http-status-codes';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '../lib/utils/auth-helpers';
 
 import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
-  CreateMessageDto,
-  MessageDto,
-  ThreadHistoryResponse,
-} from '../contracts/Message';
-import { createMessageSchema } from '../contracts/Message';
+  type CreateMessageDto,
+  type MessageDto,
+} from '@/features/messages/contracts/message.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { deleteFromS3 } from '../lib/services/aws';
-import {
-  deleteDocumentFromDb,
-  getDocumentByPublicId,
-} from '../lib/services/document';
-import { submitFeedbackDirectly } from '../lib/services/feedback';
-import {
-  deleteFileFromDb,
-  fetchFilesDetails,
-  getFileDetailsByPublicId,
-  getOrganizationFilesCount,
-} from '../lib/services/file';
-import {
-  fetchProjectFiles,
-  deleteProjectFile as deleteProjectFileFromService,
-  fetchOrganizationDefaultProjectPublicId,
-} from '../lib/services/project';
-import {
-  createAndStoreMessage,
-  deleteMessageByPublicId,
-} from '../lib/services/message';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryClerkUserTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '../lib/services/sentry';
-import { findOrCreateThread } from '../lib/services/thread';
-import { usageTracker } from '../lib/services/usage';
-import { getUserThreads } from '../lib/services/visitor';
-import {
-  ClerkOrganizationMetadata,
-  ClerkOrganizationPublicMetadata,
-} from '../lib/types/organizations';
+import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
+import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
+import { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
+import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
+import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
+import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
+import { deleteFileFromDbCommand as deleteFileFromDb } from '@/features/documents/services/commands/delete-file-from-db-command';
+import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
+import { deleteProjectFileFromDbCommand as deleteProjectFileFromService } from '@/features/documents/services/commands/delete-project-file-from-db-command';
+import { getDefaultProjectPublicIdQuery as fetchOrganizationDefaultProjectPublicId } from '@/features/projects/services/queries/get-default-project-query';
+import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
+import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
+import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
+import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
+import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
+import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
+import { toggleThreadStarredCommand } from '@/features/threads/services/commands/toggle-thread-starred-command';
+import { getSidebarThreadsQuery } from '@/features/threads/services/queries/get-sidebar-threads-query';
+import { getAllThreadsQuery } from '@/features/threads/services/queries/get-all-threads-query';
+import { renameThreadCommand } from '@/features/threads/services/commands/rename-thread-command';
+import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
+import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
+import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
-import { fetchOrganizationDefaultProjectId } from '../lib/services/project';
-import { getAccountSetupStatus } from '../lib/services/account-setup';
-import { getOrgIdOrThrow } from '../lib/services/clerk';
-import { Project, UserFile } from '@prisma/client';
-
-const serviceName = 'actions';
+import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
+import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
+import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
+import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
+import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import { defaultStorageLimits } from '@/features/organizations/constants/settings';
+import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
+import type { Project, UserFile } from '@/generated/prisma/client';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -65,65 +60,22 @@ type ResponseHistory = {
   error?: string;
 };
 
+/** @deprecated Use sendMessageCommand from @/features/messages instead */
 export const sendMessage = async (
   threadId: string,
   data: CreateMessageDto,
-  visitorId: string
+  visitorId: string,
 ): Promise<ResponseMessage> => {
-  const requestData = await createMessageSchema().safeParseAsync(data);
-
-  if (!requestData.success) {
-    return {
-      error: 'Bad structure',
-      status: StatusCodes.BAD_REQUEST,
-    };
-  }
-
-  const threadPublicId = threadId;
-  const prompt = requestData.data.prompt;
-
-  // get or create thread
-  try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      threadPublicId,
-      visitorId,
-    });
-    const { threadRecord } = await findOrCreateThread(
-      threadPublicId,
-      visitorId
-    );
-
-    // create user message
-    const messageResponse = await createAndStoreMessage({
-      prompt,
-      threadId: threadRecord.id,
-      visitorId,
-      messageType: requestData.data.messageType,
-      voiceDurationSeconds: requestData.data.voiceDurationSeconds,
-    });
-
-    return { message: messageResponse, status: StatusCodes.CREATED };
-  } catch (e) {
-    logger.error({ err: e }, 'processing error');
-    return {
-      error: 'Problem during processing',
-      status: StatusCodes.BAD_REQUEST,
-    };
-  }
+  return sendMessageCommand(threadId, data, visitorId);
 };
-//get user threads
+/** @deprecated Use getUserThreadsQuery from @/features/threads instead */
 export const getUserMessages = async (
   visitorId: string,
   skip?: number,
-  take?: number
+  take?: number,
 ): Promise<ResponseHistory> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      visitorId,
-    });
-    const userThreads = await getUserThreads(visitorId, skip, take);
+    const userThreads = await getUserThreadsQuery(visitorId, skip, take);
 
     return { threads: userThreads, status: StatusCodes.OK };
   } catch (err) {
@@ -137,9 +89,7 @@ export const getUserMessages = async (
 //get user documents
 export const getUserFiles = async () => {
   try {
-    const orgId = getOrgIdOrThrow();
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
+    const orgId = await getOrgIdOrThrow();
     const files = await fetchFilesDetails(orgId);
     return { files };
   } catch (error) {
@@ -150,12 +100,22 @@ export const getUserFiles = async () => {
   }
 };
 
+// Get all organization files (for knowledge base picker)
+export const getAllOrgFiles = async () => {
+  try {
+    const orgId = await getOrgIdOrThrow();
+    const files = await fetchAllOrgFiles(orgId);
+    return { files };
+  } catch {
+    return { files: [] };
+  }
+};
+
 // Get project files
 export const getProjectFiles = async (
-  projectPublicId: Project['public_id']
+  projectPublicId: Project['public_id'],
 ) => {
   try {
-    setSentryServiceTag(serviceName);
     const files = await fetchProjectFiles(projectPublicId);
 
     return { files };
@@ -167,14 +127,61 @@ export const getProjectFiles = async (
   }
 };
 
+// Get project storage info (usage + limits)
+export const getProjectStorageInfo = async (
+  projectPublicId: Project['public_id'],
+) => {
+  try {
+    const orgId = await getOrgIdOrThrow();
+    const project = await getProjectByPublicIdOrThrow(projectPublicId);
+    const [usage, limits] = await Promise.all([
+      getProjectStorageUsageQuery(orgId, project.id),
+      getStorageLimits(orgId),
+    ]);
+    return {
+      usedBytes: usage.totalBytes,
+      limitBytes: limits.projectStorageLimitBytes,
+      singleFileLimitBytes: limits.singleFileLimitBytes,
+    };
+  } catch {
+    return {
+      usedBytes: 0,
+      limitBytes: defaultStorageLimits.projectStorageLimitBytes,
+      singleFileLimitBytes: defaultStorageLimits.singleFileLimitBytes,
+    };
+  }
+};
+
+// Import files from knowledge base to a project
+export const importFilesToProject = async (
+  filePublicIds: string[],
+  targetProjectPublicId: string,
+) => {
+  const { importFileToProjectCommand } =
+    await import('@/features/documents/services/commands/import-file-to-project-command');
+
+  const results = [];
+  for (const fileId of filePublicIds) {
+    try {
+      const result = await importFileToProjectCommand(
+        fileId,
+        targetProjectPublicId,
+      );
+      results.push({
+        fileId,
+        success: true,
+        alreadyExists: result.alreadyExists,
+      });
+    } catch {
+      results.push({ fileId, success: false, alreadyExists: false });
+    }
+  }
+  return { results };
+};
+
 // Get file details for download
 export const getFileDetailsForDownload = async (fileId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      fileId,
-    });
-
     const fileRecord = await getFileDetailsByPublicId(fileId);
     if (!fileRecord) {
       return {
@@ -198,15 +205,9 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 // Delete project file
 export const deleteProjectFileAction = async (
   filePublicId: UserFile['public_id'],
-  projectPublicId: Project['public_id']
+  projectPublicId: Project['public_id'],
 ) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      filePublicId,
-      projectPublicId,
-    });
-
     const fileRecord = await getFileDetailsByPublicId(filePublicId);
     if (!fileRecord) {
       return {
@@ -219,13 +220,13 @@ export const deleteProjectFileAction = async (
 
     const result = await deleteProjectFileFromService(
       filePublicId,
-      projectPublicId
+      projectPublicId,
     );
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
       const documentS3Path = `${fileRecord.public_id}.${getFileExtension(
-        fileRecord.file_name
+        fileRecord.file_name,
       )}`;
 
       try {
@@ -264,12 +265,6 @@ export const deleteProjectFileAction = async (
 export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
-    setSentryContext('EXTRA_DATA', {
-      filePublicId,
-    });
-
     //  Removal document from `UserFile`
     // TODO: UserFile should be in relation to UserDocument
     const fileRecord = await getFileDetailsByPublicId(filePublicId);
@@ -277,7 +272,7 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
 
     if (fileRecord) {
       const documentS3Path = `${filePublicId}.${getFileExtension(
-        fileRecord.file_name
+        fileRecord.file_name,
       )}`;
 
       await deleteFromS3(documentS3Path);
@@ -327,170 +322,44 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
   };
 };
 
-//save data to clerk user profile
-export const saveUserMetadata = async (
-  clerkUserId: string,
-  metadata: Record<string, unknown>
-): Promise<{ success: boolean; error?: string }> => {
-  if (!clerkUserId || typeof clerkUserId !== 'string') {
-    return { success: false, error: 'Invalid clerkUserId' };
-  }
+/** @deprecated Use saveUserMetadataCommand from @/features/users instead */
+export const saveUserMetadata = saveUserMetadataCommand;
 
-  try {
-    const user = await clerkClient().users.getUser(clerkUserId);
-    const currentMetadata = user.publicMetadata || {};
+/** @deprecated Use saveOrganizationPublicMetadataCommand from @/features/organizations instead */
+export const saveOrganizationPublicMetadata =
+  saveOrganizationPublicMetadataCommand;
 
-    await clerkClient().users.updateUser(clerkUserId, {
-      publicMetadata: {
-        ...currentMetadata,
-        ...metadata,
-      },
-    });
+/** @deprecated Use getOrganizationMetadataQuery from @/features/organizations instead */
+export const getOrganizationMetadata = getOrganizationMetadataQuery;
 
-    return { success: true };
-  } catch (error) {
-    logger.error(`${{ err: error }} Error saving user metadata:`);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-};
-
-// save data to clerk organization profile
-// TODO: should it be public?
-export const saveOrganizationPublicMetadata = async (
-  organizationId: string,
-  { hasKnowledge }: ClerkOrganizationPublicMetadata
-) => {
-  setSentryServiceTag('saveOrganizationPublicMetadata');
-  setSentryClerkUserTag(organizationId);
-
-  try {
-    await clerkClient().organizations.updateOrganizationMetadata(
-      organizationId,
-      {
-        publicMetadata: {
-          hasKnowledge,
-        },
-      }
-    );
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error: cannot update public metadata for organization ${organizationId}:`
-    );
-  }
-};
-
-export const saveOrganizationInitialMetadata = async (
-  organizationId: string,
-  { publicMetadata, privateMetadata }: ClerkOrganizationMetadata
-) => {
-  setSentryServiceTag('saveOrganizationInitialMetadata');
-  setSentryClerkUserTag(organizationId);
-
-  try {
-    await clerkClient.organizations.updateOrganizationMetadata(organizationId, {
-      publicMetadata,
-      privateMetadata,
-    });
-  } catch (error) {
-    logger.error(
-      { error },
-      `Error: cannot update private metadata for organization ${organizationId}:`
-    );
-  }
-};
-
-export const getOrganizationMetadata = async (
-  organizationId: string
-): Promise<ClerkOrganizationMetadata> => {
-  setSentryServiceTag('getOrganizationMetadata');
-  setSentryClerkUserTag(organizationId);
-
-  try {
-    const organization = await clerkClient.organizations.getOrganization({
-      organizationId,
-    });
-    return {
-      publicMetadata: organization.publicMetadata,
-      privateMetadata: organization.privateMetadata,
-    } as ClerkOrganizationMetadata;
-  } catch (error) {
-    logger.error(
-      { err: error },
-      `Error: cannot get private metadata for organization ${organizationId}:`
-    );
-    return {
-      publicMetadata: undefined,
-      privateMetadata: undefined,
-    };
-  }
-};
-
-//send answer rate to assistant
+/** @deprecated Use rateMessageCommand from @/features/messages instead */
 export const rateMessage = async (
   messageId: string,
   feedback: 'up' | 'down',
-  runId: string
 ) => {
-  try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messageId,
-      feedback,
-      runId,
-    });
-    await submitFeedbackDirectly(messageId, feedback, runId);
-    return { success: true };
-  } catch (error) {
-    logger.error({ err: error }, 'Error sending answer rate');
-    return { success: false };
-  }
+  return rateMessageCommand(messageId, feedback);
 };
 
+/** @deprecated Use deleteMessageCommand from @/features/messages instead */
 export async function deleteUserMessage(messagePublicId: string) {
-  try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      messagePublicId,
-    });
-    await deleteMessageByPublicId(messagePublicId);
-    return { success: true };
-  } catch (error) {
-    logger.error({ err: error }, 'Error deleting user message');
-    return { success: false };
-  }
+  return deleteMessageCommand(messagePublicId);
 }
 
-//autocomplete suggestions
+/** @deprecated Use searchThreadsQuery from @/features/threads instead */
 export async function fetchThreadSuggestions(
   visitorId: string,
-  query: string
+  query: string,
 ): Promise<{ id: string; title: string }[]> {
-  if (!visitorId || !query.trim() || query.trim().length < 3) {
-    return [];
-  }
-
-  const threads = await getUserThreads(visitorId, 0, 5, query);
-
-  return threads.map((thread) => ({
-    id: thread.public_id,
-    title: thread.messages[0]?.content.slice(0, 50) || 'No title',
-  }));
+  return searchThreadsQuery(visitorId, query);
 }
 
+/** @deprecated Use trackThreadCreatedCommand from @/features/threads instead */
 export const trackThreadCreated = async () => {
-  usageTracker.incThreadsCount();
+  return trackThreadCreatedCommand();
 };
 
 export const getDefaultProjectId = async () => {
-  const { orgId } = auth();
-
-  if (!orgId) {
-    throw new Error('Organization ID is required');
-  }
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   try {
     return await fetchOrganizationDefaultProjectId(orgId);
@@ -501,11 +370,12 @@ export const getDefaultProjectId = async () => {
 };
 
 export const getDefaultProjectPublicId = async () => {
-  const { orgId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
-  if (!orgId) {
-    throw new Error('Organization ID is required');
-  }
+  logger.info(
+    { orgId },
+    'Organization ID retrieved in getDefaultProjectPublicId',
+  );
 
   try {
     return await fetchOrganizationDefaultProjectPublicId(orgId);
@@ -515,9 +385,50 @@ export const getDefaultProjectPublicId = async () => {
   }
 };
 
+export const toggleThreadStarred = async (
+  threadPublicId: string,
+  isStarred: boolean,
+) => {
+  return toggleThreadStarredCommand(threadPublicId, isStarred);
+};
+
+export const getSidebarThreads = async (
+  visitorId: string,
+  recentLimit?: number,
+  recentSkip?: number,
+) => {
+  return getSidebarThreadsQuery(visitorId, recentLimit, recentSkip);
+};
+
+export const getAllThreads = async (
+  visitorId: string,
+  skip?: number,
+  take?: number,
+  query?: string,
+) => {
+  return getAllThreadsQuery(visitorId, skip, take, query);
+};
+
+export const renameThread = async (threadPublicId: string, title: string) => {
+  return renameThreadCommand(threadPublicId, title);
+};
+
+export const deleteThread = async (threadPublicId: string) => {
+  return deleteThreadCommand(threadPublicId);
+};
+
 export const getAccountSetupStatusAction = async () => {
   try {
-    return await getAccountSetupStatus();
+    // Get userId from Better Auth
+    const user = await getCurrentUser();
+    const userId = user?.id;
+
+    if (!userId) {
+      logger.warn('No user found in getAccountSetupStatusAction');
+      throw new Error('User not authenticated');
+    }
+
+    return await getAccountSetupStatus(userId);
   } catch (error) {
     logger.error({ err: error }, 'Error fetching account setup status');
     throw error;

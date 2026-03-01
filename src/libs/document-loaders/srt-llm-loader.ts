@@ -1,7 +1,5 @@
-import { Document } from '@langchain/core/documents';
-import { DocumentLoader } from '@langchain/core/document_loaders/base';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import { parseSrtToSegmentsUsingLLM } from '@/app/api/threads/services/parseSrtWithLLM';
-import { TextSplitter } from 'langchain/text_splitter';
 import * as fs from 'node:fs';
 
 type SRTLLMDocumentLoaderProps = {
@@ -14,9 +12,8 @@ type SRTLLMDocumentLoaderProps = {
 /**
  * Custom SRT document loader that implements SRT processing with LLM processing.
  * LLM is prompted to process the SRT content into meaningful segments
- * @implements {DocumentLoader}
  */
-export class SRTLLMDocumentLoader implements DocumentLoader {
+export class SRTLLMDocumentLoader {
   private filePath: string;
   private fileName: string;
   private fileId: string;
@@ -34,7 +31,7 @@ export class SRTLLMDocumentLoader implements DocumentLoader {
     this.organizationId = organizationId;
   }
 
-  async load(): Promise<Document<Record<string, any>>[]> {
+  async load(): Promise<VectorStoreDocument[]> {
     try {
       const fileContent = await fs.promises.readFile(this.filePath, 'utf-8');
       const segments = await parseSrtToSegmentsUsingLLM(
@@ -56,12 +53,5 @@ export class SRTLLMDocumentLoader implements DocumentLoader {
     } catch (error) {
       throw new Error(`Failed to process SRT document: ${error}`);
     }
-  }
-
-  async loadAndSplit(
-    splitter?: TextSplitter
-  ): Promise<Document<Record<string, any>>[]> {
-    const docs = await this.load();
-    return splitter ? await splitter.splitDocuments(docs) : docs;
   }
 }

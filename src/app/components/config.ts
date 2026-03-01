@@ -11,78 +11,113 @@ export type ModelProvider =
   | 'fireworks'
   | 'azure-openai';
 
+/** Visual grouping for the model selector UI (maps to the original provider behind the model) */
+export type ModelOrigin = 'openai' | 'google' | 'anthropic' | 'perplexity';
+
 export type AvailableModel = {
   value: string;
   label: string;
   provider: ModelProvider;
+  origin: ModelOrigin;
+  reasoning?: boolean;
 };
+
+// All models are routed through OpenRouter as a unified gateway.
+// The `origin` field is used only for UI grouping in the model selector.
 export const availableModels: AvailableModel[] = [
   // OpenAI Models
-  { value: 'gpt-4o', label: 'GPT-4o', provider: 'openai' },
-  { value: 'gpt-4o-mini', label: 'GPT-4o mini', provider: 'openai' },
-  { value: 'o1', label: 'OpenAI o1', provider: 'openai' },
-  { value: 'o1-mini', label: 'OpenAI o1-mini', provider: 'openai' },
-  { value: 'o3-mini', label: 'OpenAI o3-mini', provider: 'openai' },
-  { value: 'gpt-4', label: 'GPT-4', provider: 'openai' },
-
-  // Google Gemini Models
-  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash', provider: 'google' },
   {
-    value: 'gemini-2.5-flash-preview-04-17',
-    label: 'Gemini 2.5 Flash Preview',
-    provider: 'google',
+    value: 'openai/gpt-5.2',
+    label: 'GPT-5.2 Thinking',
+    provider: 'openrouter',
+    origin: 'openai',
+    reasoning: true,
   },
   {
-    value: 'gemini-2.5-pro-preview-03-25',
-    label: 'Gemini 2.5 Pro Preview',
-    provider: 'google',
+    value: 'openai/gpt-5.2-chat',
+    label: 'GPT-5.2 Instant',
+    provider: 'openrouter',
+    origin: 'openai',
+  },
+
+  // Google Gemini Models
+  {
+    value: 'google/gemini-3-flash-preview',
+    label: 'Gemini 3 Flash',
+    provider: 'openrouter',
+    origin: 'google',
+    reasoning: true,
   },
 
   // Anthropic Claude Models
   {
-    value: 'claude-3-7-sonnet-latest',
-    label: 'Claude 3.7 Sonnet',
-    provider: 'anthropic',
+    value: 'anthropic/claude-sonnet-4.6',
+    label: 'Claude Sonnet 4.6',
+    provider: 'openrouter',
+    origin: 'anthropic',
+    reasoning: true,
   },
+
+  // Perplexity Models
   {
-    value: 'claude-3-5-sonnet-20241022',
-    label: 'Claude 3.5 Sonnet',
-    provider: 'anthropic',
-  },
-  {
-    value: 'claude-3-5-haiku-latest',
-    label: 'Claude 3.5 Haiku',
-    provider: 'anthropic',
-  },
-  {
-    value: 'claude-3-5-haiku-20241022',
-    label: 'Claude 3.5 Haiku (Oct)',
-    provider: 'anthropic',
+    value: 'perplexity/sonar-pro',
+    label: 'Perplexity Sonar Pro',
+    provider: 'openrouter',
+    origin: 'perplexity',
   },
 ] as const;
 
+/** Maps legacy model IDs (stored in DB) to current OpenRouter model IDs */
+const legacyModelIdMap: Record<string, string> = {
+  'gpt-5.2': 'openai/gpt-5.2',
+  'gpt-5.2-chat-latest': 'openai/gpt-5.2-chat',
+  'gpt-4o': 'openai/gpt-5.2-chat',
+  'gpt-4o-mini': 'openai/gpt-5.2-chat',
+  'o3-mini': 'openai/gpt-5.2',
+  'openai/gpt-4o': 'openai/gpt-5.2-chat',
+  'openai/gpt-4o-mini': 'openai/gpt-5.2-chat',
+  'openai/o3-mini': 'openai/gpt-5.2',
+  'gemini-3-flash-preview': 'google/gemini-3-flash-preview',
+  'gemini-2.0-flash': 'google/gemini-3-flash-preview',
+  'claude-sonnet-4-6': 'anthropic/claude-sonnet-4.6',
+  'claude-haiku-4-5-20251001': 'anthropic/claude-sonnet-4.6',
+  'claude-3-7-sonnet-latest': 'anthropic/claude-sonnet-4.6',
+  'claude-haiku-4.5': 'anthropic/claude-sonnet-4.6',
+  'anthropic/claude-haiku-4.5': 'anthropic/claude-sonnet-4.6',
+  'anthropic/claude-3.7-sonnet': 'anthropic/claude-sonnet-4.6',
+};
+
+/** Normalize a model ID, converting legacy IDs to current OpenRouter IDs */
+export const normalizeModelId = (modelValue: string): string => {
+  return legacyModelIdMap[modelValue] || modelValue;
+};
+
 export const getModelProvider = (
-  modelValue: string
+  modelValue: string,
 ): ModelProvider | undefined => {
-  return availableModels.find((model) => model.value === modelValue)?.provider;
+  const normalized = normalizeModelId(modelValue);
+  const found = availableModels.find((model) => model.value === normalized);
+  if (found) {
+    return found.provider;
+  }
+
+  // Infer provider from OpenRouter-style prefix (e.g. "google/gemini-..." → openrouter)
+  if (normalized.includes('/')) {
+    return 'openrouter';
+  }
+
+  return undefined;
 };
 
 export const isReasoningModel = (modelValue: string): boolean => {
-  return [
-    // OpenAI reasoning models
-    'o1',
-    'o1-mini',
-    'o3-mini',
-    // Google Gemini thinking models
-    'gemini-2.5-flash-preview-04-17',
-    'gemini-2.5-pro-preview-03-25',
-    // Anthropic extended thinking models
-    'claude-3-7-sonnet-latest',
-  ].includes(modelValue);
+  const normalized = normalizeModelId(modelValue);
+  return availableModels.some(
+    (model) => model.value === normalized && model.reasoning === true,
+  );
 };
 
 export const getProviderRequirements = (
-  provider: ModelProvider
+  provider: ModelProvider,
 ): { envVars: string[]; optional?: boolean } => {
   switch (provider) {
     case 'openai':
@@ -116,10 +151,22 @@ export const getProviderRequirements = (
 };
 
 const isProviderConfigured = (provider: ModelProvider): boolean => {
-  if (provider === 'openai') return true;
+  if (provider === 'openrouter') {
+    return !!process.env.OPENROUTER_API_KEY;
+  }
+  if (provider === 'openai') {
+    return true;
+  }
 
   const requirements = getProviderRequirements(provider);
   return requirements.envVars.every((envVar) => process.env[envVar]);
+};
+
+const originDisplayNames: Record<ModelOrigin, string> = {
+  openai: 'OpenAI',
+  google: 'Google',
+  anthropic: 'Anthropic',
+  perplexity: 'Perplexity',
 };
 
 export const getProviderDisplayName = (provider: ModelProvider): string => {
@@ -145,25 +192,71 @@ export const getProviderDisplayName = (provider: ModelProvider): string => {
   }
 };
 
+/** Group models by their visual origin (OpenAI, Google, Anthropic, etc.) for the model selector UI */
+export const groupModelsByOrigin = (
+  models: AvailableModel[],
+): Array<{
+  origin: ModelOrigin;
+  displayName: string;
+  models: AvailableModel[];
+}> => {
+  const grouped = models.reduce(
+    (acc, model) => {
+      const origin = model.origin;
+      if (!acc[origin]) {
+        acc[origin] = {
+          origin,
+          displayName: originDisplayNames[origin],
+          models: [],
+        };
+      }
+      acc[origin].models.push(model);
+      return acc;
+    },
+    {} as Record<
+      ModelOrigin,
+      { origin: ModelOrigin; displayName: string; models: AvailableModel[] }
+    >,
+  );
+
+  const originOrder: ModelOrigin[] = [
+    'openai',
+    'google',
+    'anthropic',
+    'perplexity',
+  ];
+
+  return originOrder
+    .filter((origin) => grouped[origin])
+    .map((origin) => grouped[origin]);
+};
+
+/** @deprecated Use groupModelsByOrigin instead */
 export const groupModelsByProvider = (
-  models: AvailableModel[]
+  models: AvailableModel[],
 ): Array<{
   provider: ModelProvider;
   displayName: string;
   models: AvailableModel[];
 }> => {
-  const grouped = models.reduce((acc, model) => {
-    const provider = model.provider;
-    if (!acc[provider]) {
-      acc[provider] = {
-        provider,
-        displayName: getProviderDisplayName(provider),
-        models: [],
-      };
-    }
-    acc[provider].models.push(model);
-    return acc;
-  }, {} as Record<ModelProvider, { provider: ModelProvider; displayName: string; models: AvailableModel[] }>);
+  const grouped = models.reduce(
+    (acc, model) => {
+      const provider = model.provider;
+      if (!acc[provider]) {
+        acc[provider] = {
+          provider,
+          displayName: getProviderDisplayName(provider),
+          models: [],
+        };
+      }
+      acc[provider].models.push(model);
+      return acc;
+    },
+    {} as Record<
+      ModelProvider,
+      { provider: ModelProvider; displayName: string; models: AvailableModel[] }
+    >,
+  );
 
   const providerOrder: ModelProvider[] = [
     'openai',
@@ -181,8 +274,8 @@ export const groupModelsByProvider = (
     .map((provider) => grouped[provider])
     .concat(
       Object.values(grouped).filter(
-        (group) => !providerOrder.includes(group.provider)
-      )
+        (group) => !providerOrder.includes(group.provider),
+      ),
     );
 };
 
@@ -191,6 +284,6 @@ export const groupModelsByProvider = (
 // This function is kept for backward compatibility and server-side usage where organization context is not available
 export const getAvailableModels = (): AvailableModel[] => {
   return availableModels.filter((model) =>
-    isProviderConfigured(model.provider)
+    isProviderConfigured(model.provider),
   );
 };

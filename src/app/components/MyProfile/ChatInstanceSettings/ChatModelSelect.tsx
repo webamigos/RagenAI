@@ -3,18 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Card } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
+import { useActiveOrganization } from '@/app/hooks/use-better-auth';
 
 import {
-  AvailableModel,
-  groupModelsByProvider,
+  type AvailableModel,
+  groupModelsByOrigin,
   isReasoningModel,
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { SettingsType } from './types';
-import { defaultOrganizationSettings } from '@/app/lib/constants/settings';
+import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 import { logger } from '@/app/lib/utils/logger';
 
 export const ChatModelSelect = ({}) => {
@@ -25,12 +26,17 @@ export const ChatModelSelect = ({}) => {
 
   const { successToast, errorToast } = statusToast();
   const t = useTranslations('assistant-settings.model-select');
+  const { data: activeOrg } = useActiveOrganization();
 
   useEffect(() => {
     const loadAvailableModels = async () => {
+      if (!activeOrg?.id) {
+        return;
+      }
+
       try {
         setModelsLoading(true);
-        const models = await getAvailableModelsForOrganization();
+        const models = await getAvailableModelsForOrganization(activeOrg.id);
         setAvailableModels(models);
       } catch (error) {
         errorToast({
@@ -42,7 +48,7 @@ export const ChatModelSelect = ({}) => {
     };
 
     loadAvailableModels();
-  }, []);
+  }, [activeOrg?.id]);
 
   useEffect(() => {
     const fetchModel = async () => {
@@ -66,7 +72,7 @@ export const ChatModelSelect = ({}) => {
   }, []);
 
   const handleModelChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>
+    event: React.ChangeEvent<HTMLSelectElement>,
   ) => {
     const newModel = event.target.value;
     setModel(newModel);
@@ -84,7 +90,7 @@ export const ChatModelSelect = ({}) => {
     }
   };
 
-  const groupedModels = groupModelsByProvider(availableModels);
+  const groupedModels = groupModelsByOrigin(availableModels);
 
   return (
     <Card title={t('title')} size="full">
@@ -104,8 +110,8 @@ export const ChatModelSelect = ({}) => {
             {availableModels.length === 0 ? (
               <option value="">No models available</option>
             ) : (
-              groupedModels.map(({ provider, displayName, models }) => (
-                <optgroup key={provider} label={displayName}>
+              groupedModels.map(({ origin, displayName, models }) => (
+                <optgroup key={origin} label={displayName}>
                   {models.map(({ value, label }) => (
                     <option key={value} value={value}>
                       {isReasoningModel(value) ? `🧠 ${label}` : label}

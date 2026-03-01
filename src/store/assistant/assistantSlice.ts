@@ -1,12 +1,12 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
-  MessageDto,
-  StreamedMessageDto,
+  type MessageDto,
+  type StreamedMessageDto,
   ChatResponseType,
   ChatType,
-  ThreadContext,
-} from '@/app/contracts/Message';
-import { AssistantMode } from '@/app/contracts/Assistant';
+} from '@/features/messages/contracts/message.types';
+import { type ThreadContext } from '@/features/threads/contracts/thread.types';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import voiceReducer from '../voice/voiceSlice';
 
 export interface AssistantState {
@@ -57,7 +57,7 @@ export const assistantSlice = createSlice({
     },
     setStreamedMessage: (
       state,
-      action: PayloadAction<StreamedMessageDto | null>
+      action: PayloadAction<StreamedMessageDto | null>,
     ) => {
       state.streamedMessage = action.payload;
     },
@@ -89,7 +89,7 @@ export const assistantSlice = createSlice({
       state.messages = state.messages.map((message) =>
         message.public_id === action.payload
           ? { ...message, voice_played: true }
-          : message
+          : message,
       );
     },
     setThreadContext: (state, action: PayloadAction<ThreadContext | null>) => {
@@ -101,7 +101,7 @@ export const assistantSlice = createSlice({
         id: number;
         public_id: string;
         title: string;
-      } | null>
+      } | null>,
     ) => {
       if (state.threadContext) {
         state.threadContext.mentionedProject = action.payload;

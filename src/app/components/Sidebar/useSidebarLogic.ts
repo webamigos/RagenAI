@@ -1,8 +1,8 @@
 import { useEffect, useCallback, useRef } from 'react';
-import { useUser, useOrganization } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
@@ -50,8 +50,8 @@ export const useSidebarLogic = () => {
   const { user, isSignedIn } = useUser();
   const pathname = usePathname();
   const locale = useLocale();
-  const userEmail = user?.emailAddresses[0].emailAddress;
-  const userAvatar = user?.imageUrl;
+  const userEmail = user?.email; // Better Auth: email is a direct string property
+  const userAvatar = user?.image;
   const { handleCloseThread } = useCloseThread();
   const t = useTranslations('sidebar');
   const { openSearch } = useSearchThreads();
@@ -70,7 +70,9 @@ export const useSidebarLogic = () => {
   );
 
   const loadMoreThreads = useCallback(async () => {
-    if (isLoading || !hasMore || !user?.id || loadingRef.current) return;
+    if (isLoading || !hasMore || !user?.id || loadingRef.current) {
+      return;
+    }
 
     loadingRef.current = true;
     const viewportHeight = window.innerHeight;
@@ -95,7 +97,7 @@ export const useSidebarLogic = () => {
         if (threads?.length) {
           dispatch(addThreads(threads));
           dispatch(incrementSkip(threads.length));
-          dispatch(setHasMore(threads.length === limit));
+          dispatch(setHasMore(threads.length >= limit));
 
           if (threads.length === limit) {
             prefetchThreads(user.id, skip + limit, limit);
@@ -104,8 +106,9 @@ export const useSidebarLogic = () => {
           dispatch(setHasMore(false));
         }
         // break;
+      } else {
+        throw new Error(error);
       }
-      throw new Error(error);
     } catch (err) {
       retryCount++;
       if (retryCount === maxRetries) {

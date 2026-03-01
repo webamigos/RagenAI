@@ -1,16 +1,11 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { z } from 'zod';
-import { getAuth } from '@clerk/nextjs/server';
+import { auth } from '@/lib/auth';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
-import {
-  updateThreadProjectContext,
-  removeThreadProjectContext,
-} from '@/app/lib/services/thread';
+import { updateThreadProjectContextCommand as updateThreadProjectContext } from '@/features/threads/services/commands/update-thread-context-command';
+import { removeThreadProjectContextCommand as removeThreadProjectContext } from '@/features/threads/services/commands/remove-thread-context-command';
 import db from '@ragenai/prisma-client';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,14 +22,18 @@ const updateContextSchema = z.object({
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { publicThreadId } = await params;
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('thread-context');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!orgId) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    setSentryClerkOrganizationTag(orgId);
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return new Response('Organization not found', { status: 401 });
+    }
 
     const body = await request.json();
     const { mentionedProjectId } = updateContextSchema.parse(body);
@@ -69,7 +68,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     const updatedThread = await updateThreadProjectContext(
       publicThreadId,
-      mentionedProjectId
+      mentionedProjectId,
     );
 
     logger.info(
@@ -78,7 +77,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         mentionedProjectId,
         orgId,
       },
-      'Thread project context updated'
+      'Thread project context updated',
     );
 
     return Response.json({
@@ -95,14 +94,18 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(request: NextRequest, { params }: Params) {
   const { publicThreadId } = await params;
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('thread-context');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!orgId) {
+    if (!session?.user) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    setSentryClerkOrganizationTag(orgId);
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return new Response('Organization not found', { status: 401 });
+    }
 
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
@@ -123,7 +126,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         threadId: publicThreadId,
         orgId,
       },
-      'Thread project context removed'
+      'Thread project context removed',
     );
 
     return Response.json({

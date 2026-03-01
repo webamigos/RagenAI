@@ -1,22 +1,18 @@
 'use server';
 
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import { nanoid } from 'nanoid';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
-import { fetchOrganizationDefaultProjectId } from '@/app/lib/services/project';
+import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { usageTracker } from '@/app/lib/services/usage';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
+import { type WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import {
-  ScrapeWebsiteWorkflowPayload,
+  type ScrapeWebsiteWorkflowPayload,
   Workflow,
-} from '@/app/contracts/Workflows';
+} from '@/features/documents/contracts/document.types';
 
 export type ProcessUrlResult = {
   success: boolean;
@@ -27,9 +23,9 @@ export type ProcessUrlResult = {
 
 export async function processUrl(
   url: string,
-  mode: WebsiteLoaderMode
+  mode: WebsiteLoaderMode,
 ): Promise<ProcessUrlResult> {
-  const { orgId } = auth();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   if (!orgId) {
     return {
@@ -39,10 +35,7 @@ export async function processUrl(
   }
 
   try {
-    setSentryServiceTag('website-parsing');
-    setSentryClerkOrganizationTag(orgId);
-
-    const uniqueFileId = uuidv4();
+    const uniqueFileId = randomUUID();
     const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
 
     if (!defaultProjectId) {
@@ -70,7 +63,7 @@ export async function processUrl(
         taskQueue: TASK_QUEUE_NAME,
         workflowId: websiteWorkflowId,
         args: [websiteWorkflowPayload],
-      }
+      },
     );
 
     logger.info('embeddingsHandle: %j', embeddingsHandle, 2);

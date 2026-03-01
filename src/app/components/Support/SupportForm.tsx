@@ -1,15 +1,19 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
-import { Button, Input, Textarea, Card, Text } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Text } from '@ragenai/common-ui/Text';
+import { Textarea } from '@ragenai/common-ui/Textarea';
 import { sendSupportRequest } from '@/app/lib/services/api';
 
-import { getSupportFormSchema, SupportFormData } from './types';
+import { getSupportFormSchema, type SupportFormData } from './types';
 
 export const SupportForm = () => {
   const t = useTranslations('support-page');
@@ -38,7 +42,7 @@ export const SupportForm = () => {
           title: data.title,
           message: data.message,
         },
-        data.file
+        data.file,
       );
 
       successToast({ message: t('send-success') });
@@ -85,8 +89,8 @@ export const SupportForm = () => {
             accept="image/*"
             multiple
             {...register('file')}
-            error={errors.file}
-            errorMessage={errors.file?.message}
+            error={errors.file as FieldError | undefined}
+            errorMessage={(errors.file as FieldError | undefined)?.message}
           />
         </div>
         <Text color="gray-400" fontSize="sm">

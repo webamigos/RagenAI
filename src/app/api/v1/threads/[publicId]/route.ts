@@ -1,14 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { getApiContext } from '../../__logic__/context/api.context';
 import { ApiDbService } from '../../__logic__/services/api-db.service';
 import { ApiErrorService } from '../../__logic__/services/api-errors.service';
 import { updateThreadSchema } from '../../__logic__/dtos/update-thread.dto';
 import { StatusCodes } from 'http-status-codes';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,9 +15,7 @@ export type Params = {
 export const GET = async (request: NextRequest, { params }: Params) => {
   const { publicId } = await params;
   try {
-    setSentryServiceTag('api.threads.id.get');
     const apiContext = await getApiContext(request);
-    setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
     const record = await apiDbService.getUserThread(publicId);
@@ -38,12 +32,10 @@ export const GET = async (request: NextRequest, { params }: Params) => {
 export const PATCH = async (request: NextRequest, { params }: Params) => {
   const { publicId } = await params;
   try {
-    setSentryServiceTag('api.threads.id.patch');
     const body = await request.json();
     const parsedData = updateThreadSchema.parse(body);
 
     const apiContext = await getApiContext(request);
-    setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
     const record = await apiDbService.updateUserThread(publicId, parsedData);
@@ -57,9 +49,7 @@ export const PATCH = async (request: NextRequest, { params }: Params) => {
 export const DELETE = async (request: NextRequest, { params }: Params) => {
   const { publicId } = await params;
   try {
-    setSentryServiceTag('api.threads.id.delete');
     const apiContext = await getApiContext(request);
-    setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
     await apiDbService.deleteUserThread(publicId);

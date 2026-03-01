@@ -3,13 +3,15 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Card, FileUploader, Button } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { FileUploader } from '@ragenai/common-ui/FileUploader';
+import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useSettings } from '@/app/hooks/useSettings';
 
 import { UploadList } from './UploadList';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -68,7 +70,7 @@ export const UploadKnowledge = () => {
         setFiles([]);
         // refreshFiles();
         startTransition(() => {
-          push('/settings/knowledge/documents-list');
+          push('/knowledge/documents-list');
         });
         refreshSettings();
       } else {

@@ -4,8 +4,9 @@ import React, { useEffect, useReducer } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useOrganization } from '@clerk/nextjs';
-import MarkdownIt from 'markdown-it';
+import { useOrganization } from '@/app/hooks/use-auth';
+// @ts-expect-error -- UMD bundle (Turbopack bug with markdown-it ESM)
+import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import TurndownService from 'turndown';
 import { useTranslations } from 'next-intl';
 import { useForm, Controller } from 'react-hook-form';
@@ -13,15 +14,11 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { statusToast } from '@/app/lib/utils/toast';
-import {
-  SpinnerSVG,
-  WysiwygEditor,
-  Text,
-  Input,
-  Button,
-  CloudArrowUp,
-  XMarkIcon,
-} from '@ragenai/common-ui';
+import { SpinnerSVG, CloudArrowUp, XMarkIcon } from '@ragenai/common-ui/icons';
+import { WysiwygEditor } from '@ragenai/common-ui/WysywigEditor';
+import { Text } from '@ragenai/common-ui/Text';
+import { Input } from '@ragenai/common-ui/Input';
+import { Button } from '@ragenai/common-ui/Button';
 import {
   fetchDocumentByOrganization,
   updateDocument,
@@ -59,11 +56,11 @@ export function DocumentComponent({ publicId }: Props) {
   const orgId = organization?.id;
 
   const documentSchema = z.object({
-    content: z.string().min(1, { message: t('content-empty') }),
+    content: z.string().min(1, { error: t('content-empty') }),
   });
 
   const titleSchema = z.object({
-    title: z.string().min(1, { message: t('title-empty') }),
+    title: z.string().min(1, { error: t('title-empty') }),
   });
 
   const {
@@ -108,7 +105,9 @@ export function DocumentComponent({ publicId }: Props) {
   };
 
   const onSubmit = async (data: { content: string }) => {
-    if (!orgId) return;
+    if (!orgId) {
+      return;
+    }
     dispatch({ type: 'SET_IS_SAVING', payload: true });
 
     const markdownContent = turndownService.turndown(data.content);
@@ -125,7 +124,7 @@ export function DocumentComponent({ publicId }: Props) {
       'files',
       new File([markdownContent], `${documentTitle}`, {
         type: 'text/markdown',
-      })
+      }),
     );
     formData.append('organizationId', organization!.id);
 
@@ -143,7 +142,9 @@ export function DocumentComponent({ publicId }: Props) {
   };
 
   const onTitleSubmit = async (data: { title: string }) => {
-    if (!orgId) return;
+    if (!orgId) {
+      return;
+    }
     dispatch({ type: 'SET_IS_SAVING', payload: true });
 
     const response = await updateDocument({
@@ -230,11 +231,11 @@ export function DocumentComponent({ publicId }: Props) {
 
   return (
     <>
-      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto bg-primary-light dark:bg-primary-dark">
+      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
-              onClick={() => push('/manage-knowledge/documents-list')}
+              onClick={() => push('/knowledge/documents-list')}
               className="h-8 w-8 cursor-pointer mr-2"
             />
           )}
@@ -319,12 +320,14 @@ export function DocumentComponent({ publicId }: Props) {
         </form>
       ) : (
         <div
-          className="flex-1 prose prose-lg dark:prose-invert max-w-none w-full"
+          className="flex-1 w-full overflow-auto px-6 py-8 lg:px-12"
           onDoubleClick={handleDoubleClick}
         >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {documentContent}
-          </ReactMarkdown>
+          <div className="prose prose-xl prose-zinc dark:prose-invert max-w-5xl prose-headings:font-semibold prose-p:leading-relaxed prose-li:leading-relaxed">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {documentContent}
+            </ReactMarkdown>
+          </div>
         </div>
       )}
     </>

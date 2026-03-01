@@ -6,7 +6,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbSeparator,
-} from '@ragenai/common-ui';
+} from '@ragenai/common-ui/Breadcrumb';
 import { useBreadcrumbs } from '@/app/hooks/useBreadcrumbs';
 
 interface BreadcrumbNavigationProps {

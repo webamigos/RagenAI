@@ -1,34 +1,39 @@
-import { Role, Source } from '@prisma/client';
+import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import {
-  getThreadMessages,
-  getThreadDetails,
-} from '../../../lib/services/thread';
+  getThreadMessagesListQuery as getThreadMessages,
+  getThreadDetailsQuery as getThreadDetails,
+} from '@/features/threads/services/queries/get-thread-details-query';
 import {
-  createAndStoreMessage,
-  createMessageInDB,
-} from '../../../lib/services/message';
-import { ApiSseMessageEvent } from '../../../contracts/Events';
+  createAndStoreMessageCommand as createAndStoreMessage,
+  createMessageInDbCommand as createMessageInDB,
+} from '@/features/messages/services/commands/create-message-command';
+import { type ApiSseMessageEvent } from '@/features/threads/contracts/events.types';
 import { logger } from '../../../lib/utils/logger';
 import { initializeRagChain } from './initializeBasicRag';
 import { initializeConversationChain } from '../services/initializeConversationChain';
-import { getAllSettings } from '@/app/lib/services/settings';
+import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
-import { setSentryContext } from '@/app/lib/services/sentry';
-import { Runnable } from '@langchain/core/runnables';
-import { ChatType, CreateMessageDto } from '@/app/contracts/Message';
+import {
+  ChatType,
+  type CreateMessageDto,
+} from '@/features/messages/contracts/message.types';
 import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
-import { AssistantMode } from '@/app/contracts/Assistant';
-import { getProjectInstruction } from '@/app/lib/services/projectInstructions';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
+import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import type { BaseChatChainOutput } from '@/libs/chains/types/common';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
+import { getModelProvider, normalizeModelId } from '@/app/components/config';
 
 /**
  * Load thread documents from database for a specific thread
  */
 async function loadThreadDocuments(
-  threadId: string
+  threadId: string,
 ): Promise<ThreadDocumentUI[]> {
   try {
     const threadDocuments = await db.threadDocument.findMany({
@@ -57,7 +62,7 @@ async function loadThreadDocuments(
         userFileIds: threadDocuments.map((td) => td.userFile.public_id),
         fileNames: threadDocuments.map((td) => td.userFile.file_name),
       },
-      'loadThreadDocuments: Retrieved thread documents from database'
+      'loadThreadDocuments: Retrieved thread documents from database',
     );
 
     const threadDocumentsUI: ThreadDocumentUI[] = threadDocuments.map((td) => ({
@@ -72,10 +77,61 @@ async function loadThreadDocuments(
   } catch (error) {
     logger.error(
       { error, threadId },
-      'loadThreadDocuments: Error loading thread documents from database'
+      'loadThreadDocuments: Error loading thread documents from database',
     );
     return [];
   }
+}
+
+/**
+ * Merge DB-loaded thread documents with inline documents from the request body.
+ * Inline documents take priority for content when DB documents have empty content
+ * (e.g., async Temporal processing hasn't completed yet).
+ */
+function mergeThreadDocuments(
+  dbDocs: ThreadDocumentUI[],
+  inlineDocs: ThreadDocumentUI[],
+): ThreadDocumentUI[] {
+  if (inlineDocs.length === 0) {
+    return dbDocs;
+  }
+  if (dbDocs.length === 0) {
+    return inlineDocs;
+  }
+
+  // Build a map of inline docs by userFileId for quick lookup
+  const inlineByFileId = new Map<string, ThreadDocumentUI>();
+  for (const doc of inlineDocs) {
+    if (doc.userFileId) {
+      inlineByFileId.set(doc.userFileId, doc);
+    }
+  }
+
+  // For each DB doc, use inline content if DB content is empty
+  const merged = dbDocs.map((dbDoc) => {
+    if (dbDoc.content) {
+      return dbDoc;
+    }
+
+    const inlineDoc = dbDoc.userFileId
+      ? inlineByFileId.get(dbDoc.userFileId)
+      : undefined;
+
+    if (inlineDoc?.content) {
+      return { ...dbDoc, content: inlineDoc.content };
+    }
+    return dbDoc;
+  });
+
+  // Add any inline docs not present in DB (e.g., docs without userFileId)
+  const dbFileIds = new Set(dbDocs.map((d) => d.userFileId).filter(Boolean));
+  for (const doc of inlineDocs) {
+    if (!doc.userFileId || !dbFileIds.has(doc.userFileId)) {
+      merged.push(doc);
+    }
+  }
+
+  return merged;
 }
 
 type Config = {
@@ -100,8 +156,6 @@ export async function streamEvents({
     async start(controller) {
       sendApiEvent(controller, 'init');
 
-      let runId: string = '';
-
       try {
         const rawSettings = await getAllSettings(orgId);
         if (!rawSettings.apiKey) {
@@ -111,7 +165,7 @@ export async function streamEvents({
         // TODO: to optimize we can move database queries after chain run
         sendApiEvent(controller, 'find_thread');
 
-        const threadRecord = await getThreadDetails(publicThreadId);
+        const threadRecord = await getThreadDetails(publicThreadId, orgId);
 
         sendApiEvent(controller, 'thread_found', {
           id: threadRecord.public_id,
@@ -156,7 +210,7 @@ export async function streamEvents({
         // Determine project instructions with fallback hierarchy
         // Priority: mentioned_project_id > project_id > organization instructions (from effectiveSettings.prompt)
         let projectInstruction: string | null = null;
-        let effectiveProjectId: number | null = null;
+        let effectiveProjectPublicId: string | null = null;
 
         try {
           sendApiEvent(controller, 'init_lmm');
@@ -171,9 +225,9 @@ export async function streamEvents({
             if (mentionedProject) {
               try {
                 projectInstruction = await getProjectInstruction(
-                  mentionedProject.public_id
+                  mentionedProject.public_id,
                 );
-                effectiveProjectId = mentionedProject.id;
+                effectiveProjectPublicId = mentionedProject.public_id;
 
                 logger.info(
                   {
@@ -181,7 +235,7 @@ export async function streamEvents({
                     mentionedProjectPublicId: mentionedProject.public_id,
                     hasInstruction: Boolean(projectInstruction),
                   },
-                  'Using instructions from mentioned project (highest priority)'
+                  'Using instructions from mentioned project (highest priority)',
                 );
               } catch (error) {
                 logger.error(
@@ -190,14 +244,14 @@ export async function streamEvents({
                     mentionedProjectId: threadRecord.mentioned_project_id,
                     mentionedProjectPublicId: mentionedProject.public_id,
                   },
-                  'Error getting instructions from mentioned project, falling back to thread project'
+                  'Error getting instructions from mentioned project, falling back to thread project',
                 );
                 // Continue to fallback logic below
               }
             } else {
               logger.warn(
                 { mentionedProjectId: threadRecord.mentioned_project_id },
-                'Mentioned project not found, falling back to thread project'
+                'Mentioned project not found, falling back to thread project',
               );
               // Continue to fallback logic below
             }
@@ -211,9 +265,9 @@ export async function streamEvents({
           ) {
             try {
               projectInstruction = await getProjectInstruction(
-                threadRecord.project.public_id
+                threadRecord.project.public_id,
               );
-              effectiveProjectId = threadRecord.project.id;
+              effectiveProjectPublicId = threadRecord.project.public_id;
 
               logger.info(
                 {
@@ -221,7 +275,7 @@ export async function streamEvents({
                   publicProjectId: threadRecord.project.public_id,
                   hasInstruction: Boolean(projectInstruction),
                 },
-                'Using instructions from thread project (medium priority)'
+                'Using instructions from thread project (medium priority)',
               );
             } catch (error) {
               logger.error(
@@ -230,14 +284,14 @@ export async function streamEvents({
                   projectId: threadRecord.project_id,
                   publicProjectId: threadRecord.project?.public_id,
                 },
-                'Error getting instructions from thread project, will use organization instructions'
+                'Error getting instructions from thread project, will use organization instructions',
               );
               // Will fallback to organization instructions via effectiveSettings.prompt
             }
           } else if (!projectInstruction && threadRecord.project_id) {
             logger.warn(
               { projectId: threadRecord.project_id },
-              'Project associated with thread, but missing public_id'
+              'Project associated with thread, but missing public_id',
             );
           }
 
@@ -253,82 +307,76 @@ export async function streamEvents({
                 threadModel: threadRecord.preferred_model,
                 orgDefaultModel: rawSettings.model,
               },
-              'No project instructions found, will use organization instructions (lowest priority fallback)'
+              'No project instructions found, will use organization instructions (lowest priority fallback)',
             );
           }
         } catch (error) {
           logger.error(
             { err: error },
-            'Error in project instruction resolution, using organization fallback'
+            'Error in project instruction resolution, using organization fallback',
           );
           // projectInstruction stays null, chains will use organization instructions
         }
 
-        let chain: Runnable | undefined = undefined;
-        let finalAnswerRunName: string | undefined = undefined;
+        let chainOutput: BaseChatChainOutput | undefined = undefined;
 
         //TODO: stream chain errors
         // Initialize the appropriate chain based on mode
         if (mode === AssistantMode.INTERNAL) {
           if (filteredMode === ChatType.CONVERSATION) {
-            const conversation = await initializeConversationChain({
+            chainOutput = await initializeConversationChain({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
               },
               projectInstruction,
             });
-            chain = conversation.chain;
-            finalAnswerRunName = conversation.finalAnswerRunName;
           } else {
             // Use effective project ID (mentioned project takes priority over thread project)
             const projectIdToUse =
-              effectiveProjectId || threadRecord.project?.id;
-            if (!projectIdToUse) {
-              logger.error(
-                {
-                  threadId: publicThreadId,
-                  effectiveProjectId,
-                  threadProjectId: threadRecord.project?.id,
-                  mentionedProjectId: threadRecord.mentioned_project_id,
-                },
-                'No project ID available for RAG chain initialization'
-              );
-              throw new Error(
-                'Project ID is required for knowledge base access'
-              );
-            }
+              threadRecord.mentioned_project_id || threadRecord.project_id;
+            const projectPublicIdToUse =
+              effectiveProjectPublicId || threadRecord.project?.public_id;
 
-            const threadDocuments = await loadThreadDocuments(threadRecord.id);
+            // Load thread documents from DB and merge with inline documents from the request.
+            // Inline documents (from request body) have content immediately available,
+            // while DB documents may have empty content if async processing hasn't completed yet.
+            const dbThreadDocuments = await loadThreadDocuments(
+              threadRecord.id,
+            );
+            const inlineThreadDocuments = userMessage.threadDocuments || [];
 
-            const basicRag = await initializeRagChain({
+            const threadDocuments = mergeThreadDocuments(
+              dbThreadDocuments,
+              inlineThreadDocuments,
+            );
+
+            chainOutput = await initializeRagChain({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
               },
               projectInstruction,
-              internalProjectId: projectIdToUse,
+              projectId: projectIdToUse ?? null,
+              projectPublicId: projectPublicIdToUse ?? null,
               threadDocuments,
             });
-            chain = basicRag.chain;
-            finalAnswerRunName = basicRag.finalAnswerRunName;
           }
         } else if (mode === AssistantMode.PUBLIC) {
-          const projectIdToUse = effectiveProjectId || threadRecord.project?.id;
-          const publicRag = await initializePublicRagChain({
+          const projectPublicIdToUse =
+            effectiveProjectPublicId || threadRecord.project?.public_id;
+          chainOutput = await initializePublicRagChain({
             settings: {
               ...effectiveSettings,
               apiKey: effectiveSettings.apiKey,
             },
             organizationId: orgId,
             projectInstruction,
-            projectId: projectIdToUse,
+            projectPublicId: projectPublicIdToUse,
           });
-          chain = publicRag.chain;
-          finalAnswerRunName = publicRag.finalAnswerRunName;
         }
 
-        if (!chain) {
+        if (!chainOutput) {
           // TODO: invalid chain error
           sendApiEvent(controller, 'close');
 
@@ -348,110 +396,115 @@ export async function streamEvents({
 
         sendApiEvent(controller, 'start_lmm');
 
-        const eventStream = chain.streamEvents(
-          {
-            question: threadMessage.content,
-            chat_history: conv_history,
-          },
-          {
-            version: 'v2',
-          }
-        );
-
-        setSentryContext('EXTRA_DATA', {
-          userQuestion: threadMessage.content,
-          publicThreadId,
-          publicMessageId: threadMessage.public_id,
+        const streamResult = await chainOutput.stream({
+          question: threadMessage.content,
+          chat_history: conv_history,
         });
 
         let fullMessage = '';
-        let chainRunIds = [];
 
-        for await (const event of eventStream) {
-          // TODO: stream selected chain events
-          // e. g. related to start and end of vector store  retrieval
-          // sendApiEvent(controller, event.event, {
-          //   name: event.name,
-          // });
-
-          if (event.event === 'on_chain_start') {
-            chainRunIds.push(event.run_id);
-            runId = chainRunIds[0];
+        for await (const part of streamResult.fullStream) {
+          switch (part.type) {
+            case 'text-delta':
+              fullMessage += part.textDelta;
+              sendApiEvent(controller, 'delta', {
+                content: part.textDelta,
+              });
+              break;
+            case 'reasoning-start':
+              sendApiEvent(controller, 'reasoning_start');
+              break;
+            case 'reasoning-delta':
+              sendApiEvent(controller, 'reasoning_delta', {
+                content: part.delta,
+              });
+              break;
+            case 'reasoning-end':
+              sendApiEvent(controller, 'reasoning_end');
+              break;
           }
+        }
 
-          if (
-            event.event === 'on_parser_stream' &&
-            event.name === finalAnswerRunName
-          ) {
-            const textChunk = event.data.chunk || '';
-            fullMessage += textChunk;
+        sendApiEvent(controller, 'llm_completed');
 
-            sendApiEvent(controller, 'delta', {
-              content: textChunk,
-            });
-          } else if (
-            event.event === 'on_parser_end' &&
-            event.name === finalAnswerRunName
-          ) {
-            sendApiEvent(controller, 'llm_completed');
+        // Track AI usage (fire-and-forget)
+        try {
+          const usage = await streamResult.usage;
+          const modelId = effectiveSettings.model || '';
+          const provider =
+            getModelProvider(normalizeModelId(modelId)) || 'openrouter';
+          const userId = await getCurrentUserId().catch(() => null);
 
-            sendApiEvent(controller, 'save_assistant_response');
+          trackAiUsage({
+            organizationId: orgId,
+            projectId: threadRecord.project_id ?? null,
+            threadId: threadRecord.public_id,
+            userId,
+            step: AiUsageStep.CHAT_COMPLETION,
+            provider,
+            model: modelId,
+            inputTokens: usage.inputTokens ?? 0,
+            outputTokens: usage.outputTokens ?? 0,
+            totalTokens: usage.totalTokens ?? 0,
+          });
+        } catch (usageError) {
+          logger.error({ err: usageError }, 'Failed to track AI usage');
+        }
+
+        sendApiEvent(controller, 'save_assistant_response');
+
+        try {
+          const dbMessage = await createMessageInDB({
+            threadId: threadRecord.id,
+            message: {
+              id: threadMessage.public_id,
+              content: fullMessage,
+              source: Source.UI,
+            },
+            role: Role.ASSISTANT,
+            runId: '',
+            messageType: threadRecord.preferred_communication_type,
+          });
+
+          sendApiEvent(controller, 'assistant_response_saved');
+
+          try {
+            // We create an object without the full content because it has already been sent in the delta events
+            const messageToSend: ApiSseMessageEvent = {
+              id: dbMessage.public_id,
+              role: dbMessage.role,
+              created_at: dbMessage.created_at.toISOString(),
+              content: '', // We clear the content - the client already has the full message from the delta events
+              run_id: '',
+            };
+
+            sendApiEvent(controller, 'final_response', messageToSend);
+
+            // close stream
+            sendApiEvent(controller, 'close');
+
+            controller.close();
+          } catch (finalResponseError) {
+            logger.error(
+              { err: finalResponseError },
+              'Error sending final_response after assistant_response_saved',
+            );
 
             try {
-              const dbMessage = await createMessageInDB({
-                threadId: threadRecord.id,
-                message: {
-                  id: threadMessage.public_id,
-                  content: event.data.output,
-                  source: Source.UI,
-                },
-                role: Role.ASSISTANT,
-                runId,
-                messageType: threadRecord.preferred_communication_type,
-              });
-
-              sendApiEvent(controller, 'assistant_response_saved');
-
-              try {
-                // We create an object without the full content because it has already been sent in the delta events
-
-                const messageToSend: ApiSseMessageEvent = {
-                  id: dbMessage.public_id,
-                  role: dbMessage.role,
-                  created_at: dbMessage.created_at.toISOString(),
-                  content: '', // We clear the content – the client already has the full message from the delta events
-                  run_id: runId,
-                };
-
-                sendApiEvent(controller, 'final_response', messageToSend);
-
-                // close stream
-                sendApiEvent(controller, 'close');
-
-                controller.close();
-              } catch (finalResponseError) {
-                logger.error(
-                  { err: finalResponseError },
-                  'Error sending final_response after assistant_response_saved'
-                );
-
-                try {
-                  sendApiEvent(controller, 'close');
-                  controller.close();
-                } catch (closeError) {
-                  logger.error(
-                    { err: closeError },
-                    'Error closing stream after final_response error'
-                  );
-                }
-              }
-            } catch (finalResponseError) {
+              sendApiEvent(controller, 'close');
+              controller.close();
+            } catch (closeError) {
               logger.error(
-                { err: finalResponseError },
-                'Error sending final_response after assistant_response_saved'
+                { err: closeError },
+                'Error closing stream after final_response error',
               );
             }
           }
+        } catch (finalResponseError) {
+          logger.error(
+            { err: finalResponseError },
+            'Error sending final_response after assistant_response_saved',
+          );
         }
       } catch (error) {
         const exceptionFilter = new SseExceptionFilter();

@@ -1,48 +1,47 @@
-import { auth } from '@clerk/nextjs/server';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { VectorStoreMetadataFilter } from '@/app/lib/types/types';
-import { OrganizationSettings } from '@/app/lib/types/settings';
+import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
 import { DOCUMENT_SEARCH_QUERY_NAME } from '@/libs/db/constants/vectorStore';
-import { Embeddings } from '@langchain/core/embeddings';
-import { SupabaseClient } from '@supabase/supabase-js';
+import type { VectorStoreClient } from '@/libs/vector-store/types';
+import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   createChatCompletionInstance,
   createModerationInstance,
   createEmbeddingsInstance,
 } from '../../../lib/services/llm';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
-import { QdrantVectorStore } from '@langchain/qdrant';
+import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadata } from '@/app/actions';
-import { ThreadDocumentUI } from '@/app/contracts/ThreadDocument';
-
-const serviceName = 'initializeBasicRag';
+import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
-  internalProjectId: number;
+  projectId?: number | null;
+  projectPublicId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
 };
 
-const DEFAULT_REPHRASE_MODEL = 'gpt-4o';
-const DEFAULT_REPHRASE_TEMPERATURE = 0.5;
+const DEFAULT_REPHRASE_MODEL =
+  process.env.REPHRASE_MODEL || 'google/gemini-2.0-flash-001';
+const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
+const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
+  ? 0.5
+  : parsedRephraseTemp;
 
 export const initializeRagChain = async ({
   settings,
   projectInstruction,
-  internalProjectId,
+  projectId,
+  projectPublicId,
   threadDocuments,
 }: InitializeRagChainParams) => {
   try {
-    const { orgId } = auth();
-    setSentryServiceTag(serviceName);
+    const orgId = await getOrgIdFromAuthOrThrow();
 
     if (!orgId) {
       throw new Error('Invalid organization');
@@ -56,16 +55,8 @@ export const initializeRagChain = async ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    setSentryContext('CHAIN_DATA', {
-      answerModel,
-      answerTemperature,
-      answerInstructions,
-      maxDocumentsToRetrieve,
-      hasProjectInstruction: !!projectInstruction,
-    });
-
     const embeddingModel = createEmbeddingsInstance({ apiKey });
-    const contentModerator = createModerationInstance({ apiKey });
+    const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
       apiKey,
@@ -79,35 +70,24 @@ export const initializeRagChain = async ({
     });
 
     const orgMetadata = await getOrganizationMetadata(orgId);
-    let vectorStore = undefined;
+    let vectorStore: VectorStoreClient;
+    let isMeilisearch = false;
 
-    if (orgMetadata.privateMetadata?.vector_store === 'qdrant') {
-      vectorStore = await createQdrantVectorStore(embeddingModel);
-    } else {
-      vectorStore = await createSupabaseVectorStore(
+    if (orgMetadata.vectorStore === 'supabase') {
+      vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
-        internalProjectId
+        orgId,
+        projectPublicId ?? undefined,
       );
+    } else {
+      vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
+      isMeilisearch = true;
     }
 
-    //DOCUMENT FILTERING BY PROJECT_ID
-    if (!internalProjectId) {
-      throw new Error('Internal project ID is required');
-    }
-
-    const isSupabaseVectorStore = vectorStore instanceof SupabaseVectorStore;
-
-    const filterOptions = {
-      must: [
-        {
-          key: 'metadata.project_id',
-          match: {
-            value: internalProjectId,
-          },
-        },
-      ],
-    };
+    const filterOptions = isMeilisearch
+      ? await buildMeilisearchFilter(orgId, projectId ?? null)
+      : undefined;
 
     return await basicRagChain({
       models: {
@@ -117,7 +97,9 @@ export const initializeRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        metadataFilter: isSupabaseVectorStore ? {} : filterOptions,
+        // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
+        // MeilisearchVectorStore needs filter passed to similaritySearch()
+        metadataFilter: filterOptions,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
@@ -131,71 +113,89 @@ export const initializeRagChain = async ({
   }
 };
 
-const createQdrantVectorStore = async (embeddingModel: Embeddings) => {
-  try {
-    const { orgId } = auth();
-    if (!orgId) {
-      throw new Error('Organization ID is required, could not get from clerk');
-    }
+/**
+ * Build Meilisearch filter based on project context:
+ * - Thread with project: org_id AND (project_id = X OR file_id IN [imported_kb_source_ids])
+ * - Thread without project (global KB): org_id AND project_id IS NULL
+ */
+async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
+  const orgCondition = {
+    key: 'metadata.organization_id',
+    match: { value: orgId },
+  };
 
-    logger.info('creating qdrant vector store', {
-      url: process.env.QDRANT_URL,
-      apiKey: process.env.QDRANT_API_KEY, // staging and prod
-      collectionName: orgId,
-    });
-
-    const vectorStore = await QdrantVectorStore.fromExistingCollection(
-      embeddingModel,
-      {
-        url: process.env.QDRANT_URL,
-        apiKey: process.env.QDRANT_API_KEY, // staging and prod
-        collectionName: orgId,
-      }
-    );
-
-    return vectorStore;
-  } catch (error) {
-    logger.error(
-      {
-        err: error,
-        url: process.env.QDRANT_URL,
-        apiKey: process.env.QDRANT_API_KEY, // staging and prod
-        // collectionName: orgId,
-      },
-      'Error creating Qdrant vector store'
-    );
-    throw error;
+  if (!projectId) {
+    // Global KB: search files without a project
+    return {
+      must: [orgCondition, { key: 'metadata.project_id', is_null: true }],
+    };
   }
+
+  // Project-scoped: search project files + imported KB files
+  const importedSourceFileIds = await getImportedKbFileIdsQuery(
+    projectId,
+    orgId,
+  );
+
+  if (importedSourceFileIds.length === 0) {
+    // No KB imports — simple project filter
+    return {
+      must: [
+        orgCondition,
+        { key: 'metadata.project_id', match: { value: projectId } },
+      ],
+    };
+  }
+
+  // Project files OR imported KB source file embeddings
+  return {
+    must: [orgCondition],
+    should: [
+      { key: 'metadata.project_id', match: { value: projectId } },
+      {
+        key: 'metadata.file_id',
+        match_any: { values: importedSourceFileIds },
+      },
+    ],
+  };
+}
+
+const createMeilisearchVectorStore = (
+  embeddingModel: EmbeddingsProvider,
+  indexName: string,
+): VectorStoreClient => {
+  logger.info('creating meilisearch vector store', {
+    url: process.env.MEILISEARCH_URL,
+    indexName,
+  });
+
+  return new MeilisearchVectorStoreClient(embeddingModel, {
+    url: process.env.MEILISEARCH_URL!,
+    apiKey: process.env.MEILISEARCH_MASTER_KEY,
+    indexName,
+  });
 };
 
-// TODO: refactor to use with qdrant or switch depending on organization settings?
-const createSupabaseVectorStore = async (
+const createSupabaseVectorStore = (
   client: SupabaseClient,
-  embeddingModel: Embeddings,
-  projectId?: number
-): Promise<SupabaseVectorStore> => {
+  embeddingModel: EmbeddingsProvider,
+  organizationId: string,
+  projectPublicId?: string,
+): VectorStoreClient => {
   try {
-    const { orgId } = auth();
-    if (!orgId) {
-      throw new Error('Organization ID is required, could not get from clerk');
-    }
-
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
-
     // SECURITY CRITICAL: This organization_id filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.
-    const metadataFilter: VectorStoreMetadataFilter = {
-      organization_id: orgId,
+    const metadataFilter: Record<string, any> = {
+      organization_id: organizationId,
     };
 
-    if (projectId) {
-      metadataFilter.project_id = projectId;
+    if (projectPublicId) {
+      metadataFilter.project_public_id = projectPublicId;
     }
 
-    return new SupabaseVectorStore(embeddingModel, {
+    return new SupabaseVectorStoreClient(embeddingModel, {
       client,
       queryName: DOCUMENT_SEARCH_QUERY_NAME,
       filter: metadataFilter,

@@ -1,11 +1,10 @@
 import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 import { ForgotPasswordForm } from '@/app/components/Forms/ForgotPasswordForm';
-import { PropsWihLocale } from '@/app/lib/types/types';
+import { type PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
-import Link from 'next/link';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -19,7 +18,7 @@ export async function generateMetadata({ params }: PropsWihLocale) {
 export default async function ForgotPasswordPage({ params }: PropsWihLocale) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const tsu = useTranslations('sign-up');
+  const tsu = await getTranslations('sign-up');
 
   return (
     <div className="flex min-h-screen flex-1">

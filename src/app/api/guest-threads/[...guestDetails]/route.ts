@@ -1,13 +1,11 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
-import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
-import { createMessageSchema } from '@/app/contracts/Message';
+import { createMessageSchema } from '@/features/messages/contracts/message.types';
 import { streamEvents } from '../../threads/services/assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getVisitorIdFromCookie } from '@/app/lib/services/cookies';
-import { getPublicProject } from '@/app/lib/services/project';
+import { getPublicProjectQuery as getPublicProject } from '@/features/projects/services/queries/get-project-query';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,12 +30,9 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     const { organizationId, projectId } = projectData;
 
-    setSentryServiceTag('threads');
     if (!organizationId) {
       throw new Error('Unauthorized');
     }
-    setSentryClerkOrganizationTag(organizationId);
-
     const body = await request.json();
     const parsedData = createMessageSchema().parse(body);
 
@@ -67,7 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (error) {
     logger.error(
       { err: error },
-      'Unexpected error in thread stream GET handler'
+      'Unexpected error in thread stream GET handler',
     );
 
     if (stream) {

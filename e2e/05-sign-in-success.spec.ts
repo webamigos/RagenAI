@@ -1,17 +1,8 @@
-import { setupClerkTestingToken } from '@clerk/testing/playwright';
 import { test, expect } from '@playwright/test';
 
-import { login } from './commands/login';
-
-test.beforeEach(async ({ page }) => {
-  await setupClerkTestingToken({ page });
-  await page.goto('/en');
-});
+import { login } from './helpers';
 
 test('sign in success', async ({ page }) => {
   await login(page);
-
-  const testEmail = process.env.TESTS_CLERK_USER_EMAIL!?.split('@')[0];
-
-  await expect(page.getByText(/new thread/i)).toBeVisible();
+  await expect(page).toHaveURL(/\/pl\//, { timeout: 15_000 });
 });

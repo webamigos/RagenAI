@@ -1,5 +1,5 @@
-import type { Plan, Subscription } from '@prisma/client';
+import type { Subscription, SubscriptionPlan } from '@/generated/prisma/browser';
 
 export type SubscriptionDetails = Subscription & {
-  plan: Plan;
+  subscriptionPlan: SubscriptionPlan | null;
 };

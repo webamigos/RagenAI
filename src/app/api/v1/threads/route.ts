@@ -1,21 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { getApiContext } from '../__logic__/context/api.context';
 import { ApiDbService } from '../__logic__/services/api-db.service';
 import { ApiErrorService } from '../__logic__/services/api-errors.service';
 import { StatusCodes } from 'http-status-codes';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 
 export const dynamic = 'force-dynamic';
 
 export const GET = async (request: NextRequest) => {
   try {
-    setSentryServiceTag('api.threads.get');
     const apiContext = await getApiContext(request);
-    setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
     const threads = await apiDbService.getUserThreads();
@@ -29,9 +23,7 @@ export const GET = async (request: NextRequest) => {
 // TODO: is using same logic here as from UI makes sense?
 export const POST = async (request: NextRequest) => {
   try {
-    setSentryServiceTag('api.threads.post');
     const apiContext = await getApiContext(request);
-    setSentryClerkOrganizationTag(apiContext.orgId);
 
     const apiDbService = new ApiDbService(apiContext);
     const thread = await apiDbService.createUserThread();

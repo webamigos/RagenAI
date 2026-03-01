@@ -5,10 +5,10 @@ import Joyride, {
   ACTIONS,
   STATUS,
   EVENTS,
-  Step,
-  CallBackProps,
+  type Step,
+  type CallBackProps,
 } from 'react-joyride';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { useTranslations } from 'next-intl';
@@ -30,7 +30,7 @@ interface JoyrideContextProps {
 }
 
 export const JoyrideContext = createContext<JoyrideContextProps | undefined>(
-  undefined
+  undefined,
 );
 
 export const JoyrideProvider = ({
@@ -44,12 +44,13 @@ export const JoyrideProvider = ({
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { user, isSignedIn } = useUser();
+  const { organization } = useOrganization();
   const t = useTranslations('joyride');
   const { openSidebar, closeSidebar } = useSidebar();
 
-  const onboardingComplete = user?.publicMetadata.onboardingComplete as boolean;
-  const userBelongsToOrganization =
-    user?.organizationMemberships[0]?.id !== undefined;
+  // @ts-ignore - onboardingComplete is defined as additionalField in Better Auth config
+  const onboardingComplete = user?.onboardingComplete as boolean;
+  const userBelongsToOrganization = !!organization?.id;
   const showOnboarding =
     !userBelongsToOrganization && !onboardingComplete && isSignedIn;
 
@@ -73,26 +74,43 @@ export const JoyrideProvider = ({
   const handleJoyrideCallback = async (data: CallBackProps) => {
     const { action, index, status, type } = data;
 
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     if (action === ACTIONS.CLOSE || status === STATUS.SKIPPED) {
       await saveUserMetadata(user.id, metadata);
-      await user.reload();
       stopJoyride();
       return;
     }
 
     if (type === EVENTS.STEP_AFTER) {
-      if (index === 0) openSidebar(); // Moving to step 1
-      else if (index === 1) closeSidebar(); // Moving to step 2
-      else if (index === 3) openSidebar(); // Moving to step 4
-      else if (index === 4) closeSidebar(); // Moving to step 5
-      else if (index === 5) openSidebar(); // Moving to step 6
-      else if (index === 6) closeSidebar(); // Moving to step 7
+      if (index === 0) {
+        openSidebar();
+      } // Moving to step 1
+      else if (index === 1) {
+        closeSidebar();
+      } // Moving to step 2
+      else if (index === 3) {
+        openSidebar();
+      } // Moving to step 4
+      else if (index === 4) {
+        closeSidebar();
+      } // Moving to step 5
+      else if (index === 5) {
+        openSidebar();
+      } // Moving to step 6
+      else if (index === 6) {
+        closeSidebar();
+      } // Moving to step 7
     }
     if (action === ACTIONS.PREV && type === EVENTS.STEP_AFTER) {
-      if (index === 2) openSidebar(); // Moving back to step 1
-      else if (index === 7) openSidebar(); // Moving back to step 6
+      if (index === 2) {
+        openSidebar();
+      } // Moving back to step 1
+      else if (index === 7) {
+        openSidebar();
+      } // Moving back to step 6
     }
 
     if (type === EVENTS.STEP_AFTER || type === EVENTS.ERROR) {
@@ -131,7 +149,6 @@ export const JoyrideProvider = ({
       }
     } else if (status === STATUS.FINISHED) {
       await saveUserMetadata(user.id, metadata);
-      await user.reload();
       stopJoyride();
     }
   };

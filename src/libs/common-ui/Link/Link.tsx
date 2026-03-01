@@ -1,6 +1,6 @@
 import { forwardRef, type ComponentProps } from 'react';
 import { Link as I18nLink } from '@/i18n/routing';
-import { classMerge } from '@ragenai/common-ui';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 type Props = Readonly<{
   href: string;

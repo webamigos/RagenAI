@@ -1,7 +1,7 @@
-import { ComponentProps } from 'react';
+import { type ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
-import { Heading } from '@ragenai/tui';
+import { Heading } from '@ragenai/tui/heading';
 import { Divider } from '../Divider';
 
 type Props = {
@@ -15,7 +15,7 @@ export const Header = ({ children, showDivider = true, className }: Props) => {
       <Heading
         className={classMerge(
           'mb-2 text-gray-700 dark:text-gray-200',
-          className
+          className,
         )}
       >
         {children}

@@ -3,10 +3,10 @@ import { z } from 'zod';
 export const registrationSchema = (t: (key: string) => string) =>
   z.object({
     terms: z.boolean().refine((value) => value === true, {
-      message: t('validation.terms'),
+      error: t('validation.terms'),
     }),
     newsletter_consent: z.boolean(),
-    email: z.string().email(t('validation.email')),
+    email: z.email(t('validation.email')),
     password: z.string().min(8, t('validation.password')),
   });
 

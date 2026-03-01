@@ -1,13 +1,13 @@
 'use client';
 
+import { Button } from '@ragenai/common-ui/Button';
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogBody,
   DialogDescription,
   DialogTitle,
-} from '@ragenai/common-ui';
+} from '@ragenai/common-ui/Dialog';
 import { useTranslations } from 'next-intl';
 
 type Props = {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Role } from '@prisma/client';
-import { usePathname } from 'next/navigation';
+import { Role } from '@/generated/prisma/browser';
+import { usePathname } from '@/i18n/routing';
 import { useDispatch } from 'react-redux';
 import { useAppSelector } from '@/store/hooks';
 
@@ -14,14 +14,14 @@ import {
   ChatResponseType,
   ChatType,
   type CreateMessageDto,
-} from '@/app/contracts/Message';
+} from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 
 import { useApi } from '@/app/hooks/useApi';
-import { PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
+import { type PromptFormRef } from '@/app/components/Assistant/PromptForm/PromptForm';
 import { handleAssistantStream } from '@/app/components/Assistant/handle-assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
 import { getVisitorIdFromBrowserCookie } from '@/app/lib/services/cookies.browser';
 import {
@@ -36,7 +36,7 @@ const { errorToast } = statusToast();
 
 export const usePublicAssistantLogic = (
   threadId: string,
-  organizationId: string
+  organizationId: string,
 ) => {
   const pathname = usePathname();
   const [visitorId, setVisitorId] = useState('');
@@ -80,14 +80,14 @@ export const usePublicAssistantLogic = (
 
         // Check if we have a temporary message to process
         const tempMessage = sessionStorage.getItem(
-          SESSION_STORAGE_TEMP_MESSAGE_KEY
+          SESSION_STORAGE_TEMP_MESSAGE_KEY,
         );
         if (tempMessage) {
           const userMessage = {
             public_id: `user-${Date.now()}`,
             role: Role.USER,
             content: tempMessage,
-            created_at: new Date(),
+            created_at: new Date().toISOString(),
           };
 
           sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
@@ -151,7 +151,7 @@ export const usePublicAssistantLogic = (
       public_id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
       visitorId: visitorId,
     };
 

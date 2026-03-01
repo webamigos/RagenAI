@@ -2,10 +2,10 @@ import { useTranslations } from 'next-intl';
 
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
-import { ModalStateProps, UserFilesTable } from './UserFilesTable';
+import { type ModalStateProps, UserFilesTable } from './UserFilesTable';
 
-import { type UserFileType } from '@/app/contracts/Documents';
-import { UserFile } from '@prisma/client';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
+import { type UserFile } from '@/generated/prisma/browser';
 
 type FileListViewProps = {
   files: UserFileType[];
@@ -18,7 +18,7 @@ type FileListViewProps = {
   removeFile: (filePublicId: UserFile['public_id']) => void;
   handleDelete: (
     filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name']
+    fileName: UserFile['file_name'],
   ) => void;
 };
 

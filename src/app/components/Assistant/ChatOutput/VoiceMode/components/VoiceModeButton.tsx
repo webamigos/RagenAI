@@ -1,4 +1,4 @@
-import { VoiceModeButtonProps } from '../types';
+import { type VoiceModeButtonProps } from '../types';
 import { VoiceModeButtonIcon } from './VoiceModeButtonIcon';
 
 export const VoiceModeButton = ({
@@ -10,25 +10,36 @@ export const VoiceModeButton = ({
   onStopRecording,
 }: VoiceModeButtonProps) => {
   const getButtonStyles = () => {
-    if (isRecording)
+    if (isRecording) {
       return 'animate-pulse bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800';
-    if (isPlayingAudio) return 'animate-pulse bg-blue-100 dark:bg-blue-900';
-    if (isWaitingForResponse) return 'bg-gray-100 dark:bg-gray-800';
-    if (!isPlayingAudio && !isRecording && !isGeneratingAudio)
+    }
+    if (isPlayingAudio) {
+      return 'animate-pulse bg-blue-100 dark:bg-blue-900';
+    }
+    if (isWaitingForResponse) {
+      return 'bg-gray-100 dark:bg-gray-800';
+    }
+    if (!isPlayingAudio && !isRecording && !isGeneratingAudio) {
       return 'bg-gray-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800';
+    }
     return 'bg-gray-200 dark:bg-gray-800';
   };
 
   const getInnerCircleStyles = () => {
-    if (isRecording) return 'bg-red-500';
-    if (isPlayingAudio) return 'bg-blue-500';
+    if (isRecording) {
+      return 'bg-red-500';
+    }
+    if (isPlayingAudio) {
+      return 'bg-blue-500';
+    }
     if (
       !isPlayingAudio &&
       !isRecording &&
       !isGeneratingAudio &&
       !isWaitingForResponse
-    )
+    ) {
       return 'bg-green-500 dark:bg-green-600';
+    }
     return 'bg-gray-500 dark:bg-gray-700';
   };
 

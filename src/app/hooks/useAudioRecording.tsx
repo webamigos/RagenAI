@@ -23,7 +23,9 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // Web Speech API types are incomplete in TypeScript's DOM lib
+  // (missing onspeechend, maxAlternatives, mismatched event types)
+  const recognitionRef = useRef<any>(null);
 
   const locale = useLocale();
 
@@ -71,7 +73,9 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
       return null;
     }
 
-    const recognition = new SpeechRecognition();
+    // Cast to any — TypeScript's SpeechRecognition types are incomplete
+    // (missing onspeechend, maxAlternatives, mismatched event types)
+    const recognition: any = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = localeToSpeechLang(locale);
@@ -83,7 +87,7 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
         lang: recognition.lang,
         maxAlternatives: recognition.maxAlternatives,
       },
-      'Speech recognition configuration'
+      'Speech recognition configuration',
     );
 
     recognition.onstart = () => {
@@ -98,10 +102,6 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let finalTranscript = '';
       let interimTranscript = '';
-
-      // Get the last result
-      const lastResultIndex = event.results.length - 1;
-      const lastResult = event.results[lastResultIndex];
 
       // Process all results
       for (let i = 0; i < event.results.length; i++) {
@@ -157,7 +157,7 @@ export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
             event: e,
           },
         },
-        'Recognition error'
+        'Recognition error',
       );
 
       cleanupRecognition();

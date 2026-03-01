@@ -1,8 +1,22 @@
 'use client';
 
-import * as Headless from '@headlessui/react';
-import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  CloseButton,
+} from '@headlessui/react';
+import React, { useState, useCallback, createContext, useContext } from 'react';
 import { NavbarItem } from './navbar';
+
+const SidebarCollapseContext = createContext({
+  isCollapsed: false,
+  toggle: () => {},
+});
+
+export function useSidebarCollapse() {
+  return useContext(SidebarCollapseContext);
+}
 
 function OpenMenuIcon() {
   return (
@@ -30,73 +44,144 @@ function CloseMenuIcon() {
   );
 }
 
+function SidebarToggleIcon() {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className="w-5 h-5"
+      fill="currentColor"
+    >
+      <path
+        fillRule="evenodd"
+        d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 function MobileSidebar({
   open,
   close,
   children,
 }: React.PropsWithChildren<{ open: boolean; close: () => void }>) {
   return (
-    <Headless.Dialog open={open} onClose={close} className="lg:hidden">
-      <Headless.DialogBackdrop
+    <Dialog open={open} onClose={close} className="lg:hidden">
+      <DialogBackdrop
         transition
         className="fixed inset-0 bg-black/30 transition data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
       />
-      <Headless.DialogPanel
+      <DialogPanel
         transition
         className="fixed inset-y-0 w-full max-w-80 p-2 transition duration-300 ease-in-out data-closed:-translate-x-full"
       >
         <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-zinc-950/5 dark:bg-zinc-900 dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
-            <Headless.CloseButton as={NavbarItem} aria-label="Close navigation">
+            <CloseButton as={NavbarItem} aria-label="Close navigation">
               <CloseMenuIcon />
-            </Headless.CloseButton>
+            </CloseButton>
           </div>
           {children}
         </div>
-      </Headless.DialogPanel>
-    </Headless.Dialog>
+      </DialogPanel>
+    </Dialog>
   );
 }
 
 export function SidebarLayout({
   navbar,
   sidebar,
+  collapsedSidebar,
   children,
 }: React.PropsWithChildren<{
   navbar: React.ReactNode;
   sidebar: React.ReactNode;
+  collapsedSidebar?: React.ReactNode;
 }>) {
   let [showSidebar, setShowSidebar] = useState(false);
+  let [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    try {
+      return localStorage.getItem('sidebar-collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggle = useCallback(() => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('sidebar-collapsed', String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
 
   return (
-    <div className="relative isolate flex min-h-svh w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
-      {/* Sidebar on desktop */}
-      <div className="fixed inset-y-0 left-0 w-64 max-lg:hidden">{sidebar}</div>
+    <SidebarCollapseContext.Provider value={{ isCollapsed, toggle }}>
+      <div className="relative isolate flex min-h-svh w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
+        {/* Sidebar on desktop */}
+        <div
+          className={`fixed inset-y-0 left-0 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
+        >
+          {sidebar}
+        </div>
 
-      {/* Sidebar on mobile */}
-      <MobileSidebar open={showSidebar} close={() => setShowSidebar(false)}>
-        {sidebar}
-      </MobileSidebar>
-
-      {/* Navbar on mobile */}
-      <header className="flex items-center px-4 lg:hidden">
-        <div className="py-2.5">
-          <NavbarItem
-            onClick={() => setShowSidebar(true)}
-            aria-label="Open navigation"
+        {/* Collapsed icon rail on desktop */}
+        {collapsedSidebar && (
+          <div
+            className={`fixed inset-y-0 left-0 z-20 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-12' : 'w-0 overflow-hidden'}`}
           >
-            <OpenMenuIcon />
-          </NavbarItem>
-        </div>
-        <div className="min-w-0 flex-1">{navbar}</div>
-      </header>
+            {collapsedSidebar}
+          </div>
+        )}
 
-      {/* Content */}
-      <main className="flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 lg:pl-64">
-        <div className="flex items-start justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:rounded-lg lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10">
-          <div className="w-full max-w-6xl">{children}</div>
-        </div>
-      </main>
-    </div>
+        {/* Sidebar on mobile */}
+        <MobileSidebar open={showSidebar} close={() => setShowSidebar(false)}>
+          {sidebar}
+        </MobileSidebar>
+
+        {/* Navbar on mobile */}
+        <header className="flex items-center px-4 lg:hidden">
+          <div className="py-2.5">
+            <NavbarItem
+              onClick={() => setShowSidebar(true)}
+              aria-label="Open navigation"
+            >
+              <OpenMenuIcon />
+            </NavbarItem>
+          </div>
+          <div className="min-w-0 flex-1">{navbar}</div>
+        </header>
+
+        {/* Content */}
+        <main
+          className={`flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 transition-all duration-200 ${isCollapsed ? (collapsedSidebar ? 'lg:pl-12' : 'lg:pl-0') : 'lg:pl-64'}`}
+        >
+          {/* Desktop sidebar toggle (only when no collapsed rail) */}
+          {isCollapsed && !collapsedSidebar && (
+            <button
+              type="button"
+              onClick={toggle}
+              className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+              aria-label="Open sidebar"
+            >
+              <SidebarToggleIcon />
+            </button>
+          )}
+          <div
+            className={`flex items-start justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
+          >
+            <div className="w-full max-w-6xl">{children}</div>
+          </div>
+        </main>
+      </div>
+    </SidebarCollapseContext.Provider>
   );
 }

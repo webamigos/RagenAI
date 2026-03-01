@@ -2,7 +2,9 @@ import { format } from 'date-fns';
 
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
-import { Text, Tooltip, InformationCircle } from '@ragenai/common-ui';
+import { Text } from '@ragenai/common-ui/Text';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import { InformationCircle } from '@ragenai/common-ui/icons';
 
 import type { UserFileTypeSafe } from '../FileList/UserFilesTable';
 import { FileInfoPopup } from './FileInfoPopup';

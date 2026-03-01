@@ -1,19 +1,13 @@
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
-import { getAllSettings } from '@/app/lib/services/settings';
-import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
+import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
+/** @deprecated Use getAllSettings from @/features/organizations directly */
 export async function getOrganizationSettings() {
   try {
-    const { orgId } = auth();
-
-    if (!orgId) {
-      throw new Error('Unauthorized');
-    }
-
-    setSentryClerkOrganizationTag(orgId);
+    const orgId = await getOrgIdFromAuthOrThrow();
 
     const settings = await getAllSettings(orgId);
 

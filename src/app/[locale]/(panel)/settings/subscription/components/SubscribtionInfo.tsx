@@ -4,15 +4,16 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import type { SubscriptionDetails } from '../types';
-import { PlanType, SubscriptionStatus } from '@prisma/client';
-import { Button, Link } from '@ragenai/common-ui';
+import { SubscriptionPlanType } from '@/generated/prisma/browser';
+import { Button } from '@ragenai/common-ui/Button';
+import { Link } from '@ragenai/common-ui/Link';
 import {
   cancelSubscription,
   activateInternalFreePlan,
   getSubscriptionData,
 } from '../actions';
-import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useRouter } from '@/i18n/routing';
 import {
   DescriptionDetails,
   DescriptionList,
@@ -36,28 +37,31 @@ export const SubscriptionInfo = ({
 
   const {
     plan,
+    subscriptionPlan,
     status,
-    trial_end,
-    current_period_end,
-    current_period_start,
-    canceled_at,
-    stripe_subscription_id,
+    trialEnd,
+    periodEnd,
+    periodStart,
+    cancelAtPeriodEnd,
+    stripeSubscriptionId,
   } = subscription;
+
+  const planType = subscriptionPlan?.type;
+  const isStripe = planType === SubscriptionPlanType.STRIPE;
 
   const handleCancelSubscription = async () => {
     setIsLoading(true);
-    const response = await cancelSubscription(stripe_subscription_id);
+    const response = await cancelSubscription(stripeSubscriptionId);
     if (response) {
-      const canceledAt = response.canceled_at;
       toast.success(t('cancel-subscription-success'));
       setSubscription((prev) => ({
         ...prev,
-        canceled_at: canceledAt ? new Date(canceledAt * 1000) : new Date(),
+        cancelAtPeriodEnd: true,
       }));
     } else {
       setSubscription((prev) => ({
         ...prev,
-        canceled_at: initialSubscription.canceled_at,
+        cancelAtPeriodEnd: initialSubscription.cancelAtPeriodEnd,
         status: initialSubscription.status,
       }));
       toast.error(t('cancel-subscription-error'));
@@ -88,55 +92,56 @@ export const SubscriptionInfo = ({
     <DescriptionList>
       <DescriptionTerm>{t('current-plan')}</DescriptionTerm>
       <DescriptionDetails>
-        {plan.name} ({plan.type})
+        {plan} {planType ? `(${planType})` : ''}
       </DescriptionDetails>
 
       <DescriptionTerm>{t('status')}</DescriptionTerm>
       <DescriptionDetails>
         <span
           className={`${
-            status === SubscriptionStatus.ACTIVE
-              ? 'text-green-600'
-              : 'text-red-600'
+            status === 'active' ? 'text-green-600' : 'text-red-600'
           }`}
         >
           {status}
         </span>
       </DescriptionDetails>
 
-      <DescriptionTerm>{t('period-start')}</DescriptionTerm>
-      <DescriptionDetails>
-        {format(current_period_start, 'dd.MM.yyyy')}
-      </DescriptionDetails>
+      {periodStart && (
+        <>
+          <DescriptionTerm>{t('period-start')}</DescriptionTerm>
+          <DescriptionDetails>
+            {format(periodStart, 'dd.MM.yyyy')}
+          </DescriptionDetails>
+        </>
+      )}
 
-      {canceled_at && (
+      {cancelAtPeriodEnd && (
         <>
           <DescriptionTerm>{t('canceled-at')}</DescriptionTerm>
           <DescriptionDetails>
-            <p>{format(canceled_at, 'dd.MM.yyyy')}</p>
-            <p className="text-sm">{t('cancel-subscription-confirmation')}</p>
+            <p>{t('cancel-subscription-confirmation')}</p>
           </DescriptionDetails>
         </>
       )}
-      {trial_end && (
+      {trialEnd && (
         <>
           <DescriptionTerm>{t('trial-ends')}</DescriptionTerm>
           <DescriptionDetails>
-            {format(trial_end, 'dd.MM.yyyy')}
+            {format(trialEnd, 'dd.MM.yyyy')}
           </DescriptionDetails>
         </>
       )}
-      {current_period_end && (
+      {periodEnd && (
         <>
           <DescriptionTerm>{t('current-period-ends')}</DescriptionTerm>
           <DescriptionDetails>
-            {format(current_period_end, 'dd.MM.yyyy')}
+            {format(periodEnd, 'dd.MM.yyyy')}
           </DescriptionDetails>
         </>
       )}
 
       <div className="mt-6 flex gap-4 items-center">
-        {plan.type === PlanType.STRIPE && !canceled_at && (
+        {isStripe && !cancelAtPeriodEnd && (
           <>
             {!showConfirmation ? (
               <Button
@@ -165,13 +170,13 @@ export const SubscriptionInfo = ({
           </>
         )}
 
-        {plan.type === PlanType.INTERNAL || canceled_at ? (
+        {!isStripe || cancelAtPeriodEnd ? (
           <Link href="/settings/subscription/plans">
             {t('show-available-plans')}
           </Link>
         ) : null}
       </div>
-      {canceled_at && (
+      {cancelAtPeriodEnd && (
         <>
           {!showActivateConfirmation ? (
             <Button

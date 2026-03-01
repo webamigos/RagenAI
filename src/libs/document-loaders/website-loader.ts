@@ -1,14 +1,10 @@
-import '@mendable/firecrawl-js';
-import { FireCrawlLoader } from '@langchain/community/document_loaders/web/firecrawl';
+import FirecrawlApp from '@mendable/firecrawl-js';
 import { logger } from '@/app/lib/utils/logger';
 import { createMarkdownDocument } from '@/app/lib/services/document';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
-
-import { type Document } from '@langchain/core/documents';
-import { type TextSplitter } from 'langchain/text_splitter';
-import { type DocumentLoader } from '@langchain/core/document_loaders/base';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
-import { FileType } from '@prisma/client';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
+import { FileType } from '@/generated/prisma/client';
 
 export interface WebsiteDocumentLoaderParams {
   url: string;
@@ -19,7 +15,7 @@ export interface WebsiteDocumentLoaderParams {
   projectId: number;
 }
 
-export class WebsiteDocumentLoader implements DocumentLoader {
+export class WebsiteDocumentLoader {
   private readonly url: string;
   private readonly mode: WebsiteLoaderMode;
   private readonly fileName: string;
@@ -43,25 +39,50 @@ export class WebsiteDocumentLoader implements DocumentLoader {
     this.projectId = projectId;
   }
 
-  async load(): Promise<Document[]> {
+  async load(): Promise<VectorStoreDocument[]> {
     try {
+      const firecrawl = new FirecrawlApp({
+        apiKey: process.env.FIRECRAWL_API_KEY,
+      });
+
       const commonOptions = {
-        formats: ['markdown'],
+        formats: ['markdown' as const],
         onlyMainContent: true,
         excludeTags: ['img'],
       };
 
-      const loader = new FireCrawlLoader({
-        url: this.url,
-        apiKey: process.env.FIRECRAWL_API_KEY,
-        mode: this.mode,
-        params:
-          this.mode === WebsiteLoaderMode.CRAWL
-            ? { scrapeOptions: commonOptions }
-            : commonOptions,
-      });
+      let docs: VectorStoreDocument[] = [];
 
-      const docs = await loader.load();
+      if (this.mode === WebsiteLoaderMode.CRAWL) {
+        const crawlResult = await firecrawl.crawlUrl(this.url, {
+          scrapeOptions: commonOptions,
+        });
+
+        if ('data' in crawlResult && crawlResult.data) {
+          docs = crawlResult.data.map((doc: any) => ({
+            pageContent: doc.markdown || '',
+            metadata: {
+              sourceURL: doc.metadata?.sourceURL || this.url,
+              title: doc.metadata?.title,
+            },
+          }));
+        }
+      } else {
+        const scrapeResult = await firecrawl.scrapeUrl(this.url, commonOptions);
+
+        if ('markdown' in scrapeResult && scrapeResult.markdown) {
+          docs = [
+            {
+              pageContent: scrapeResult.markdown,
+              metadata: {
+                sourceURL: scrapeResult.metadata?.sourceURL || this.url,
+                title: scrapeResult.metadata?.title,
+              },
+            },
+          ];
+        }
+      }
+
       const combinedMarkdown = docs.map((doc) => doc.pageContent).join('\n\n');
 
       const enhancedMarkdown = `URL: ${this.url}\nMode: ${
@@ -73,7 +94,6 @@ export class WebsiteDocumentLoader implements DocumentLoader {
         enhancedMarkdown.length,
         this.organizationId,
         FileType.URL,
-        //this.fileId,
         this.projectId
       );
 
@@ -93,13 +113,5 @@ export class WebsiteDocumentLoader implements DocumentLoader {
       logger.error(`Error loading website content for URL: ${this.url}`, error);
       throw error;
     }
-  }
-
-  async loadAndSplit(splitter?: TextSplitter): Promise<Document[]> {
-    const docs = await this.load();
-    if (splitter) {
-      return splitter.splitDocuments(docs);
-    }
-    return docs;
   }
 }

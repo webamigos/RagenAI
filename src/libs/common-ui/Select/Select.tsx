@@ -1,9 +1,9 @@
 import { type FieldError } from 'react-hook-form';
-import { ComponentPropsWithRef, useId } from 'react';
+import { type ComponentPropsWithRef, useId } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Field, Label } from '@ragenai/tui';
-import { Select as TuiSelect } from '@ragenai/tui';
+import { Field, Label } from '@ragenai/tui/fieldset';
+import { Select as TuiSelect } from '@ragenai/tui/select';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
 

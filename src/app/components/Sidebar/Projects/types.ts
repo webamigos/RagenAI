@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { ThreadCommunicationType } from '@prisma/client';
+import { type ThreadCommunicationType } from '@/generated/prisma/browser';
 
 export type ThreadType = {
-  created_at: Date;
+  created_at: string;
   public_id: string;
   visitor_id: string | null;
   preferred_communication_type: ThreadCommunicationType;
@@ -15,7 +15,7 @@ export type ThreadType = {
 };
 
 export type ProjectType = {
-  created_at: Date;
+  created_at: string;
   public_id: string;
   title: string;
   threads: ThreadType[];
@@ -58,5 +58,5 @@ export type EmptyProjectsStateProps = {
 export type CreateProjectFormData = z.infer<typeof createProjectSchema>;
 
 export const createProjectSchema = z.object({
-  title: z.string().trim().min(1, { message: 'projects.error.title-required' }),
+  title: z.string().trim().min(1, { error: 'projects.error.title-required' }),
 });

@@ -1,12 +1,14 @@
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 import { logger } from '../../../lib/utils/logger';
-import { getAuth } from '@clerk/nextjs/server';
-import { setSentryClerkOrganizationTag } from '@/app/lib/services/sentry';
-import { setSentryServiceTag } from '@/app/lib/services/sentry';
-import { ChatType, createMessageSchema } from '@/app/contracts/Message';
+import { auth } from '@/lib/auth';
+import {
+  ChatType,
+  createMessageSchema,
+} from '@/features/messages/contracts/message.types';
 import { streamEvents } from '@/app/api/threads/services/assistant-stream';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,12 +21,18 @@ export async function POST(request: NextRequest, { params }: Params) {
   let stream: ReadableStream | undefined;
 
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('threads');
-    if (!orgId) {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user) {
       throw new Error('Unauthorized');
     }
-    setSentryClerkOrganizationTag(orgId);
+
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      throw new Error('Organization not found');
+    }
 
     const { publicThreadId } = await params;
     const chatType = request?.nextUrl?.searchParams.get('mode');
@@ -54,7 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (error) {
     logger.error(
       { err: error },
-      'Unexpected error in thread stream GET handler'
+      'Unexpected error in thread stream GET handler',
     );
     if (stream) {
       stream.cancel();

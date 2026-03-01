@@ -1,38 +1,46 @@
 'use client';
 
-import { RefObject } from 'react';
+import { type RefObject } from 'react';
 
 import {
-  ApiSseMessageDelta,
-  ApiSseMessageEvent,
-  SseMessageError,
-} from '@/app/contracts/Events';
+  type ApiSseMessageDelta,
+  type ApiSseMessageEvent,
+  type ApiSseReasoningDelta,
+  type SseMessageError,
+} from '@/features/threads/contracts/events.types';
 
-import { Thread } from '@prisma/client';
+import { type Thread } from '@/generated/prisma/browser';
 import {
-  ChatResponseType,
-  ChatType,
-  CreateMessageDto,
-  MessageDto,
-  StreamedMessageDto,
-  ThreadHistoryResponse,
-} from '@/app/contracts/Message';
+  type ChatResponseType,
+  type ChatType,
+  type CreateMessageDto,
+  type MessageDto,
+  type StreamedMessageDto,
+} from '@/features/messages/contracts/message.types';
+import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import axios, { AxiosError } from 'axios';
-import { type UserResource } from '@clerk/types';
 import {
-  ApiEvent,
-  ApiEventData,
+  type ApiEvent,
+  type ApiEventData,
   parseSseString,
 } from '@/libs/sse/prepare-sse-message';
+
+// Better Auth user type (simplified)
+type User = {
+  id: string;
+  email: string;
+  name: string;
+  image?: string | null;
+};
 import { deleteUserMessage } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
-import { ToastProps } from '@/app/lib/utils/toast';
-import { PromptFormRef } from './PromptForm/PromptForm';
-import { AssistantMode } from '@/app/contracts/Assistant';
+import { type ToastProps } from '@/app/lib/utils/toast';
+import { type PromptFormRef } from './PromptForm/PromptForm';
+import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { StatusCodes } from 'http-status-codes';
 import { type TranslationFn } from './types';
 import { getErrorMessage } from './utils';
-import { AppDispatch } from '@/store';
+import { type AppDispatch } from '@/store';
 import {
   setMessages,
   setStreamedMessage,
@@ -54,7 +62,7 @@ type CommonConfig = {
   data: CreateMessageDto;
   scrollFn: () => void;
   streamedMessage: StreamedMessageDto | null;
-  errorToast: ({ message, position, autoClose }: ToastProps) => void;
+  errorToast: ({ message }: ToastProps) => void;
   promptFormRef: RefObject<PromptFormRef>;
   organizationId?: string;
   chatType?: ChatType;
@@ -63,7 +71,7 @@ type CommonConfig = {
 
 type HandleAssistantStreamConfig = {
   mode: AssistantMode;
-  user?: UserResource | undefined | null;
+  user?: User | undefined | null;
   organizationId?: string;
   threadsState?: ThreadHistoryResponse[];
 } & CommonConfig;
@@ -84,7 +92,7 @@ const handleStreamError = async ({
   promptFormRef: RefObject<PromptFormRef>;
   errorMessage: string | null;
   tChainErrors: TranslationFn;
-  errorToast: ({ message, position, autoClose }: ToastProps) => void;
+  errorToast: ({ message }: ToastProps) => void;
   reduxDispatch: AppDispatch;
 }) => {
   try {
@@ -94,7 +102,7 @@ const handleStreamError = async ({
 
     const updatedMessages = messages.filter(
       (message) =>
-        message.public_id !== (lastUserMessageId || userMessage.public_id)
+        message.public_id !== (lastUserMessageId || userMessage.public_id),
     );
     reduxDispatch(setMessages(updatedMessages));
     promptFormRef.current?.reset(userMessage.content || '');
@@ -124,8 +132,8 @@ const getStreamUrl = (
   mode: AssistantMode,
   threadId: string,
   chatType?: ChatType,
-  user?: UserResource,
-  organizationId?: string
+  user?: User,
+  organizationId?: string,
 ): string => {
   if (mode === AssistantMode.INTERNAL) {
     return user
@@ -177,7 +185,7 @@ export const handleAssistantStream = async ({
       threadId,
       chatType,
       user || undefined,
-      organizationId
+      organizationId,
     );
     const apiStream = await axios.post<ReadableStream>(streamUrl, data, {
       responseType: 'stream',
@@ -197,6 +205,8 @@ export const handleAssistantStream = async ({
 
     let buffer = ''; // Initialize a buffer to accumulate chunks
     let accumulatingMessage = '';
+    let accumulatingReasoning = '';
+    let isCurrentlyReasoning = false;
     let runId = '';
     let lastUserMessageId: string | null = null;
 
@@ -226,12 +236,57 @@ export const handleAssistantStream = async ({
               const { id } = messageData as { id: string };
               lastUserMessageId = id;
               reduxDispatch(
-                setMessages([...messages, { ...userMessage, public_id: id }])
+                setMessages([...messages, { ...userMessage, public_id: id }]),
               );
             }
             break;
 
-          case 'delta':
+          case 'reasoning_start':
+            isCurrentlyReasoning = true;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+                reasoningContent: accumulatingReasoning,
+                isReasoning: true,
+              }),
+            );
+            break;
+
+          case 'reasoning_delta': {
+            const { content: reasoningChunk } =
+              messageData as ApiSseReasoningDelta;
+            accumulatingReasoning += reasoningChunk;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+                reasoningContent: accumulatingReasoning,
+                isReasoning: true,
+              }),
+            );
+            if (accumulatingReasoning.length % 100 === 0) {
+              scrollFn();
+            }
+            break;
+          }
+
+          case 'reasoning_end':
+            isCurrentlyReasoning = false;
+            reduxDispatch(
+              setStreamedMessage({
+                content: accumulatingMessage,
+                runId,
+                created_at: new Date().toISOString(),
+                reasoningContent: accumulatingReasoning,
+                isReasoning: false,
+              }),
+            );
+            break;
+
+          case 'delta': {
             const { content: textChunk } = messageData as ApiSseMessageDelta;
             accumulatingMessage += textChunk;
             reduxDispatch(
@@ -239,12 +294,15 @@ export const handleAssistantStream = async ({
                 content: accumulatingMessage,
                 runId,
                 created_at: new Date().toISOString(),
-              })
+                reasoningContent: accumulatingReasoning || undefined,
+                isReasoning: isCurrentlyReasoning,
+              }),
             );
             if (accumulatingMessage.length % 100 === 0) {
               scrollFn();
             }
             break;
+          }
 
           case 'final_response':
             if (messageData) {
@@ -254,7 +312,7 @@ export const handleAssistantStream = async ({
                 public_id: id,
                 role,
                 content: accumulatingMessage,
-                created_at: new Date(),
+                created_at: new Date().toISOString(),
                 run_id: runId,
                 message_type: responseType,
               };
@@ -270,7 +328,7 @@ export const handleAssistantStream = async ({
               ].filter(
                 (message, index, self) =>
                   index ===
-                  self.findIndex((m) => m.public_id === message.public_id)
+                  self.findIndex((m) => m.public_id === message.public_id),
               );
 
               reduxDispatch(setMessages(uniqueMessages));
@@ -285,7 +343,7 @@ export const handleAssistantStream = async ({
             if (messageData) {
               const errorMessage = getErrorMessage(
                 messageData as SseMessageError,
-                tChainErrors
+                tChainErrors,
               );
               if (!errorMessage && !streamedMessage) {
                 return;

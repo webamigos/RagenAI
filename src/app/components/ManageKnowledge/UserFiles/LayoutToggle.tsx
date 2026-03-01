@@ -1,6 +1,7 @@
 import { type ComponentProps } from 'react';
 
-import { classMerge, ListIcon, GridIcon } from '@ragenai/common-ui';
+import { classMerge } from '@ragenai/common-ui/utils/cn';
+import { ListIcon, GridIcon } from '@ragenai/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 

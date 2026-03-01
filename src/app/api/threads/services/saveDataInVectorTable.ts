@@ -1,37 +1,32 @@
 import * as fs from 'node:fs';
 import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import { EPubLoader } from '@langchain/community/document_loaders/fs/epub';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
-import { Document } from 'langchain/document';
-import { MarkdownTextSplitter } from 'langchain/text_splitter';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { randomUUID } from 'node:crypto';
+import db from '@ragenai/prisma-client';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import {
   DOCUMENT_SEARCH_QUERY_NAME,
   VECTOR_STORE_TABLE_NAME,
 } from '@/libs/db/constants/vectorStore';
-import { VectorStoreDocumentMetadata } from '@/app/lib/types/types';
+import { type VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
-import { getOpenaiAPIKey } from '@/app/lib/services/settings';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
+import { getOpenaiAPIKey } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
-import { QdrantVectorStore } from '@langchain/qdrant';
-import { auth } from '@clerk/nextjs/server';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
 import { SUPPORTED_MIME_TYPES } from '@/app/lib/constants/supportedMimeTypes';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { WebsiteDocumentLoader } from '@/libs/document-loaders/website-loader';
-import { WebsiteLoaderMode } from '@/app/contracts/DocumentLoading';
-
-const serviceName = 'saveDataInVectorTable';
+import { WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
+import {
+  recursiveCharacterSplit,
+  markdownSplit,
+  splitDocuments,
+} from '@/libs/text-splitter';
 
 type ConvertAndStoreResult = {
   success: boolean;
@@ -45,6 +40,7 @@ type ConvertAndStoreDocumentParams = {
   organizationId: string;
   fileId: string;
   projectId: number;
+  projectPublicId?: string;
   mimeType: string;
 };
 
@@ -73,13 +69,12 @@ const CHUNK_SETTINGS = {
 
 const saveBinaryToTempFile = async (
   content: string | Buffer,
-  extension: string
+  extension: string,
 ) => {
   const projectDir = process.cwd();
-  const filePath = path.join(projectDir, `temp-${uuidv4()}.${extension}`);
+  const filePath = path.join(projectDir, `temp-${randomUUID()}.${extension}`);
 
   try {
-    setSentryServiceTag(serviceName);
     const data = content instanceof Buffer ? new Uint8Array(content) : content;
     await fs.promises.writeFile(filePath, data);
     await fs.promises
@@ -99,27 +94,72 @@ const saveBinaryToTempFile = async (
   }
 };
 
+async function loadEpubDocuments(
+  filePath: string,
+): Promise<VectorStoreDocument[]> {
+  const EPub = (await import('epub2')).default;
+  const epub = await EPub.createAsync(filePath);
+
+  const docs: VectorStoreDocument[] = [];
+  const chapters = epub.flow || [];
+
+  for (const chapter of chapters) {
+    try {
+      const content = await epub.getChapterAsync(chapter.id);
+      if (content) {
+        // Strip HTML tags for plain text content
+        const textContent = content
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (textContent) {
+          docs.push({
+            pageContent: textContent,
+            metadata: {
+              chapter: chapter.title || chapter.id,
+              source: filePath,
+            },
+          });
+        }
+      }
+    } catch (err) {
+      logger.warn(
+        { err, chapterId: chapter.id },
+        'Could not load epub chapter',
+      );
+    }
+  }
+
+  return docs;
+}
+
+async function loadTextDocument(
+  filePath: string,
+): Promise<VectorStoreDocument[]> {
+  const content = await fs.promises.readFile(filePath, 'utf-8');
+  return [
+    {
+      pageContent: content,
+      metadata: { source: filePath },
+    },
+  ];
+}
+
 export const convertAndStoreDocument = async ({
   fileContent,
   fileName,
   organizationId,
   fileId,
   projectId,
+  projectPublicId,
   mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-    setSentryContext('EXTRA_DATA', {
-      fileName,
-      fileId,
-    });
-
     if (!fileContent) {
       return { success: false, message: 'File content missing!' };
     }
 
-    let rawDocs: Document[] = [];
+    let rawDocs: VectorStoreDocument[] = [];
     const apiKey = await getOpenaiAPIKey(organizationId);
 
     if (!apiKey) {
@@ -134,6 +174,16 @@ export const convertAndStoreDocument = async ({
     }
 
     logger.info({ mimeType }, 'Detected MIME type');
+
+    // Resolve project public_id for Meilisearch metadata
+    let resolvedProjectPublicId = projectPublicId ?? null;
+    if (!resolvedProjectPublicId && projectId) {
+      const project = await db.project.findUnique({
+        where: { id: projectId },
+        select: { public_id: true },
+      });
+      resolvedProjectPublicId = project?.public_id ?? null;
+    }
 
     const embeddingModel = await createEmbeddingsInstance({ apiKey });
 
@@ -153,7 +203,7 @@ export const convertAndStoreDocument = async ({
     }
     const { filePath, message, success } = await saveBinaryToTempFile(
       fileContent,
-      fileExtension
+      fileExtension,
     );
     if (!success || !filePath) {
       return {
@@ -164,32 +214,35 @@ export const convertAndStoreDocument = async ({
 
     try {
       await fs.promises.access(filePath, fs.constants.R_OK);
-      let loader;
       switch (fileExtension) {
-        case 'pdf':
-          loader = new PDFOCRDocumentLoader({
+        case 'pdf': {
+          const loader = new PDFOCRDocumentLoader({
             filePath,
             fileName,
             fileId,
             organizationId,
             projectId: projectId ?? undefined,
           });
+          rawDocs = await loader.load();
           break;
-        case 'srt':
-          loader = new SRTLLMDocumentLoader({
+        }
+        case 'srt': {
+          const loader = new SRTLLMDocumentLoader({
             filePath,
             fileName,
             fileId,
             organizationId,
           });
+          rawDocs = await loader.load();
           break;
+        }
         case 'epub':
-          loader = new EPubLoader(filePath);
+          rawDocs = await loadEpubDocuments(filePath);
           break;
         case 'md':
-          loader = new TextLoader(filePath);
+          rawDocs = await loadTextDocument(filePath);
           break;
-        case 'url':
+        case 'url': {
           const urlContent = fileContent.toString();
 
           // convention to fulfill ConvertAndStoreDocumentParams interface
@@ -200,7 +253,7 @@ export const convertAndStoreDocument = async ({
           ) {
             throw new Error('Invalid crawl mode');
           }
-          loader = new WebsiteDocumentLoader({
+          const loader = new WebsiteDocumentLoader({
             url,
             mode,
             fileName,
@@ -208,22 +261,18 @@ export const convertAndStoreDocument = async ({
             organizationId,
             projectId,
           });
+          rawDocs = await loader.load();
           break;
+        }
         default:
-          loader = undefined;
+          throw new Error(
+            `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`,
+          );
       }
-
-      if (!loader) {
-        throw new Error(
-          `Unsupported file type, no loader found. File extension: ${fileExtension}, mimeType: ${mimeType}!`
-        );
-      }
-
-      rawDocs = await loader.load();
     } catch (error) {
       logger.error(
         { err: error },
-        `Error loading ${fileExtension.toUpperCase()} file`
+        `Error loading ${fileExtension.toUpperCase()} file`,
       );
       return {
         success: false,
@@ -242,29 +291,22 @@ export const convertAndStoreDocument = async ({
       CHUNK_SETTINGS[fileExtension as keyof typeof CHUNK_SETTINGS] ||
       CHUNK_SETTINGS.epub;
 
-    const textSplitter =
-      fileExtension === 'md'
-        ? new MarkdownTextSplitter({
-            chunkSize: splitterSettings.chunkSize,
-            chunkOverlap: splitterSettings.chunkOverlap,
-            keepSeparator: true,
-          })
-        : new RecursiveCharacterTextSplitter({
-            chunkSize: splitterSettings.chunkSize,
-            chunkOverlap: splitterSettings.chunkOverlap,
-            keepSeparator: true,
-          });
+    const splitFn =
+      fileExtension === 'md' ? markdownSplit : recursiveCharacterSplit;
 
-    const docs = await textSplitter.splitDocuments(rawDocs);
+    const docs = splitDocuments(rawDocs, splitFn, {
+      chunkSize: splitterSettings.chunkSize,
+      chunkOverlap: splitterSettings.chunkOverlap,
+    });
 
-    const { orgId } = auth();
+    const orgId = await getOrgIdFromAuthOrThrow();
 
     if (!orgId) {
       throw new Error('Invalid organization!');
     }
 
     const orgMetadata = await getOrganizationMetadata(orgId);
-    const vectorStoreType = orgMetadata.privateMetadata?.vector_store;
+    const vectorStoreType = orgMetadata.vectorStore;
 
     const updatedDocs = await Promise.all(
       docs.map(async (doc, index) => {
@@ -276,7 +318,7 @@ export const convertAndStoreDocument = async ({
           id: index,
           organization_id: organizationId,
           file_id: fileId,
-          project_id: projectId,
+          project_public_id: resolvedProjectPublicId,
           source_type: fileExtension,
           chunk_size: splitterSettings.chunkSize,
           chunk_overlap: splitterSettings.chunkOverlap,
@@ -288,39 +330,28 @@ export const convertAndStoreDocument = async ({
           embedding_model: embeddingModel.model,
         };
 
-        if (vectorStoreType === 'qdrant') {
-          return {
-            pageContent: text,
-            metadata,
-            embedding: [],
-          };
-        } else {
-          const [embedding] = await embeddingModel.embedDocuments([text]);
+        if (vectorStoreType === 'supabase') {
+          const embedding = await embeddingModel.embedQuery(text);
           return {
             pageContent: text,
             metadata,
             embedding,
           };
+        } else {
+          return {
+            pageContent: text,
+            metadata,
+            embedding: [] as number[],
+          };
         }
-      })
+      }),
     );
 
-    if (vectorStoreType === 'qdrant') {
-      const vectorStore = await QdrantVectorStore.fromExistingCollection(
-        embeddingModel,
-        {
-          url: process.env.QDRANT_URL,
-          apiKey: process.env.QDRANT_API_KEY, // staging and prod
-          collectionName: orgId,
-        }
-      );
-
-      await vectorStore.addDocuments(updatedDocs);
-    } else {
-      const vectorStore = new SupabaseVectorStore(embeddingModel, {
+    if (vectorStoreType === 'supabase') {
+      const vectorStore = new SupabaseVectorStoreClient(embeddingModel, {
         client: supabaseVectorStoreClient,
-        tableName: VECTOR_STORE_TABLE_NAME,
         queryName: DOCUMENT_SEARCH_QUERY_NAME,
+        tableName: VECTOR_STORE_TABLE_NAME,
       });
 
       await vectorStore.addVectors(
@@ -328,7 +359,20 @@ export const convertAndStoreDocument = async ({
         updatedDocs.map((doc) => ({
           pageContent: doc.pageContent,
           metadata: doc.metadata,
-        }))
+        })),
+      );
+    } else {
+      const vectorStore = new MeilisearchVectorStoreClient(embeddingModel, {
+        url: process.env.MEILISEARCH_URL!,
+        apiKey: process.env.MEILISEARCH_MASTER_KEY,
+        indexName: orgId,
+      });
+
+      await vectorStore.addDocuments(
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        })),
       );
     }
 

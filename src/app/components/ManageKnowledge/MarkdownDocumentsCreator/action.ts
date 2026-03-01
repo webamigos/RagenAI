@@ -1,7 +1,7 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
 import TurndownService from 'turndown';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   createMarkdownDocument,
@@ -10,20 +10,13 @@ import {
   saveEditedDocumentTitle,
 } from '@/app/lib/services/document';
 import { type DocumentSchema } from './DocumentCreator';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
-
-const serviceName = 'MarkdownDocumentsCreator';
 
 export async function saveMarkdownWithMeta(
   data: DocumentSchema,
-  organizationId: string
+  organizationId: string,
 ) {
-  const uniqueFileId = uuidv4();
+  const uniqueFileId = randomUUID();
   const turndownService = new TurndownService();
   const markdownContent = turndownService.turndown(data.content);
   const markdownData = {
@@ -33,13 +26,11 @@ export async function saveMarkdownWithMeta(
     organization_id: organizationId,
   };
   const markdownDataSize = new TextEncoder().encode(
-    JSON.stringify(markdownData.content)
+    JSON.stringify(markdownData.content),
   ).length;
 
   try {
     createMarkdownDocument(markdownData);
-    setSentryClerkOrganizationTag(organizationId);
-    setSentryServiceTag(serviceName);
     return {
       success: true,
       document: {
@@ -72,12 +63,9 @@ type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
 
 export async function fetchDocumentByOrganization(
   organizationId: string,
-  documentPublicId: string
+  documentPublicId: string,
 ): Promise<DocumentResponse> {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-    setSentryContext('EXTRA_DATA', { documentPublicId });
     const response: { content: string; title: string }[] =
       await getDocumentPreview({
         orgId: organizationId,
@@ -125,9 +113,6 @@ export const updateDocument = async ({
   content,
 }: UpdateDocumentTitleProps): Promise<UpdateResponse> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(orgId);
-    setSentryContext('EXTRA_DATA', { documentId });
     if (!content) {
       await saveEditedDocumentTitle({ orgId, documentId, title });
     }

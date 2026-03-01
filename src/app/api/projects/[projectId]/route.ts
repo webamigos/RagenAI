@@ -1,28 +1,75 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getProjectByPublicId } from '@/app/lib/services/project';
+import { type NextRequest, NextResponse } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
+import { auth } from '@/lib/auth';
+import db from '@ragenai/prisma-client';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: Promise<{ projectId: string }> },
 ) {
   try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: StatusCodes.UNAUTHORIZED },
+      );
+    }
+
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: StatusCodes.FORBIDDEN },
+      );
+    }
+
     const { projectId } = await params;
 
     if (!projectId) {
       return NextResponse.json(
         { error: 'Project ID is required' },
-        { status: StatusCodes.BAD_REQUEST }
+        { status: StatusCodes.BAD_REQUEST },
       );
     }
 
-    const project = await getProjectByPublicId(projectId);
+    const project = await db.project.findFirst({
+      where: {
+        public_id: projectId,
+        organization_id: orgId,
+      },
+      select: {
+        public_id: true,
+        title: true,
+        is_public: true,
+        published_at: true,
+        chatbot_enabled: true,
+        threads: {
+          orderBy: { created_at: 'desc' },
+          select: {
+            public_id: true,
+            title: true,
+            created_at: true,
+            is_starred: true,
+            messages: {
+              orderBy: { created_at: 'asc' },
+              take: 1,
+              select: { content: true },
+            },
+          },
+        },
+      },
+    });
 
     if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },
-        { status: StatusCodes.NOT_FOUND }
+        { status: StatusCodes.NOT_FOUND },
       );
     }
 
@@ -31,7 +78,7 @@ export async function GET(
     logger.error({ err: error }, 'Error fetching project');
     return NextResponse.json(
       { error: 'Failed to fetch project' },
-      { status: StatusCodes.INTERNAL_SERVER_ERROR }
+      { status: StatusCodes.INTERNAL_SERVER_ERROR },
     );
   }
 }

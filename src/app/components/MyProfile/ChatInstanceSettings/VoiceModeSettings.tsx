@@ -2,11 +2,11 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@/app/hooks/use-auth';
 
-import { Card } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
 import { fetchVoiceId, updateVoiceId } from './actions';
-import { statusToast } from '@/app/lib/utils/toast';
+import { toast } from 'sonner';
 import { AudioPlayer } from './AudioPlayer';
 
 const VOICE_OPTIONS = [
@@ -28,7 +28,6 @@ export const VoiceModeSettings = () => {
   const t = useTranslations('assistant-settings.voice-mode-settings');
   const { organization } = useOrganization();
   const [selectedVoice, setSelectedVoice] = useState(VOICE_OPTIONS[0].value);
-  const toast = statusToast();
 
   useEffect(() => {
     const getVoiceSettings = async () => {
@@ -47,9 +46,9 @@ export const VoiceModeSettings = () => {
       const response = await updateVoiceId(organization.id, e.target.value);
       if (response.success) {
         setSelectedVoice(e.target.value);
-        toast.successToast({ message: t('voice-updated') });
+        toast.success(t('voice-updated'));
       } else {
-        toast.errorToast({ message: t('voice-update-failed') });
+        toast.error(t('voice-update-failed'));
       }
     }
   };

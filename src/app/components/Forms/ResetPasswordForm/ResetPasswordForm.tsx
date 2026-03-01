@@ -1,27 +1,27 @@
 'use client';
 
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth, useSignIn } from '@clerk/nextjs';
 import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { useRouter } from '@/i18n/routing';
-import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
-import { Card, Input, Button } from '@ragenai/common-ui';
+import { Card } from '@ragenai/common-ui/Card';
+import { Input } from '@ragenai/common-ui/Input';
+import { Button } from '@ragenai/common-ui/Button';
+import { authClient } from '@/app/hooks/use-better-auth';
 
 import { type ResetPasswordData, ResetPasswordSchema } from './schema';
-import { type ClerkAPIError } from '@clerk/types';
 import { Logo } from '../../Logo';
 
 export const ResetPasswordForm = () => {
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
 
-  const { isLoaded, signIn, setActive } = useSignIn();
   const t = useTranslations('Forgot-password');
-  const { isSignedIn } = useAuth();
   const { push } = useRouter();
 
   const {
@@ -32,31 +32,30 @@ export const ResetPasswordForm = () => {
     resolver: zodResolver(ResetPasswordSchema),
   });
 
-  if (!isLoaded) {
-    return null;
-  }
-
-  if (isSignedIn) {
-    push('/');
-    return null;
-  }
-
   const reset = async (data: ResetPasswordData) => {
+    if (!token) {
+      setError('Invalid reset token');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
     try {
-      setIsLoading(true);
-      await signIn?.attemptFirstFactor({
-        strategy: 'reset_password_email_code',
-        code: data.code,
-        password: data.password,
+      const result = await authClient.resetPassword({
+        newPassword: data.password,
+        token,
       });
 
-      setActive({ session: signIn?.createdSessionId! });
-      push('/');
-      setIsLoading(false);
-    } catch (error) {
-      if (isClerkAPIResponseError(error)) {
-        setApiErrors(error.errors);
+      if (result.error) {
+        setError(result.error.message || 'Failed to reset password');
+        return;
       }
+
+      // Redirect to sign-in after successful password reset
+      push('/sign-in');
+    } catch (err) {
+      setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -75,15 +74,9 @@ export const ResetPasswordForm = () => {
           error={errors.password}
           type="password"
         />
-        <Input
-          errorMessage={errors.code?.message}
-          label={t('Enter-reset-code')}
-          placeholder="Reset code"
-          error={errors.code}
-          {...register('code')}
-          className="py-1.5"
-          type="text"
-        />
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>
+        )}
         <Button
           className="w-full py-2 px-4 my-4 bg-blue-500 text-white hover:bg-blue-600 flex justify-center items-center"
           isLoading={isLoading}
@@ -91,7 +84,6 @@ export const ResetPasswordForm = () => {
         >
           {t('Reset-password')}
         </Button>
-        <ClerkErrorsInterface apiErrors={apiErrors} />
       </form>
     </Card>
   );

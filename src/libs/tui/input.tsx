@@ -1,4 +1,7 @@
-import * as Headless from '@headlessui/react';
+import {
+  Input as HeadlessInput,
+  type InputProps as HeadlessInputProps,
+} from '@headlessui/react';
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 
@@ -13,7 +16,7 @@ export function InputGroup({
         '[&_input]:has-[[data-slot=icon]:first-child]:pl-10 [&_input]:has-[[data-slot=icon]:last-child]:pr-10 sm:[&_input]:has-[[data-slot=icon]:first-child]:pl-8 sm:[&_input]:has-[[data-slot=icon]:last-child]:pr-8',
         'data-[slot=icon]:*:pointer-events-none data-[slot=icon]:*:absolute data-[slot=icon]:*:top-3 data-[slot=icon]:*:z-10 data-[slot=icon]:*:size-5 sm:data-[slot=icon]:*:top-2.5 sm:data-[slot=icon]:*:size-4',
         '[&>[data-slot=icon]:first-child]:left-3 sm:[&>[data-slot=icon]:first-child]:left-2.5 [&>[data-slot=icon]:last-child]:right-3 sm:[&>[data-slot=icon]:last-child]:right-2.5',
-        'data-[slot=icon]:*:text-zinc-500 dark:data-[slot=icon]:*:text-zinc-400'
+        'data-[slot=icon]:*:text-zinc-500 dark:data-[slot=icon]:*:text-zinc-400',
       )}
     >
       {children}
@@ -39,8 +42,8 @@ export const Input = forwardRef(function Input(
       | 'text'
       | 'url'
       | DateType;
-  } & Omit<Headless.InputProps, 'as' | 'className'>,
-  ref: React.ForwardedRef<HTMLInputElement>
+  } & Omit<HeadlessInputProps, 'as' | 'className'>,
+  ref: React.ForwardedRef<HTMLInputElement>,
 ) {
   return (
     <span
@@ -49,8 +52,8 @@ export const Input = forwardRef(function Input(
         className,
         // Basic layout
         'relative block w-full',
-        // Background color + shadow applied to inset pseudo element, so shadow blends with border in light mode
-        'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white before:shadow-xs',
+        // Background color applied to inset pseudo element
+        'before:absolute before:inset-px before:rounded-[calc(var(--radius-lg)-1px)] before:bg-white',
         // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
         'dark:before:hidden',
         // Focus ring
@@ -61,7 +64,7 @@ export const Input = forwardRef(function Input(
         'has-data-invalid:before:shadow-red-500/10',
       ])}
     >
-      <Headless.Input
+      <HeadlessInput
         ref={ref}
         {...props}
         className={clsx([
@@ -86,7 +89,7 @@ export const Input = forwardRef(function Input(
           // Typography
           'text-base/6 text-zinc-950 placeholder:text-zinc-500 sm:text-sm/6 dark:text-white',
           // Border
-          'border border-zinc-950/10 data-hover:border-zinc-950/20 dark:border-white/10 dark:data-hover:border-white/20',
+          'border border-zinc-950/10 data-hover:border-zinc-950/20 focus:border-transparent dark:border-white/10 dark:data-hover:border-white/20 dark:focus:border-transparent',
           // Background color
           'bg-transparent dark:bg-white/5',
           // Hide default focus styles

@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
-import { Card, Dialog } from '@ragenai/common-ui';
+import { useOrganization } from '@/app/hooks/use-auth';
+import { Card } from '@ragenai/common-ui/Card';
+import { Dialog } from '@ragenai/common-ui/Dialog';
 
 import { getProjectFiles } from '@/app/actions';
 import { ProjectFileUpload } from './ProjectFileUpload';
 import {
   ProjectFileUploadContent,
-  FileStatus,
+  type FileStatus,
 } from './ProjectFileUploadContent';
 
 type Props = {

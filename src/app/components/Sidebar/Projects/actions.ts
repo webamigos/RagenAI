@@ -1,20 +1,14 @@
 'use server';
 
-import { type Project } from '@prisma/client';
+import { type Project } from '@/generated/prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
+import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
+import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
 import {
-  setSentryServiceTag,
-  setSentryClerkOrganizationTag,
-  setSentryContext,
-} from '@/app/lib/services/sentry';
-import {
-  findOrganizationByProviderId,
-  createProjectForOrganization,
-  fetchProjectsForUser,
-} from '@/app/lib/services/project';
-
-const serviceName = 'assistants/actions';
+  getOrgIdFromAuth,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
 
 type CreateProjectResponse = {
   status: StatusCodes;
@@ -23,41 +17,26 @@ type CreateProjectResponse = {
 };
 
 export const createProject = async (
-  providerOrgId: string,
+  _providerOrgId: string,
   title: string,
-  userId: string
+  _userId: string,
 ): Promise<CreateProjectResponse> => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(providerOrgId);
-    setSentryContext('EXTRA_DATA', {
-      title,
-      userId,
-    });
+    const orgId = await getOrgIdFromAuth();
+    const userId = await getCurrentUserId();
 
-    const organization = await findOrganizationByProviderId(providerOrgId);
-
-    if (!organization) {
-      logger.error(
-        { providerOrgId },
-        'Organization not found when creating project'
-      );
+    if (!orgId || !userId) {
       return {
-        error: 'Organization not found',
-        status: StatusCodes.NOT_FOUND,
+        error: 'Unauthorized',
+        status: StatusCodes.UNAUTHORIZED,
       };
     }
 
-    const project = await createProjectForOrganization(
-      organization.id,
-      title,
-      providerOrgId,
-      userId
-    );
+    const project = await createProjectForOrganization(title, orgId, userId);
 
     logger.info(
       { projectPublicId: project.public_id },
-      'Project created successfully'
+      'Project created successfully',
     );
 
     return {
@@ -65,10 +44,7 @@ export const createProject = async (
       status: StatusCodes.CREATED,
     };
   } catch (error) {
-    logger.error(
-      { err: error, providerOrgId, title, userId },
-      'Error creating project'
-    );
+    logger.error({ err: error, title }, 'Error creating project');
     return {
       error: 'Failed to create project',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -76,20 +52,24 @@ export const createProject = async (
   }
 };
 
-export const getProjects = async (organizationId: string, userId: string) => {
+export const getProjects = async (_organizationId: string, _userId: string) => {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryClerkOrganizationTag(organizationId);
-    setSentryContext('EXTRA_DATA', {
-      userId,
-    });
+    const orgId = await getOrgIdFromAuth();
+    const userId = await getCurrentUserId();
+
+    if (!orgId || !userId) {
+      return {
+        error: 'Unauthorized',
+        status: StatusCodes.UNAUTHORIZED,
+      };
+    }
 
     logger.info(
-      { organizationId, userId },
-      'Getting projects from Clerk organization'
+      { organizationId: orgId, userId },
+      'Getting projects for organization',
     );
 
-    const projects = await fetchProjectsForUser(organizationId, userId);
+    const projects = await fetchProjectsForUser(orgId, userId);
 
     logger.info({ count: projects.length }, 'Successfully fetched projects');
 
@@ -98,10 +78,7 @@ export const getProjects = async (organizationId: string, userId: string) => {
       status: StatusCodes.OK,
     };
   } catch (error) {
-    logger.error(
-      { err: error, organizationId, userId },
-      'Error fetching assistants'
-    );
+    logger.error({ err: error }, 'Error fetching assistants');
     return {
       error: 'Failed to fetch assistant',
       status: StatusCodes.INTERNAL_SERVER_ERROR,

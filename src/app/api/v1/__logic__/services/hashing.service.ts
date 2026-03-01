@@ -1,6 +1,6 @@
 import { compare, genSalt, hash } from 'bcrypt';
 
-import { Brand } from '../types/brand';
+import { type Brand } from '../types/brand';
 
 export type HashedKey = Brand<string, 'HashedKey'>;
 

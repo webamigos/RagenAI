@@ -1,28 +1,21 @@
-import { ElevenLabsClient } from 'elevenlabs';
-
 import { logger } from '@/app/lib/utils/logger';
-
-const apiKey = process.env.NEXT_PUBLIC_ELEVENLABS_API_KEY;
-
-const client = new ElevenLabsClient({ apiKey });
 
 export const convertTextToSpeech = async (
   text: string,
-  voiceId: string
+  voiceId: string,
 ): Promise<string> => {
   try {
-    const response = await client.textToSpeech.convert(voiceId, {
-      output_format: 'mp3_44100_128',
-      text,
-      model_id: 'eleven_multilingual_v2',
+    const response = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voiceId }),
     });
-    const chunks: Uint8Array[] = [];
 
-    for await (const chunk of response) {
-      chunks.push(chunk);
+    if (!response.ok) {
+      throw new Error(`TTS request failed with status ${response.status}`);
     }
 
-    const audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
+    const audioBlob = await response.blob();
     return URL.createObjectURL(audioBlob);
   } catch (error) {
     logger.error({ err: error }, 'Error in text to speech conversion');

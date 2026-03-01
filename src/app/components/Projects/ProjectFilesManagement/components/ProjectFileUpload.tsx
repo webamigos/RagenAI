@@ -2,11 +2,12 @@
 
 import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
-import { useOrganization } from '@clerk/nextjs';
+import { useOrganization } from '@/app/hooks/use-auth';
 import { Suspense, lazy } from 'react';
 
 import { FileUploader } from '@ragenai/common-ui/FileUploader';
-import { Button, LoadingSkeleton } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { LoadingSkeleton } from '@ragenai/common-ui/Skeleton';
 import { UploadList } from '../../../ManageKnowledge/UploadKnowledge/UploadList';
 import {
   ErrorBoundaryWithTranslations as ErrorBoundary,

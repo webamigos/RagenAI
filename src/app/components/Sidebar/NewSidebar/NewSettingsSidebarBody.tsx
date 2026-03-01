@@ -1,63 +1,78 @@
+'use client';
+
 import {
   SidebarBody,
-  SidebarHeading,
   SidebarItem,
   SidebarLabel,
   SidebarSection,
-  SidebarSpacer,
 } from '@ragenai/tui/sidebar';
 import {
-  Cog6ToothIcon,
-  HomeIcon,
-  MegaphoneIcon,
-  QuestionMarkCircleIcon,
-  SparklesIcon,
-  Square2StackIcon,
-  TicketIcon,
   ArrowLeftIcon,
-  BookOpenIcon,
-  UserGroupIcon,
-  WrenchScrewdriverIcon,
+  BuildingOfficeIcon,
+  AdjustmentsHorizontalIcon,
   CreditCardIcon,
   KeyIcon,
-} from '@heroicons/react/20/solid';
+  CircleStackIcon,
+  CpuChipIcon,
+  UserGroupIcon,
+} from '@heroicons/react/24/outline';
 
 import { useTranslations } from 'next-intl';
+import { useUser } from '@/app/hooks/use-auth';
+
+const iconClassName = 'size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400';
 
 export const NewSidebarSettingsBody = () => {
   const t = useTranslations('sidebar');
+  const { isAppAdmin } = useUser();
 
   return (
     <SidebarBody>
       <SidebarSection>
-        <SidebarItem href="/">
-          <ArrowLeftIcon className="w-5 h-5" />
-          <SidebarLabel>{t('back')}</SidebarLabel>
-        </SidebarItem>
-        <SidebarItem href="/settings/knowledge">
-          <BookOpenIcon className="w-5 h-5" />
-          <SidebarLabel>{t('manage-knowledge')}</SidebarLabel>
+        <SidebarItem href="/new">
+          <ArrowLeftIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">{t('back')}</SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/organization-profile">
-          <TicketIcon className="w-5 h-5" />
-          <SidebarLabel>{t('manage-organization')}</SidebarLabel>
-        </SidebarItem>
-        <SidebarItem href="/settings/organization-profile/organization-members">
-          <UserGroupIcon className="w-5 h-5" />
-          <SidebarLabel>{t('manage-members')}</SidebarLabel>
+          <BuildingOfficeIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">
+            {t('manage-organization')}
+          </SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/prompt-management">
-          <WrenchScrewdriverIcon className="w-5 h-5" />
-          <SidebarLabel>{t('assistant-management')}</SidebarLabel>
+          <AdjustmentsHorizontalIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">
+            {t('assistant-management')}
+          </SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/subscription">
-          <CreditCardIcon className="w-5 h-5" />
-          <SidebarLabel>{t('subscription-management')}</SidebarLabel>
+          <CreditCardIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">
+            {t('subscription-management')}
+          </SidebarLabel>
+        </SidebarItem>
+        <SidebarItem href="/settings/teams">
+          <UserGroupIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">{t('teams')}</SidebarLabel>
         </SidebarItem>
         <SidebarItem href="/settings/api-keys">
-          <KeyIcon className="w-5 h-5" />
-          <SidebarLabel>{t('api-keys')}</SidebarLabel>
+          <KeyIcon className={iconClassName} />
+          <SidebarLabel className="font-normal">{t('api-keys')}</SidebarLabel>
         </SidebarItem>
+        {isAppAdmin && (
+          <SidebarItem href="/settings/ai-usage">
+            <CpuChipIcon className={iconClassName} />
+            <SidebarLabel className="font-normal">{t('ai-usage')}</SidebarLabel>
+          </SidebarItem>
+        )}
+        {isAppAdmin && (
+          <SidebarItem href="/settings/disk-usage">
+            <CircleStackIcon className={iconClassName} />
+            <SidebarLabel className="font-normal">
+              {t('disk-usage')}
+            </SidebarLabel>
+          </SidebarItem>
+        )}
       </SidebarSection>
     </SidebarBody>
   );

@@ -1,16 +1,23 @@
 import { useState } from 'react';
 
-import { type ClerkAPIError } from '@clerk/types';
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useUser } from '@clerk/nextjs';
+import { useUser } from '@/app/hooks/use-auth';
 import { useTranslations } from 'next-intl';
 
-import { ClerkErrorsInterface } from '../ClerkErrorsInterface';
-import { Input, Button, Card } from '@ragenai/common-ui';
+import { Input } from '@ragenai/common-ui/Input';
+import { Button } from '@ragenai/common-ui/Button';
+import { Card } from '@ragenai/common-ui/Card';
 import { statusToast } from '@/app/lib/utils/toast';
+import { logger } from '@/app/lib/utils/logger';
+
+// Simple error type to replace APIError
+type APIError = {
+  message: string;
+  longMessage?: string;
+  code?: string;
+};
 const schema = z
   .object({
     currentPassword: z
@@ -34,31 +41,32 @@ const schema = z
 type FormData = z.infer<typeof schema>;
 
 export const ChangePasswordForm = () => {
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
+  const [apiErrors, setApiErrors] = useState<APIError[]>([]);
 
-  const { successToast } = statusToast();
-  const { user } = useUser();
+  const { errorToast } = statusToast();
+  const { user: _user } = useUser();
   const t = useTranslations('change-password');
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
+  const onSubmit = async (_data: FormData) => {
     try {
-      await user?.updatePassword({
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword,
+      // TODO: Implement password change with Better Auth
+      // Better Auth uses different API for password changes
+      // See: https://www.better-auth.com/docs/authentication/password
+      logger.warn('Password change not implemented with Better Auth yet');
+      errorToast({
+        message:
+          'Password change functionality is being migrated to Better Auth',
       });
-      successToast({ message: t('password-changed') });
-      reset();
     } catch (error) {
-      if (isClerkAPIResponseError(error)) {
-        setApiErrors(error.errors);
+      if (error instanceof Error) {
+        setApiErrors([{ message: error.message }]);
       }
     }
   };
@@ -99,7 +107,13 @@ export const ChangePasswordForm = () => {
           >
             {t('change-password')}
           </Button>
-          <ClerkErrorsInterface apiErrors={apiErrors} />
+          {apiErrors.length > 0 && (
+            <div className="mt-2 text-sm text-red-600">
+              {apiErrors.map((error, index) => (
+                <p key={index}>{error.message}</p>
+              ))}
+            </div>
+          )}
         </div>
       </form>
     </Card>

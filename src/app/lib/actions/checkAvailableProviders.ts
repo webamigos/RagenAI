@@ -1,10 +1,9 @@
 'use server';
 
-import { auth } from '@clerk/nextjs/server';
 import {
-  ModelProvider,
+  type ModelProvider,
   availableModels,
-  AvailableModel,
+  type AvailableModel,
 } from '../../components/config';
 import {
   getOpenaiAPIKey,
@@ -15,7 +14,7 @@ import {
   getOpenrouterAPIKey,
   getFireworksAPIKey,
   getAzureOpenAICredentials,
-} from '../services/settings';
+} from '@/features/organizations/services/organization-settings';
 
 const providerStatusCache = new Map<
   string,
@@ -29,9 +28,9 @@ type ProviderStatus = {
   source: 'organization' | 'environment' | 'both';
 };
 
-export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
-  const { orgId } = auth();
-
+export async function checkAvailableProviders(
+  orgId: string,
+): Promise<ProviderStatus[]> {
   if (!orgId) {
     throw new Error('Organization ID is required');
   }
@@ -154,15 +153,15 @@ export async function checkAvailableProviders(): Promise<ProviderStatus[]> {
   return providerStatuses;
 }
 
-export async function getAvailableModelsForOrganization(): Promise<
-  AvailableModel[]
-> {
-  const providerStatuses = await checkAvailableProviders();
+export async function getAvailableModelsForOrganization(
+  orgId: string,
+): Promise<AvailableModel[]> {
+  const providerStatuses = await checkAvailableProviders(orgId);
   const availableProviders = providerStatuses
     .filter((status) => status.available)
     .map((status) => status.provider);
 
   return availableModels.filter((model) =>
-    availableProviders.includes(model.provider)
+    availableProviders.includes(model.provider),
   );
 }

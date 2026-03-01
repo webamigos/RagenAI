@@ -1,16 +1,10 @@
-import { OrganizationSettings } from '@/app/lib/types/settings';
+import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import {
   createChatCompletionInstance,
   createModerationInstance,
 } from '@/app/lib/services/llm';
-import {
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
 import { logger } from '@/app/lib/utils/logger';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
-
-const serviceName = 'initializeConversationChain';
 
 type InitializeConversationChainParams = {
   settings: OrganizationSettings;
@@ -24,17 +18,9 @@ export const initializeConversationChain = async ({
   try {
     const { apiKey, model, temperature, prompt } = settings;
 
-    setSentryServiceTag(serviceName);
-    setSentryContext('CHAIN_DATA', {
-      model,
-      temperature,
-      prompt,
-      hasProjectInstruction: !!projectInstruction,
-    });
-
     return await conversationChain({
       models: {
-        contentModerator: createModerationInstance({ apiKey }),
+        contentModerator: createModerationInstance(),
         answerGenerator: createChatCompletionInstance({
           apiKey,
           model,

@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { Text } from '@ragenai/common-ui/Text';
-import { FileType, UserFile } from '@prisma/client';
+import { type UserFile } from '@/generated/prisma/browser';
 
 import { FileCard } from './FileCard';
 import { DeleteFileModal } from '../DeleteFileModal';
@@ -12,7 +12,7 @@ import {
   type ModalStateProps,
   type UserFileTypeSafe,
 } from '../FileList/UserFilesTable';
-import { type UserFileType } from '@/app/contracts/Documents';
+import { type UserFileType } from '@/features/documents/contracts/document.types';
 
 type GridViewProps = {
   files: UserFileType[];
@@ -25,7 +25,7 @@ type GridViewProps = {
   removeFile: (publicFileId: UserFile['public_id']) => void;
   handleDelete: (
     filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name']
+    fileName: UserFile['file_name'],
   ) => void;
 };
 

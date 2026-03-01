@@ -1,26 +1,24 @@
 'use client';
 
-import { isClerkAPIResponseError } from '@clerk/nextjs/errors';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
-import { useSignIn } from '@clerk/nextjs';
 import { useState } from 'react';
 
-import { useRouter } from '@/i18n/routing';
-import { ClerkErrorsInterface } from '@/app/components/ClerkErrorsInterface';
-import { Button, Card, Input, Link, Text } from '@ragenai/common-ui';
+import { Button } from '@ragenai/common-ui/Button';
+import { Input } from '@ragenai/common-ui/Input';
+import { signIn } from '@/app/hooks/use-better-auth';
+import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
+import { logger } from '@/app/lib/utils/logger';
 import { type LoginFormData, loginSchema } from './schema';
-import { type ClerkAPIError } from '@clerk/types';
 
 export const LoginForm = () => {
-  const [apiErrors, setApiErrors] = useState<ClerkAPIError[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isLoaded, signIn, setActive } = useSignIn();
 
   const t = useTranslations('sign-in');
-  const { push } = useRouter();
+  const locale = useLocale();
 
   const {
     register,
@@ -32,25 +30,35 @@ export const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     const { email, password } = data;
-
-    if (!isLoaded) return;
-
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      const result = await signIn.create({
-        identifier: email,
-        password: password,
+      const result = await signIn.email({
+        email,
+        password,
       });
 
-      if (result.status === 'complete') {
-        await setActive({ session: result.createdSessionId });
-        push('/');
+      if (result.error) {
+        setError(result.error.message || 'Sign in failed');
+        return;
       }
-    } catch (error) {
-      if (isClerkAPIResponseError(error)) {
-        setApiErrors(error.errors);
+
+      // Finalize user onboarding (set activeOrganizationId + trial subscription)
+      try {
+        await finalizeUserOnboarding();
+      } catch (err) {
+        logger.warn(
+          { error: err },
+          'Onboarding finalization failed, relying on fallback',
+        );
+        // Continue anyway - middleware/account-configuration will handle it
       }
+
+      // Use window.location.href to force full page reload and session refresh
+      window.location.href = `/${locale}/`;
+    } catch (err) {
+      setError('An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
     }
@@ -74,6 +82,9 @@ export const LoginForm = () => {
         error={errors.password}
         errorMessage={errors.password?.message}
       />
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>
+      )}
       <Button
         type="submit"
         className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -82,7 +93,6 @@ export const LoginForm = () => {
       >
         {t('sign-in')}
       </Button>
-      <ClerkErrorsInterface apiErrors={apiErrors} />
     </form>
   );
 };

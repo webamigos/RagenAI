@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from 'react';
 import { format } from 'date-fns';
-import { ApiKey, Project } from '@prisma/client';
+import { type ApiKey, type Project } from '@/generated/prisma/browser';
 import { useTranslations } from 'next-intl';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useRouter } from '@/i18n/routing';
 
 import {
@@ -14,16 +14,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Tooltip,
-  TrashIcon,
-} from '@ragenai/common-ui';
-
-import { Button } from '@ragenai/tui';
+} from '@ragenai/common-ui/Table';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import { TrashIcon } from '@ragenai/common-ui/icons';
 
 import { RemoveApiKeyDialog } from './RemoveApiKey/RemoveApiKeyDialog';
 import { removeApiKey } from './RemoveApiKey/actions';
-import { Link } from '@/i18n/routing';
-import { PlusIcon } from '@heroicons/react/16/solid';
 
 type Props = {
   data: {
@@ -42,7 +38,7 @@ type Props = {
 export const ApiKeysList = ({ data, defaultPublicProjectId }: Props) => {
   const t = useTranslations('api-keys');
   const [selectedKey, setSelectedKey] = useState<ApiKey['public_id'] | null>(
-    null
+    null,
   );
   const [isDialogOpened, setIsDialogOpened] = useState(false);
   const [isPending, startTransition] = useTransition();

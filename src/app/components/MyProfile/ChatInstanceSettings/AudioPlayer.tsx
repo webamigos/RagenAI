@@ -19,7 +19,9 @@ export const AudioPlayer = ({
 
   useEffect(() => {
     const audioEl = audioRef.current;
-    if (!audioEl) return;
+    if (!audioEl) {
+      return;
+    }
 
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
@@ -48,7 +50,9 @@ export const AudioPlayer = ({
   }, [audioUrl, autoPlay]);
 
   const togglePlayPause = () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      return;
+    }
     if (isPlaying) {
       audioRef.current.pause();
     } else {

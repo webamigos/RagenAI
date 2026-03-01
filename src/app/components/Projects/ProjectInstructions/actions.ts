@@ -1,35 +1,16 @@
 'use server';
 
-import {
-  saveProjectInstruction,
-  getProjectInstruction,
-} from '@/app/lib/services/projectInstructions';
+import { saveProjectInstructionCommand as saveProjectInstruction } from '@/features/projects/services/commands/save-project-instruction-command';
+import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  setSentryContext,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
-
-const serviceName = 'projectInstructions';
 
 export async function saveProjectInstructionAction(
   projectId: string,
-  instruction: string
+  instruction: string,
 ): Promise<{ success: boolean; message: string }> {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      projectId,
-      instructionLength: instruction.length,
-    });
-
-    const result = await saveProjectInstruction(projectId, instruction);
-
-    if (result.success) {
-      return { success: true, message: 'Instruction saved successfully' };
-    } else {
-      return { success: false, message: result.status };
-    }
+    await saveProjectInstruction(projectId, instruction);
+    return { success: true, message: 'Instruction saved successfully' };
   } catch (error) {
     logger.error({ err: error }, 'Failed to save project instruction');
     return { success: false, message: 'Failed to save project instruction' };
@@ -37,14 +18,9 @@ export async function saveProjectInstructionAction(
 }
 
 export async function getProjectInstructionAction(
-  projectId: string
+  projectId: string,
 ): Promise<{ success: boolean; instruction: string | null; message?: string }> {
   try {
-    setSentryServiceTag(serviceName);
-    setSentryContext('EXTRA_DATA', {
-      projectId,
-    });
-
     const instruction = await getProjectInstruction(projectId);
     return { success: true, instruction };
   } catch (error) {

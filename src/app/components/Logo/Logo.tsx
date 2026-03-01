@@ -18,7 +18,7 @@ type Props = {
 export const Logo = ({
   className,
   disableLink = false,
-  ignoreTheme = false,
+  ignoreTheme: _ignoreTheme = false,
 }: Props) => {
   const { refresh } = useRouter();
   const pathname = usePathname();
@@ -51,7 +51,7 @@ export const Logo = ({
           height={80}
           className={classMerge(
             `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
-            className
+            className,
           )}
           onClick={() => {
             if (!disableLink) {

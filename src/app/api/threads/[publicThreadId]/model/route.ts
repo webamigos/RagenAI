@@ -1,12 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@clerk/nextjs/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  setSentryClerkOrganizationTag,
-  setSentryServiceTag,
-} from '@/app/lib/services/sentry';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,14 +19,23 @@ const updateModelSchema = z.object({
 export async function PATCH(request: NextRequest, { params }: Params) {
   const { publicThreadId } = await params;
   try {
-    const { orgId, userId } = getAuth(request);
-    setSentryServiceTag('threads.model.patch');
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-    if (!orgId) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    setSentryClerkOrganizationTag(orgId);
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 401 },
+      );
+    }
+
+    const userId = session.user.id;
 
     const body = await request.json();
     const { model } = updateModelSchema.parse(body);
@@ -64,12 +70,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         success: true,
         thread: updatedThread,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     logger.error(
       { err: error, threadId: publicThreadId },
-      'Error updating thread model'
+      'Error updating thread model',
     );
 
     return NextResponse.json(
@@ -77,7 +83,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
