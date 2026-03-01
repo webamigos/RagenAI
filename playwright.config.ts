@@ -1,9 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenvFlow from 'dotenv-flow';
-
-dotenvFlow.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
