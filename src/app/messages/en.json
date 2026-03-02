@@ -379,6 +379,7 @@
     "assistant-management": "Assistant settings",
     "api-keys": "API Keys",
     "teams": "Teams",
+    "users": "Users",
     "ai-usage": "AI Usage",
     "disk-usage": "Disk Usage",
     "create-new-thread": "New thread",
@@ -967,6 +968,28 @@
       "changing": "Changing password...",
       "success": "Password has been changed",
       "error": "Invalid current password"
+    }
+  },
+  "impersonation": {
+    "banner": "You are impersonating {name}",
+    "stop": "Stop impersonating"
+  },
+  "admin": {
+    "users": {
+      "title": "Users",
+      "search": "Search users...",
+      "impersonate": "Impersonate",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "created": "Created"
+    },
+    "create-organization": {
+      "title": "Create Organization",
+      "name": "Organization name",
+      "slug": "Slug",
+      "submit": "Create",
+      "error": "Failed to create organization"
     }
   }
 }

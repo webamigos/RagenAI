@@ -383,6 +383,7 @@
     "subscription-management": "Subskrypcja",
     "api-keys": "Klucze API",
     "teams": "Zespoły",
+    "users": "Użytkownicy",
     "ai-usage": "Użycie AI",
     "disk-usage": "Użycie dysku",
     "create-new-thread": "Nowy wątek",
@@ -970,6 +971,28 @@
       "changing": "Zmiana hasła...",
       "success": "Hasło zostało zmienione",
       "error": "Nieprawidłowe obecne hasło"
+    }
+  },
+  "impersonation": {
+    "banner": "Podszywasz się pod {name}",
+    "stop": "Zakończ podszywanie"
+  },
+  "admin": {
+    "users": {
+      "title": "Użytkownicy",
+      "search": "Szukaj użytkowników...",
+      "impersonate": "Podszyj się",
+      "name": "Imię",
+      "email": "Email",
+      "role": "Rola",
+      "created": "Utworzono"
+    },
+    "create-organization": {
+      "title": "Utwórz organizację",
+      "name": "Nazwa organizacji",
+      "slug": "Slug",
+      "submit": "Utwórz",
+      "error": "Nie udało się utworzyć organizacji"
     }
   }
 }
