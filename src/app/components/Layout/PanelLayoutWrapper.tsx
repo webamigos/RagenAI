@@ -4,6 +4,7 @@ import { useUser } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
 import { CollapsedSidebarRail } from '@/app/components/Sidebar/CollapsedSidebarRail';
+import { ImpersonationBanner } from '@/app/components/ImpersonationBanner';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -37,12 +38,15 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
   }
 
   return (
-    <SidebarLayout
-      navbar={navbar}
-      sidebar={sidebar}
-      collapsedSidebar={<CollapsedSidebarRail />}
-    >
-      {children}
-    </SidebarLayout>
+    <>
+      <ImpersonationBanner />
+      <SidebarLayout
+        navbar={navbar}
+        sidebar={sidebar}
+        collapsedSidebar={<CollapsedSidebarRail />}
+      >
+        {children}
+      </SidebarLayout>
+    </>
   );
 };

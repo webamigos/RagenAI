@@ -20,13 +20,22 @@ import { NewChatButton } from '@/app/components/Sidebar/NewChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
 import { PanelLayoutWrapper } from '@/app/components/Layout/PanelLayoutWrapper';
 import { getTranslations } from 'next-intl/server';
+import { OrganizationSwitcher } from '@/app/components/Sidebar/OrganizationSwitcher';
+import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
+import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { isAppAdmin } from '@/lib/auth-access-control';
 
 type Props = Readonly<{
   children: React.ReactNode;
 }>;
 
 export default async function PanelLayout({ children }: Props) {
-  const t = await getTranslations('sidebar');
+  const [t, user, activeOrgId, organizations] = await Promise.all([
+    getTranslations('sidebar'),
+    getCurrentUser(),
+    getOrgIdFromAuth(),
+    getUserOrganizationsQuery(),
+  ]);
 
   const navbar = (
     <Navbar>
@@ -49,6 +58,11 @@ export default async function PanelLayout({ children }: Props) {
             </span>
             <SidebarToggleButton />
           </div>
+          <OrganizationSwitcher
+            organizations={organizations}
+            activeOrganizationId={activeOrgId}
+            isAppAdmin={isAppAdmin(user)}
+          />
           <NewChatButton variant="sidebar">
             <PlusIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('new-chat')}</SidebarLabel>
