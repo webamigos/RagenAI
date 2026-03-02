@@ -22,7 +22,7 @@ export const config = {
   ],
 };
 
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   // Ignore all below setup for API instance
   if (IS_API_MODE) {
     return NextResponse.next();

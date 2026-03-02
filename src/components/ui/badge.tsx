@@ -23,7 +23,7 @@ const badgeVariants = cva(
     defaultVariants: {
       variant: 'default',
     },
-  }
+  },
 );
 
 function Badge({
@@ -36,7 +36,6 @@ function Badge({
   const Comp = asChild ? Slot.Root : 'span';
 
   return (
-    // @ts-expect-error - React 18 LegacyRef vs Radix Slot Ref incompatibility (upgrade @types/react to 19 to resolve)
     <Comp
       data-slot="badge"
       data-variant={variant}

@@ -33,7 +33,7 @@ export function useAuth() {
   return {
     userId: session?.user?.id || null,
     // @ts-ignore - Better Auth types don't expose activeOrganizationId yet
-    orgId: session?.activeOrganizationId || null,
+    orgId: (session?.session as any)?.activeOrganizationId || null,
     isLoaded: !isPending,
     isSignedIn: !!session?.user,
     sessionId: session?.session?.id || null,

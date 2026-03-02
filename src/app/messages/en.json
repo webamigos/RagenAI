@@ -972,7 +972,8 @@
   },
   "impersonation": {
     "banner": "You are impersonating {name}",
-    "stop": "Stop impersonating"
+    "stop": "Stop impersonating",
+    "stop-error": "Failed to stop impersonation"
   },
   "admin": {
     "users": {
@@ -987,8 +988,9 @@
     "create-organization": {
       "title": "Create Organization",
       "name": "Organization name",
-      "slug": "Slug",
+      "slug": "URL Slug",
       "submit": "Create",
+      "success": "Organization created",
       "error": "Failed to create organization"
     }
   }

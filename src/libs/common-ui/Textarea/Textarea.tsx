@@ -49,6 +49,7 @@ type Props = {
   disabled?: boolean;
   handleSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
   modelSelector?: React.ReactNode;
+  leftAddon?: React.ReactNode;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -76,6 +77,7 @@ export const Textarea = forwardRef(
       value,
       handleSubmit: _handleSubmit,
       modelSelector,
+      leftAddon,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>,
@@ -333,6 +335,12 @@ export const Textarea = forwardRef(
               >
                 {attachmentIcon}
               </button>
+            )}
+
+            {leftAddon && (
+              <div className="absolute top-1/2 -translate-y-1/2 left-3 z-10 flex items-center">
+                {leftAddon}
+              </div>
             )}
 
             {icon && (

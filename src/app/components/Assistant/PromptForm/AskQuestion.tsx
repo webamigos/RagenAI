@@ -19,6 +19,8 @@ type Props = {
   onFilesDrop?: (files: File[]) => void;
   threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentRemove?: (index: number) => void;
+  textareaClassName?: string;
+  leftAddon?: React.ReactNode;
 };
 
 export const AskQuestion = ({
@@ -34,6 +36,8 @@ export const AskQuestion = ({
   onFilesDrop,
   threadDocuments,
   onThreadDocumentRemove,
+  textareaClassName,
+  leftAddon,
 }: Props) => {
   const t = useTranslations('form');
 
@@ -43,7 +47,7 @@ export const AskQuestion = ({
       value={value}
       onSend={onSend}
       containerClassName="w-full"
-      className="h-10 !rounded-xl !border-border/60 !shadow-md focus:!shadow-lg focus:!border-ring/40 transition-shadow dark:!bg-background"
+      className={`h-10 !rounded-xl !border-border/60 !shadow-md focus:!shadow-lg focus:!border-ring/40 transition-shadow dark:!bg-background ${textareaClassName || ''}`}
       errorMessage={error?.message}
       error={error}
       disabled={disabled}
@@ -56,6 +60,7 @@ export const AskQuestion = ({
       onFilesDrop={onFilesDrop}
       threadDocuments={threadDocuments}
       onThreadDocumentRemove={onThreadDocumentRemove}
+      leftAddon={leftAddon}
     />
   );
 };

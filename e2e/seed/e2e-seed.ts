@@ -17,6 +17,10 @@ import {
   TEST_ACCOUNT_ID,
   TEST_PROJECT_TITLE,
   TEST_PROJECT_PUBLIC_ID,
+  TEST_ORG2_ID,
+  TEST_ORG2_SLUG,
+  TEST_ORG2_NAME,
+  TEST_MEMBER2_ID,
 } from '../constants.js';
 
 const connectionString = process.env.DATABASE_URL;
@@ -41,7 +45,7 @@ async function cleanup() {
     where: { organization_id: TEST_ORG_ID },
   });
   await prisma.member.deleteMany({
-    where: { id: TEST_MEMBER_ID },
+    where: { id: { in: [TEST_MEMBER_ID, TEST_MEMBER2_ID] } },
   });
   await prisma.account.deleteMany({
     where: { id: TEST_ACCOUNT_ID },
@@ -49,8 +53,11 @@ async function cleanup() {
   await prisma.session.deleteMany({
     where: { userId: TEST_USER_ID },
   });
+  await prisma.organizationSettings.deleteMany({
+    where: { organization_id: TEST_ORG2_ID },
+  });
   await prisma.organization.deleteMany({
-    where: { id: TEST_ORG_ID },
+    where: { id: { in: [TEST_ORG_ID, TEST_ORG2_ID] } },
   });
   await prisma.user.deleteMany({
     where: { id: TEST_USER_ID },
@@ -70,7 +77,7 @@ async function seed() {
       name: TEST_USER_NAME,
       emailVerified: true,
       onboardingComplete: true,
-      role: 'user',
+      role: 'admin',
     },
   });
   console.log(`Created user: ${TEST_USER_EMAIL}`);
@@ -156,6 +163,36 @@ async function seed() {
     },
   });
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
+
+  // 9. Create second organization for org-switcher tests
+  await prisma.organization.create({
+    data: {
+      id: TEST_ORG2_ID,
+      name: TEST_ORG2_NAME,
+      slug: TEST_ORG2_SLUG,
+      vectorStore: 'meilisearch',
+    },
+  });
+  console.log(`Created second organization: ${TEST_ORG2_NAME}`);
+
+  // 10. Add user as owner of second org
+  await prisma.member.create({
+    data: {
+      id: TEST_MEMBER2_ID,
+      organizationId: TEST_ORG2_ID,
+      userId: TEST_USER_ID,
+      role: 'owner',
+    },
+  });
+  console.log('Created member for second org');
+
+  // 11. Create org settings for second org
+  await prisma.organizationSettings.create({
+    data: {
+      organization_id: TEST_ORG2_ID,
+    },
+  });
+  console.log('Created organization settings for second org');
 
   console.log('E2E seed complete.');
 }

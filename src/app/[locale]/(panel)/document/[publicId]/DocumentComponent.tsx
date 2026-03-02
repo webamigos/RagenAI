@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useOrganization } from '@/app/hooks/use-auth';
-// @ts-expect-error -- UMD bundle (Turbopack bug with markdown-it ESM)
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import TurndownService from 'turndown';
 import { useTranslations } from 'next-intl';
