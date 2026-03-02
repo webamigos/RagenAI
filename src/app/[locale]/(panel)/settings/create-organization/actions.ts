@@ -9,6 +9,8 @@ import db from '@ragenai/prisma-client';
 export async function createOrganizationAction(name: string, slug: string) {
   const adminUser = await requireAppAdmin();
 
+  // createOrganization with authenticated headers automatically adds
+  // the calling user as owner — no need for a separate addMember call
   const org = await auth.api.createOrganization({
     body: { name, slug },
     headers: await headers(),
@@ -17,16 +19,6 @@ export async function createOrganizationAction(name: string, slug: string) {
   if (!org?.id) {
     throw new Error('Failed to create organization');
   }
-
-  // Add admin user as owner
-  await auth.api.addMember({
-    body: {
-      organizationId: org.id,
-      userId: adminUser.id,
-      role: 'owner',
-    },
-    headers: new Headers(),
-  });
 
   // Create default project
   await createOrganizationWithDefaultProjectCommand(org.id, adminUser.id);
