@@ -44,7 +44,6 @@ import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-he
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
-import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
@@ -421,10 +420,6 @@ export const deleteThread = async (threadPublicId: string) => {
 
 export const getUserOrganizationsAction = async () => {
   return getUserOrganizationsQuery();
-};
-
-export const switchOrganizationAction = async (organizationId: string) => {
-  return switchOrganizationCommand(organizationId);
 };
 
 export const getAccountSetupStatusAction = async () => {

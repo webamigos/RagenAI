@@ -16,7 +16,7 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
-import { switchOrganizationAction } from '@/app/actions/index';
+import { authClient } from '@/app/hooks/use-better-auth';
 import { useState } from 'react';
 
 type Organization = {
@@ -49,7 +49,7 @@ export function OrganizationSwitcher({
 
   const handleSwitchOrg = async (organizationId: string) => {
     setIsPending(true);
-    await switchOrganizationAction(organizationId);
+    await authClient.organization.setActive({ organizationId });
     window.location.href = '/new';
   };
 
