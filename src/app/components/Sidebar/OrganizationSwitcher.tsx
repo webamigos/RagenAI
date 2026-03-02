@@ -1,23 +1,25 @@
 'use client';
 
 import {
-  Dropdown,
-  DropdownButton,
   DropdownMenu,
-  DropdownItem,
-  DropdownDivider,
-  DropdownLabel,
-} from '@ragenai/tui/dropdown';
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import {
-  ChevronUpDownIcon,
-  BuildingOfficeIcon,
+  ChevronsUpDownIcon,
+  Building2Icon,
   PlusIcon,
-  Cog6ToothIcon,
-} from '@heroicons/react/24/outline';
+  SettingsIcon,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { authClient } from '@/app/hooks/use-better-auth';
+import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
+import { Link } from '@/i18n/routing';
 
 type Organization = {
   id: string;
@@ -52,6 +54,7 @@ export function OrganizationSwitcher({
       return;
     }
 
+    await switchOrganizationCommand(organizationId);
     await authClient.organization.setActive({ organizationId });
     router.refresh();
   };
@@ -68,38 +71,44 @@ export function OrganizationSwitcher({
   }
 
   return (
-    <Dropdown>
-      <DropdownButton as={SidebarItem}>
-        <BuildingOfficeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-        <SidebarLabel className="font-semibold truncate">
-          {activeOrg?.name ?? t('manage-organization')}
-        </SidebarLabel>
-        <ChevronUpDownIcon className="ml-auto size-4 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-      </DropdownButton>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <SidebarItem>
+          <BuildingOfficeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <SidebarLabel className="font-semibold truncate">
+            {activeOrg?.name ?? t('manage-organization')}
+          </SidebarLabel>
+          <ChevronsUpDownIcon className="ml-auto size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+        </SidebarItem>
+      </DropdownMenuTrigger>
 
-      <DropdownMenu
-        anchor="bottom start"
-        className="min-w-[var(--button-width)]"
-      >
+      <DropdownMenuContent align="start" className="min-w-56">
         {otherOrgs.map((org) => (
-          <DropdownItem key={org.id} onClick={() => handleSwitchOrg(org.id)}>
-            <BuildingOfficeIcon className="size-4" />
-            <DropdownLabel>{org.name}</DropdownLabel>
-          </DropdownItem>
+          <DropdownMenuItem
+            key={org.id}
+            onClick={() => handleSwitchOrg(org.id)}
+          >
+            <Building2Icon />
+            {org.name}
+          </DropdownMenuItem>
         ))}
 
-        {otherOrgs.length > 0 && <DropdownDivider />}
+        {otherOrgs.length > 0 && <DropdownMenuSeparator />}
 
-        <DropdownItem href="/settings/organization-profile">
-          <Cog6ToothIcon className="size-4" />
-          <DropdownLabel>{t('manage-organization')}</DropdownLabel>
-        </DropdownItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings/organization-profile">
+            <SettingsIcon />
+            {t('manage-organization')}
+          </Link>
+        </DropdownMenuItem>
 
-        <DropdownItem href="/settings/create-organization">
-          <PlusIcon className="size-4" />
-          <DropdownLabel>{t('create-organization')}</DropdownLabel>
-        </DropdownItem>
-      </DropdownMenu>
-    </Dropdown>
+        <DropdownMenuItem asChild>
+          <Link href="/settings/create-organization">
+            <PlusIcon />
+            {t('create-organization')}
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
