@@ -11,21 +11,25 @@ export type UserOrganization = {
 };
 
 export async function getUserOrganizationsQuery(): Promise<UserOrganization[]> {
-  // @ts-ignore - Better Auth types don't expose listOrganizations yet
-  const organizations = await (auth.api as any).listOrganizations({
-    headers: await headers(),
-  });
+  try {
+    // @ts-ignore - Better Auth types don't expose listOrganizations yet
+    const organizations = await (auth.api as any).listOrganizations({
+      headers: await headers(),
+    });
 
-  if (!organizations || !Array.isArray(organizations)) {
+    if (!organizations || !Array.isArray(organizations)) {
+      return [];
+    }
+
+    return organizations.map(
+      (org: { id: string; name: string; slug?: string; logo?: string }) => ({
+        id: org.id,
+        name: org.name,
+        slug: org.slug ?? null,
+        logo: org.logo ?? null,
+      }),
+    );
+  } catch {
     return [];
   }
-
-  return organizations.map(
-    (org: { id: string; name: string; slug?: string; logo?: string }) => ({
-      id: org.id,
-      name: org.name,
-      slug: org.slug ?? null,
-      logo: org.logo ?? null,
-    }),
-  );
 }

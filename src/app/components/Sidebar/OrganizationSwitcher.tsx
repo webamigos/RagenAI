@@ -17,7 +17,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { switchOrganizationAction } from '@/app/actions/index';
 import { authClient } from '@/app/hooks/use-better-auth';
 
 type Organization = {
@@ -53,7 +52,6 @@ export function OrganizationSwitcher({
       return;
     }
 
-    await switchOrganizationAction(organizationId);
     await authClient.organization.setActive({ organizationId });
     router.refresh();
   };

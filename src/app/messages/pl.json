@@ -975,7 +975,8 @@
   },
   "impersonation": {
     "banner": "Podszywasz się pod {name}",
-    "stop": "Zakończ podszywanie"
+    "stop": "Zakończ podszywanie",
+    "stop-error": "Nie udało się zakończyć podszywania"
   },
   "admin": {
     "users": {
@@ -990,8 +991,9 @@
     "create-organization": {
       "title": "Utwórz organizację",
       "name": "Nazwa organizacji",
-      "slug": "Slug",
+      "slug": "URL Slug",
       "submit": "Utwórz",
+      "success": "Organizacja została utworzona",
       "error": "Nie udało się utworzyć organizacji"
     }
   }

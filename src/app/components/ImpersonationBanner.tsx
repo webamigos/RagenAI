@@ -5,12 +5,14 @@ import { useRouter } from '@/i18n/routing';
 import { useSession } from '@/app/hooks/use-better-auth';
 import { stopImpersonationAction } from '@/app/[locale]/(panel)/settings/users/actions';
 import { useTransition } from 'react';
+import { statusToast } from '@/app/lib/utils/toast';
 
 export function ImpersonationBanner() {
   const t = useTranslations('impersonation');
   const router = useRouter();
   const { data: session, refetch } = useSession();
   const [isPending, startTransition] = useTransition();
+  const { errorToast } = statusToast();
 
   // @ts-ignore - Better Auth types don't expose impersonatedBy yet
   const impersonatedBy = session?.session?.impersonatedBy as string | undefined;
@@ -29,7 +31,7 @@ export function ImpersonationBanner() {
         router.push('/new');
         router.refresh();
       } catch {
-        // Error is handled by the server action
+        errorToast({ message: t('stop-error') });
       }
     });
   };

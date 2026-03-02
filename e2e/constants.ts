@@ -16,4 +16,9 @@ export const TEST_ACCOUNT_ID = 'e2e-test-account-00-0000-0001';
 export const TEST_PROJECT_TITLE = 'E2E Test Project';
 export const TEST_PROJECT_PUBLIC_ID = 'e2e00000-0000-0000-0000-00e2e0000001';
 
+export const TEST_ORG2_ID = 'e2e-test-org-00000-0000-0002';
+export const TEST_ORG2_SLUG = 'e2e-test-org-2';
+export const TEST_ORG2_NAME = 'E2E Second Org';
+export const TEST_MEMBER2_ID = 'e2e-test-member-000-0000-0002';
+
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');
