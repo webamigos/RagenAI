@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { requireAppAdmin } from '@/lib/auth-guards';
+import { getSessionOrThrow } from '@/lib/auth-guards';
 import { revalidatePath } from 'next/cache';
 
 export async function switchOrganizationCommand(organizationId: string) {
@@ -10,7 +10,7 @@ export async function switchOrganizationCommand(organizationId: string) {
     throw new Error('Organization ID is required');
   }
 
-  await requireAppAdmin();
+  await getSessionOrThrow();
 
   await auth.api.setActiveOrganization({
     body: { organizationId },

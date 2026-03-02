@@ -16,10 +16,8 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
 import { switchOrganizationAction } from '@/app/actions/index';
-import { useSession } from '@/app/hooks/use-better-auth';
-import { useTransition } from 'react';
+import { useState } from 'react';
 
 type Organization = {
   id: string;
@@ -40,9 +38,7 @@ export function OrganizationSwitcher({
   isAppAdmin,
 }: Props) {
   const t = useTranslations('sidebar');
-  const router = useRouter();
-  const { refetch } = useSession();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const activeOrg = organizations.find(
     (org) => org.id === activeOrganizationId,
@@ -51,17 +47,10 @@ export function OrganizationSwitcher({
     (org) => org.id !== activeOrganizationId,
   );
 
-  const handleSwitchOrg = (organizationId: string) => {
-    startTransition(async () => {
-      try {
-        await switchOrganizationAction(organizationId);
-        await refetch();
-        router.push('/new');
-        router.refresh();
-      } catch {
-        // Error is handled by the server action
-      }
-    });
+  const handleSwitchOrg = async (organizationId: string) => {
+    setIsPending(true);
+    await switchOrganizationAction(organizationId);
+    window.location.href = '/new';
   };
 
   if (!isAppAdmin) {
