@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { getSubscriptionData } from '../../subscription/actions';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { isAppAdmin } from '@/lib/auth-access-control';
 import { OrganizationTabs } from '../components/OrganizationTabs';
 import db from '@ragenai/prisma-client';
 
@@ -81,15 +82,17 @@ export default async function OrganizationProfilePage({ params }: Props) {
   // Get current user's role
   const activeMember = members.find((m) => m.userId === user.id);
 
-  // Calculate allowInvite flag
+  // Calculate allowInvite flag — app admins skip plan restrictions
   const FEATURE_FLAG = !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
   const planName = subscription?.plan;
-  const allowInvite = Boolean(
-    FEATURE_FLAG &&
+  const allowInvite =
+    isAppAdmin(user) ||
+    Boolean(
+      FEATURE_FLAG &&
       planName &&
       planName !== TRIAL_PLAN_NAME &&
-      planName !== FREE_PLAN_NAME
-  );
+      planName !== FREE_PLAN_NAME,
+    );
 
   return (
     <div className="p-6">
