@@ -15,6 +15,7 @@ import {
   CircleStackIcon,
   CpuChipIcon,
   UserGroupIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 
 import { useTranslations } from 'next-intl';
@@ -59,6 +60,12 @@ export const NewSidebarSettingsBody = () => {
           <KeyIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('api-keys')}</SidebarLabel>
         </SidebarItem>
+        {isAppAdmin && (
+          <SidebarItem href="/settings/users">
+            <UsersIcon className={iconClassName} />
+            <SidebarLabel className="font-normal">{t('users')}</SidebarLabel>
+          </SidebarItem>
+        )}
         {isAppAdmin && (
           <SidebarItem href="/settings/ai-usage">
             <CpuChipIcon className={iconClassName} />
