@@ -16,8 +16,9 @@ import {
   Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { switchOrganizationAction } from '@/app/actions/index';
 import { authClient } from '@/app/hooks/use-better-auth';
-import { useState } from 'react';
 
 type Organization = {
   id: string;
@@ -38,7 +39,7 @@ export function OrganizationSwitcher({
   isAppAdmin,
 }: Props) {
   const t = useTranslations('sidebar');
-  const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
 
   const activeOrg = organizations.find(
     (org) => org.id === activeOrganizationId,
@@ -48,9 +49,13 @@ export function OrganizationSwitcher({
   );
 
   const handleSwitchOrg = async (organizationId: string) => {
-    setIsPending(true);
+    if (organizationId === activeOrganizationId) {
+      return;
+    }
+
+    await switchOrganizationAction(organizationId);
     await authClient.organization.setActive({ organizationId });
-    window.location.href = '/new';
+    router.refresh();
   };
 
   if (!isAppAdmin) {
@@ -66,10 +71,7 @@ export function OrganizationSwitcher({
 
   return (
     <Dropdown>
-      <DropdownButton
-        as={SidebarItem}
-        className={isPending ? 'opacity-50 pointer-events-none' : ''}
-      >
+      <DropdownButton as={SidebarItem}>
         <BuildingOfficeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
         <SidebarLabel className="font-semibold truncate">
           {activeOrg?.name ?? t('manage-organization')}
