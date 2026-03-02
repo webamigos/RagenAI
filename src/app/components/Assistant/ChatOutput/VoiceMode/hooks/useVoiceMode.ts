@@ -10,7 +10,7 @@ import { voiceModeReducer, initialState } from '../voiceModeReducer';
 import { type VoiceModeProps, type VoiceModeHandlers } from '../types';
 
 interface UseVoiceModeProps {
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
   initialIsRecording: boolean;
   messages: VoiceModeProps['messages'];
   onClose: () => void;

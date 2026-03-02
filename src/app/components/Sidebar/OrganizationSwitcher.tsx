@@ -15,11 +15,11 @@ import {
   PlusIcon,
   SettingsIcon,
 } from 'lucide-react';
+import { useTransition } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { authClient } from '@/app/hooks/use-better-auth';
 import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
-import { Link } from '@/i18n/routing';
 
 type Organization = {
   id: string;
@@ -41,6 +41,7 @@ export function OrganizationSwitcher({
 }: Props) {
   const t = useTranslations('sidebar');
   const router = useRouter();
+  const [, startTransition] = useTransition();
 
   const activeOrg = organizations.find(
     (org) => org.id === activeOrganizationId,
@@ -49,14 +50,16 @@ export function OrganizationSwitcher({
     (org) => org.id !== activeOrganizationId,
   );
 
-  const handleSwitchOrg = async (organizationId: string) => {
+  const handleSwitchOrg = (organizationId: string) => {
     if (organizationId === activeOrganizationId) {
       return;
     }
 
-    await switchOrganizationCommand(organizationId);
-    await authClient.organization.setActive({ organizationId });
-    router.refresh();
+    startTransition(async () => {
+      await authClient.organization.setActive({ organizationId });
+      await switchOrganizationCommand(organizationId);
+      router.refresh();
+    });
   };
 
   if (!isAppAdmin) {
@@ -86,7 +89,7 @@ export function OrganizationSwitcher({
         {otherOrgs.map((org) => (
           <DropdownMenuItem
             key={org.id}
-            onClick={() => handleSwitchOrg(org.id)}
+            onSelect={() => handleSwitchOrg(org.id)}
           >
             <Building2Icon />
             {org.name}

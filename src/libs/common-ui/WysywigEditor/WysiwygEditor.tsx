@@ -1,6 +1,6 @@
 'use client';
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
 import { type FieldError } from 'react-hook-form';
@@ -56,7 +56,7 @@ function ToolbarDivider() {
   return <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-0.5" />;
 }
 
-function Toolbar({ editor }: { editor: ReturnType<typeof useEditor> }) {
+function Toolbar({ editor }: { editor: Editor | null }) {
   if (!editor) {
     return null;
   }

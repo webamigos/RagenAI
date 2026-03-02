@@ -4,6 +4,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
+import { nextCookies } from 'better-auth/next-js';
 import { stripe } from '@better-auth/stripe';
 import { orgAccessControl, orgRoles } from './auth-access-control';
 import Stripe from 'stripe';
@@ -138,6 +139,7 @@ export const auth = betterAuth({
         });
       },
     }),
+    nextCookies(),
   ],
 
   session: {

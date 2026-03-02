@@ -63,7 +63,7 @@ type CommonConfig = {
   scrollFn: () => void;
   streamedMessage: StreamedMessageDto | null;
   errorToast: ({ message }: ToastProps) => void;
-  promptFormRef: RefObject<PromptFormRef>;
+  promptFormRef: RefObject<PromptFormRef | null>;
   organizationId?: string;
   chatType?: ChatType;
   reduxDispatch: AppDispatch;
@@ -89,7 +89,7 @@ const handleStreamError = async ({
   lastUserMessageId: string | null;
   userMessage: MessageDto;
   messages: MessageDto[];
-  promptFormRef: RefObject<PromptFormRef>;
+  promptFormRef: RefObject<PromptFormRef | null>;
   errorMessage: string | null;
   tChainErrors: TranslationFn;
   errorToast: ({ message }: ToastProps) => void;
