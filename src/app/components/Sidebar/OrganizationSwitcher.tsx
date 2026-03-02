@@ -64,7 +64,7 @@ export function OrganizationSwitcher({
     });
   };
 
-  if (!isAppAdmin || organizations.length <= 1) {
+  if (!isAppAdmin) {
     return (
       <SidebarItem className="cursor-default">
         <BuildingOfficeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
