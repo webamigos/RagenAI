@@ -983,7 +983,9 @@
       "name": "Name",
       "email": "Email",
       "role": "Role",
-      "created": "Created"
+      "created": "Created",
+      "noResults": "No users found",
+      "impersonateError": "Failed to impersonate user"
     },
     "create-organization": {
       "title": "Create Organization",

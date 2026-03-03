@@ -17,6 +17,8 @@ export async function impersonateUserAction(userId: string) {
 }
 
 export async function stopImpersonationAction() {
+  await requireAppAdmin();
+
   await auth.api.stopImpersonating({
     headers: await headers(),
   });

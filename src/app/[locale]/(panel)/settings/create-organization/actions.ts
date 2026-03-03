@@ -23,13 +23,20 @@ export async function createOrganizationAction(name: string, slug: string) {
   // Create default project
   await createOrganizationWithDefaultProjectCommand(org.id, adminUser.id);
 
-  // Set default vector store
+  // Set default vector store (merge with existing metadata)
   const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
+  const existingOrg = await db.organization.findUnique({
+    where: { id: org.id },
+    select: { metadata: true },
+  });
   await db.organization.update({
     where: { id: org.id },
     data: {
       vectorStore: defaultVectorStore,
-      metadata: { vector_store: defaultVectorStore },
+      metadata: {
+        ...((existingOrg?.metadata as object) ?? {}),
+        vector_store: defaultVectorStore,
+      },
     },
   });
 

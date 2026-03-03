@@ -35,7 +35,6 @@
       "Bash(node:*)",
       "Bash(curl:*)",
       "Bash(npx playwright:*)",
-      "Bash(DATABASE_URL=\"postgresql://postgres:pass123@localhost:5432/ragen\" npx playwright:*)",
       "Bash(npx tsx:*)"
     ]
   },

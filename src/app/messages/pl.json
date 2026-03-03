@@ -986,7 +986,9 @@
       "name": "Imię",
       "email": "Email",
       "role": "Rola",
-      "created": "Utworzono"
+      "created": "Utworzono",
+      "noResults": "Nie znaleziono użytkowników",
+      "impersonateError": "Nie udało się podszyć pod użytkownika"
     },
     "create-organization": {
       "title": "Utwórz organizację",
