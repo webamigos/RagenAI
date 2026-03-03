@@ -31,7 +31,7 @@ export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
     }
 
     // Better Auth stores active organization on the session record
-    const orgId = session.session.activeOrganizationId as string | null;
+    const orgId = (session.session?.activeOrganizationId as string) ?? null;
 
     if (orgId) {
       logger.debug({ orgId }, 'Got orgId from session');

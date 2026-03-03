@@ -58,7 +58,7 @@ export function OrganizationSwitcher({
     startTransition(async () => {
       await authClient.organization.setActive({ organizationId });
       await switchOrganizationCommand(organizationId);
-      router.refresh();
+      router.push('/new');
     });
   };
 

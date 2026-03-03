@@ -57,6 +57,13 @@ export const availableModels: AvailableModel[] = [
     origin: 'anthropic',
     reasoning: true,
   },
+  {
+    value: 'anthropic/claude-opus-4.6',
+    label: 'Claude Opus 4.6',
+    provider: 'openrouter',
+    origin: 'anthropic',
+    reasoning: true,
+  },
 
   // Perplexity Models
   {
