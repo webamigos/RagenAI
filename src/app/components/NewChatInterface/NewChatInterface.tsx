@@ -48,12 +48,12 @@ export const NewChatInterface = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
+  const defaultModel =
+    organizationDefaultModel || 'google/gemini-3-flash-preview';
   const [resolvedDefaultModel, setResolvedDefaultModel] = useState<
     string | null
   >(organizationDefaultModel || null);
-  const [selectedModel, setSelectedModel] = useState<string>(
-    organizationDefaultModel || 'google/gemini-3-flash-preview',
-  );
+  const [selectedModel, setSelectedModel] = useState<string>(defaultModel);
   const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
     [],
   );
@@ -130,22 +130,6 @@ export const NewChatInterface = ({
     return null;
   }
 
-  // Show loading state while fetching organization settings
-  if (
-    !isPublicAccess &&
-    !organizationDefaultModel &&
-    resolvedDefaultModel === null
-  ) {
-    return (
-      <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-gray-100"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   const handleVoiceModeActivation = async () => {
     sessionStorage.setItem('voice_mode_active', 'true');
     sessionStorage.setItem('response_type', ChatResponseType.VOICE);
@@ -158,18 +142,6 @@ export const NewChatInterface = ({
   };
 
   const userName = user?.name?.split(' ')[0];
-
-  const suggestions = [
-    { key: 'suggestion-summarize', icon: '📄' },
-    { key: 'suggestion-explain', icon: '💡' },
-    { key: 'suggestion-analyze', icon: '📊' },
-    { key: 'suggestion-write', icon: '✏️' },
-  ] as const;
-
-  const handleSuggestionClick = (text: string) => {
-    handleInputChange(text);
-    inputRef.current?.focus();
-  };
 
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
@@ -189,22 +161,6 @@ export const NewChatInterface = ({
         </div>
       )}
 
-      {!projectTitle && (
-        <div className="flex flex-nowrap items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
-          {suggestions.map(({ key, icon }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => handleSuggestionClick(t(key))}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm text-muted-foreground shadow-sm transition-all hover:bg-accent hover:text-foreground hover:shadow-md active:scale-[0.98]"
-            >
-              <span>{icon}</span>
-              <span>{t(key)}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
       <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
         <MentionTextarea
           ref={inputRef}
@@ -213,7 +169,7 @@ export const NewChatInterface = ({
           onKeyDown={handleKeyDown}
           handleSubmit={handleSubmit}
           placeholder={t('new-thread-placeholder')}
-          className="w-full min-h-[100px] !rounded-xl !shadow-lg !border-border/50 focus-within:!shadow-xl focus-within:!border-ring/30 transition-shadow"
+          className="w-full min-h-[100px] !rounded-xl !shadow-lg !border-border/50 focus-within:!shadow-xl focus-within:!border-ring/30 transition-shadow !pl-10"
           disabled={isLoading || isPending}
           showVoiceInput={false}
           error={errors.prompt}

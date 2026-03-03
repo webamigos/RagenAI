@@ -201,35 +201,39 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             onFilesDrop={handleFilesDrop}
             threadDocuments={threadDocuments}
             onThreadDocumentRemove={handleThreadDocumentRemove}
+            textareaClassName={!isPublicAccess ? '!pl-10' : undefined}
+            leftAddon={
+              !isPublicAccess ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                      aria-label="Add attachment"
+                    >
+                      <PlusIcon className="size-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    side="top"
+                    className="w-52"
+                  >
+                    <DropdownMenuItem
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <ArrowUpTrayIcon className="size-4" />
+                      {tAttach('upload-file')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
+                      <BookOpenIcon className="size-4" />
+                      {tAttach('from-knowledge-base')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : undefined
+            }
           />
-
-          {!isPublicAccess && (
-            <div className="mt-2 flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex items-center justify-center size-8 rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    aria-label="Add attachment"
-                  >
-                    <PlusIcon className="size-4" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" className="w-52">
-                  <DropdownMenuItem
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <ArrowUpTrayIcon className="size-4" />
-                    {tAttach('upload-file')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
-                    <BookOpenIcon className="size-4" />
-                    {tAttach('from-knowledge-base')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          )}
         </form>
 
         <input

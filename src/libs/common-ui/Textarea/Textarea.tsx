@@ -14,7 +14,7 @@ import {
   ArrowRightCircleIcon,
   ExclamationCircleIcon,
   MicrophoneIcon,
-  PaperClipIcon,
+  PlusIcon,
   StopIcon,
 } from '@heroicons/react/20/solid';
 import { CloudArrowUpIcon } from '@heroicons/react/24/outline';
@@ -49,6 +49,8 @@ type Props = {
   disabled?: boolean;
   handleSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
   modelSelector?: React.ReactNode;
+  leftAddon?: React.ReactNode;
+  leftAddonPosition?: 'center' | 'bottom';
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -76,6 +78,8 @@ export const Textarea = forwardRef(
       value,
       handleSubmit: _handleSubmit,
       modelSelector,
+      leftAddon,
+      leftAddonPosition = 'center',
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>,
@@ -192,7 +196,7 @@ export const Textarea = forwardRef(
     let onClick: (() => void) | undefined = undefined;
 
     const attachmentIcon = showFileAttachment ? (
-      <PaperClipIcon
+      <PlusIcon
         className={classMerge(
           'size-5',
           'text-foreground/70 hover:text-foreground cursor-pointer transition-colors',
@@ -333,6 +337,19 @@ export const Textarea = forwardRef(
               >
                 {attachmentIcon}
               </button>
+            )}
+
+            {leftAddon && !attachmentIcon && (
+              <div
+                className={classMerge(
+                  'absolute left-3 z-10 flex items-center',
+                  leftAddonPosition === 'bottom'
+                    ? 'bottom-1.5'
+                    : 'top-1/2 -translate-y-1/2',
+                )}
+              >
+                {leftAddon}
+              </div>
             )}
 
             {icon && (

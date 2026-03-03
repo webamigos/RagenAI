@@ -12,7 +12,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "typeRoots": ["./contracts", "./node_modules/@types"],
     "plugins": [
@@ -37,6 +37,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
     ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
     "src/app/api/upload/[...upload]/route.tsx",
     "src/app/api/settings/api-key/route.ts",

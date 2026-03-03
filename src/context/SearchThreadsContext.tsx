@@ -7,7 +7,7 @@ export type SearchThreadsContextType = {
   isSearchOpen: boolean;
   openSearch: () => void;
   closeSearch: () => void;
-  modalRef: React.RefObject<HTMLDivElement>;
+  modalRef: React.RefObject<HTMLDivElement | null>;
 };
 
 export const SearchThreadsContext = createContext<

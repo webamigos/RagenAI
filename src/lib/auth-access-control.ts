@@ -40,7 +40,7 @@ export type OrgRole = 'owner' | 'admin' | 'member';
 // ---------------------------------------------------------------------------
 
 export function isAppAdmin(
-  user: { role?: string } | null | undefined,
+  user: { role?: string | null } | null | undefined,
 ): boolean {
   return user?.role === APP_ADMIN_ROLE;
 }

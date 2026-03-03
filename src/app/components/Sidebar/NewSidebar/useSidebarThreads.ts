@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useUser } from '@/app/hooks/use-auth';
+import { useActiveOrganization } from '@/app/hooks/use-better-auth';
 import { getSidebarThreads, toggleThreadStarred } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
 import type { SidebarThreadItem } from '@/features/threads/contracts/thread.types';
@@ -27,12 +28,15 @@ export const sidebarThreadEvents = {
 
 export const useSidebarThreads = () => {
   const { user } = useUser();
+  const { data: activeOrg } = useActiveOrganization();
+  const activeOrgId = activeOrg?.id;
   const [starredThreads, setStarredThreads] = useState<SidebarThreadItem[]>([]);
   const [recentThreads, setRecentThreads] = useState<SidebarThreadItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [recentSkip, setRecentSkip] = useState(0);
   const fetchedRef = useRef(false);
+  const prevOrgIdRef = useRef<string | undefined>(undefined);
 
   const fetchThreads = useCallback(
     async (skip = 0, append = false) => {
@@ -61,12 +65,27 @@ export const useSidebarThreads = () => {
     [user?.id],
   );
 
+  // Reset and refetch when organization changes
+  useEffect(() => {
+    if (activeOrgId !== prevOrgIdRef.current) {
+      // Only clear state when switching between orgs (not initial load)
+      if (prevOrgIdRef.current !== undefined) {
+        setStarredThreads([]);
+        setRecentThreads([]);
+        setRecentSkip(0);
+        setHasMore(false);
+      }
+      fetchedRef.current = false;
+      prevOrgIdRef.current = activeOrgId;
+    }
+  }, [activeOrgId]);
+
   useEffect(() => {
     if (user?.id && !fetchedRef.current) {
       fetchedRef.current = true;
       fetchThreads(0);
     }
-  }, [user?.id, fetchThreads]);
+  }, [user?.id, fetchThreads, activeOrgId]);
 
   // Listen for new thread creation events
   useEffect(() => {

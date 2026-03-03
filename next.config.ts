@@ -18,12 +18,6 @@ if (IS_API_MODE) {
 const nextConfig = {
   reactStrictMode: true,
 
-  // TODO: Remove after upgrading @types/react to v19 — React 18 LegacyRef vs
-  // Radix/shadcn Ref incompatibilities cause ~20 build errors in src/components/ui/
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
   async rewrites() {
     return {
       beforeFiles: rewrites,
@@ -78,7 +72,7 @@ const nextConfig = {
 
   webpack: (
     config: any,
-    { isServer, webpack }: { isServer: boolean; webpack: any }
+    { isServer, webpack }: { isServer: boolean; webpack: any },
   ) => {
     if (!isServer) {
       // Replace serverLogger with clientLogger on client-side
@@ -88,10 +82,10 @@ const nextConfig = {
           (resource: any) => {
             resource.request = resource.request.replace(
               /serverLogger/,
-              'clientLogger'
+              'clientLogger',
             );
-          }
-        )
+          },
+        ),
       );
 
       // Prevent server-only modules from being bundled on client-side
@@ -100,7 +94,7 @@ const nextConfig = {
         'better-auth',
         'better-auth/adapters/prisma',
         'better-auth/plugins',
-        'pino-pretty'
+        'pino-pretty',
       );
 
       config.resolve.alias = {
@@ -116,10 +110,10 @@ const nextConfig = {
           (resource: any) => {
             resource.request = resource.request.replace(
               /generated\/prisma\/client/,
-              'generated/prisma/browser'
+              'generated/prisma/browser',
             );
-          }
-        )
+          },
+        ),
       );
 
       config.resolve.fallback = {

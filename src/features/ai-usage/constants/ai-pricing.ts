@@ -22,6 +22,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'claude-3.7-sonnet': { input: 3, output: 15 },
     'claude-haiku-4.5': { input: 0.8, output: 4 },
     'claude-sonnet-4.6': { input: 3, output: 15 },
+    'claude-opus-4.6': { input: 5, output: 25 },
   },
   google: {
     'gemini-2.0-flash': { input: 0.1, output: 0.4 },
@@ -43,6 +44,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'anthropic/claude-haiku-4.5': { input: 0.8, output: 4 },
     'anthropic/claude-3.7-sonnet': { input: 3, output: 15 },
     'anthropic/claude-sonnet-4.6': { input: 3, output: 15 },
+    'anthropic/claude-opus-4.6': { input: 15, output: 75 },
     'perplexity/sonar-pro': { input: 3, output: 15 },
   },
 };
