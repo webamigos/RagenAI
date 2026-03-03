@@ -95,17 +95,18 @@ export async function registerOtel() {
         new HttpInstrumentation({
           ignoreIncomingRequestHook: (req) => {
             const url = req.url ?? '';
+            const pathname = url.split('?')[0];
             return (
-              url.startsWith('/_next/') ||
-              url.startsWith('/favicon') ||
-              url.endsWith('.ico') ||
-              url.endsWith('.png') ||
-              url.endsWith('.jpg') ||
-              url.endsWith('.svg') ||
-              url.endsWith('.css') ||
-              url.endsWith('.js') ||
-              url.endsWith('.wasm') ||
-              url.endsWith('.woff2')
+              pathname.startsWith('/_next/') ||
+              pathname.startsWith('/favicon') ||
+              pathname.endsWith('.ico') ||
+              pathname.endsWith('.png') ||
+              pathname.endsWith('.jpg') ||
+              pathname.endsWith('.svg') ||
+              pathname.endsWith('.css') ||
+              pathname.endsWith('.js') ||
+              pathname.endsWith('.wasm') ||
+              pathname.endsWith('.woff2')
             );
           },
         }),
@@ -115,7 +116,12 @@ export async function registerOtel() {
     });
     console.log('[otel] Instrumentations registered (HTTP, PG, Prisma)');
 
+    let isShuttingDown = false;
     const shutdown = async () => {
+      if (isShuttingDown) {
+        return;
+      }
+      isShuttingDown = true;
       console.log('[otel] Shutting down providers...');
       await Promise.allSettled([
         tracerProvider.shutdown(),

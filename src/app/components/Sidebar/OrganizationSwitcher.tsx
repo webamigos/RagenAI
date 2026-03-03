@@ -56,9 +56,13 @@ export function OrganizationSwitcher({
     }
 
     startTransition(async () => {
-      await authClient.organization.setActive({ organizationId });
-      await switchOrganizationCommand(organizationId);
-      router.push('/new');
+      try {
+        await authClient.organization.setActive({ organizationId });
+        await switchOrganizationCommand(organizationId);
+        router.push('/new');
+      } catch {
+        // Silently handled — page state remains unchanged
+      }
     });
   };
 
