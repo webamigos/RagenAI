@@ -6,7 +6,7 @@ import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
 import { CollapsedSidebarRail } from '@/app/components/Sidebar/CollapsedSidebarRail';
 import { ImpersonationBanner } from '@/app/components/ImpersonationBanner';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 type Props = {
   navbar: React.ReactNode;
@@ -19,6 +19,11 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
   const router = useRouter();
   const params = useParams();
   const locale = params?.locale || 'pl';
+  const wasAuthenticatedRef = useRef(false);
+
+  if (isLoaded && isSignedIn) {
+    wasAuthenticatedRef.current = true;
+  }
 
   // Clear invalid session and redirect to login
   useEffect(() => {
@@ -30,10 +35,9 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
     }
   }, [isLoaded, isSignedIn, router, locale]);
 
-  // Show loading state during SSR and initial client load
-  // This prevents flash of dashboard content before auth check completes
+  // Show loading state only during initial load, not during session refetches
   const isServer = typeof window === 'undefined';
-  if (isServer || !isLoaded || !isSignedIn) {
+  if (isServer || !isSignedIn || (!wasAuthenticatedRef.current && !isLoaded)) {
     return <div className="min-h-screen bg-white dark:bg-gray-900" />;
   }
 

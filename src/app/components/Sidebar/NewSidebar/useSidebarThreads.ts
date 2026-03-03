@@ -67,18 +67,15 @@ export const useSidebarThreads = () => {
 
   // Reset and refetch when organization changes
   useEffect(() => {
-    if (
-      activeOrgId &&
-      prevOrgIdRef.current &&
-      activeOrgId !== prevOrgIdRef.current
-    ) {
+    if (activeOrgId !== prevOrgIdRef.current) {
+      // Only clear state when switching between orgs (not initial load)
+      if (prevOrgIdRef.current !== undefined) {
+        setStarredThreads([]);
+        setRecentThreads([]);
+        setRecentSkip(0);
+        setHasMore(false);
+      }
       fetchedRef.current = false;
-      setStarredThreads([]);
-      setRecentThreads([]);
-      setRecentSkip(0);
-      setHasMore(false);
-    }
-    if (activeOrgId) {
       prevOrgIdRef.current = activeOrgId;
     }
   }, [activeOrgId]);

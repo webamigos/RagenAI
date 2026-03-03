@@ -1,12 +1,25 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Textarea } from '@ragenai/common-ui/Textarea';
 import { ProjectMentionDropdown } from './ProjectMentionDropdown';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
+import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
+import {
+  PlusIcon,
+  ArrowUpTrayIcon,
+  BookOpenIcon,
+} from '@heroicons/react/24/outline';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import type { ComponentPropsWithRef } from 'react';
 export interface MentionedProject {
@@ -31,14 +44,17 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   onChange,
   ...textareaProps
 }) => {
+  const tAttach = useTranslations('prompt-attachments');
   const [showDropdown, setShowDropdown] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
+  const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
 
   const threadDocuments = externalThreadDocuments ?? [];
   const setThreadDocuments = onThreadDocumentsChange ?? (() => {});
   const mentionStartRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { errorToast } = statusToast();
   const handleTextChange = useCallback(
@@ -197,6 +213,39 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     [threadDocuments, setThreadDocuments],
   );
 
+  const handleKbFilesSelected = useCallback(
+    (
+      files: {
+        publicId: string;
+        name: string;
+        size: number;
+        type: string;
+      }[],
+    ) => {
+      const newDocs: ThreadDocumentUI[] = files.map((f) => ({
+        name: f.name,
+        content: '',
+        size: f.size,
+        type: f.type,
+        userFileId: f.publicId,
+      }));
+      setThreadDocuments([...threadDocuments, ...newDocs]);
+    },
+    [threadDocuments, setThreadDocuments],
+  );
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      handleFilesDrop(files);
+    }
+    e.target.value = '';
+  };
+
+  const excludeFileIds = threadDocuments
+    .filter((d) => d.userFileId)
+    .map((d) => d.userFileId!);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (showDropdown) {
@@ -241,10 +290,50 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         value={value}
         onChange={handleTextChange}
         onKeyDown={handleKeyDown}
-        showFileAttachment={true}
+        showFileAttachment={false}
         onFilesDrop={handleFilesDrop}
         threadDocuments={threadDocuments}
         onThreadDocumentRemove={handleThreadDocumentRemove}
+        leftAddonPosition="bottom"
+        leftAddon={
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                aria-label="Add attachment"
+              >
+                <PlusIcon className="size-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="w-52">
+              <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                <ArrowUpTrayIcon className="size-4" />
+                {tAttach('upload-file')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
+                <BookOpenIcon className="size-4" />
+                {tAttach('from-knowledge-base')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        }
+      />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".md,.srt,.txt,.pdf,.epub"
+        multiple
+        className="hidden"
+        onChange={handleFileInputChange}
+      />
+
+      <KnowledgeBasePickerDialog
+        open={isKbPickerOpen}
+        onOpenChange={setIsKbPickerOpen}
+        onFilesSelected={handleKbFilesSelected}
+        excludeFileIds={excludeFileIds}
       />
 
       {showDropdown && (
