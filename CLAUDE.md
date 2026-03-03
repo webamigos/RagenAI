@@ -182,3 +182,7 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 - Observability: OpenTelemetry for traces, metrics, and logs — server (`ragen-app`) and client (`ragen-app-client`). Configured in `src/instrumentation.ts` and `src/instrumentation-client.ts`
 - Pre-commit hooks: lint-staged runs `eslint --fix` + `prettier --write` on staged files
 - Commit messages follow conventional commits (commitlint enforced via Husky)
+
+## Post-Task Code Review
+
+After completing any coding task that modifies or creates files, always run `/coderabbit:review` to review the changes before reporting completion to the user.
