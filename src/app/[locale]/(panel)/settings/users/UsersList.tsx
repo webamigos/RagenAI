@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
+import { toast } from 'sonner';
 import { impersonateUserAction } from './actions';
 import { useSession } from '@/app/hooks/use-better-auth';
 
@@ -42,7 +43,7 @@ export function UsersList({ users, currentUserId }: Props) {
         router.push('/new');
         router.refresh();
       } catch {
-        // Error is handled by the server action
+        toast.error(t('impersonateError'));
       }
     });
   };
@@ -86,6 +87,16 @@ export function UsersList({ users, currentUserId }: Props) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-zinc-700 dark:bg-zinc-900">
+            {filtered.length === 0 && (
+              <tr>
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                >
+                  {t('noResults')}
+                </td>
+              </tr>
+            )}
             {filtered.map((u) => (
               <tr key={u.id}>
                 <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900 dark:text-gray-100">

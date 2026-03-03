@@ -6,8 +6,8 @@ import { getSubscriptionData } from '../../subscription/actions';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
-import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { getActiveMember, getSession } from '@/lib/auth-guards';
+import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 
 const TRIAL_PLAN_NAME = 'Trial';
 const FREE_PLAN_NAME = 'Free';
@@ -32,23 +32,28 @@ export async function inviteMember(
       };
     }
 
-    // 2. Sprawdź feature flag + plan
-    const FEATURE_FLAG =
-      !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
-    const subscription = await getSubscriptionData();
-    const planName = subscription?.plan;
+    // 2. Sprawdź feature flag + plan (app admin pomija ograniczenia)
+    const session = await getSession();
+    const isAdmin = isAppAdmin(session?.user);
 
-    const allowAddMembers =
-      FEATURE_FLAG &&
-      planName &&
-      planName !== TRIAL_PLAN_NAME &&
-      planName !== FREE_PLAN_NAME;
+    if (!isAdmin) {
+      const FEATURE_FLAG =
+        !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
+      const subscription = await getSubscriptionData();
+      const planName = subscription?.plan;
 
-    if (!allowAddMembers) {
-      return {
-        success: false,
-        error: 'Zapraszanie członków dostępne tylko w płatnych planach',
-      };
+      const allowAddMembers =
+        FEATURE_FLAG &&
+        planName &&
+        planName !== TRIAL_PLAN_NAME &&
+        planName !== FREE_PLAN_NAME;
+
+      if (!allowAddMembers) {
+        return {
+          success: false,
+          error: 'Zapraszanie członków dostępne tylko w płatnych planach',
+        };
+      }
     }
 
     // 3. Sprawdź czy email już w organizacji
@@ -90,7 +95,6 @@ export async function inviteMember(
     }
 
     // 5. Wyślij zaproszenie
-    const session = await auth.api.getSession({ headers: await headers() });
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
