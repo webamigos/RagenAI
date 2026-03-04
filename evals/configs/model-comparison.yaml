@@ -1,19 +1,19 @@
 description: "Cross-model quality comparison for RAG chain"
 
 providers:
-  - id: "file://providers/rag-chain.provider.ts"
+  - id: "file://../providers/rag-chain.provider.ts"
     label: "GPT-4o (OpenRouter)"
     config:
       provider: "openrouter"
       model: "openai/gpt-4o"
 
-  - id: "file://providers/rag-chain.provider.ts"
+  - id: "file://../providers/rag-chain.provider.ts"
     label: "Claude Sonnet (OpenRouter)"
     config:
       provider: "openrouter"
       model: "anthropic/claude-sonnet-4-6"
 
-  - id: "file://providers/rag-chain.provider.ts"
+  - id: "file://../providers/rag-chain.provider.ts"
     label: "Gemini Flash (OpenRouter)"
     config:
       provider: "openrouter"

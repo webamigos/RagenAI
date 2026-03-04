@@ -1,7 +1,7 @@
 description: "Red team / adversarial prompt tests for RAG chain"
 
 providers:
-  - id: "file://providers/rag-chain.provider.ts"
+  - id: "file://../providers/rag-chain.provider.ts"
     label: "RAG Chain (GPT-4o)"
     config:
       provider: "openrouter"

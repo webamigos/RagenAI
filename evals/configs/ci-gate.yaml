@@ -1,7 +1,7 @@
 description: "CI gate — minimal fast eval subset (must pass >= 80%)"
 
 providers:
-  - id: "file://providers/rag-chain.provider.ts"
+  - id: "file://../providers/rag-chain.provider.ts"
     label: "RAG Chain (GPT-4o)"
     config:
       provider: "openrouter"

@@ -1,7 +1,7 @@
 description: "Rephrase chain quality tests"
 
 providers:
-  - id: "file://providers/rephrase.provider.ts"
+  - id: "file://../providers/rephrase.provider.ts"
     label: "Rephrase (GPT-4o)"
     config:
       provider: "openrouter"
