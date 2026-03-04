@@ -6,6 +6,8 @@ import { logger } from '@/app/lib/utils/logger';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+const FROM_EMAIL = 'Ragen AI <noreply@updates.webamigos.pl>';
+
 export const sendWelcomeEmail = async ({
   to,
   name,
@@ -15,7 +17,7 @@ export const sendWelcomeEmail = async ({
 }) => {
   try {
     const response = await resend.emails.send({
-      from: 'Ragen <noreply@updates.ragen.ai>',
+      from: FROM_EMAIL,
       to: [to],
       subject: 'Witaj w Ragen!',
       react: WelcomeEmail({ name }),
@@ -23,6 +25,7 @@ export const sendWelcomeEmail = async ({
 
     return { data: response };
   } catch (error) {
+    logger.error({ error }, 'Failed to send welcome email');
     return { error: 'Nie udało się wysłać powitalnego e-maila' };
   }
 };
@@ -42,7 +45,7 @@ export const sendContactEmail = async ({
     const attachments = files && files.length > 0 ? files : [];
 
     const response = await resend.emails.send({
-      from: 'Ragen AI <noreply@updates.ragen.ai>',
+      from: FROM_EMAIL,
       to: ['hello@webamigos.pl'],
       replyTo: email,
       subject: `[Ragen Support] ${title}`,
@@ -53,7 +56,7 @@ export const sendContactEmail = async ({
     const { subject, text } = getUserResponseEmailContent(title, message);
 
     const userResponse = await resend.emails.send({
-      from: 'Ragen AI <noreply@updates.ragen.ai>',
+      from: FROM_EMAIL,
       to: email,
       subject: `[Ragen Support] ${subject}`,
       text,
@@ -82,7 +85,7 @@ export const sendPasswordResetEmailViaMailer = async ({
 }) => {
   try {
     const response = await resend.emails.send({
-      from: 'Ragen <noreply@updates.ragen.ai>',
+      from: FROM_EMAIL,
       to: [to],
       subject: 'Reset your Ragen password',
       text: `Click the following link to reset your password: ${resetUrl}\n\nIf you did not request a password reset, please ignore this email.\n\nThis link will expire in 1 hour.`,
@@ -117,7 +120,7 @@ export const sendInvitationEmail = async ({
     );
 
     const response = await resend.emails.send({
-      from: 'Acme <onboarding@resend.dev>', // Zmieniono na zweryfikowaną domenę testową
+      from: FROM_EMAIL,
       to: [to],
       subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
       react: InvitationEmail({
