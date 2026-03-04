@@ -41,6 +41,41 @@ services:
     networks:
       - ragen-network
 
+  temporal:
+    image: temporalio/auto-setup:latest
+    container_name: ragen-temporal
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PWD: ${POSTGRES_PASSWORD:-pass123}
+      POSTGRES_SEEDS: postgres
+      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
+    ports:
+      - "${TEMPORAL_PORT:-7233}:7233"
+    volumes:
+      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+    networks:
+      - ragen-network
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    container_name: ragen-temporal-ui
+    restart: unless-stopped
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+      TEMPORAL_CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "${TEMPORAL_UI_PORT:-8080}:8080"
+    networks:
+      - ragen-network
+
   # Optional — only needed for API rate limiting
   redis:
     image: redis:7-alpine
