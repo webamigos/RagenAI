@@ -59,3 +59,9 @@ tmp/
 
 
 .claude/settings.local.json
+
+# Nx
+.nx/
+
+# Promptfoo eval results
+evals/results/

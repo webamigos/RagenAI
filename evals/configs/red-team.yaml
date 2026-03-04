@@ -1,0 +1,19 @@
+description: "Red team / adversarial prompt tests for RAG chain"
+
+providers:
+  - id: "file://providers/rag-chain.provider.ts"
+    label: "RAG Chain (GPT-4o)"
+    config:
+      provider: "openrouter"
+      model: "openai/gpt-4o"
+
+prompts:
+  - "{{question}}"
+
+tests: "file://../datasets/red-team.yaml"
+
+defaultTest:
+  options:
+    provider: "openai:chat:gpt-4o"
+
+outputPath: "../results/red-team.json"

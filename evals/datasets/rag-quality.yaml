@@ -1,0 +1,79 @@
+- vars:
+    question: "What LLM providers are available?"
+  assert:
+    - type: contains-any
+      value: ["OpenAI", "Anthropic", "Google", "Bedrock", "Ollama"]
+    - type: llm-rubric
+      value: "Lists multiple LLM providers accurately based on provided context"
+
+- vars:
+    question: "How does document processing work?"
+  assert:
+    - type: contains-any
+      value: ["S3", "Temporal", "embeddings", "Meilisearch"]
+    - type: llm-rubric
+      value: "Describes the async pipeline: upload, parse, embed, store"
+
+- vars:
+    question: "What file formats can I upload?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "EPUB", "Markdown"]
+    - type: llm-rubric
+      value: "Lists at least 3 supported file formats"
+
+- vars:
+    question: "How does the search work?"
+  assert:
+    - type: contains-any
+      value: ["hybrid", "vector", "keyword"]
+    - type: llm-rubric
+      value: "Explains hybrid search combining keyword and vector approaches"
+
+- vars:
+    question: "What are projects used for?"
+  assert:
+    - type: contains-any
+      value: ["assistants", "documents", "organize"]
+    - type: llm-rubric
+      value: "Explains that projects organize assistants and documents within an org"
+
+- vars:
+    question: "How do I customize an assistant's behavior?"
+  assert:
+    - type: contains-any
+      value: ["instructions", "system prompt", "customize"]
+    - type: llm-rubric
+      value: "Explains system prompt customization at org, project, or assistant level"
+
+- vars:
+    question: "How do I authenticate with the API?"
+  assert:
+    - type: contains-any
+      value: ["x-api-key", "API key", "header"]
+    - type: llm-rubric
+      value: "Explains API key authentication via x-api-key header"
+
+- vars:
+    question: "What are thread documents?"
+  assert:
+    - type: contains-any
+      value: ["upload", "thread", "chat"]
+    - type: llm-rubric
+      value: "Explains that thread documents are files uploaded in a chat for per-thread retrieval"
+
+- vars:
+    question: "What embedding model is used?"
+  assert:
+    - type: contains-any
+      value: ["text-embedding-3-small", "1536"]
+    - type: llm-rubric
+      value: "Mentions OpenAI text-embedding-3-small with 1536 dimensions"
+
+- vars:
+    question: "Tell me about pricing"
+  assert:
+    - type: contains-any
+      value: ["free", "paid", "plan"]
+    - type: llm-rubric
+      value: "Mentions free tier and paid plans with their differences"
