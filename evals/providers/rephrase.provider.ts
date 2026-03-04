@@ -44,8 +44,16 @@ export class RephraseProvider implements ApiProvider {
 
     try {
       const chatHistory = context?.vars?.chat_history;
-      const chatHistoryStr =
-        typeof chatHistory === 'string' ? chatHistory : undefined;
+      let chatHistoryStr: string | undefined;
+      if (typeof chatHistory === 'string') {
+        chatHistoryStr = chatHistory;
+      } else if (Array.isArray(chatHistory)) {
+        chatHistoryStr = (chatHistory as { role: string; content: string }[])
+          .map(
+            (m) => `${m.role === 'user' ? 'USER' : 'ASSISTANT'}: ${m.content}`,
+          )
+          .join('\n');
+      }
 
       const result = await rephraseQuestion(questionRephraser, {
         question: prompt,

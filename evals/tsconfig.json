@@ -4,6 +4,7 @@
     "noEmit": true,
     "rootDir": "..",
     "paths": {
+      "@/app/lib/utils/logger": ["./shims/logger.ts"],
       "@/*": ["../src/*"],
       "@/temporal/*": ["../temporal/src/*"],
       "@ragenai/common-ui/*": ["../src/libs/common-ui/*"],

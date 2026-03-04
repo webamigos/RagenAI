@@ -55,7 +55,10 @@ export class HttpProvider implements ApiProvider {
         return { error: `Failed to create thread: ${threadRes.status}` };
       }
 
-      const thread = (await threadRes.json()) as { id: string };
+      const thread = (await threadRes.json()) as { id?: string };
+      if (!thread.id) {
+        return { error: 'Thread creation response missing id field' };
+      }
 
       // Send query
       const queryRes = await fetch(`${baseUrl}/api/v1/query`, {

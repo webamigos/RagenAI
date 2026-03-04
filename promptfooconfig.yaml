@@ -1,0 +1,19 @@
+description: "Ragen LLM Evals — default config (RAG quality)"
+
+providers:
+  - id: "file://evals/providers/rag-chain.provider.ts"
+    label: "RAG Chain (GPT-4o)"
+    config:
+      provider: "openrouter"
+      model: "openai/gpt-4o"
+
+prompts:
+  - "{{question}}"
+
+tests: "file://evals/datasets/rag-quality.yaml"
+
+defaultTest:
+  options:
+    provider: "openai:chat:gpt-4o"
+
+outputPath: "evals/results/default.json"
