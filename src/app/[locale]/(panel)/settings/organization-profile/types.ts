@@ -16,11 +16,6 @@ export const UpdateOrganizationSchema = z.object({
     .string()
     .min(1, 'Nazwa jest wymagana')
     .max(100, 'Nazwa może mieć max 100 znaków'),
-  slug: z
-    .string()
-    .max(50, 'Slug może mieć max 50 znaków')
-    .optional()
-    .or(z.literal('')),
 });
 
 // TypeScript types

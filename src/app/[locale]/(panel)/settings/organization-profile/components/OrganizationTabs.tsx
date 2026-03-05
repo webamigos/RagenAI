@@ -11,8 +11,6 @@ import type { Member, Invitation } from '../types';
 type Organization = {
   id: string;
   name: string;
-  slug?: string;
-  logo?: string;
   members: Member[];
 };
 
@@ -23,6 +21,9 @@ type Props = {
   currentUserEmail: string;
   allowInvite: boolean;
 };
+
+const tabClasses =
+  'w-full rounded-lg py-2 text-sm font-medium transition-colors focus:outline-none text-zinc-500 dark:text-zinc-400 data-[selected]:bg-white data-[selected]:text-zinc-950 data-[selected]:shadow-sm dark:data-[selected]:bg-zinc-800 dark:data-[selected]:text-white';
 
 export function OrganizationTabs({
   organization,
@@ -39,17 +40,15 @@ export function OrganizationTabs({
 
   return (
     <TabGroup>
-      <TabList className="flex space-x-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
-        <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-indigo-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-indigo-400">
-          {t('tabs.general')}
-        </Tab>
-        <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-indigo-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-indigo-400">
+      <TabList className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900">
+        <Tab className={tabClasses}>{t('tabs.general')}</Tab>
+        <Tab className={tabClasses}>
           {t('tabs.members')} ({organization.members.length})
         </Tab>
-        <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-blue-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-indigo-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-indigo-400">
-          {t('tabs.invitations')}{' '}
+        <Tab className={tabClasses}>
+          {t('tabs.invitations')}
           {pendingInvitationsCount > 0 && (
-            <span className="ml-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-indigo-600 rounded-full">
+            <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-zinc-900 px-1.5 py-0.5 text-xs font-medium text-white dark:bg-white dark:text-zinc-900">
               {pendingInvitationsCount}
             </span>
           )}
@@ -58,20 +57,15 @@ export function OrganizationTabs({
 
       <TabPanels className="mt-6">
         {/* General tab - Organization profile form */}
-        <TabPanel className="rounded-xl bg-white p-6 shadow dark:bg-gray-900">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              {t('profile.title')}
-            </h3>
-            <OrganizationProfileForm
-              organization={organization}
-              canEdit={isOrgAdmin(currentUserRole)}
-            />
-          </div>
+        <TabPanel>
+          <OrganizationProfileForm
+            organization={organization}
+            canEdit={isOrgAdmin(currentUserRole)}
+          />
         </TabPanel>
 
         {/* Members tab */}
-        <TabPanel className="rounded-xl bg-white p-6 shadow dark:bg-gray-900">
+        <TabPanel>
           <MembersList
             members={organization.members}
             organizationId={organization.id}
@@ -82,7 +76,7 @@ export function OrganizationTabs({
         </TabPanel>
 
         {/* Invitations tab */}
-        <TabPanel className="rounded-xl bg-white p-6 shadow dark:bg-gray-900">
+        <TabPanel>
           <ManageInvitationsSection
             invitations={invitations}
             organizationId={organization.id}

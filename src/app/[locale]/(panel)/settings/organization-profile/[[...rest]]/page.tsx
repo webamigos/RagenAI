@@ -95,17 +95,11 @@ export default async function OrganizationProfilePage({ params }: Props) {
     );
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Profil Organizacji
-      </h1>
-
+    <div className="max-w-2xl">
       <OrganizationTabs
         organization={{
           id: organization.id,
           name: organization.name,
-          slug: organization.slug || undefined,
-          logo: organization.logo || undefined,
           members: members.map((m) => ({
             id: m.id,
             userId: m.userId,

@@ -913,16 +913,13 @@
   "organization": {
     "tabs": {
       "general": "General",
-      "members": "Members",
+      "members": "Users",
       "invitations": "Invitations"
     },
     "profile": {
       "title": "Organization Profile",
       "name": "Name",
-      "slug": "URL Slug",
       "name-placeholder": "Organization name",
-      "slug-placeholder": "my-organization",
-      "slug-hint": "Slug is used in URLs. Leave empty for automatic generation.",
       "save": "Save changes",
       "saving": "Saving...",
       "cancel": "Cancel",
@@ -930,9 +927,9 @@
       "edit-error": "An error occurred while updating the profile"
     },
     "members": {
-      "title": "Members",
-      "invite-member": "Invite Member",
-      "no-members": "No members",
+      "title": "Users",
+      "invite-member": "Invite User",
+      "no-members": "No users",
       "user": "User",
       "role": "Role",
       "joined": "Joined",
@@ -940,23 +937,23 @@
       "you": "You",
       "role-owner": "Owner",
       "role-admin": "Administrator",
-      "role-member": "Member",
+      "role-member": "User",
       "email": "Email",
       "send-invitation": "Send Invitation",
       "sending": "Sending...",
       "cancel": "Cancel",
       "invite-success": "Invitation has been sent",
       "invite-error": "An error occurred while sending invitation",
-      "invite-unavailable-plan": "Inviting members is only available in paid plans. Change your plan in the Subscription section.",
-      "confirm-remove": "Are you sure you want to remove this member from the organization?",
-      "remove-success": "Member has been removed",
-      "remove-error": "An error occurred while removing member",
+      "invite-unavailable-plan": "Inviting users is only available in paid plans. Change your plan in the Subscription section.",
+      "confirm-remove": "Are you sure you want to remove this user from the organization?",
+      "remove-success": "User has been removed",
+      "remove-error": "An error occurred while removing user",
       "role-update-success": "Role has been updated",
       "role-update-error": "An error occurred while updating role",
       "change-role": "Change Role",
       "remove": "Remove",
       "change-to-admin": "Change to Administrator",
-      "change-to-member": "Change to Member"
+      "change-to-member": "Change to User"
     },
     "invitations": {
       "title": "Invitations",
@@ -964,7 +961,7 @@
       "email": "Email",
       "role": "Role",
       "role-admin": "Administrator",
-      "role-member": "Member",
+      "role-member": "User",
       "status": "Status",
       "sent": "Sent",
       "actions": "Actions",
@@ -1001,7 +998,7 @@
     "rejected-message": "Invitation rejected",
     "go-home": "Go to Home Page",
     "role-admin": "Administrator",
-    "role-member": "Member",
+    "role-member": "User",
     "role-owner": "Owner"
   },
   "user-profile": {
@@ -1016,9 +1013,6 @@
       "email-hint": "Email cannot be changed",
       "name": "Name",
       "name-placeholder": "Your name",
-      "image": "Profile Image URL",
-      "image-placeholder": "https://example.com/avatar.jpg",
-      "image-hint": "Enter URL to your profile picture",
       "save": "Save changes",
       "saving": "Saving...",
       "cancel": "Cancel",
