@@ -1,0 +1,58 @@
+[
+  {
+    "pageContent": "Ragen supports multiple LLM providers including OpenAI (GPT-4o, GPT-4-turbo), Anthropic (Claude Sonnet, Claude Haiku), Google (Gemini Flash, Gemini Pro), Amazon Bedrock, Azure OpenAI, Fireworks AI, OpenRouter, and local models via Ollama.",
+    "metadata": {
+      "source": "faq",
+      "topic": "providers",
+      "document_id": "doc-001"
+    }
+  },
+  {
+    "pageContent": "To upload documents, navigate to the Documents section in your project. Supported file formats include PDF, EPUB, Markdown (.md), SRT subtitles, and web URLs. Documents are processed asynchronously through a Temporal workflow pipeline: upload to S3, parse content, generate embeddings, and store in Meilisearch.",
+    "metadata": {
+      "source": "faq",
+      "topic": "uploads",
+      "document_id": "doc-002"
+    }
+  },
+  {
+    "pageContent": "Ragen uses a hybrid search approach combining keyword search and vector similarity search powered by Meilisearch. Each organization gets its own isolated search index. Embeddings are generated using OpenAI's text-embedding-3-small model with 1536 dimensions.",
+    "metadata": { "source": "faq", "topic": "search", "document_id": "doc-003" }
+  },
+  {
+    "pageContent": "Projects allow you to organize assistants and documents within your organization. Each project can have its own set of assistants, document collections, and API keys. Project-level instructions are appended to the system prompt of every assistant in that project.",
+    "metadata": {
+      "source": "faq",
+      "topic": "projects",
+      "document_id": "doc-004"
+    }
+  },
+  {
+    "pageContent": "Assistants can be customized with system prompts (answer instructions) that define their behavior and personality. You can set instructions at the organization level, project level, or per-assistant. Assistant-level instructions take precedence over project-level instructions.",
+    "metadata": {
+      "source": "faq",
+      "topic": "assistants",
+      "document_id": "doc-005"
+    }
+  },
+  {
+    "pageContent": "The API is available at /api/v1/ and uses API key authentication via the x-api-key header. You can create API keys in the organization settings. Each API key is scoped to a specific project and grants access to threads, assistants, documents, and query endpoints.",
+    "metadata": { "source": "faq", "topic": "api", "document_id": "doc-006" }
+  },
+  {
+    "pageContent": "Ragen pricing includes a free tier with limited messages and document uploads. Paid plans offer higher limits, priority processing, and advanced features like custom model selection and dedicated support. Usage is tracked per organization.",
+    "metadata": {
+      "source": "faq",
+      "topic": "pricing",
+      "document_id": "doc-007"
+    }
+  },
+  {
+    "pageContent": "Thread documents allow users to upload files directly in a chat conversation. These documents are processed and made available for retrieval within that specific thread. The assistant can reference both project-level knowledge base documents and thread-specific uploads when answering questions.",
+    "metadata": {
+      "source": "faq",
+      "topic": "thread-documents",
+      "document_id": "doc-008"
+    }
+  }
+]

@@ -1,0 +1,20 @@
+description: "CI gate — minimal fast eval subset (must pass >= 80%)"
+
+providers:
+  - id: "file://../providers/rag-chain.provider.ts"
+    label: "RAG Chain (GPT-4o)"
+    config:
+      provider: "openrouter"
+      model: "openai/gpt-4o"
+
+prompts:
+  - "{{question}}"
+
+tests: "file://../datasets/ci-gate.yaml"
+
+defaultTest:
+  options:
+    provider: "openai:chat:gpt-4o"
+  threshold: 0.8
+
+outputPath: "../results/ci-results.json"

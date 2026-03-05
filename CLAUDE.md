@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-docker compose up        # Start local Postgres, Redis, Meilisearch
+docker compose up        # Start local Postgres, Redis, Meilisearch, Temporal
 npm run dev              # Start Next.js dev server
 npm run build            # Production build (runs prisma generate first)
 npm run lint             # ESLint
@@ -20,7 +20,7 @@ npm run db:seed          # Seed database (uses .env.local)
 
 ## Local Development
 
-Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, optional Redis on 6379). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, Temporal on 7233, Temporal UI on 8080, optional Redis on 6379). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
@@ -29,7 +29,7 @@ DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 
 ## Architecture
 
-**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search)
+**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search) + Temporal.io (async workflow orchestration)
 
 **What it does**: RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
 

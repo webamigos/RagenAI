@@ -25,7 +25,14 @@
     "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.cjs",
     "vectorstore:migrate": "node scripts/vector-store/apply-migrations.cjs",
     "postvectorstore:migrate": "npm run vectorstore:generate:database-types",
-    "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts"
+    "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts",
+    "eval": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval",
+    "eval:models": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/model-comparison.yaml",
+    "eval:rag": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rag-quality.yaml",
+    "eval:redteam": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/red-team.yaml",
+    "eval:rephrase": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rephrase-quality.yaml",
+    "eval:ci": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/ci-gate.yaml --output evals/results/ci-results.json --output evals/results/ci-results.html",
+    "eval:view": "promptfoo view"
   },
   "type": "module",
   "private": true,
@@ -84,6 +91,7 @@
     "postcss": "^8.4.42",
     "prettier": "^3.8.1",
     "prisma": "^7.0.0",
+    "promptfoo": "^0.120.19",
     "semantic-release": "^24.1.0",
     "shadcn": "^3.8.5",
     "supabase": "^1.201.2",

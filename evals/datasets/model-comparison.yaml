@@ -1,0 +1,41 @@
+- vars:
+    question: "What LLM providers does Ragen support?"
+  assert:
+    - type: contains-any
+      value: ["OpenAI", "Anthropic", "Google"]
+    - type: llm-rubric
+      value: "Answer lists at least 3 LLM providers supported by the platform"
+
+- vars:
+    question: "How do I upload a document?"
+  assert:
+    - type: contains-any
+      value: ["Documents", "PDF", "upload"]
+    - type: llm-rubric
+      value: "Answer explains the document upload process including supported formats"
+
+- vars:
+    question: "What is the recipe for chocolate cake?"
+  assert:
+    - type: llm-rubric
+      value: "Answer politely declines or states it cannot help with topics outside its knowledge base"
+
+- vars:
+    question: "Jakie formaty plików są obsługiwane?"
+  assert:
+    - type: llm-rubric
+      value: "Answer is in Polish and mentions supported file formats like PDF, EPUB, or Markdown"
+
+- vars:
+    question: "Explain how search works in the platform"
+  assert:
+    - type: contains-any
+      value: ["hybrid", "vector", "keyword", "Meilisearch"]
+    - type: llm-rubric
+      value: "Answer explains the hybrid search approach combining keyword and vector similarity"
+
+- vars:
+    question: "Can I use my own API keys?"
+  assert:
+    - type: llm-rubric
+      value: "Answer addresses API key management and mentions x-api-key or organization settings"
