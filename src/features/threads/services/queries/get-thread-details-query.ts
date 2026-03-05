@@ -6,6 +6,7 @@ import { logger } from '@/app/lib/utils/logger';
 export const getThreadDetailsQuery = async (
   publicThreadId: string,
   orgId?: string,
+  options?: { includeMessages?: boolean },
 ) => {
   try {
     const thread = await db.thread.findFirstOrThrow({
@@ -36,6 +37,13 @@ export const getThreadDetailsQuery = async (
             name: true,
           },
         },
+        ...(options?.includeMessages
+          ? {
+              messages: {
+                orderBy: { created_at: 'asc' as const },
+              },
+            }
+          : {}),
       },
     });
 
