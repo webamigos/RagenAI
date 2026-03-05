@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -30,6 +31,7 @@ export function AddTeamMemberDialog({
   orgMembers,
   onAdded,
 }: Props) {
+  const t = useTranslations('teams-page');
   const { successToast, errorToast } = statusToast();
   const [selectedUserId, setSelectedUserId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,12 +63,12 @@ export function AddTeamMemberDialog({
         teamId,
         userId: selectedUserId,
       });
-      successToast({ message: 'Member added to team' });
+      successToast({ message: t('member-added') });
       setSelectedUserId('');
       onClose();
       onAdded();
     } catch {
-      errorToast({ message: 'Failed to add member' });
+      errorToast({ message: t('member-add-error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -79,12 +81,12 @@ export function AddTeamMemberDialog({
 
   return (
     <Dialog open={isOpen} onClose={handleClose} size="md">
-      <DialogTitle>Add Team Member</DialogTitle>
+      <DialogTitle>{t('add-member')}</DialogTitle>
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         {availableMembers.length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            All organization members are already in this team.
+            {t('all-members-added')}
           </p>
         ) : (
           <div>
@@ -92,7 +94,7 @@ export function AddTeamMemberDialog({
               htmlFor="member-select"
               className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
             >
-              Select Member
+              {t('select-member')}
             </label>
             <select
               id="member-select"
@@ -115,13 +117,13 @@ export function AddTeamMemberDialog({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            outline
+            plain
           >
-            Cancel
+            {t('cancel')}
           </Button>
           {availableMembers.length > 0 && (
             <Button isSubmit={true} disabled={isSubmitting || !selectedUserId}>
-              {isSubmitting ? 'Adding...' : 'Add Member'}
+              {isSubmitting ? t('adding') : t('add-member')}
             </Button>
           )}
         </div>

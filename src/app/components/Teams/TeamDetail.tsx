@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import {
   Dialog,
   DialogTitle,
+  DialogBody,
   DialogDescription,
   DialogActions,
 } from '@ragenai/common-ui/Dialog';
@@ -35,29 +37,37 @@ export function TeamDetail({
   onBack,
   onRefresh,
 }: Props) {
+  const t = useTranslations('teams-page');
   const { successToast, errorToast } = statusToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+  const [memberToRemove, setMemberToRemove] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
 
   const handleRemoveMember = useCallback(
     async (userId: string) => {
       setRemovingUserId(userId);
+      setIsRemoveDialogOpen(false);
+      setMemberToRemove(null);
       try {
         await authClient.organization.removeTeamMember({
           teamId: team.id,
           userId,
         });
-        successToast({ message: 'Member removed from team' });
+        successToast({ message: t('member-removed') });
         onRefresh();
       } catch {
-        errorToast({ message: 'Failed to remove member' });
+        errorToast({ message: t('member-remove-error') });
       } finally {
         setRemovingUserId(null);
       }
     },
-    [team.id, successToast, errorToast, onRefresh],
+    [team.id, successToast, errorToast, onRefresh, t],
   );
 
   const handleDeleteTeam = useCallback(async () => {
@@ -66,10 +76,10 @@ export function TeamDetail({
       await authClient.organization.removeTeam({
         teamId: team.id,
       });
-      successToast({ message: 'Team deleted' });
+      successToast({ message: t('team-deleted') });
       onBack();
     } catch {
-      errorToast({ message: 'Failed to delete team' });
+      errorToast({ message: t('team-delete-error') });
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
@@ -84,7 +94,7 @@ export function TeamDetail({
           onClick={onBack}
           className="text-sm text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
         >
-          &larr; Back to teams
+          &larr; {t('back-to-teams')}
         </button>
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -92,22 +102,21 @@ export function TeamDetail({
               {team.name}
             </h2>
             <span className="text-sm text-zinc-500 dark:text-zinc-400">
-              ({team.members.length}{' '}
-              {team.members.length === 1 ? 'member' : 'members'})
+              ({t('member-count', { count: team.members.length })})
             </span>
           </div>
           <div className="flex gap-2">
             {canManage && (
               <>
                 <Button onClick={() => setIsAddDialogOpen(true)}>
-                  Add Member
+                  {t('add-member')}
                 </Button>
                 <Button
                   outline
                   onClick={() => setIsDeleteDialogOpen(true)}
-                  className="!text-red-600 !border-red-200 hover:!bg-red-50 dark:!text-red-400 dark:!border-red-800 dark:hover:!bg-red-950/30"
+                  className="!border-red-200 !text-red-600 hover:!bg-red-50 dark:!border-red-800 dark:!text-red-400 dark:hover:!bg-red-950/30"
                 >
-                  Delete Team
+                  {t('delete-team')}
                 </Button>
               </>
             )}
@@ -119,7 +128,7 @@ export function TeamDetail({
       {team.members.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No members yet. Add members to get started.
+            {t('no-members')}
           </p>
         </div>
       ) : (
@@ -167,11 +176,17 @@ export function TeamDetail({
               {/* Actions */}
               {canManage && (
                 <button
-                  onClick={() => handleRemoveMember(member.userId)}
+                  onClick={() => {
+                    setMemberToRemove({
+                      userId: member.userId,
+                      name: member.userName || member.userEmail,
+                    });
+                    setIsRemoveDialogOpen(true);
+                  }}
                   disabled={removingUserId === member.userId}
                   className="shrink-0 text-sm text-red-600 transition-colors hover:text-red-500 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
                 >
-                  {removingUserId === member.userId ? '...' : 'Remove'}
+                  {removingUserId === member.userId ? '...' : t('remove')}
                 </button>
               )}
             </div>
@@ -188,32 +203,66 @@ export function TeamDetail({
         onAdded={onRefresh}
       />
 
+      {/* Remove member confirmation dialog */}
+      <Dialog
+        open={isRemoveDialogOpen}
+        onClose={() => {
+          setIsRemoveDialogOpen(false);
+          setMemberToRemove(null);
+        }}
+        size="sm"
+      >
+        <DialogTitle>{t('remove-member-title')}</DialogTitle>
+        <DialogBody>
+          <DialogDescription>
+            {t('remove-member-confirm', { name: memberToRemove?.name ?? '' })}
+          </DialogDescription>
+        </DialogBody>
+        <DialogActions>
+          <Button
+            plain
+            onClick={() => {
+              setIsRemoveDialogOpen(false);
+              setMemberToRemove(null);
+            }}
+          >
+            {t('cancel')}
+          </Button>
+          <Button
+            plain
+            onClick={() => {
+              if (memberToRemove) {
+                handleRemoveMember(memberToRemove.userId);
+              }
+            }}
+          >
+            {t('remove')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Delete confirmation dialog */}
       <Dialog
         open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         size="sm"
       >
-        <DialogTitle>Delete Team</DialogTitle>
-        <DialogDescription>
-          Are you sure you want to delete &ldquo;{team.name}&rdquo;? This will
-          remove all members and unshare associated threads. This action cannot
-          be undone.
-        </DialogDescription>
+        <DialogTitle>{t('delete-team')}</DialogTitle>
+        <DialogBody>
+          <DialogDescription>
+            {t('delete-team-confirm', { name: team.name })}
+          </DialogDescription>
+        </DialogBody>
         <DialogActions>
           <Button
-            outline
+            plain
             onClick={() => setIsDeleteDialogOpen(false)}
             disabled={isDeleting}
           >
-            Cancel
+            {t('cancel')}
           </Button>
-          <Button
-            onClick={handleDeleteTeam}
-            isLoading={isDeleting}
-            className="!bg-red-600 hover:!bg-red-700 !border-red-600"
-          >
-            Delete Team
+          <Button plain onClick={handleDeleteTeam} isLoading={isDeleting}>
+            {t('delete-team')}
           </Button>
         </DialogActions>
       </Dialog>

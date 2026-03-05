@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
@@ -20,6 +21,7 @@ export function CreateTeamDialog({
   organizationId,
   onCreated,
 }: Props) {
+  const t = useTranslations('teams-page');
   const { successToast, errorToast } = statusToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
@@ -43,12 +45,12 @@ export function CreateTeamDialog({
         name: name.trim(),
         organizationId,
       });
-      successToast({ message: 'Team created successfully' });
+      successToast({ message: t('team-created') });
       setName('');
       onClose();
       onCreated();
     } catch {
-      errorToast({ message: 'Failed to create team' });
+      errorToast({ message: t('team-create-error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -61,7 +63,7 @@ export function CreateTeamDialog({
 
   return (
     <Dialog open={isOpen} onClose={handleClose} size="md">
-      <DialogTitle>Create Team</DialogTitle>
+      <DialogTitle>{t('create-team')}</DialogTitle>
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <div>
@@ -69,12 +71,12 @@ export function CreateTeamDialog({
             htmlFor="team-name"
             className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
           >
-            Team Name
+            {t('team-name')}
           </label>
           <Input
             id="team-name"
             type="text"
-            placeholder="e.g. HR, Engineering, Marketing"
+            placeholder={t('team-name-placeholder')}
             ref={inputRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -87,12 +89,12 @@ export function CreateTeamDialog({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            outline
+            plain
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button isSubmit={true} disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Creating...' : 'Create Team'}
+            {isSubmitting ? t('creating') : t('create-team')}
           </Button>
         </div>
       </form>

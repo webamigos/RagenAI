@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { CreateTeamDialog } from './CreateTeamDialog';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
@@ -20,6 +21,7 @@ export function TeamsList({
   onSelectTeam,
   onRefresh,
 }: Props) {
+  const t = useTranslations('teams-page');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
@@ -27,11 +29,11 @@ export function TeamsList({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-          Teams ({teams.length})
+          {t('title')} ({teams.length})
         </h2>
         {canManage && (
           <Button onClick={() => setIsCreateDialogOpen(true)}>
-            Create Team
+            {t('create-team')}
           </Button>
         )}
       </div>
@@ -40,8 +42,8 @@ export function TeamsList({
       {teams.length === 0 ? (
         <div className="py-8 text-center">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No teams yet.
-            {canManage && ' Create a team to get started.'}
+            {t('no-teams')}
+            {canManage && ` ${t('no-teams-hint')}`}
           </p>
         </div>
       ) : (
@@ -58,7 +60,7 @@ export function TeamsList({
               }}
               tabIndex={0}
               role="button"
-              aria-label={`Select team ${team.name}`}
+              aria-label={`${t('select-team')} ${team.name}`}
               className="flex cursor-pointer items-center gap-3 rounded-lg py-3 px-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
             >
               {/* Team icon */}
@@ -74,8 +76,7 @@ export function TeamsList({
                   {team.name}
                 </div>
                 <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {team.memberCount}{' '}
-                  {team.memberCount === 1 ? 'member' : 'members'}
+                  {t('member-count', { count: team.memberCount })}
                 </div>
               </div>
 
