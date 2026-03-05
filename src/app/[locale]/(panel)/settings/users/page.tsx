@@ -34,7 +34,7 @@ export default async function UsersPage() {
   });
 
   return (
-    <div className="p-6">
+    <div className="max-w-2xl">
       <UsersList
         users={users.map((u) => ({
           id: u.id,

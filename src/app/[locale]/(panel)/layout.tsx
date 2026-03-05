@@ -41,7 +41,7 @@ export default async function PanelLayout({ children }: Props) {
     <Navbar>
       <NavbarSpacer />
       <NavbarSection>
-        <SearchButton variant="navbar" aria-label="Search">
+        <SearchButton variant="navbar" aria-label={t('search')}>
           <MagnifyingGlassIconOutline className="w-5 h-5" />
         </SearchButton>
       </NavbarSection>

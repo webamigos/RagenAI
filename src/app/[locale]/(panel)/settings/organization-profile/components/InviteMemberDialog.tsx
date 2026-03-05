@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
+import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { inviteMember } from '../actions/members';
 import { InviteMemberSchema, type InviteMemberFormData } from '../types';
@@ -120,21 +121,17 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-2">
-          <button
+          <Button
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            outline
           >
             {t('cancel')}
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
+          </Button>
+          <Button isSubmit={true} disabled={isSubmitting}>
             {isSubmitting ? t('sending') : t('send-invitation')}
-          </button>
+          </Button>
         </div>
       </form>
     </Dialog>

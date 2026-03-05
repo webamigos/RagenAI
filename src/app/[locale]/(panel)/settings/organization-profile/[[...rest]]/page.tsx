@@ -1,5 +1,5 @@
-import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
+import { getTranslations, getLocale } from 'next-intl/server';
+import { redirect } from '@/i18n/routing';
 import { getSubscriptionData } from '../../subscription/actions';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin } from '@/lib/auth-access-control';
@@ -31,18 +31,19 @@ export async function generateMetadata({ params }: Props) {
 export default async function OrganizationProfilePage({ params }: Props) {
   // Await params to comply with Next.js 15 requirements
   await params;
+  const locale = await getLocale();
 
   // Auth check
   const user = await getCurrentUser();
   if (!user) {
-    redirect('/sign-in');
+    return redirect({ href: '/sign-in', locale });
   }
 
   // Get active organization (with fallback to first organization)
   const organizationId = await getOrgIdFromAuth();
 
   if (!organizationId) {
-    redirect('/');
+    return redirect({ href: '/', locale });
   }
 
   // Get organization details from database
@@ -51,7 +52,7 @@ export default async function OrganizationProfilePage({ params }: Props) {
   });
 
   if (!organization) {
-    redirect('/');
+    return redirect({ href: '/', locale });
   }
 
   // Fetch members with user data

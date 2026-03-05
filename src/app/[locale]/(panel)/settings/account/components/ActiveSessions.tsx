@@ -119,6 +119,7 @@ export function ActiveSessions() {
       // After revoking all, user will be logged out — redirect happens automatically
     } catch {
       errorToast({ message: t('revoke-all-error') });
+    } finally {
       setRevokingAll(false);
     }
   };

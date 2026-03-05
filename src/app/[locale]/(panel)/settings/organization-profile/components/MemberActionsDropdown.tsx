@@ -26,7 +26,10 @@ export function MemberActionsDropdown({
 
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <MenuButton className="inline-flex items-center justify-center rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300">
+      <MenuButton
+        aria-label={t('actions')}
+        className="inline-flex items-center justify-center rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+      >
         <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
       </MenuButton>
 

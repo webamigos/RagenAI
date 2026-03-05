@@ -213,7 +213,7 @@ export const AcceptInvitationForm = () => {
                 {t('expires')}
               </p>
               <p className="text-base text-gray-900 dark:text-gray-100">
-                {new Date(invitation.expiresAt).toLocaleDateString('pl-PL', {
+                {new Date(invitation.expiresAt).toLocaleDateString(locale, {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',

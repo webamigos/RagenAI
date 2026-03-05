@@ -2,6 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import { Button } from '@ragenai/common-ui/Button';
+import {
+  Dialog,
+  DialogTitle,
+  DialogDescription,
+  DialogActions,
+} from '@ragenai/common-ui/Dialog';
 import { statusToast } from '@/app/lib/utils/toast';
 import { authClient } from '@/app/hooks/use-better-auth';
 import { AddTeamMemberDialog } from './AddTeamMemberDialog';
@@ -31,13 +37,13 @@ export function TeamDetail({
 }: Props) {
   const { successToast, errorToast } = statusToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
   const handleRemoveMember = useCallback(
     async (userId: string) => {
-      if (!confirm('Remove this member from the team?')) {
-        return;
-      }
-
+      setRemovingUserId(userId);
       try {
         await authClient.organization.removeTeamMember({
           teamId: team.id,
@@ -47,20 +53,15 @@ export function TeamDetail({
         onRefresh();
       } catch {
         errorToast({ message: 'Failed to remove member' });
+      } finally {
+        setRemovingUserId(null);
       }
     },
     [team.id, successToast, errorToast, onRefresh],
   );
 
   const handleDeleteTeam = useCallback(async () => {
-    if (
-      !confirm(
-        'Delete this team? This will remove all members and unshare associated threads.',
-      )
-    ) {
-      return;
-    }
-
+    setIsDeleting(true);
     try {
       await authClient.organization.removeTeam({
         teamId: team.id,
@@ -69,6 +70,9 @@ export function TeamDetail({
       onBack();
     } catch {
       errorToast({ message: 'Failed to delete team' });
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
     }
   }, [team.id, successToast, errorToast, onBack]);
 
@@ -98,12 +102,13 @@ export function TeamDetail({
                 <Button onClick={() => setIsAddDialogOpen(true)}>
                   Add Member
                 </Button>
-                <button
-                  onClick={handleDeleteTeam}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                <Button
+                  outline
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="!text-red-600 !border-red-200 hover:!bg-red-50 dark:!text-red-400 dark:!border-red-800 dark:hover:!bg-red-950/30"
                 >
                   Delete Team
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -163,9 +168,10 @@ export function TeamDetail({
               {canManage && (
                 <button
                   onClick={() => handleRemoveMember(member.userId)}
-                  className="shrink-0 text-sm text-red-600 transition-colors hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
+                  disabled={removingUserId === member.userId}
+                  className="shrink-0 text-sm text-red-600 transition-colors hover:text-red-500 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
                 >
-                  Remove
+                  {removingUserId === member.userId ? '...' : 'Remove'}
                 </button>
               )}
             </div>
@@ -181,6 +187,36 @@ export function TeamDetail({
         orgMembers={orgMembers}
         onAdded={onRefresh}
       />
+
+      {/* Delete confirmation dialog */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        size="sm"
+      >
+        <DialogTitle>Delete Team</DialogTitle>
+        <DialogDescription>
+          Are you sure you want to delete &ldquo;{team.name}&rdquo;? This will
+          remove all members and unshare associated threads. This action cannot
+          be undone.
+        </DialogDescription>
+        <DialogActions>
+          <Button
+            outline
+            onClick={() => setIsDeleteDialogOpen(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteTeam}
+            isLoading={isDeleting}
+            className="!bg-red-600 hover:!bg-red-700 !border-red-600"
+          >
+            Delete Team
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

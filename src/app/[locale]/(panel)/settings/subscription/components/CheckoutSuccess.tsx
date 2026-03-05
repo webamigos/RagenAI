@@ -28,13 +28,15 @@ export const CheckoutSuccess = ({
 
         <div className="space-y-3">
           <div>
-            <h2 className="text-sm font-medium text-gray-500">{t('plan')}</h2>
+            <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {t('plan')}
+            </h2>
             <p className="mt-1 text-lg font-semibold">
               {lineItem?.description}
             </p>
           </div>
           <div>
-            <h2 className="text-sm font-medium text-gray-500">
+            <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
               {t('next-payment-date')}
             </h2>
             <p className="mt-1 text-lg font-semibold">
@@ -42,7 +44,9 @@ export const CheckoutSuccess = ({
             </p>
           </div>
           <div>
-            <h2 className="text-sm font-medium text-gray-500">{t('status')}</h2>
+            <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              {t('status')}
+            </h2>
             <p className="mt-1 text-lg font-semibold capitalize">
               <span
                 className={`${

@@ -116,7 +116,12 @@ export const CollapsedSidebarRail = () => {
         >
           <Avatar
             src={user?.image}
-            className="size-8"
+            initials={
+              user?.image
+                ? undefined
+                : (user?.name || user?.email || '?')[0].toUpperCase()
+            }
+            className="size-8 bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
             square
             alt="user avatar"
           />
