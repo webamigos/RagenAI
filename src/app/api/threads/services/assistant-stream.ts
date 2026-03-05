@@ -155,8 +155,11 @@ async function resolveProjectInstruction(
   try {
     // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
     if (threadRecord.mentioned_project_id) {
-      const mentionedProject = await db.project.findUnique({
-        where: { id: threadRecord.mentioned_project_id },
+      const mentionedProject = await db.project.findFirst({
+        where: {
+          id: threadRecord.mentioned_project_id,
+          organization_id: orgId,
+        },
         select: { id: true, public_id: true, title: true },
       });
 
@@ -299,11 +302,8 @@ export async function streamEvents({
         // Build conversation history from thread record (no separate DB query needed)
         const conv_history =
           'messages' in threadRecord && Array.isArray(threadRecord.messages)
-            ? threadRecord.messages
-                .map(
-                  (msg: { role: string; content: string }) =>
-                    `${msg.role}: ${msg.content}`,
-                )
+            ? (threadRecord.messages as { role: string; content: string }[])
+                .map((msg) => `${msg.role}: ${msg.content}`)
                 .join('\n')
             : undefined;
 

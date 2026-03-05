@@ -26,11 +26,12 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate content and rephrase question in parallel
-      const [, standaloneQuestion] = await Promise.all([
-        moderateContent(models.contentModerator, sanitizedInput),
-        rephraseQuestion(models.questionRephraser, sanitizedInput),
-      ]);
+      // Step 2: Moderate content first, then rephrase
+      await moderateContent(models.contentModerator, sanitizedInput);
+      const standaloneQuestion = await rephraseQuestion(
+        models.questionRephraser,
+        sanitizedInput,
+      );
 
       // Step 3: Retrieve KB documents and thread documents in parallel
       const [context, threadContext] = await Promise.all([
@@ -45,7 +46,7 @@ export const basicRagChain = async ({
           vectorStore,
           models.embeddings,
           standaloneQuestion,
-          config?.maxDocumentsToRetrieve || 3,
+          config?.maxDocumentsToRetrieve ?? 3,
         ),
       ]);
 
