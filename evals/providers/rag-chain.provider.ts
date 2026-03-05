@@ -68,7 +68,7 @@ export class RagChainProvider implements ApiProvider {
       });
 
       const text = await result.text;
-      const usage = await result.usage;
+      const usage = (await result.usage) ?? {};
 
       return {
         output: text,

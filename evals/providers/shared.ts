@@ -10,7 +10,11 @@ const API_KEY_ENV_MAP: Record<string, string> = {
 };
 
 export function resolveApiKey(provider: string): string | undefined {
-  return process.env[API_KEY_ENV_MAP[provider] ?? 'OPENAI_API_KEY'];
+  const envVar = API_KEY_ENV_MAP[provider];
+  if (!envVar) {
+    return undefined;
+  }
+  return process.env[envVar];
 }
 
 /**

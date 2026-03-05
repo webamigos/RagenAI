@@ -12,7 +12,9 @@ export class MockVectorStoreClient implements VectorStoreClient {
   private documents: VectorStoreDocument[];
 
   constructor(documents?: VectorStoreDocument[]) {
-    this.documents = documents ?? (productFaq as VectorStoreDocument[]);
+    this.documents = structuredClone(
+      documents ?? (productFaq as VectorStoreDocument[]),
+    );
   }
 
   async similaritySearch(
@@ -25,22 +27,24 @@ export class MockVectorStoreClient implements VectorStoreClient {
       .split(/\s+/)
       .filter((t) => t.length > 2);
 
-    const scored = this.documents.map((doc) => {
-      const content = doc.pageContent.toLowerCase();
-      let score = 0;
-      for (const term of queryTerms) {
-        if (content.includes(term)) {
-          score += 1;
+    const scored = this.documents
+      .map((doc) => {
+        const content = doc.pageContent.toLowerCase();
+        let score = 0;
+        for (const term of queryTerms) {
+          if (content.includes(term)) {
+            score += 1;
+          }
         }
-      }
-      return { doc, score };
-    });
+        return { doc, score };
+      })
+      .filter((s) => s.score > 0);
 
     scored.sort((a, b) => b.score - a.score);
     return scored.slice(0, k).map((s) => s.doc);
   }
 
   async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
-    this.documents.push(...documents);
+    this.documents.push(...structuredClone(documents));
   }
 }

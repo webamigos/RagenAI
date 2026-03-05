@@ -35,7 +35,8 @@
       "Bash(node:*)",
       "Bash(curl:*)",
       "Bash(npx playwright:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "WebFetch(domain:www.promptfoo.dev)"
     ]
   },
   "enabledPlugins": {

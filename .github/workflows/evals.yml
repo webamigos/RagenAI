@@ -12,6 +12,8 @@ jobs:
     name: Run CI Eval Gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -28,12 +30,48 @@ jobs:
         run: npx prisma generate
 
       - name: Run CI evals
+        if: env.OPENROUTER_API_KEY != '' && env.OPENAI_API_KEY != ''
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           DEFAULT_MODEL_PROVIDER: openrouter
           DEFAULT_MODEL: openai/gpt-4o
         run: npm run eval:ci
+
+      - name: Generate eval summary
+        if: always() && hashFiles('evals/results/ci-results.json') != ''
+        run: |
+          node -e "
+            import { readFileSync } from 'fs';
+            const data = JSON.parse(readFileSync('evals/results/ci-results.json', 'utf8'));
+            const results = data.results?.results ?? data.results ?? [];
+            const total = results.length;
+            const passed = results.filter(r => r.success).length;
+            const failed = total - passed;
+            const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0.0';
+            const icon = failed === 0 ? '✅' : '⚠️';
+
+            let md = '## ' + icon + ' Prompt Eval Results\n\n';
+            md += '| Metric | Value |\n|--------|-------|\n';
+            md += '| Total tests | ' + total + ' |\n';
+            md += '| Passed | ' + passed + ' |\n';
+            md += '| Failed | ' + failed + ' |\n';
+            md += '| Pass rate | ' + rate + '% |\n\n';
+
+            if (failed > 0) {
+              md += '### Failed Tests\n\n';
+              md += '| Test | Error |\n|------|-------|\n';
+              for (const r of results) {
+                if (!r.success) {
+                  const q = (r.vars?.question ?? r.prompt?.raw ?? 'N/A').substring(0, 80);
+                  const err = (r.gradingResult?.reason ?? r.error ?? 'assertion failed').substring(0, 120);
+                  md += '| ' + q.replace(/\|/g, '\\|') + ' | ' + err.replace(/\|/g, '\\|') + ' |\n';
+                }
+              }
+            }
+
+            process.stdout.write(md);
+          " >> \$GITHUB_STEP_SUMMARY
 
       - name: Upload eval results
         if: always()

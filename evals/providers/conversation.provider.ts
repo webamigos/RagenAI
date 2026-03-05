@@ -1,4 +1,8 @@
-import type { ApiProvider, ProviderResponse } from 'promptfoo';
+import type {
+  ApiProvider,
+  CallApiContextParams,
+  ProviderResponse,
+} from 'promptfoo';
 import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
 import { createNoopModeration, resolveApiKey } from './shared';
@@ -22,7 +26,10 @@ export class ConversationProvider implements ApiProvider {
     return `conversation:${this.providerConfig.provider ?? 'openrouter'}:${this.providerConfig.model ?? 'openai/gpt-4o'}`;
   }
 
-  async callApi(prompt: string): Promise<ProviderResponse> {
+  async callApi(
+    prompt: string,
+    context?: CallApiContextParams,
+  ): Promise<ProviderResponse> {
     const provider = this.providerConfig.provider ?? 'openrouter';
     const model = this.providerConfig.model ?? 'openai/gpt-4o';
 
@@ -49,13 +56,17 @@ export class ConversationProvider implements ApiProvider {
         },
       });
 
+      const chatHistory = context?.vars?.chat_history;
+      const chatHistoryStr =
+        typeof chatHistory === 'string' ? chatHistory : undefined;
+
       const result = await chain.stream({
         question: prompt,
-        chat_history: undefined,
+        chat_history: chatHistoryStr,
       });
 
       const text = await result.text;
-      const usage = await result.usage;
+      const usage = (await result.usage) ?? {};
 
       return {
         output: text,
