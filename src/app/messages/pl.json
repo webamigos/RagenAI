@@ -371,6 +371,38 @@
     "upload-files": "Dodaj pliki",
     "add-from-url": "Dodaj wiedzę z linku"
   },
+  "settings-page": {
+    "title": "Ustawienia",
+    "nav": {
+      "general": "Ogólne",
+      "account": "Konto",
+      "connectors": "Integracje",
+      "organization": "Organizacja",
+      "assistant-settings": "Ustawienia asystenta",
+      "subscription": "Subskrypcja",
+      "teams": "Zespoły",
+      "api-keys": "Klucze API",
+      "users": "Użytkownicy",
+      "ai-usage": "Użycie AI",
+      "disk-usage": "Użycie dysku"
+    },
+    "general": {
+      "appearance": "Wygląd",
+      "appearance-description": "Wybierz jak aplikacja wygląda dla Ciebie.",
+      "theme-light": "Jasny",
+      "theme-dark": "Ciemny",
+      "theme-system": "Systemowy"
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Zarządzaj ustawieniami konta i informacjami profilu."
+    },
+    "connectors": {
+      "title": "Integracje",
+      "description": "Połącz zewnętrzne usługi i integracje.",
+      "no-connectors": "Brak dostępnych integracji."
+    }
+  },
   "sidebar": {
     "back": "Powrót",
     "profile": "Profil",

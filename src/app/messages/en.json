@@ -368,6 +368,38 @@
     "upload-files": "Upload files",
     "add-from-url": "Add Knowledge from URL"
   },
+  "settings-page": {
+    "title": "Settings",
+    "nav": {
+      "general": "General",
+      "account": "Account",
+      "connectors": "Connectors",
+      "organization": "Organization",
+      "assistant-settings": "Assistant settings",
+      "subscription": "Subscription",
+      "teams": "Teams",
+      "api-keys": "API Keys",
+      "users": "Users",
+      "ai-usage": "AI Usage",
+      "disk-usage": "Disk Usage"
+    },
+    "general": {
+      "appearance": "Appearance",
+      "appearance-description": "Choose how the application looks for you.",
+      "theme-light": "Light",
+      "theme-dark": "Dark",
+      "theme-system": "System"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Manage your account settings and profile information."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Connect external services and integrations.",
+      "no-connectors": "No connectors available yet."
+    }
+  },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",

@@ -52,7 +52,7 @@ export const NewSidebarFooter = () => {
           <ChevronUpIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
         </DropdownButton>
         <DropdownMenu className="min-w-64" anchor="top start">
-          <DropdownItem href="/user/profile">
+          <DropdownItem href="/settings/account">
             <UserIcon
               data-slot="icon"
               className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
