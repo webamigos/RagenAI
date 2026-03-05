@@ -1,15 +1,5 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Hr,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components';
+import { Button, Hr, Text } from '@react-email/components';
+import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 
 type Props = {
@@ -39,106 +29,43 @@ const InvitationEmail = ({
   const roleLabel = role === 'admin' ? 'Administrator' : 'Członek';
 
   return (
-    <Html>
-      <Head />
-      <Preview>
-        Otrzymałeś zaproszenie do organizacji {organizationName} w Ragen AI
-      </Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Section style={box} align="center">
-            <Img
-              src="https://wkjfuiqjfrswdnpqybbb.supabase.co/storage/v1/object/public/assets/ragen-logo-on-light-bg_x180.png"
-              width={180}
-              height={64}
-              alt="Ragen AI"
-            />
-            <Hr style={hr} />
-            <Text style={paragraph}>Cześć!</Text>
-            {inviterName ? (
-              <Text style={paragraph}>
-                <strong>{inviterName}</strong> zaprasza Cię do dołączenia do
-                organizacji <strong>{organizationName}</strong> w Ragen AI.
-              </Text>
-            ) : (
-              <Text style={paragraph}>
-                Otrzymałeś zaproszenie do organizacji{' '}
-                <strong>{organizationName}</strong> w Ragen AI.
-              </Text>
-            )}
-            <Text style={paragraph}>
-              Zostaniesz dodany z rolą: <strong>{roleLabel}</strong>
-            </Text>
-            <Button style={button} href={acceptUrl}>
-              Zaakceptuj zaproszenie
-            </Button>
-            <Hr style={hr} />
-            <Text style={paragraph}>
-              To zaproszenie wygasa <strong>{expiryDate}</strong>.
-            </Text>
-            <Text style={paragraph}>
-              Jeśli nie chcesz dołączyć do tej organizacji, zignoruj tę
-              wiadomość.
-            </Text>
-            <Text style={paragraph}>— Zespół Ragen AI</Text>
-            <Hr style={hr} />
-            <Text style={footer}>
-              Zaproszenie wysłane na adres: {invitedEmail}
-            </Text>
-            <Text style={footer}>Ragen by Web Amigos</Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+    <EmailLayout
+      preview={`Otrzymałeś zaproszenie do organizacji ${organizationName} w Ragen AI`}
+    >
+      <Text className="text-base leading-6 text-[#525f7f]">Cześć!</Text>
+      {inviterName ? (
+        <Text className="text-base leading-6 text-[#525f7f]">
+          <strong>{inviterName}</strong> zaprasza Cię do dołączenia do
+          organizacji <strong>{organizationName}</strong> w Ragen AI.
+        </Text>
+      ) : (
+        <Text className="text-base leading-6 text-[#525f7f]">
+          Otrzymałeś zaproszenie do organizacji{' '}
+          <strong>{organizationName}</strong> w Ragen AI.
+        </Text>
+      )}
+      <Text className="text-base leading-6 text-[#525f7f]">
+        Zostaniesz dodany z rolą: <strong>{roleLabel}</strong>
+      </Text>
+      <Button
+        className="block w-full rounded-[5px] bg-[#4f46e5] px-2.5 py-2.5 text-center text-base font-bold text-white no-underline"
+        href={acceptUrl}
+      >
+        Zaakceptuj zaproszenie
+      </Button>
+      <Hr className="my-5 border-[#e6ebf1]" />
+      <Text className="text-base leading-6 text-[#525f7f]">
+        To zaproszenie wygasa <strong>{expiryDate}</strong>.
+      </Text>
+      <Text className="text-base leading-6 text-[#525f7f]">
+        Jeśli nie chcesz dołączyć do tej organizacji, zignoruj tę wiadomość.
+      </Text>
+      <Hr className="my-5 border-[#e6ebf1]" />
+      <Text className="text-xs leading-4 text-[#8898aa]">
+        Zaproszenie wysłane na adres: {invitedEmail}
+      </Text>
+    </EmailLayout>
   );
-};
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily:
-    '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-};
-
-const box = {
-  padding: '0 48px',
-};
-
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '20px 0',
-};
-
-const paragraph = {
-  color: '#525f7f',
-  fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left' as const,
-};
-
-const button = {
-  backgroundColor: '#4f46e5',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '100%',
-  padding: '10px',
-};
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
 };
 
 export { InvitationEmail };
