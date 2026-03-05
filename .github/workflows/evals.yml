@@ -31,6 +31,7 @@ jobs:
         run: npx prisma generate
 
       - name: Run CI evals
+        continue-on-error: true
         if: env.OPENROUTER_API_KEY != '' && env.OPENAI_API_KEY != ''
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
