@@ -38,31 +38,13 @@ export async function updateOrganization(
       };
     }
 
-    // 3. Check slug uniqueness if provided and changed
-    const { name, slug } = validated.data;
+    // 3. Update organization
+    const { name } = validated.data;
 
-    if (slug && slug.trim() !== '') {
-      const existingOrg = await db.organization.findFirst({
-        where: {
-          slug: slug.trim(),
-          NOT: { id: organizationId },
-        },
-      });
-
-      if (existingOrg) {
-        return {
-          success: false,
-          error: 'Ten slug jest już zajęty przez inną organizację',
-        };
-      }
-    }
-
-    // 4. Update organization
     await db.organization.update({
       where: { id: organizationId },
       data: {
         name: name.trim(),
-        slug: slug?.trim() || null,
       },
     });
 

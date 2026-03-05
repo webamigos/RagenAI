@@ -11,7 +11,7 @@ import { logger } from '@/app/lib/utils/logger';
  */
 export async function changePassword(
   currentPassword: string,
-  newPassword: string
+  newPassword: string,
 ) {
   try {
     // 1. Get current session
@@ -58,9 +58,9 @@ export async function changePassword(
 }
 
 /**
- * Update user profile (name, image)
+ * Update user profile (name)
  */
-export async function updateProfile(name: string, image?: string) {
+export async function updateProfile(name: string) {
   try {
     // 1. Get current session
     const session = await auth.api.getSession({ headers: await headers() });
@@ -75,7 +75,6 @@ export async function updateProfile(name: string, image?: string) {
     await auth.api.updateUser({
       body: {
         name: name.trim(),
-        image: image?.trim() || null,
       },
       headers: await headers(),
     });

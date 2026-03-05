@@ -6,7 +6,6 @@ export const UpdateProfileSchema = z.object({
     .string()
     .min(1, 'Nazwa jest wymagana')
     .max(100, 'Nazwa może mieć max 100 znaków'),
-  image: z.url('Nieprawidłowy URL').optional().or(z.literal('')),
 });
 
 export const ChangePasswordSchema = z
