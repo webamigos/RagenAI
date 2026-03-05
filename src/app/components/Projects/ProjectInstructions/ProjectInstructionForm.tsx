@@ -59,7 +59,7 @@ export const ProjectInstructionForm = ({
     try {
       const result = await saveProjectInstructionAction(
         projectId,
-        data.description
+        data.description,
       );
 
       if (result.success) {
@@ -94,25 +94,25 @@ export const ProjectInstructionForm = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <Textarea
-          label={t('description-label')}
-          mandatory={true}
+        <label className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          {t('description-label')}
+          <span className="text-red-600">*</span>
+        </label>
+        <textarea
           {...register('description')}
-          rows={4}
-          className="w-full"
-          error={errors.description}
-          errorMessage={errors.description?.message}
-          showVoiceInput={false}
+          rows={6}
           placeholder={t('placeholder')}
+          className="block w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 resize-none"
         />
+        {errors.description && (
+          <p className="mt-1 text-sm text-red-600">
+            {errors.description.message}
+          </p>
+        )}
       </div>
 
-      <div className="flex justify-end space-x-3 pt-4">
-        <Button
-          type="button"
-          className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-          onClick={onCancel}
-        >
+      <div className="flex justify-end space-x-2">
+        <Button type="button" plain onClick={onCancel}>
           {t('cancel')}
         </Button>
         <Button isSubmit={true} disabled={isSubmitting}>

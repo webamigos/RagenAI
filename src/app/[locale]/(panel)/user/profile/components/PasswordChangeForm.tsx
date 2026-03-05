@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { changePassword } from '../actions/user';
 import { ChangePasswordSchema, type ChangePasswordFormData } from '../types';
@@ -102,13 +103,9 @@ export function PasswordChangeForm() {
 
       {/* Submit Button */}
       <div className="flex justify-end pt-2">
-        <button
-          type="submit"
-          disabled={isSubmitting || !isDirty}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
+        <Button isSubmit={true} disabled={isSubmitting || !isDirty}>
           {isSubmitting ? t('changing') : t('change')}
-        </button>
+        </Button>
       </div>
     </form>
   );

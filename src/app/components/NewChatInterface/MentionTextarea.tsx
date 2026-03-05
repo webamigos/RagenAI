@@ -33,6 +33,7 @@ interface MentionTextareaProps extends ComponentPropsWithRef<typeof Textarea> {
   mentionedProject?: MentionedProject | null;
   threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
+  hideAttachments?: boolean;
 }
 
 export const MentionTextarea: React.FC<MentionTextareaProps> = ({
@@ -40,6 +41,7 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   mentionedProject,
   threadDocuments: externalThreadDocuments,
   onThreadDocumentsChange,
+  hideAttachments = false,
   value = '',
   onChange,
   ...textareaProps
@@ -291,50 +293,58 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         onChange={handleTextChange}
         onKeyDown={handleKeyDown}
         showFileAttachment={false}
-        onFilesDrop={handleFilesDrop}
-        threadDocuments={threadDocuments}
-        onThreadDocumentRemove={handleThreadDocumentRemove}
+        onFilesDrop={hideAttachments ? undefined : handleFilesDrop}
+        threadDocuments={hideAttachments ? undefined : threadDocuments}
+        onThreadDocumentRemove={
+          hideAttachments ? undefined : handleThreadDocumentRemove
+        }
         leftAddonPosition="bottom"
         leftAddon={
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
-                aria-label="Add attachment"
-              >
-                <PlusIcon className="size-5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" side="top" className="w-52">
-              <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
-                <ArrowUpTrayIcon className="size-4" />
-                {tAttach('upload-file')}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
-                <BookOpenIcon className="size-4" />
-                {tAttach('from-knowledge-base')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          hideAttachments ? undefined : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                  aria-label="Add attachment"
+                >
+                  <PlusIcon className="size-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-52">
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                  <ArrowUpTrayIcon className="size-4" />
+                  {tAttach('upload-file')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
+                  <BookOpenIcon className="size-4" />
+                  {tAttach('from-knowledge-base')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
         }
       />
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".md,.srt,.txt,.pdf,.epub"
-        multiple
-        className="hidden"
-        onChange={handleFileInputChange}
-      />
+      {!hideAttachments && (
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".md,.srt,.txt,.pdf,.epub"
+            multiple
+            className="hidden"
+            onChange={handleFileInputChange}
+          />
 
-      <KnowledgeBasePickerDialog
-        open={isKbPickerOpen}
-        onOpenChange={setIsKbPickerOpen}
-        onFilesSelected={handleKbFilesSelected}
-        excludeFileIds={excludeFileIds}
-      />
+          <KnowledgeBasePickerDialog
+            open={isKbPickerOpen}
+            onOpenChange={setIsKbPickerOpen}
+            onFilesSelected={handleKbFilesSelected}
+            excludeFileIds={excludeFileIds}
+          />
+        </>
+      )}
 
       {showDropdown && (
         <ProjectMentionDropdown

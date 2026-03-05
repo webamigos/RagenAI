@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { requireAppAdmin } from '@/lib/auth-guards';
 import { revalidatePath } from 'next/cache';
+import db from '@ragenai/prisma-client';
 
 export async function impersonateUserAction(userId: string) {
   await requireAppAdmin();
@@ -24,4 +25,58 @@ export async function stopImpersonationAction() {
   });
 
   revalidatePath('/');
+}
+
+export async function banUserAction(userId: string, reason?: string) {
+  await requireAppAdmin();
+
+  await auth.api.banUser({
+    body: { userId, banReason: reason },
+    headers: await headers(),
+  });
+
+  revalidatePath('/settings/users');
+}
+
+export async function unbanUserAction(userId: string) {
+  await requireAppAdmin();
+
+  await auth.api.unbanUser({
+    body: { userId },
+    headers: await headers(),
+  });
+
+  revalidatePath('/settings/users');
+}
+
+export async function renameUserAction(userId: string, name: string) {
+  await requireAppAdmin();
+
+  await db.user.update({
+    where: { id: userId },
+    data: { name },
+  });
+
+  revalidatePath('/settings/users');
+}
+
+export async function createUserAction(data: {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'user';
+}) {
+  await requireAppAdmin();
+
+  await auth.api.createUser({
+    body: {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      role: data.role,
+    },
+    headers: await headers(),
+  });
+
+  revalidatePath('/settings/users');
 }

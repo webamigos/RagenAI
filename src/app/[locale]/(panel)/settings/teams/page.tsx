@@ -46,18 +46,13 @@ export default async function TeamsSettingsPage() {
   }));
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Teams
-      </h1>
-      <div className="rounded-xl bg-white p-6 shadow dark:bg-gray-900">
-        <TeamsManagement
-          initialTeams={teams}
-          organizationId={organizationId}
-          orgMembers={orgMembers}
-          canManage={canManage}
-        />
-      </div>
+    <div className="max-w-2xl">
+      <TeamsManagement
+        initialTeams={teams}
+        organizationId={organizationId}
+        orgMembers={orgMembers}
+        canManage={canManage}
+      />
     </div>
   );
 }

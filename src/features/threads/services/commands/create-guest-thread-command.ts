@@ -3,7 +3,6 @@
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { getVisitorIdFromCookie } from '@/app/lib/services/cookies';
-import { createAndStoreMessageCommand } from '@/features/messages/services/commands/create-message-command';
 import type { ThreadAction } from '../../contracts/thread.types';
 
 export const createGuestThreadCommand = async ({
@@ -32,13 +31,9 @@ export const createGuestThreadCommand = async ({
       },
     });
 
-    if (initialMessage && visitorId) {
-      await createAndStoreMessageCommand({
-        threadId: threadRecord.id,
-        prompt: initialMessage,
-        visitorId: visitorId,
-      });
-    }
+    // Note: initialMessage is NOT saved here — it's stored in sessionStorage
+    // and processed by usePublicAssistantLogic.fetchData which triggers the
+    // assistant stream (saving + AI response) to avoid duplicate messages.
 
     return {
       success: true,

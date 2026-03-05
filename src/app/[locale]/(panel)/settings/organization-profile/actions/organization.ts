@@ -9,15 +9,13 @@ import {
 } from '../types';
 import { getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 /**
  * Update organization profile
  * Only owner/admin can update
  */
-export async function updateOrganization(
-  organizationId: string,
-  data: UpdateOrganizationFormData,
-) {
+export async function updateOrganization(data: UpdateOrganizationFormData) {
   try {
     // 1. Validate input
     const validated = UpdateOrganizationSchema.safeParse(data);
@@ -28,7 +26,10 @@ export async function updateOrganization(
       };
     }
 
-    // 2. Check permissions
+    // 2. Derive org from session
+    const organizationId = await getOrgIdFromAuthOrThrow();
+
+    // 3. Check permissions
     const activeMember = await getActiveMember(organizationId);
 
     if (!activeMember || !isOrgAdmin(activeMember.role)) {
@@ -38,7 +39,7 @@ export async function updateOrganization(
       };
     }
 
-    // 3. Update organization
+    // 4. Update organization
     const { name } = validated.data;
 
     await db.organization.update({

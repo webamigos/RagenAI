@@ -271,7 +271,15 @@ export const Textarea = forwardRef(
         </label>
         <div className={error ? 'relative mt-2 rounded-md shadow-xs' : 'mt-2'}>
           <div
-            className="relative"
+            className={classMerge(
+              'relative rounded-xl border transition-colors dark:bg-secondary-dark',
+              isDragOver
+                ? 'border-2 border-blue-400 dark:border-blue-500'
+                : error
+                  ? 'border-red-300'
+                  : 'border-gray-300 dark:border-gray-800',
+              !error && 'shadow-xs',
+            )}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
@@ -292,20 +300,12 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full dark:bg-secondary-dark dark:text-gray-300 rounded-md border border-gray-300 dark:border-gray-800 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px] transition-colors',
+                'block w-full bg-transparent dark:text-gray-300 rounded-md border-0 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
                 maxHeightClass,
                 {
-                  'text-red-900 ring-red-300 placeholder:text-red-300 focus:ring-red-500':
-                    error,
-                  'shadow-xs': !error,
-                  'border-2 border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20':
-                    isDragOver,
-                  'border border-gray-300 dark:border-gray-800':
-                    !isDragOver && !error,
+                  'text-red-900 placeholder:text-red-300': error,
                 },
-                'pl-3',
-                modelSelector ? 'pr-28' : 'pr-14',
-                className,
+                'pl-3 pr-3',
               )}
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
@@ -313,12 +313,6 @@ export const Textarea = forwardRef(
               placeholder={t('placeholder')}
               {...rest}
             />
-
-            {modelSelector && (
-              <div className="absolute bottom-1.5 right-14 flex items-center">
-                {modelSelector}
-              </div>
-            )}
 
             {isDragOver && (
               <div className="absolute inset-0 flex items-center justify-center bg-blue-100/80 dark:bg-blue-900/40 rounded-md pointer-events-none">
@@ -329,37 +323,34 @@ export const Textarea = forwardRef(
               </div>
             )}
 
-            {attachmentIcon && (
-              <button
-                type="button"
-                onClick={onFileIconClick || handleFileIconClick}
-                className="absolute bottom-2.5 left-3 flex items-center"
-              >
-                {attachmentIcon}
-              </button>
-            )}
-
-            {leftAddon && !attachmentIcon && (
-              <div
-                className={classMerge(
-                  'absolute left-3 z-10 flex items-center',
-                  leftAddonPosition === 'bottom'
-                    ? 'bottom-1.5'
-                    : 'top-1/2 -translate-y-1/2',
-                )}
-              >
-                {leftAddon}
+            {/* Bottom bar: left addon / attachment + model selector + send */}
+            {(leftAddon || attachmentIcon || modelSelector || icon) && (
+              <div className="flex items-center justify-between px-3 pb-2 pt-0">
+                <div className="flex items-center">
+                  {leftAddon && !attachmentIcon && leftAddon}
+                  {attachmentIcon && (
+                    <button
+                      type="button"
+                      onClick={onFileIconClick || handleFileIconClick}
+                      className="flex items-center"
+                    >
+                      {attachmentIcon}
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  {modelSelector}
+                  {icon && (
+                    <button
+                      type="button"
+                      onClick={onClick}
+                      className="flex items-center"
+                    >
+                      {icon}
+                    </button>
+                  )}
+                </div>
               </div>
-            )}
-
-            {icon && (
-              <button
-                type="button"
-                onClick={onClick}
-                className="absolute bottom-1.5 right-3 flex items-center"
-              >
-                {icon}
-              </button>
             )}
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { statusToast } from '@/app/lib/utils/toast';
 import { cancelInvitation, resendInvitation } from '../actions/invitations';
 import { isOrgAdmin } from '@/lib/auth-access-control';
@@ -18,6 +18,7 @@ export function ManageInvitationsSection({
   currentUserRole,
 }: Props) {
   const t = useTranslations('organization.invitations');
+  const locale = useLocale();
   const { successToast, errorToast } = statusToast();
 
   const canManageInvitations = isOrgAdmin(currentUserRole);
@@ -93,7 +94,7 @@ export function ManageInvitationsSection({
 
               {/* Sent date */}
               <span className="hidden shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
-                {new Date(invitation.createdAt).toLocaleDateString('pl-PL', {
+                {new Date(invitation.createdAt).toLocaleDateString(locale, {
                   year: 'numeric',
                   month: 'short',
                   day: 'numeric',

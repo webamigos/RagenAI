@@ -52,7 +52,11 @@ export const usePublicAssistantLogic = (
     error: isError,
   } = useAppSelector((state) => state.assistant);
 
-  const { isLoading } = useApi(() => fetchMessagesFromApi(threadId, visitorId));
+  const { isLoading } = useApi(() =>
+    visitorId
+      ? fetchMessagesFromApi(threadId, visitorId)
+      : Promise.resolve(undefined),
+  );
 
   const messagesEndDivRef = useRef<HTMLDivElement>(null);
   const promptFormRef = useRef<PromptFormRef>(null);
@@ -126,6 +130,12 @@ export const usePublicAssistantLogic = (
     const visitorCookieValue = getVisitorIdFromBrowserCookie();
     if (visitorCookieValue) {
       setVisitorId(visitorCookieValue);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!visitorId) {
+      return;
     }
 
     fetchData();

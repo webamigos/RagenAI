@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { Button } from '@ragenai/common-ui/Button';
 import { InviteMemberDialog } from './InviteMemberDialog';
 import { MemberActionsDropdown } from './MemberActionsDropdown';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -25,6 +26,7 @@ export function MembersList({
   allowInvite,
 }: Props) {
   const t = useTranslations('organization.members');
+  const locale = useLocale();
   const { successToast, errorToast } = statusToast();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
@@ -63,12 +65,9 @@ export function MembersList({
           {t('title')} ({members.length})
         </h2>
         {canManageMembers && allowInvite && (
-          <button
-            onClick={() => setIsInviteDialogOpen(true)}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-          >
+          <Button onClick={() => setIsInviteDialogOpen(true)}>
             {t('invite-member')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -144,7 +143,7 @@ export function MembersList({
 
                 {/* Joined date */}
                 <span className="hidden shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
-                  {new Date(member.createdAt).toLocaleDateString('pl-PL', {
+                  {new Date(member.createdAt).toLocaleDateString(locale, {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',

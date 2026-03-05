@@ -1,9 +1,6 @@
-import { Card } from '@ragenai/common-ui/Card';
 import { getSubscriptionData } from './actions';
 import { SubscriptionInfo } from './components/SubscribtionInfo';
 import { getTranslations } from 'next-intl/server';
-import { Container } from '@ragenai/common-ui/Container';
-import { Header } from '@ragenai/common-ui/Header';
 import type { PropsWihLocale } from '@/app/lib/types/types';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
@@ -18,16 +15,17 @@ export default async function SubscriptionPage() {
 
   if (!subscription) {
     return (
-      <Card title={t('title')} size="full" className="mb-5">
-        <p className="mt-4">{t('no-subscription')}</p>
-      </Card>
+      <div className="max-w-2xl">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          {t('no-subscription')}
+        </p>
+      </div>
     );
   }
 
   return (
-    <Container size="2xl">
-      <Header>{t('title')}</Header>
+    <div className="max-w-2xl">
       <SubscriptionInfo subscription={subscription} />
-    </Container>
+    </div>
   );
 }

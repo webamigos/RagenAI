@@ -100,10 +100,16 @@ export function CreateProject({
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose}>
+    <Dialog open={isOpen} onClose={onClose} size="md">
       <DialogTitle>{t('projects.create')}</DialogTitle>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-2">
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+        <div>
+          <label
+            htmlFor="title"
+            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          >
+            {t('projects.what-is-project')}
+          </label>
           <Input
             id="title"
             placeholder={t('projects.placeholder')}
@@ -113,22 +119,18 @@ export function CreateProject({
               inputRef.current = e;
             }}
             disabled={isSubmitting}
-            className="py-2"
             error={errors.title}
             errorMessage={errors.title?.message}
           />
-          <div className="text-sm text-muted-foreground">
-            <h4 className="font-medium mt-4">
-              {t('projects.what-is-project')}
-            </h4>
-            <p>{t('projects.project-description')}</p>
-          </div>
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            {t('projects.project-description')}
+          </p>
         </div>
         <div className="flex justify-end space-x-2">
           <Button
             type="button"
+            plain
             onClick={onClose}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
             disabled={isSubmitting || isPending}
           >
             {t('projects.cancel')}

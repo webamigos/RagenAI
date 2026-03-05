@@ -21,7 +21,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 type PublicProjectSectionProps = {
   linkToPublicProject: string;
   publishedAt: string;
-  projectId: number;
+  projectId: string;
   onLinkRefreshed?: (newLink: string) => void;
 };
 
@@ -42,7 +42,7 @@ export const PublicProjectSection = memo(
 
     const truncatedLink = useMemo(
       () => truncateFileName(currentLink, 30),
-      [currentLink]
+      [currentLink],
     );
 
     const handleRefreshClick = () => {
@@ -56,7 +56,7 @@ export const PublicProjectSection = memo(
         if (accessToken) {
           const baseUrl = linkToPublicProject.substring(
             0,
-            linkToPublicProject.lastIndexOf('/') + 1
+            linkToPublicProject.lastIndexOf('/') + 1,
           );
           const newFullLink = baseUrl + accessToken;
 
@@ -77,7 +77,7 @@ export const PublicProjectSection = memo(
 
     const formattedDate = useMemo(
       () => format(new Date(currentPublishedAt), 'dd.MM.yyyy'),
-      [currentPublishedAt]
+      [currentPublishedAt],
     );
 
     return (
@@ -105,20 +105,21 @@ export const PublicProjectSection = memo(
               <TableCell>
                 <Text fontSize="xs">{formattedDate}</Text>
               </TableCell>
-              <div className="flex w-full justify-between pl-4">
-                <CopyButton
-                  className="mt-2"
-                  textToCopy={currentLink}
-                  aria-label={t('share-knowledge.copy-link-aria-label')}
-                />
-                <ArrowPath
-                  className={`h-4 w-4 mt-2 cursor-pointer ${
-                    isRefreshing ? 'animate-spin text-gray-400' : ''
-                  }`}
-                  onClick={handleRefreshClick}
-                  aria-label={t('share-knowledge.refresh-link-aria-label')}
-                />
-              </div>
+              <TableCell>
+                <div className="flex justify-end gap-2">
+                  <CopyButton
+                    textToCopy={currentLink}
+                    aria-label={t('share-knowledge.copy-link-aria-label')}
+                  />
+                  <ArrowPath
+                    className={`h-4 w-4 cursor-pointer ${
+                      isRefreshing ? 'animate-spin text-gray-400' : ''
+                    }`}
+                    onClick={handleRefreshClick}
+                    aria-label={t('share-knowledge.refresh-link-aria-label')}
+                  />
+                </div>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
@@ -156,7 +157,7 @@ export const PublicProjectSection = memo(
         </Dialog>
       </div>
     );
-  }
+  },
 );
 
 PublicProjectSection.displayName = 'PublicProjectSection';

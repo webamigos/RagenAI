@@ -1,111 +1,87 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
-import { useTranslations } from 'next-intl';
-import { useOrganization } from '@/app/hooks/use-auth';
+import { useState, useRef } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 
-import { Dialog } from '@ragenai/common-ui/Dialog';
-import { Text } from '@ragenai/common-ui/Text';
-import { Switch } from '@ragenai/common-ui/Switch';
-import { Collapse } from '@ragenai/common-ui/Collapse';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useProjectKeyGenerator } from '@/app/hooks/useProjectKeyGenerator';
 import { useDisablePublicAccess } from '@/app/hooks/useDisablePublicAccess';
-
-import { PublicLinkSection } from './components/PublicLinkSection';
-import { ChatbotConfiguration } from './components/ChatbotConfiguration';
-import { EmbedScriptSection } from './components/EmbedScriptSection';
+import { CopyButton } from '@ragenai/common-ui/CopyButton/CopyButton';
+import { ArrowPath } from '@ragenai/common-ui/icons';
 
 type ShareDialogProps = {
   open: boolean;
   onClose: () => void;
-  projectId: number;
+  projectPublicId: string;
   isPublicProject: boolean;
   linkToPublicProject: string;
   publishedAt: string;
-  isChatbotEnabled?: boolean;
-  onChatbotEnabledChange?: (enabled: boolean) => Promise<boolean>;
 };
 
 function getOrigin() {
   return typeof window !== 'undefined' ? window.location.origin : '';
 }
 
-function getBaseUrl() {
-  return `${getOrigin()}/pl/public/assistants`;
-}
-
 export const ShareDialog = ({
   open,
   onClose,
-  projectId,
+  projectPublicId,
   isPublicProject,
   linkToPublicProject,
   publishedAt,
-  isChatbotEnabled: initialChatbotEnabled = false,
-  onChatbotEnabledChange,
 }: ShareDialogProps) => {
   const [isSharedLinkPublicly, setIsSharedLinkPublicly] = useState(
     isPublicProject || false,
   );
   const [shareUrl, setShareUrl] = useState('');
   const wasPublicLinkKeyGenerated = useRef<boolean>(false);
-  const wasChatbotKeyGenerated = useRef<boolean>(false);
   const [currentLinkToPublicProject, setCurrentLinkToPublicProject] =
     useState(linkToPublicProject);
   const [currentPublishedAt, setCurrentPublishedAt] = useState(publishedAt);
-
-  const [isChatbotEnabled, setIsChatbotEnabled] = useState(
-    initialChatbotEnabled,
-  );
-  const [isChatbotCustomized, setIsChatbotCustomized] = useState(false);
-  const [accessKey, setAccessKey] = useState('');
-  const [chatbotName, setChatbotName] = useState('');
-  const [chatbotTitle, setChatbotTitle] = useState('');
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
-  const [isUpdatingChatbotState, setIsUpdatingChatbotState] = useState(false);
+  const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
 
   const t = useTranslations('projects');
-  const { organization } = useOrganization();
+  const locale = useLocale();
+  const getBaseUrl = () => `${getOrigin()}/${locale}/public/assistants`;
   const { generateKey, isGenerating: isGeneratingKey } =
-    useProjectKeyGenerator(projectId);
+    useProjectKeyGenerator(projectPublicId);
   const { disablePublicAccess, isDisabling } =
-    useDisablePublicAccess(projectId);
+    useDisablePublicAccess(projectPublicId);
   const { errorToast, successToast } = statusToast();
 
-  const embedScript = useMemo(() => {
-    if (!accessKey) {
-      return;
-    }
-
-    return `<script src='${getOrigin()}/api/embed/${accessKey}?${new URLSearchParams(
-      {
-        title: chatbotTitle,
-        message: chatbotName,
-      },
-    ).toString()}'></script>`;
-  }, [accessKey, chatbotTitle, chatbotName]);
-
-  const generateTokenAndSetUrl = async (forChatbot = false) => {
-    if (!organization) {
-      return null;
-    }
-
+  const generateTokenAndSetUrl = async () => {
     try {
       const accessToken = await generateKey();
 
       if (!accessToken) {
+        errorToast({
+          message: t('share-knowledge.refresh-error'),
+        });
         return null;
       }
 
-      if (forChatbot) {
-        wasChatbotKeyGenerated.current = true;
-      } else {
-        wasPublicLinkKeyGenerated.current = true;
-      }
+      wasPublicLinkKeyGenerated.current = true;
       return accessToken;
-    } catch (error) {
+    } catch {
       errorToast({
         message: t('share-knowledge.refresh-error'),
       });
@@ -113,19 +89,18 @@ export const ShareDialog = ({
     }
   };
 
-  const handleShareToggle = async (checked: boolean) => {
-    if (checked) {
+  const handleShareToggle = (checked: boolean) => {
+    if (checked && !shareUrl) {
       setIsSharedLinkPublicly(true);
-      if (!shareUrl) {
-        const accessToken = await generateTokenAndSetUrl(false);
+      generateTokenAndSetUrl().then((accessToken) => {
         if (accessToken) {
           setShareUrl(`${getBaseUrl()}/${accessToken}`);
         } else {
           setIsSharedLinkPublicly(false);
         }
-      }
-    } else {
-      // When toggling off, show confirmation modal
+      });
+    }
+    if (!checked) {
       setIsDisableModalOpen(true);
     }
   };
@@ -148,7 +123,7 @@ export const ShareDialog = ({
           message: t('share-knowledge.disable-error'),
         });
       }
-    } catch (error) {
+    } catch {
       errorToast({
         message: t('share-knowledge.disable-error'),
       });
@@ -157,169 +132,179 @@ export const ShareDialog = ({
     }
   };
 
-  const handleDisableCancel = () => {
-    setIsDisableModalOpen(false);
-  };
-
-  const handleChatbotToggle = async (checked: boolean) => {
-    if (!onChatbotEnabledChange) {
-      setIsChatbotEnabled(checked);
-      if (checked && !accessKey) {
-        const accessToken = await generateTokenAndSetUrl(true);
-        if (accessToken) {
-          setAccessKey(accessToken);
-        } else {
-          setIsChatbotEnabled(false);
-        }
-      }
-      return;
-    }
-
-    setIsUpdatingChatbotState(true);
+  const handleRefreshConfirm = async () => {
     try {
-      const success = await onChatbotEnabledChange(checked);
-
-      if (success) {
-        setIsChatbotEnabled(checked);
-        if (checked && !accessKey) {
-          const accessToken = await generateTokenAndSetUrl(true);
-          if (accessToken) {
-            setAccessKey(accessToken);
-          } else {
-            // If we couldn't generate a key, revert the DB change
-            await onChatbotEnabledChange(false);
-            setIsChatbotEnabled(false);
-            errorToast({
-              message: t('share-knowledge.chatbot-enable-error'),
-            });
-          }
-        }
+      const accessToken = await generateKey();
+      if (accessToken) {
+        const newFullLink = `${getBaseUrl()}/${accessToken}`;
+        setShareUrl(newFullLink);
+        setCurrentLinkToPublicProject(accessToken);
+        setCurrentPublishedAt(new Date().toISOString());
+        wasPublicLinkKeyGenerated.current = true;
+        successToast({
+          message: t('share-knowledge.refresh-success'),
+        });
       } else {
         errorToast({
-          message: t('share-knowledge.chatbot-update-error'),
+          message: t('share-knowledge.refresh-error'),
         });
       }
-    } catch (error) {
+    } catch {
       errorToast({
-        message: t('share-knowledge.chatbot-update-error'),
+        message: t('share-knowledge.refresh-error'),
       });
     } finally {
-      setIsUpdatingChatbotState(false);
+      setIsRefreshModalOpen(false);
     }
   };
 
-  const handleChatbotCustomizeToggle = () =>
-    setIsChatbotCustomized((prev) => !prev);
+  const displayLink = wasPublicLinkKeyGenerated.current
+    ? shareUrl
+    : currentLinkToPublicProject
+      ? `${getBaseUrl()}/${currentLinkToPublicProject}`
+      : '';
 
-  const handleLinkRefreshed = (newLink: string) => {
-    setCurrentLinkToPublicProject(newLink);
-    setCurrentPublishedAt(new Date().toISOString());
-  };
+  const formattedDate = currentPublishedAt
+    ? new Date(currentPublishedAt).toLocaleDateString(locale)
+    : '';
 
   return (
-    <Dialog open={open} onClose={onClose} className="max-w-xl">
-      <div className="w-full p-6 space-y-6">
-        <Text className="text-xl font-semibold">
-          {t('share-knowledge.title')}
-        </Text>
+    <>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) {
+            onClose();
+          }
+        }}
+      >
+        <DialogContent
+          className="max-w-lg"
+          aria-describedby={undefined}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>{t('share-knowledge.title')}</DialogTitle>
+          </DialogHeader>
 
-        <div>
-          {/* PUBLIC LINK */}
-          <PublicLinkSection
-            isSharedLinkPublicly={isSharedLinkPublicly}
-            shareUrl={shareUrl}
-            isGeneratingKey={isGeneratingKey}
-            wasKeyGenerated={wasPublicLinkKeyGenerated.current}
-            linkToPublicProject={`${getBaseUrl()}/${currentLinkToPublicProject}`}
-            publishedAt={currentPublishedAt}
-            projectId={projectId}
-            onToggle={handleShareToggle}
-            onLinkRefreshed={handleLinkRefreshed}
-          />
-
-          {/* CHATBOT ENABLE */}
-          <div>
+          <div className="space-y-4">
+            {/* Toggle */}
             <div className="flex items-center justify-between">
-              <Text className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('share-knowledge.enable-chatbot')}
-              </Text>
+              <span className="text-sm text-muted-foreground">
+                {t('share-knowledge.share-publicly')}
+              </span>
               <Switch
-                checked={isChatbotEnabled}
-                onChange={handleChatbotToggle}
-                disabled={isGeneratingKey || isUpdatingChatbotState}
+                checked={isSharedLinkPublicly}
+                onCheckedChange={handleShareToggle}
+                disabled={isGeneratingKey}
+                className="data-[state=checked]:bg-purple-600"
               />
             </div>
 
-            {isChatbotEnabled && wasChatbotKeyGenerated.current && (
-              <div className="flex items-center justify-between mt-8">
-                <Text className="text-sm text-gray-700 dark:text-gray-300">
-                  {t('share-knowledge.personalize-chatbot')}
-                </Text>
-                <button
-                  onClick={handleChatbotCustomizeToggle}
-                  className="p-1 hover:bg-muted rounded-md transition"
-                  aria-label={isChatbotCustomized ? t('collapse') : t('expand')}
-                >
-                  <ChevronDownIcon
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
-                      isChatbotCustomized ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
+            {/* Content when shared */}
+            {isSharedLinkPublicly && (
+              <div className="space-y-3">
+                {isGeneratingKey ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t('share-knowledge.generating-link')}
+                  </p>
+                ) : displayLink ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      {t('share-knowledge.link-to-knowledge')}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Input readOnly value={displayLink} className="text-sm" />
+                      <CopyButton
+                        textToCopy={displayLink}
+                        showToast
+                        aria-label={t('share-knowledge.copy-link-aria-label')}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsRefreshModalOpen(true)}
+                        className="shrink-0 p-2 rounded-md hover:bg-muted transition-colors"
+                        aria-label={t(
+                          'share-knowledge.refresh-link-aria-label',
+                        )}
+                      >
+                        <ArrowPath className="size-4" />
+                      </button>
+                    </div>
+                    {formattedDate && (
+                      <p className="text-xs text-muted-foreground">
+                        {t('share-knowledge.project-table.publishedAt')}:{' '}
+                        {formattedDate}
+                      </p>
+                    )}
+                  </>
+                ) : null}
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
 
-          {/* CHATBOT SETTINGS + EMBED SCRIPT */}
-          {isChatbotEnabled && wasChatbotKeyGenerated.current && (
-            <>
-              <Collapse isOpen={isChatbotCustomized}>
-                <ChatbotConfiguration
-                  chatbotTitle={chatbotTitle}
-                  chatbotName={chatbotName}
-                  onTitleChange={setChatbotTitle}
-                  onNameChange={setChatbotName}
-                />
-              </Collapse>
-
-              {embedScript && <EmbedScriptSection embedScript={embedScript} />}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Confirmation Modal for Disabling Public Access */}
-      <Dialog
+      {/* Disable confirmation */}
+      <AlertDialog
         open={isDisableModalOpen}
-        onClose={handleDisableCancel}
-        className="max-w-md"
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDisableModalOpen(false);
+          }
+        }}
       >
-        <div className="p-6 space-y-4">
-          <Text className="text-lg font-semibold">
-            {t('share-knowledge.disable-title')}
-          </Text>
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
-            {t('share-knowledge.disable-confirmation')}
-          </Text>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={handleDisableCancel}
-              className="px-4 py-2 rounded text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              {t('cancel')}
-            </button>
-            <button
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('share-knowledge.disable-title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('share-knowledge.disable-confirmation')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDisableConfirm}
               disabled={isDisabling}
-              className="px-4 py-2 rounded text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
             >
               {isDisabling
                 ? t('share-knowledge.disabling')
                 : t('share-knowledge.disable')}
-            </button>
-          </div>
-        </div>
-      </Dialog>
-    </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Refresh confirmation */}
+      <AlertDialog
+        open={isRefreshModalOpen}
+        onOpenChange={setIsRefreshModalOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('share-knowledge.refresh-link-title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('share-knowledge.refresh-link-confirmation')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRefreshConfirm}
+              disabled={isGeneratingKey}
+            >
+              {isGeneratingKey
+                ? t('share-knowledge.refreshing')
+                : t('share-knowledge.refresh')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
