@@ -64,10 +64,9 @@ export function useAccountSetupStatus({
 
         if (setupComplete) {
           logger.info(
-            'Account configuration complete, finalizing onboarding...'
+            'Account configuration complete, finalizing onboarding...',
           );
 
-          // Use Better Auth instead of Clerk stub
           try {
             await finalizeUserOnboarding();
           } catch (err) {
@@ -77,6 +76,28 @@ export function useAccountSetupStatus({
 
           onSuccessCallback?.(status);
           return;
+        } else if (
+          status?.organizationExists &&
+          status?.organizationHasDefaultProject
+        ) {
+          // Organization and project exist but subscription is missing.
+          // This happens with OAuth sign-up where the user.created hook
+          // sets up org/project but finalizeOnboarding hasn't run yet.
+          logger.info('Org and project exist, running finalize onboarding...');
+
+          try {
+            await finalizeUserOnboarding();
+            const refreshedStatus = await getAccountSetupStatusAction();
+            setStatus(refreshedStatus);
+            if (refreshedStatus?.accountSetupComplete) {
+              onSuccessCallback?.(refreshedStatus);
+              return;
+            }
+          } catch (err) {
+            logger.error({ err }, 'Failed to finalize onboarding');
+          }
+
+          timeoutId = setTimeout(poll, refetchInterval);
         } else {
           logger.info('Account configuration not complete, retrying...');
           timeoutId = setTimeout(poll, refetchInterval);
