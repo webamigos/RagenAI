@@ -25,8 +25,8 @@ export function TeamsList({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
           Teams ({teams.length})
         </h2>
         {canManage && (
@@ -38,63 +38,57 @@ export function TeamsList({
 
       {/* Teams list */}
       {teams.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400">
+        <div className="py-8 text-center">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
             No teams yet.
             {canManage && ' Create a team to get started.'}
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Members
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                  Created
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-              {teams.map((team) => (
-                <tr
-                  key={team.id}
-                  onClick={() => onSelectTeam(team.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      onSelectTeam(team.id);
-                    }
-                  }}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`Select team ${team.name}`}
-                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
-                      {team.name}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {team.memberCount}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(team.createdAt).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          {teams.map((team) => (
+            <div
+              key={team.id}
+              onClick={() => onSelectTeam(team.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectTeam(team.id);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Select team ${team.name}`}
+              className="flex cursor-pointer items-center gap-3 rounded-lg py-3 px-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            >
+              {/* Team icon */}
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700">
+                <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                  {team.name[0].toUpperCase()}
+                </span>
+              </div>
+
+              {/* Team info */}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-zinc-950 dark:text-white">
+                  {team.name}
+                </div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {team.memberCount}{' '}
+                  {team.memberCount === 1 ? 'member' : 'members'}
+                </div>
+              </div>
+
+              {/* Created date */}
+              <span className="hidden shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
+                {new Date(team.createdAt).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </span>
+            </div>
+          ))}
         </div>
       )}
 

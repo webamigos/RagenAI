@@ -67,7 +67,7 @@ export function CreateTeamDialog({
         <div>
           <label
             htmlFor="team-name"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
           >
             Team Name
           </label>
@@ -87,7 +87,7 @@ export function CreateTeamDialog({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            outline
           >
             Cancel
           </Button>
