@@ -4,12 +4,15 @@ import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import {
-  Dialog,
-  DialogTitle,
-  DialogBody,
-  DialogDescription,
-  DialogActions,
-} from '@ragenai/common-ui/Dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
 import {
   DropdownMenu,
@@ -225,74 +228,70 @@ export function TeamDetail({
       />
 
       {/* Remove member confirmation dialog */}
-      <Dialog
+      <AlertDialog
         open={isRemoveDialogOpen}
-        onClose={() => {
-          setIsRemoveDialogOpen(false);
-          setMemberToRemove(null);
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsRemoveDialogOpen(false);
+            setMemberToRemove(null);
+          }
         }}
-        size="sm"
       >
-        <DialogTitle>{t('remove-member-title')}</DialogTitle>
-        <DialogBody>
-          <DialogDescription>
-            {t('remove-member-confirm', { name: memberToRemove?.name ?? '' })}
-          </DialogDescription>
-        </DialogBody>
-        <DialogActions>
-          <Button
-            plain
-            onClick={() => {
-              setIsRemoveDialogOpen(false);
-              setMemberToRemove(null);
-            }}
-          >
-            {t('cancel')}
-          </Button>
-          <Button
-            outline
-            onClick={() => {
-              if (memberToRemove) {
-                handleRemoveMember(memberToRemove.userId);
-              }
-            }}
-            className="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white dark:!border-red-700 dark:!text-red-400 dark:hover:!bg-red-600 dark:hover:!text-white"
-          >
-            {t('remove')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('remove-member-title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('remove-member-confirm', {
+                name: memberToRemove?.name ?? '',
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (memberToRemove) {
+                  handleRemoveMember(memberToRemove.userId);
+                }
+              }}
+              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+            >
+              {t('remove')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* Delete confirmation dialog */}
-      <Dialog
+      {/* Delete team confirmation dialog */}
+      <AlertDialog
         open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        size="sm"
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDeleteDialogOpen(false);
+          }
+        }}
       >
-        <DialogTitle>{t('delete-team')}</DialogTitle>
-        <DialogBody>
-          <DialogDescription>
-            {t('delete-team-confirm', { name: team.name })}
-          </DialogDescription>
-        </DialogBody>
-        <DialogActions>
-          <Button
-            plain
-            onClick={() => setIsDeleteDialogOpen(false)}
-            disabled={isDeleting}
-          >
-            {t('cancel')}
-          </Button>
-          <Button
-            outline
-            onClick={handleDeleteTeam}
-            isLoading={isDeleting}
-            className="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white dark:!border-red-700 dark:!text-red-400 dark:hover:!bg-red-600 dark:hover:!text-white"
-          >
-            {t('delete-team')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('delete-team')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('delete-team-confirm', { name: team.name })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              {t('cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTeam}
+              disabled={isDeleting}
+              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+            >
+              {t('delete-team')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

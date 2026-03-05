@@ -6,13 +6,17 @@ import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
+import { Dialog, DialogTitle, DialogActions } from '@ragenai/common-ui/Dialog';
 import {
-  Dialog,
-  DialogTitle,
-  DialogBody,
-  DialogDescription,
-  DialogActions,
-} from '@ragenai/common-ui/Dialog';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -337,22 +341,25 @@ export function UsersList({ users, currentUserId }: Props) {
       </Dialog>
 
       {/* Ban dialog */}
-      <Dialog
+      <AlertDialog
         open={!!banTarget}
-        onClose={() => {
-          setBanTarget(null);
-          setBanReason('');
+        onOpenChange={(open) => {
+          if (!open) {
+            setBanTarget(null);
+            setBanReason('');
+          }
         }}
-        size="sm"
       >
-        <DialogTitle>{t('banTitle')}</DialogTitle>
-        <DialogBody>
-          <DialogDescription>
-            {t('banConfirm', {
-              name: banTarget?.name || banTarget?.email || '',
-            })}
-          </DialogDescription>
-          <div className="mt-4">
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('banTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('banConfirm', {
+                name: banTarget?.name || banTarget?.email || '',
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="px-0">
             <Input
               value={banReason}
               onChange={(e) => setBanReason(e.target.value)}
@@ -360,56 +367,49 @@ export function UsersList({ users, currentUserId }: Props) {
               disabled={isPending}
             />
           </div>
-        </DialogBody>
-        <DialogActions>
-          <Button
-            plain
-            onClick={() => {
-              setBanTarget(null);
-              setBanReason('');
-            }}
-            disabled={isPending}
-          >
-            {t('cancel')}
-          </Button>
-          <Button
-            outline
-            onClick={handleBan}
-            isLoading={isPending}
-            className="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white dark:!border-red-700 dark:!text-red-400 dark:hover:!bg-red-600 dark:hover:!text-white"
-          >
-            {t('ban')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>
+              {t('cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBan}
+              disabled={isPending}
+              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+            >
+              {t('ban')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Unban dialog */}
-      <Dialog
+      <AlertDialog
         open={!!unbanTarget}
-        onClose={() => setUnbanTarget(null)}
-        size="sm"
+        onOpenChange={(open) => {
+          if (!open) {
+            setUnbanTarget(null);
+          }
+        }}
       >
-        <DialogTitle>{t('unbanTitle')}</DialogTitle>
-        <DialogBody>
-          <DialogDescription>
-            {t('unbanConfirm', {
-              name: unbanTarget?.name || unbanTarget?.email || '',
-            })}
-          </DialogDescription>
-        </DialogBody>
-        <DialogActions>
-          <Button
-            plain
-            onClick={() => setUnbanTarget(null)}
-            disabled={isPending}
-          >
-            {t('cancel')}
-          </Button>
-          <Button plain onClick={handleUnban} isLoading={isPending}>
-            {t('unban')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('unbanTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('unbanConfirm', {
+                name: unbanTarget?.name || unbanTarget?.email || '',
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>
+              {t('cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnban} disabled={isPending}>
+              {t('unban')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Create user dialog */}
       <Dialog
