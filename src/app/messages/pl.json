@@ -486,12 +486,22 @@
     "updated": "Zaktualizowany {time}"
   },
   "search-threads": {
-    "title": "Szukaj w wątkach",
-    "error-sugestions": "Błąd poczas pobierania sugestii",
+    "title": "Szukaj czatów i projektów",
+    "error-suggestions": "Błąd podczas pobierania sugestii",
     "error-threads": "Błąd podczas pobierania wątków",
-    "threads-not-found": "Wątek nieodpowada",
-    "no-results": "Brak wyników",
-    "placeholder": "Wpisz szukaną frazę..."
+    "threads-not-found": "Wątek nie znaleziony",
+    "no-results": "Brak wyników.",
+    "placeholder": "Szukaj czatów i projektów...",
+    "recent": "Ostatnie",
+    "threads": "Czaty",
+    "projects": "Projekty",
+    "untitled": "Bez tytułu",
+    "loading": "Ładowanie...",
+    "date-today": "Dzisiaj",
+    "date-yesterday": "Wczoraj",
+    "date-days-ago": "{count} dni temu",
+    "date-past-week": "Ostatni tydzień",
+    "date-past-month": "Ostatni miesiąc"
   },
   "files-table": {
     "title": "Lista plików",

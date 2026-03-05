@@ -1,148 +1,313 @@
-import React, { useReducer, useRef, useEffect } from 'react';
+'use client';
+
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
-
-import { Input } from '@ragenai/tui/input';
-import { Text } from '@ragenai/tui/text';
-import { SidebarItem } from '@ragenai/tui/sidebar';
-import { Dialog, DialogTitle, DialogBody } from '@ragenai/tui/dialog';
-import { statusToast } from '@/app/lib/utils/toast';
-import { fetchThreadSuggestions } from '../../../actions';
-import { reducer, initialState } from './SearchThreadsReducer';
+import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
+import {
+  CommandDialog,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandSeparator,
+} from '@/components/ui/command';
+import { useRouter } from '@/i18n/routing';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
+import { statusToast } from '@/app/lib/utils/toast';
+import { getSidebarThreads } from '../../../actions';
+import { searchAll, getRecentProjects } from './search-actions';
+import type { SearchResultItem } from '@/features/threads/services/queries/search-all-query';
+
 type SearchThreadsProps = {
   visitorId: string;
+};
+
+type TranslateFn = (
+  key: string,
+  values?: Record<string, string | number>,
+) => string;
+
+function formatRelativeDate(dateStr: string, t: TranslateFn): string {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return t('date-today');
+  }
+  if (diffDays === 1) {
+    return t('date-yesterday');
+  }
+  if (diffDays < 7) {
+    return t('date-days-ago', { count: diffDays });
+  }
+  if (diffDays < 30) {
+    return t('date-past-week');
+  }
+  return t('date-past-month');
+}
+
+type RecentData = {
+  threads: {
+    public_id: string;
+    title: string | null;
+    created_at: string;
+    messages: { content: string }[];
+  }[];
+  projects: { public_id: string; title: string; created_at: string }[];
 };
 
 export const SearchThreads = React.forwardRef<
   HTMLDivElement,
   SearchThreadsProps
 >(({ visitorId }, _ref) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { query, results, suggestions, isLoading, hasSearched } = state;
   const { closeSearch, isSearchOpen } = useSearchThreads();
-
-  const { errorToast } = statusToast();
+  const router = useRouter();
   const t = useTranslations('search-threads');
+  const { errorToast } = statusToast();
 
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [query, setQuery] = useState('');
+  const [recentData, setRecentData] = useState<RecentData | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchRequestIdRef = React.useRef(0);
 
-  const debouncedFetchSuggestions = useDebouncedCallback(
-    async (value: string) => {
-      if (value.trim()) {
-        dispatch({ type: 'SET_LOADING', payload: true });
-        dispatch({ type: 'SET_HAS_SEARCHED', payload: true });
-        try {
-          const fetchedSuggestions = await fetchThreadSuggestions(
-            visitorId,
-            value,
-          );
-          dispatch({ type: 'SET_SUGGESTIONS', payload: fetchedSuggestions });
-        } catch (error) {
-          errorToast({ message: `${t('error-suggestions')}: ${error}` });
-        } finally {
-          dispatch({ type: 'SET_LOADING', payload: false });
-        }
-      } else {
-        dispatch({ type: 'SET_SUGGESTIONS', payload: [] });
-        dispatch({ type: 'SET_HAS_SEARCHED', payload: false });
-      }
-    },
-    300,
-  );
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    dispatch({ type: 'SET_QUERY', payload: value });
-    debouncedFetchSuggestions(value);
-  };
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) {
+  // Load recent threads and projects when dialog opens
+  useEffect(() => {
+    if (!isSearchOpen || !visitorId) {
       return;
     }
 
-    dispatch({ type: 'SET_LOADING', payload: true });
-    dispatch({ type: 'SET_HAS_SEARCHED', payload: true });
-    try {
-      const fetchedResults = await fetchThreadSuggestions(visitorId, query);
-      dispatch({
-        type: 'SET_RESULTS',
-        payload: fetchedResults.map((thread: any) => ({
-          id: thread.public_id,
-          title: thread.messages[0]?.content,
-          createdAt: thread.created_at,
-        })),
-      });
-    } catch (error) {
-      errorToast({ message: `${t('error-threads')}: ${error}` });
-    } finally {
-      dispatch({ type: 'SET_LOADING', payload: false });
-    }
-  };
+    let cancelled = false;
 
-  const handleSuggestionClick = (suggestionId: string) => {
-    if (!suggestionId) {
-      errorToast({ message: `${t('threads-not-found')}: ${suggestionId}` });
-    }
+    const loadRecent = async () => {
+      try {
+        const [threadsResult, projects] = await Promise.all([
+          getSidebarThreads(visitorId, 10, 0),
+          getRecentProjects(),
+        ]);
+        if (!cancelled) {
+          const seen = new Set<string>();
+          const recentThreads = [
+            ...threadsResult.starred,
+            ...threadsResult.recent,
+          ]
+            .filter((thread) => {
+              if (seen.has(thread.public_id)) {
+                return false;
+              }
+              seen.add(thread.public_id);
+              return true;
+            })
+            .slice(0, 10);
+          setRecentData({
+            threads: recentThreads as RecentData['threads'],
+            projects,
+          });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          const msg = error instanceof Error ? error.message : String(error);
+          errorToast({ message: `${t('error-threads')}: ${msg}` });
+        }
+      }
+    };
 
-    dispatch({ type: 'SET_SUGGESTIONS', payload: [] });
-    closeSearch();
-  };
+    loadRecent();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSearchOpen, visitorId]);
 
+  // Reset state when dialog closes
   useEffect(() => {
-    if (isSearchOpen && inputRef.current) {
-      inputRef.current.focus();
+    if (!isSearchOpen) {
+      setQuery('');
+      setSearchResults([]);
+      setIsSearching(false);
     }
   }, [isSearchOpen]);
 
+  const debouncedSearch = useDebouncedCallback(async (value: string) => {
+    if (!value.trim() || value.trim().length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    const requestId = ++searchRequestIdRef.current;
+    setIsSearching(true);
+    try {
+      const results = await searchAll(visitorId, value);
+      if (requestId === searchRequestIdRef.current) {
+        setSearchResults(results);
+      }
+    } catch (error) {
+      if (requestId === searchRequestIdRef.current) {
+        const msg = error instanceof Error ? error.message : String(error);
+        errorToast({ message: `${t('error-suggestions')}: ${msg}` });
+      }
+    } finally {
+      if (requestId === searchRequestIdRef.current) {
+        setIsSearching(false);
+      }
+    }
+  }, 300);
+
+  const handleValueChange = useCallback(
+    (value: string) => {
+      setQuery(value);
+      debouncedSearch(value);
+    },
+    [debouncedSearch],
+  );
+
+  const handleSelect = useCallback(
+    (type: 'thread' | 'project', id: string) => {
+      closeSearch();
+      if (type === 'project') {
+        router.push(`/projects/${id}`);
+      } else {
+        router.push(`/chats/${id}`);
+      }
+    },
+    [closeSearch, router],
+  );
+
+  const showRecent = !query.trim();
+  const showSearchResults = query.trim().length >= 2;
+
   return (
-    <Dialog size="lg" open={isSearchOpen} onClose={closeSearch}>
-      <DialogTitle>{t('title')}</DialogTitle>
-      <DialogBody className="relative h-96 overflow-auto">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm z-10">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400 dark:border-zinc-600"></div>
+    <CommandDialog
+      open={isSearchOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          closeSearch();
+        }
+      }}
+      title={t('title')}
+      description={t('placeholder')}
+      showCloseButton={false}
+    >
+      <CommandInput
+        placeholder={t('placeholder')}
+        value={query}
+        onValueChange={handleValueChange}
+      />
+      <CommandList className="max-h-[400px]">
+        {isSearching && (
+          <div
+            className="flex items-center justify-center py-6"
+            role="status"
+            aria-label={t('loading')}
+          >
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400 dark:border-zinc-600" />
           </div>
         )}
-        <form onSubmit={handleSearch}>
-          <Input
-            value={query}
-            onChange={handleInputChange}
-            placeholder={t('placeholder')}
-            className="mb-4"
-            ref={inputRef}
-          />
-        </form>
-        {suggestions.length > 0 && (
-          <div className="mt-2">
-            {suggestions.map((suggestion) => (
-              <SidebarItem
-                key={suggestion.id}
-                href={`/chats/${suggestion.id}`}
-                onClick={() => handleSuggestionClick(suggestion.id)}
-              >
-                {suggestion.title}
-              </SidebarItem>
-            ))}
-          </div>
+
+        {!isSearching && showSearchResults && searchResults.length === 0 && (
+          <CommandEmpty>{t('no-results')}</CommandEmpty>
         )}
-        <div className="mt-4">
-          {hasSearched && results.length === 0 && suggestions.length === 0 && (
-            <Text className="text-zinc-500 dark:text-zinc-400">
-              {t('no-results')}
-            </Text>
-          )}
-          {results.length > 0 &&
-            results.map((thread) => (
-              <Text key={thread.id} className="mt-2">
-                {thread.title} - {new Date(thread.createdAt).toLocaleString()}
-              </Text>
-            ))}
-        </div>
-      </DialogBody>
-    </Dialog>
+
+        {!isSearching && showSearchResults && searchResults.length > 0 && (
+          <>
+            {searchResults.some((r) => r.type === 'project') && (
+              <CommandGroup heading={t('projects')}>
+                {searchResults
+                  .filter((r) => r.type === 'project')
+                  .map((result) => (
+                    <CommandItem
+                      key={`project-${result.id}`}
+                      value={`project-${result.id}-${result.title}`}
+                      onSelect={() => handleSelect('project', result.id)}
+                      className="cursor-pointer"
+                    >
+                      <FolderIcon className="size-4 shrink-0 text-zinc-500" />
+                      <span className="flex-1 truncate">{result.title}</span>
+                      <span className="text-xs text-zinc-400 shrink-0">
+                        {formatRelativeDate(result.createdAt, t)}
+                      </span>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            )}
+            {searchResults.some((r) => r.type === 'project') &&
+              searchResults.some((r) => r.type === 'thread') && (
+                <CommandSeparator />
+              )}
+            {searchResults.some((r) => r.type === 'thread') && (
+              <CommandGroup heading={t('threads')}>
+                {searchResults
+                  .filter((r) => r.type === 'thread')
+                  .map((result) => (
+                    <CommandItem
+                      key={`thread-${result.id}`}
+                      value={`thread-${result.id}-${result.title}`}
+                      onSelect={() => handleSelect('thread', result.id)}
+                      className="cursor-pointer"
+                    >
+                      <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
+                      <span className="flex-1 truncate">{result.title}</span>
+                      <span className="text-xs text-zinc-400 shrink-0">
+                        {formatRelativeDate(result.createdAt, t)}
+                      </span>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            )}
+          </>
+        )}
+
+        {!isSearching && showRecent && recentData && (
+          <>
+            {recentData.projects.length > 0 && (
+              <CommandGroup heading={t('projects')}>
+                {recentData.projects.map((project) => (
+                  <CommandItem
+                    key={`recent-project-${project.public_id}`}
+                    value={`recent-project-${project.public_id}-${project.title}`}
+                    onSelect={() => handleSelect('project', project.public_id)}
+                    className="cursor-pointer"
+                  >
+                    <FolderIcon className="size-4 shrink-0 text-zinc-500" />
+                    <span className="flex-1 truncate">{project.title}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {recentData.threads.length > 0 && (
+              <CommandGroup heading={t('recent')}>
+                {recentData.threads.map((thread) => (
+                  <CommandItem
+                    key={`recent-${thread.public_id}`}
+                    value={`recent-thread-${thread.public_id}-${thread.title || thread.messages[0]?.content}`}
+                    onSelect={() => handleSelect('thread', thread.public_id)}
+                    className="cursor-pointer"
+                  >
+                    <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
+                    <span className="flex-1 truncate">
+                      {thread.title ||
+                        thread.messages[0]?.content?.slice(0, 60) ||
+                        t('untitled')}
+                    </span>
+                    <span className="text-xs text-zinc-400 shrink-0">
+                      {formatRelativeDate(thread.created_at, t)}
+                    </span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </>
+        )}
+      </CommandList>
+    </CommandDialog>
   );
 });
 

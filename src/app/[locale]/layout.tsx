@@ -10,11 +10,12 @@ import { Inter } from 'next/font/google';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
+import { GlobalSearchDialog } from '@/app/components/Sidebar/ThreadsHistory/GlobalSearchDialog';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 
 const JoyrideProvider = dynamic<JoyrideProviderProps>(() =>
-  import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider)
+  import('@/context/OnboardingContext').then((mod) => mod.JoyrideProvider),
 );
 
 type JoyrideProviderProps = {
@@ -59,6 +60,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <body className={`${interFont.className} h-full`}>
           <Providers>
             <SearchThreadsProvider>
+              <GlobalSearchDialog />
               <SettingsProvider>
                 <JoyrideProvider>{children}</JoyrideProvider>
               </SettingsProvider>
