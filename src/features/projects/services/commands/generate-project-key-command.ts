@@ -5,12 +5,12 @@ import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
-export const generateProjectKeyCommand = async (projectId: number) => {
+export const generateProjectKeyCommand = async (publicId: string) => {
   try {
     const orgId = await getOrgIdOrThrow();
 
     const existing = await db.project.findFirst({
-      where: { id: projectId, organization_id: orgId },
+      where: { public_id: publicId, organization_id: orgId },
     });
 
     if (!existing) {
@@ -20,7 +20,7 @@ export const generateProjectKeyCommand = async (projectId: number) => {
     logger.info('Generating access token for project');
 
     const project = await db.project.update({
-      where: { id: projectId },
+      where: { id: existing.id },
       data: {
         access_token: crypto.randomUUID(),
         is_public: true,

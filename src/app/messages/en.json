@@ -861,7 +861,8 @@
       "no-threads-description": "Start a new conversation above",
       "instructions": "Instructions",
       "files": "Files",
-      "share": "Share"
+      "share": "Share",
+      "storage-used": "{percentage}% memory used"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
@@ -882,6 +883,7 @@
       "refreshing": "Refreshing...",
       "refresh-link-aria-label": "Refresh public link",
       "refresh-error": "An error occurred while refreshing the link",
+      "refresh-success": "Link has been refreshed successfully",
       "copy-link-aria-label": "Copy public link",
       "share-url": "Sharing URL",
       "toggle-sharing": "Toggle public sharing",

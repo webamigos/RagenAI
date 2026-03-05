@@ -819,7 +819,8 @@
       "no-threads-description": "Rozpocznij nową rozmowę powyżej",
       "instructions": "Instrukcje",
       "files": "Pliki",
-      "share": "Udostępnij"
+      "share": "Udostępnij",
+      "storage-used": "{percentage}% użycia pamięci"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
@@ -840,6 +841,7 @@
       "refreshing": "Odświeżanie...",
       "refresh-link-aria-label": "Odśwież link publiczny",
       "refresh-error": "Wystąpił błąd podczas odświeżania linku",
+      "refresh-success": "Link został pomyślnie odświeżony",
       "copy-link-aria-label": "Kopiuj link publiczny",
       "share-url": "URL udostępniania",
       "toggle-sharing": "Przełącz udostępnianie publiczne",

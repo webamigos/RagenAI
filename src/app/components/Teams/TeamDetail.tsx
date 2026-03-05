@@ -94,7 +94,7 @@ export function TeamDetail({
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
     }
-  }, [team.id, successToast, errorToast, onBack]);
+  }, [team.id, successToast, errorToast, onBack, t]);
 
   return (
     <div className="space-y-6">

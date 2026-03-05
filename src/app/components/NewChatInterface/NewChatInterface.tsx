@@ -178,6 +178,7 @@ export const NewChatInterface = ({
           mentionedProject={mentionedProject}
           threadDocuments={threadDocuments}
           onThreadDocumentsChange={setThreadDocuments}
+          hideAttachments={isPublicAccess}
           modelSelector={
             !isPublicAccess ? (
               <ModelSelectorInline

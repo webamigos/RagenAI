@@ -66,7 +66,7 @@ export function TeamsList({
               {/* Team icon */}
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700">
                 <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
-                  {team.name[0].toUpperCase()}
+                  {(team.name[0] || '?').toUpperCase()}
                 </span>
               </div>
 

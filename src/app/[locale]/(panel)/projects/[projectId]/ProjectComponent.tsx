@@ -27,6 +27,7 @@ import {
 
 import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
+import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
@@ -46,8 +47,8 @@ type Project = {
   public_id: string;
   title: string;
   is_public: boolean;
-  access_token: string;
-  published_at: string;
+  access_token: string | null;
+  published_at: string | null;
   chatbot_enabled: boolean;
   threads: ProjectThread[];
 };
@@ -103,6 +104,7 @@ export function ProjectComponent({ projectId }: Props) {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [instructionText, setInstructionText] = useState<string | null>(null);
 
   // File state
   const [files, setFiles] = useState<ProjectFile[]>([]);
@@ -136,6 +138,11 @@ export function ProjectComponent({ projectId }: Props) {
         const projectData = await fetchProject(projectId);
         setProject(projectData);
         loadFiles(projectData.public_id);
+        getProjectInstructionAction(projectData.public_id).then((result) => {
+          if (result.success && result.instruction) {
+            setInstructionText(result.instruction);
+          }
+        });
       } catch (error) {
         logger.error('Error loading project:', { error: error });
         errorToast({ message: t('error.fetching-error') });
@@ -237,10 +244,16 @@ export function ProjectComponent({ projectId }: Props) {
         {t('project-view.all-projects')}
       </Link>
 
-      {/* Project title */}
-      <h1 className="text-2xl font-bold tracking-tight mb-4">
-        {project.title}
-      </h1>
+      {/* Project title + actions */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
+        <ShareDialogTrigger
+          publishedAt={project.published_at ?? ''}
+          accessToken={project.access_token ?? ''}
+          projectPublicId={project.public_id}
+          isPublicProject={project.is_public}
+        />
+      </div>
 
       <div className="flex gap-6 w-full">
         {/* Left column: chat input, thread list */}
@@ -301,18 +314,16 @@ export function ProjectComponent({ projectId }: Props) {
               </h3>
               <PlusIcon className="size-4 text-muted-foreground" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t('project-instructions.description')}
-            </p>
+            {instructionText ? (
+              <p className="text-sm text-muted-foreground/70 line-clamp-2 whitespace-pre-line">
+                {instructionText}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t('project-instructions.description')}
+              </p>
+            )}
           </div>
-
-          {/* Share button */}
-          <ShareDialogTrigger
-            publishedAt={project.published_at}
-            accessToken={project.access_token}
-            projectId={project.id}
-            isPublicProject={project.is_public}
-          />
 
           {/* Files section - inline */}
           <div className="rounded-xl border border-border/60 p-4">
@@ -341,6 +352,12 @@ export function ProjectComponent({ projectId }: Props) {
               usedBytes={storageUsed}
               limitBytes={storageLimit}
               className="mb-3"
+              label={t('project-view.storage-used', {
+                percentage:
+                  storageLimit > 0
+                    ? Math.round((storageUsed / storageLimit) * 100)
+                    : 0,
+              })}
             />
 
             {/* File cards grid */}
@@ -370,7 +387,12 @@ export function ProjectComponent({ projectId }: Props) {
           </DialogHeader>
           <ProjectInstructionForm
             projectId={project.public_id}
-            onSuccess={() => setShowInstructions(false)}
+            onSuccess={() => {
+              setShowInstructions(false);
+              getProjectInstructionAction(project.public_id).then((result) => {
+                setInstructionText(result.success ? result.instruction : null);
+              });
+            }}
             onCancel={() => setShowInstructions(false)}
           />
         </DialogContent>

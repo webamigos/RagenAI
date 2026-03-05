@@ -1,21 +1,36 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useTranslations } from 'next-intl';
-import { useOrganization } from '@/app/hooks/use-auth';
+import { useTranslations, useLocale } from 'next-intl';
 
-import { Dialog } from '@ragenai/common-ui/Dialog';
-import { Text } from '@ragenai/common-ui/Text';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useProjectKeyGenerator } from '@/app/hooks/useProjectKeyGenerator';
 import { useDisablePublicAccess } from '@/app/hooks/useDisablePublicAccess';
-
-import { PublicLinkSection } from './components/PublicLinkSection';
+import { CopyButton } from '@ragenai/common-ui/CopyButton/CopyButton';
+import { ArrowPath } from '@ragenai/common-ui/icons';
 
 type ShareDialogProps = {
   open: boolean;
   onClose: () => void;
-  projectId: number;
+  projectPublicId: string;
   isPublicProject: boolean;
   linkToPublicProject: string;
   publishedAt: string;
@@ -25,14 +40,10 @@ function getOrigin() {
   return typeof window !== 'undefined' ? window.location.origin : '';
 }
 
-function getBaseUrl() {
-  return `${getOrigin()}/pl/public/assistants`;
-}
-
 export const ShareDialog = ({
   open,
   onClose,
-  projectId,
+  projectPublicId,
   isPublicProject,
   linkToPublicProject,
   publishedAt,
@@ -46,30 +57,31 @@ export const ShareDialog = ({
     useState(linkToPublicProject);
   const [currentPublishedAt, setCurrentPublishedAt] = useState(publishedAt);
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
+  const [isRefreshModalOpen, setIsRefreshModalOpen] = useState(false);
 
   const t = useTranslations('projects');
-  const { organization } = useOrganization();
+  const locale = useLocale();
+  const getBaseUrl = () => `${getOrigin()}/${locale}/public/assistants`;
   const { generateKey, isGenerating: isGeneratingKey } =
-    useProjectKeyGenerator(projectId);
+    useProjectKeyGenerator(projectPublicId);
   const { disablePublicAccess, isDisabling } =
-    useDisablePublicAccess(projectId);
+    useDisablePublicAccess(projectPublicId);
   const { errorToast, successToast } = statusToast();
 
   const generateTokenAndSetUrl = async () => {
-    if (!organization) {
-      return null;
-    }
-
     try {
       const accessToken = await generateKey();
 
       if (!accessToken) {
+        errorToast({
+          message: t('share-knowledge.refresh-error'),
+        });
         return null;
       }
 
       wasPublicLinkKeyGenerated.current = true;
       return accessToken;
-    } catch (error) {
+    } catch {
       errorToast({
         message: t('share-knowledge.refresh-error'),
       });
@@ -77,19 +89,18 @@ export const ShareDialog = ({
     }
   };
 
-  const handleShareToggle = async (checked: boolean) => {
-    if (checked) {
+  const handleShareToggle = (checked: boolean) => {
+    if (checked && !shareUrl) {
       setIsSharedLinkPublicly(true);
-      if (!shareUrl) {
-        const accessToken = await generateTokenAndSetUrl();
+      generateTokenAndSetUrl().then((accessToken) => {
         if (accessToken) {
           setShareUrl(`${getBaseUrl()}/${accessToken}`);
         } else {
           setIsSharedLinkPublicly(false);
         }
-      }
-    } else {
-      // When toggling off, show confirmation modal
+      });
+    }
+    if (!checked) {
       setIsDisableModalOpen(true);
     }
   };
@@ -112,7 +123,7 @@ export const ShareDialog = ({
           message: t('share-knowledge.disable-error'),
         });
       }
-    } catch (error) {
+    } catch {
       errorToast({
         message: t('share-knowledge.disable-error'),
       });
@@ -121,70 +132,179 @@ export const ShareDialog = ({
     }
   };
 
-  const handleDisableCancel = () => {
-    setIsDisableModalOpen(false);
+  const handleRefreshConfirm = async () => {
+    try {
+      const accessToken = await generateKey();
+      if (accessToken) {
+        const newFullLink = `${getBaseUrl()}/${accessToken}`;
+        setShareUrl(newFullLink);
+        setCurrentLinkToPublicProject(accessToken);
+        setCurrentPublishedAt(new Date().toISOString());
+        wasPublicLinkKeyGenerated.current = true;
+        successToast({
+          message: t('share-knowledge.refresh-success'),
+        });
+      } else {
+        errorToast({
+          message: t('share-knowledge.refresh-error'),
+        });
+      }
+    } catch {
+      errorToast({
+        message: t('share-knowledge.refresh-error'),
+      });
+    } finally {
+      setIsRefreshModalOpen(false);
+    }
   };
 
-  const handleLinkRefreshed = (newLink: string) => {
-    setCurrentLinkToPublicProject(newLink);
-    setCurrentPublishedAt(new Date().toISOString());
-  };
+  const displayLink = wasPublicLinkKeyGenerated.current
+    ? shareUrl
+    : currentLinkToPublicProject
+      ? `${getBaseUrl()}/${currentLinkToPublicProject}`
+      : '';
+
+  const formattedDate = currentPublishedAt
+    ? new Date(currentPublishedAt).toLocaleDateString(locale)
+    : '';
 
   return (
-    <Dialog open={open} onClose={onClose} className="max-w-xl">
-      <div className="w-full p-6 space-y-6">
-        <Text className="text-xl font-semibold">
-          {t('share-knowledge.title')}
-        </Text>
-
-        <div>
-          {/* PUBLIC LINK */}
-          <PublicLinkSection
-            isSharedLinkPublicly={isSharedLinkPublicly}
-            shareUrl={shareUrl}
-            isGeneratingKey={isGeneratingKey}
-            wasKeyGenerated={wasPublicLinkKeyGenerated.current}
-            linkToPublicProject={`${getBaseUrl()}/${currentLinkToPublicProject}`}
-            publishedAt={currentPublishedAt}
-            projectId={projectId}
-            onToggle={handleShareToggle}
-            onLinkRefreshed={handleLinkRefreshed}
-          />
-        </div>
-      </div>
-
-      {/* Confirmation Modal for Disabling Public Access */}
+    <>
       <Dialog
-        open={isDisableModalOpen}
-        onClose={handleDisableCancel}
-        className="max-w-md"
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) {
+            onClose();
+          }
+        }}
       >
-        <div className="p-6 space-y-4">
-          <Text className="text-lg font-semibold">
-            {t('share-knowledge.disable-title')}
-          </Text>
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
-            {t('share-knowledge.disable-confirmation')}
-          </Text>
-          <div className="flex justify-end gap-2 pt-2">
-            <button
-              onClick={handleDisableCancel}
-              className="px-4 py-2 rounded text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              {t('cancel')}
-            </button>
-            <button
+        <DialogContent
+          className="max-w-lg"
+          aria-describedby={undefined}
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <DialogHeader>
+            <DialogTitle>{t('share-knowledge.title')}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Toggle */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                {t('share-knowledge.share-publicly')}
+              </span>
+              <Switch
+                checked={isSharedLinkPublicly}
+                onCheckedChange={handleShareToggle}
+                disabled={isGeneratingKey}
+                className="data-[state=checked]:bg-purple-600"
+              />
+            </div>
+
+            {/* Content when shared */}
+            {isSharedLinkPublicly && (
+              <div className="space-y-3">
+                {isGeneratingKey ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t('share-knowledge.generating-link')}
+                  </p>
+                ) : displayLink ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      {t('share-knowledge.link-to-knowledge')}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Input readOnly value={displayLink} className="text-sm" />
+                      <CopyButton
+                        textToCopy={displayLink}
+                        showToast
+                        aria-label={t('share-knowledge.copy-link-aria-label')}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setIsRefreshModalOpen(true)}
+                        className="shrink-0 p-2 rounded-md hover:bg-muted transition-colors"
+                        aria-label={t(
+                          'share-knowledge.refresh-link-aria-label',
+                        )}
+                      >
+                        <ArrowPath className="size-4" />
+                      </button>
+                    </div>
+                    {formattedDate && (
+                      <p className="text-xs text-muted-foreground">
+                        {t('share-knowledge.project-table.publishedAt')}:{' '}
+                        {formattedDate}
+                      </p>
+                    )}
+                  </>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Disable confirmation */}
+      <AlertDialog
+        open={isDisableModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDisableModalOpen(false);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('share-knowledge.disable-title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('share-knowledge.disable-confirmation')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDisableConfirm}
               disabled={isDisabling}
-              className="px-4 py-2 rounded text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="border border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
             >
               {isDisabling
                 ? t('share-knowledge.disabling')
                 : t('share-knowledge.disable')}
-            </button>
-          </div>
-        </div>
-      </Dialog>
-    </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Refresh confirmation */}
+      <AlertDialog
+        open={isRefreshModalOpen}
+        onOpenChange={setIsRefreshModalOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('share-knowledge.refresh-link-title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('share-knowledge.refresh-link-confirmation')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRefreshConfirm}
+              disabled={isGeneratingKey}
+            >
+              {isGeneratingKey
+                ? t('share-knowledge.refreshing')
+                : t('share-knowledge.refresh')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

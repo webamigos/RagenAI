@@ -198,9 +198,11 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             handleResponseType={handleResponseType}
             setPromptValue={(text: string) => setValue('prompt', text)}
             showFileAttachment={false}
-            onFilesDrop={handleFilesDrop}
-            threadDocuments={threadDocuments}
-            onThreadDocumentRemove={handleThreadDocumentRemove}
+            onFilesDrop={isPublicAccess ? undefined : handleFilesDrop}
+            threadDocuments={isPublicAccess ? undefined : threadDocuments}
+            onThreadDocumentRemove={
+              isPublicAccess ? undefined : handleThreadDocumentRemove
+            }
             textareaClassName=""
             leftAddon={
               !isPublicAccess ? (
