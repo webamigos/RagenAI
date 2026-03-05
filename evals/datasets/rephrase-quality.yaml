@@ -1,0 +1,34 @@
+- vars:
+    question: "What about the pricing?"
+    chat_history: "USER: What LLM providers does Ragen support?\nASSISTANT: Ragen supports OpenAI, Anthropic, Google, Bedrock, Ollama, and more."
+  assert:
+    - type: llm-rubric
+      value: "Rephrased question is standalone and asks about Ragen's pricing (not just 'the pricing')"
+
+- vars:
+    question: "How do I use it?"
+    chat_history: "USER: Tell me about the API\nASSISTANT: The API is available at /api/v1/ and uses API key authentication via x-api-key header."
+  assert:
+    - type: llm-rubric
+      value: "Rephrased question is standalone and asks about how to use the Ragen API"
+
+- vars:
+    question: "Can I change that?"
+    chat_history: "USER: What embedding model is used?\nASSISTANT: Ragen uses OpenAI text-embedding-3-small with 1536 dimensions."
+  assert:
+    - type: llm-rubric
+      value: "Rephrased question is standalone and asks about changing the embedding model"
+
+- vars:
+    question: "What are the limits?"
+    chat_history: "USER: How does document upload work?\nASSISTANT: You can upload PDF, EPUB, Markdown, SRT, and URLs. They're processed asynchronously."
+  assert:
+    - type: llm-rubric
+      value: "Rephrased question is standalone and asks about document upload limits or restrictions"
+
+- vars:
+    question: "Tell me more"
+    chat_history: "USER: What are projects?\nASSISTANT: Projects organize assistants and documents within your organization. Each project can have its own assistants, document collections, and API keys."
+  assert:
+    - type: llm-rubric
+      value: "Rephrased question is standalone and asks for more details about projects and their features"

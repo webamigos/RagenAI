@@ -1,0 +1,65 @@
+name: Prompt Evals
+
+on:
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "src/libs/chains/**"
+      - "evals/**"
+
+jobs:
+  eval-ci:
+    name: Run CI Eval Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run CI evals
+        continue-on-error: true
+        if: env.OPENROUTER_API_KEY != '' && env.OPENAI_API_KEY != ''
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DEFAULT_MODEL_PROVIDER: openrouter
+          DEFAULT_MODEL: openai/gpt-4o
+        run: npm run eval:ci
+
+      - name: Convert to CTRF
+        if: always() && hashFiles('evals/results/ci-results.json') != ''
+        run: node evals/scripts/promptfoo-to-ctrf.mjs evals/results/ci-results.json ctrf/eval-results.json
+
+      - name: Publish Eval Results
+        if: always() && hashFiles('ctrf/eval-results.json') != ''
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: './ctrf/eval-results.json'
+          summary-delta-report: true
+          fail-rate-report: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: evals/results/
+          retention-days: 30
