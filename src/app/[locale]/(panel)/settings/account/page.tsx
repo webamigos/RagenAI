@@ -1,9 +1,13 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { redirect } from '@/i18n/routing';
-import { getLocale } from 'next-intl/server';
 import { ProfileEditForm } from '../../user/profile/components/ProfileEditForm';
 import { PasswordChangeForm } from '../../user/profile/components/PasswordChangeForm';
+
+export async function generateMetadata() {
+  const t = await getTranslations('Metadata');
+  return { title: t('settings-account.title') };
+}
 
 export default async function AccountSettingsPage() {
   const [user, tProfile, locale] = await Promise.all([

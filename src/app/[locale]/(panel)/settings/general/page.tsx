@@ -1,11 +1,21 @@
 import { getTranslations } from 'next-intl/server';
+import { ProfileSection } from './components/ProfileSection';
 import { ThemeSelector } from './components/ThemeSelector';
+
+export async function generateMetadata() {
+  const t = await getTranslations('Metadata');
+  return { title: t('settings-general.title') };
+}
 
 export default async function GeneralSettingsPage() {
   const t = await getTranslations('settings-page.general');
 
   return (
     <div className="max-w-2xl space-y-8">
+      <ProfileSection />
+
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+
       <section>
         <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
           {t('appearance')}

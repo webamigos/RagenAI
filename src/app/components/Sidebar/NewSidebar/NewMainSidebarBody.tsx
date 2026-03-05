@@ -35,7 +35,7 @@ export const NewMainSidebarBody = () => {
   const activeThread = pathname.match(/\/chats\/([^/]+)/)?.[1] ?? '';
 
   return (
-    <SidebarBody>
+    <SidebarBody className="[&>[data-slot=section]+[data-slot=section]]:mt-2">
       {/* Navigation links */}
       <SidebarSection>
         <SidebarItem href="/chats" current={pathname === '/chats'}>
@@ -50,7 +50,7 @@ export const NewMainSidebarBody = () => {
         </SidebarItem>
       </SidebarSection>
 
-      <SidebarDivider />
+      <SidebarDivider className="my-1" />
 
       {/* Starred threads */}
       {starredThreads.length > 0 && (

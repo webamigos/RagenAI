@@ -1,5 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
+export async function generateMetadata() {
+  const t = await getTranslations('Metadata');
+  return { title: t('settings-connectors.title') };
+}
+
 export default async function ConnectorsSettingsPage() {
   const t = await getTranslations('settings-page.connectors');
 

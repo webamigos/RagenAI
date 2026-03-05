@@ -17,7 +17,7 @@ type Props = {
   children: ReactNode;
 };
 
-const LOGO_URL = 'http://app.ragen.ai/assets/ragen-logo-on-light-bg.svg';
+const LOGO_URL = 'https://app.ragen.ai/assets/ragen-logo-on-light-bg.svg';
 
 export const EmailLayout = ({ preview, children }: Props) => (
   <Html>
