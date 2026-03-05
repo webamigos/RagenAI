@@ -4,7 +4,6 @@ import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
-import { SearchThreads } from '../Sidebar/ThreadsHistory/SearchThreads';
 import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
@@ -41,10 +40,8 @@ export const Assistant = ({ threadId }: Props) => {
     streamedMessage,
     isPublicAccess,
     userVisitorId,
-    isSearchOpen,
     responseType,
     isLimitLock,
-    closeSearch,
     isSignedIn,
     messages: localMessages,
     onSubmit,
@@ -183,12 +180,6 @@ export const Assistant = ({ threadId }: Props) => {
 
   return (
     <>
-      {isSearchOpen && (
-        <div onClick={closeSearch}>
-          <SearchThreads visitorId={userVisitorId!} />
-        </div>
-      )}
-
       <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] flex-col font-sans -m-6 lg:-m-10">
         {responseType === ChatResponseType.VOICE && (
           <VoiceMode
