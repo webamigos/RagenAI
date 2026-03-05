@@ -10,6 +10,8 @@ import { signUp } from '@/app/hooks/use-better-auth';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 import { logger } from '@/app/lib/utils/logger';
+import { GoogleSignInButton } from '@/app/components/Forms/GoogleSignInButton';
+
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { addSubscriberToKit } from './actions';
 
@@ -23,10 +25,14 @@ export const RegisterForm = () => {
   const {
     register,
     handleSubmit,
+    watch,
+    trigger,
     formState: { errors },
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema(t)),
   });
+
+  const termsAccepted = watch('terms');
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
@@ -222,6 +228,34 @@ export const RegisterForm = () => {
         >
           {t('sign-up')}
         </Button>
+
+        <div className="relative mt-6">
+          <div
+            className="absolute inset-0 flex items-center"
+            aria-hidden="true"
+          >
+            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+          </div>
+          <div className="relative flex justify-center text-sm/6 font-medium">
+            <span className="bg-primary-light dark:bg-primary-dark px-6 text-gray-900 dark:text-gray-300">
+              {t('or-continue-with')}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <GoogleSignInButton
+            label={t('sign-up-with-google')}
+            onBeforeSignIn={() => {
+              if (!termsAccepted) {
+                void trigger('terms');
+                return false;
+              }
+              return true;
+            }}
+            onError={(message) => setError(message)}
+          />
+        </div>
       </form>
     </>
   );

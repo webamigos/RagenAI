@@ -54,6 +54,7 @@ export const NewSidebarFooter = () => {
               <img
                 src={userAvatar}
                 alt="user avatar"
+                referrerPolicy="no-referrer"
                 className="size-9 rounded-lg object-cover"
               />
             ) : (

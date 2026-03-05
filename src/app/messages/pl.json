@@ -66,7 +66,8 @@
       "password": "Hasło musi mieć co najmniej 8 znaków"
     },
     "newsletter-consent": "Wyrażam zgodę na przetwarzania moich danych osobowych przez Web Amigos sp. z o. o. w celu wysyłania do mnie drogą elektroniczną newslettera, czyli informacji o nowościach, usługach, ofertach, polecanych linkach, czy wydarzeniach. Wiem, że mogę tę zgodę w każdej chwili wycofać. Więcej informacji znajduje się w ",
-    "newsletter-consent-link": "Polityce newslettera"
+    "newsletter-consent-link": "Polityce newslettera",
+    "sign-up-with-google": "Zarejestruj się przez Google"
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -81,7 +82,8 @@
     "sign-in-to-account": "Zaloguj się do konta",
     "not-a-member": "Nie masz konta?",
     "start-free-trial": "Rozpocznij 14 dniowy okres próbny",
-    "or-continue-with": "Lub zaloguj się za pomocą"
+    "or-continue-with": "Lub zaloguj się za pomocą",
+    "sign-in-with-google": "Zaloguj się przez Google"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",

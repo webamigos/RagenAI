@@ -8,6 +8,7 @@ import { nextCookies } from 'better-auth/next-js';
 import { stripe } from '@better-auth/stripe';
 import { orgAccessControl, orgRoles } from './auth-access-control';
 import Stripe from 'stripe';
+import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 
@@ -89,6 +90,14 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: 'postgresql',
   }),
+
+  socialProviders: {
+    google: {
+      prompt: 'select_account',
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
 
   emailAndPassword: {
     enabled: true,
@@ -172,47 +181,41 @@ export const auth = betterAuth({
               userId: user.id,
             });
 
-            // Create organization via Better Auth
-            const org = await auth.api.createOrganization({
-              body: {
+            // Create organization directly via Prisma (auth.api requires session context
+            // which is not available during OAuth callback hooks)
+            const orgId = crypto.randomUUID();
+            const memberId = crypto.randomUUID();
+
+            await db.organization.create({
+              data: {
+                id: orgId,
                 name: organizationName,
                 slug: `${user.id}-org`,
               },
-              headers: new Headers(),
             });
 
-            if (!org?.id) {
-              throw new Error('Failed to create organization');
-            }
-
-            console.log('[AUTH] Organization created', {
-              userId: user.id,
-              orgId: org.id,
-            });
-
-            // Add user as owner
-            await auth.api.addMember({
-              body: {
-                organizationId: org.id,
+            await db.member.create({
+              data: {
+                id: memberId,
+                organizationId: orgId,
                 userId: user.id,
                 role: 'owner',
               },
-              headers: new Headers(),
             });
 
-            console.log('[AUTH] User added as owner', {
+            console.log('[AUTH] Organization created and user added as owner', {
               userId: user.id,
-              orgId: org.id,
+              orgId,
             });
 
             // Create default project for organization
-            await createOrganizationWithDefaultProject(org.id, user.id);
+            await createOrganizationWithDefaultProject(orgId, user.id);
 
             // Set default vector store (meilisearch for local dev, can be changed in settings)
             const defaultVectorStore =
               process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
             await db.organization.update({
-              where: { id: org.id },
+              where: { id: orgId },
               data: {
                 vectorStore: defaultVectorStore,
                 metadata: {
