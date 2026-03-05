@@ -5,7 +5,29 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
 import { Button } from '@ragenai/common-ui/Button';
-import { impersonateUserAction } from './actions';
+import { Input } from '@ragenai/common-ui/Input';
+import {
+  Dialog,
+  DialogTitle,
+  DialogBody,
+  DialogDescription,
+  DialogActions,
+} from '@ragenai/common-ui/Dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
+import {
+  impersonateUserAction,
+  banUserAction,
+  unbanUserAction,
+  renameUserAction,
+  createUserAction,
+} from './actions';
 import { useSession } from '@/app/hooks/use-better-auth';
 
 type User = {
@@ -15,6 +37,9 @@ type User = {
   role: string;
   createdAt: string;
   image: string | null;
+  banned: boolean;
+  banReason: string | null;
+  organizationName: string | null;
 };
 
 type Props = {
@@ -28,6 +53,26 @@ export function UsersList({ users, currentUserId }: Props) {
   const { refetch } = useSession();
   const [search, setSearch] = useState('');
   const [isPending, startTransition] = useTransition();
+
+  // Rename dialog state
+  const [renameTarget, setRenameTarget] = useState<User | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  // Ban dialog state
+  const [banTarget, setBanTarget] = useState<User | null>(null);
+  const [banReason, setBanReason] = useState('');
+
+  // Unban dialog state
+  const [unbanTarget, setUnbanTarget] = useState<User | null>(null);
+
+  // Create user dialog state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'user',
+  });
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -49,11 +94,87 @@ export function UsersList({ users, currentUserId }: Props) {
     });
   };
 
+  const handleRename = () => {
+    if (!renameTarget || !renameValue.trim()) {
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await renameUserAction(renameTarget.id, renameValue.trim());
+        toast.success(t('renameSuccess'));
+        setRenameTarget(null);
+        router.refresh();
+      } catch {
+        toast.error(t('renameError'));
+      }
+    });
+  };
+
+  const handleBan = () => {
+    if (!banTarget) {
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await banUserAction(banTarget.id, banReason || undefined);
+        toast.success(t('banSuccess'));
+        setBanTarget(null);
+        setBanReason('');
+        router.refresh();
+      } catch {
+        toast.error(t('banError'));
+      }
+    });
+  };
+
+  const handleUnban = () => {
+    if (!unbanTarget) {
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await unbanUserAction(unbanTarget.id);
+        toast.success(t('unbanSuccess'));
+        setUnbanTarget(null);
+        router.refresh();
+      } catch {
+        toast.error(t('unbanError'));
+      }
+    });
+  };
+
+  const handleCreateUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.email.trim() || !createForm.password.trim()) {
+      return;
+    }
+    startTransition(async () => {
+      try {
+        await createUserAction({
+          name: createForm.name.trim(),
+          email: createForm.email.trim(),
+          password: createForm.password,
+          role: createForm.role as 'admin' | 'user',
+        });
+        toast.success(t('createSuccess'));
+        setIsCreateOpen(false);
+        setCreateForm({ name: '', email: '', password: '', role: 'user' });
+        router.refresh();
+      } catch {
+        toast.error(t('createError'));
+      }
+    });
+  };
+
   return (
     <div className="space-y-4">
-      <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-        {t('title')}
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          {t('title')}
+        </h2>
+        <Button onClick={() => setIsCreateOpen(true)}>{t('createUser')}</Button>
+      </div>
+
       <div>
         <input
           type="text"
@@ -92,14 +213,25 @@ export function UsersList({ users, currentUserId }: Props) {
 
             {/* User info */}
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-zinc-950 dark:text-white">
-                {u.name || u.email}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-zinc-950 dark:text-white">
+                  {u.name || u.email}
+                </span>
+                {u.banned && (
+                  <span className="rounded-md bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                    {t('banned')}
+                  </span>
+                )}
               </div>
-              {u.name && (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {u.email}
-                </div>
-              )}
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                {u.name ? u.email : ''}
+                {u.organizationName && (
+                  <span>
+                    {u.name ? ' · ' : ''}
+                    {u.organizationName}
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Role badge */}
@@ -118,23 +250,271 @@ export function UsersList({ users, currentUserId }: Props) {
               {new Date(u.createdAt).toLocaleDateString()}
             </span>
 
-            {/* Actions */}
+            {/* Actions - three dots menu */}
             <div className="shrink-0">
               {u.id !== currentUserId ? (
-                <Button
-                  onClick={() => handleImpersonate(u.id)}
-                  disabled={isPending}
-                  className="!px-3 !py-1 !text-xs"
-                >
-                  {t('impersonate')}
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="rounded p-1 transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    >
+                      <EllipsisHorizontalIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setRenameTarget(u);
+                        setRenameValue(u.name || '');
+                      }}
+                    >
+                      {t('rename')}
+                    </DropdownMenuItem>
+                    {u.banned ? (
+                      <DropdownMenuItem onClick={() => setUnbanTarget(u)}>
+                        {t('unban')}
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem onClick={() => setBanTarget(u)}>
+                        {t('ban')}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleImpersonate(u.id)}
+                      disabled={isPending}
+                    >
+                      {t('impersonate')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
-                <div className="w-20" />
+                <div className="w-7" />
               )}
             </div>
           </div>
         ))}
       </div>
+
+      {/* Rename dialog */}
+      <Dialog
+        open={!!renameTarget}
+        onClose={() => setRenameTarget(null)}
+        size="sm"
+      >
+        <DialogTitle>{t('renameTitle')}</DialogTitle>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleRename();
+          }}
+          className="mt-4 space-y-4"
+        >
+          <Input
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+            placeholder={t('namePlaceholder')}
+            disabled={isPending}
+          />
+          <DialogActions>
+            <Button
+              plain
+              onClick={() => setRenameTarget(null)}
+              disabled={isPending}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              isSubmit
+              disabled={isPending || !renameValue.trim()}
+              isLoading={isPending}
+            >
+              {t('save')}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* Ban dialog */}
+      <Dialog
+        open={!!banTarget}
+        onClose={() => {
+          setBanTarget(null);
+          setBanReason('');
+        }}
+        size="sm"
+      >
+        <DialogTitle>{t('banTitle')}</DialogTitle>
+        <DialogBody>
+          <DialogDescription>
+            {t('banConfirm', {
+              name: banTarget?.name || banTarget?.email || '',
+            })}
+          </DialogDescription>
+          <div className="mt-4">
+            <Input
+              value={banReason}
+              onChange={(e) => setBanReason(e.target.value)}
+              placeholder={t('banReasonPlaceholder')}
+              disabled={isPending}
+            />
+          </div>
+        </DialogBody>
+        <DialogActions>
+          <Button
+            plain
+            onClick={() => {
+              setBanTarget(null);
+              setBanReason('');
+            }}
+            disabled={isPending}
+          >
+            {t('cancel')}
+          </Button>
+          <Button
+            outline
+            onClick={handleBan}
+            isLoading={isPending}
+            className="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white dark:!border-red-700 dark:!text-red-400 dark:hover:!bg-red-600 dark:hover:!text-white"
+          >
+            {t('ban')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Unban dialog */}
+      <Dialog
+        open={!!unbanTarget}
+        onClose={() => setUnbanTarget(null)}
+        size="sm"
+      >
+        <DialogTitle>{t('unbanTitle')}</DialogTitle>
+        <DialogBody>
+          <DialogDescription>
+            {t('unbanConfirm', {
+              name: unbanTarget?.name || unbanTarget?.email || '',
+            })}
+          </DialogDescription>
+        </DialogBody>
+        <DialogActions>
+          <Button
+            plain
+            onClick={() => setUnbanTarget(null)}
+            disabled={isPending}
+          >
+            {t('cancel')}
+          </Button>
+          <Button plain onClick={handleUnban} isLoading={isPending}>
+            {t('unban')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create user dialog */}
+      <Dialog
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        size="md"
+      >
+        <DialogTitle>{t('createUser')}</DialogTitle>
+        <form onSubmit={handleCreateUser} className="mt-6 space-y-4">
+          <div>
+            <label
+              htmlFor="create-name"
+              className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              {t('name')}
+            </label>
+            <Input
+              id="create-name"
+              value={createForm.name}
+              onChange={(e) =>
+                setCreateForm((p) => ({ ...p, name: e.target.value }))
+              }
+              placeholder={t('namePlaceholder')}
+              disabled={isPending}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="create-email"
+              className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              {t('email')}
+            </label>
+            <Input
+              id="create-email"
+              type="email"
+              value={createForm.email}
+              onChange={(e) =>
+                setCreateForm((p) => ({ ...p, email: e.target.value }))
+              }
+              placeholder={t('emailPlaceholder')}
+              disabled={isPending}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="create-password"
+              className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              {t('password')}
+            </label>
+            <Input
+              id="create-password"
+              type="password"
+              value={createForm.password}
+              onChange={(e) =>
+                setCreateForm((p) => ({ ...p, password: e.target.value }))
+              }
+              placeholder={t('passwordPlaceholder')}
+              disabled={isPending}
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="create-role"
+              className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              {t('role')}
+            </label>
+            <select
+              id="create-role"
+              value={createForm.role}
+              onChange={(e) =>
+                setCreateForm((p) => ({ ...p, role: e.target.value }))
+              }
+              disabled={isPending}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              type="button"
+              plain
+              onClick={() => setIsCreateOpen(false)}
+              disabled={isPending}
+            >
+              {t('cancel')}
+            </Button>
+            <Button
+              isSubmit
+              disabled={
+                isPending ||
+                !createForm.email.trim() ||
+                !createForm.password.trim()
+              }
+              isLoading={isPending}
+            >
+              {t('createUser')}
+            </Button>
+          </div>
+        </form>
+      </Dialog>
     </div>
   );
 }

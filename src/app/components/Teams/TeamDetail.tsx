@@ -10,6 +10,13 @@ import {
   DialogDescription,
   DialogActions,
 } from '@ragenai/common-ui/Dialog';
+import { EllipsisHorizontalIcon } from '@heroicons/react/24/outline';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { statusToast } from '@/app/lib/utils/toast';
 import { authClient } from '@/app/hooks/use-better-auth';
 import { AddTeamMemberDialog } from './AddTeamMemberDialog';
@@ -108,15 +115,15 @@ export function TeamDetail({
           <div className="flex gap-2">
             {canManage && (
               <>
-                <Button onClick={() => setIsAddDialogOpen(true)}>
-                  {t('add-member')}
-                </Button>
                 <Button
                   outline
                   onClick={() => setIsDeleteDialogOpen(true)}
                   className="!border-red-200 !text-red-600 hover:!bg-red-50 dark:!border-red-800 dark:!text-red-400 dark:hover:!bg-red-950/30"
                 >
                   {t('delete-team')}
+                </Button>
+                <Button onClick={() => setIsAddDialogOpen(true)}>
+                  {t('add-member')}
                 </Button>
               </>
             )}
@@ -175,19 +182,33 @@ export function TeamDetail({
 
               {/* Actions */}
               {canManage && (
-                <button
-                  onClick={() => {
-                    setMemberToRemove({
-                      userId: member.userId,
-                      name: member.userName || member.userEmail,
-                    });
-                    setIsRemoveDialogOpen(true);
-                  }}
-                  disabled={removingUserId === member.userId}
-                  className="shrink-0 text-sm text-red-600 transition-colors hover:text-red-500 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
-                >
-                  {removingUserId === member.userId ? '...' : t('remove')}
-                </button>
+                <div className="shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        disabled={removingUserId === member.userId}
+                        className="rounded p-1 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:hover:bg-zinc-700"
+                      >
+                        <EllipsisHorizontalIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setMemberToRemove({
+                            userId: member.userId,
+                            name: member.userName || member.userEmail,
+                          });
+                          setIsRemoveDialogOpen(true);
+                        }}
+                        className="!text-red-600 dark:!text-red-400"
+                      >
+                        {t('remove')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               )}
             </div>
           ))}
@@ -229,12 +250,13 @@ export function TeamDetail({
             {t('cancel')}
           </Button>
           <Button
-            plain
+            outline
             onClick={() => {
               if (memberToRemove) {
                 handleRemoveMember(memberToRemove.userId);
               }
             }}
+            className="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white dark:!border-red-700 dark:!text-red-400 dark:hover:!bg-red-600 dark:hover:!text-white"
           >
             {t('remove')}
           </Button>
@@ -261,7 +283,12 @@ export function TeamDetail({
           >
             {t('cancel')}
           </Button>
-          <Button plain onClick={handleDeleteTeam} isLoading={isDeleting}>
+          <Button
+            outline
+            onClick={handleDeleteTeam}
+            isLoading={isDeleting}
+            className="!border-red-300 !text-red-600 hover:!bg-red-600 hover:!text-white dark:!border-red-700 dark:!text-red-400 dark:hover:!bg-red-600 dark:hover:!text-white"
+          >
             {t('delete-team')}
           </Button>
         </DialogActions>
