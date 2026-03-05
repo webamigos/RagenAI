@@ -11,6 +11,7 @@ import {
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { Link } from '@/i18n/routing';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@/components/ui/input';
 import { logger } from '@/app/lib/utils/logger';
 import { useAppSelector } from '@/store/hooks';
@@ -99,14 +100,10 @@ export const AssistantsPage = () => {
         <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
           {t('title')}
         </h1>
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
-        >
+        <Button onClick={() => setIsCreateModalOpen(true)}>
           <PlusIcon className="size-4" />
           {t('create')}
-        </button>
+        </Button>
       </div>
 
       {/* Search */}

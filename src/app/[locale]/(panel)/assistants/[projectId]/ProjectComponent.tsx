@@ -81,7 +81,6 @@ export function ProjectComponent({ projectId }: Props) {
               accessToken={project.access_token}
               projectId={project.id}
               isPublicProject={project.is_public}
-              isChatbotEnabled={project.chatbot_enabled}
             />
           </div>
         </div>

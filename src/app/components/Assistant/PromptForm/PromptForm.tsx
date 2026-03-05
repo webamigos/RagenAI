@@ -201,7 +201,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             onFilesDrop={handleFilesDrop}
             threadDocuments={threadDocuments}
             onThreadDocumentRemove={handleThreadDocumentRemove}
-            textareaClassName={!isPublicAccess ? '!pl-10' : undefined}
+            textareaClassName=""
             leftAddon={
               !isPublicAccess ? (
                 <DropdownMenu>

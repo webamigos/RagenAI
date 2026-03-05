@@ -818,7 +818,8 @@
       "no-threads": "Brak konwersacji",
       "no-threads-description": "Rozpocznij nową rozmowę powyżej",
       "instructions": "Instrukcje",
-      "files": "Pliki"
+      "files": "Pliki",
+      "share": "Udostępnij"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

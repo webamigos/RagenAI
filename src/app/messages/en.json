@@ -860,7 +860,8 @@
       "no-threads": "No conversations yet",
       "no-threads-description": "Start a new conversation above",
       "instructions": "Instructions",
-      "files": "Files"
+      "files": "Files",
+      "share": "Share"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

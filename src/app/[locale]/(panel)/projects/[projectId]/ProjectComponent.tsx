@@ -14,8 +14,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import { PageSkeleton } from '@ragenai/common-ui/Skeleton';
-
 import { Link } from '@/i18n/routing';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
@@ -202,44 +200,58 @@ export function ProjectComponent({ projectId }: Props) {
   };
 
   if (isLoading || !project || !isReady) {
-    return <PageSkeleton />;
+    return (
+      <div className="animate-pulse">
+        {/* Back link */}
+        <div className="h-4 w-32 bg-muted rounded mb-2" />
+        {/* Title */}
+        <div className="h-8 w-48 bg-muted rounded mb-4" />
+        <div className="flex gap-6 w-full">
+          {/* Left column */}
+          <div className="flex-1 min-w-0">
+            <div className="h-[100px] w-full bg-muted rounded-xl mb-6" />
+            <div className="space-y-3">
+              <div className="h-12 w-full bg-muted rounded" />
+              <div className="h-12 w-full bg-muted rounded" />
+              <div className="h-12 w-full bg-muted rounded" />
+            </div>
+          </div>
+          {/* Right column */}
+          <div className="w-72 lg:w-80 shrink-0 hidden md:block space-y-4">
+            <div className="h-20 w-full bg-muted rounded-xl" />
+            <div className="h-40 w-full bg-muted rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
-      <div className="flex gap-8 w-full">
-        {/* Left column: back link, chat input, thread list */}
+      {/* Back link */}
+      <Link
+        href="/projects"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+      >
+        <ArrowLeftIcon className="size-3.5" />
+        {t('project-view.all-projects')}
+      </Link>
+
+      {/* Project title */}
+      <h1 className="text-2xl font-bold tracking-tight mb-4">
+        {project.title}
+      </h1>
+
+      <div className="flex gap-6 w-full">
+        {/* Left column: chat input, thread list */}
         <div className="flex-1 min-w-0">
-          {/* Back link */}
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-          >
-            <ArrowLeftIcon className="size-3.5" />
-            {t('project-view.all-projects')}
-          </Link>
-
-          {/* Project title + actions */}
-          <div className="flex items-center gap-3 mb-6">
-            <h1 className="text-2xl font-bold tracking-tight">
-              {project.title}
-            </h1>
-            <ShareDialogTrigger
-              publishedAt={project.published_at}
-              accessToken={project.access_token}
-              projectId={project.id}
-              isPublicProject={project.is_public}
-              isChatbotEnabled={project.chatbot_enabled}
-            />
-          </div>
-
           {/* Chat input */}
-          <div className="mb-8">
+          <div className="mb-6">
             <NewChatInterface
               projectId={project.id}
               projectPublicId={project.public_id}
               projectTitle={project.title}
-              className="!max-w-none"
+              className="!max-w-none !mx-0 !px-0"
             />
           </div>
 
@@ -277,7 +289,7 @@ export function ProjectComponent({ projectId }: Props) {
         </div>
 
         {/* Right column: instructions + files */}
-        <div className="w-80 lg:w-[400px] shrink-0 hidden md:block space-y-4">
+        <div className="w-72 lg:w-80 shrink-0 hidden md:block space-y-4">
           {/* Instructions section */}
           <div
             className="rounded-xl border border-border/60 p-4 hover:bg-muted/30 transition-colors cursor-pointer"
@@ -293,6 +305,14 @@ export function ProjectComponent({ projectId }: Props) {
               {t('project-instructions.description')}
             </p>
           </div>
+
+          {/* Share button */}
+          <ShareDialogTrigger
+            publishedAt={project.published_at}
+            accessToken={project.access_token}
+            projectId={project.id}
+            isPublicProject={project.is_public}
+          />
 
           {/* Files section - inline */}
           <div className="rounded-xl border border-border/60 p-4">

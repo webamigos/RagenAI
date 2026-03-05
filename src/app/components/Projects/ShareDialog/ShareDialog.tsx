@@ -1,21 +1,16 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@/app/hooks/use-auth';
 
 import { Dialog } from '@ragenai/common-ui/Dialog';
 import { Text } from '@ragenai/common-ui/Text';
-import { Switch } from '@ragenai/common-ui/Switch';
-import { Collapse } from '@ragenai/common-ui/Collapse';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useProjectKeyGenerator } from '@/app/hooks/useProjectKeyGenerator';
 import { useDisablePublicAccess } from '@/app/hooks/useDisablePublicAccess';
 
 import { PublicLinkSection } from './components/PublicLinkSection';
-import { ChatbotConfiguration } from './components/ChatbotConfiguration';
-import { EmbedScriptSection } from './components/EmbedScriptSection';
 
 type ShareDialogProps = {
   open: boolean;
@@ -24,8 +19,6 @@ type ShareDialogProps = {
   isPublicProject: boolean;
   linkToPublicProject: string;
   publishedAt: string;
-  isChatbotEnabled?: boolean;
-  onChatbotEnabledChange?: (enabled: boolean) => Promise<boolean>;
 };
 
 function getOrigin() {
@@ -43,28 +36,16 @@ export const ShareDialog = ({
   isPublicProject,
   linkToPublicProject,
   publishedAt,
-  isChatbotEnabled: initialChatbotEnabled = false,
-  onChatbotEnabledChange,
 }: ShareDialogProps) => {
   const [isSharedLinkPublicly, setIsSharedLinkPublicly] = useState(
     isPublicProject || false,
   );
   const [shareUrl, setShareUrl] = useState('');
   const wasPublicLinkKeyGenerated = useRef<boolean>(false);
-  const wasChatbotKeyGenerated = useRef<boolean>(false);
   const [currentLinkToPublicProject, setCurrentLinkToPublicProject] =
     useState(linkToPublicProject);
   const [currentPublishedAt, setCurrentPublishedAt] = useState(publishedAt);
-
-  const [isChatbotEnabled, setIsChatbotEnabled] = useState(
-    initialChatbotEnabled,
-  );
-  const [isChatbotCustomized, setIsChatbotCustomized] = useState(false);
-  const [accessKey, setAccessKey] = useState('');
-  const [chatbotName, setChatbotName] = useState('');
-  const [chatbotTitle, setChatbotTitle] = useState('');
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
-  const [isUpdatingChatbotState, setIsUpdatingChatbotState] = useState(false);
 
   const t = useTranslations('projects');
   const { organization } = useOrganization();
@@ -74,20 +55,7 @@ export const ShareDialog = ({
     useDisablePublicAccess(projectId);
   const { errorToast, successToast } = statusToast();
 
-  const embedScript = useMemo(() => {
-    if (!accessKey) {
-      return;
-    }
-
-    return `<script src='${getOrigin()}/api/embed/${accessKey}?${new URLSearchParams(
-      {
-        title: chatbotTitle,
-        message: chatbotName,
-      },
-    ).toString()}'></script>`;
-  }, [accessKey, chatbotTitle, chatbotName]);
-
-  const generateTokenAndSetUrl = async (forChatbot = false) => {
+  const generateTokenAndSetUrl = async () => {
     if (!organization) {
       return null;
     }
@@ -99,11 +67,7 @@ export const ShareDialog = ({
         return null;
       }
 
-      if (forChatbot) {
-        wasChatbotKeyGenerated.current = true;
-      } else {
-        wasPublicLinkKeyGenerated.current = true;
-      }
+      wasPublicLinkKeyGenerated.current = true;
       return accessToken;
     } catch (error) {
       errorToast({
@@ -117,7 +81,7 @@ export const ShareDialog = ({
     if (checked) {
       setIsSharedLinkPublicly(true);
       if (!shareUrl) {
-        const accessToken = await generateTokenAndSetUrl(false);
+        const accessToken = await generateTokenAndSetUrl();
         if (accessToken) {
           setShareUrl(`${getBaseUrl()}/${accessToken}`);
         } else {
@@ -161,56 +125,6 @@ export const ShareDialog = ({
     setIsDisableModalOpen(false);
   };
 
-  const handleChatbotToggle = async (checked: boolean) => {
-    if (!onChatbotEnabledChange) {
-      setIsChatbotEnabled(checked);
-      if (checked && !accessKey) {
-        const accessToken = await generateTokenAndSetUrl(true);
-        if (accessToken) {
-          setAccessKey(accessToken);
-        } else {
-          setIsChatbotEnabled(false);
-        }
-      }
-      return;
-    }
-
-    setIsUpdatingChatbotState(true);
-    try {
-      const success = await onChatbotEnabledChange(checked);
-
-      if (success) {
-        setIsChatbotEnabled(checked);
-        if (checked && !accessKey) {
-          const accessToken = await generateTokenAndSetUrl(true);
-          if (accessToken) {
-            setAccessKey(accessToken);
-          } else {
-            // If we couldn't generate a key, revert the DB change
-            await onChatbotEnabledChange(false);
-            setIsChatbotEnabled(false);
-            errorToast({
-              message: t('share-knowledge.chatbot-enable-error'),
-            });
-          }
-        }
-      } else {
-        errorToast({
-          message: t('share-knowledge.chatbot-update-error'),
-        });
-      }
-    } catch (error) {
-      errorToast({
-        message: t('share-knowledge.chatbot-update-error'),
-      });
-    } finally {
-      setIsUpdatingChatbotState(false);
-    }
-  };
-
-  const handleChatbotCustomizeToggle = () =>
-    setIsChatbotCustomized((prev) => !prev);
-
   const handleLinkRefreshed = (newLink: string) => {
     setCurrentLinkToPublicProject(newLink);
     setCurrentPublishedAt(new Date().toISOString());
@@ -236,55 +150,6 @@ export const ShareDialog = ({
             onToggle={handleShareToggle}
             onLinkRefreshed={handleLinkRefreshed}
           />
-
-          {/* CHATBOT ENABLE */}
-          <div>
-            <div className="flex items-center justify-between">
-              <Text className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('share-knowledge.enable-chatbot')}
-              </Text>
-              <Switch
-                checked={isChatbotEnabled}
-                onChange={handleChatbotToggle}
-                disabled={isGeneratingKey || isUpdatingChatbotState}
-              />
-            </div>
-
-            {isChatbotEnabled && wasChatbotKeyGenerated.current && (
-              <div className="flex items-center justify-between mt-8">
-                <Text className="text-sm text-gray-700 dark:text-gray-300">
-                  {t('share-knowledge.personalize-chatbot')}
-                </Text>
-                <button
-                  onClick={handleChatbotCustomizeToggle}
-                  className="p-1 hover:bg-muted rounded-md transition"
-                  aria-label={isChatbotCustomized ? t('collapse') : t('expand')}
-                >
-                  <ChevronDownIcon
-                    className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
-                      isChatbotCustomized ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* CHATBOT SETTINGS + EMBED SCRIPT */}
-          {isChatbotEnabled && wasChatbotKeyGenerated.current && (
-            <>
-              <Collapse isOpen={isChatbotCustomized}>
-                <ChatbotConfiguration
-                  chatbotTitle={chatbotTitle}
-                  chatbotName={chatbotName}
-                  onTitleChange={setChatbotTitle}
-                  onNameChange={setChatbotName}
-                />
-              </Collapse>
-
-              {embedScript && <EmbedScriptSection embedScript={embedScript} />}
-            </>
-          )}
         </div>
       </div>
 
