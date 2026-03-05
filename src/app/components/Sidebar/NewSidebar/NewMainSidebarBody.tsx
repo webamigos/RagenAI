@@ -6,16 +6,9 @@ import {
   SidebarItem,
   SidebarLabel,
   SidebarSection,
-  SidebarSpacer,
   SidebarDivider,
 } from '@ragenai/tui/sidebar';
-import {
-  ChatBubbleLeftIcon,
-  Cog6ToothIcon,
-  FolderIcon,
-  HomeIcon,
-  QuestionMarkCircleIcon,
-} from '@heroicons/react/24/outline';
+import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 
@@ -41,35 +34,8 @@ export const NewMainSidebarBody = () => {
 
   const activeThread = pathname.match(/\/chats\/([^/]+)/)?.[1] ?? '';
 
-  const isSettingsPage = pathname.includes('/settings');
-  const isSupportPage = pathname.includes('/support');
-
-  if (isSettingsPage || isSupportPage) {
-    return (
-      <SidebarBody>
-        <SidebarSection>
-          <SidebarItem href="/new">
-            <HomeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-            <SidebarLabel className="font-normal">Home</SidebarLabel>
-          </SidebarItem>
-          <SidebarItem href="/settings">
-            <Cog6ToothIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-            <SidebarLabel className="font-normal">Settings</SidebarLabel>
-          </SidebarItem>
-        </SidebarSection>
-        <SidebarSpacer />
-        <SidebarSection>
-          <SidebarItem href="/support">
-            <QuestionMarkCircleIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-            <SidebarLabel className="font-normal">Support</SidebarLabel>
-          </SidebarItem>
-        </SidebarSection>
-      </SidebarBody>
-    );
-  }
-
   return (
-    <SidebarBody>
+    <SidebarBody className="[&>[data-slot=section]+[data-slot=section]]:mt-2">
       {/* Navigation links */}
       <SidebarSection>
         <SidebarItem href="/chats" current={pathname === '/chats'}>
@@ -84,7 +50,7 @@ export const NewMainSidebarBody = () => {
         </SidebarItem>
       </SidebarSection>
 
-      <SidebarDivider />
+      <SidebarDivider className="my-1" />
 
       {/* Starred threads */}
       {starredThreads.length > 0 && (

@@ -185,6 +185,18 @@
     "plans": {
       "title": "Pricing and subscription plans | Ragen AI"
     },
+    "settings-general": {
+      "title": "General Settings | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Account Settings | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Connectors | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Teams | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
     },
@@ -368,11 +380,51 @@
     "upload-files": "Upload files",
     "add-from-url": "Add Knowledge from URL"
   },
+  "settings-page": {
+    "title": "Settings",
+    "nav": {
+      "general": "General",
+      "account": "Account",
+      "connectors": "Connectors",
+      "organization": "Organization",
+      "assistant-settings": "Assistant settings",
+      "subscription": "Subscription",
+      "teams": "Teams",
+      "api-keys": "API Keys",
+      "users": "Users",
+      "ai-usage": "AI Usage",
+      "disk-usage": "Disk Usage"
+    },
+    "general": {
+      "profile": "Profile",
+      "display-name": "Display name",
+      "display-name-placeholder": "Your name",
+      "profile-save": "Save",
+      "profile-saving": "Saving...",
+      "profile-success": "Profile updated",
+      "profile-error": "Failed to update profile",
+      "appearance": "Appearance",
+      "appearance-description": "Choose how the application looks for you.",
+      "theme-light": "Light",
+      "theme-dark": "Dark",
+      "theme-system": "System"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Manage your account settings and profile information."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Connect external services and integrations.",
+      "no-connectors": "No connectors available yet."
+    }
+  },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
     "manage-organization": "Organization",
+    "organization-settings": "Organization Settings",
     "manage-knowledge": "Knowledge",
     "subscription-management": "Subscription management",
     "organization-list": "Organization list",
@@ -434,7 +486,10 @@
       "settings": "Settings",
       "privacy-policy": "Privacy policy",
       "share-feedback": "Your feedback",
-      "sign-out": "Sign out"
+      "sign-out": "Sign out",
+      "role-app-admin": "App Admin",
+      "role-org-admin": "Org Admin",
+      "role-user": "User"
     }
   },
   "chats-page": {

@@ -105,7 +105,7 @@ export function OrganizationSwitcher({
         <DropdownMenuItem asChild>
           <Link href="/settings/organization-profile">
             <SettingsIcon />
-            {t('manage-organization')}
+            {t('organization-settings')}
           </Link>
         </DropdownMenuItem>
 

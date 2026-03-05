@@ -144,6 +144,34 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 - Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
 - Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
 
+### Settings Pages
+
+Settings live under `src/app/[locale]/(panel)/settings/` with a dedicated layout (`layout.tsx`) that renders an internal left-side navigation + content area. The main sidebar does **not** change when on settings pages.
+
+**Internal navigation component**: `settings/components/SettingsNav.tsx` (client component) — defines all nav items with icons and permission-based visibility.
+
+**Permission levels for settings nav items**:
+
+| Permission | Nav items | Who sees them |
+|---|---|---|
+| `user` | General, Account, Connectors | All authenticated users |
+| `orgAdmin` | Organization, Assistant settings, Subscription, Teams | Org owner/admin (via `useOrganization().isOrgAdmin`) |
+| `appAdmin` | API Keys, Users, AI Usage, Disk Usage | App admins only (via `useUser().isAppAdmin`) |
+
+App admins can access all pages regardless of permission level.
+
+**Key pages**:
+- `settings/general/` — Appearance/theme switcher (light/dark/system) using `next-themes`
+- `settings/account/` — Profile edit + password change (reuses components from `user/profile/components/`)
+- `settings/connectors/` — External integrations (placeholder)
+- `settings/[[...rest]]/` — Redirects `/settings` → `/settings/general`
+- Org-level: `organization-profile/`, `prompt-management/`, `subscription/`, `teams/`
+- App-admin: `api-keys/`, `users/`, `ai-usage/`, `disk-usage/`
+
+**Theme**: Managed by `next-themes` (ThemeProvider in `src/app/components/Providers.tsx`). Uses `attribute="class"` with `defaultTheme="system"`. Theme selector component at `settings/general/components/ThemeSelector.tsx`.
+
+**i18n**: Translations under `settings-page` namespace in `src/app/messages/{en,pl}.json`.
+
 ### Server Actions
 
 `src/app/actions/index.ts` provides auth-wrapped server actions that delegate to feature module queries/commands. Component-level actions are co-located with their components (e.g., `src/app/components/ApiKeys/actions.ts`). New domain logic should go in `src/features/`, not in actions files.
