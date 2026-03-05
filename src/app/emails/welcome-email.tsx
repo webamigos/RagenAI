@@ -19,7 +19,7 @@ type Props = {
   name: string | undefined;
 };
 
-export const WelcomeEmail = ({ name }: Props) => (
+const WelcomeEmail = ({ name }: Props) => (
   <Html>
     <Head />
     <Preview>Korzystaj w bezpieczny sposób z AI w swojej firmie</Preview>
@@ -110,3 +110,6 @@ const footer = {
   fontSize: '12px',
   lineHeight: '16px',
 };
+
+export { WelcomeEmail };
+export default WelcomeEmail;

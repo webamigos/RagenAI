@@ -21,7 +21,7 @@ type Props = {
   expiresAt: Date;
 };
 
-export const InvitationEmail = ({
+const InvitationEmail = ({
   invitedEmail,
   organizationName,
   inviterName,
@@ -140,3 +140,6 @@ const footer = {
   fontSize: '12px',
   lineHeight: '16px',
 };
+
+export { InvitationEmail };
+export default InvitationEmail;
