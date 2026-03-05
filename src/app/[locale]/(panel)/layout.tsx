@@ -69,7 +69,7 @@ export default async function PanelLayout({ children }: Props) {
           </NewChatButton>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-            <SidebarLabel className="font-normal">Search</SidebarLabel>
+            <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
           </SearchButton>
           <SidebarItem href="/knowledge/documents-list">
             <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />

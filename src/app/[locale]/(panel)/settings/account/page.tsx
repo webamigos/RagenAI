@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { redirect } from '@/i18n/routing';
 import { ProfileEditForm } from '../../user/profile/components/ProfileEditForm';
 import { PasswordChangeForm } from '../../user/profile/components/PasswordChangeForm';
+import { ActiveSessions } from './components/ActiveSessions';
 
 export async function generateMetadata() {
   const t = await getTranslations('Metadata');
@@ -39,6 +40,17 @@ export default async function AccountSettingsPage() {
         </h2>
         <div className="mt-4">
           <PasswordChangeForm />
+        </div>
+      </section>
+
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+
+      <section>
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          {tProfile('sessions.title')}
+        </h2>
+        <div className="mt-4">
+          <ActiveSessions />
         </div>
       </section>
     </div>

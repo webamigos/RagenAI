@@ -436,6 +436,7 @@
     "disk-usage": "Disk Usage",
     "create-new-thread": "New thread",
     "new-chat": "New Chat",
+    "search": "Search",
     "search-threads": "Search in threads",
     "generate-access-key": "Public access",
     "support-page": "Support Page",
@@ -1027,6 +1028,22 @@
       "changing": "Changing password...",
       "success": "Password has been changed",
       "error": "Invalid current password"
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "logout-all": "Log out",
+      "logout-all-description": "Log out of all other devices",
+      "logging-out": "Logging out...",
+      "current": "Current",
+      "last-active": "Last active",
+      "revoke": "Revoke",
+      "revoking": "Revoking...",
+      "revoke-success": "Session has been revoked",
+      "revoke-error": "Failed to revoke session",
+      "revoke-all-success": "All other sessions have been revoked",
+      "revoke-all-error": "Failed to revoke sessions",
+      "load-error": "Failed to load sessions",
+      "retry": "Retry"
     }
   },
   "impersonation": {

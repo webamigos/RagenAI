@@ -440,6 +440,7 @@
     "disk-usage": "Użycie dysku",
     "create-new-thread": "Nowy wątek",
     "new-chat": "Nowy czat",
+    "search": "Szukaj",
     "search-threads": "Szukaj w wątkach",
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
@@ -1030,6 +1031,22 @@
       "changing": "Zmiana hasła...",
       "success": "Hasło zostało zmienione",
       "error": "Nieprawidłowe obecne hasło"
+    },
+    "sessions": {
+      "title": "Aktywne sesje",
+      "logout-all": "Wyloguj",
+      "logout-all-description": "Wyloguj ze wszystkich innych urządzeń",
+      "logging-out": "Wylogowywanie...",
+      "current": "Bieżąca",
+      "last-active": "Ostatnia aktywność",
+      "revoke": "Unieważnij",
+      "revoking": "Unieważnianie...",
+      "revoke-success": "Sesja została unieważniona",
+      "revoke-error": "Nie udało się unieważnić sesji",
+      "revoke-all-success": "Wszystkie pozostałe sesje zostały unieważnione",
+      "revoke-all-error": "Nie udało się unieważnić sesji",
+      "load-error": "Nie udało się załadować sesji",
+      "retry": "Ponów"
     }
   },
   "impersonation": {
