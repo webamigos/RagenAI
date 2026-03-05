@@ -5,13 +5,14 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const getThreadDetailsQuery = async (
   publicThreadId: string,
-  orgId?: string,
+  orgId: string,
+  options?: { includeMessages?: boolean },
 ) => {
   try {
     const thread = await db.thread.findFirstOrThrow({
       where: {
         public_id: publicThreadId,
-        ...(orgId ? { organization_id: orgId } : {}),
+        organization_id: orgId,
       },
       select: {
         id: true,
@@ -36,6 +37,17 @@ export const getThreadDetailsQuery = async (
             name: true,
           },
         },
+        ...(options?.includeMessages
+          ? {
+              messages: {
+                select: {
+                  role: true,
+                  content: true,
+                },
+                orderBy: { created_at: 'asc' as const },
+              },
+            }
+          : {}),
       },
     });
 
@@ -52,13 +64,13 @@ export const getThreadDetailsQuery = async (
 
 export const getThreadMessagesListQuery = async (
   publicThreadId: string,
-  orgId?: string,
+  orgId: string,
 ) => {
   try {
     const thread = await db.thread.findFirst({
       where: {
         public_id: publicThreadId,
-        ...(orgId ? { organization_id: orgId } : {}),
+        organization_id: orgId,
       },
       select: {
         messages: {

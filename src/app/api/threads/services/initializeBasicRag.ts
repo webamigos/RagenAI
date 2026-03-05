@@ -1,4 +1,3 @@
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
@@ -14,12 +13,13 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
-import { getOrganizationMetadata } from '@/app/actions';
+import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
+  orgId: string;
   projectInstruction?: string | null;
   projectId?: number | null;
   projectPublicId?: string | null;
@@ -35,18 +35,13 @@ const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
 
 export const initializeRagChain = async ({
   settings,
+  orgId,
   projectInstruction,
   projectId,
   projectPublicId,
   threadDocuments,
 }: InitializeRagChainParams) => {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-
-    if (!orgId) {
-      throw new Error('Invalid organization');
-    }
-
     const {
       apiKey,
       model: answerModel,

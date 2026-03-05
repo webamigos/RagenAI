@@ -1,9 +1,6 @@
 import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-import {
-  getThreadMessagesListQuery as getThreadMessages,
-  getThreadDetailsQuery as getThreadDetails,
-} from '@/features/threads/services/queries/get-thread-details-query';
+import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
   createAndStoreMessageCommand as createAndStoreMessage,
   createMessageInDbCommand as createMessageInDB,
@@ -144,6 +141,124 @@ type Config = {
   projectId?: number;
 };
 
+type ThreadRecord = Awaited<ReturnType<typeof getThreadDetails>>;
+
+async function resolveProjectInstruction(
+  threadRecord: ThreadRecord,
+  orgId: string,
+  rawSettings: { model: string },
+  effectiveSettings: { prompt: string; model: string },
+): Promise<{ instruction: string | null; projectPublicId: string | null }> {
+  let projectInstruction: string | null = null;
+  let effectiveProjectPublicId: string | null = null;
+
+  try {
+    // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
+    if (threadRecord.mentioned_project_id) {
+      const mentionedProject = await db.project.findFirst({
+        where: {
+          id: threadRecord.mentioned_project_id,
+          organization_id: orgId,
+        },
+        select: { id: true, public_id: true, title: true },
+      });
+
+      if (mentionedProject) {
+        try {
+          projectInstruction = await getProjectInstruction(
+            mentionedProject.public_id,
+          );
+          effectiveProjectPublicId = mentionedProject.public_id;
+
+          logger.info(
+            {
+              mentionedProjectId: threadRecord.mentioned_project_id,
+              mentionedProjectPublicId: mentionedProject.public_id,
+              hasInstruction: Boolean(projectInstruction),
+            },
+            'Using instructions from mentioned project (highest priority)',
+          );
+        } catch (error) {
+          logger.error(
+            {
+              err: error,
+              mentionedProjectId: threadRecord.mentioned_project_id,
+              mentionedProjectPublicId: mentionedProject.public_id,
+            },
+            'Error getting instructions from mentioned project, falling back to thread project',
+          );
+        }
+      } else {
+        logger.warn(
+          { mentionedProjectId: threadRecord.mentioned_project_id },
+          'Mentioned project not found, falling back to thread project',
+        );
+      }
+    }
+
+    // 2. MEDIUM PRIORITY: Thread project
+    if (
+      !projectInstruction &&
+      threadRecord.project_id &&
+      threadRecord.project?.public_id
+    ) {
+      try {
+        projectInstruction = await getProjectInstruction(
+          threadRecord.project.public_id,
+        );
+        effectiveProjectPublicId = threadRecord.project.public_id;
+
+        logger.info(
+          {
+            internalProjectId: threadRecord.project_id,
+            publicProjectId: threadRecord.project.public_id,
+            hasInstruction: Boolean(projectInstruction),
+          },
+          'Using instructions from thread project (medium priority)',
+        );
+      } catch (error) {
+        logger.error(
+          {
+            err: error,
+            projectId: threadRecord.project_id,
+            publicProjectId: threadRecord.project?.public_id,
+          },
+          'Error getting instructions from thread project, will use organization instructions',
+        );
+      }
+    } else if (!projectInstruction && threadRecord.project_id) {
+      logger.warn(
+        { projectId: threadRecord.project_id },
+        'Project associated with thread, but missing public_id',
+      );
+    }
+
+    // 3. LOWEST PRIORITY: Organization instructions (handled by chain initialization)
+    if (!projectInstruction) {
+      logger.info(
+        {
+          orgId,
+          hasOrgPrompt: Boolean(effectiveSettings.prompt),
+          effectiveModel: effectiveSettings.model,
+          threadModel: threadRecord.preferred_model,
+          orgDefaultModel: rawSettings.model,
+        },
+        'No project instructions found, will use organization instructions (lowest priority fallback)',
+      );
+    }
+  } catch (error) {
+    logger.error(
+      { err: error },
+      'Error in project instruction resolution, using organization fallback',
+    );
+  }
+
+  return {
+    instruction: projectInstruction,
+    projectPublicId: effectiveProjectPublicId,
+  };
+}
+
 export async function streamEvents({
   publicThreadId,
   userMessage,
@@ -157,15 +272,19 @@ export async function streamEvents({
       sendApiEvent(controller, 'init');
 
       try {
-        const rawSettings = await getAllSettings(orgId);
+        // Phase 1: Fetch settings and thread details (with messages) in parallel
+        sendApiEvent(controller, 'find_thread');
+
+        const [rawSettings, threadRecord] = await Promise.all([
+          getAllSettings(orgId),
+          getThreadDetails(publicThreadId, orgId, {
+            includeMessages: true,
+          }),
+        ]);
+
         if (!rawSettings.apiKey) {
           throw new ApiKeyError();
         }
-
-        // TODO: to optimize we can move database queries after chain run
-        sendApiEvent(controller, 'find_thread');
-
-        const threadRecord = await getThreadDetails(publicThreadId, orgId);
 
         sendApiEvent(controller, 'thread_found', {
           id: threadRecord.public_id,
@@ -180,17 +299,44 @@ export async function streamEvents({
           voiceId: rawSettings.voiceId,
         };
 
-        // TODO: handle moderated message
-        // save message
-        sendApiEvent(controller, 'save_user_message');
+        // Build conversation history from thread record (no separate DB query needed)
+        const conv_history =
+          'messages' in threadRecord && Array.isArray(threadRecord.messages)
+            ? (threadRecord.messages as { role: string; content: string }[])
+                .map((msg) => `${msg.role}: ${msg.content}`)
+                .join('\n')
+            : undefined;
 
-        const threadMessage = await createAndStoreMessage({
-          threadId: threadRecord.id,
-          prompt: userMessage.prompt,
-          visitorId, // only for public threads
-          messageType: userMessage.messageType,
-          voiceDurationSeconds: userMessage.voiceDurationSeconds,
-        });
+        // Phase 2: Save user message + resolve project instructions + load thread docs in parallel
+        sendApiEvent(controller, 'save_user_message');
+        sendApiEvent(controller, 'init_lmm');
+
+        const phase2Promises: [
+          Promise<Awaited<ReturnType<typeof createAndStoreMessage>>>,
+          Promise<{
+            instruction: string | null;
+            projectPublicId: string | null;
+          }>,
+          Promise<ThreadDocumentUI[]>,
+        ] = [
+          createAndStoreMessage({
+            threadId: threadRecord.id,
+            prompt: userMessage.prompt,
+            visitorId,
+            messageType: userMessage.messageType,
+            voiceDurationSeconds: userMessage.voiceDurationSeconds,
+          }),
+          resolveProjectInstruction(
+            threadRecord,
+            orgId,
+            rawSettings,
+            effectiveSettings,
+          ),
+          loadThreadDocuments(threadRecord.id),
+        ];
+
+        const [threadMessage, projectResult, dbThreadDocuments] =
+          await Promise.all(phase2Promises);
 
         if (!threadMessage) {
           logger.error('Thread message not found');
@@ -202,126 +348,18 @@ export async function streamEvents({
           id: threadMessage.public_id,
         });
 
-        // Send event with created message ID
         sendApiEvent(controller, 'user_message_created', {
           id: threadMessage.public_id,
         });
 
-        // Determine project instructions with fallback hierarchy
-        // Priority: mentioned_project_id > project_id > organization instructions (from effectiveSettings.prompt)
-        let projectInstruction: string | null = null;
-        let effectiveProjectPublicId: string | null = null;
+        const {
+          instruction: projectInstruction,
+          projectPublicId: effectiveProjectPublicId,
+        } = projectResult;
 
-        try {
-          sendApiEvent(controller, 'init_lmm');
-
-          // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
-          if (threadRecord.mentioned_project_id) {
-            const mentionedProject = await db.project.findUnique({
-              where: { id: threadRecord.mentioned_project_id },
-              select: { id: true, public_id: true, title: true },
-            });
-
-            if (mentionedProject) {
-              try {
-                projectInstruction = await getProjectInstruction(
-                  mentionedProject.public_id,
-                );
-                effectiveProjectPublicId = mentionedProject.public_id;
-
-                logger.info(
-                  {
-                    mentionedProjectId: threadRecord.mentioned_project_id,
-                    mentionedProjectPublicId: mentionedProject.public_id,
-                    hasInstruction: Boolean(projectInstruction),
-                  },
-                  'Using instructions from mentioned project (highest priority)',
-                );
-              } catch (error) {
-                logger.error(
-                  {
-                    err: error,
-                    mentionedProjectId: threadRecord.mentioned_project_id,
-                    mentionedProjectPublicId: mentionedProject.public_id,
-                  },
-                  'Error getting instructions from mentioned project, falling back to thread project',
-                );
-                // Continue to fallback logic below
-              }
-            } else {
-              logger.warn(
-                { mentionedProjectId: threadRecord.mentioned_project_id },
-                'Mentioned project not found, falling back to thread project',
-              );
-              // Continue to fallback logic below
-            }
-          }
-
-          // 2. MEDIUM PRIORITY: Thread project (if no mentioned project or mentioned project failed)
-          if (
-            !projectInstruction &&
-            threadRecord.project_id &&
-            threadRecord.project?.public_id
-          ) {
-            try {
-              projectInstruction = await getProjectInstruction(
-                threadRecord.project.public_id,
-              );
-              effectiveProjectPublicId = threadRecord.project.public_id;
-
-              logger.info(
-                {
-                  internalProjectId: threadRecord.project_id,
-                  publicProjectId: threadRecord.project.public_id,
-                  hasInstruction: Boolean(projectInstruction),
-                },
-                'Using instructions from thread project (medium priority)',
-              );
-            } catch (error) {
-              logger.error(
-                {
-                  err: error,
-                  projectId: threadRecord.project_id,
-                  publicProjectId: threadRecord.project?.public_id,
-                },
-                'Error getting instructions from thread project, will use organization instructions',
-              );
-              // Will fallback to organization instructions via effectiveSettings.prompt
-            }
-          } else if (!projectInstruction && threadRecord.project_id) {
-            logger.warn(
-              { projectId: threadRecord.project_id },
-              'Project associated with thread, but missing public_id',
-            );
-          }
-
-          // 3. LOWEST PRIORITY: Organization instructions
-          // This fallback is automatically handled by effectiveSettings.prompt in the chain initialization
-          // No additional code needed - if projectInstruction is null, chains use organization instructions
-          if (!projectInstruction) {
-            logger.info(
-              {
-                orgId,
-                hasOrgPrompt: Boolean(effectiveSettings.prompt),
-                effectiveModel: effectiveSettings.model,
-                threadModel: threadRecord.preferred_model,
-                orgDefaultModel: rawSettings.model,
-              },
-              'No project instructions found, will use organization instructions (lowest priority fallback)',
-            );
-          }
-        } catch (error) {
-          logger.error(
-            { err: error },
-            'Error in project instruction resolution, using organization fallback',
-          );
-          // projectInstruction stays null, chains will use organization instructions
-        }
-
+        // Phase 3: Initialize the appropriate chain
         let chainOutput: BaseChatChainOutput | undefined = undefined;
 
-        //TODO: stream chain errors
-        // Initialize the appropriate chain based on mode
         if (mode === AssistantMode.INTERNAL) {
           if (filteredMode === ChatType.CONVERSATION) {
             chainOutput = await initializeConversationChain({
@@ -332,20 +370,12 @@ export async function streamEvents({
               projectInstruction,
             });
           } else {
-            // Use effective project ID (mentioned project takes priority over thread project)
             const projectIdToUse =
               threadRecord.mentioned_project_id || threadRecord.project_id;
             const projectPublicIdToUse =
               effectiveProjectPublicId || threadRecord.project?.public_id;
 
-            // Load thread documents from DB and merge with inline documents from the request.
-            // Inline documents (from request body) have content immediately available,
-            // while DB documents may have empty content if async processing hasn't completed yet.
-            const dbThreadDocuments = await loadThreadDocuments(
-              threadRecord.id,
-            );
             const inlineThreadDocuments = userMessage.threadDocuments || [];
-
             const threadDocuments = mergeThreadDocuments(
               dbThreadDocuments,
               inlineThreadDocuments,
@@ -356,6 +386,7 @@ export async function streamEvents({
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
               },
+              orgId,
               projectInstruction,
               projectId: projectIdToUse ?? null,
               projectPublicId: projectPublicIdToUse ?? null,
@@ -377,23 +408,12 @@ export async function streamEvents({
         }
 
         if (!chainOutput) {
-          // TODO: invalid chain error
           sendApiEvent(controller, 'close');
-
           controller.close();
           return;
         }
 
-        // TODO: to optimize db queries we can pass messages from client instead of fetching from db?
-        sendApiEvent(controller, 'get_thread_messages');
-        const threadMessages = await getThreadMessages(publicThreadId);
-
-        sendApiEvent(controller, 'add_thread_messages_to_lmm');
-
-        const conv_history = threadMessages?.messages
-          .map((msg) => `${msg.role}: ${msg.content}`)
-          .join('\n');
-
+        // Phase 4: Run chain with streaming
         sendApiEvent(controller, 'start_lmm');
 
         const streamResult = await chainOutput.stream({
