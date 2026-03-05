@@ -60,17 +60,21 @@ jobs:
             md += '| Failed | ' + failed + ' |\n';
             md += '| Pass rate | ' + rate + '% |\n\n';
 
-            if (failed > 0) {
-              md += '### Failed Tests\n\n';
-              md += '| Test | Error |\n|------|-------|\n';
-              for (const r of results) {
-                if (!r.success) {
-                  const q = (r.vars?.question ?? r.prompt?.raw ?? 'N/A').substring(0, 80);
-                  const err = (r.gradingResult?.reason ?? r.error ?? 'assertion failed').substring(0, 120);
-                  md += '| ' + q.replace(/\|/g, '\\|') + ' | ' + err.replace(/\|/g, '\\|') + ' |\n';
-                }
-              }
+            md += '> Download the **eval-results** artifact below for an interactive HTML report.\n\n';
+
+            md += '### All Tests\n\n';
+            md += '<table><tr><th>Status</th><th>Question</th><th>Score</th><th>Details</th></tr>\n';
+            for (const r of results) {
+              const status = r.success ? '✅' : '❌';
+              const q = (r.vars?.question ?? r.prompt?.raw ?? 'N/A').substring(0, 100).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const score = r.score != null ? (r.score * 100).toFixed(0) + '%' : '-';
+              const detail = r.success
+                ? (r.gradingResult?.reason ?? 'passed').substring(0, 150)
+                : (r.gradingResult?.reason ?? r.error ?? 'assertion failed').substring(0, 150);
+              const detailEsc = detail.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              md += '<tr><td>' + status + '</td><td>' + q + '</td><td>' + score + '</td><td><details><summary>expand</summary>' + detailEsc + '</details></td></tr>\n';
             }
+            md += '</table>\n';
 
             process.stdout.write(md);
           " >> \$GITHUB_STEP_SUMMARY
