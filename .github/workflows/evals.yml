@@ -15,6 +15,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      checks: write
 
     steps:
       - uses: actions/checkout@v4
@@ -40,44 +41,19 @@ jobs:
           DEFAULT_MODEL: openai/gpt-4o
         run: npm run eval:ci
 
-      - name: Generate eval summary
+      - name: Convert to CTRF
         if: always() && hashFiles('evals/results/ci-results.json') != ''
-        run: |
-          node -e "
-            import { readFileSync } from 'fs';
-            const data = JSON.parse(readFileSync('evals/results/ci-results.json', 'utf8'));
-            const results = data.results?.results ?? data.results ?? [];
-            const total = results.length;
-            const passed = results.filter(r => r.success).length;
-            const failed = total - passed;
-            const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0.0';
-            const icon = failed === 0 ? '✅' : '⚠️';
+        run: node evals/scripts/promptfoo-to-ctrf.mjs evals/results/ci-results.json ctrf/eval-results.json
 
-            let md = '## ' + icon + ' Prompt Eval Results\n\n';
-            md += '| Metric | Value |\n|--------|-------|\n';
-            md += '| Total tests | ' + total + ' |\n';
-            md += '| Passed | ' + passed + ' |\n';
-            md += '| Failed | ' + failed + ' |\n';
-            md += '| Pass rate | ' + rate + '% |\n\n';
-
-            md += '> Download the **eval-results** artifact below for an interactive HTML report.\n\n';
-
-            md += '### All Tests\n\n';
-            md += '<table><tr><th>Status</th><th>Question</th><th>Score</th><th>Details</th></tr>\n';
-            for (const r of results) {
-              const status = r.success ? '✅' : '❌';
-              const q = (r.vars?.question ?? r.prompt?.raw ?? 'N/A').substring(0, 100).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-              const score = r.score != null ? (r.score * 100).toFixed(0) + '%' : '-';
-              const detail = r.success
-                ? (r.gradingResult?.reason ?? 'passed').substring(0, 150)
-                : (r.gradingResult?.reason ?? r.error ?? 'assertion failed').substring(0, 150);
-              const detailEsc = detail.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-              md += '<tr><td>' + status + '</td><td>' + q + '</td><td>' + score + '</td><td><details><summary>expand</summary>' + detailEsc + '</details></td></tr>\n';
-            }
-            md += '</table>\n';
-
-            process.stdout.write(md);
-          " >> \$GITHUB_STEP_SUMMARY
+      - name: Publish Eval Results
+        if: always() && hashFiles('ctrf/eval-results.json') != ''
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: './ctrf/eval-results.json'
+          summary-delta-report: true
+          fail-rate-report: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload eval results
         if: always()
