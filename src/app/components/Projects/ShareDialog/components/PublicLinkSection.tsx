@@ -14,7 +14,7 @@ type PublicLinkSectionProps = {
   linkToPublicProject: string;
   publishedAt: string;
   onToggle: (checked: boolean) => void;
-  projectId: number;
+  projectId: string;
   onLinkRefreshed?: (newLink: string) => void;
 };
 
@@ -94,7 +94,7 @@ export const PublicLinkSection = memo(
         {isSharedLinkPublicly && <div className="mt-8">{renderContent()}</div>}
       </div>
     );
-  }
+  },
 );
 
 PublicLinkSection.displayName = 'PublicLinkSection';

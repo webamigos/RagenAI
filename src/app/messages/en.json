@@ -66,7 +66,8 @@
       "password": "Invalid password"
     },
     "newsletter-consent": "I consent to the processing of my personal data by Web Amigos sp. z o.o. for the purpose of sending me a newsletter via electronic means, including information about news, services, offers, recommended links, or events. I understand that I can withdraw this consent at any time. More information can be found in ",
-    "newsletter-consent-link": "Newsltetter Policy"
+    "newsletter-consent-link": "Newsltetter Policy",
+    "sign-up-with-google": "Sign up with Google"
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -81,7 +82,8 @@
     "sign-in-to-account": "Sign in to your account",
     "not-a-member": "Not a member?",
     "start-free-trial": "Start a 14 day free trial",
-    "or-continue-with": "Or continue with"
+    "or-continue-with": "Or continue with",
+    "sign-in-with-google": "Sign in with Google"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
@@ -184,6 +186,18 @@
     },
     "plans": {
       "title": "Pricing and subscription plans | Ragen AI"
+    },
+    "settings-general": {
+      "title": "General Settings | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Account Settings | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Connectors | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Teams | Ragen AI"
     },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
@@ -368,11 +382,82 @@
     "upload-files": "Upload files",
     "add-from-url": "Add Knowledge from URL"
   },
+  "settings-page": {
+    "title": "Settings",
+    "nav": {
+      "general": "General",
+      "account": "Account",
+      "connectors": "Connectors",
+      "organization": "Organization",
+      "assistant-settings": "Assistant settings",
+      "subscription": "Subscription",
+      "teams": "Teams",
+      "api-keys": "API Keys",
+      "users": "Users",
+      "ai-usage": "AI Usage",
+      "disk-usage": "Disk Usage"
+    },
+    "general": {
+      "profile": "Profile",
+      "display-name": "Display name",
+      "display-name-placeholder": "Your name",
+      "profile-save": "Save",
+      "profile-saving": "Saving...",
+      "profile-success": "Profile updated",
+      "profile-error": "Failed to update profile",
+      "appearance": "Appearance",
+      "appearance-description": "Choose how the application looks for you.",
+      "theme-light": "Light",
+      "theme-dark": "Dark",
+      "theme-system": "System"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Manage your account settings and profile information."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Connect external services and integrations.",
+      "no-connectors": "No connectors available yet."
+    }
+  },
+  "teams-page": {
+    "title": "Teams",
+    "create-team": "Create Team",
+    "no-teams": "No teams yet.",
+    "no-teams-hint": "Create a team to get started.",
+    "select-team": "Select team",
+    "member-count": "{count, plural, =1 {1 member} other {# members}}",
+    "back-to-teams": "Back to teams",
+    "add-member": "Add Member",
+    "delete-team": "Delete Team",
+    "no-members": "No members yet. Add members to get started.",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "team-name": "Team Name",
+    "team-name-placeholder": "e.g. HR, Engineering, Marketing",
+    "creating": "Creating...",
+    "adding": "Adding...",
+    "select-member": "Select Member",
+    "all-members-added": "All organization members are already in this team.",
+    "team-created": "Team created successfully",
+    "team-create-error": "Failed to create team",
+    "team-deleted": "Team deleted",
+    "team-delete-error": "Failed to delete team",
+    "delete-team-confirm": "Are you sure you want to delete \"{name}\"? This will remove all members and unshare associated threads. This action cannot be undone.",
+    "member-added": "Member added to team",
+    "member-add-error": "Failed to add member",
+    "member-removed": "Member removed from team",
+    "member-remove-error": "Failed to remove member",
+    "remove-member-title": "Remove Member",
+    "remove-member-confirm": "Are you sure you want to remove {name} from this team?"
+  },
   "sidebar": {
     "profile": "Profile",
     "security": "Security",
     "create-organization": "Create organization",
     "manage-organization": "Organization",
+    "organization-settings": "Organization Settings",
     "manage-knowledge": "Knowledge",
     "subscription-management": "Subscription management",
     "organization-list": "Organization list",
@@ -384,6 +469,7 @@
     "disk-usage": "Disk Usage",
     "create-new-thread": "New thread",
     "new-chat": "New Chat",
+    "search": "Search",
     "search-threads": "Search in threads",
     "generate-access-key": "Public access",
     "support-page": "Support Page",
@@ -434,7 +520,10 @@
       "settings": "Settings",
       "privacy-policy": "Privacy policy",
       "share-feedback": "Your feedback",
-      "sign-out": "Sign out"
+      "sign-out": "Sign out",
+      "role-app-admin": "App Admin",
+      "role-org-admin": "Org Admin",
+      "role-user": "User"
     }
   },
   "chats-page": {
@@ -773,7 +862,9 @@
       "no-threads": "No conversations yet",
       "no-threads-description": "Start a new conversation above",
       "instructions": "Instructions",
-      "files": "Files"
+      "files": "Files",
+      "share": "Share",
+      "storage-used": "{percentage}% memory used"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
@@ -794,6 +885,7 @@
       "refreshing": "Refreshing...",
       "refresh-link-aria-label": "Refresh public link",
       "refresh-error": "An error occurred while refreshing the link",
+      "refresh-success": "Link has been refreshed successfully",
       "copy-link-aria-label": "Copy public link",
       "share-url": "Sharing URL",
       "toggle-sharing": "Toggle public sharing",
@@ -858,16 +950,13 @@
   "organization": {
     "tabs": {
       "general": "General",
-      "members": "Members",
+      "members": "Users",
       "invitations": "Invitations"
     },
     "profile": {
       "title": "Organization Profile",
       "name": "Name",
-      "slug": "URL Slug",
       "name-placeholder": "Organization name",
-      "slug-placeholder": "my-organization",
-      "slug-hint": "Slug is used in URLs. Leave empty for automatic generation.",
       "save": "Save changes",
       "saving": "Saving...",
       "cancel": "Cancel",
@@ -875,9 +964,9 @@
       "edit-error": "An error occurred while updating the profile"
     },
     "members": {
-      "title": "Members",
-      "invite-member": "Invite Member",
-      "no-members": "No members",
+      "title": "Users",
+      "invite-member": "Invite User",
+      "no-members": "No users",
       "user": "User",
       "role": "Role",
       "joined": "Joined",
@@ -885,23 +974,23 @@
       "you": "You",
       "role-owner": "Owner",
       "role-admin": "Administrator",
-      "role-member": "Member",
+      "role-member": "User",
       "email": "Email",
       "send-invitation": "Send Invitation",
       "sending": "Sending...",
       "cancel": "Cancel",
       "invite-success": "Invitation has been sent",
       "invite-error": "An error occurred while sending invitation",
-      "invite-unavailable-plan": "Inviting members is only available in paid plans. Change your plan in the Subscription section.",
-      "confirm-remove": "Are you sure you want to remove this member from the organization?",
-      "remove-success": "Member has been removed",
-      "remove-error": "An error occurred while removing member",
+      "invite-unavailable-plan": "Inviting users is only available in paid plans. Change your plan in the Subscription section.",
+      "confirm-remove": "Are you sure you want to remove this user from the organization?",
+      "remove-success": "User has been removed",
+      "remove-error": "An error occurred while removing user",
       "role-update-success": "Role has been updated",
       "role-update-error": "An error occurred while updating role",
       "change-role": "Change Role",
       "remove": "Remove",
       "change-to-admin": "Change to Administrator",
-      "change-to-member": "Change to Member"
+      "change-to-member": "Change to User"
     },
     "invitations": {
       "title": "Invitations",
@@ -909,7 +998,7 @@
       "email": "Email",
       "role": "Role",
       "role-admin": "Administrator",
-      "role-member": "Member",
+      "role-member": "User",
       "status": "Status",
       "sent": "Sent",
       "actions": "Actions",
@@ -946,7 +1035,7 @@
     "rejected-message": "Invitation rejected",
     "go-home": "Go to Home Page",
     "role-admin": "Administrator",
-    "role-member": "Member",
+    "role-member": "User",
     "role-owner": "Owner"
   },
   "user-profile": {
@@ -961,9 +1050,6 @@
       "email-hint": "Email cannot be changed",
       "name": "Name",
       "name-placeholder": "Your name",
-      "image": "Profile Image URL",
-      "image-placeholder": "https://example.com/avatar.jpg",
-      "image-hint": "Enter URL to your profile picture",
       "save": "Save changes",
       "saving": "Saving...",
       "cancel": "Cancel",
@@ -978,6 +1064,22 @@
       "changing": "Changing password...",
       "success": "Password has been changed",
       "error": "Invalid current password"
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "logout-all": "Log out",
+      "logout-all-description": "Log out of all other devices",
+      "logging-out": "Logging out...",
+      "current": "Current",
+      "last-active": "Last active",
+      "revoke": "Revoke",
+      "revoking": "Revoking...",
+      "revoke-success": "Session has been revoked",
+      "revoke-error": "Failed to revoke session",
+      "revoke-all-success": "All other sessions have been revoked",
+      "revoke-all-error": "Failed to revoke sessions",
+      "load-error": "Failed to load sessions",
+      "retry": "Retry"
     }
   },
   "impersonation": {
@@ -995,7 +1097,32 @@
       "role": "Role",
       "created": "Created",
       "noResults": "No users found",
-      "impersonateError": "Failed to impersonate user"
+      "impersonateError": "Failed to impersonate user",
+      "rename": "Rename",
+      "renameTitle": "Rename User",
+      "namePlaceholder": "User name",
+      "renameSuccess": "User renamed",
+      "renameError": "Failed to rename user",
+      "ban": "Ban",
+      "unban": "Unban",
+      "banned": "Banned",
+      "banTitle": "Ban User",
+      "banConfirm": "Are you sure you want to ban {name}? They will not be able to sign in.",
+      "banReasonPlaceholder": "Reason (optional)",
+      "banSuccess": "User banned",
+      "banError": "Failed to ban user",
+      "unbanTitle": "Unban User",
+      "unbanConfirm": "Are you sure you want to unban {name}?",
+      "unbanSuccess": "User unbanned",
+      "unbanError": "Failed to unban user",
+      "createUser": "Create User",
+      "emailPlaceholder": "user@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Password",
+      "createSuccess": "User created",
+      "createError": "Failed to create user",
+      "cancel": "Cancel",
+      "save": "Save"
     },
     "create-organization": {
       "title": "Create Organization",

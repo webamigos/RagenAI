@@ -46,9 +46,16 @@ export function useAuth() {
  * Returns active organization data and membership info
  */
 export function useOrganization() {
+  const { data: session } = useSession();
   const { data: org, isPending } = useActiveOrganization();
-  // @ts-ignore - Better Auth types don't expose role/permissions yet
-  const role = (org as any)?.role as string | undefined;
+
+  // Better Auth returns org with members array — find current user's role
+  const orgData = org as any;
+  const currentUserId = session?.user?.id;
+  const currentMember = orgData?.members?.find(
+    (m: any) => m.userId === currentUserId,
+  );
+  const role = currentMember?.role as string | undefined;
 
   return {
     organization: org || null,
@@ -56,8 +63,7 @@ export function useOrganization() {
     membership: org
       ? {
           role: role,
-          // @ts-ignore
-          permissions: (org as any).permissions || [],
+          permissions: currentMember?.permissions || [],
         }
       : null,
     isOrgAdmin: checkOrgAdmin(role),

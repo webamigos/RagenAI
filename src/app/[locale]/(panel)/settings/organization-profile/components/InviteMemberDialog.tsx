@@ -6,10 +6,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
-import { Input } from '@ragenai/common-ui/Input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { inviteMember } from '../actions/members';
 import { InviteMemberSchema, type InviteMemberFormData } from '../types';
+
+const inputClasses =
+  'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-500';
+
+const labelClasses = 'block text-sm text-zinc-500 dark:text-zinc-400 mb-1.5';
 
 type Props = {
   isOpen: boolean;
@@ -59,17 +63,14 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
     <Dialog open={isOpen} onClose={handleClose} size="md">
       <DialogTitle>{t('invite-member')}</DialogTitle>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
         {/* Email input */}
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
-          >
+          <label htmlFor="invite-email" className={labelClasses}>
             {t('email')}
           </label>
-          <Input
-            id="email"
+          <input
+            id="invite-email"
             type="email"
             placeholder="user@example.com"
             {...register('email')}
@@ -78,42 +79,53 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
               inputRef.current = e;
             }}
             disabled={isSubmitting}
-            error={errors.email}
-            errorMessage={errors.email?.message}
+            className={inputClasses}
           />
+          {errors.email && (
+            <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>
+          )}
         </div>
 
         {/* Role select */}
         <div>
-          <label
-            htmlFor="role"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
-          >
+          <label htmlFor="invite-role" className={labelClasses}>
             {t('role')}
           </label>
-          <select
-            id="role"
-            {...register('role')}
-            disabled={isSubmitting}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="member">{t('role-member')}</option>
-            <option value="admin">{t('role-admin')}</option>
-          </select>
+          <div className="relative">
+            <select
+              id="invite-role"
+              {...register('role')}
+              disabled={isSubmitting}
+              className={`${inputClasses} appearance-none pr-8`}
+            >
+              <option value="member">{t('role-member')}</option>
+              <option value="admin">{t('role-admin')}</option>
+            </select>
+            <svg
+              className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
           {errors.role && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-              {errors.role.message}
-            </p>
+            <p className="mt-1 text-xs text-red-500">{errors.role.message}</p>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end gap-2 pt-2">
           <Button
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            outline
           >
             {t('cancel')}
           </Button>

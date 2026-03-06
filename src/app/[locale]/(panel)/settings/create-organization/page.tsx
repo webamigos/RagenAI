@@ -1,16 +1,28 @@
-import type { Metadata } from 'next';
 import { redirect } from '@/i18n/routing';
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin } from '@/lib/auth-access-control';
 import { CreateOrganizationForm } from './CreateOrganizationForm';
 
-export const metadata: Metadata = {
-  title: 'Create Organization',
+type Props = {
+  params: Promise<{ locale: string }>;
 };
 
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  const t = await getTranslations({
+    locale,
+    namespace: 'admin.create-organization',
+  });
+  return { title: t('title') };
+}
+
 export default async function CreateOrganizationPage() {
-  const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
+  const [user, locale, t] = await Promise.all([
+    getCurrentUser(),
+    getLocale(),
+    getTranslations('admin.create-organization'),
+  ]);
 
   if (!user) {
     return redirect({ href: '/sign-in', locale });
@@ -21,11 +33,13 @@ export default async function CreateOrganizationPage() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Create Organization
-      </h1>
-      <CreateOrganizationForm />
+    <div className="max-w-2xl">
+      <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+        {t('title')}
+      </h2>
+      <div className="mt-4">
+        <CreateOrganizationForm />
+      </div>
     </div>
   );
 }

@@ -79,9 +79,8 @@ export function ProjectComponent({ projectId }: Props) {
             <ShareDialogTrigger
               publishedAt={project.published_at}
               accessToken={project.access_token}
-              projectId={project.id}
+              projectPublicId={project.public_id}
               isPublicProject={project.is_public}
-              isChatbotEnabled={project.chatbot_enabled}
             />
           </div>
         </div>

@@ -44,9 +44,11 @@ export async function GET(
         organization_id: orgId,
       },
       select: {
+        id: true,
         public_id: true,
         title: true,
         is_public: true,
+        access_token: true,
         published_at: true,
         chatbot_enabled: true,
         threads: {

@@ -24,12 +24,17 @@ import { OrganizationSwitcher } from '@/app/components/Sidebar/OrganizationSwitc
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin } from '@/lib/auth-access-control';
+import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
 
 type Props = Readonly<{
   children: React.ReactNode;
 }>;
 
 export default async function PanelLayout({ children }: Props) {
+  // Ensure onboarding is finalized (handles OAuth sign-up where
+  // finalizeOnboardingCommand hasn't run yet)
+  await ensureOnboardingComplete();
+
   const [t, user, activeOrgId, organizations] = await Promise.all([
     getTranslations('sidebar'),
     getCurrentUser(),
@@ -41,7 +46,7 @@ export default async function PanelLayout({ children }: Props) {
     <Navbar>
       <NavbarSpacer />
       <NavbarSection>
-        <SearchButton variant="navbar" aria-label="Search">
+        <SearchButton variant="navbar" aria-label={t('search')}>
           <MagnifyingGlassIconOutline className="w-5 h-5" />
         </SearchButton>
       </NavbarSection>
@@ -69,7 +74,7 @@ export default async function PanelLayout({ children }: Props) {
           </NewChatButton>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-            <SidebarLabel className="font-normal">Search</SidebarLabel>
+            <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
           </SearchButton>
           <SidebarItem href="/knowledge/documents-list">
             <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />

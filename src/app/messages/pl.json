@@ -66,7 +66,8 @@
       "password": "Hasło musi mieć co najmniej 8 znaków"
     },
     "newsletter-consent": "Wyrażam zgodę na przetwarzania moich danych osobowych przez Web Amigos sp. z o. o. w celu wysyłania do mnie drogą elektroniczną newslettera, czyli informacji o nowościach, usługach, ofertach, polecanych linkach, czy wydarzeniach. Wiem, że mogę tę zgodę w każdej chwili wycofać. Więcej informacji znajduje się w ",
-    "newsletter-consent-link": "Polityce newslettera"
+    "newsletter-consent-link": "Polityce newslettera",
+    "sign-up-with-google": "Zarejestruj się przez Google"
   },
   "sign-in": {
     "sign-in": "Zaloguj się",
@@ -81,7 +82,8 @@
     "sign-in-to-account": "Zaloguj się do konta",
     "not-a-member": "Nie masz konta?",
     "start-free-trial": "Rozpocznij 14 dniowy okres próbny",
-    "or-continue-with": "Lub zaloguj się za pomocą"
+    "or-continue-with": "Lub zaloguj się za pomocą",
+    "sign-in-with-google": "Zaloguj się przez Google"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -185,6 +187,18 @@
     },
     "plans": {
       "title": "Cennik i plany subskrypcji | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Ustawienia ogólne | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Ustawienia konta | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Integracje | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Zespoły | Ragen AI"
     },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
@@ -371,12 +385,83 @@
     "upload-files": "Dodaj pliki",
     "add-from-url": "Dodaj wiedzę z linku"
   },
+  "settings-page": {
+    "title": "Ustawienia",
+    "nav": {
+      "general": "Ogólne",
+      "account": "Konto",
+      "connectors": "Integracje",
+      "organization": "Organizacja",
+      "assistant-settings": "Ustawienia asystenta",
+      "subscription": "Subskrypcja",
+      "teams": "Zespoły",
+      "api-keys": "Klucze API",
+      "users": "Użytkownicy",
+      "ai-usage": "Użycie AI",
+      "disk-usage": "Użycie dysku"
+    },
+    "general": {
+      "profile": "Profil",
+      "display-name": "Nazwa wyświetlana",
+      "display-name-placeholder": "Twoje imię",
+      "profile-save": "Zapisz",
+      "profile-saving": "Zapisywanie...",
+      "profile-success": "Profil zaktualizowany",
+      "profile-error": "Nie udało się zaktualizować profilu",
+      "appearance": "Wygląd",
+      "appearance-description": "Wybierz jak aplikacja wygląda dla Ciebie.",
+      "theme-light": "Jasny",
+      "theme-dark": "Ciemny",
+      "theme-system": "Systemowy"
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Zarządzaj ustawieniami konta i informacjami profilu."
+    },
+    "connectors": {
+      "title": "Integracje",
+      "description": "Połącz zewnętrzne usługi i integracje.",
+      "no-connectors": "Brak dostępnych integracji."
+    }
+  },
+  "teams-page": {
+    "title": "Zespoły",
+    "create-team": "Utwórz zespół",
+    "no-teams": "Brak zespołów.",
+    "no-teams-hint": "Utwórz zespół, aby rozpocząć.",
+    "select-team": "Wybierz zespół",
+    "member-count": "{count, plural, =1 {1 użytkownik} few {# użytkowników} other {# użytkowników}}",
+    "back-to-teams": "Powrót do zespołów",
+    "add-member": "Dodaj użytkownika",
+    "delete-team": "Usuń zespół",
+    "no-members": "Brak użytkowników. Dodaj użytkowników, aby rozpocząć.",
+    "remove": "Usuń",
+    "cancel": "Anuluj",
+    "team-name": "Nazwa zespołu",
+    "team-name-placeholder": "np. HR, Inżynieria, Marketing",
+    "creating": "Tworzenie...",
+    "adding": "Dodawanie...",
+    "select-member": "Wybierz użytkownika",
+    "all-members-added": "Wszyscy użytkownicy organizacji są już w tym zespole.",
+    "team-created": "Zespół utworzony pomyślnie",
+    "team-create-error": "Nie udało się utworzyć zespołu",
+    "team-deleted": "Zespół usunięty",
+    "team-delete-error": "Nie udało się usunąć zespołu",
+    "delete-team-confirm": "Czy na pewno chcesz usunąć \"{name}\"? Spowoduje to usunięcie wszystkich członków i cofnięcie udostępniania powiązanych wątków. Tej operacji nie można cofnąć.",
+    "member-added": "Użytkownik dodany do zespołu",
+    "member-add-error": "Nie udało się dodać użytkownika",
+    "member-removed": "Użytkownik usunięty z zespołu",
+    "member-remove-error": "Nie udało się usunąć użytkownika",
+    "remove-member-title": "Usuń użytkownika",
+    "remove-member-confirm": "Czy na pewno chcesz usunąć {name} z tego zespołu?"
+  },
   "sidebar": {
     "back": "Powrót",
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
     "manage-organization": "Organizacja",
+    "organization-settings": "Ustawienia organizacji",
     "manage-knowledge": "Baza wiedzy",
     "organization-list": "Lista organizacji",
     "assistant-management": "Ustawienia asystenta",
@@ -388,6 +473,7 @@
     "disk-usage": "Użycie dysku",
     "create-new-thread": "Nowy wątek",
     "new-chat": "Nowy czat",
+    "search": "Szukaj",
     "search-threads": "Szukaj w wątkach",
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
@@ -437,7 +523,10 @@
       "settings": "Ustawienia",
       "privacy-policy": "Polityka prywatności",
       "share-feedback": "Twój feedback",
-      "sign-out": "Wyloguj się"
+      "sign-out": "Wyloguj się",
+      "role-app-admin": "Admin aplikacji",
+      "role-org-admin": "Admin organizacji",
+      "role-user": "Użytkownik"
     }
   },
   "chats-page": {
@@ -731,7 +820,9 @@
       "no-threads": "Brak konwersacji",
       "no-threads-description": "Rozpocznij nową rozmowę powyżej",
       "instructions": "Instrukcje",
-      "files": "Pliki"
+      "files": "Pliki",
+      "share": "Udostępnij",
+      "storage-used": "{percentage}% użycia pamięci"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
@@ -752,6 +843,7 @@
       "refreshing": "Odświeżanie...",
       "refresh-link-aria-label": "Odśwież link publiczny",
       "refresh-error": "Wystąpił błąd podczas odświeżania linku",
+      "refresh-success": "Link został pomyślnie odświeżony",
       "copy-link-aria-label": "Kopiuj link publiczny",
       "share-url": "URL udostępniania",
       "toggle-sharing": "Przełącz udostępnianie publiczne",
@@ -861,16 +953,13 @@
   "organization": {
     "tabs": {
       "general": "Ogólne",
-      "members": "Członkowie",
+      "members": "Użytkownicy",
       "invitations": "Zaproszenia"
     },
     "profile": {
       "title": "Profil Organizacji",
       "name": "Nazwa",
-      "slug": "Slug URL",
       "name-placeholder": "Nazwa organizacji",
-      "slug-placeholder": "moja-organizacja",
-      "slug-hint": "Slug używany jest w URL-ach. Pozostaw puste dla automatycznego generowania.",
       "save": "Zapisz zmiany",
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
@@ -878,9 +967,9 @@
       "edit-error": "Wystąpił błąd podczas aktualizacji profilu"
     },
     "members": {
-      "title": "Członkowie",
-      "invite-member": "Zaproś członka",
-      "no-members": "Brak członków",
+      "title": "Użytkownicy",
+      "invite-member": "Zaproś użytkownika",
+      "no-members": "Brak użytkowników",
       "user": "Użytkownik",
       "role": "Rola",
       "joined": "Dołączył",
@@ -888,23 +977,23 @@
       "you": "Ty",
       "role-owner": "Właściciel",
       "role-admin": "Administrator",
-      "role-member": "Członek",
+      "role-member": "Użytkownik",
       "email": "Email",
       "send-invitation": "Wyślij zaproszenie",
       "sending": "Wysyłanie...",
       "cancel": "Anuluj",
       "invite-success": "Zaproszenie zostało wysłane",
       "invite-error": "Wystąpił błąd podczas wysyłania zaproszenia",
-      "invite-unavailable-plan": "Zapraszanie członków dostępne tylko w płatnych planach. Zmień swój plan w sekcji Subskrypcja.",
-      "confirm-remove": "Czy na pewno chcesz usunąć tego członka z organizacji?",
-      "remove-success": "Członek został usunięty",
-      "remove-error": "Wystąpił błąd podczas usuwania członka",
+      "invite-unavailable-plan": "Zapraszanie użytkowników dostępne tylko w płatnych planach. Zmień swój plan w sekcji Subskrypcja.",
+      "confirm-remove": "Czy na pewno chcesz usunąć tego użytkownika z organizacji?",
+      "remove-success": "Użytkownik został usunięty",
+      "remove-error": "Wystąpił błąd podczas usuwania użytkownika",
       "role-update-success": "Rola została zaktualizowana",
       "role-update-error": "Wystąpił błąd podczas aktualizacji roli",
       "change-role": "Zmień rolę",
       "remove": "Usuń",
       "change-to-admin": "Zmień na Administratora",
-      "change-to-member": "Zmień na Członka"
+      "change-to-member": "Zmień na Użytkownika"
     },
     "invitations": {
       "title": "Zaproszenia",
@@ -912,7 +1001,7 @@
       "email": "Email",
       "role": "Rola",
       "role-admin": "Administrator",
-      "role-member": "Członek",
+      "role-member": "Użytkownik",
       "status": "Status",
       "sent": "Wysłano",
       "actions": "Akcje",
@@ -949,7 +1038,7 @@
     "rejected-message": "Zaproszenie odrzucone",
     "go-home": "Przejdź do strony głównej",
     "role-admin": "Administrator",
-    "role-member": "Członek",
+    "role-member": "Użytkownik",
     "role-owner": "Właściciel"
   },
   "user-profile": {
@@ -964,9 +1053,6 @@
       "email-hint": "Email nie może być zmieniony",
       "name": "Nazwa",
       "name-placeholder": "Twoje imię",
-      "image": "URL zdjęcia profilowego",
-      "image-placeholder": "https://example.com/avatar.jpg",
-      "image-hint": "Podaj URL do swojego zdjęcia profilowego",
       "save": "Zapisz zmiany",
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
@@ -981,6 +1067,22 @@
       "changing": "Zmiana hasła...",
       "success": "Hasło zostało zmienione",
       "error": "Nieprawidłowe obecne hasło"
+    },
+    "sessions": {
+      "title": "Aktywne sesje",
+      "logout-all": "Wyloguj",
+      "logout-all-description": "Wyloguj ze wszystkich innych urządzeń",
+      "logging-out": "Wylogowywanie...",
+      "current": "Bieżąca",
+      "last-active": "Ostatnia aktywność",
+      "revoke": "Unieważnij",
+      "revoking": "Unieważnianie...",
+      "revoke-success": "Sesja została unieważniona",
+      "revoke-error": "Nie udało się unieważnić sesji",
+      "revoke-all-success": "Wszystkie pozostałe sesje zostały unieważnione",
+      "revoke-all-error": "Nie udało się unieważnić sesji",
+      "load-error": "Nie udało się załadować sesji",
+      "retry": "Ponów"
     }
   },
   "impersonation": {
@@ -998,7 +1100,32 @@
       "role": "Rola",
       "created": "Utworzono",
       "noResults": "Nie znaleziono użytkowników",
-      "impersonateError": "Nie udało się podszyć pod użytkownika"
+      "impersonateError": "Nie udało się podszyć pod użytkownika",
+      "rename": "Zmień nazwę",
+      "renameTitle": "Zmień nazwę użytkownika",
+      "namePlaceholder": "Nazwa użytkownika",
+      "renameSuccess": "Nazwa użytkownika zmieniona",
+      "renameError": "Nie udało się zmienić nazwy użytkownika",
+      "ban": "Zablokuj",
+      "unban": "Odblokuj",
+      "banned": "Zablokowany",
+      "banTitle": "Zablokuj użytkownika",
+      "banConfirm": "Czy na pewno chcesz zablokować {name}? Użytkownik nie będzie mógł się zalogować.",
+      "banReasonPlaceholder": "Powód (opcjonalnie)",
+      "banSuccess": "Użytkownik zablokowany",
+      "banError": "Nie udało się zablokować użytkownika",
+      "unbanTitle": "Odblokuj użytkownika",
+      "unbanConfirm": "Czy na pewno chcesz odblokować {name}?",
+      "unbanSuccess": "Użytkownik odblokowany",
+      "unbanError": "Nie udało się odblokować użytkownika",
+      "createUser": "Utwórz użytkownika",
+      "emailPlaceholder": "user@example.com",
+      "password": "Hasło",
+      "passwordPlaceholder": "Hasło",
+      "createSuccess": "Użytkownik utworzony",
+      "createError": "Nie udało się utworzyć użytkownika",
+      "cancel": "Anuluj",
+      "save": "Zapisz"
     },
     "create-organization": {
       "title": "Utwórz organizację",

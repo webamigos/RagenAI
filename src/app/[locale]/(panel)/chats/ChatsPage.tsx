@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/20/solid';
 
 import { useUser } from '@/app/hooks/use-auth';
 import { Link } from '@/i18n/routing';
+import { Button } from '@ragenai/common-ui/Button';
 import { getAllThreads } from '@/app/actions';
 import { Input } from '@/components/ui/input';
 import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
@@ -29,31 +30,36 @@ function getThreadHref(thread: AllThreadsItem): string {
   return `/chats/${thread.public_id}`;
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+  const diffSec = Math.floor(diffMs / 1000);
 
-  if (diffMins < 1) {
-    return 'just now';
+  // Use Intl.RelativeTimeFormat for localized relative times
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  if (diffSec < 60) {
+    return rtf.format(-diffSec, 'second');
   }
+  const diffMins = Math.floor(diffSec / 60);
   if (diffMins < 60) {
-    return `${diffMins}m ago`;
+    return rtf.format(-diffMins, 'minute');
   }
+  const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24) {
-    return `${diffHours}h ago`;
+    return rtf.format(-diffHours, 'hour');
   }
+  const diffDays = Math.floor(diffHours / 24);
   if (diffDays < 7) {
-    return `${diffDays}d ago`;
+    return rtf.format(-diffDays, 'day');
   }
-  return date.toLocaleDateString();
+  return date.toLocaleDateString(locale);
 }
 
 export const ChatsPage = () => {
   const t = useTranslations('chats-page');
+  const locale = useLocale();
   const { user } = useUser();
   const [threads, setThreads] = useState<AllThreadsItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -147,13 +153,10 @@ export const ChatsPage = () => {
         <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
           {t('title')}
         </h1>
-        <Link
-          href="/new"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
-        >
+        <Button href="/new">
           <PlusIcon className="size-4" />
           {t('new-chat')}
-        </Link>
+        </Button>
       </div>
 
       {/* Search */}
@@ -180,7 +183,7 @@ export const ChatsPage = () => {
         {threads.map((thread) => (
           <div
             key={thread.public_id}
-            className="group flex items-start gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
+            className="group flex items-center gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">
               <p className="text-sm font-medium text-zinc-950 dark:text-white truncate">
@@ -189,7 +192,7 @@ export const ChatsPage = () => {
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
                   {t('last-message', {
-                    time: formatRelativeTime(thread.created_at),
+                    time: formatRelativeTime(thread.created_at, locale),
                   })}
                 </span>
                 {thread.project && (

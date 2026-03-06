@@ -32,7 +32,8 @@
     "eval:redteam": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/red-team.yaml",
     "eval:rephrase": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rephrase-quality.yaml",
     "eval:ci": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/ci-gate.yaml --output evals/results/ci-results.json --output evals/results/ci-results.html",
-    "eval:view": "promptfoo view"
+    "eval:view": "promptfoo view",
+    "emails:dev": "email dev -d src/app/emails -p 3001"
   },
   "type": "module",
   "private": true,
@@ -41,6 +42,7 @@
     "@commitlint/cli": "^19.4.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@playwright/test": "^1.47.2",
+    "@react-email/preview-server": "^5.2.9",
     "@semantic-release/github": "^10.1.7",
     "@swc-node/register": "~1.8.0",
     "@swc/cli": "~0.1.62",
@@ -92,6 +94,7 @@
     "prettier": "^3.8.1",
     "prisma": "^7.0.0",
     "promptfoo": "^0.120.19",
+    "react-email": "^5.2.9",
     "semantic-release": "^24.1.0",
     "shadcn": "^3.8.5",
     "supabase": "^1.201.2",

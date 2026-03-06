@@ -52,7 +52,8 @@ export async function getAccountSetupStatusQuery(
     ]);
 
     const organizationHasSubscription =
-      !!subscription && subscription.status === 'active';
+      !!subscription &&
+      (subscription.status === 'active' || subscription.status === 'trialing');
     logger.info(
       {
         organizationHasSubscription,

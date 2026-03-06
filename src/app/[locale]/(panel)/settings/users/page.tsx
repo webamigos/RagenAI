@@ -29,12 +29,22 @@ export default async function UsersPage() {
       role: true,
       createdAt: true,
       image: true,
+      banned: true,
+      banReason: true,
+      members: {
+        select: {
+          organization: {
+            select: { name: true },
+          },
+        },
+        take: 1,
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
 
   return (
-    <div className="p-6">
+    <div className="max-w-2xl">
       <UsersList
         users={users.map((u) => ({
           id: u.id,
@@ -43,6 +53,9 @@ export default async function UsersPage() {
           role: u.role ?? 'user',
           createdAt: u.createdAt.toISOString(),
           image: u.image ?? null,
+          banned: u.banned ?? false,
+          banReason: u.banReason ?? null,
+          organizationName: u.members[0]?.organization?.name ?? null,
         }))}
         currentUserId={user.id}
       />

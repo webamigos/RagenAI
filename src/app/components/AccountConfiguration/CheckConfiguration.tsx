@@ -3,25 +3,23 @@
 import { useAccountSetupStatus } from '@/app/hooks/useAccountConfigurationStatus';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
 import { Text } from '@ragenai/common-ui/Text';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { signOut } from '@/app/hooks/use-better-auth';
 
 const REFETCH_INTERVAL = 1000;
-const SETUP_COMPLETE_REDIRECT_PATH = '/';
 
 export const CheckConfiguration = () => {
-  const router = useRouter();
-
   const t = useTranslations('account-configuration');
+  const locale = useLocale();
 
   const [accountReady, setAccountReady] = useState(false);
 
   const onSuccessCallback = () => {
     setAccountReady(true);
-    router.push(SETUP_COMPLETE_REDIRECT_PATH);
+    // Full page reload to pick up the updated session cookie
+    window.location.href = `/${locale}/`;
   };
 
   const onErrorCallback = () => {

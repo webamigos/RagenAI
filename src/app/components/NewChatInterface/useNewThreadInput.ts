@@ -62,6 +62,7 @@ export const useNewThreadInput = ({
   const publicThread = usePublicNewThread({
     accessToken: accessToken!,
     projectId: projectId!,
+    organizationId: _organizationId,
     widgetMode: widgetMode || false,
   });
 

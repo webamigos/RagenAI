@@ -130,6 +130,20 @@ Two role hierarchies:
 
 Centralized in `src/lib/auth-access-control.ts` (client-safe checks) and `src/lib/auth-guards.ts` (server-side guards).
 
+### Settings
+
+Settings pages live under `src/app/[locale]/(panel)/settings/` with a dedicated layout rendering an internal left-side navigation. The main app sidebar remains unchanged when viewing settings.
+
+**Permission-based navigation:**
+
+| Permission | Pages | Visible to |
+|---|---|---|
+| User | General, Account, Connectors | All authenticated users |
+| Org Admin | Organization, Assistant settings, Subscription, Teams | Organization owner/admin |
+| App Admin | API Keys, Users, AI Usage, Disk Usage | Platform administrators |
+
+App admins can access all settings pages. Theme switching (Light/Dark/System) is available in Settings > General via `next-themes`.
+
 ### Document Processing
 
 Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use OpenAI `text-embedding-3-small` (1536 dimensions).

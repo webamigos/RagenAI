@@ -34,16 +34,12 @@ export function Dialog({
   className?: string;
   children: React.ReactNode;
 } & Omit<HeadlessDialogProps, 'as' | 'className'>) {
-  // TODO: there is a problem with bg-zinc-500-25 looks like ignored
-
   return (
     <HeadlessDialog {...props} className="relative z-10">
       <HeadlessDialogBackdrop
         transition
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in"
+        className="fixed inset-0 bg-zinc-950/25 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in dark:bg-zinc-950/50"
       />
-      {/*
-       */}
       <div className="fixed inset-0 w-screen overflow-y-auto flex items-center justify-center p-4">
         <HeadlessDialogPanel
           transition

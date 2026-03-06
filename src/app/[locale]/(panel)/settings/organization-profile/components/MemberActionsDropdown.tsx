@@ -26,56 +26,57 @@ export function MemberActionsDropdown({
 
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <MenuButton className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300">
+      <MenuButton
+        aria-label={t('actions')}
+        className="inline-flex items-center justify-center rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+      >
         <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
       </MenuButton>
 
-      <MenuItems className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
-        <div className="py-1">
-          {/* Change role options */}
-          {member.role !== 'admin' && (
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={() => onChangeRole(member.id, 'admin')}
-                  className={`${
-                    focus ? 'bg-gray-100 dark:bg-gray-700' : ''
-                  } block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300`}
-                >
-                  {t('change-to-admin')}
-                </button>
-              )}
-            </MenuItem>
-          )}
-          {member.role !== 'member' && member.role !== 'owner' && (
-            <MenuItem>
-              {({ focus }) => (
-                <button
-                  onClick={() => onChangeRole(member.id, 'member')}
-                  className={`${
-                    focus ? 'bg-gray-100 dark:bg-gray-700' : ''
-                  } block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300`}
-                >
-                  {t('change-to-member')}
-                </button>
-              )}
-            </MenuItem>
-          )}
-
-          {/* Remove member */}
+      <MenuItems className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-lg border border-zinc-200 bg-white py-1 shadow-lg focus:outline-none dark:border-zinc-700 dark:bg-zinc-900">
+        {/* Change role options */}
+        {member.role !== 'admin' && (
           <MenuItem>
             {({ focus }) => (
               <button
-                onClick={onRemove}
+                onClick={() => onChangeRole(member.id, 'admin')}
                 className={`${
-                  focus ? 'bg-gray-100 dark:bg-gray-700' : ''
-                } block w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400`}
+                  focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
+                } block w-full px-3 py-1.5 text-left text-sm text-zinc-700 dark:text-zinc-300`}
               >
-                {t('remove')}
+                {t('change-to-admin')}
               </button>
             )}
           </MenuItem>
-        </div>
+        )}
+        {member.role !== 'member' && member.role !== 'owner' && (
+          <MenuItem>
+            {({ focus }) => (
+              <button
+                onClick={() => onChangeRole(member.id, 'member')}
+                className={`${
+                  focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
+                } block w-full px-3 py-1.5 text-left text-sm text-zinc-700 dark:text-zinc-300`}
+              >
+                {t('change-to-member')}
+              </button>
+            )}
+          </MenuItem>
+        )}
+
+        {/* Remove member */}
+        <MenuItem>
+          {({ focus }) => (
+            <button
+              onClick={onRemove}
+              className={`${
+                focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
+              } block w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400`}
+            >
+              {t('remove')}
+            </button>
+          )}
+        </MenuItem>
       </MenuItems>
     </Menu>
   );

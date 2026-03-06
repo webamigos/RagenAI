@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, memo } from 'react';
+import { useEffect, useState, memo } from 'react';
+import { useRouter } from '@/i18n/routing';
 
 import { useNewThread } from '../hooks/useNewThread';
 import { NewChatInterface } from '@/app/components/NewChatInterface';
@@ -20,30 +21,40 @@ const PublicStart = memo(
     widgetMode?: boolean;
   }) => {
     const t = useTranslations('Chatbot');
-    const { checkExistingThread, isLoading } = useNewThread({
+    const { push } = useRouter();
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const { checkExistingThread, getRecentThreadId, isLoading } = useNewThread({
       accessToken,
       projectId,
+      organizationId,
       widgetMode,
     });
 
     useEffect(() => {
-      // set visitor cookie
-      const setCookie = async () => {
-        await makeVisitorCookieRequest();
-      };
-
-      setCookie();
+      makeVisitorCookieRequest();
     }, []);
 
+    // Auto-redirect to recent thread if one exists in localStorage
     useEffect(() => {
-      const checkThread = async () => {
-        if (widgetMode) {
-          await checkExistingThread();
-        }
-      };
+      if (widgetMode) {
+        checkExistingThread();
+        return;
+      }
 
-      checkThread();
-    }, [widgetMode, checkExistingThread]);
+      const recentThread = getRecentThreadId();
+      if (recentThread) {
+        setIsRedirecting(true);
+        push(`/public/assistants/${accessToken}/threads/${recentThread}`);
+      }
+    }, [widgetMode, checkExistingThread, getRecentThreadId, accessToken, push]);
+
+    if (isRedirecting) {
+      return (
+        <div className="h-screen w-full flex items-center justify-center">
+          <p className="text-muted-foreground">{t('opening-chat-thread')}</p>
+        </div>
+      );
+    }
 
     return (
       <div className="h-screen w-full flex items-center justify-center">
@@ -66,7 +77,7 @@ const PublicStart = memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 PublicStart.displayName = 'PublicStart';

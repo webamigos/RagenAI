@@ -23,6 +23,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
@@ -56,7 +66,7 @@ export const ThreadDropdownMenu = ({
   const t = useTranslations('thread-actions');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleStar = async () => {
     const newStarred = !thread.is_starred;
@@ -83,24 +93,14 @@ export const ThreadDropdownMenu = ({
   };
 
   const handleDelete = async () => {
-    if (!isConfirmingDelete) {
-      setIsConfirmingDelete(true);
-      return;
-    }
-    setIsConfirmingDelete(false);
+    setIsDeleteOpen(false);
     onDeleted?.(thread.public_id);
     await deleteThread(thread.public_id);
   };
 
   return (
     <>
-      <DropdownMenu
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsConfirmingDelete(false);
-          }
-        }}
-      >
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
@@ -127,9 +127,12 @@ export const ThreadDropdownMenu = ({
             {t('rename')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onClick={handleDelete}>
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => setIsDeleteOpen(true)}
+          >
             <TrashIcon className="size-4" />
-            {isConfirmingDelete ? t('delete-confirm') : t('delete')}
+            {t('delete')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -161,6 +164,26 @@ export const ThreadDropdownMenu = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('delete-title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('delete-confirm')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+            >
+              {t('delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

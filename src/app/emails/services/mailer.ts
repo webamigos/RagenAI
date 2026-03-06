@@ -1,6 +1,8 @@
 import { type CreateContactOptions, Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
+import { ContactEmail } from '../contact-email';
+import { PasswordResetEmail } from '../password-reset-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -49,7 +51,7 @@ export const sendContactEmail = async ({
       to: ['hello@webamigos.pl'],
       replyTo: email,
       subject: `[Ragen Support] ${title}`,
-      text: message,
+      react: ContactEmail({ email, message }),
       attachments,
     });
 
@@ -87,8 +89,8 @@ export const sendPasswordResetEmailViaMailer = async ({
     const response = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: 'Reset your Ragen password',
-      text: `Click the following link to reset your password: ${resetUrl}\n\nIf you did not request a password reset, please ignore this email.\n\nThis link will expire in 1 hour.`,
+      subject: 'Zresetuj hasło do Ragen',
+      react: PasswordResetEmail({ resetUrl }),
     });
 
     return { data: response };

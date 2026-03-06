@@ -14,8 +14,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-import { PageSkeleton } from '@ragenai/common-ui/Skeleton';
-
 import { Link } from '@/i18n/routing';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { logger } from '@/app/lib/utils/logger';
@@ -29,6 +27,7 @@ import {
 
 import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
+import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
@@ -48,8 +47,8 @@ type Project = {
   public_id: string;
   title: string;
   is_public: boolean;
-  access_token: string;
-  published_at: string;
+  access_token: string | null;
+  published_at: string | null;
   chatbot_enabled: boolean;
   threads: ProjectThread[];
 };
@@ -105,6 +104,7 @@ export function ProjectComponent({ projectId }: Props) {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [instructionText, setInstructionText] = useState<string | null>(null);
 
   // File state
   const [files, setFiles] = useState<ProjectFile[]>([]);
@@ -138,6 +138,11 @@ export function ProjectComponent({ projectId }: Props) {
         const projectData = await fetchProject(projectId);
         setProject(projectData);
         loadFiles(projectData.public_id);
+        getProjectInstructionAction(projectData.public_id).then((result) => {
+          if (result.success && result.instruction) {
+            setInstructionText(result.instruction);
+          }
+        });
       } catch (error) {
         logger.error('Error loading project:', { error: error });
         errorToast({ message: t('error.fetching-error') });
@@ -202,44 +207,64 @@ export function ProjectComponent({ projectId }: Props) {
   };
 
   if (isLoading || !project || !isReady) {
-    return <PageSkeleton />;
+    return (
+      <div className="animate-pulse">
+        {/* Back link */}
+        <div className="h-4 w-32 bg-muted rounded mb-2" />
+        {/* Title */}
+        <div className="h-8 w-48 bg-muted rounded mb-4" />
+        <div className="flex gap-6 w-full">
+          {/* Left column */}
+          <div className="flex-1 min-w-0">
+            <div className="h-[100px] w-full bg-muted rounded-xl mb-6" />
+            <div className="space-y-3">
+              <div className="h-12 w-full bg-muted rounded" />
+              <div className="h-12 w-full bg-muted rounded" />
+              <div className="h-12 w-full bg-muted rounded" />
+            </div>
+          </div>
+          {/* Right column */}
+          <div className="w-72 lg:w-80 shrink-0 hidden md:block space-y-4">
+            <div className="h-20 w-full bg-muted rounded-xl" />
+            <div className="h-40 w-full bg-muted rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
-      <div className="flex gap-8 w-full">
-        {/* Left column: back link, chat input, thread list */}
+      {/* Back link */}
+      <Link
+        href="/projects"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+      >
+        <ArrowLeftIcon className="size-3.5" />
+        {t('project-view.all-projects')}
+      </Link>
+
+      {/* Project title + actions */}
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
+        <ShareDialogTrigger
+          publishedAt={project.published_at ?? ''}
+          accessToken={project.access_token ?? ''}
+          projectPublicId={project.public_id}
+          isPublicProject={project.is_public}
+        />
+      </div>
+
+      <div className="flex gap-6 w-full">
+        {/* Left column: chat input, thread list */}
         <div className="flex-1 min-w-0">
-          {/* Back link */}
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-          >
-            <ArrowLeftIcon className="size-3.5" />
-            {t('project-view.all-projects')}
-          </Link>
-
-          {/* Project title + actions */}
-          <div className="flex items-center gap-3 mb-6">
-            <h1 className="text-2xl font-bold tracking-tight">
-              {project.title}
-            </h1>
-            <ShareDialogTrigger
-              publishedAt={project.published_at}
-              accessToken={project.access_token}
-              projectId={project.id}
-              isPublicProject={project.is_public}
-              isChatbotEnabled={project.chatbot_enabled}
-            />
-          </div>
-
           {/* Chat input */}
-          <div className="mb-8">
+          <div className="mb-6">
             <NewChatInterface
               projectId={project.id}
               projectPublicId={project.public_id}
               projectTitle={project.title}
-              className="!max-w-none"
+              className="!max-w-none !mx-0 !px-0"
             />
           </div>
 
@@ -277,7 +302,7 @@ export function ProjectComponent({ projectId }: Props) {
         </div>
 
         {/* Right column: instructions + files */}
-        <div className="w-80 lg:w-[400px] shrink-0 hidden md:block space-y-4">
+        <div className="w-72 lg:w-80 shrink-0 hidden md:block space-y-4">
           {/* Instructions section */}
           <div
             className="rounded-xl border border-border/60 p-4 hover:bg-muted/30 transition-colors cursor-pointer"
@@ -289,9 +314,15 @@ export function ProjectComponent({ projectId }: Props) {
               </h3>
               <PlusIcon className="size-4 text-muted-foreground" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t('project-instructions.description')}
-            </p>
+            {instructionText ? (
+              <p className="text-sm text-muted-foreground/70 line-clamp-2 whitespace-pre-line">
+                {instructionText}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {t('project-instructions.description')}
+              </p>
+            )}
           </div>
 
           {/* Files section - inline */}
@@ -321,6 +352,12 @@ export function ProjectComponent({ projectId }: Props) {
               usedBytes={storageUsed}
               limitBytes={storageLimit}
               className="mb-3"
+              label={t('project-view.storage-used', {
+                percentage:
+                  storageLimit > 0
+                    ? Math.round((storageUsed / storageLimit) * 100)
+                    : 0,
+              })}
             />
 
             {/* File cards grid */}
@@ -350,7 +387,12 @@ export function ProjectComponent({ projectId }: Props) {
           </DialogHeader>
           <ProjectInstructionForm
             projectId={project.public_id}
-            onSuccess={() => setShowInstructions(false)}
+            onSuccess={() => {
+              setShowInstructions(false);
+              getProjectInstructionAction(project.public_id).then((result) => {
+                setInstructionText(result.success ? result.instruction : null);
+              });
+            }}
             onCancel={() => setShowInstructions(false)}
           />
         </DialogContent>

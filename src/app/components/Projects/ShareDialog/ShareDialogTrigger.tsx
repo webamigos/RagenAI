@@ -1,50 +1,43 @@
 import { useState } from 'react';
-import { GlobalAltIcon } from '@ragenai/common-ui/icons';
+import { useTranslations } from 'next-intl';
+import { ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { Button } from '@ragenai/common-ui/Button';
 
 import { ShareDialog } from './ShareDialog';
-import { useToggleChatbotEnabled } from '@/app/hooks/useToggleChatbotEnabled';
 
 type ShareDialogTriggerProps = {
-  projectId: number;
+  projectPublicId: string;
   isPublicProject: boolean;
   accessToken: string;
   publishedAt: string;
-  isChatbotEnabled: boolean;
 };
 
 export const ShareDialogTrigger = ({
-  projectId,
+  projectPublicId,
   isPublicProject,
   accessToken,
   publishedAt,
-  isChatbotEnabled,
 }: ShareDialogTriggerProps) => {
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const { toggleChatbotEnabled } = useToggleChatbotEnabled(projectId);
-
-  const handleDialogClose = () => {
-    setShowShareDialog(false);
-  };
+  const t = useTranslations('projects.project-view');
 
   return (
     <>
-      <div
-        onClick={() => setShowShareDialog(true)}
-        className="cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-      >
-        <GlobalAltIcon className="w-4 h-4 text-gray-500" />
-      </div>
+      <Button type="button" outline onClick={() => setShowShareDialog(true)}>
+        <ArrowUpTrayIcon className="size-4 mr-1" />
+        {t('share')}
+      </Button>
 
-      <ShareDialog
-        open={showShareDialog}
-        onClose={handleDialogClose}
-        projectId={projectId}
-        isPublicProject={isPublicProject}
-        linkToPublicProject={accessToken}
-        publishedAt={publishedAt}
-        isChatbotEnabled={isChatbotEnabled}
-        onChatbotEnabledChange={toggleChatbotEnabled}
-      />
+      {showShareDialog && (
+        <ShareDialog
+          open={showShareDialog}
+          onClose={() => setShowShareDialog(false)}
+          projectPublicId={projectPublicId}
+          isPublicProject={isPublicProject}
+          linkToPublicProject={accessToken}
+          publishedAt={publishedAt}
+        />
+      )}
     </>
   );
 };

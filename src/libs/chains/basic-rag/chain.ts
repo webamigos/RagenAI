@@ -26,33 +26,31 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate the content
+      // Step 2: Moderate content first, then rephrase
       await moderateContent(models.contentModerator, sanitizedInput);
-
-      // Step 3: Rephrase the question
       const standaloneQuestion = await rephraseQuestion(
         models.questionRephraser,
         sanitizedInput,
       );
 
-      // Step 4: Retrieve relevant documents from vector store
-      const context = await retrieveRelevantDocuments(
-        vectorStore,
-        standaloneQuestion,
-        config?.maxDocumentsToRetrieve,
-        config?.metadataFilter,
-      );
+      // Step 3: Retrieve KB documents and thread documents in parallel
+      const [context, threadContext] = await Promise.all([
+        retrieveRelevantDocuments(
+          vectorStore,
+          standaloneQuestion,
+          config?.maxDocumentsToRetrieve,
+          config?.metadataFilter,
+        ),
+        retrieveThreadDocuments(
+          config?.threadDocuments || [],
+          vectorStore,
+          models.embeddings,
+          standaloneQuestion,
+          config?.maxDocumentsToRetrieve ?? 3,
+        ),
+      ]);
 
-      // Step 5: Retrieve thread-specific documents
-      const threadContext = await retrieveThreadDocuments(
-        config?.threadDocuments || [],
-        vectorStore,
-        models.embeddings,
-        standaloneQuestion,
-        config?.maxDocumentsToRetrieve || 3,
-      );
-
-      // Step 6: Build messages and stream the answer
+      // Step 4: Build messages and stream the answer
       const { system, messages } = buildRagMessages(
         standaloneQuestion,
         sanitizedInput.chat_history,

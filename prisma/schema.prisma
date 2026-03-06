@@ -354,13 +354,15 @@ model Account {
   userId       String    @map("user_id")
   accountId    String    @map("account_id")
   providerId   String    @map("provider_id")
-  accessToken  String?   @map("access_token")
-  refreshToken String?   @map("refresh_token")
-  idToken      String?   @map("id_token")
-  expiresAt    DateTime? @db.Timestamptz @map("expires_at")
-  password     String?
-  createdAt    DateTime  @default(now()) @db.Timestamptz @map("created_at")
-  updatedAt    DateTime  @updatedAt @db.Timestamptz @map("updated_at")
+  accessToken          String?   @map("access_token")
+  refreshToken         String?   @map("refresh_token")
+  idToken              String?   @map("id_token")
+  accessTokenExpiresAt DateTime? @db.Timestamptz @map("access_token_expires_at")
+  scope                String?
+  expiresAt            DateTime? @db.Timestamptz @map("expires_at")
+  password             String?
+  createdAt            DateTime  @default(now()) @db.Timestamptz @map("created_at")
+  updatedAt            DateTime  @updatedAt @db.Timestamptz @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

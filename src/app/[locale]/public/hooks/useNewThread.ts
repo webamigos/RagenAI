@@ -1,18 +1,40 @@
 'use client';
 
-import { useReducer, useTransition, useCallback, useEffect } from 'react';
-import { useRouter, usePathname } from '@/i18n/routing';
-import { useSessionStorage } from './useSessionStorage';
+import { useReducer, useTransition, useCallback } from 'react';
+import { useRouter } from '@/i18n/routing';
 import { useCloseThread } from '@/app/hooks/useCloseThreads';
 import { createGuestThreadCommand as createGuestThreadAction } from '@/features/threads/services/commands/create-guest-thread-command';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { useDispatch } from 'react-redux';
 import { clearMessages } from '@/store/assistant/assistantSlice';
-import {
-  LOCAL_STORAGE_THREAD_KEY,
-  SESSION_STORAGE_TEMP_MESSAGE_KEY,
-} from '@/app/components/config';
+import { SESSION_STORAGE_TEMP_MESSAGE_KEY } from '@/app/components/config';
+
+const PUBLIC_THREAD_PREFIX = 'public_thread_';
+
+function getStoredThreadId(accessToken: string): string | null {
+  try {
+    return localStorage.getItem(`${PUBLIC_THREAD_PREFIX}${accessToken}`);
+  } catch {
+    return null;
+  }
+}
+
+function setStoredThreadId(accessToken: string, threadId: string) {
+  try {
+    localStorage.setItem(`${PUBLIC_THREAD_PREFIX}${accessToken}`, threadId);
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function removeStoredThreadId(accessToken: string) {
+  try {
+    localStorage.removeItem(`${PUBLIC_THREAD_PREFIX}${accessToken}`);
+  } catch {
+    // localStorage unavailable
+  }
+}
 
 type ActionType =
   | { type: 'SET_IS_LOADING'; payload: boolean }
@@ -42,25 +64,20 @@ const reducer = (state: StateType, action: ActionType): StateType => {
 export const useNewThread = ({
   accessToken,
   projectId,
+  organizationId,
   widgetMode = false,
 }: {
   accessToken: string;
   projectId: number;
+  organizationId?: string;
   widgetMode?: boolean;
 }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [isPending, startTransition] = useTransition();
   const { push } = useRouter();
-  const pathname = usePathname();
   const { handleCloseThread } = useCloseThread();
   const { errorToast } = statusToast();
   const reduxDispatch = useDispatch();
-
-  const {
-    storedValue: threadId,
-    setValue: setThreadId,
-    removeValue: removeThreadId,
-  } = useSessionStorage<string | null>(LOCAL_STORAGE_THREAD_KEY, null);
 
   const handleNewThread = useCallback(
     async (
@@ -68,7 +85,7 @@ export const useNewThread = ({
       passedProjectId?: number,
       projectPublicId?: string,
       mentionedProjectId?: number,
-      preferredModel?: string
+      preferredModel?: string,
     ) => {
       try {
         dispatch({ type: 'SET_IS_LOADING', payload: true });
@@ -76,6 +93,7 @@ export const useNewThread = ({
         reduxDispatch(clearMessages());
 
         const result = await createGuestThreadAction({
+          organizationId,
           projectId: passedProjectId ?? projectId,
           initialMessage,
           mentionedProjectId,
@@ -87,17 +105,17 @@ export const useNewThread = ({
         }
 
         const newThreadId = result.thread.public_id;
-        setThreadId(newThreadId);
+        setStoredThreadId(accessToken, newThreadId);
 
         if (initialMessage) {
           sessionStorage.setItem(
             SESSION_STORAGE_TEMP_MESSAGE_KEY,
-            initialMessage
+            initialMessage,
           );
         }
 
         startTransition(() =>
-          push(`/public/assistants/${accessToken}/threads/${newThreadId}`)
+          push(`/public/assistants/${accessToken}/threads/${newThreadId}`),
         );
       } catch (err) {
         const errorMessage =
@@ -113,22 +131,23 @@ export const useNewThread = ({
       dispatch,
       handleCloseThread,
       reduxDispatch,
+      organizationId,
       projectId,
-      setThreadId,
       startTransition,
       push,
       accessToken,
       errorToast,
-    ]
+    ],
   );
 
   const checkExistingThread = useCallback(async () => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
 
-      if (threadId) {
+      const storedThread = getStoredThreadId(accessToken);
+      if (storedThread) {
         startTransition(() =>
-          push(`/public/assistants/${accessToken}/threads/${threadId}`)
+          push(`/public/assistants/${accessToken}/threads/${storedThread}`),
         );
         return;
       }
@@ -141,17 +160,23 @@ export const useNewThread = ({
     } finally {
       dispatch({ type: 'SET_IS_LOADING', payload: false });
     }
-  }, [accessToken, threadId, push, handleNewThread, errorToast]);
+  }, [accessToken, startTransition, push, handleNewThread, errorToast]);
 
-  useEffect(() => {
-    if (!widgetMode && !pathname.includes('/threads')) {
-      removeThreadId();
-    }
-  }, [pathname, widgetMode, removeThreadId]);
+  /** Get the stored thread ID for this assistant (if any) */
+  const getRecentThreadId = useCallback(() => {
+    return getStoredThreadId(accessToken);
+  }, [accessToken]);
+
+  /** Clear the stored thread for this assistant */
+  const clearRecentThread = useCallback(() => {
+    removeStoredThreadId(accessToken);
+  }, [accessToken]);
 
   return {
     handleNewThread,
     checkExistingThread,
+    getRecentThreadId,
+    clearRecentThread,
     isLoading: state.isLoading,
     isPending,
     error: state.error,

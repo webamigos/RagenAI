@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -30,6 +31,7 @@ export function AddTeamMemberDialog({
   orgMembers,
   onAdded,
 }: Props) {
+  const t = useTranslations('teams-page');
   const { successToast, errorToast } = statusToast();
   const [selectedUserId, setSelectedUserId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,12 +63,12 @@ export function AddTeamMemberDialog({
         teamId,
         userId: selectedUserId,
       });
-      successToast({ message: 'Member added to team' });
+      successToast({ message: t('member-added') });
       setSelectedUserId('');
       onClose();
       onAdded();
     } catch {
-      errorToast({ message: 'Failed to add member' });
+      errorToast({ message: t('member-add-error') });
     } finally {
       setIsSubmitting(false);
     }
@@ -79,27 +81,27 @@ export function AddTeamMemberDialog({
 
   return (
     <Dialog open={isOpen} onClose={handleClose} size="md">
-      <DialogTitle>Add Team Member</DialogTitle>
+      <DialogTitle>{t('add-member')}</DialogTitle>
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         {availableMembers.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            All organization members are already in this team.
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {t('all-members-added')}
           </p>
         ) : (
           <div>
             <label
               htmlFor="member-select"
-              className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+              className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
             >
-              Select Member
+              {t('select-member')}
             </label>
             <select
               id="member-select"
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               {availableMembers.map((member) => (
                 <option key={member.userId} value={member.userId}>
@@ -115,13 +117,13 @@ export function AddTeamMemberDialog({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            plain
           >
-            Cancel
+            {t('cancel')}
           </Button>
           {availableMembers.length > 0 && (
             <Button isSubmit={true} disabled={isSubmitting || !selectedUserId}>
-              {isSubmitting ? 'Adding...' : 'Add Member'}
+              {isSubmitting ? t('adding') : t('add-member')}
             </Button>
           )}
         </div>
