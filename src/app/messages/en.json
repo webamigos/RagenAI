@@ -422,7 +422,25 @@
       "connected": "Connected",
       "pending": "Pending",
       "connect": "Connect",
-      "disconnect": "Disconnect"
+      "disconnect": "Disconnect",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Search and read documents from your Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "View calendar events and check availability."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Access traffic reports, conversions, and audience insights."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "View campaigns, performance, and track costs."
+        }
+      }
     }
   },
   "teams-page": {
@@ -552,7 +570,15 @@
   },
   "prompt-attachments": {
     "upload-file": "Upload file",
-    "from-knowledge-base": "From Knowledge Base"
+    "from-knowledge-base": "From Knowledge Base",
+    "from-google-drive": "From Google Drive"
+  },
+  "drive-picker": {
+    "title": "Select from Google Drive",
+    "search-placeholder": "Search documents...",
+    "no-results": "No documents match your search",
+    "no-files": "No documents found",
+    "fetch-error": "Failed to load document content"
   },
   "thread-actions": {
     "star": "Star",

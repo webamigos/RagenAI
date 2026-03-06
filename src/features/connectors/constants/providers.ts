@@ -15,14 +15,22 @@ const MCP_GOOGLE_SERVER_URL = (() => {
 
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
+    provider: McpConnectorProvider.GOOGLE_DRIVE,
+    name: 'Google Drive',
+    description: 'Search and read documents from your Google Drive.',
+    icon: 'folder',
+    mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+  },
+  {
     provider: McpConnectorProvider.GOOGLE_CALENDAR,
     name: 'Google Calendar',
-    description: 'View, create, and manage calendar events.',
+    description: 'View calendar events and check availability.',
     icon: 'calendar',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
     scopes: [
-      'https://www.googleapis.com/auth/calendar',
-      'https://www.googleapis.com/auth/calendar.events',
+      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/calendar.events.readonly',
     ],
   },
   {
@@ -36,7 +44,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
     provider: McpConnectorProvider.GOOGLE_ADS,
     name: 'Google Ads',
-    description: 'Manage campaigns, view performance, and track costs.',
+    description: 'View campaigns, performance, and track costs.',
     icon: 'megaphone',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
     scopes: ['https://www.googleapis.com/auth/adwords'],

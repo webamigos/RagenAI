@@ -22,6 +22,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   GOOGLE_CALENDAR: '/assets/connectors/google-calendar.svg',
   GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
   GOOGLE_ADS: '/assets/connectors/google-ads.svg',
+  GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
 };
 
 type ConnectorCardProps = {
@@ -53,7 +54,8 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
       const mcpServerBaseUrl = provider.mcpServerUrl;
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
-      const authUrl = `${mcpServerBaseUrl}/auth/google?customer_id=${encodeURIComponent(result.customer_id)}&redirect_uri=${encodeURIComponent(callbackUrl)}`;
+      const scopesParam = encodeURIComponent(provider.scopes.join(' '));
+      const authUrl = `${mcpServerBaseUrl}/auth/google?customer_id=${encodeURIComponent(result.customer_id)}&redirect_uri=${encodeURIComponent(callbackUrl)}&scopes=${scopesParam}`;
 
       const popup = window.open(authUrl, 'google-auth', 'width=600,height=700');
 
@@ -152,13 +154,13 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
-            {provider.name}
+            {t(`providers.${provider.provider}.name`)}
           </h3>
           {isConnected && <Badge color="green">{t('connected')}</Badge>}
           {isPending && <Badge color="amber">{t('pending')}</Badge>}
         </div>
         <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-          {provider.description}
+          {t(`providers.${provider.provider}.description`)}
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
