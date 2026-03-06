@@ -9,6 +9,8 @@ import { type ThreadDocumentUI } from '@/features/documents/contracts/document.t
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
+import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
+import { isDriveConnected } from '@/app/actions/google-drive';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -51,6 +53,8 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const [mentionQuery, setMentionQuery] = useState('');
   const [cursorPosition, setCursorPosition] = useState(0);
   const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
+  const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
+  const [hasDriveConnector, setHasDriveConnector] = useState(false);
 
   const threadDocuments = externalThreadDocuments ?? [];
   const setThreadDocuments = onThreadDocumentsChange ?? (() => {});
@@ -244,6 +248,19 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     e.target.value = '';
   };
 
+  useEffect(() => {
+    isDriveConnected()
+      .then(setHasDriveConnector)
+      .catch(() => setHasDriveConnector(false));
+  }, []);
+
+  const handleDriveFileSelected = useCallback(
+    (doc: ThreadDocumentUI) => {
+      setThreadDocuments([...threadDocuments, doc]);
+    },
+    [threadDocuments, setThreadDocuments],
+  );
+
   const excludeFileIds = threadDocuments
     .filter((d) => d.userFileId)
     .map((d) => d.userFileId!);
@@ -320,6 +337,16 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
                   <BookOpenIcon className="size-4" />
                   {tAttach('from-knowledge-base')}
                 </DropdownMenuItem>
+                {hasDriveConnector && (
+                  <DropdownMenuItem onClick={() => setIsDrivePickerOpen(true)}>
+                    <img
+                      src="/assets/connectors/google-drive.svg"
+                      alt="Google Drive"
+                      className="size-4"
+                    />
+                    {tAttach('from-google-drive')}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )
@@ -342,6 +369,12 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
             onOpenChange={setIsKbPickerOpen}
             onFilesSelected={handleKbFilesSelected}
             excludeFileIds={excludeFileIds}
+          />
+
+          <GoogleDrivePickerDialog
+            open={isDrivePickerOpen}
+            onOpenChange={setIsDrivePickerOpen}
+            onFileSelected={handleDriveFileSelected}
           />
         </>
       )}

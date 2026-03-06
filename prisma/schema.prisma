@@ -567,6 +567,7 @@ enum McpConnectorProvider {
   GOOGLE_CALENDAR
   GOOGLE_ANALYTICS
   GOOGLE_ADS
+  GOOGLE_DRIVE
 }
 
 model McpConnector {
