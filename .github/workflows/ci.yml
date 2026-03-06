@@ -43,6 +43,9 @@ env:
   PUSHER_KEY: "dummy"
   PUSHER_SECRET: "dummy"
   NEXT_PUBLIC_PUSHER_KEY: "dummy"
+  MCP_GOOGLE_SERVER_URL: "https://example.com"
+  GOOGLE_CLIENT_ID: "dummy"
+  GOOGLE_CLIENT_SECRET: "dummy"
 
 on:
   push:

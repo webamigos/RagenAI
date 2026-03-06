@@ -25,6 +25,8 @@ import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import { getModelProvider, normalizeModelId } from '@/app/components/config';
+import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
+import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 
 /**
  * Load thread documents from database for a specific thread
@@ -271,6 +273,11 @@ export async function streamEvents({
     async start(controller) {
       sendApiEvent(controller, 'init');
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let mcpTools: Record<string, any> = {};
+      let mcpContext = '';
+      let closeMcpClients: (() => Promise<void>) | undefined;
+
       try {
         // Phase 1: Fetch settings and thread details (with messages) in parallel
         sendApiEvent(controller, 'find_thread');
@@ -344,6 +351,41 @@ export async function streamEvents({
           return;
         }
 
+        // Load MCP tools from user's enabled connectors (skip for public mode)
+        const userId =
+          mode !== AssistantMode.PUBLIC
+            ? await getCurrentUserId().catch(() => null)
+            : null;
+
+        if (userId) {
+          try {
+            const connectors = await getEnabledConnectorsQuery(orgId, userId);
+            if (connectors.length > 0) {
+              const { tools, closeAll } =
+                await createMcpToolsFromConnectors(connectors);
+              mcpTools = tools;
+              closeMcpClients = closeAll;
+
+              // Build context so the AI knows the customer_id for each connector
+              const customerIds = connectors.map(
+                (c) =>
+                  `- ${c.provider} tools: use customer_id="${c.customer_id}"`,
+              );
+              mcpContext = `You have access to external tools via connected integrations. When calling these tools, use the following customer_id values:\n${customerIds.join('\n')}`;
+
+              logger.info(
+                { toolCount: Object.keys(tools).length },
+                'MCP tools loaded for chat session',
+              );
+            }
+          } catch (error) {
+            logger.error(
+              { err: error },
+              'Failed to load MCP tools, continuing without them',
+            );
+          }
+        }
+
         sendApiEvent(controller, 'user_message_saved', {
           id: threadMessage.public_id,
         });
@@ -368,6 +410,8 @@ export async function streamEvents({
                 apiKey: effectiveSettings.apiKey,
               },
               projectInstruction,
+              mcpTools,
+              mcpContext,
             });
           } else {
             const projectIdToUse =
@@ -391,6 +435,8 @@ export async function streamEvents({
               projectId: projectIdToUse ?? null,
               projectPublicId: projectPublicIdToUse ?? null,
               threadDocuments,
+              mcpTools,
+              mcpContext,
             });
           }
         } else if (mode === AssistantMode.PUBLIC) {
@@ -408,6 +454,11 @@ export async function streamEvents({
         }
 
         if (!chainOutput) {
+          if (closeMcpClients) {
+            closeMcpClients().catch((err) =>
+              logger.error({ err }, 'Error closing MCP clients'),
+            );
+          }
           sendApiEvent(controller, 'close');
           controller.close();
           return;
@@ -442,7 +493,38 @@ export async function streamEvents({
             case 'reasoning-end':
               sendApiEvent(controller, 'reasoning_end');
               break;
+            case 'tool-call':
+              sendApiEvent(controller, 'tool_call', {
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+              });
+              break;
+            case 'tool-result':
+              sendApiEvent(controller, 'tool_result', {
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+              });
+              break;
           }
+        }
+
+        // Fallback: use resolved text if fullMessage is empty (multi-step tool use)
+        if (!fullMessage) {
+          try {
+            const resolvedText = (await streamResult.text) || '';
+            if (resolvedText) {
+              fullMessage = resolvedText;
+            }
+          } catch {
+            // text promise may reject
+          }
+        }
+
+        // Close MCP clients after streaming completes
+        if (closeMcpClients) {
+          closeMcpClients().catch((err) =>
+            logger.error({ err }, 'Error closing MCP clients'),
+          );
         }
 
         sendApiEvent(controller, 'llm_completed');
@@ -531,6 +613,16 @@ export async function streamEvents({
         logger.error({ err: error }, 'Error processing SSE');
         // this also sends error event which can be handled in UI
         exceptionFilter.handleError(error, controller);
+
+        // Ensure MCP clients are closed on error
+        if (closeMcpClients) {
+          closeMcpClients().catch((err) =>
+            logger.error(
+              { err },
+              'Error closing MCP clients during error handling',
+            ),
+          );
+        }
 
         try {
           controller.close();

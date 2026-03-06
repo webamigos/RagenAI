@@ -2,7 +2,9 @@ import type { ChainStreamPart } from '../types/common';
 
 /**
  * Maps the Vercel AI SDK's fullStream to our simplified ChainStreamPart type.
- * Only passes through text-delta and reasoning events, ignoring everything else.
+ * Passes through text-delta, reasoning, and tool events.
+ *
+ * Note: AI SDK v6 uses `input`/`output` instead of `args`/`result` for tool parts.
  */
 export async function* mapFullStream(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,7 +24,23 @@ export async function* mapFullStream(
       case 'reasoning-end':
         yield { type: 'reasoning-end', id: part.id };
         break;
-      // Ignore all other event types (tool-call, source, finish, etc.)
+      case 'tool-call':
+        yield {
+          type: 'tool-call',
+          toolCallId: part.toolCallId,
+          toolName: part.toolName,
+          args: part.input ?? part.args,
+        };
+        break;
+      case 'tool-result':
+        yield {
+          type: 'tool-result',
+          toolCallId: part.toolCallId,
+          toolName: part.toolName,
+          result: part.output !== undefined ? part.output : part.result,
+        };
+        break;
+      // Ignore other event types (source, finish, finish-step, etc.)
     }
   }
 }

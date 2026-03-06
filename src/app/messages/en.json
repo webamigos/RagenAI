@@ -418,7 +418,11 @@
     "connectors": {
       "title": "Connectors",
       "description": "Connect external services and integrations.",
-      "no-connectors": "No connectors available yet."
+      "no-connectors": "No connectors available yet.",
+      "connected": "Connected",
+      "pending": "Pending",
+      "connect": "Connect",
+      "disconnect": "Disconnect"
     }
   },
   "teams-page": {
@@ -930,6 +934,11 @@
     "save_assistant_response": "saving response",
     "assistant_response_saved": "",
     "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "calling tool",
+    "tool_result": "",
     "error": "An Error has occurred",
     "close": ""
   },

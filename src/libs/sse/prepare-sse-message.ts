@@ -9,6 +9,8 @@ import {
   type ApiSseReasoningDelta,
   type ApiSseThreadFound,
   type ApiSseMessageCreated,
+  type ApiSseToolCall,
+  type ApiSseToolResult,
 } from '@/features/threads/contracts/events.types';
 
 export const prepareSseMessage = (
@@ -42,6 +44,8 @@ export type ApiEvent =
   | 'save_assistant_response'
   | 'assistant_response_saved'
   | 'final_response'
+  | 'tool_call'
+  | 'tool_result'
   | 'error'
   | 'close';
 
@@ -50,7 +54,9 @@ export type ApiEventData =
   | ApiSseMessageDelta
   | ApiSseReasoningDelta
   | ApiSseThreadFound
-  | ApiSseMessageCreated;
+  | ApiSseMessageCreated
+  | ApiSseToolCall
+  | ApiSseToolResult;
 
 export const prepareApiSseMessage = (
   event: ApiEvent,

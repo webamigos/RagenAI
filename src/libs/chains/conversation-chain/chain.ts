@@ -1,4 +1,4 @@
-import { streamText } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import {
   buildConversationMessages,
   validateAnswerGenerator,
@@ -33,10 +33,20 @@ export const conversationChain = async ({
         config?.projectInstruction,
       );
 
+      const hasTools =
+        config?.mcpTools && Object.keys(config.mcpTools).length > 0;
+
+      const effectiveSystem = config?.mcpContext
+        ? `${system}\n\n${config.mcpContext}`
+        : system;
+
       const result = streamText({
         model: models.answerGenerator,
-        system,
+        system: effectiveSystem,
         messages,
+        ...(hasTools
+          ? { tools: config!.mcpTools, stopWhen: stepCountIs(5) }
+          : {}),
       });
 
       return {

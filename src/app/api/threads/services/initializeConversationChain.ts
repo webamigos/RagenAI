@@ -9,11 +9,16 @@ import { conversationChain } from '@/libs/chains/conversation-chain/chain';
 type InitializeConversationChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mcpTools?: Record<string, any>;
+  mcpContext?: string;
 };
 
 export const initializeConversationChain = async ({
   settings,
   projectInstruction,
+  mcpTools,
+  mcpContext,
 }: InitializeConversationChainParams) => {
   try {
     const { apiKey, model, temperature, prompt } = settings;
@@ -30,6 +35,8 @@ export const initializeConversationChain = async ({
       config: {
         answerInstructions: prompt || '',
         projectInstruction: projectInstruction || '',
+        mcpTools,
+        mcpContext,
       },
     });
   } catch (error) {
