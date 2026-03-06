@@ -439,6 +439,10 @@
         "GOOGLE_ADS": {
           "name": "Google Ads",
           "description": "View campaigns, performance, and track costs."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Manage tasks, projects, and workspaces."
         }
       }
     }

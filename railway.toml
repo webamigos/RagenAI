@@ -1,0 +1,16 @@
+[build]
+builder = "RAILPACK"
+buildCommand = "npx prisma generate && npm run build"
+
+[deploy]
+runtime = "V2"
+numReplicas = 1
+startCommand = "npm run start"
+limitOverride = {"containers":{"cpu":4,"diskBytes":100000000000,"memoryBytes":8000000000}}
+preDeployCommand = ["npx prisma migrate deploy"]
+sleepApplication = false
+useLegacyStacker = false
+ipv6EgressEnabled = false
+multiRegionConfig = {"europe-west4-drams3a":{"numReplicas":1}}
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

@@ -442,6 +442,10 @@
         "GOOGLE_ADS": {
           "name": "Google Ads",
           "description": "Przeglądaj kampanie, wyniki i śledź koszty."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Zarządzaj zadaniami, projektami i przestrzeniami roboczymi."
         }
       }
     }
