@@ -7,8 +7,10 @@ import { Button } from '@ragenai/tui/button';
 import { Badge } from '@ragenai/tui/badge';
 import { Switch, SwitchField } from '@ragenai/tui/switch';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
-import type { ConnectorDto } from '@/features/connectors/contracts/connector.types';
-import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
+import type {
+  ConnectorDto,
+  ProviderDefinition,
+} from '@/features/connectors/contracts/connector.types';
 import {
   initiateConnection,
   confirmConnection,
@@ -80,7 +82,11 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
           if (!popup.closed) {
             popup.close();
           }
-          handleAuthCallback(result.id);
+          if (popupSuccess) {
+            handleAuthCallback(result.id);
+          } else {
+            setLoading(false);
+          }
         }
       }, 500);
     } catch {

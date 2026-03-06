@@ -37,7 +37,7 @@ export async function* mapFullStream(
           type: 'tool-result',
           toolCallId: part.toolCallId,
           toolName: part.toolName,
-          result: part.output ?? part.result,
+          result: part.output !== undefined ? part.output : part.result,
         };
         break;
       // Ignore other event types (source, finish, finish-step, etc.)

@@ -1,8 +1,17 @@
 import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 
-const MCP_GOOGLE_SERVER_URL =
-  process.env.MCP_GOOGLE_SERVER_URL || 'http://localhost:8000';
+const MCP_GOOGLE_SERVER_URL = (() => {
+  if (process.env.MCP_GOOGLE_SERVER_URL) {
+    return process.env.MCP_GOOGLE_SERVER_URL;
+  }
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error(
+      'MCP_GOOGLE_SERVER_URL is required in non-development environments',
+    );
+  }
+  return 'http://localhost:8000';
+})();
 
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {

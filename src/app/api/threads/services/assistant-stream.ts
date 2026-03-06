@@ -351,8 +351,11 @@ export async function streamEvents({
           return;
         }
 
-        // Load MCP tools from user's enabled connectors
-        const userId = await getCurrentUserId().catch(() => null);
+        // Load MCP tools from user's enabled connectors (skip for public mode)
+        const userId =
+          mode !== AssistantMode.PUBLIC
+            ? await getCurrentUserId().catch(() => null)
+            : null;
 
         if (userId) {
           try {
@@ -451,6 +454,11 @@ export async function streamEvents({
         }
 
         if (!chainOutput) {
+          if (closeMcpClients) {
+            closeMcpClients().catch((err) =>
+              logger.error({ err }, 'Error closing MCP clients'),
+            );
+          }
           sendApiEvent(controller, 'close');
           controller.close();
           return;
