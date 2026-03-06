@@ -371,9 +371,12 @@ export async function streamEvents({
                 (c) =>
                   `- ${c.provider} tools: use customer_id="${c.customer_id}"`,
               );
-              const now = new Date();
-              const currentDateTime = now.toISOString();
               const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+              const currentDateTime = new Date().toLocaleString('en-US', {
+                timeZone,
+                dateStyle: 'full',
+                timeStyle: 'long',
+              });
               mcpContext = `You have access to external tools via connected integrations. When calling these tools, use the following customer_id values:\n${customerIds.join('\n')}\n\nCurrent date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to resolve relative dates like "today", "tomorrow", "this week", etc. when calling calendar or other time-based tools. Always provide both time_min and time_max for calendar queries to get precise results.`;
 
               logger.info(

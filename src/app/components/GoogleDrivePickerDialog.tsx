@@ -46,19 +46,29 @@ export const GoogleDrivePickerDialog = ({
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadFiles = useCallback(async (query: string = '') => {
-    setIsLoading(true);
-    try {
-      const result = await searchDriveFiles(query);
-      if (result.success && result.files) {
-        setFiles(result.files);
-      } else {
+  const loadFiles = useCallback(
+    async (query: string = '') => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const result = await searchDriveFiles(query);
+        if (result.success && result.files) {
+          setFiles(result.files);
+        } else {
+          setFiles([]);
+          if (result.error) {
+            setError(result.error);
+          }
+        }
+      } catch {
         setFiles([]);
+        setError(t('fetch-error'));
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [t],
+  );
 
   useEffect(() => {
     if (open) {
