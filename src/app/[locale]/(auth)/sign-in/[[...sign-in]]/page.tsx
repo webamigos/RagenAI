@@ -19,14 +19,26 @@ export async function generateMetadata({ params }: PropsWihLocale) {
   };
 }
 
-export default async function SignInPage() {
+type SignInPageProps = {
+  searchParams: Promise<{ invitationId?: string }>;
+};
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
   const user = await getCurrentUser();
   const t = await getTranslations('sign-in');
+  const { invitationId } = await searchParams;
 
   if (user) {
     const locale = await getLocale();
+    if (invitationId) {
+      nextRedirect(`/${locale}/accept-invitation?token=${invitationId}`);
+    }
     nextRedirect(`/${locale}`);
   }
+
+  const signUpHref = invitationId
+    ? `/sign-up?invitationId=${invitationId}`
+    : '/sign-up';
 
   return (
     <div className="flex min-h-screen flex-1">
@@ -40,7 +52,7 @@ export default async function SignInPage() {
             <p className="mt-2 text-sm/6 dark:text-gray-300 text-gray-500">
               {t('not-a-member')}{' '}
               <Link
-                href="/sign-up"
+                href={signUpHref}
                 className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-500"
               >
                 {t('start-free-trial')}

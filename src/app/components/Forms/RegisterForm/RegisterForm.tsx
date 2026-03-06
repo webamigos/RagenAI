@@ -12,6 +12,8 @@ import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/
 import { logger } from '@/app/lib/utils/logger';
 import { GoogleSignInButton } from '@/app/components/Forms/GoogleSignInButton';
 
+import { useSearchParams } from 'next/navigation';
+
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { addSubscriberToKit } from './actions';
 
@@ -19,6 +21,8 @@ export const RegisterForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const invitationId = searchParams.get('invitationId');
 
   const t = useTranslations('sign-up');
 
@@ -246,6 +250,7 @@ export const RegisterForm = () => {
         <div className="mt-6">
           <GoogleSignInButton
             label={t('sign-up-with-google')}
+            invitationId={invitationId}
             onBeforeSignIn={() => {
               if (!termsAccepted) {
                 void trigger('terms');

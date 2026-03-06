@@ -8,12 +8,14 @@ import { logger } from '@/app/lib/utils/logger';
 
 type GoogleSignInButtonProps = {
   label: string;
+  invitationId?: string | null;
   onBeforeSignIn?: () => boolean;
   onError?: (message: string) => void;
 };
 
 export const GoogleSignInButton = ({
   label,
+  invitationId,
   onBeforeSignIn,
   onError,
 }: GoogleSignInButtonProps) => {
@@ -28,9 +30,13 @@ export const GoogleSignInButton = ({
     setIsLoading(true);
 
     try {
+      const callbackURL = invitationId
+        ? `/${locale}/accept-invitation?token=${invitationId}`
+        : `/${locale}/`;
+
       await signIn.social({
         provider: 'google',
-        callbackURL: `/${locale}/`,
+        callbackURL,
         errorCallbackURL: `/${locale}/sign-in`,
       });
     } catch (err) {
