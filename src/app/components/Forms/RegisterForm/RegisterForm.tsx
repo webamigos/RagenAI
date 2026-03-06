@@ -62,9 +62,6 @@ export const RegisterForm = () => {
       }
 
       // Check if user came from invitation link
-      const searchParams = new URLSearchParams(window.location.search);
-      const invitationId = searchParams.get('invitationId');
-
       if (invitationId) {
         // Auto-accept invitation after registration
         try {

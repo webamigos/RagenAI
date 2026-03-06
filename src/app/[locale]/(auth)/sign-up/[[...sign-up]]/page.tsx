@@ -29,7 +29,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
   const t = await getTranslations('sign-up');
 
   const signInHref = invitationId
-    ? `/sign-in?invitationId=${invitationId}`
+    ? `/sign-in?invitationId=${encodeURIComponent(invitationId)}`
     : '/sign-in';
 
   return (

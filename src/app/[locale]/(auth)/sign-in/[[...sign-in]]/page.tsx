@@ -31,13 +31,15 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   if (user) {
     const locale = await getLocale();
     if (invitationId) {
-      nextRedirect(`/${locale}/accept-invitation?token=${invitationId}`);
+      nextRedirect(
+        `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`,
+      );
     }
     nextRedirect(`/${locale}`);
   }
 
   const signUpHref = invitationId
-    ? `/sign-up?invitationId=${invitationId}`
+    ? `/sign-up?invitationId=${encodeURIComponent(invitationId)}`
     : '/sign-up';
 
   return (

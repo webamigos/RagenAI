@@ -62,7 +62,7 @@ export const LoginForm = () => {
 
       // If user came from invitation link, redirect to accept it
       if (invitationId) {
-        window.location.href = `/${locale}/accept-invitation?token=${invitationId}`;
+        window.location.href = `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`;
         return;
       }
 
