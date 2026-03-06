@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
@@ -21,6 +22,8 @@ export const LoginForm = () => {
 
   const t = useTranslations('sign-in');
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const invitationId = searchParams.get('invitationId');
 
   const {
     register,
@@ -55,6 +58,12 @@ export const LoginForm = () => {
           'Onboarding finalization failed, relying on fallback',
         );
         // Continue anyway - middleware/account-configuration will handle it
+      }
+
+      // If user came from invitation link, redirect to accept it
+      if (invitationId) {
+        window.location.href = `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`;
+        return;
       }
 
       // Use window.location.href to force full page reload and session refresh
@@ -110,6 +119,7 @@ export const LoginForm = () => {
       <div className="mt-6">
         <GoogleSignInButton
           label={t('sign-in-with-google')}
+          invitationId={invitationId}
           onError={(message) => setError(message)}
         />
       </div>

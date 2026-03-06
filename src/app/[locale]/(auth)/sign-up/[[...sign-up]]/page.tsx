@@ -19,12 +19,18 @@ type Props = {
   params: Promise<{
     locale: string;
   }>;
+  searchParams: Promise<{ invitationId?: string }>;
 };
 
-export default async function SignUpPage({ params }: Props) {
+export default async function SignUpPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { invitationId } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations('sign-up');
+
+  const signInHref = invitationId
+    ? `/sign-in?invitationId=${encodeURIComponent(invitationId)}`
+    : '/sign-in';
 
   return (
     <>
@@ -39,7 +45,7 @@ export default async function SignUpPage({ params }: Props) {
               <p className="mt-2 text-sm/6 dark:text-gray-300 text-gray-500">
                 {t('Already-have-an-account')}{' '}
                 <Link
-                  href="/sign-in"
+                  href={signInHref}
                   className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-500"
                 >
                   {t('sign-in')}
