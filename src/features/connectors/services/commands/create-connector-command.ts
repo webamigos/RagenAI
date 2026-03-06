@@ -18,7 +18,7 @@ export const createConnectorCommand = async (
     throw new Error(`Unknown provider: ${provider}`);
   }
 
-  const customerId = `${organizationId}:${userId}`;
+  const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
 
   try {
     return await db.mcpConnector.upsert({
@@ -32,6 +32,7 @@ export const createConnectorCommand = async (
       update: {
         status: McpConnectorStatus.PENDING,
         mcp_server_url: `${providerDef.mcpServerUrl}/mcp`,
+        customer_id: customerId,
       },
       create: {
         organization_id: organizationId,

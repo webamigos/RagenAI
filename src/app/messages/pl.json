@@ -425,7 +425,25 @@
       "connected": "Połączono",
       "pending": "Oczekuje",
       "connect": "Połącz",
-      "disconnect": "Rozłącz"
+      "disconnect": "Rozłącz",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Wyszukuj i czytaj dokumenty z Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Przeglądaj wydarzenia w kalendarzu i sprawdzaj dostępność."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Raporty ruchu, konwersje i statystyki odbiorców."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Przeglądaj kampanie, wyniki i śledź koszty."
+        }
+      }
     }
   },
   "teams-page": {
@@ -555,7 +573,15 @@
   },
   "prompt-attachments": {
     "upload-file": "Wgraj plik",
-    "from-knowledge-base": "Z Bazy Wiedzy"
+    "from-knowledge-base": "Z Bazy Wiedzy",
+    "from-google-drive": "Z Google Drive"
+  },
+  "drive-picker": {
+    "title": "Wybierz z Google Drive",
+    "search-placeholder": "Szukaj dokumentów...",
+    "no-results": "Brak dokumentów pasujących do wyszukiwania",
+    "no-files": "Nie znaleziono dokumentów",
+    "fetch-error": "Nie udało się pobrać zawartości dokumentu"
   },
   "thread-actions": {
     "star": "Przypnij",

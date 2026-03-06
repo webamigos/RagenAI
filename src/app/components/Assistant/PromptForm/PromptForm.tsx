@@ -3,6 +3,7 @@ import {
   useImperativeHandle,
   useState,
   useCallback,
+  useEffect,
   useRef,
 } from 'react';
 import { useTranslations } from 'next-intl';
@@ -31,6 +32,8 @@ import {
 } from '@/features/messages/contracts/message.types';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
+import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
+import { isDriveConnected } from '@/app/actions/google-drive';
 
 type Props = {
   isLoading: boolean;
@@ -63,7 +66,17 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       [],
     );
     const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
+    const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
+    const [hasDriveConnector, setHasDriveConnector] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+    useEffect(() => {
+      if (!isPublicAccess) {
+        isDriveConnected()
+          .then(setHasDriveConnector)
+          .catch(() => setHasDriveConnector(false));
+      }
+    }, [isPublicAccess]);
 
     const {
       register,
@@ -128,6 +141,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
 
     const handleThreadDocumentRemove = useCallback((index: number) => {
       setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const handleDriveFileSelected = useCallback((doc: ThreadDocumentUI) => {
+      setThreadDocuments((prev) => [...prev, doc]);
     }, []);
 
     const handleKbFilesSelected = useCallback(
@@ -231,6 +248,18 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
                       <BookOpenIcon className="size-4" />
                       {tAttach('from-knowledge-base')}
                     </DropdownMenuItem>
+                    {hasDriveConnector && (
+                      <DropdownMenuItem
+                        onClick={() => setIsDrivePickerOpen(true)}
+                      >
+                        <img
+                          src="/assets/connectors/google-drive.svg"
+                          alt="Google Drive"
+                          className="size-4"
+                        />
+                        {tAttach('from-google-drive')}
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : undefined
@@ -252,6 +281,12 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           onOpenChange={setIsKbPickerOpen}
           onFilesSelected={handleKbFilesSelected}
           excludeFileIds={excludeFileIds}
+        />
+
+        <GoogleDrivePickerDialog
+          open={isDrivePickerOpen}
+          onOpenChange={setIsDrivePickerOpen}
+          onFileSelected={handleDriveFileSelected}
         />
       </div>
     );
