@@ -46,6 +46,16 @@ export type SseMessageError = {
   code: ChainErrorCode;
 };
 
+export type ApiSseToolCall = {
+  toolCallId: string;
+  toolName: string;
+};
+
+export type ApiSseToolResult = {
+  toolCallId: string;
+  toolName: string;
+};
+
 export type SseEndEvent = {
   type: 'end';
 };

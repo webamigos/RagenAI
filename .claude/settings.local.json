@@ -37,7 +37,8 @@
       "Bash(npx playwright:*)",
       "Bash(npx tsx:*)",
       "WebFetch(domain:www.promptfoo.dev)",
-      "Skill(coderabbit:review)"
+      "Skill(coderabbit:review)",
+      "Bash(git:*)"
     ]
   },
   "enabledPlugins": {

@@ -24,6 +24,9 @@ type InitializeRagChainParams = {
   projectId?: number | null;
   projectPublicId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mcpTools?: Record<string, any>;
+  mcpContext?: string;
 };
 
 const DEFAULT_REPHRASE_MODEL =
@@ -40,6 +43,8 @@ export const initializeRagChain = async ({
   projectId,
   projectPublicId,
   threadDocuments,
+  mcpTools,
+  mcpContext,
 }: InitializeRagChainParams) => {
   try {
     const {
@@ -99,6 +104,8 @@ export const initializeRagChain = async ({
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
         threadDocuments: threadDocuments || [],
+        mcpTools,
+        mcpContext,
       },
       vectorStore,
     });

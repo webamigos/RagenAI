@@ -1,4 +1,7 @@
 import { getTranslations } from 'next-intl/server';
+import { CONNECTOR_PROVIDERS } from '@/features/connectors/constants/providers';
+import { getConnectors } from './actions';
+import { ConnectorsList } from './components/ConnectorsList';
 
 export async function generateMetadata() {
   const t = await getTranslations('Metadata');
@@ -7,6 +10,7 @@ export async function generateMetadata() {
 
 export default async function ConnectorsSettingsPage() {
   const t = await getTranslations('settings-page.connectors');
+  const connectors = await getConnectors();
 
   return (
     <div className="max-w-2xl space-y-4">
@@ -18,9 +22,7 @@ export default async function ConnectorsSettingsPage() {
           {t('description')}
         </p>
       </section>
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        {t('no-connectors')}
-      </div>
+      <ConnectorsList providers={CONNECTOR_PROVIDERS} connectors={connectors} />
     </div>
   );
 }

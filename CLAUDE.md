@@ -57,7 +57,7 @@ features/{feature}/
 └── utils/              # Feature-specific utilities
 ```
 
-**Current feature modules**: `assistants`, `documents`, `messages`, `onboarding`, `organizations`, `projects`, `subscriptions`, `threads`, `users`
+**Current feature modules**: `assistants`, `connectors`, `documents`, `messages`, `onboarding`, `organizations`, `projects`, `subscriptions`, `threads`, `users`
 
 **Conventions**:
 - Queries return data directly; commands return results or `OperationResult<T>`
@@ -125,6 +125,7 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `db/` — Prisma client singleton (aliased as `@ragenai/prisma-client`)
 - `temporal/` — Temporal.io client for async document processing workflows
 - `payments/` — Stripe integration
+- `mcp/` — MCP (Model Context Protocol) client for connecting to external tool servers via `@ai-sdk/mcp`
 - `sse/` — Server-Sent Events for streaming
 - `tui/` — Tailwind UI component library (aliased as `@ragenai/tui`)
 - `common-ui/` — Shared UI utilities (aliased as `@ragenai/common-ui`)
@@ -143,6 +144,24 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 - Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
 - Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
 - Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
+
+### MCP Integrations (External Tools)
+
+Users can connect external services (Google Calendar, Analytics, Ads) via Settings > Connectors. These are powered by MCP (Model Context Protocol) servers that provide tools to the AI during chat sessions.
+
+**How it works:**
+- Each connector stores an `mcp_server_url` and `customer_id` (format: `{orgId}:{userId}`) in the `McpConnector` Prisma model
+- During chat, `assistant-stream.ts` loads enabled connectors, creates MCP clients via `@ai-sdk/mcp` (`src/libs/mcp/client.ts`), and passes the tools to `streamText()`
+- AI SDK v6 uses `stopWhen: stepCountIs(N)` (not `maxSteps`) for multi-step tool use
+- MCP clients are closed after streaming completes (or on error)
+
+**Key files:**
+- `src/features/connectors/` — CQRS feature module (contracts, queries, commands)
+- `src/libs/mcp/client.ts` — Creates MCP clients from connector records, returns tools + cleanup function
+- `src/libs/chains/basic-rag/chain.ts` and `conversation-chain/chain.ts` — Pass MCP tools to `streamText()` with `stopWhen: stepCountIs(5)`
+- `src/app/[locale]/(panel)/settings/connectors/` — UI for connecting/disconnecting providers (OAuth popup flow)
+
+**External MCP server:** `ragen-mcp-google` (separate repo) — FastMCP + FastAPI Python server deployed on Railway. Per-user OAuth with PKCE, tokens stored in its own Postgres.
 
 ### Settings Pages
 
@@ -163,7 +182,7 @@ App admins can access all pages regardless of permission level.
 **Key pages**:
 - `settings/general/` — Appearance/theme switcher (light/dark/system) using `next-themes`
 - `settings/account/` — Profile edit + password change (reuses components from `user/profile/components/`)
-- `settings/connectors/` — External integrations (placeholder)
+- `settings/connectors/` — External integrations (Google Calendar, Google Analytics, Google Ads) with OAuth popup flow
 - `settings/[[...rest]]/` — Redirects `/settings` → `/settings/general`
 - Org-level: `organization-profile/`, `prompt-management/`, `subscription/`, `teams/`
 - App-admin: `api-keys/`, `users/`, `ai-usage/`, `disk-usage/`
