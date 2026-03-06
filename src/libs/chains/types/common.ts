@@ -20,6 +20,9 @@ export interface RagChainModels extends BaseChatChainModels {
 export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mcpTools?: Record<string, any>;
+  mcpContext?: string;
 }
 
 export interface RagChainConfig extends ChainConfig {
@@ -47,6 +50,13 @@ export type ChainStreamPart =
   | { type: 'reasoning-start'; id: string }
   | { type: 'reasoning-delta'; id: string; delta: string }
   | { type: 'reasoning-end'; id: string }
+  | { type: 'tool-call'; toolCallId: string; toolName: string; args: unknown }
+  | {
+      type: 'tool-result';
+      toolCallId: string;
+      toolName: string;
+      result: unknown;
+    }
   | { type: 'other'; [key: string]: unknown };
 
 export interface BaseChatChainOutput {

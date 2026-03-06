@@ -421,7 +421,11 @@
     "connectors": {
       "title": "Integracje",
       "description": "Połącz zewnętrzne usługi i integracje.",
-      "no-connectors": "Brak dostępnych integracji."
+      "no-connectors": "Brak dostępnych integracji.",
+      "connected": "Połączono",
+      "pending": "Oczekuje",
+      "connect": "Połącz",
+      "disconnect": "Rozłącz"
     }
   },
   "teams-page": {
@@ -933,6 +937,11 @@
     "save_assistant_response": "zapisywanie odpowiedzi",
     "assistant_response_saved": "",
     "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "wywołuję narzędzie",
+    "tool_result": "",
     "error": "Wystąpił błąd",
     "close": ""
   },

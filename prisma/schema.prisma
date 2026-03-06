@@ -317,11 +317,12 @@ model User {
   banExpires         DateTime? @map("ban_expires") @db.Timestamptz
   stripeCustomerId   String?  @map("stripe_customer_id")
 
-  sessions    Session[]
-  accounts    Account[]
-  members     Member[]
-  aiUsages    AiUsage[]
-  teamMembers TeamMember[]
+  sessions      Session[]
+  accounts      Account[]
+  members       Member[]
+  aiUsages      AiUsage[]
+  teamMembers   TeamMember[]
+  mcpConnectors McpConnector[]
 
   @@map("users")
 }
@@ -385,13 +386,14 @@ model Organization {
   vectorStore  String? @map("vector_store")
   publicId     String  @unique @default(uuid()) @map("public_id") @db.Uuid
 
-  members  Member[]
-  settings OrganizationSettings?
-  projects Project[]
-  apiKeys  ApiKey[]
-  aiUsages AiUsage[]
-  teams    Team[]
-  folders  DocumentFolder[]
+  members       Member[]
+  settings      OrganizationSettings?
+  projects      Project[]
+  apiKeys       ApiKey[]
+  aiUsages      AiUsage[]
+  teams         Team[]
+  folders       DocumentFolder[]
+  mcpConnectors McpConnector[]
 
   @@index([publicId])
   @@map("organizations")
@@ -553,6 +555,42 @@ enum AiUsageStep {
   CHAT_COMPLETION
   REPHRASING
   EMBEDDINGS
+}
+
+enum McpConnectorStatus {
+  PENDING
+  CONNECTED
+  ERROR
+}
+
+enum McpConnectorProvider {
+  GOOGLE_CALENDAR
+  GOOGLE_ANALYTICS
+  GOOGLE_ADS
+}
+
+model McpConnector {
+  id              String               @id @default(uuid()) @db.Uuid
+  organization_id String
+  user_id         String
+  provider        McpConnectorProvider
+  mcp_server_url  String
+  customer_id     String
+  enabled         Boolean              @default(true)
+  status          McpConnectorStatus   @default(PENDING)
+  connected_at    DateTime?            @db.Timestamptz
+  created_at      DateTime             @default(now()) @db.Timestamptz
+  updated_at      DateTime             @updatedAt @db.Timestamptz
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, user_id, provider])
+  @@index([organization_id])
+  @@index([user_id])
+  @@index([organization_id, user_id])
+
+  @@map("mcp_connectors")
 }
 
 model AiUsage {
