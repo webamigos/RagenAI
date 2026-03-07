@@ -16,6 +16,7 @@ import { getApiChatMessagesQuery } from '../queries/api-threads.query';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
+import { LimitExceededException } from '../guards/rate-limit.guard';
 import { logger } from '@/app/lib/utils/logger';
 
 async function prepareChainToRun(
@@ -109,7 +110,7 @@ export async function createApiChatMessagesCommand(
 ) {
   const usageLimitStatus = await checkUsageLimitsQuery(context.orgId);
   if (usageLimitStatus.isAnyLimitExceeded) {
-    throw new Error(
+    throw new LimitExceededException(
       'Monthly usage limit exceeded. Please contact your organization administrator.',
     );
   }
@@ -179,7 +180,7 @@ export async function streamApiChatMessagesCommand(
 ) {
   const usageLimitStatus = await checkUsageLimitsQuery(context.orgId);
   if (usageLimitStatus.isAnyLimitExceeded) {
-    throw new Error(
+    throw new LimitExceededException(
       'Monthly usage limit exceeded. Please contact your organization administrator.',
     );
   }

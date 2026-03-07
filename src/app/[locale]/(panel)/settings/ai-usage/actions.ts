@@ -18,7 +18,6 @@ import {
 import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
 import {
   saveUsageLimits,
-  getUsageLimits,
   getDefaultOrganizationLimits,
   saveDefaultOrganizationLimits,
 } from '@/features/organizations/services/organization-settings';
@@ -84,11 +83,12 @@ export async function getUsersForFilter(orgId?: string) {
 
 export async function getOrgUsageLimitsAction(orgId: string) {
   await requireAppAdmin();
-  const [limits, status] = await Promise.all([
-    getUsageLimits(orgId),
-    checkUsageLimitsQuery(orgId),
-  ]);
-  return { limits, current: status.current, exceeded: status.exceeded };
+  const status = await checkUsageLimitsQuery(orgId);
+  return {
+    limits: status.limits,
+    current: status.current,
+    exceeded: status.exceeded,
+  };
 }
 
 export async function updateOrgUsageLimitsAction(

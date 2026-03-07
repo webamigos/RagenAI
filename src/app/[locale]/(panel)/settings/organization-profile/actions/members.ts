@@ -61,12 +61,10 @@ export async function inviteMember(
     if (!isAdmin) {
       const usageLimits = await getUsageLimits(organizationId);
       if (usageLimits.maxMembers !== null) {
-        const currentMemberCount = await db.member.count({
-          where: { organizationId },
-        });
-        const pendingInvitationCount = await db.invitation.count({
-          where: { organizationId, status: 'pending' },
-        });
+        const [currentMemberCount, pendingInvitationCount] = await Promise.all([
+          db.member.count({ where: { organizationId } }),
+          db.invitation.count({ where: { organizationId, status: 'pending' } }),
+        ]);
         if (
           currentMemberCount + pendingInvitationCount >=
           usageLimits.maxMembers

@@ -19,6 +19,7 @@ import {
   getOrganizationsForFilterQuery,
   getProjectsForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
+import db from '@ragenai/prisma-client';
 
 /**
  * Ensures the caller is an app admin or org admin.
@@ -57,9 +58,10 @@ export async function getAdminStorageOverview() {
     getStorageLimitsByOrgId(access.orgId),
   ]);
 
-  // We need the org name — get it from the filter query
-  const orgs = await getOrganizationsForFilterQuery();
-  const org = orgs.find((o) => o.id === access.orgId);
+  const org = await db.organization.findUnique({
+    where: { id: access.orgId },
+    select: { name: true },
+  });
 
   return [
     {
