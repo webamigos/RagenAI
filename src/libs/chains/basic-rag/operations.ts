@@ -69,6 +69,7 @@ export async function rephraseQuestion(
     model,
     system: systemTemplates.rephraseQuestion,
     messages,
+    experimental_telemetry: { isEnabled: true },
   });
 
   return result.text;
