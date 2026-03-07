@@ -22,7 +22,8 @@ export type ProviderDefinition = {
   description: string;
   icon: string;
   mcpServerUrl: string;
-  scopes: string[];
+  authPath: string;
+  scopes?: string[];
 };
 
 export type { McpConnectorProvider, McpConnectorStatus };

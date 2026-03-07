@@ -38,7 +38,8 @@
       "Bash(npx tsx:*)",
       "WebFetch(domain:www.promptfoo.dev)",
       "Skill(coderabbit:review)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "WebFetch(domain:developer.clickup.com)"
     ]
   },
   "enabledPlugins": {

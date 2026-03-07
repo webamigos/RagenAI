@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
@@ -20,6 +21,7 @@ const ReasoningBlock = ({
   isStreaming?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const t = useTranslations('assistant.chat');
 
   return (
     <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 dark:bg-muted/20 overflow-hidden">
@@ -35,7 +37,10 @@ const ReasoningBlock = ({
         >
           <path d="M4.5 2l5 4-5 4V2z" />
         </svg>
-        <span>Thinking{isStreaming ? '...' : ''}</span>
+        <span>
+          {t('thinking')}
+          {isStreaming ? '...' : ''}
+        </span>
       </button>
       {isOpen && (
         <div className="px-3 pb-2 text-xs text-muted-foreground/80 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">

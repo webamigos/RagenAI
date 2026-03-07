@@ -23,10 +23,11 @@ import { getProjectInstructionQuery as getProjectInstruction } from '@/features/
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
-import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
+import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
+import { observe, updateActiveTrace } from '@langfuse/tracing';
 
 /**
  * Load thread documents from database for a specific thread
@@ -270,372 +271,411 @@ export async function streamEvents({
   visitorId,
 }: Config) {
   return new ReadableStream({
-    async start(controller) {
-      sendApiEvent(controller, 'init');
+    start: observe(
+      async function chatStream(controller) {
+        sendApiEvent(controller, 'init');
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let mcpTools: Record<string, any> = {};
-      let mcpContext = '';
-      let closeMcpClients: (() => Promise<void>) | undefined;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let mcpTools: Record<string, any> = {};
+        let mcpContext = '';
+        let closeMcpClients: (() => Promise<void>) | undefined;
 
-      try {
-        // Phase 1: Fetch settings and thread details (with messages) in parallel
-        sendApiEvent(controller, 'find_thread');
+        try {
+          // Phase 1: Fetch settings and thread details (with messages) in parallel
+          sendApiEvent(controller, 'find_thread');
 
-        const [rawSettings, threadRecord] = await Promise.all([
-          getAllSettings(orgId),
-          getThreadDetails(publicThreadId, orgId, {
-            includeMessages: true,
-          }),
-        ]);
+          const [rawSettings, threadRecord, orgSlugResult] = await Promise.all([
+            getAllSettings(orgId),
+            getThreadDetails(publicThreadId, orgId, {
+              includeMessages: true,
+            }),
+            db.organization.findUnique({
+              where: { id: orgId },
+              select: { slug: true },
+            }),
+          ]);
+          const orgSlug = orgSlugResult?.slug ?? orgId;
 
-        if (!rawSettings.apiKey) {
-          throw new ApiKeyError();
-        }
+          if (!rawSettings.apiKey) {
+            throw new ApiKeyError();
+          }
 
-        sendApiEvent(controller, 'thread_found', {
-          id: threadRecord.public_id,
-        });
+          sendApiEvent(controller, 'thread_found', {
+            id: threadRecord.public_id,
+          });
 
-        const effectiveSettings = {
-          apiKey: rawSettings.apiKey,
-          model: threadRecord.preferred_model || rawSettings.model,
-          temperature: rawSettings.temperature,
-          prompt: rawSettings.prompt,
-          maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
-          voiceId: rawSettings.voiceId,
-        };
+          const effectiveSettings = {
+            apiKey: rawSettings.apiKey,
+            model: threadRecord.preferred_model || rawSettings.model,
+            temperature: rawSettings.temperature,
+            prompt: rawSettings.prompt,
+            maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
+            voiceId: rawSettings.voiceId,
+          };
 
-        // Build conversation history from thread record (no separate DB query needed)
-        const conv_history =
-          'messages' in threadRecord && Array.isArray(threadRecord.messages)
-            ? (threadRecord.messages as { role: string; content: string }[])
-                .map((msg) => `${msg.role}: ${msg.content}`)
-                .join('\n')
-            : undefined;
+          // Build conversation history from thread record (no separate DB query needed)
+          const conv_history =
+            'messages' in threadRecord && Array.isArray(threadRecord.messages)
+              ? (threadRecord.messages as { role: string; content: string }[])
+                  .map((msg) => `${msg.role}: ${msg.content}`)
+                  .join('\n')
+              : undefined;
 
-        // Phase 2: Save user message + resolve project instructions + load thread docs in parallel
-        sendApiEvent(controller, 'save_user_message');
-        sendApiEvent(controller, 'init_lmm');
+          // Phase 2: Save user message + resolve project instructions + load thread docs in parallel
+          sendApiEvent(controller, 'save_user_message');
+          sendApiEvent(controller, 'init_lmm');
 
-        const phase2Promises: [
-          Promise<Awaited<ReturnType<typeof createAndStoreMessage>>>,
-          Promise<{
-            instruction: string | null;
-            projectPublicId: string | null;
-          }>,
-          Promise<ThreadDocumentUI[]>,
-        ] = [
-          createAndStoreMessage({
-            threadId: threadRecord.id,
-            prompt: userMessage.prompt,
-            visitorId,
-            messageType: userMessage.messageType,
-            voiceDurationSeconds: userMessage.voiceDurationSeconds,
-          }),
-          resolveProjectInstruction(
-            threadRecord,
-            orgId,
-            rawSettings,
-            effectiveSettings,
-          ),
-          loadThreadDocuments(threadRecord.id),
-        ];
+          const phase2Promises: [
+            Promise<Awaited<ReturnType<typeof createAndStoreMessage>>>,
+            Promise<{
+              instruction: string | null;
+              projectPublicId: string | null;
+            }>,
+            Promise<ThreadDocumentUI[]>,
+          ] = [
+            createAndStoreMessage({
+              threadId: threadRecord.id,
+              prompt: userMessage.prompt,
+              visitorId,
+              messageType: userMessage.messageType,
+              voiceDurationSeconds: userMessage.voiceDurationSeconds,
+            }),
+            resolveProjectInstruction(
+              threadRecord,
+              orgId,
+              rawSettings,
+              effectiveSettings,
+            ),
+            loadThreadDocuments(threadRecord.id),
+          ];
 
-        const [threadMessage, projectResult, dbThreadDocuments] =
-          await Promise.all(phase2Promises);
+          const [threadMessage, projectResult, dbThreadDocuments] =
+            await Promise.all(phase2Promises);
 
-        if (!threadMessage) {
-          logger.error('Thread message not found');
-          controller.close();
-          return;
-        }
+          if (!threadMessage) {
+            logger.error('Thread message not found');
+            controller.close();
+            return;
+          }
 
-        // Load MCP tools from user's enabled connectors (skip for public mode)
-        const userId =
-          mode !== AssistantMode.PUBLIC
-            ? await getCurrentUserId().catch(() => null)
-            : null;
+          // Load MCP tools from user's enabled connectors (skip for public mode)
+          const currentUser =
+            mode !== AssistantMode.PUBLIC
+              ? await getCurrentUser().catch(() => null)
+              : null;
+          const userId = currentUser?.id ?? null;
+          const userEmail = currentUser?.email ?? null;
 
-        if (userId) {
-          try {
-            const connectors = await getEnabledConnectorsQuery(orgId, userId);
-            if (connectors.length > 0) {
-              const { tools, closeAll } =
-                await createMcpToolsFromConnectors(connectors);
-              mcpTools = tools;
-              closeMcpClients = closeAll;
+          if (userId) {
+            try {
+              const connectors = await getEnabledConnectorsQuery(orgId, userId);
+              if (connectors.length > 0) {
+                const { tools, closeAll } =
+                  await createMcpToolsFromConnectors(connectors);
+                mcpTools = tools;
+                closeMcpClients = closeAll;
 
-              // Build context so the AI knows the customer_id for each connector
-              const customerIds = connectors.map(
-                (c) =>
-                  `- ${c.provider} tools: use customer_id="${c.customer_id}"`,
-              );
-              const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-              const currentDateTime = new Date().toLocaleString('en-US', {
-                timeZone,
-                dateStyle: 'full',
-                timeStyle: 'long',
-              });
-              mcpContext = `You have access to external tools via connected integrations. When calling these tools, use the following customer_id values:\n${customerIds.join('\n')}\n\nCurrent date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to resolve relative dates like "today", "tomorrow", "this week", etc. when calling calendar or other time-based tools. Always provide both time_min and time_max for calendar queries to get precise results.`;
+                // Build context so the AI knows the customer_id for each connector
+                const customerIds = connectors.map(
+                  (c) =>
+                    `- ${c.provider} tools: use customer_id="${c.customer_id}"`,
+                );
+                const timeZone =
+                  Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const currentDateTime = new Date().toLocaleString('en-US', {
+                  timeZone,
+                  dateStyle: 'full',
+                  timeStyle: 'long',
+                });
+                mcpContext = `You have access to external tools via connected integrations. When calling these tools, use the following customer_id values:\n${customerIds.join('\n')}\n\nCurrent date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to resolve relative dates like "today", "tomorrow", "this week", etc. when calling calendar or other time-based tools. Always provide both time_min and time_max for calendar queries to get precise results.`;
 
-              logger.info(
-                { toolCount: Object.keys(tools).length },
-                'MCP tools loaded for chat session',
+                logger.info(
+                  { toolCount: Object.keys(tools).length },
+                  'MCP tools loaded for chat session',
+                );
+              }
+            } catch (error) {
+              logger.error(
+                { err: error },
+                'Failed to load MCP tools, continuing without them',
               );
             }
-          } catch (error) {
-            logger.error(
-              { err: error },
-              'Failed to load MCP tools, continuing without them',
-            );
           }
-        }
 
-        sendApiEvent(controller, 'user_message_saved', {
-          id: threadMessage.public_id,
-        });
+          sendApiEvent(controller, 'user_message_saved', {
+            id: threadMessage.public_id,
+          });
 
-        sendApiEvent(controller, 'user_message_created', {
-          id: threadMessage.public_id,
-        });
+          sendApiEvent(controller, 'user_message_created', {
+            id: threadMessage.public_id,
+          });
 
-        const {
-          instruction: projectInstruction,
-          projectPublicId: effectiveProjectPublicId,
-        } = projectResult;
+          const {
+            instruction: projectInstruction,
+            projectPublicId: effectiveProjectPublicId,
+          } = projectResult;
 
-        // Phase 3: Initialize the appropriate chain
-        let chainOutput: BaseChatChainOutput | undefined = undefined;
+          // Phase 3: Initialize the appropriate chain
+          let chainOutput: BaseChatChainOutput | undefined = undefined;
 
-        if (mode === AssistantMode.INTERNAL) {
-          if (filteredMode === ChatType.CONVERSATION) {
-            chainOutput = await initializeConversationChain({
-              settings: {
-                ...effectiveSettings,
-                apiKey: effectiveSettings.apiKey,
-              },
-              projectInstruction,
-              mcpTools,
-              mcpContext,
-            });
-          } else {
-            const projectIdToUse =
-              threadRecord.mentioned_project_id || threadRecord.project_id;
+          // Set Langfuse trace context (user, session, tags)
+          const trackedModelId = effectiveSettings.model || '';
+          const trackedProvider =
+            getModelProvider(normalizeModelId(trackedModelId)) || 'openrouter';
+          const traceTags = [
+            `provider:${trackedProvider}`,
+            `model:${trackedModelId}`,
+          ];
+          updateActiveTrace({
+            name: `chat-${mode === AssistantMode.PUBLIC ? 'public' : filteredMode === ChatType.CONVERSATION ? 'conversation' : 'rag'}`,
+            input: userMessage.prompt,
+            userId: userEmail ?? undefined,
+            sessionId: `${orgSlug}:${threadRecord.public_id}`,
+            tags: traceTags,
+          });
+
+          if (mode === AssistantMode.INTERNAL) {
+            if (filteredMode === ChatType.CONVERSATION) {
+              chainOutput = await initializeConversationChain({
+                settings: {
+                  ...effectiveSettings,
+                  apiKey: effectiveSettings.apiKey,
+                },
+                projectInstruction,
+                mcpTools,
+                mcpContext,
+              });
+            } else {
+              const projectIdToUse =
+                threadRecord.mentioned_project_id || threadRecord.project_id;
+              const projectPublicIdToUse =
+                effectiveProjectPublicId || threadRecord.project?.public_id;
+
+              const inlineThreadDocuments = userMessage.threadDocuments || [];
+              const threadDocuments = mergeThreadDocuments(
+                dbThreadDocuments,
+                inlineThreadDocuments,
+              );
+
+              chainOutput = await initializeRagChain({
+                settings: {
+                  ...effectiveSettings,
+                  apiKey: effectiveSettings.apiKey,
+                },
+                orgId,
+                projectInstruction,
+                projectId: projectIdToUse ?? null,
+                projectPublicId: projectPublicIdToUse ?? null,
+                threadDocuments,
+                mcpTools,
+                mcpContext,
+              });
+            }
+          } else if (mode === AssistantMode.PUBLIC) {
             const projectPublicIdToUse =
               effectiveProjectPublicId || threadRecord.project?.public_id;
-
-            const inlineThreadDocuments = userMessage.threadDocuments || [];
-            const threadDocuments = mergeThreadDocuments(
-              dbThreadDocuments,
-              inlineThreadDocuments,
-            );
-
-            chainOutput = await initializeRagChain({
+            chainOutput = await initializePublicRagChain({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
               },
-              orgId,
+              organizationId: orgId,
               projectInstruction,
-              projectId: projectIdToUse ?? null,
-              projectPublicId: projectPublicIdToUse ?? null,
-              threadDocuments,
-              mcpTools,
-              mcpContext,
+              projectPublicId: projectPublicIdToUse,
             });
           }
-        } else if (mode === AssistantMode.PUBLIC) {
-          const projectPublicIdToUse =
-            effectiveProjectPublicId || threadRecord.project?.public_id;
-          chainOutput = await initializePublicRagChain({
-            settings: {
-              ...effectiveSettings,
-              apiKey: effectiveSettings.apiKey,
-            },
-            organizationId: orgId,
-            projectInstruction,
-            projectPublicId: projectPublicIdToUse,
-          });
-        }
 
-        if (!chainOutput) {
+          if (!chainOutput) {
+            if (closeMcpClients) {
+              closeMcpClients().catch((err) =>
+                logger.error({ err }, 'Error closing MCP clients'),
+              );
+            }
+            sendApiEvent(controller, 'close');
+            controller.close();
+            return;
+          }
+
+          // Phase 4: Run chain with streaming
+          sendApiEvent(controller, 'start_lmm');
+
+          const streamResult = await chainOutput.stream({
+            question: threadMessage.content,
+            chat_history: conv_history,
+          });
+
+          let fullMessage = '';
+          const usedToolNames = new Set<string>();
+
+          for await (const part of streamResult.fullStream) {
+            switch (part.type) {
+              case 'text-delta':
+                fullMessage += part.textDelta;
+                sendApiEvent(controller, 'delta', {
+                  content: part.textDelta,
+                });
+                break;
+              case 'reasoning-start':
+                sendApiEvent(controller, 'reasoning_start');
+                break;
+              case 'reasoning-delta':
+                sendApiEvent(controller, 'reasoning_delta', {
+                  content: part.delta,
+                });
+                break;
+              case 'reasoning-end':
+                sendApiEvent(controller, 'reasoning_end');
+                break;
+              case 'tool-call':
+                usedToolNames.add(part.toolName);
+                sendApiEvent(controller, 'tool_call', {
+                  toolCallId: part.toolCallId,
+                  toolName: part.toolName,
+                });
+                break;
+              case 'tool-result':
+                sendApiEvent(controller, 'tool_result', {
+                  toolCallId: part.toolCallId,
+                  toolName: part.toolName,
+                });
+                break;
+            }
+          }
+
+          // Fallback: use resolved text if fullMessage is empty (multi-step tool use)
+          if (!fullMessage) {
+            try {
+              const resolvedText = (await streamResult.text) || '';
+              if (resolvedText) {
+                fullMessage = resolvedText;
+              }
+            } catch {
+              // text promise may reject
+            }
+          }
+
+          // Update Langfuse trace with output and tool tags
+          if (usedToolNames.size > 0) {
+            for (const toolName of usedToolNames) {
+              traceTags.push(`tool:${toolName}`);
+            }
+          }
+          updateActiveTrace({
+            output: fullMessage,
+            tags: traceTags,
+          });
+
+          // Close MCP clients after streaming completes
           if (closeMcpClients) {
             closeMcpClients().catch((err) =>
               logger.error({ err }, 'Error closing MCP clients'),
             );
           }
-          sendApiEvent(controller, 'close');
-          controller.close();
-          return;
-        }
 
-        // Phase 4: Run chain with streaming
-        sendApiEvent(controller, 'start_lmm');
+          sendApiEvent(controller, 'llm_completed');
 
-        const streamResult = await chainOutput.stream({
-          question: threadMessage.content,
-          chat_history: conv_history,
-        });
-
-        let fullMessage = '';
-
-        for await (const part of streamResult.fullStream) {
-          switch (part.type) {
-            case 'text-delta':
-              fullMessage += part.textDelta;
-              sendApiEvent(controller, 'delta', {
-                content: part.textDelta,
-              });
-              break;
-            case 'reasoning-start':
-              sendApiEvent(controller, 'reasoning_start');
-              break;
-            case 'reasoning-delta':
-              sendApiEvent(controller, 'reasoning_delta', {
-                content: part.delta,
-              });
-              break;
-            case 'reasoning-end':
-              sendApiEvent(controller, 'reasoning_end');
-              break;
-            case 'tool-call':
-              sendApiEvent(controller, 'tool_call', {
-                toolCallId: part.toolCallId,
-                toolName: part.toolName,
-              });
-              break;
-            case 'tool-result':
-              sendApiEvent(controller, 'tool_result', {
-                toolCallId: part.toolCallId,
-                toolName: part.toolName,
-              });
-              break;
-          }
-        }
-
-        // Fallback: use resolved text if fullMessage is empty (multi-step tool use)
-        if (!fullMessage) {
+          // Track AI usage (fire-and-forget)
           try {
-            const resolvedText = (await streamResult.text) || '';
-            if (resolvedText) {
-              fullMessage = resolvedText;
+            const usage = await streamResult.usage;
+            const modelId = effectiveSettings.model || '';
+            const provider =
+              getModelProvider(normalizeModelId(modelId)) || 'openrouter';
+
+            trackAiUsage({
+              organizationId: orgId,
+              projectId: threadRecord.project_id ?? null,
+              threadId: threadRecord.public_id,
+              userId,
+              step: AiUsageStep.CHAT_COMPLETION,
+              provider,
+              model: modelId,
+              inputTokens: usage.inputTokens ?? 0,
+              outputTokens: usage.outputTokens ?? 0,
+              totalTokens: usage.totalTokens ?? 0,
+            });
+          } catch (usageError) {
+            logger.error({ err: usageError }, 'Failed to track AI usage');
+          }
+
+          sendApiEvent(controller, 'save_assistant_response');
+
+          try {
+            const dbMessage = await createMessageInDB({
+              threadId: threadRecord.id,
+              message: {
+                id: threadMessage.public_id,
+                content: fullMessage,
+                source: Source.UI,
+              },
+              role: Role.ASSISTANT,
+              runId: '',
+              messageType: threadRecord.preferred_communication_type,
+            });
+
+            sendApiEvent(controller, 'assistant_response_saved');
+
+            try {
+              // We create an object without the full content because it has already been sent in the delta events
+              const messageToSend: ApiSseMessageEvent = {
+                id: dbMessage.public_id,
+                role: dbMessage.role,
+                created_at: dbMessage.created_at.toISOString(),
+                content: '', // We clear the content - the client already has the full message from the delta events
+                run_id: '',
+              };
+
+              sendApiEvent(controller, 'final_response', messageToSend);
+
+              // close stream
+              sendApiEvent(controller, 'close');
+
+              controller.close();
+            } catch (finalResponseError) {
+              logger.error(
+                { err: finalResponseError },
+                'Error sending final_response after assistant_response_saved',
+              );
+
+              try {
+                sendApiEvent(controller, 'close');
+                controller.close();
+              } catch (closeError) {
+                logger.error(
+                  { err: closeError },
+                  'Error closing stream after final_response error',
+                );
+              }
             }
-          } catch {
-            // text promise may reject
-          }
-        }
-
-        // Close MCP clients after streaming completes
-        if (closeMcpClients) {
-          closeMcpClients().catch((err) =>
-            logger.error({ err }, 'Error closing MCP clients'),
-          );
-        }
-
-        sendApiEvent(controller, 'llm_completed');
-
-        // Track AI usage (fire-and-forget)
-        try {
-          const usage = await streamResult.usage;
-          const modelId = effectiveSettings.model || '';
-          const provider =
-            getModelProvider(normalizeModelId(modelId)) || 'openrouter';
-          const userId = await getCurrentUserId().catch(() => null);
-
-          trackAiUsage({
-            organizationId: orgId,
-            projectId: threadRecord.project_id ?? null,
-            threadId: threadRecord.public_id,
-            userId,
-            step: AiUsageStep.CHAT_COMPLETION,
-            provider,
-            model: modelId,
-            inputTokens: usage.inputTokens ?? 0,
-            outputTokens: usage.outputTokens ?? 0,
-            totalTokens: usage.totalTokens ?? 0,
-          });
-        } catch (usageError) {
-          logger.error({ err: usageError }, 'Failed to track AI usage');
-        }
-
-        sendApiEvent(controller, 'save_assistant_response');
-
-        try {
-          const dbMessage = await createMessageInDB({
-            threadId: threadRecord.id,
-            message: {
-              id: threadMessage.public_id,
-              content: fullMessage,
-              source: Source.UI,
-            },
-            role: Role.ASSISTANT,
-            runId: '',
-            messageType: threadRecord.preferred_communication_type,
-          });
-
-          sendApiEvent(controller, 'assistant_response_saved');
-
-          try {
-            // We create an object without the full content because it has already been sent in the delta events
-            const messageToSend: ApiSseMessageEvent = {
-              id: dbMessage.public_id,
-              role: dbMessage.role,
-              created_at: dbMessage.created_at.toISOString(),
-              content: '', // We clear the content - the client already has the full message from the delta events
-              run_id: '',
-            };
-
-            sendApiEvent(controller, 'final_response', messageToSend);
-
-            // close stream
-            sendApiEvent(controller, 'close');
-
-            controller.close();
           } catch (finalResponseError) {
             logger.error(
               { err: finalResponseError },
               'Error sending final_response after assistant_response_saved',
             );
-
-            try {
-              sendApiEvent(controller, 'close');
-              controller.close();
-            } catch (closeError) {
-              logger.error(
-                { err: closeError },
-                'Error closing stream after final_response error',
-              );
-            }
           }
-        } catch (finalResponseError) {
-          logger.error(
-            { err: finalResponseError },
-            'Error sending final_response after assistant_response_saved',
-          );
-        }
-      } catch (error) {
-        const exceptionFilter = new SseExceptionFilter();
-        logger.error({ err: error }, 'Error processing SSE');
-        // this also sends error event which can be handled in UI
-        exceptionFilter.handleError(error, controller);
+        } catch (error) {
+          const exceptionFilter = new SseExceptionFilter();
+          logger.error({ err: error }, 'Error processing SSE');
+          // this also sends error event which can be handled in UI
+          exceptionFilter.handleError(error, controller);
 
-        // Ensure MCP clients are closed on error
-        if (closeMcpClients) {
-          closeMcpClients().catch((err) =>
-            logger.error(
-              { err },
-              'Error closing MCP clients during error handling',
-            ),
-          );
-        }
+          // Ensure MCP clients are closed on error
+          if (closeMcpClients) {
+            closeMcpClients().catch((err) =>
+              logger.error(
+                { err },
+                'Error closing MCP clients during error handling',
+              ),
+            );
+          }
 
-        try {
-          controller.close();
-        } catch (closeError) {
-          logger.error({ err: closeError }, 'Error closing controller');
+          try {
+            controller.close();
+          } catch (closeError) {
+            logger.error({ err: closeError }, 'Error closing controller');
+          }
         }
-      }
-    },
+      },
+      { name: 'streamEvents' },
+    ),
   });
 }

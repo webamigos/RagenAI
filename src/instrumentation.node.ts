@@ -3,12 +3,6 @@
 export async function registerOtel() {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   console.log('[otel] OTEL_EXPORTER_OTLP_ENDPOINT =', endpoint);
-  if (!endpoint) {
-    console.warn(
-      '[otel] OTEL_EXPORTER_OTLP_ENDPOINT not set, skipping OpenTelemetry init',
-    );
-    return;
-  }
 
   try {
     // OTLP HTTP exporters internally reference `navigator.userAgent` for
@@ -42,6 +36,7 @@ export async function registerOtel() {
     const { PrismaInstrumentation } = await import('@prisma/instrumentation');
     const { registerInstrumentations } =
       await import('@opentelemetry/instrumentation');
+    const { langfuseSpanProcessor } = await import('@/libs/langfuse');
 
     console.log('[otel] All modules imported successfully');
 
@@ -51,46 +46,58 @@ export async function registerOtel() {
       'deployment.environment.name': process.env.TARGET_ENV ?? 'local',
     });
 
-    // Traces
-    const traceExporter = new OTLPTraceExporter({
-      url: `${endpoint}/v1/traces`,
-    });
+    // Span processors: Langfuse always, OTLP when endpoint is set
+    const spanProcessors: import('@opentelemetry/sdk-trace-node').SpanProcessor[] =
+      [langfuseSpanProcessor];
+
+    if (endpoint) {
+      const traceExporter = new OTLPTraceExporter({
+        url: `${endpoint}/v1/traces`,
+      });
+      spanProcessors.push(new BatchSpanProcessor(traceExporter));
+    }
+
     const tracerProvider = new NodeTracerProvider({
       resource,
-      spanProcessors: [new BatchSpanProcessor(traceExporter)],
+      spanProcessors,
     });
     tracerProvider.register();
-    console.log('[otel] TracerProvider registered');
+    console.log('[otel] TracerProvider registered (Langfuse active)');
 
-    // Metrics
-    const metricExporter = new OTLPMetricExporter({
-      url: `${endpoint}/v1/metrics`,
-    });
-    const meterProvider = new MeterProvider({
-      resource,
-      readers: [
-        new PeriodicExportingMetricReader({
-          exporter: metricExporter,
-          exportIntervalMillis: 30_000,
-        }),
-      ],
-    });
-    metrics.setGlobalMeterProvider(meterProvider);
-    console.log('[otel] MeterProvider registered');
+    let meterProviderInstance: InstanceType<typeof MeterProvider> | undefined;
+    let loggerProviderInstance: InstanceType<typeof LoggerProvider> | undefined;
 
-    // Logs
-    const logExporter = new OTLPLogExporter({ url: `${endpoint}/v1/logs` });
-    const loggerProvider = new LoggerProvider({
-      resource,
-      processors: [new BatchLogRecordProcessor(logExporter)],
-    });
-    logs.setGlobalLoggerProvider(loggerProvider);
-    console.log('[otel] LoggerProvider registered');
+    if (endpoint) {
+      // Metrics
+      const metricExporter = new OTLPMetricExporter({
+        url: `${endpoint}/v1/metrics`,
+      });
+      meterProviderInstance = new MeterProvider({
+        resource,
+        readers: [
+          new PeriodicExportingMetricReader({
+            exporter: metricExporter,
+            exportIntervalMillis: 30_000,
+          }),
+        ],
+      });
+      metrics.setGlobalMeterProvider(meterProviderInstance);
+      console.log('[otel] MeterProvider registered');
+
+      // Logs
+      const logExporter = new OTLPLogExporter({ url: `${endpoint}/v1/logs` });
+      loggerProviderInstance = new LoggerProvider({
+        resource,
+        processors: [new BatchLogRecordProcessor(logExporter)],
+      });
+      logs.setGlobalLoggerProvider(loggerProviderInstance);
+      console.log('[otel] LoggerProvider registered');
+    }
 
     // Instrumentations
     registerInstrumentations({
       tracerProvider,
-      meterProvider,
+      meterProvider: meterProviderInstance,
       instrumentations: [
         new HttpInstrumentation({
           ignoreIncomingRequestHook: (req) => {
@@ -125,8 +132,8 @@ export async function registerOtel() {
       console.log('[otel] Shutting down providers...');
       await Promise.allSettled([
         tracerProvider.shutdown(),
-        meterProvider.shutdown(),
-        loggerProvider.shutdown(),
+        meterProviderInstance?.shutdown() ?? Promise.resolve(),
+        loggerProviderInstance?.shutdown() ?? Promise.resolve(),
       ])
         .then((results) => {
           results.forEach((result, index) => {
@@ -151,7 +158,7 @@ export async function registerOtel() {
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
 
-    console.log('[otel] OpenTelemetry fully initialized, OTLP endpoint set');
+    console.log('[otel] OpenTelemetry fully initialized');
   } catch (error) {
     console.error('[otel] Failed to initialize OpenTelemetry:', error);
   }

@@ -16,7 +16,6 @@ import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
-
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
   orgId: string;

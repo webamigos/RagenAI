@@ -13,6 +13,18 @@ const MCP_GOOGLE_SERVER_URL = (() => {
   return 'http://localhost:8000';
 })();
 
+const MCP_CLICKUP_SERVER_URL = (() => {
+  if (process.env.MCP_CLICKUP_SERVER_URL) {
+    return process.env.MCP_CLICKUP_SERVER_URL;
+  }
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error(
+      'MCP_CLICKUP_SERVER_URL is required in non-development environments',
+    );
+  }
+  return 'http://localhost:8001';
+})();
+
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
     provider: McpConnectorProvider.GOOGLE_DRIVE,
@@ -20,6 +32,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Search and read documents from your Google Drive.',
     icon: 'folder',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/drive.readonly'],
   },
   {
@@ -28,6 +41,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'View calendar events and check availability.',
     icon: 'calendar',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authPath: '/auth/google',
     scopes: [
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/calendar.events.readonly',
@@ -39,6 +53,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Access traffic reports, conversions, and audience insights.',
     icon: 'chart-bar',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
   },
   {
@@ -47,7 +62,16 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'View campaigns, performance, and track costs.',
     icon: 'megaphone',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/adwords'],
+  },
+  {
+    provider: McpConnectorProvider.CLICKUP,
+    name: 'ClickUp',
+    description: 'Manage tasks, projects, and workspaces.',
+    icon: 'check-square',
+    mcpServerUrl: MCP_CLICKUP_SERVER_URL,
+    authPath: '/auth/clickup',
   },
 ];
 

@@ -2,7 +2,10 @@
 
 import { randomUUID } from 'node:crypto';
 import { nanoid } from 'nanoid';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
@@ -13,6 +16,7 @@ import {
   type ScrapeWebsiteWorkflowPayload,
   Workflow,
 } from '@/features/documents/contracts/document.types';
+import db from '@ragenai/prisma-client';
 
 export type ProcessUrlResult = {
   success: boolean;
@@ -36,7 +40,14 @@ export async function processUrl(
 
   try {
     const uniqueFileId = randomUUID();
-    const defaultProjectId = await fetchOrganizationDefaultProjectId(orgId);
+    const [defaultProjectId, user, org] = await Promise.all([
+      fetchOrganizationDefaultProjectId(orgId),
+      getCurrentUser(),
+      db.organization.findUnique({
+        where: { id: orgId },
+        select: { slug: true },
+      }),
+    ]);
 
     if (!defaultProjectId) {
       return {
@@ -55,6 +66,8 @@ export async function processUrl(
       mode,
       orgId,
       projectId: defaultProjectId,
+      orgSlug: org?.slug ?? undefined,
+      userEmail: user?.email ?? undefined,
     };
 
     const embeddingsHandle = await client.workflow.start(

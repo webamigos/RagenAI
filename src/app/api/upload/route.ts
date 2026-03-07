@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUser,
+} from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
@@ -28,6 +31,14 @@ export async function POST(request: NextRequest) {
   if (!orgId) {
     throw new Error('Invalid organization');
   }
+
+  const [user, org] = await Promise.all([
+    getCurrentUser(),
+    db.organization.findUnique({
+      where: { id: orgId },
+      select: { slug: true },
+    }),
+  ]);
 
   try {
     const formData = await request.formData();
@@ -140,6 +151,8 @@ export async function POST(request: NextRequest) {
             {
               ...fileRecord,
               project_public_id: projectRecord?.public_id ?? null,
+              organization_slug: org?.slug ?? undefined,
+              user_email: user?.email ?? undefined,
             },
           ],
         });
