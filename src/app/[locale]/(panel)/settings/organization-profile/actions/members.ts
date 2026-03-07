@@ -8,6 +8,7 @@ import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 import { getActiveMember, getSession } from '@/lib/auth-guards';
 import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
+import { getUsageLimits } from '@/features/organizations/services/organization-settings';
 
 const TRIAL_PLAN_NAME = 'Trial';
 const FREE_PLAN_NAME = 'Free';
@@ -56,7 +57,29 @@ export async function inviteMember(
       }
     }
 
-    // 3. Sprawdź czy email już w organizacji
+    // 3. Check max members limit
+    if (!isAdmin) {
+      const usageLimits = await getUsageLimits(organizationId);
+      if (usageLimits.maxMembers !== null) {
+        const currentMemberCount = await db.member.count({
+          where: { organizationId },
+        });
+        const pendingInvitationCount = await db.invitation.count({
+          where: { organizationId, status: 'pending' },
+        });
+        if (
+          currentMemberCount + pendingInvitationCount >=
+          usageLimits.maxMembers
+        ) {
+          return {
+            success: false,
+            error: `Member limit reached (${usageLimits.maxMembers}). Contact your administrator to increase the limit.`,
+          };
+        }
+      }
+    }
+
+    // 4. Sprawdź czy email już w organizacji
     const existingUser = await db.user.findUnique({
       where: { email: email.toLowerCase() },
     });

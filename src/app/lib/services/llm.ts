@@ -20,7 +20,6 @@ import {
   getFireworksAPIKey,
   getAzureOpenAICredentials,
 } from '@/features/organizations/services/organization-settings';
-import { usageTracker } from './usage';
 import { logger } from '../utils/logger';
 
 export const MODELS_MAP = {
@@ -699,7 +698,13 @@ export const createChatCompletionInstanceWithOrg = async (
 };
 
 // We use openai embeddings always, independent of the provider
-export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
+export const createEmbeddingsInstance = ({
+  apiKey,
+  organizationId,
+}: {
+  apiKey: string;
+  organizationId?: string;
+}) => {
   if (!apiKey) {
     throw new Error('Cannot create embeddings instance, apiKey is required');
   }
@@ -707,7 +712,7 @@ export const createEmbeddingsInstance = ({ apiKey }: { apiKey: string }) => {
   return EmbeddingsFactory.createInstance(
     { provider: 'openai', apiKey },
     { model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small' },
-    usageTracker,
+    organizationId,
   );
 };
 

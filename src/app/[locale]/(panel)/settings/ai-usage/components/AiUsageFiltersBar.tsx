@@ -12,6 +12,7 @@ import {
 type Props = {
   filters: AiUsageFilters;
   onChange: (filters: AiUsageFilters) => void;
+  isAppAdmin?: boolean;
 };
 
 const PERIODS = [
@@ -31,7 +32,11 @@ const STEPS = [
   { value: AiUsageStep.EMBEDDINGS, label: 'Embeddings' },
 ];
 
-export function AiUsageFiltersBar({ filters, onChange }: Props) {
+export function AiUsageFiltersBar({
+  filters,
+  onChange,
+  isAppAdmin = false,
+}: Props) {
   const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
   const [projects, setProjects] = useState<
     { publicId: string; title: string; orgName: string }[]
@@ -45,13 +50,15 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
   useEffect(() => {
     let ignore = false;
 
-    getOrganizationsForFilter()
-      .then((data) => {
-        if (!ignore) {
-          setOrgs(data);
-        }
-      })
-      .catch(() => {});
+    if (isAppAdmin) {
+      getOrganizationsForFilter()
+        .then((data) => {
+          if (!ignore) {
+            setOrgs(data);
+          }
+        })
+        .catch(() => {});
+    }
     getProjectsForFilter(filters.organizationId)
       .then((data) => {
         if (!ignore) {
@@ -70,7 +77,7 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
     return () => {
       ignore = true;
     };
-  }, [filters.organizationId]);
+  }, [filters.organizationId, isAppAdmin]);
 
   const handlePeriodChange = (period: AiUsageFilters['period']) => {
     onChange({ ...filters, period, dateFrom: undefined, dateTo: undefined });
@@ -132,26 +139,28 @@ export function AiUsageFiltersBar({ filters, onChange }: Props) {
 
       {/* Dropdown filters */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Organization filter */}
-        <select
-          value={filters.organizationId ?? ''}
-          onChange={(e) =>
-            onChange({
-              ...filters,
-              organizationId: e.target.value || undefined,
-              projectPublicId: undefined,
-              userId: undefined,
-            })
-          }
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
-        >
-          <option value="">All organizations</option>
-          {orgs.map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
+        {/* Organization filter — app admins only */}
+        {isAppAdmin && (
+          <select
+            value={filters.organizationId ?? ''}
+            onChange={(e) =>
+              onChange({
+                ...filters,
+                organizationId: e.target.value || undefined,
+                projectPublicId: undefined,
+                userId: undefined,
+              })
+            }
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
+          >
+            <option value="">All organizations</option>
+            {orgs.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Project filter */}
         <select

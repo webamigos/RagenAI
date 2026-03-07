@@ -1,7 +1,7 @@
 'use server';
 
-import { usageTracker } from '@/app/lib/services/usage';
-
+// Legacy usage tracking removed — thread creation is now tracked
+// via the AiUsage table when chat completions occur.
 export const trackThreadCreatedCommand = async () => {
-  usageTracker.incThreadsCount();
+  // no-op: retained for backward compatibility with callers
 };

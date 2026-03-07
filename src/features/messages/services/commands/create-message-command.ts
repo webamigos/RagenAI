@@ -8,7 +8,6 @@ import {
 } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { usageTracker } from '@/app/lib/services/usage';
 import { createVisitorEntry } from '@/app/lib/services/visitor';
 import type { DbMessageDto, MessageDto } from '../../contracts/message.types';
 
@@ -30,8 +29,6 @@ export const createMessageInDbCommand = async ({
   voiceDurationSeconds?: number;
 }) => {
   try {
-    usageTracker.incMessagesCount(role);
-
     return await db.message.create({
       data: {
         thread_id: threadId,

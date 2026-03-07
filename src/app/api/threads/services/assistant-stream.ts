@@ -415,7 +415,27 @@ export async function streamEvents({
             projectPublicId: effectiveProjectPublicId,
           } = projectResult;
 
-          // Phase 3: Initialize the appropriate chain
+          // Phase 3: Check usage limits before proceeding
+          const { checkUsageLimitsQuery } =
+            await import('@/features/ai-usage/services/queries/check-usage-limits-query');
+          const usageLimitStatus = await checkUsageLimitsQuery(orgId);
+          if (usageLimitStatus.isAnyLimitExceeded) {
+            const reasons: string[] = [];
+            if (usageLimitStatus.exceeded.tokens) {
+              reasons.push('token limit');
+            }
+            if (usageLimitStatus.exceeded.cost) {
+              reasons.push('cost limit');
+            }
+            if (usageLimitStatus.exceeded.messages) {
+              reasons.push('message limit');
+            }
+            throw new Error(
+              `Monthly usage limit exceeded: ${reasons.join(', ')}. Please contact your organization administrator.`,
+            );
+          }
+
+          // Phase 4: Initialize the appropriate chain
           let chainOutput: BaseChatChainOutput | undefined = undefined;
 
           // Set Langfuse trace context (user, session, tags)
@@ -444,6 +464,11 @@ export async function streamEvents({
                 projectInstruction,
                 mcpTools,
                 mcpContext,
+                tracking: {
+                  organizationId: orgId,
+                  projectId: threadRecord.project_id,
+                  userId,
+                },
               });
             } else {
               const projectIdToUse =
@@ -463,6 +488,7 @@ export async function streamEvents({
                   apiKey: effectiveSettings.apiKey,
                 },
                 orgId,
+                userId,
                 projectInstruction,
                 projectId: projectIdToUse ?? null,
                 projectPublicId: projectPublicIdToUse ?? null,

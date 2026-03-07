@@ -27,7 +27,12 @@ export const basicRagChain = async ({
       const sanitizedInput = sanitizeAndValidateInput(input);
 
       // Step 2: Moderate content first, then rephrase
-      await moderateContent(models.contentModerator, sanitizedInput);
+      await moderateContent(
+        models.contentModerator,
+        sanitizedInput,
+        true,
+        config?.tracking,
+      );
       const standaloneQuestion = await rephraseQuestion(
         models.questionRephraser,
         sanitizedInput,

@@ -17,12 +17,19 @@ export interface RagChainModels extends BaseChatChainModels {
   embeddings: EmbeddingsProvider;
 }
 
+export interface ChainTrackingContext {
+  organizationId: string;
+  projectId?: number | null;
+  userId?: string | null;
+}
+
 export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
+  tracking?: ChainTrackingContext;
 }
 
 export interface RagChainConfig extends ChainConfig {

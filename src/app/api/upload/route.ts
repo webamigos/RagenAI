@@ -8,7 +8,6 @@ import { logger } from '@/app/lib/utils/logger';
 import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
-import { usageTracker } from '@/app/lib/services/usage';
 import { uploadToS3 } from '@/app/lib/services/aws';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
 import db from '@ragenai/prisma-client';
@@ -168,9 +167,6 @@ export async function POST(request: NextRequest) {
           fileSize: file.size,
           uniqueFileId: fileRecord.public_id,
         });
-
-        usageTracker.incUploadedFilesSize(file.size);
-        usageTracker.incUploadedFilesCount();
 
         // Update running totals for cumulative validation
         runningOrgUsage += file.size;

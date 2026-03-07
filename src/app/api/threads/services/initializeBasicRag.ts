@@ -19,6 +19,7 @@ import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries
 type InitializeRagChainParams = {
   settings: OrganizationSettings;
   orgId: string;
+  userId?: string | null;
   projectInstruction?: string | null;
   projectId?: number | null;
   projectPublicId?: string | null;
@@ -38,6 +39,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
 export const initializeRagChain = async ({
   settings,
   orgId,
+  userId,
   projectInstruction,
   projectId,
   projectPublicId,
@@ -54,7 +56,10 @@ export const initializeRagChain = async ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    const embeddingModel = createEmbeddingsInstance({ apiKey });
+    const embeddingModel = createEmbeddingsInstance({
+      apiKey,
+      organizationId: orgId,
+    });
     const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
@@ -105,6 +110,7 @@ export const initializeRagChain = async ({
         threadDocuments: threadDocuments || [],
         mcpTools,
         mcpContext,
+        tracking: { organizationId: orgId, projectId, userId },
       },
       vectorStore,
     });

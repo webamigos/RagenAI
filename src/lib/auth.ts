@@ -11,6 +11,7 @@ import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
+import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -208,8 +209,9 @@ export const auth = betterAuth({
               orgId,
             });
 
-            // Create default project for organization
+            // Create default project and apply default limits
             await createOrganizationWithDefaultProject(orgId, user.id);
+            await applyDefaultLimitsToOrg(orgId);
 
             // Set default vector store (meilisearch for local dev, can be changed in settings)
             const defaultVectorStore =

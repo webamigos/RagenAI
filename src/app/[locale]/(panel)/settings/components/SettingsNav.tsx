@@ -88,13 +88,13 @@ const navItems: NavItem[] = [
     href: '/settings/ai-usage',
     labelKey: 'ai-usage',
     icon: <CpuChipIcon className={iconClassName} />,
-    permission: 'appAdmin',
+    permission: 'orgAdmin',
   },
   {
     href: '/settings/disk-usage',
     labelKey: 'disk-usage',
     icon: <CircleStackIcon className={iconClassName} />,
-    permission: 'appAdmin',
+    permission: 'orgAdmin',
   },
 ];
 
