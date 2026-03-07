@@ -23,6 +23,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
   GOOGLE_ADS: '/assets/connectors/google-ads.svg',
   GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
+  CLICKUP: '/assets/connectors/clickup.svg',
 };
 
 type ConnectorCardProps = {
@@ -54,10 +55,16 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
       const mcpServerBaseUrl = provider.mcpServerUrl;
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
-      const scopesParam = encodeURIComponent(provider.scopes.join(' '));
-      const authUrl = `${mcpServerBaseUrl}/auth/google?customer_id=${encodeURIComponent(result.customer_id)}&redirect_uri=${encodeURIComponent(callbackUrl)}&scopes=${scopesParam}`;
+      const authParams = new URLSearchParams({
+        customer_id: result.customer_id,
+        redirect_uri: callbackUrl,
+      });
+      if (provider.scopes?.length) {
+        authParams.set('scopes', provider.scopes.join(' '));
+      }
+      const authUrl = `${mcpServerBaseUrl}${provider.authPath}?${authParams.toString()}`;
 
-      const popup = window.open(authUrl, 'google-auth', 'width=600,height=700');
+      const popup = window.open(authUrl, 'oauth-popup', 'width=600,height=700');
 
       if (!popup || popup.closed) {
         setLoading(false);

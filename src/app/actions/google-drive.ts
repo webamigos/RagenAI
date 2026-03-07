@@ -112,6 +112,10 @@ export async function searchDriveFiles(
       return { success: false, error: 'Failed to search Google Drive' };
     }
     const data: SearchResponse = await response.json();
+    if (!data.success && data.error) {
+      logger.error({ error: data.error }, 'Google Drive search API error');
+      return { success: false, error: 'Failed to search Google Drive' };
+    }
     return data;
   } catch (error) {
     logger.error({ err: error }, 'Error searching Google Drive');

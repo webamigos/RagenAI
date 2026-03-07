@@ -568,6 +568,7 @@ enum McpConnectorProvider {
   GOOGLE_ANALYTICS
   GOOGLE_ADS
   GOOGLE_DRIVE
+  CLICKUP
 }
 
 model McpConnector {

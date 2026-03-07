@@ -15,7 +15,7 @@ import { generateText } from 'ai';
 import type { PDFiumPageRenderOptions } from '@hyzyla/pdfium';
 
 async function renderImage(
-  options: PDFiumPageRenderOptions
+  options: PDFiumPageRenderOptions,
 ): Promise<Uint8Array> {
   const buffer = await sharp(options.data, {
     raw: {
@@ -31,7 +31,7 @@ async function renderImage(
 
 export async function describeImageWithLLM(
   imagePath: string,
-  chatInstance: LanguageModelV3
+  chatInstance: LanguageModelV3,
 ): Promise<string> {
   try {
     logger.info(`Processing PDF, describe image path: ${imagePath}`);
@@ -56,6 +56,7 @@ export async function describeImageWithLLM(
           ],
         },
       ],
+      experimental_telemetry: { isEnabled: true },
     });
 
     return result.text || 'No description generated.';
@@ -79,7 +80,7 @@ export const processPDFInBatches = async (
   convertedPages: any[],
   directory: string,
   chatInstance: LanguageModelV3,
-  batchSize: number = PDF_PROCESSING_CONFIG.batchSize
+  batchSize: number = PDF_PROCESSING_CONFIG.batchSize,
 ) => {
   logger.info(`Processing PDF in batches with size: ${batchSize}`);
   const pageDescriptions: string[] = [];
@@ -95,10 +96,10 @@ export const processPDFInBatches = async (
       batch.map(async (page: any) => {
         const imagePath = path.join(
           directory,
-          `${PDF_IMAGE_CONFIG.saveFilename}${page.page}.png`
+          `${PDF_IMAGE_CONFIG.saveFilename}${page.page}.png`,
         );
         return await describeImageWithLLM(imagePath, chatInstance);
-      })
+      }),
     );
     pageDescriptions.push(...batchDescriptions);
   }
@@ -127,7 +128,7 @@ export const convertPDFToImages = async (filePath: string, fileId: string) => {
 
       const outputPath = path.join(
         directory,
-        `${PDF_IMAGE_CONFIG.saveFilename}${page.number}.png`
+        `${PDF_IMAGE_CONFIG.saveFilename}${page.number}.png`,
       );
       await fs.promises.writeFile(outputPath, new Uint8Array(image.data));
 

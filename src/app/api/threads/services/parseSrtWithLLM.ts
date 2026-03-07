@@ -8,7 +8,7 @@ export async function parseSrtToSegmentsUsingLLM(
   organizationId: string,
   fileContent: string,
   minWords: number,
-  maxWords: number
+  maxWords: number,
 ): Promise<string[]> {
   const apiKey = await getOpenaiAPIKey(organizationId);
 
@@ -33,6 +33,7 @@ export async function parseSrtToSegmentsUsingLLM(
           content: `Podziel tekst:\n\n${fileContent}`,
         },
       ],
+      experimental_telemetry: { isEnabled: true },
     });
 
     const segments = result.text

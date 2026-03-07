@@ -338,6 +338,9 @@
       "model-updated": "Model zmieniony na {model}",
       "model-update-failed": "Nie udało się zmienić modelu: {error}",
       "model-label": "Model"
+    },
+    "chat": {
+      "thinking": "Myślenie"
     }
   },
   "assistant-settings": {
@@ -442,6 +445,10 @@
         "GOOGLE_ADS": {
           "name": "Google Ads",
           "description": "Przeglądaj kampanie, wyniki i śledź koszty."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Zarządzaj zadaniami, projektami i przestrzeniami roboczymi."
         }
       }
     }

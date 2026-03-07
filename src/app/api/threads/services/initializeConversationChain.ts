@@ -5,7 +5,6 @@ import {
 } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
-
 type InitializeConversationChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
