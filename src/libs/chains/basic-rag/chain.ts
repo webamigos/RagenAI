@@ -71,7 +71,10 @@ export const basicRagChain = async ({
         model: models.answerGenerator,
         system: effectiveSystem,
         messages,
-        experimental_telemetry: { isEnabled: true },
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: 'basic-rag-stream',
+        },
         ...(hasTools
           ? {
               tools: config!.mcpTools,

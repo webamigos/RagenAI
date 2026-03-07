@@ -50,6 +50,8 @@ export interface ScrapeWebsiteWorkflowPayload {
   mode: WebsiteLoaderMode;
   orgId: UserFile['organization_id'];
   projectId: UserFile['project_id'];
+  orgSlug?: string;
+  userEmail?: string;
 }
 
 export type ParsedFile = {

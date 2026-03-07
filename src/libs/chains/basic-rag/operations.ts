@@ -69,7 +69,10 @@ export async function rephraseQuestion(
     model,
     system: systemTemplates.rephraseQuestion,
     messages,
-    experimental_telemetry: { isEnabled: true },
+    experimental_telemetry: {
+      isEnabled: true,
+      functionId: 'rephrase-question',
+    },
   });
 
   return result.text;

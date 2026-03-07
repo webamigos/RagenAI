@@ -44,7 +44,10 @@ export const conversationChain = async ({
         model: models.answerGenerator,
         system: effectiveSystem,
         messages,
-        experimental_telemetry: { isEnabled: true },
+        experimental_telemetry: {
+          isEnabled: true,
+          functionId: 'conversation-stream',
+        },
         ...(hasTools
           ? { tools: config!.mcpTools, stopWhen: stepCountIs(5) }
           : {}),

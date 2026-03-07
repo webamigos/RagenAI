@@ -5,15 +5,12 @@ const shouldExportSpan: ShouldExportSpan = ({ otelSpan }) => {
   const spanName = otelSpan.name;
 
   return (
-    scopeName.includes('@ai-sdk') ||
+    scopeName === 'ai' ||
     scopeName.includes('langfuse') ||
     scopeName.includes('openai') ||
     scopeName.includes('anthropic') ||
     scopeName.includes('google') ||
-    spanName.includes('streamText') ||
-    spanName.includes('generateText') ||
-    spanName.includes('generateObject') ||
-    spanName.includes('embed')
+    spanName.startsWith('ai.')
   );
 };
 

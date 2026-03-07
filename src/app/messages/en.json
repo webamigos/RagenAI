@@ -335,6 +335,9 @@
       "model-updated": "Model changed to {model}",
       "model-update-failed": "Failed to change model: {error}",
       "model-label": "Model"
+    },
+    "chat": {
+      "thinking": "Thinking"
     }
   },
   "assistant-settings": {
