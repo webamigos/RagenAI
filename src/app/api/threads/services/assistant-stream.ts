@@ -368,11 +368,9 @@ export async function streamEvents({
                 mcpTools = tools;
                 closeMcpClients = closeAll;
 
-                // Build context so the AI knows the customer_id for each connector
-                const customerIds = connectors.map(
-                  (c) =>
-                    `- ${c.provider} tools: use customer_id="${c.customer_id}"`,
-                );
+                const connectorProviders = connectors
+                  .map((c) => c.provider)
+                  .join(', ');
                 const timeZone =
                   Intl.DateTimeFormat().resolvedOptions().timeZone;
                 const currentDateTime = new Date().toLocaleString('en-US', {
@@ -380,7 +378,7 @@ export async function streamEvents({
                   dateStyle: 'full',
                   timeStyle: 'long',
                 });
-                mcpContext = `You have access to external tools via connected integrations. When calling these tools, use the following customer_id values:\n${customerIds.join('\n')}\n\nCurrent date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to resolve relative dates like "today", "tomorrow", "this week", etc. when calling calendar or other time-based tools. Always provide both time_min and time_max for calendar queries to get precise results.`;
+                mcpContext = `You have access to external tools via connected integrations (${connectorProviders}). Authentication is handled automatically — just call the tools directly without any credentials.\n\nCurrent date and time: ${currentDateTime} (timezone: ${timeZone}). Use this to resolve relative dates like "today", "tomorrow", "this week", etc. when calling calendar or other time-based tools. Always provide both time_min and time_max for calendar queries to get precise results.`;
 
                 logger.info(
                   { toolCount: Object.keys(tools).length },
