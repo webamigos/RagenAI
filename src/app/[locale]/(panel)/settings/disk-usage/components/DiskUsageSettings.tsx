@@ -43,7 +43,15 @@ const CATEGORY_COLORS = {
   threadFiles: '#f59e0b',
 };
 
-export function DiskUsageSettings() {
+type DiskUsageSettingsProps = {
+  isAppAdmin?: boolean;
+  orgId?: string;
+};
+
+export function DiskUsageSettings({
+  isAppAdmin = false,
+  orgId,
+}: DiskUsageSettingsProps) {
   const [orgs, setOrgs] = useState<OrgStorageSummary[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [orgDetails, setOrgDetails] = useState<{
@@ -77,19 +85,26 @@ export function DiskUsageSettings() {
     try {
       const data = await getAdminStorageOverview();
       setOrgs(data);
+      // Org admins: auto-select their org
+      if (!isAppAdmin && data.length === 1 && data[0]) {
+        handleSelectOrg(data[0].orgId);
+      }
     } catch {
       toast.error('Failed to load storage data');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAppAdmin]);
 
   useEffect(() => {
     loadOrgs();
-    getDiskOrganizationsForFilter()
-      .then(setFilterOrgs)
-      .catch(() => toast.error('Failed to load organization filters'));
-  }, [loadOrgs]);
+    if (isAppAdmin) {
+      getDiskOrganizationsForFilter()
+        .then(setFilterOrgs)
+        .catch(() => toast.error('Failed to load organization filters'));
+    }
+  }, [loadOrgs, isAppAdmin]);
 
   useEffect(() => {
     getDiskProjectsForFilter(filterOrgId || undefined)
@@ -227,27 +242,29 @@ export function DiskUsageSettings() {
     <div className="space-y-8">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <select
-          value={filterOrgId}
-          onChange={(e) => {
-            setFilterOrgId(e.target.value);
-            setFilterProjectId('');
-            if (e.target.value) {
-              handleSelectOrg(e.target.value);
-            } else {
-              setSelectedOrg(null);
-              setOrgDetails(null);
-            }
-          }}
-          className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
-        >
-          <option value="">All organizations</option>
-          {filterOrgs.map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
+        {isAppAdmin && (
+          <select
+            value={filterOrgId}
+            onChange={(e) => {
+              setFilterOrgId(e.target.value);
+              setFilterProjectId('');
+              if (e.target.value) {
+                handleSelectOrg(e.target.value);
+              } else {
+                setSelectedOrg(null);
+                setOrgDetails(null);
+              }
+            }}
+            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
+          >
+            <option value="">All organizations</option>
+            {filterOrgs.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         <select
           value={filterProjectId}
@@ -264,131 +281,141 @@ export function DiskUsageSettings() {
         </select>
       </div>
 
-      {/* Overview: all orgs bar chart */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">
-          Storage Usage by Organization
-        </h2>
-        {barChartData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={barChartData}>
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: 'MB',
-                  angle: -90,
-                  position: 'insideLeft',
-                  style: { fontSize: 12 },
-                }}
-              />
-              <RechartsTooltip
-                formatter={(value) => `${Number(value).toFixed(2)} MB`}
-              />
-              <Legend />
-              <Bar dataKey="usage" fill="#3b82f6" name="Used (MB)" />
-              <Bar dataKey="limit" fill="#e5e7eb" name="Limit (MB)" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            No storage usage data yet.
-          </p>
-        )}
-      </section>
+      {/* Overview: all orgs bar chart — app admins only */}
+      {isAppAdmin && (
+        <section>
+          <h2 className="text-lg font-semibold mb-4">
+            Storage Usage by Organization
+          </h2>
+          {barChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={barChartData}>
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  label={{
+                    value: 'MB',
+                    angle: -90,
+                    position: 'insideLeft',
+                    style: { fontSize: 12 },
+                  }}
+                />
+                <RechartsTooltip
+                  formatter={(value) => `${Number(value).toFixed(2)} MB`}
+                />
+                <Legend />
+                <Bar dataKey="usage" fill="#3b82f6" name="Used (MB)" />
+                <Bar dataKey="limit" fill="#e5e7eb" name="Limit (MB)" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No storage usage data yet.
+            </p>
+          )}
+        </section>
+      )}
 
-      {/* Organization list */}
-      <section>
-        <h2 className="text-lg font-semibold mb-4">Organizations</h2>
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-3 font-medium">Organization</th>
-                <th className="text-right p-3 font-medium">Files</th>
-                <th className="text-right p-3 font-medium">Usage</th>
-                <th className="text-right p-3 font-medium">Limit</th>
-                <th className="text-right p-3 font-medium">% Used</th>
-                <th className="p-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrgs.map((org) => {
-                const limit =
-                  org.storageLimitBytes ??
-                  defaultStorageLimits.storageLimitBytes;
-                const pct =
-                  limit > 0 ? Math.min(100, (org.totalBytes / limit) * 100) : 0;
-                return (
-                  <tr
-                    key={org.orgId}
-                    role="button"
-                    tabIndex={0}
-                    className={`border-t hover:bg-muted/30 cursor-pointer transition-colors ${
-                      selectedOrg === org.orgId ? 'bg-muted/50' : ''
-                    }`}
-                    onClick={() => handleSelectOrg(org.orgId)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleSelectOrg(org.orgId);
-                      }
-                    }}
-                  >
-                    <td className="p-3 font-medium">{org.orgName}</td>
-                    <td className="p-3 text-right">{org.fileCount}</td>
-                    <td className="p-3 text-right">
-                      {prettyBytes(org.totalBytes)}
-                    </td>
-                    <td className="p-3 text-right">{prettyBytes(limit)}</td>
-                    <td className="p-3 text-right">
-                      <span
-                        className={
-                          pct > 90
-                            ? 'text-red-500 font-semibold'
-                            : pct > 70
-                              ? 'text-amber-500'
-                              : ''
+      {/* Organization list — app admins only */}
+      {isAppAdmin && (
+        <section>
+          <h2 className="text-lg font-semibold mb-4">Organizations</h2>
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="text-left p-3 font-medium">Organization</th>
+                  <th className="text-right p-3 font-medium">Files</th>
+                  <th className="text-right p-3 font-medium">Usage</th>
+                  <th className="text-right p-3 font-medium">Limit</th>
+                  <th className="text-right p-3 font-medium">% Used</th>
+                  <th className="p-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrgs.map((org) => {
+                  const limit =
+                    org.storageLimitBytes ??
+                    defaultStorageLimits.storageLimitBytes;
+                  const pct =
+                    limit > 0
+                      ? Math.min(100, (org.totalBytes / limit) * 100)
+                      : 0;
+                  return (
+                    <tr
+                      key={org.orgId}
+                      role="button"
+                      tabIndex={0}
+                      className={`border-t hover:bg-muted/30 cursor-pointer transition-colors ${
+                        selectedOrg === org.orgId ? 'bg-muted/50' : ''
+                      }`}
+                      onClick={() => handleSelectOrg(org.orgId)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleSelectOrg(org.orgId);
                         }
-                      >
-                        {pct.toFixed(1)}%
-                      </span>
-                    </td>
-                    <td className="p-3 text-right text-xs text-muted-foreground">
-                      {selectedOrg === org.orgId ? 'Selected' : 'Click to view'}
+                      }}
+                    >
+                      <td className="p-3 font-medium">{org.orgName}</td>
+                      <td className="p-3 text-right">{org.fileCount}</td>
+                      <td className="p-3 text-right">
+                        {prettyBytes(org.totalBytes)}
+                      </td>
+                      <td className="p-3 text-right">{prettyBytes(limit)}</td>
+                      <td className="p-3 text-right">
+                        <span
+                          className={
+                            pct > 90
+                              ? 'text-red-500 font-semibold'
+                              : pct > 70
+                                ? 'text-amber-500'
+                                : ''
+                          }
+                        >
+                          {pct.toFixed(1)}%
+                        </span>
+                      </td>
+                      <td className="p-3 text-right text-xs text-muted-foreground">
+                        {selectedOrg === org.orgId
+                          ? 'Selected'
+                          : 'Click to view'}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredOrgs.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="p-6 text-center text-muted-foreground"
+                    >
+                      No organizations found
                     </td>
                   </tr>
-                );
-              })}
-              {filteredOrgs.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="p-6 text-center text-muted-foreground"
-                  >
-                    No organizations found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {/* Selected org detail */}
       {selectedOrg && orgDetails && selectedOrgData && (
         <section className="space-y-6 border rounded-lg p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">{selectedOrgData.orgName}</h2>
-            <button
-              onClick={() => {
-                setSelectedOrg(null);
-                setOrgDetails(null);
-              }}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Close
-            </button>
+            {isAppAdmin && (
+              <button
+                onClick={() => {
+                  setSelectedOrg(null);
+                  setOrgDetails(null);
+                }}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
+            )}
           </div>
 
           {/* Overall progress */}
@@ -514,32 +541,34 @@ export function DiskUsageSettings() {
             </div>
           )}
 
-          {/* Admin controls: edit limits */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">Storage Limits</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <LimitInput
-                label="Organization Limit (MB)"
-                value={editingOrgLimit}
-                onChange={setEditingOrgLimit}
-              />
-              <LimitInput
-                label="Project Limit (MB)"
-                value={editingProjectLimit}
-                onChange={setEditingProjectLimit}
-              />
-              <LimitInput
-                label="Single File Limit (MB)"
-                value={editingFileLimit}
-                onChange={setEditingFileLimit}
-              />
+          {/* Admin controls: edit limits — app admins only */}
+          {isAppAdmin && (
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Storage Limits</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <LimitInput
+                  label="Organization Limit (MB)"
+                  value={editingOrgLimit}
+                  onChange={setEditingOrgLimit}
+                />
+                <LimitInput
+                  label="Project Limit (MB)"
+                  value={editingProjectLimit}
+                  onChange={setEditingProjectLimit}
+                />
+                <LimitInput
+                  label="Single File Limit (MB)"
+                  value={editingFileLimit}
+                  onChange={setEditingFileLimit}
+                />
+              </div>
+              <div className="flex justify-end mt-4">
+                <Button onClick={handleSaveLimits} isLoading={isSaving}>
+                  Save Limits
+                </Button>
+              </div>
             </div>
-            <div className="flex justify-end mt-4">
-              <Button onClick={handleSaveLimits} isLoading={isSaving}>
-                Save Limits
-              </Button>
-            </div>
-          </div>
+          )}
         </section>
       )}
     </div>

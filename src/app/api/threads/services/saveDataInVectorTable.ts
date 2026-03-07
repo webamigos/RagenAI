@@ -185,7 +185,10 @@ export const convertAndStoreDocument = async ({
       resolvedProjectPublicId = project?.public_id ?? null;
     }
 
-    const embeddingModel = await createEmbeddingsInstance({ apiKey });
+    const embeddingModel = await createEmbeddingsInstance({
+      apiKey,
+      organizationId,
+    });
 
     let fileExtension =
       SUPPORTED_MIME_TYPES[mimeType as keyof typeof SUPPORTED_MIME_TYPES];

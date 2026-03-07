@@ -19,6 +19,7 @@ import type { AiUsageChartData } from '@/features/ai-usage/contracts/ai-usage.ty
 
 type Props = {
   charts: AiUsageChartData;
+  isAppAdmin?: boolean;
 };
 
 const COLORS = [
@@ -53,7 +54,7 @@ function formatTokensShort(n: number): string {
   return String(n);
 }
 
-export function AiUsageCharts({ charts }: Props) {
+export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
   const hasData =
     charts.daily.length > 0 ||
     charts.byStep.length > 0 ||
@@ -228,8 +229,8 @@ export function AiUsageCharts({ charts }: Props) {
             </div>
           )}
 
-          {/* By Organization */}
-          {charts.byOrg.length > 0 && (
+          {/* By Organization — app admins only */}
+          {isAppAdmin && charts.byOrg.length > 0 && (
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">
                 By Organization

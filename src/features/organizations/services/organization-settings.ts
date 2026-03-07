@@ -7,6 +7,8 @@ import { getApiKeyFromPool } from './queries/get-api-keys-query';
 import type {
   RawOrganizationSettings,
   StorageLimits,
+  UsageLimits,
+  DefaultOrganizationLimits,
 } from '../contracts/organization.types';
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
 
@@ -319,6 +321,137 @@ export async function getStorageLimits(orgId: string): Promise<StorageLimits> {
 
 /** @deprecated Use getStorageLimits instead */
 export const getStorageLimitsByOrgId = getStorageLimits;
+
+// --- Usage Limits ---
+
+export async function saveUsageLimits(
+  orgId: string,
+  limits: Partial<UsageLimits>,
+): Promise<void> {
+  const data: Record<string, unknown> = {};
+  if (limits.monthlyTokenLimit !== undefined) {
+    data.monthly_token_limit =
+      limits.monthlyTokenLimit !== null
+        ? BigInt(limits.monthlyTokenLimit)
+        : null;
+  }
+  if (limits.monthlyCostLimitCents !== undefined) {
+    data.monthly_cost_limit_cents = limits.monthlyCostLimitCents;
+  }
+  if (limits.monthlyMessageLimit !== undefined) {
+    data.monthly_message_limit = limits.monthlyMessageLimit;
+  }
+  if (limits.maxMembers !== undefined) {
+    data.max_members = limits.maxMembers;
+  }
+  await upsertSettings(orgId, data);
+}
+
+export async function getUsageLimits(orgId: string): Promise<UsageLimits> {
+  const settings = await getSettings(orgId);
+  return {
+    monthlyTokenLimit:
+      settings?.monthly_token_limit != null
+        ? Number(settings.monthly_token_limit)
+        : null,
+    monthlyCostLimitCents: settings?.monthly_cost_limit_cents ?? null,
+    monthlyMessageLimit: settings?.monthly_message_limit ?? null,
+    maxMembers: settings?.max_members ?? null,
+  };
+}
+
+// --- Default Organization Limits ---
+
+const DEFAULT_LIMITS_KEY = 'default_organization_limits';
+
+export async function getDefaultOrganizationLimits(): Promise<DefaultOrganizationLimits> {
+  const row = await db.settings.findUnique({
+    where: { key: DEFAULT_LIMITS_KEY },
+  });
+  if (!row) {
+    return {
+      storageLimitBytes: defaultStorageLimits.storageLimitBytes,
+      projectStorageLimitBytes: defaultStorageLimits.projectStorageLimitBytes,
+      singleFileLimitBytes: defaultStorageLimits.singleFileLimitBytes,
+      monthlyTokenLimit: null,
+      monthlyCostLimitCents: null,
+      monthlyMessageLimit: null,
+      maxMembers: null,
+    };
+  }
+  try {
+    const parsed = JSON.parse(row.value) as Partial<DefaultOrganizationLimits>;
+    return {
+      storageLimitBytes:
+        parsed.storageLimitBytes ?? defaultStorageLimits.storageLimitBytes,
+      projectStorageLimitBytes:
+        parsed.projectStorageLimitBytes ??
+        defaultStorageLimits.projectStorageLimitBytes,
+      singleFileLimitBytes:
+        parsed.singleFileLimitBytes ??
+        defaultStorageLimits.singleFileLimitBytes,
+      monthlyTokenLimit: parsed.monthlyTokenLimit ?? null,
+      monthlyCostLimitCents: parsed.monthlyCostLimitCents ?? null,
+      monthlyMessageLimit: parsed.monthlyMessageLimit ?? null,
+      maxMembers: parsed.maxMembers ?? null,
+    };
+  } catch {
+    return {
+      storageLimitBytes: defaultStorageLimits.storageLimitBytes,
+      projectStorageLimitBytes: defaultStorageLimits.projectStorageLimitBytes,
+      singleFileLimitBytes: defaultStorageLimits.singleFileLimitBytes,
+      monthlyTokenLimit: null,
+      monthlyCostLimitCents: null,
+      monthlyMessageLimit: null,
+      maxMembers: null,
+    };
+  }
+}
+
+export async function saveDefaultOrganizationLimits(
+  limits: Partial<DefaultOrganizationLimits>,
+): Promise<void> {
+  const current = await getDefaultOrganizationLimits();
+  const merged = { ...current, ...limits };
+  await db.settings.upsert({
+    where: { key: DEFAULT_LIMITS_KEY },
+    update: { value: JSON.stringify(merged) },
+    create: { key: DEFAULT_LIMITS_KEY, value: JSON.stringify(merged) },
+  });
+}
+
+export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
+  const defaults = await getDefaultOrganizationLimits();
+  const data: Record<string, unknown> = {};
+
+  if (defaults.storageLimitBytes !== null) {
+    data.storage_limit_bytes = BigInt(defaults.storageLimitBytes);
+  }
+  if (defaults.projectStorageLimitBytes !== null) {
+    data.project_storage_limit_bytes = BigInt(
+      defaults.projectStorageLimitBytes,
+    );
+  }
+  if (defaults.singleFileLimitBytes !== null) {
+    data.single_file_limit_bytes = BigInt(defaults.singleFileLimitBytes);
+  }
+  if (defaults.monthlyTokenLimit !== null) {
+    data.monthly_token_limit = BigInt(defaults.monthlyTokenLimit);
+  }
+  if (defaults.monthlyCostLimitCents !== null) {
+    data.monthly_cost_limit_cents = defaults.monthlyCostLimitCents;
+  }
+  if (defaults.monthlyMessageLimit !== null) {
+    data.monthly_message_limit = defaults.monthlyMessageLimit;
+  }
+  if (defaults.maxMembers !== null) {
+    data.max_members = defaults.maxMembers;
+  }
+
+  if (Object.keys(data).length > 0) {
+    await upsertSettings(orgId, data);
+  }
+}
 
 // --- Get All Settings ---
 
