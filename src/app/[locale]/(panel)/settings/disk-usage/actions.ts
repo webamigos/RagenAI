@@ -1,6 +1,13 @@
 'use server';
 
-import { requireAppAdmin } from '@/lib/auth-guards';
+import {
+  requireAppAdmin,
+  getSessionOrThrow,
+  getActiveMember,
+  isAppAdmin,
+  isOrgAdmin,
+} from '@/lib/auth-guards';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { saveStorageLimits } from '@/features/organizations/services/organization-settings';
 import {
   getAdminAllOrgsStorageQuery,
@@ -12,23 +19,74 @@ import {
   getOrganizationsForFilterQuery,
   getProjectsForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
+import db from '@ragenai/prisma-client';
+
+/**
+ * Ensures the caller is an app admin or org admin.
+ * Returns { isAppAdmin, orgId } for scoping queries.
+ */
+async function requireStorageAccess(): Promise<{
+  isAppAdmin: boolean;
+  orgId: string;
+}> {
+  const session = await getSessionOrThrow();
+  const userIsAppAdmin = isAppAdmin(session.user);
+
+  if (userIsAppAdmin) {
+    const orgId = await getOrgIdFromAuthOrThrow();
+    return { isAppAdmin: true, orgId };
+  }
+
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const member = await getActiveMember(orgId);
+  if (!member || !isOrgAdmin(member.role)) {
+    throw new Error('Unauthorized: admin access required');
+  }
+  return { isAppAdmin: false, orgId };
+}
 
 export async function getAdminStorageOverview() {
-  await requireAppAdmin();
-  return getAdminAllOrgsStorageQuery();
+  const access = await requireStorageAccess();
+
+  if (access.isAppAdmin) {
+    return getAdminAllOrgsStorageQuery();
+  }
+
+  // Org admin: return only their own org
+  const [usage, limits] = await Promise.all([
+    getStorageUsageQuery(access.orgId),
+    getStorageLimitsByOrgId(access.orgId),
+  ]);
+
+  const org = await db.organization.findUnique({
+    where: { id: access.orgId },
+    select: { name: true },
+  });
+
+  return [
+    {
+      orgId: access.orgId,
+      orgName: org?.name ?? 'My Organization',
+      totalBytes: usage.totalBytes,
+      fileCount: usage.totalFileCount,
+      storageLimitBytes: limits.storageLimitBytes,
+    },
+  ];
 }
 
 export async function getAdminOrgProjects(orgId: string) {
-  await requireAppAdmin();
-  return getAdminOrgProjectsStorageQuery(orgId);
+  const access = await requireStorageAccess();
+  const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
+  return getAdminOrgProjectsStorageQuery(scopedOrgId);
 }
 
 export async function getAdminOrgStorageDetails(orgId: string) {
-  await requireAppAdmin();
+  const access = await requireStorageAccess();
+  const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
 
   const [usage, limits] = await Promise.all([
-    getStorageUsageQuery(orgId),
-    getStorageLimitsByOrgId(orgId),
+    getStorageUsageQuery(scopedOrgId),
+    getStorageLimitsByOrgId(scopedOrgId),
   ]);
 
   return { usage, limits };
@@ -40,8 +98,9 @@ export async function getDiskOrganizationsForFilter() {
 }
 
 export async function getDiskProjectsForFilter(orgId?: string) {
-  await requireAppAdmin();
-  return getProjectsForFilterQuery(orgId);
+  const access = await requireStorageAccess();
+  const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
+  return getProjectsForFilterQuery(scopedOrgId);
 }
 
 export async function updateOrgStorageLimitsAction(

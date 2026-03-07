@@ -23,7 +23,12 @@ export const conversationChain = async ({
       const sanitizedInput = sanitizeAndValidateInput(input);
 
       // Step 2: Moderate the content (no history moderation for conversation)
-      await moderateContent(models.contentModerator, sanitizedInput, false);
+      await moderateContent(
+        models.contentModerator,
+        sanitizedInput,
+        false,
+        config?.tracking,
+      );
 
       // Step 3: Build messages and stream the answer
       const { system, messages } = buildConversationMessages(

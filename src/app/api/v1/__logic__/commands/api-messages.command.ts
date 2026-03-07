@@ -14,6 +14,9 @@ import {
 } from '@/libs/sse/prepare-sse-message';
 import { getApiChatMessagesQuery } from '../queries/api-threads.query';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { getModelProvider, normalizeModelId } from '@/app/components/config';
+import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
+import { LimitExceededException } from '../guards/rate-limit.guard';
 import { logger } from '@/app/lib/utils/logger';
 
 async function prepareChainToRun(
@@ -100,12 +103,18 @@ async function prepareChainToRun(
   };
 }
 
-// TODO: moderation
 export async function createApiChatMessagesCommand(
   context: ApiContext,
   publicThreadId: string,
   payload: ChatMessageDto,
 ) {
+  const usageLimitStatus = await checkUsageLimitsQuery(context.orgId);
+  if (usageLimitStatus.isAnyLimitExceeded) {
+    throw new LimitExceededException(
+      'Monthly usage limit exceeded. Please contact your organization administrator.',
+    );
+  }
+
   const {
     chainOutput,
     threadRecord,
@@ -132,7 +141,9 @@ export async function createApiChatMessagesCommand(
       threadId: threadRecord.public_id,
       userId: context.userId ?? null,
       step: AiUsageStep.CHAT_COMPLETION,
-      provider: 'openrouter',
+      provider:
+        getModelProvider(normalizeModelId(rawSettings.model || '')) ||
+        'openrouter',
       model: rawSettings.model || '',
       inputTokens: usage.inputTokens ?? 0,
       outputTokens: usage.outputTokens ?? 0,
@@ -167,6 +178,13 @@ export async function streamApiChatMessagesCommand(
   payload: ChatMessageDto,
   controller: ReadableStreamDefaultController,
 ) {
+  const usageLimitStatus = await checkUsageLimitsQuery(context.orgId);
+  if (usageLimitStatus.isAnyLimitExceeded) {
+    throw new LimitExceededException(
+      'Monthly usage limit exceeded. Please contact your organization administrator.',
+    );
+  }
+
   const { chainOutput, threadRecord, threadMessage, conv_history } =
     await prepareChainToRun(context, publicThreadId, payload, controller);
 

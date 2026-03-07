@@ -66,6 +66,23 @@ export type StorageLimits = {
   singleFileLimitBytes: number;
 };
 
+export type UsageLimits = {
+  monthlyTokenLimit: number | null;
+  monthlyCostLimitCents: number | null;
+  monthlyMessageLimit: number | null;
+  maxMembers: number | null;
+};
+
+export type DefaultOrganizationLimits = {
+  storageLimitBytes: number | null;
+  projectStorageLimitBytes: number | null;
+  singleFileLimitBytes: number | null;
+  monthlyTokenLimit: number | null;
+  monthlyCostLimitCents: number | null;
+  monthlyMessageLimit: number | null;
+  maxMembers: number | null;
+};
+
 export type StorageUsage = {
   knowledgeBaseBytes: number;
   knowledgeBaseFileCount: number;

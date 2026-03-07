@@ -188,6 +188,10 @@ model OrganizationSettings {
   storage_limit_bytes         BigInt?
   project_storage_limit_bytes BigInt?
   single_file_limit_bytes     BigInt?
+  monthly_token_limit         BigInt?
+  monthly_cost_limit_cents    Int?
+  monthly_message_limit       Int?
+  max_members                 Int?
   created_at                  DateTime             @default(now()) @db.Timestamptz
   updated_at                  DateTime             @updatedAt @db.Timestamptz
 

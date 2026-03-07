@@ -11,11 +11,22 @@ import { AiUsageSummaryCards } from './AiUsageSummaryCards';
 import { AiUsageFiltersBar } from './AiUsageFiltersBar';
 import { AiUsageCharts } from './AiUsageCharts';
 import { AiUsageTable } from './AiUsageTable';
+import { AiUsageLimitsManager } from './AiUsageLimitsManager';
 
-export function AiUsageDashboard() {
+type Props = {
+  isAppAdmin: boolean;
+  orgId?: string;
+};
+
+export function AiUsageDashboard({ isAppAdmin, orgId }: Props) {
   const [data, setData] = useState<AiUsageDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<AiUsageFilters>({ period: '30d' });
+  const [filters, setFilters] = useState<AiUsageFilters>({
+    period: '30d',
+    // Org admins are auto-scoped server-side, but we set it here
+    // so the filters bar reflects the correct state
+    ...(!isAppAdmin && orgId ? { organizationId: orgId } : {}),
+  });
   const latestRequestIdRef = useRef(0);
 
   const loadData = useCallback(async (f: AiUsageFilters) => {
@@ -63,13 +74,24 @@ export function AiUsageDashboard() {
 
   return (
     <div className="space-y-6">
-      <AiUsageFiltersBar filters={filters} onChange={handleFiltersChange} />
+      {isAppAdmin && (
+        <>
+          <AiUsageLimitsManager />
+          <hr className="border-border" />
+        </>
+      )}
+
+      <AiUsageFiltersBar
+        filters={filters}
+        onChange={handleFiltersChange}
+        isAppAdmin={isAppAdmin}
+      />
 
       {data && (
         <>
           <AiUsageSummaryCards summary={data.summary} isLoading={isLoading} />
-          <AiUsageCharts charts={data.charts} />
-          <AiUsageTable items={data.items} />
+          <AiUsageCharts charts={data.charts} isAppAdmin={isAppAdmin} />
+          <AiUsageTable items={data.items} isAppAdmin={isAppAdmin} />
         </>
       )}
 

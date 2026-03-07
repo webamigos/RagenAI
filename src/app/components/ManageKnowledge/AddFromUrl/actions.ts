@@ -9,7 +9,6 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
-import { usageTracker } from '@/app/lib/services/usage';
 import { type WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import {
@@ -101,7 +100,6 @@ export async function processUrl(
     //   };
     // }
 
-    usageTracker.incUploadedFilesCount();
     await saveOrganizationPublicMetadata(orgId, { hasKnowledge: true });
 
     return {

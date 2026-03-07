@@ -5,12 +5,15 @@ import {
 } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
+import type { ChainTrackingContext } from '@/libs/chains/types/common';
+
 type InitializeConversationChainParams = {
   settings: OrganizationSettings;
   projectInstruction?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
+  tracking?: ChainTrackingContext;
 };
 
 export const initializeConversationChain = async ({
@@ -18,6 +21,7 @@ export const initializeConversationChain = async ({
   projectInstruction,
   mcpTools,
   mcpContext,
+  tracking,
 }: InitializeConversationChainParams) => {
   try {
     const { apiKey, model, temperature, prompt } = settings;
@@ -36,6 +40,7 @@ export const initializeConversationChain = async ({
         projectInstruction: projectInstruction || '',
         mcpTools,
         mcpContext,
+        tracking,
       },
     });
   } catch (error) {

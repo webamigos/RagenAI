@@ -45,7 +45,7 @@ export const initializePublicRagChain = async ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    const embeddingModel = createEmbeddingsInstance({ apiKey });
+    const embeddingModel = createEmbeddingsInstance({ apiKey, organizationId });
     const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
@@ -114,6 +114,7 @@ export const initializePublicRagChain = async ({
         metadataFilter: isMeilisearch ? metadataFilter : undefined,
         maxDocumentsToRetrieve,
         answerInstructions: finalInstructions,
+        tracking: { organizationId },
       },
       vectorStore,
     });

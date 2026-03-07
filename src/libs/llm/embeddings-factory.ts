@@ -2,7 +2,8 @@ import { embed, embedMany } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
 import type { EmbeddingModelV3 } from '@ai-sdk/provider';
-import { type UsageTracker } from '@/app/lib/utils/usage/usage-tracker';
+import { AiUsageStep } from '@/generated/prisma/client';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import type {
   BedrockCredentials,
   OpenAICredentials,
@@ -13,21 +14,39 @@ import type {
 
 /**
  * Wrapper around Vercel AI SDK embedding models that provides
- * a unified interface with usage tracking.
+ * a unified interface with usage tracking via AiUsage table.
  */
 export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
   private embeddingModel: EmbeddingModelV3;
-  private usageTracker?: UsageTracker;
+  private organizationId?: string;
+  private provider: string;
 
   constructor(
     embeddingModel: EmbeddingModelV3,
     modelName: string,
-    usageTracker?: UsageTracker,
+    provider: string,
+    organizationId?: string,
   ) {
     this.embeddingModel = embeddingModel;
     this.model = modelName;
-    this.usageTracker = usageTracker;
+    this.provider = provider;
+    this.organizationId = organizationId;
+  }
+
+  private trackEmbeddingUsage(tokens: number): void {
+    if (!this.organizationId) {
+      return;
+    }
+    trackAiUsage({
+      organizationId: this.organizationId,
+      step: AiUsageStep.EMBEDDINGS,
+      provider: this.provider,
+      model: this.model,
+      inputTokens: tokens,
+      outputTokens: 0,
+      totalTokens: tokens,
+    });
   }
 
   async embedDocuments(texts: string[]): Promise<number[][]> {
@@ -36,11 +55,8 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
       values: texts,
     });
 
-    if (usage && this.usageTracker) {
-      this.usageTracker.incEmbeddingsTokens({
-        prompt_tokens: usage.tokens,
-        total_tokens: usage.tokens,
-      });
+    if (usage) {
+      this.trackEmbeddingUsage(usage.tokens);
     }
 
     return embeddings;
@@ -52,11 +68,8 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
       value: text,
     });
 
-    if (usage && this.usageTracker) {
-      this.usageTracker.incEmbeddingsTokens({
-        prompt_tokens: usage.tokens,
-        total_tokens: usage.tokens,
-      });
+    if (usage) {
+      this.trackEmbeddingUsage(usage.tokens);
     }
 
     return embedding;
@@ -67,7 +80,7 @@ export class EmbeddingsFactory {
   private static createBedrockInstance(
     credentials: BedrockCredentials,
     config: BaseEmbeddingsConfig,
-    usageTracker?: UsageTracker,
+    organizationId?: string,
   ): EmbeddingsProvider {
     if (!credentials.credentials) {
       throw new Error('Credentials are required for Bedrock');
@@ -87,14 +100,15 @@ export class EmbeddingsFactory {
     return new TrackedEmbeddingsProvider(
       bedrock.textEmbeddingModel(modelName),
       modelName,
-      usageTracker,
+      'bedrock',
+      organizationId,
     );
   }
 
   private static createOpenAIInstance(
     credentials: OpenAICredentials,
     config: BaseEmbeddingsConfig,
-    usageTracker?: UsageTracker,
+    organizationId?: string,
   ): EmbeddingsProvider {
     if (!credentials.apiKey) {
       throw new Error('API key is required for OpenAI');
@@ -108,21 +122,22 @@ export class EmbeddingsFactory {
     return new TrackedEmbeddingsProvider(
       openai.textEmbeddingModel(modelName),
       modelName,
-      usageTracker,
+      'openai',
+      organizationId,
     );
   }
 
   static createInstance(
     credentials: ProviderCredentials,
     config: BaseEmbeddingsConfig,
-    usageTracker?: UsageTracker,
+    organizationId?: string,
   ): EmbeddingsProvider {
     switch (credentials.provider) {
       case 'bedrock':
-        return this.createBedrockInstance(credentials, config, usageTracker);
+        return this.createBedrockInstance(credentials, config, organizationId);
 
       case 'openai':
-        return this.createOpenAIInstance(credentials, config, usageTracker);
+        return this.createOpenAIInstance(credentials, config, organizationId);
 
       default:
         throw new Error('Unsupported provider');
