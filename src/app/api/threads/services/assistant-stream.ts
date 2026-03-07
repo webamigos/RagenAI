@@ -23,7 +23,7 @@ import { getProjectInstructionQuery as getProjectInstruction } from '@/features/
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
-import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
+import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
@@ -284,17 +284,12 @@ export async function streamEvents({
           // Phase 1: Fetch settings and thread details (with messages) in parallel
           sendApiEvent(controller, 'find_thread');
 
-          const [rawSettings, threadRecord, orgSlugResult] = await Promise.all([
+          const [rawSettings, threadRecord] = await Promise.all([
             getAllSettings(orgId),
             getThreadDetails(publicThreadId, orgId, {
               includeMessages: true,
             }),
-            db.organization.findUnique({
-              where: { id: orgId },
-              select: { slug: true },
-            }),
           ]);
-          const orgSlug = orgSlugResult?.slug ?? orgId;
 
           if (!rawSettings.apiKey) {
             throw new ApiKeyError();
@@ -359,12 +354,10 @@ export async function streamEvents({
           }
 
           // Load MCP tools from user's enabled connectors (skip for public mode)
-          const currentUser =
+          const userId =
             mode !== AssistantMode.PUBLIC
-              ? await getCurrentUser().catch(() => null)
+              ? await getCurrentUserId().catch(() => null)
               : null;
-          const userId = currentUser?.id ?? null;
-          const userEmail = currentUser?.email ?? null;
 
           if (userId) {
             try {
@@ -429,8 +422,8 @@ export async function streamEvents({
           updateActiveTrace({
             name: `chat-${mode === AssistantMode.PUBLIC ? 'public' : filteredMode === ChatType.CONVERSATION ? 'conversation' : 'rag'}`,
             input: userMessage.prompt,
-            userId: userEmail ?? undefined,
-            sessionId: `${orgSlug}:${threadRecord.public_id}`,
+            userId: userId ?? undefined,
+            sessionId: `${orgId}:${threadRecord.public_id}`,
             tags: traceTags,
           });
 
