@@ -76,7 +76,7 @@ export const Textarea = forwardRef(
       onSend,
       setValue,
       value,
-      handleSubmit: _handleSubmit,
+      handleSubmit,
       modelSelector,
       leftAddon,
       leftAddonPosition = 'center',
@@ -131,10 +131,12 @@ export const Textarea = forwardRef(
       }
     }, [value]);
 
+    const sendAction = onSend ?? handleSubmit;
+
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        onSend?.();
+        sendAction?.();
       }
     };
 
@@ -223,12 +225,12 @@ export const Textarea = forwardRef(
               'h-9 w-9',
               disabled
                 ? 'text-gray-300 dark:text-gray-600'
-                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300',
+                : 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300',
             )}
             aria-hidden="true"
           />
         );
-        onClick = disabled ? undefined : onSend;
+        onClick = disabled ? undefined : sendAction;
       } else {
         icon = (
           <MicrophoneIcon
@@ -248,13 +250,13 @@ export const Textarea = forwardRef(
             className={classMerge(
               'h-9 w-9',
               value?.trim()
-                ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
+                ? 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
                 : 'text-gray-300 dark:text-gray-600',
             )}
             aria-hidden="true"
           />
         );
-        onClick = value?.trim() ? onSend : undefined;
+        onClick = value?.trim() ? sendAction : undefined;
       } else {
         icon = null;
       }

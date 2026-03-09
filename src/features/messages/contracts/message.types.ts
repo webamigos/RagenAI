@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { type Role, type Message as MessageModel } from '@/generated/prisma/browser';
+import {
+  type Role,
+  type Message as MessageModel,
+} from '@/generated/prisma/browser';
 
 export enum ChatType {
   CONVERSATION = 'conversation',
@@ -37,12 +40,20 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           size: z.number(),
           type: z.string(),
           userFileId: z.string().optional(),
+          sourceUrl: z.string().optional(),
         }),
       )
       .optional(),
   });
 
 export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;
+
+export type MessageAttachment = {
+  name: string;
+  size: number;
+  type: string;
+  sourceUrl?: string;
+};
 
 export type MessageDto = {
   role: Role;
@@ -54,6 +65,7 @@ export type MessageDto = {
   message_type?: MessageModel['message_type'];
   voice_duration_seconds?: MessageModel['voice_duration_seconds'];
   voice_played?: MessageModel['voice_played'];
+  attachments?: MessageAttachment[];
 };
 
 export type ApiMessageDto = {

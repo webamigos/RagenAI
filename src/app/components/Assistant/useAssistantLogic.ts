@@ -163,6 +163,12 @@ export const useAssistantLogic = (threadId: string) => {
       message_type: data.messageType,
       voice_duration_seconds: data.voiceDurationSeconds,
       voice_played: false,
+      attachments: data.threadDocuments?.map((doc) => ({
+        name: doc.name,
+        size: doc.size,
+        type: doc.type,
+        sourceUrl: doc.sourceUrl,
+      })),
     };
     // Cast to unknown first to avoid type mismatch
     // ugly workaround to satisfied Clerk UserResourceTypes

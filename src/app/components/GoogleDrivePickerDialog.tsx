@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  MagnifyingGlassIcon,
-  DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +22,7 @@ type DriveFile = {
   mime_type: string;
   modified_time: string;
   owner: string;
+  web_view_link?: string;
 };
 
 type Props = {
@@ -32,6 +30,8 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   onFileSelected: (doc: ThreadDocumentUI) => void;
 };
+
+const MAX_BATCHES = 5;
 
 export const GoogleDrivePickerDialog = ({
   open,
@@ -41,19 +41,27 @@ export const GoogleDrivePickerDialog = ({
   const t = useTranslations('drive-picker');
   const [files, setFiles] = useState<DriveFile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [loadingFileId, setLoadingFileId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>();
+  const [batchCount, setBatchCount] = useState(1);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const loadFiles = useCallback(
     async (query: string = '') => {
       setIsLoading(true);
       setError(null);
+      setNextPageToken(undefined);
+      setBatchCount(1);
       try {
         const result = await searchDriveFiles(query);
         if (result.success && result.files) {
           setFiles(result.files);
+          setNextPageToken(result.next_page_token);
         } else {
           setFiles([]);
           if (result.error) {
@@ -70,11 +78,52 @@ export const GoogleDrivePickerDialog = ({
     [t],
   );
 
+  const loadMore = useCallback(async () => {
+    if (!nextPageToken || isLoadingMore || batchCount >= MAX_BATCHES) {
+      return;
+    }
+    setIsLoadingMore(true);
+    try {
+      const result = await searchDriveFiles(search, nextPageToken);
+      if (result.success && result.files) {
+        setFiles((prev) => [...prev, ...result.files!]);
+        setNextPageToken(result.next_page_token);
+        setBatchCount((prev) => prev + 1);
+      }
+    } catch {
+      // Silently fail on load-more
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [nextPageToken, isLoadingMore, batchCount, search]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !nextPageToken || batchCount >= MAX_BATCHES) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { root: scrollContainerRef.current, threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [nextPageToken, batchCount, loadMore]);
+
   useEffect(() => {
     if (open) {
       setSearch('');
       setFiles([]);
       setError(null);
+      setNextPageToken(undefined);
+      setBatchCount(1);
       loadFiles();
     }
   }, [open, loadFiles]);
@@ -109,6 +158,7 @@ export const GoogleDrivePickerDialog = ({
           content: result.content,
           size: new Blob([result.content]).size,
           type: file.mime_type || 'text/plain',
+          sourceUrl: file.web_view_link,
         };
         onFileSelected(doc);
         onOpenChange(false);
@@ -134,6 +184,9 @@ export const GoogleDrivePickerDialog = ({
     });
   };
 
+  const hasMorePages = !!nextPageToken;
+  const reachedBatchLimit = batchCount >= MAX_BATCHES && hasMorePages;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -154,7 +207,10 @@ export const GoogleDrivePickerDialog = ({
 
         {error && <div className="text-sm text-red-500 px-1">{error}</div>}
 
-        <div className="max-h-72 overflow-y-auto -mx-1">
+        <div
+          ref={scrollContainerRef}
+          className="max-h-72 overflow-y-auto -mx-1"
+        >
           {isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
@@ -180,7 +236,11 @@ export const GoogleDrivePickerDialog = ({
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
                       </div>
                     ) : (
-                      <DocumentTextIcon className="size-5 shrink-0 text-blue-500" />
+                      <img
+                        src="/assets/connectors/google-docs.svg"
+                        alt="Google Doc"
+                        className="size-5 shrink-0"
+                      />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-sm truncate">{file.name}</div>
@@ -194,6 +254,23 @@ export const GoogleDrivePickerDialog = ({
                   </button>
                 );
               })}
+
+              {/* Sentinel for intersection observer */}
+              {hasMorePages && !reachedBatchLimit && (
+                <div ref={sentinelRef} className="py-2">
+                  {isLoadingMore && (
+                    <div className="flex justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {reachedBatchLimit && (
+                <div className="text-center py-3 text-xs text-muted-foreground">
+                  {t('use-search-hint')}
+                </div>
+              )}
             </div>
           )}
         </div>
