@@ -92,7 +92,7 @@ const MessageContent = ({
         }}
       />
       {role === 'ASSISTANT' && message && (
-        <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <RateAnswer
             initialRated={message.rate}
             publicId={message.public_id}
