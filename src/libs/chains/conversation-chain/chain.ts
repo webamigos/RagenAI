@@ -4,6 +4,7 @@ import {
   validateAnswerGenerator,
 } from './operations';
 import type { ConversationChainParams } from '../types/conversation';
+import { MAX_TOOL_STEPS } from '../types/common';
 import type { BaseChatChainOutput } from '../types/common';
 import {
   sanitizeAndValidateInput,
@@ -54,7 +55,7 @@ export const conversationChain = async ({
           functionId: 'conversation-stream',
         },
         ...(hasTools
-          ? { tools: config!.mcpTools, stopWhen: stepCountIs(5) }
+          ? { tools: config!.mcpTools, stopWhen: stepCountIs(MAX_TOOL_STEPS) }
           : {}),
       });
 
