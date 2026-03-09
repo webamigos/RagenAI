@@ -39,7 +39,9 @@
       "WebFetch(domain:www.promptfoo.dev)",
       "Skill(coderabbit:review)",
       "Bash(git:*)",
-      "WebFetch(domain:developer.clickup.com)"
+      "WebFetch(domain:developer.clickup.com)",
+      "Read(//Users/patryk/Workspace/webamigos/ragen/**)",
+      "Read(//Users/patryk/Workspace/webamigos/ragen/ragen-mcp-google/**)"
     ]
   },
   "enabledPlugins": {

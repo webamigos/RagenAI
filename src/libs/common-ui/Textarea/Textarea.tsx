@@ -76,7 +76,7 @@ export const Textarea = forwardRef(
       onSend,
       setValue,
       value,
-      handleSubmit: _handleSubmit,
+      handleSubmit,
       modelSelector,
       leftAddon,
       leftAddonPosition = 'center',
@@ -131,10 +131,12 @@ export const Textarea = forwardRef(
       }
     }, [value]);
 
+    const sendAction = onSend ?? handleSubmit;
+
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        onSend?.();
+        sendAction?.();
       }
     };
 
@@ -228,7 +230,7 @@ export const Textarea = forwardRef(
             aria-hidden="true"
           />
         );
-        onClick = disabled ? undefined : onSend;
+        onClick = disabled ? undefined : sendAction;
       } else {
         icon = (
           <MicrophoneIcon
@@ -254,7 +256,7 @@ export const Textarea = forwardRef(
             aria-hidden="true"
           />
         );
-        onClick = value?.trim() ? onSend : undefined;
+        onClick = value?.trim() ? sendAction : undefined;
       } else {
         icon = null;
       }
