@@ -591,6 +591,9 @@
     "fetch-error": "Nie udało się pobrać zawartości dokumentu",
     "use-search-hint": "Użyj wyszukiwarki powyżej, aby znaleźć więcej dokumentów"
   },
+  "thread-content-panel": {
+    "title": "Zawartość"
+  },
   "thread-actions": {
     "star": "Przypnij",
     "unstar": "Odepnij",

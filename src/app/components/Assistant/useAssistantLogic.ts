@@ -167,6 +167,7 @@ export const useAssistantLogic = (threadId: string) => {
         name: doc.name,
         size: doc.size,
         type: doc.type,
+        sourceUrl: doc.sourceUrl,
       })),
     };
     // Cast to unknown first to avoid type mismatch

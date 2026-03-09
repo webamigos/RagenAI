@@ -22,6 +22,7 @@ type DriveFile = {
   mime_type: string;
   modified_time: string;
   owner: string;
+  web_view_link?: string;
 };
 
 type Props = {
@@ -157,6 +158,7 @@ export const GoogleDrivePickerDialog = ({
           content: result.content,
           size: new Blob([result.content]).size,
           type: file.mime_type || 'text/plain',
+          sourceUrl: file.web_view_link,
         };
         onFileSelected(doc);
         onOpenChange(false);

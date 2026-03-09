@@ -10,7 +10,9 @@ import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import { ThreadContentPanel } from './ThreadContentPanel';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { useDispatch, useSelector } from 'react-redux';
@@ -73,6 +75,12 @@ export const Assistant = ({ threadId }: Props) => {
   const [organizationDefaultModel, setOrganizationDefaultModel] = useState<
     string | null
   >(null);
+  const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
+
+  const allAttachments = useMemo(
+    () => messages.flatMap((m) => m.attachments ?? []),
+    [messages],
+  );
 
   useEffect(() => {
     const getVoiceSettings = async () => {
@@ -179,8 +187,8 @@ export const Assistant = ({ threadId }: Props) => {
   }, [threadId]);
 
   return (
-    <>
-      <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] flex-col font-sans -m-6 lg:-m-10">
+    <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
+      <div className="flex flex-1 min-w-0 flex-col font-sans">
         {responseType === ChatResponseType.VOICE && (
           <VoiceMode
             onClose={closeVoiceMode}
@@ -204,6 +212,20 @@ export const Assistant = ({ threadId }: Props) => {
               <ThreadModelLabel
                 model={currentThreadModel || organizationDefaultModel}
               />
+            )}
+            {allAttachments.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsContentPanelOpen(!isContentPanelOpen)}
+                className={`p-1.5 rounded-md border transition-colors ${
+                  isContentPanelOpen
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                title="Content"
+              >
+                <DocumentTextIcon className="size-4" />
+              </button>
             )}
           </div>
         </div>
@@ -235,6 +257,13 @@ export const Assistant = ({ threadId }: Props) => {
           )}
         </div>
       </div>
-    </>
+
+      {isContentPanelOpen && allAttachments.length > 0 && (
+        <ThreadContentPanel
+          attachments={allAttachments}
+          onClose={() => setIsContentPanelOpen(false)}
+        />
+      )}
+    </div>
   );
 };

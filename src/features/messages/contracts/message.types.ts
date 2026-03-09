@@ -40,6 +40,7 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           size: z.number(),
           type: z.string(),
           userFileId: z.string().optional(),
+          sourceUrl: z.string().optional(),
         }),
       )
       .optional(),
@@ -51,6 +52,7 @@ export type MessageAttachment = {
   name: string;
   size: number;
   type: string;
+  sourceUrl?: string;
 };
 
 export type MessageDto = {

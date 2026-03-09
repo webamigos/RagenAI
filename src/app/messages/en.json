@@ -588,6 +588,9 @@
     "fetch-error": "Failed to load document content",
     "use-search-hint": "Use the search box above to find more documents"
   },
+  "thread-content-panel": {
+    "title": "Content"
+  },
   "thread-actions": {
     "star": "Star",
     "unstar": "Unstar",

@@ -131,27 +131,49 @@ export const ChatOutput = ({
               message.attachments &&
               message.attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2 justify-end">
-                  {message.attachments.map((att, i) => (
-                    <div
-                      key={`${att.name}-${i}`}
-                      className="flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 text-foreground"
-                    >
-                      <span
-                        className="text-sm leading-snug line-clamp-3"
-                        title={att.name}
-                      >
-                        {att.name}
-                      </span>
-                      <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
-                        <DocumentTextIcon className="size-3 text-blue-500" />
-                        {att.name.lastIndexOf('.') !== -1
-                          ? att.name
-                              .slice(att.name.lastIndexOf('.') + 1)
-                              .toUpperCase()
-                          : 'DOC'}
-                      </span>
-                    </div>
-                  ))}
+                  {message.attachments.map((att, i) => {
+                    const cardContent = (
+                      <>
+                        <span
+                          className="text-sm leading-snug line-clamp-3"
+                          title={att.name}
+                        >
+                          {att.name}
+                        </span>
+                        <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
+                          <DocumentTextIcon className="size-3 text-blue-500" />
+                          {att.name.lastIndexOf('.') !== -1
+                            ? att.name
+                                .slice(att.name.lastIndexOf('.') + 1)
+                                .toUpperCase() || 'DOC'
+                            : 'DOC'}
+                        </span>
+                      </>
+                    );
+
+                    const baseClass =
+                      'flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 text-foreground';
+
+                    if (att.sourceUrl) {
+                      return (
+                        <a
+                          key={`${att.name}-${i}`}
+                          href={att.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${baseClass} hover:bg-muted/50 transition-colors no-underline`}
+                        >
+                          {cardContent}
+                        </a>
+                      );
+                    }
+
+                    return (
+                      <div key={`${att.name}-${i}`} className={baseClass}>
+                        {cardContent}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             <div

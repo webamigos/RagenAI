@@ -11,9 +11,12 @@ interface FileBadgeProps {
 }
 
 const getFileLabel = (filename: string): string => {
-  const ext = filename.lastIndexOf('.');
-  if (ext !== -1) {
-    return filename.slice(ext + 1).toUpperCase();
+  const dotIndex = filename.lastIndexOf('.');
+  if (dotIndex !== -1) {
+    const ext = filename.slice(dotIndex + 1).toUpperCase();
+    if (ext) {
+      return ext;
+    }
   }
   return 'DOC';
 };
@@ -28,12 +31,22 @@ export const FileBadge = ({
       className={classMerge(
         'relative flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3',
         'transition-colors hover:bg-muted/50',
+        document.sourceUrl && 'cursor-pointer',
         className,
       )}
+      onClick={
+        document.sourceUrl
+          ? () =>
+              window.open(document.sourceUrl, '_blank', 'noopener,noreferrer')
+          : undefined
+      }
     >
       <button
         type="button"
-        onClick={onRemove}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
         className="absolute top-1.5 right-1.5 inline-flex items-center justify-center h-5 w-5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
         aria-label={`Remove ${document.name}`}
       >
