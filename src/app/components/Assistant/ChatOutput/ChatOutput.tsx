@@ -15,6 +15,14 @@ import type {
 } from '@/features/messages/contracts/message.types';
 import './chat-response.css';
 
+/**
+ * Strips [REDACTED] placeholders from reasoning content.
+ * Claude's API inserts these when tool calls occur between reasoning blocks.
+ */
+function cleanReasoningContent(content: string): string {
+  return content.replace(/\[REDACTED\]/g, '').trim();
+}
+
 const ReasoningBlock = ({
   content,
   isStreaming,
@@ -25,6 +33,12 @@ const ReasoningBlock = ({
   const [isOpen, setIsOpen] = useState(true);
   const t = useTranslations('assistant.chat');
   const { renderAndSanitize } = useChatViewLogic(null);
+
+  const cleanedContent = cleanReasoningContent(content);
+
+  if (!cleanedContent && !isStreaming) {
+    return null;
+  }
 
   return (
     <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 dark:bg-muted/20 overflow-hidden">
@@ -45,10 +59,12 @@ const ReasoningBlock = ({
           {isStreaming ? '...' : ''}
         </span>
       </button>
-      {isOpen && (
+      {isOpen && cleanedContent && (
         <div
           className="chat-response px-3 pb-2 text-xs text-muted-foreground/80 leading-relaxed max-h-60 overflow-y-auto"
-          dangerouslySetInnerHTML={{ __html: renderAndSanitize(content) }}
+          dangerouslySetInnerHTML={{
+            __html: renderAndSanitize(cleanedContent),
+          }}
         />
       )}
     </div>
@@ -173,25 +189,29 @@ export const ChatOutput = ({
                   })}
                 </div>
               )}
-            <div
-              className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
-                message.role === 'USER'
-                  ? 'ml-auto max-w-[80%] bg-foreground text-background rounded-br-md'
-                  : 'mr-auto max-w-[85%] bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
-              }`}
-            >
-              <MessageContent
-                content={message.content}
-                role={message.role}
-                message={message}
-                isPublicAccess={isPublicAccess}
-                voiceId={!isPublicAccess ? voiceId : undefined}
-              />
-            </div>
+            {message.content.trim() && (
+              <div
+                className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
+                  message.role === 'USER'
+                    ? 'ml-auto max-w-[80%] bg-foreground text-background rounded-br-md'
+                    : 'mr-auto max-w-[85%] bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
+                }`}
+              >
+                <MessageContent
+                  content={message.content}
+                  role={message.role}
+                  message={message}
+                  isPublicAccess={isPublicAccess}
+                  voiceId={!isPublicAccess ? voiceId : undefined}
+                />
+              </div>
+            )}
           </div>
         ))}
         {streamedMessage &&
-          (streamedMessage.content || streamedMessage.reasoningContent) && (
+          (streamedMessage.content ||
+            (streamedMessage.reasoningContent &&
+              cleanReasoningContent(streamedMessage.reasoningContent))) && (
             <div className="group relative mr-auto max-w-[85%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
               {streamedMessage.reasoningContent && (
                 <ReasoningBlock
@@ -205,6 +225,21 @@ export const ChatOutput = ({
                     __html: renderedStreamedMessage,
                   }}
                 />
+              </div>
+            </div>
+          )}
+        {isLoading &&
+          streamedMessage &&
+          !streamedMessage.content &&
+          !(
+            streamedMessage.reasoningContent &&
+            cleanReasoningContent(streamedMessage.reasoningContent)
+          ) && (
+            <div className="mr-auto flex items-center rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
+              <div className="flex gap-1">
+                <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
+                <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
+                <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
               </div>
             </div>
           )}
