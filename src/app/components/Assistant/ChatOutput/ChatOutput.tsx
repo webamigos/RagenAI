@@ -8,6 +8,7 @@ import { ReadAnswer } from './ReadAnswer/ReadAnswer';
 import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import { DocumentTextIcon } from '@heroicons/react/20/solid';
+import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 import type {
   MessageDto,
   StreamedMessageDto,
@@ -142,11 +143,7 @@ export const ChatOutput = ({
                         </span>
                         <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
                           <DocumentTextIcon className="size-3 text-blue-500" />
-                          {att.name.lastIndexOf('.') !== -1
-                            ? att.name
-                                .slice(att.name.lastIndexOf('.') + 1)
-                                .toUpperCase() || 'DOC'
-                            : 'DOC'}
+                          {getFileLabel(att.name)}
                         </span>
                       </>
                     );

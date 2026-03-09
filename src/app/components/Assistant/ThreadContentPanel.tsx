@@ -3,21 +3,11 @@
 import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { useTranslations } from 'next-intl';
 import type { MessageAttachment } from '@/features/messages/contracts/message.types';
+import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 
 type Props = {
   attachments: MessageAttachment[];
   onClose: () => void;
-};
-
-const getFileLabel = (filename: string): string => {
-  const dotIndex = filename.lastIndexOf('.');
-  if (dotIndex !== -1) {
-    const ext = filename.slice(dotIndex + 1).toUpperCase();
-    if (ext) {
-      return ext;
-    }
-  }
-  return 'DOC';
 };
 
 export const ThreadContentPanel = ({ attachments, onClose }: Props) => {
@@ -36,7 +26,7 @@ export const ThreadContentPanel = ({ attachments, onClose }: Props) => {
             type="button"
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Close"
+            aria-label={t('close')}
           >
             <XMarkIcon className="size-4" />
           </button>

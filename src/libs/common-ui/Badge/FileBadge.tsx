@@ -2,6 +2,7 @@
 
 import { XMarkIcon, DocumentTextIcon } from '@heroicons/react/20/solid';
 import { classMerge } from '../utils/cn';
+import { getFileLabel } from '../utils/file-helpers';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface FileBadgeProps {
@@ -9,17 +10,6 @@ interface FileBadgeProps {
   onRemove: () => void;
   className?: string;
 }
-
-const getFileLabel = (filename: string): string => {
-  const dotIndex = filename.lastIndexOf('.');
-  if (dotIndex !== -1) {
-    const ext = filename.slice(dotIndex + 1).toUpperCase();
-    if (ext) {
-      return ext;
-    }
-  }
-  return 'DOC';
-};
 
 export const FileBadge = ({
   document,

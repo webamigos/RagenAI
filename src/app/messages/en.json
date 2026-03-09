@@ -589,7 +589,8 @@
     "use-search-hint": "Use the search box above to find more documents"
   },
   "thread-content-panel": {
-    "title": "Content"
+    "title": "Content",
+    "close": "Close"
   },
   "thread-actions": {
     "star": "Star",
