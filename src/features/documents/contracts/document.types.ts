@@ -32,6 +32,7 @@ export interface ThreadDocumentUI {
   size: number;
   type: string;
   userFileId?: string;
+  sourceUrl?: string;
 }
 
 export enum WebsiteLoaderMode {

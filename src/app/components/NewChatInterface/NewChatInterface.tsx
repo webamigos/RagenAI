@@ -148,20 +148,20 @@ export const NewChatInterface = ({
       {!projectTitle && (
         <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
           {userName && (
-            <p className="text-muted-foreground text-base mb-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <p className="text-muted-foreground text-base mb-2">
               {t('new-thread-greeting', { name: userName })}
             </p>
           )}
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl animate-in fade-in slide-in-from-bottom-3 duration-500 delay-100">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             {t('new-thread-header')}
           </h1>
-          <p className="text-muted-foreground mt-3 text-base sm:text-lg animate-in fade-in slide-in-from-bottom-3 duration-500 delay-200">
+          <p className="text-muted-foreground mt-3 text-base sm:text-lg">
             {t('new-thread-description')}
           </p>
         </div>
       )}
 
-      <div className="relative animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+      <div className="relative">
         <MentionTextarea
           ref={inputRef}
           value={prompt}

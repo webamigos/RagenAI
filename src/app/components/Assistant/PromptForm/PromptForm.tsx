@@ -236,20 +236,25 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
                   <DropdownMenuContent
                     align="start"
                     side="top"
-                    className="w-52"
+                    className="w-52 p-2"
                   >
                     <DropdownMenuItem
+                      className="py-2.5"
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <ArrowUpTrayIcon className="size-4" />
                       {tAttach('upload-file')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
+                    <DropdownMenuItem
+                      className="py-2.5"
+                      onClick={() => setIsKbPickerOpen(true)}
+                    >
                       <BookOpenIcon className="size-4" />
                       {tAttach('from-knowledge-base')}
                     </DropdownMenuItem>
                     {hasDriveConnector && (
                       <DropdownMenuItem
+                        className="py-2.5"
                         onClick={() => setIsDrivePickerOpen(true)}
                       >
                         <img
