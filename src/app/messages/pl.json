@@ -588,7 +588,8 @@
     "search-placeholder": "Szukaj dokumentów...",
     "no-results": "Brak dokumentów pasujących do wyszukiwania",
     "no-files": "Nie znaleziono dokumentów",
-    "fetch-error": "Nie udało się pobrać zawartości dokumentu"
+    "fetch-error": "Nie udało się pobrać zawartości dokumentu",
+    "use-search-hint": "Użyj wyszukiwarki powyżej, aby znaleźć więcej dokumentów"
   },
   "thread-actions": {
     "star": "Przypnij",

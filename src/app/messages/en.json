@@ -585,7 +585,8 @@
     "search-placeholder": "Search documents...",
     "no-results": "No documents match your search",
     "no-files": "No documents found",
-    "fetch-error": "Failed to load document content"
+    "fetch-error": "Failed to load document content",
+    "use-search-hint": "Use the search box above to find more documents"
   },
   "thread-actions": {
     "star": "Star",

@@ -89,6 +89,7 @@ export async function isDriveConnected(): Promise<boolean> {
 
 export async function searchDriveFiles(
   query: string = '',
+  pageToken?: string,
 ): Promise<SearchResponse> {
   const connector = await getDriveConnector();
   if (!connector) {
@@ -102,6 +103,9 @@ export async function searchDriveFiles(
       page_size: '20',
       mime_type: 'application/vnd.google-apps.document',
     });
+    if (pageToken) {
+      params.set('page_token', pageToken);
+    }
 
     const response = await fetch(`${connector.baseUrl}/drive/search?${params}`);
     if (!response.ok) {

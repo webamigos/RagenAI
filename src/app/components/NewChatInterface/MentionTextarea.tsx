@@ -328,17 +328,30 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
                   <PlusIcon className="size-5" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" side="top" className="w-52">
-                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+              <DropdownMenuContent
+                align="start"
+                side="top"
+                className="w-52 p-2"
+              >
+                <DropdownMenuItem
+                  className="py-2.5"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <ArrowUpTrayIcon className="size-4" />
                   {tAttach('upload-file')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsKbPickerOpen(true)}>
+                <DropdownMenuItem
+                  className="py-2.5"
+                  onClick={() => setIsKbPickerOpen(true)}
+                >
                   <BookOpenIcon className="size-4" />
                   {tAttach('from-knowledge-base')}
                 </DropdownMenuItem>
                 {hasDriveConnector && (
-                  <DropdownMenuItem onClick={() => setIsDrivePickerOpen(true)}>
+                  <DropdownMenuItem
+                    className="py-2.5"
+                    onClick={() => setIsDrivePickerOpen(true)}
+                  >
                     <img
                       src="/assets/connectors/google-drive.svg"
                       alt="Google Drive"

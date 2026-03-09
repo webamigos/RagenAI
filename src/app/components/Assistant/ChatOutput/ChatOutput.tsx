@@ -7,6 +7,7 @@ import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
 import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
+import { DocumentTextIcon } from '@heroicons/react/20/solid';
 import type {
   MessageDto,
   StreamedMessageDto,
@@ -22,6 +23,7 @@ const ReasoningBlock = ({
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const t = useTranslations('assistant.chat');
+  const { renderAndSanitize } = useChatViewLogic(null);
 
   return (
     <div className="mb-3 rounded-lg border border-border/50 bg-muted/30 dark:bg-muted/20 overflow-hidden">
@@ -43,9 +45,10 @@ const ReasoningBlock = ({
         </span>
       </button>
       {isOpen && (
-        <div className="px-3 pb-2 text-xs text-muted-foreground/80 whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
-          {content}
-        </div>
+        <div
+          className="chat-response px-3 pb-2 text-xs text-muted-foreground/80 leading-relaxed max-h-60 overflow-y-auto"
+          dangerouslySetInnerHTML={{ __html: renderAndSanitize(content) }}
+        />
       )}
     </div>
   );
@@ -123,21 +126,49 @@ export const ChatOutput = ({
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
       <div className="flex flex-col gap-2">
         {messages.map((message, messageIndex) => (
-          <div
-            key={`message-${message.public_id}-${messageIndex}`}
-            className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
-              message.role === 'USER'
-                ? 'ml-auto max-w-[80%] bg-foreground text-background rounded-br-md'
-                : 'mr-auto max-w-[85%] bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
-            }`}
-          >
-            <MessageContent
-              content={message.content}
-              role={message.role}
-              message={message}
-              isPublicAccess={isPublicAccess}
-              voiceId={!isPublicAccess ? voiceId : undefined}
-            />
+          <div key={`message-${message.public_id}-${messageIndex}`}>
+            {message.role === 'USER' &&
+              message.attachments &&
+              message.attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2 justify-end">
+                  {message.attachments.map((att, i) => (
+                    <div
+                      key={`${att.name}-${i}`}
+                      className="flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 text-foreground"
+                    >
+                      <span
+                        className="text-sm leading-snug line-clamp-3"
+                        title={att.name}
+                      >
+                        {att.name}
+                      </span>
+                      <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
+                        <DocumentTextIcon className="size-3 text-blue-500" />
+                        {att.name.lastIndexOf('.') !== -1
+                          ? att.name
+                              .slice(att.name.lastIndexOf('.') + 1)
+                              .toUpperCase()
+                          : 'DOC'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            <div
+              className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
+                message.role === 'USER'
+                  ? 'ml-auto max-w-[80%] bg-foreground text-background rounded-br-md'
+                  : 'mr-auto max-w-[85%] bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
+              }`}
+            >
+              <MessageContent
+                content={message.content}
+                role={message.role}
+                message={message}
+                isPublicAccess={isPublicAccess}
+                voiceId={!isPublicAccess ? voiceId : undefined}
+              />
+            </div>
           </div>
         ))}
         {streamedMessage &&

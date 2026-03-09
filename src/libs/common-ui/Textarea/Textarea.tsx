@@ -225,7 +225,7 @@ export const Textarea = forwardRef(
               'h-9 w-9',
               disabled
                 ? 'text-gray-300 dark:text-gray-600'
-                : 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300',
+                : 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300',
             )}
             aria-hidden="true"
           />
@@ -250,7 +250,7 @@ export const Textarea = forwardRef(
             className={classMerge(
               'h-9 w-9',
               value?.trim()
-                ? 'text-blue-500 dark:text-gray-200 hover:text-blue-600 dark:hover:text-gray-300'
+                ? 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
                 : 'text-gray-300 dark:text-gray-600',
             )}
             aria-hidden="true"
