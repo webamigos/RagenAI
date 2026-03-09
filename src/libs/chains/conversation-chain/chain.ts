@@ -54,7 +54,7 @@ export const conversationChain = async ({
           functionId: 'conversation-stream',
         },
         ...(hasTools
-          ? { tools: config!.mcpTools, stopWhen: stepCountIs(5) }
+          ? { tools: config!.mcpTools, stopWhen: stepCountIs(10) }
           : {}),
       });
 

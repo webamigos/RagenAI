@@ -83,7 +83,7 @@ export const basicRagChain = async ({
         ...(hasTools
           ? {
               tools: config!.mcpTools,
-              stopWhen: stepCountIs(5),
+              stopWhen: stepCountIs(10),
             }
           : {}),
       });
