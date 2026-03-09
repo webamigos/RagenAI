@@ -2,6 +2,9 @@ import type { LanguageModelV3 } from '@ai-sdk/provider';
 import type { ModerationInstance } from '@/app/lib/services/llm';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 
+/** Maximum number of tool-use steps allowed per stream when MCP tools are enabled. */
+export const MAX_TOOL_STEPS = 10;
+
 export interface BaseChatChainInput {
   question: string;
   chat_history: string | undefined;

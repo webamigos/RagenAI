@@ -11,6 +11,7 @@ import {
   moderateContent,
 } from '../utils/common-operations';
 import type { BasicRagChainParams } from '../types/basic-rag';
+import { MAX_TOOL_STEPS } from '../types/common';
 import type { BaseChatChainOutput } from '../types/common';
 import { mapFullStream } from '../utils/stream-mapper';
 
@@ -83,7 +84,7 @@ export const basicRagChain = async ({
         ...(hasTools
           ? {
               tools: config!.mcpTools,
-              stopWhen: stepCountIs(10),
+              stopWhen: stepCountIs(MAX_TOOL_STEPS),
             }
           : {}),
       });

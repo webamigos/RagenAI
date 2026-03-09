@@ -142,57 +142,54 @@ export const ChatOutput = ({
   return (
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
       <div className="flex flex-col gap-2">
-        {messages
-          .filter(
-            (message) => message.role === 'USER' || message.content.trim(),
-          )
-          .map((message, messageIndex) => (
-            <div key={`message-${message.public_id}-${messageIndex}`}>
-              {message.role === 'USER' &&
-                message.attachments &&
-                message.attachments.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2 justify-end">
-                    {message.attachments.map((att, i) => {
-                      const cardContent = (
-                        <>
-                          <span
-                            className="text-sm leading-snug line-clamp-3"
-                            title={att.name}
-                          >
-                            {att.name}
-                          </span>
-                          <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
-                            <DocumentTextIcon className="size-3 text-blue-500" />
-                            {getFileLabel(att.name)}
-                          </span>
-                        </>
-                      );
+        {messages.map((message, messageIndex) => (
+          <div key={`message-${message.public_id}-${messageIndex}`}>
+            {message.role === 'USER' &&
+              message.attachments &&
+              message.attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2 justify-end">
+                  {message.attachments.map((att, i) => {
+                    const cardContent = (
+                      <>
+                        <span
+                          className="text-sm leading-snug line-clamp-3"
+                          title={att.name}
+                        >
+                          {att.name}
+                        </span>
+                        <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
+                          <DocumentTextIcon className="size-3 text-blue-500" />
+                          {getFileLabel(att.name)}
+                        </span>
+                      </>
+                    );
 
-                      const baseClass =
-                        'flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 text-foreground';
+                    const baseClass =
+                      'flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 text-foreground';
 
-                      if (att.sourceUrl) {
-                        return (
-                          <a
-                            key={`${att.name}-${i}`}
-                            href={att.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`${baseClass} hover:bg-muted/50 transition-colors no-underline`}
-                          >
-                            {cardContent}
-                          </a>
-                        );
-                      }
-
+                    if (att.sourceUrl) {
                       return (
-                        <div key={`${att.name}-${i}`} className={baseClass}>
+                        <a
+                          key={`${att.name}-${i}`}
+                          href={att.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${baseClass} hover:bg-muted/50 transition-colors no-underline`}
+                        >
                           {cardContent}
-                        </div>
+                        </a>
                       );
-                    })}
-                  </div>
-                )}
+                    }
+
+                    return (
+                      <div key={`${att.name}-${i}`} className={baseClass}>
+                        {cardContent}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            {message.content.trim() && (
               <div
                 className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
                   message.role === 'USER'
@@ -208,8 +205,9 @@ export const ChatOutput = ({
                   voiceId={!isPublicAccess ? voiceId : undefined}
                 />
               </div>
-            </div>
-          ))}
+            )}
+          </div>
+        ))}
         {streamedMessage &&
           (streamedMessage.content ||
             (streamedMessage.reasoningContent &&
