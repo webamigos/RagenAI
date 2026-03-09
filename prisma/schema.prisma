@@ -573,6 +573,7 @@ enum McpConnectorProvider {
   GOOGLE_ADS
   GOOGLE_DRIVE
   CLICKUP
+  HUBSPOT
 }
 
 model McpConnector {

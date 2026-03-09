@@ -25,6 +25,18 @@ const MCP_CLICKUP_SERVER_URL = (() => {
   return 'http://localhost:8001';
 })();
 
+const MCP_HUBSPOT_SERVER_URL = (() => {
+  if (process.env.MCP_HUBSPOT_SERVER_URL) {
+    return process.env.MCP_HUBSPOT_SERVER_URL;
+  }
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error(
+      'MCP_HUBSPOT_SERVER_URL is required in non-development environments',
+    );
+  }
+  return 'http://localhost:8002';
+})();
+
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
     provider: McpConnectorProvider.GOOGLE_DRIVE,
@@ -48,6 +60,28 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     ],
   },
   {
+    provider: McpConnectorProvider.CLICKUP,
+    name: 'ClickUp',
+    description: 'Manage tasks, projects, and workspaces.',
+    icon: 'check-square',
+    mcpServerUrl: MCP_CLICKUP_SERVER_URL,
+    authPath: '/auth/clickup',
+  },
+  {
+    provider: McpConnectorProvider.HUBSPOT,
+    name: 'HubSpot',
+    description: 'Access contacts, companies, deals, and CRM data.',
+    icon: 'database',
+    mcpServerUrl: MCP_HUBSPOT_SERVER_URL,
+    authPath: '/auth/hubspot',
+    scopes: [
+      'crm.objects.contacts.read',
+      'crm.objects.companies.read',
+      'crm.objects.deals.read',
+      'crm.objects.owners.read',
+    ],
+  },
+  {
     provider: McpConnectorProvider.GOOGLE_ANALYTICS,
     name: 'Google Analytics',
     description: 'Access traffic reports, conversions, and audience insights.',
@@ -64,14 +98,6 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/adwords'],
-  },
-  {
-    provider: McpConnectorProvider.CLICKUP,
-    name: 'ClickUp',
-    description: 'Manage tasks, projects, and workspaces.',
-    icon: 'check-square',
-    mcpServerUrl: MCP_CLICKUP_SERVER_URL,
-    authPath: '/auth/clickup',
   },
 ];
 

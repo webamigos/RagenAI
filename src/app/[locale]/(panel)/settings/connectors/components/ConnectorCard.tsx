@@ -24,6 +24,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   GOOGLE_ADS: '/assets/connectors/google-ads.svg',
   GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
   CLICKUP: '/assets/connectors/clickup.svg',
+  HUBSPOT: '/assets/connectors/hubspot.svg',
 };
 
 type ConnectorCardProps = {

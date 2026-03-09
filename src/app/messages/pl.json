@@ -449,6 +449,10 @@
         "CLICKUP": {
           "name": "ClickUp",
           "description": "Zarządzaj zadaniami, projektami i przestrzeniami roboczymi."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Dostęp do kontaktów, firm, transakcji i danych CRM."
         }
       }
     }
