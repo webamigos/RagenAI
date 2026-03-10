@@ -279,7 +279,9 @@ export const Textarea = forwardRef(
                 ? 'border-2 border-blue-400 dark:border-blue-500'
                 : error
                   ? 'border-red-300'
-                  : 'border-gray-300 dark:border-gray-800',
+                  : disabled
+                    ? 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
+                    : 'border-gray-300 dark:border-gray-800',
               !error && 'shadow-xs',
             )}
             onDragEnter={handleDragEnter}
