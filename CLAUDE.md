@@ -147,21 +147,35 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 
 ### MCP Integrations (External Tools)
 
-Users can connect external services (Google Calendar, Analytics, Ads) via Settings > Connectors. These are powered by MCP (Model Context Protocol) servers that provide tools to the AI during chat sessions.
+Users can connect external services via Settings > Connectors. These are powered by MCP (Model Context Protocol) servers that provide tools to the AI during chat sessions.
 
 **How it works:**
 - Each connector stores an `mcp_server_url` and `customer_id` (format: `{orgId}:{userId}`) in the `McpConnector` Prisma model
 - During chat, `assistant-stream.ts` loads enabled connectors, creates MCP clients via `@ai-sdk/mcp` (`src/libs/mcp/client.ts`), and passes the tools to `streamText()`
 - AI SDK v6 uses `stopWhen: stepCountIs(N)` (not `maxSteps`) for multi-step tool use
 - MCP clients are closed after streaming completes (or on error)
+- System prompt includes per-provider guidance for tool usage (sorting, filtering, date handling) in `mcpContext`
 
 **Key files:**
 - `src/features/connectors/` — CQRS feature module (contracts, queries, commands)
 - `src/libs/mcp/client.ts` — Creates MCP clients from connector records, returns tools + cleanup function
-- `src/libs/chains/basic-rag/chain.ts` and `conversation-chain/chain.ts` — Pass MCP tools to `streamText()` with `stopWhen: stepCountIs(5)`
+- `src/libs/chains/basic-rag/chain.ts` and `conversation-chain/chain.ts` — Pass MCP tools to `streamText()` with `stopWhen: stepCountIs(10)`
 - `src/app/[locale]/(panel)/settings/connectors/` — UI for connecting/disconnecting providers (OAuth popup flow)
+- `src/app/api/threads/services/assistant-stream.ts` — Builds `mcpContext` with per-provider instructions appended to system prompt
 
-**External MCP server:** `ragen-mcp-google` (separate repo) — FastMCP + FastAPI Python server deployed on Railway. Per-user OAuth with PKCE, tokens stored in its own Postgres.
+**MCP Providers:**
+
+| Provider | MCP Server | Tools |
+|----------|-----------|-------|
+| Google Calendar | `ragen-mcp` (own) | list_calendars, list_calendar_events, get_calendar_event, check_free_busy |
+| Google Analytics | `ragen-mcp` (own) | get_traffic_report, get_conversion_data, get_top_pages, get_audience_insights |
+| Google Ads | `ragen-mcp` (own) | list_campaigns, get_campaign_performance, get_cost_summary |
+| Google Drive | `ragen-mcp` (own) | search_drive_files, read_drive_file, get_drive_file_info |
+| HubSpot | Claude AI MCP | get_crm_objects, search_crm_objects, get/search_properties, get_user_details, search_owners |
+| ClickUp | Claude AI MCP | search, create/get/update_task, create/get/update_list, create/get/update_folder, docs, comments, time tracking |
+| Gmail | Claude AI MCP | search_messages, read_message, read_thread, create_draft, list_labels, get_profile |
+
+**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + FastAPI Python server deployed on Railway. Per-user OAuth with PKCE, tokens stored in its own Postgres. All Google tools (Calendar, Analytics, Ads, Drive) require `property_id` (GA4) or `ads_customer_id` (Ads) which the user must provide.
 
 ### Settings Pages
 

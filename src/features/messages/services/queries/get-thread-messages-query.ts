@@ -3,6 +3,7 @@
 import { type Thread } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import type { MessageAttachment } from '../../contracts/message.types';
 
 export const getThreadMessagesQuery = async (
   threadPublicId: Thread['public_id'],
@@ -38,6 +39,7 @@ export const getThreadMessagesQuery = async (
         voice_duration_seconds: true,
         message_type: true,
         voice_played: true,
+        attachments: true,
       },
       orderBy: [
         {
@@ -87,6 +89,8 @@ export const getThreadMessagesQuery = async (
       messages: messages.map((message) => ({
         ...message,
         created_at: message.created_at.toISOString(),
+        attachments:
+          (message.attachments as MessageAttachment[] | null) ?? undefined,
       })),
       threadContext: {
         project: thread.project,
