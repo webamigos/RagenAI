@@ -10,6 +10,7 @@ import { createConnectorCommand } from '@/features/connectors/services/commands/
 import { markConnectorConnectedCommand } from '@/features/connectors/services/commands/mark-connector-connected-command';
 import { disconnectConnectorCommand } from '@/features/connectors/services/commands/disconnect-connector-command';
 import { toggleConnectorCommand } from '@/features/connectors/services/commands/toggle-connector-command';
+import { registerApiKeyCommand } from '@/features/connectors/services/commands/register-api-key-command';
 
 export async function getConnectors() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -54,4 +55,16 @@ export async function toggleProvider(connectorId: string, enabled: boolean) {
     throw new Error('Unauthorized');
   }
   return toggleConnectorCommand(connectorId, orgId, userId, enabled);
+}
+
+export async function registerApiKey(
+  provider: McpConnectorProvider,
+  apiKey: string,
+) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    throw new Error('Unauthorized');
+  }
+  return registerApiKeyCommand(orgId, userId, provider, apiKey);
 }

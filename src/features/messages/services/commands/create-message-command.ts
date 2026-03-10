@@ -9,7 +9,11 @@ import {
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { createVisitorEntry } from '@/app/lib/services/visitor';
-import type { DbMessageDto, MessageDto } from '../../contracts/message.types';
+import type {
+  DbMessageDto,
+  MessageAttachment,
+  MessageDto,
+} from '../../contracts/message.types';
 
 export const createMessageInDbCommand = async ({
   threadId,
@@ -19,6 +23,7 @@ export const createMessageInDbCommand = async ({
   runId,
   messageType = 'TEXT',
   voiceDurationSeconds,
+  attachments,
 }: {
   threadId: Thread['id'];
   message: Omit<DbMessageDto, 'role'>;
@@ -27,6 +32,7 @@ export const createMessageInDbCommand = async ({
   runId?: string;
   messageType?: MessageContentType;
   voiceDurationSeconds?: number;
+  attachments?: MessageAttachment[];
 }) => {
   try {
     return await db.message.create({
@@ -39,6 +45,8 @@ export const createMessageInDbCommand = async ({
         run_id: runId,
         message_type: messageType,
         voice_duration_seconds: voiceDurationSeconds,
+        attachments:
+          attachments && attachments.length > 0 ? attachments : undefined,
       },
     });
   } catch (error) {
@@ -53,12 +61,14 @@ export const createAndStoreMessageCommand = async ({
   visitorId,
   messageType = 'TEXT',
   voiceDurationSeconds,
+  attachments,
 }: {
   prompt: string;
   threadId: Thread['id'];
   visitorId?: string;
   messageType?: MessageContentType;
   voiceDurationSeconds?: number;
+  attachments?: MessageAttachment[];
 }): Promise<MessageDto> => {
   try {
     const dbMessage = await createMessageInDbCommand({
@@ -71,7 +81,12 @@ export const createAndStoreMessageCommand = async ({
       visitorId,
       messageType,
       voiceDurationSeconds,
+      attachments,
     });
+
+    const savedAttachments = dbMessage.attachments as
+      | MessageAttachment[]
+      | null;
 
     if (visitorId) {
       try {
@@ -89,6 +104,7 @@ export const createAndStoreMessageCommand = async ({
       message_type: dbMessage.message_type,
       voice_duration_seconds: dbMessage.voice_duration_seconds,
       voice_played: dbMessage.voice_played,
+      attachments: savedAttachments ?? undefined,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create and store message');
