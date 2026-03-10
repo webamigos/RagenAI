@@ -33,7 +33,9 @@ import {
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
 import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
+import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
 import { isDriveConnected } from '@/app/actions/google-drive';
+import { isFirefliesConnected } from '@/app/actions/fireflies';
 
 type Props = {
   isLoading: boolean;
@@ -67,7 +69,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     );
     const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
     const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
+    const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
     const [hasDriveConnector, setHasDriveConnector] = useState(false);
+    const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
@@ -75,6 +79,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         isDriveConnected()
           .then(setHasDriveConnector)
           .catch(() => setHasDriveConnector(false));
+        isFirefliesConnected()
+          .then(setHasFirefliesConnector)
+          .catch(() => setHasFirefliesConnector(false));
       }
     }, [isPublicAccess]);
 
@@ -143,9 +150,12 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
     }, []);
 
-    const handleDriveFileSelected = useCallback((doc: ThreadDocumentUI) => {
-      setThreadDocuments((prev) => [...prev, doc]);
-    }, []);
+    const handleExternalDocumentSelected = useCallback(
+      (doc: ThreadDocumentUI) => {
+        setThreadDocuments((prev) => [...prev, doc]);
+      },
+      [],
+    );
 
     const handleKbFilesSelected = useCallback(
       (
@@ -265,6 +275,19 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
                         {tAttach('from-google-drive')}
                       </DropdownMenuItem>
                     )}
+                    {hasFirefliesConnector && (
+                      <DropdownMenuItem
+                        className="py-2.5"
+                        onClick={() => setIsFirefliesPickerOpen(true)}
+                      >
+                        <img
+                          src="/assets/connectors/fireflies.svg"
+                          alt="Fireflies"
+                          className="size-4"
+                        />
+                        {tAttach('from-fireflies')}
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : undefined
@@ -291,7 +314,13 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <GoogleDrivePickerDialog
           open={isDrivePickerOpen}
           onOpenChange={setIsDrivePickerOpen}
-          onFileSelected={handleDriveFileSelected}
+          onFileSelected={handleExternalDocumentSelected}
+        />
+
+        <FirefliesPickerDialog
+          open={isFirefliesPickerOpen}
+          onOpenChange={setIsFirefliesPickerOpen}
+          onFileSelected={handleExternalDocumentSelected}
         />
       </div>
     );

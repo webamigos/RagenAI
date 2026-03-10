@@ -29,6 +29,7 @@ model Message {
   message_type           MessageContentType @default(TEXT)
   voice_duration_seconds Int?
   voice_played           Boolean            @default(false)
+  attachments            Json?
   thread                 Thread?            @relation(fields: [thread_id], references: [id])
   source                 Source             @default(UI)
 
@@ -574,6 +575,7 @@ enum McpConnectorProvider {
   GOOGLE_DRIVE
   CLICKUP
   HUBSPOT
+  FIREFLIES
 }
 
 model McpConnector {

@@ -426,6 +426,11 @@
       "pending": "Pending",
       "connect": "Connect",
       "disconnect": "Disconnect",
+      "api-key-title": "Connect {provider}",
+      "api-key-description": "Enter your {provider} API key to connect this integration.",
+      "api-key-placeholder": "Enter API key...",
+      "api-key-help-link": "Learn how to get your API key.",
+      "api-key-error": "Failed to register API key. Please check your key and try again.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -450,6 +455,10 @@
         "HUBSPOT": {
           "name": "HubSpot",
           "description": "Access contacts, companies, deals, and CRM data."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Search meeting transcripts, summaries, and action items."
         }
       }
     }
@@ -582,7 +591,8 @@
   "prompt-attachments": {
     "upload-file": "Upload file",
     "from-knowledge-base": "From Knowledge Base",
-    "from-google-drive": "From Google Drive"
+    "from-google-drive": "From Google Drive",
+    "from-fireflies": "From Fireflies"
   },
   "drive-picker": {
     "title": "Select from Google Drive",
@@ -591,6 +601,15 @@
     "no-files": "No documents found",
     "fetch-error": "Failed to load document content",
     "use-search-hint": "Use the search box above to find more documents"
+  },
+  "fireflies-picker": {
+    "title": "Select from Fireflies",
+    "search-placeholder": "Search transcripts...",
+    "no-results": "No transcripts match your search",
+    "no-transcripts": "No transcripts found",
+    "fetch-error": "Failed to load transcript content",
+    "untitled-transcript": "Untitled transcript",
+    "participant-count": "{count, plural, one {# participant} other {# participants}}"
   },
   "thread-content-panel": {
     "title": "Content",

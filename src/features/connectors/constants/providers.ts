@@ -37,6 +37,18 @@ const MCP_HUBSPOT_SERVER_URL = (() => {
   return 'http://localhost:8002';
 })();
 
+const MCP_FIREFLIES_SERVER_URL = (() => {
+  if (process.env.MCP_FIREFLIES_SERVER_URL) {
+    return process.env.MCP_FIREFLIES_SERVER_URL;
+  }
+  if (process.env.NODE_ENV !== 'development') {
+    throw new Error(
+      'MCP_FIREFLIES_SERVER_URL is required in non-development environments',
+    );
+  }
+  return 'http://localhost:8003';
+})();
+
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
     provider: McpConnectorProvider.GOOGLE_DRIVE,
@@ -80,6 +92,17 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
       'crm.objects.deals.read',
       'crm.objects.owners.read',
     ],
+  },
+  {
+    provider: McpConnectorProvider.FIREFLIES,
+    name: 'Fireflies.ai',
+    description: 'Search meeting transcripts, summaries, and action items.',
+    icon: 'mic',
+    mcpServerUrl: MCP_FIREFLIES_SERVER_URL,
+    authPath: '/auth/register',
+    authType: 'api_key',
+    apiKeyHelpUrl:
+      'https://docs.fireflies.ai/getting-started/quickstart#obtaining-authentication-credentials',
   },
   {
     provider: McpConnectorProvider.GOOGLE_ANALYTICS,

@@ -23,6 +23,8 @@ export type ProviderDefinition = {
   icon: string;
   mcpServerUrl: string;
   authPath: string;
+  authType?: 'oauth' | 'api_key';
+  apiKeyHelpUrl?: string;
   scopes?: string[];
 };
 

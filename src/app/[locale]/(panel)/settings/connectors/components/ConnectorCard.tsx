@@ -6,6 +6,13 @@ import { Loader2Icon } from 'lucide-react';
 import { Button } from '@ragenai/tui/button';
 import { Badge } from '@ragenai/tui/badge';
 import { Switch, SwitchField } from '@ragenai/tui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import type {
   ConnectorDto,
@@ -16,6 +23,7 @@ import {
   confirmConnection,
   disconnectProvider,
   toggleProvider,
+  registerApiKey,
 } from '../actions';
 
 const providerIcons: Record<McpConnectorProvider, string> = {
@@ -25,6 +33,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
   CLICKUP: '/assets/connectors/clickup.svg',
   HUBSPOT: '/assets/connectors/hubspot.svg',
+  FIREFLIES: '/assets/connectors/fireflies.svg',
 };
 
 type ConnectorCardProps = {
@@ -36,10 +45,14 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const t = useTranslations('settings-page.connectors');
   const [loading, setLoading] = useState(false);
   const [currentConnector, setCurrentConnector] = useState(connector);
+  const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  const [apiKeyValue, setApiKeyValue] = useState('');
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isConnected = currentConnector?.status === 'CONNECTED';
   const isPending = currentConnector?.status === 'PENDING';
+  const isApiKeyAuth = provider.authType === 'api_key';
 
   useEffect(() => {
     return () => {
@@ -49,7 +62,42 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     };
   }, []);
 
+  const handleApiKeySubmit = async () => {
+    if (!apiKeyValue.trim()) {
+      return;
+    }
+    setLoading(true);
+    setApiKeyError(null);
+    try {
+      const updated = await registerApiKey(provider.provider, apiKeyValue);
+      setCurrentConnector({
+        ...currentConnector,
+        id: updated.id,
+        provider: provider.provider,
+        mcp_server_url: provider.mcpServerUrl,
+        customer_id: '',
+        status: updated.status,
+        connected_at: updated.connected_at,
+        enabled: true,
+        created_at: new Date(),
+      });
+      setApiKeyDialogOpen(false);
+      setApiKeyValue('');
+    } catch {
+      setApiKeyError(t('api-key-error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleConnect = async () => {
+    if (isApiKeyAuth) {
+      setApiKeyDialogOpen(true);
+      setApiKeyValue('');
+      setApiKeyError(null);
+      return;
+    }
+
     setLoading(true);
     try {
       const result = await initiateConnection(provider.provider);
@@ -198,6 +246,75 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
           </Button>
         )}
       </div>
+
+      {isApiKeyAuth && (
+        <Dialog
+          open={apiKeyDialogOpen}
+          onOpenChange={(open) => {
+            setApiKeyDialogOpen(open);
+            if (!open) {
+              setApiKeyValue('');
+              setApiKeyError(null);
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {t('api-key-title', {
+                  provider: t(`providers.${provider.provider}.name`),
+                })}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">
+                {t('api-key-description', {
+                  provider: t(`providers.${provider.provider}.name`),
+                })}
+                {provider.apiKeyHelpUrl && (
+                  <>
+                    {' '}
+                    <a
+                      href={provider.apiKeyHelpUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:text-primary/80"
+                    >
+                      {t('api-key-help-link')}
+                    </a>
+                  </>
+                )}
+              </p>
+              <Input
+                type="password"
+                value={apiKeyValue}
+                onChange={(e) => setApiKeyValue(e.target.value)}
+                placeholder={t('api-key-placeholder')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleApiKeySubmit();
+                  }
+                }}
+                autoFocus
+              />
+              {apiKeyError && (
+                <p className="text-sm text-red-500">{apiKeyError}</p>
+              )}
+              <Button
+                onClick={handleApiKeySubmit}
+                disabled={loading || !apiKeyValue.trim()}
+                className="self-end"
+              >
+                {loading ? (
+                  <Loader2Icon className="size-4 animate-spin" />
+                ) : (
+                  t('connect')
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
