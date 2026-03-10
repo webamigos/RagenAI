@@ -1,5 +1,6 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getDriveConnectorQuery } from './get-drive-connector-query';
+import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 
 export type DriveFile = {
   id: string;
@@ -43,7 +44,9 @@ export const searchDriveFilesQuery = async (
       params.set('page_token', pageToken);
     }
 
-    const response = await fetch(`${connector.baseUrl}/drive/search?${params}`);
+    const response = await fetchWithTimeout(
+      `${connector.baseUrl}/drive/search?${params}`,
+    );
     if (!response.ok) {
       logger.error(
         { status: response.status },

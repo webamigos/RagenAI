@@ -1,5 +1,6 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getFirefliesConnectorQuery } from './get-fireflies-connector-query';
+import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 
 export type TranscriptContentResponse = {
   success: boolean;
@@ -28,7 +29,7 @@ export const getFirefliesTranscriptContentQuery = async (
       customer_id: connector.customer_id,
     });
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${connector.baseUrl}/transcripts/${encodeURIComponent(transcriptId)}?${params}`,
     );
     if (!response.ok) {

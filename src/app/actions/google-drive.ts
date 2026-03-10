@@ -1,7 +1,7 @@
 'use server';
 
 import {
-  getOrgIdFromAuthOrThrow,
+  getOrgIdFromAuth,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getDriveConnectorQuery } from '@/features/connectors/services/queries/get-drive-connector-query';
@@ -13,7 +13,10 @@ export type { DriveContentResponse } from '@/features/connectors/services/querie
 
 export async function isDriveConnected(): Promise<boolean> {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return false;
+    }
     const userId = await getCurrentUserId();
     if (!userId) {
       return false;
@@ -26,7 +29,10 @@ export async function isDriveConnected(): Promise<boolean> {
 }
 
 export async function searchDriveFiles(query: string = '', pageToken?: string) {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
   const userId = await getCurrentUserId();
   if (!userId) {
     return { success: false as const, error: 'Unauthorized' };
@@ -35,7 +41,10 @@ export async function searchDriveFiles(query: string = '', pageToken?: string) {
 }
 
 export async function getDriveFileContent(fileId: string) {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
   const userId = await getCurrentUserId();
   if (!userId) {
     return { success: false as const, error: 'Unauthorized' };

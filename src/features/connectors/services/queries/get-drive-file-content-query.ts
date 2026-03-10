@@ -1,5 +1,6 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getDriveConnectorQuery } from './get-drive-connector-query';
+import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 
 export type DriveContentResponse = {
   success: boolean;
@@ -25,7 +26,7 @@ export const getDriveFileContentQuery = async (
       customer_id: connector.customer_id,
     });
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${connector.baseUrl}/drive/file/${encodeURIComponent(fileId)}/content?${params}`,
     );
     if (!response.ok) {

@@ -3,6 +3,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '../../constants/providers';
 import { createConnectorCommand } from './create-connector-command';
 import { markConnectorConnectedCommand } from './mark-connector-connected-command';
+import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 
 /**
  * Register an API key with the external MCP service, then mark the connector as connected.
@@ -28,17 +29,21 @@ export const registerApiKeyCommand = async (
 
   // Step 2: Register the API key with the external MCP service
   try {
-    const response = await fetch(
-      `${providerDef.mcpServerUrl}${providerDef.authPath}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_id: connector.customer_id,
-          api_key: apiKey,
-        }),
-      },
+    const url = new URL(
+      providerDef.authPath,
+      providerDef.mcpServerUrl.endsWith('/')
+        ? providerDef.mcpServerUrl
+        : `${providerDef.mcpServerUrl}/`,
     );
+
+    const response = await fetchWithTimeout(url.toString(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customer_id: connector.customer_id,
+        api_key: apiKey,
+      }),
+    });
 
     if (!response.ok) {
       logger.error(

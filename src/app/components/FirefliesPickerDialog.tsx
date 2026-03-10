@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import {
   Dialog,
@@ -29,6 +29,7 @@ export const FirefliesPickerDialog = ({
   onFileSelected,
 }: Props) => {
   const t = useTranslations('fireflies-picker');
+  const locale = useLocale();
   const [transcripts, setTranscripts] = useState<FirefliesTranscript[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTranscriptId, setLoadingTranscriptId] = useState<string | null>(
@@ -37,13 +38,18 @@ export const FirefliesPickerDialog = ({
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const requestIdRef = useRef<number>(0);
 
   const loadTranscripts = useCallback(
     async (query: string = '') => {
+      const currentRequestId = ++requestIdRef.current;
       setIsLoading(true);
       setError(null);
       try {
         const result = await searchFirefliesTranscripts(query);
+        if (currentRequestId !== requestIdRef.current) {
+          return;
+        }
         if (result.success && result.transcripts) {
           setTranscripts(result.transcripts);
         } else {
@@ -53,10 +59,15 @@ export const FirefliesPickerDialog = ({
           }
         }
       } catch {
+        if (currentRequestId !== requestIdRef.current) {
+          return;
+        }
         setTranscripts([]);
         setError(t('fetch-error'));
       } finally {
-        setIsLoading(false);
+        if (currentRequestId === requestIdRef.current) {
+          setIsLoading(false);
+        }
       }
     },
     [t],
@@ -97,7 +108,7 @@ export const FirefliesPickerDialog = ({
       const result = await getFirefliesTranscriptContent(transcript.id);
       if (result.success && result.content) {
         const doc: ThreadDocumentUI = {
-          name: transcript.title || 'Untitled transcript',
+          name: transcript.title || t('untitled-transcript'),
           content: result.content,
           size: new Blob([result.content]).size,
           type: 'text/plain',
@@ -123,7 +134,7 @@ export const FirefliesPickerDialog = ({
     if (isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -198,7 +209,7 @@ export const FirefliesPickerDialog = ({
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="text-sm truncate">
-                        {transcript.title || 'Untitled'}
+                        {transcript.title || t('untitled-transcript')}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {formatDate(transcript.date)}
@@ -209,10 +220,9 @@ export const FirefliesPickerDialog = ({
                         )}
                         {transcript.participants?.length > 0 && (
                           <span className="ml-2">
-                            {transcript.participants.length}{' '}
-                            {transcript.participants.length === 1
-                              ? 'participant'
-                              : 'participants'}
+                            {t('participant-count', {
+                              count: transcript.participants.length,
+                            })}
                           </span>
                         )}
                       </div>

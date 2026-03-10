@@ -150,11 +150,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
     }, []);
 
-    const handleDriveFileSelected = useCallback((doc: ThreadDocumentUI) => {
-      setThreadDocuments((prev) => [...prev, doc]);
-    }, []);
-
-    const handleFirefliesTranscriptSelected = useCallback(
+    const handleExternalDocumentSelected = useCallback(
       (doc: ThreadDocumentUI) => {
         setThreadDocuments((prev) => [...prev, doc]);
       },
@@ -318,13 +314,13 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <GoogleDrivePickerDialog
           open={isDrivePickerOpen}
           onOpenChange={setIsDrivePickerOpen}
-          onFileSelected={handleDriveFileSelected}
+          onFileSelected={handleExternalDocumentSelected}
         />
 
         <FirefliesPickerDialog
           open={isFirefliesPickerOpen}
           onOpenChange={setIsFirefliesPickerOpen}
-          onFileSelected={handleFirefliesTranscriptSelected}
+          onFileSelected={handleExternalDocumentSelected}
         />
       </div>
     );

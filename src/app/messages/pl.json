@@ -610,7 +610,9 @@
     "search-placeholder": "Szukaj transkrypcji...",
     "no-results": "Brak transkrypcji pasujących do wyszukiwania",
     "no-transcripts": "Nie znaleziono transkrypcji",
-    "fetch-error": "Nie udało się pobrać zawartości transkrypcji"
+    "fetch-error": "Nie udało się pobrać zawartości transkrypcji",
+    "untitled-transcript": "Transkrypcja bez tytułu",
+    "participant-count": "{count, plural, one {# uczestnik} few {# uczestników} other {# uczestników}}"
   },
   "thread-content-panel": {
     "title": "Zawartość",

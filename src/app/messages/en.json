@@ -607,7 +607,9 @@
     "search-placeholder": "Search transcripts...",
     "no-results": "No transcripts match your search",
     "no-transcripts": "No transcripts found",
-    "fetch-error": "Failed to load transcript content"
+    "fetch-error": "Failed to load transcript content",
+    "untitled-transcript": "Untitled transcript",
+    "participant-count": "{count, plural, one {# participant} other {# participants}}"
   },
   "thread-content-panel": {
     "title": "Content",

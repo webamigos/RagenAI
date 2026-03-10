@@ -248,7 +248,16 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       </div>
 
       {isApiKeyAuth && (
-        <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
+        <Dialog
+          open={apiKeyDialogOpen}
+          onOpenChange={(open) => {
+            setApiKeyDialogOpen(open);
+            if (!open) {
+              setApiKeyValue('');
+              setApiKeyError(null);
+            }
+          }}
+        >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>

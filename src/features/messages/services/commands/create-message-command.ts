@@ -15,6 +15,45 @@ import type {
   MessageDto,
 } from '../../contracts/message.types';
 
+function sanitizeAttachments(
+  raw: MessageAttachment[] | undefined,
+): MessageAttachment[] | undefined {
+  if (!raw || raw.length === 0) {
+    return undefined;
+  }
+
+  const sanitized = raw
+    .filter(
+      (item): item is MessageAttachment =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof item.name === 'string' &&
+        typeof item.type === 'string',
+    )
+    .map((item) => {
+      const attachment: MessageAttachment = {
+        name: item.name.slice(0, 500),
+        size: typeof item.size === 'number' ? Math.max(0, item.size) : 0,
+        type: item.type.slice(0, 100),
+      };
+
+      if (typeof item.sourceUrl === 'string' && item.sourceUrl.length > 0) {
+        try {
+          const url = new URL(item.sourceUrl);
+          if (url.protocol === 'https:' || url.protocol === 'http:') {
+            attachment.sourceUrl = url.toString();
+          }
+        } catch {
+          // Invalid URL — omit sourceUrl
+        }
+      }
+
+      return attachment;
+    });
+
+  return sanitized.length > 0 ? sanitized : undefined;
+}
+
 export const createMessageInDbCommand = async ({
   threadId,
   message,
@@ -34,6 +73,8 @@ export const createMessageInDbCommand = async ({
   voiceDurationSeconds?: number;
   attachments?: MessageAttachment[];
 }) => {
+  const sanitizedAttachments = sanitizeAttachments(attachments);
+
   try {
     return await db.message.create({
       data: {
@@ -45,8 +86,7 @@ export const createMessageInDbCommand = async ({
         run_id: runId,
         message_type: messageType,
         voice_duration_seconds: voiceDurationSeconds,
-        attachments:
-          attachments && attachments.length > 0 ? attachments : undefined,
+        attachments: sanitizedAttachments,
       },
     });
   } catch (error) {

@@ -1,5 +1,6 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getFirefliesConnectorQuery } from './get-fireflies-connector-query';
+import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 
 export type FirefliesTranscript = {
   id: string;
@@ -35,7 +36,7 @@ export const searchFirefliesTranscriptsQuery = async (
       limit: '20',
     });
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${connector.baseUrl}/transcripts/search?${params}`,
     );
     if (!response.ok) {
