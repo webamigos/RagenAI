@@ -10,7 +10,9 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
 import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
+import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
 import { isDriveConnected } from '@/app/actions/google-drive';
+import { isFirefliesConnected } from '@/app/actions/fireflies';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -54,7 +56,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const [cursorPosition, setCursorPosition] = useState(0);
   const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
   const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
+  const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
   const [hasDriveConnector, setHasDriveConnector] = useState(false);
+  const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
 
   const threadDocuments = externalThreadDocuments ?? [];
   const setThreadDocuments = onThreadDocumentsChange ?? (() => {});
@@ -252,6 +256,9 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
     isDriveConnected()
       .then(setHasDriveConnector)
       .catch(() => setHasDriveConnector(false));
+    isFirefliesConnected()
+      .then(setHasFirefliesConnector)
+      .catch(() => setHasFirefliesConnector(false));
   }, []);
 
   const handleDriveFileSelected = useCallback(
@@ -360,6 +367,19 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
                     {tAttach('from-google-drive')}
                   </DropdownMenuItem>
                 )}
+                {hasFirefliesConnector && (
+                  <DropdownMenuItem
+                    className="py-2.5"
+                    onClick={() => setIsFirefliesPickerOpen(true)}
+                  >
+                    <img
+                      src="/assets/connectors/fireflies.svg"
+                      alt="Fireflies"
+                      className="size-4"
+                    />
+                    {tAttach('from-fireflies')}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )
@@ -387,6 +407,12 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
           <GoogleDrivePickerDialog
             open={isDrivePickerOpen}
             onOpenChange={setIsDrivePickerOpen}
+            onFileSelected={handleDriveFileSelected}
+          />
+
+          <FirefliesPickerDialog
+            open={isFirefliesPickerOpen}
+            onOpenChange={setIsFirefliesPickerOpen}
             onFileSelected={handleDriveFileSelected}
           />
         </>

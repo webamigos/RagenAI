@@ -7,6 +7,7 @@ import {
   useRef,
 } from 'react';
 import { useTranslations } from 'next-intl';
+import { usePathname } from '@/i18n/routing';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { validateTextFile } from '@/app/lib/utils/fileValidation';
 import {
@@ -64,6 +65,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
   ) => {
     const t = useTranslations('form');
     const tAttach = useTranslations('prompt-attachments');
+    const pathname = usePathname();
     const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
       [],
     );
@@ -83,7 +85,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           .then(setHasFirefliesConnector)
           .catch(() => setHasFirefliesConnector(false));
       }
-    }, [isPublicAccess]);
+    }, [isPublicAccess, pathname]);
 
     const {
       register,
