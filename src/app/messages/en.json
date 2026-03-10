@@ -446,6 +446,10 @@
         "CLICKUP": {
           "name": "ClickUp",
           "description": "Manage tasks, projects, and workspaces."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Access contacts, companies, deals, and CRM data."
         }
       }
     }
