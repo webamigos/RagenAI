@@ -1,7 +1,7 @@
 'use server';
 
 import {
-  getOrgIdFromAuthOrThrow,
+  getOrgIdFromAuth,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getFirefliesConnectorQuery } from '@/features/connectors/services/queries/get-fireflies-connector-query';
@@ -12,7 +12,10 @@ export type { FirefliesTranscript } from '@/features/connectors/services/queries
 
 export async function isFirefliesConnected(): Promise<boolean> {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return false;
+    }
     const userId = await getCurrentUserId();
     if (!userId) {
       return false;
@@ -25,7 +28,10 @@ export async function isFirefliesConnected(): Promise<boolean> {
 }
 
 export async function searchFirefliesTranscripts(query: string = '') {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
   const userId = await getCurrentUserId();
   if (!userId) {
     return { success: false as const, error: 'Unauthorized' };
@@ -34,7 +40,10 @@ export async function searchFirefliesTranscripts(query: string = '') {
 }
 
 export async function getFirefliesTranscriptContent(transcriptId: string) {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
   const userId = await getCurrentUserId();
   if (!userId) {
     return { success: false as const, error: 'Unauthorized' };
