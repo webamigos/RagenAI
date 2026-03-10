@@ -101,6 +101,8 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     mcpServerUrl: MCP_FIREFLIES_SERVER_URL,
     authPath: '/auth/register',
     authType: 'api_key',
+    apiKeyHelpUrl:
+      'https://docs.fireflies.ai/getting-started/quickstart#obtaining-authentication-credentials',
   },
   {
     provider: McpConnectorProvider.GOOGLE_ANALYTICS,

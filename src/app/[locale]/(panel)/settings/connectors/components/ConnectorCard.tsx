@@ -262,6 +262,19 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                 {t('api-key-description', {
                   provider: t(`providers.${provider.provider}.name`),
                 })}
+                {provider.apiKeyHelpUrl && (
+                  <>
+                    {' '}
+                    <a
+                      href={provider.apiKeyHelpUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:text-primary/80"
+                    >
+                      {t('api-key-help-link')}
+                    </a>
+                  </>
+                )}
               </p>
               <Input
                 type="password"

@@ -429,6 +429,7 @@
       "api-key-title": "Connect {provider}",
       "api-key-description": "Enter your {provider} API key to connect this integration.",
       "api-key-placeholder": "Enter API key...",
+      "api-key-help-link": "Learn how to get your API key.",
       "api-key-error": "Failed to register API key. Please check your key and try again.",
       "providers": {
         "GOOGLE_DRIVE": {

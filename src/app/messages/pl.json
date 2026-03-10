@@ -432,6 +432,7 @@
       "api-key-title": "Połącz {provider}",
       "api-key-description": "Wprowadź klucz API {provider}, aby połączyć tę integrację.",
       "api-key-placeholder": "Wprowadź klucz API...",
+      "api-key-help-link": "Dowiedz się, jak uzyskać klucz API.",
       "api-key-error": "Nie udało się zarejestrować klucza API. Sprawdź klucz i spróbuj ponownie.",
       "providers": {
         "GOOGLE_DRIVE": {
