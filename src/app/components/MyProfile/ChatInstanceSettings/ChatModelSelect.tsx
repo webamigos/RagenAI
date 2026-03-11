@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-import { Card } from '@ragenai/common-ui/Card';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { useActiveOrganization } from '@/app/hooks/use-better-auth';
@@ -17,6 +16,15 @@ import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvaila
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 import { logger } from '@/app/lib/utils/logger';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export const ChatModelSelect = ({}) => {
   const [model, setModel] = useState<string>(defaultOrganizationSettings.model);
@@ -71,10 +79,7 @@ export const ChatModelSelect = ({}) => {
     fetchModel();
   }, []);
 
-  const handleModelChange = async (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
-    const newModel = event.target.value;
+  const handleModelChange = async (newModel: string) => {
     setModel(newModel);
 
     try {
@@ -93,36 +98,41 @@ export const ChatModelSelect = ({}) => {
   const groupedModels = groupModelsByOrigin(availableModels);
 
   return (
-    <Card title={t('title')} size="full">
-      <div className="mt-4">
+    <div>
+      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        {t('title')}
+      </label>
+      <div className="mt-2">
         {isLoading || modelsLoading ? (
-          <div
-            className={`animate-pulse h-11 w-auto bg-gray-300 dark:bg-slate-700 rounded-md`}
-          />
+          <div className="h-9 w-full animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-700" />
         ) : (
-          <select
-            id="model"
+          <Select
             value={model}
-            onChange={handleModelChange}
-            className="mt-1 block w-full p-2 border border-primary-blue-500 dark:border-gray-600 dark:bg-accent-dark-500 rounded-md shadow-xs cursor-pointer"
+            onValueChange={handleModelChange}
             disabled={availableModels.length === 0}
           >
-            {availableModels.length === 0 ? (
-              <option value="">No models available</option>
-            ) : (
-              groupedModels.map(({ origin, displayName, models }) => (
-                <optgroup key={origin} label={displayName}>
-                  {models.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {isReasoningModel(value) ? `🧠 ${label}` : label}
-                    </option>
-                  ))}
-                </optgroup>
-              ))
-            )}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={t('title')} />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              {availableModels.length === 0 ? (
+                <SelectItem value="">No models available</SelectItem>
+              ) : (
+                groupedModels.map(({ origin, displayName, models }) => (
+                  <SelectGroup key={origin}>
+                    <SelectLabel>{displayName}</SelectLabel>
+                    {models.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {isReasoningModel(value) ? `🧠 ${label}` : label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))
+              )}
+            </SelectContent>
+          </Select>
         )}
       </div>
-    </Card>
+    </div>
   );
 };

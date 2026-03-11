@@ -446,6 +446,7 @@
       "api-key-placeholder": "Wprowadź klucz API...",
       "api-key-help-link": "Dowiedz się, jak uzyskać klucz API.",
       "api-key-error": "Nie udało się zarejestrować klucza API. Sprawdź klucz i spróbuj ponownie.",
+      "coming-soon": "Wkrótce",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -657,10 +658,10 @@
     "error-threads": "Błąd podczas pobierania wątków",
     "threads-not-found": "Wątek nie znaleziony",
     "no-results": "Brak wyników.",
-    "placeholder": "Szukaj czatów i projektów...",
+    "placeholder": "Szukaj czatów i asystentów...",
     "recent": "Ostatnie",
     "threads": "Czaty",
-    "projects": "Projekty",
+    "projects": "Asystenci",
     "untitled": "Bez tytułu",
     "loading": "Ładowanie...",
     "date-today": "Dzisiaj",
@@ -681,6 +682,7 @@
     "processed": "Przetworzono",
     "preview": "Podgląd",
     "no-files": "Brak plików",
+    "download": "Pobierz",
     "search-placeholder": "Wyszukaj pliki"
   },
   "file-delete-modal": {

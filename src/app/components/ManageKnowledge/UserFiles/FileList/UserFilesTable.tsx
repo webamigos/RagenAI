@@ -1,6 +1,7 @@
 import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 import {
   EmbeddingStatus,
@@ -8,7 +9,6 @@ import {
   type UserFile,
 } from '@/generated/prisma/browser';
 import { Text } from '@ragenai/common-ui/Text';
-import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import {
   Table,
   TableHead,
@@ -105,18 +105,24 @@ const FileRow = ({
           isLoading={deleteLoading}
         />
       )}
-      <TableRow className="relative text-sm overflow-x-hidden">
-        <TableCell className="flex">
-          <span className="w-6 h-6 -mb-2 mr-1">{fileIcon}</span>
-          <Tooltip
-            delayShow={1000}
-            place="top"
-            content={file_name}
-            id={`tooltip-${public_id}`}
-          >
-            <Text className="hidden lg:flex">{truncatedFileName}</Text>
-          </Tooltip>
-          <Text className="lg:hidden">{truncatedFileName}</Text>
+      <TableRow className="text-sm">
+        <TableCell className={file.document?.public_id ? 'z-10' : ''}>
+          <span className="flex items-center">
+            <span className="mr-1 inline-flex size-6 shrink-0 items-center">
+              {fileIcon}
+            </span>
+            {file.document?.public_id ? (
+              <Link
+                href={`/document/${file.document.public_id}`}
+                title={file_name}
+                className="cursor-pointer"
+              >
+                {truncatedFileName}
+              </Link>
+            ) : (
+              <span title={file_name}>{truncatedFileName}</span>
+            )}
+          </span>
         </TableCell>
         <TableCell>{prettyBytes(file_size)}</TableCell>
         <TableCell>{formattedCreatedAt}</TableCell>

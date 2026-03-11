@@ -443,6 +443,7 @@
       "api-key-placeholder": "Enter API key...",
       "api-key-help-link": "Learn how to get your API key.",
       "api-key-error": "Failed to register API key. Please check your key and try again.",
+      "coming-soon": "Coming soon",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -654,10 +655,10 @@
     "error-threads": "Error fetching threads",
     "threads-not-found": "Thread not found",
     "no-results": "No results found.",
-    "placeholder": "Search chats and projects...",
+    "placeholder": "Search chats and assistants...",
     "recent": "Recent",
     "threads": "Chats",
-    "projects": "Projects",
+    "projects": "Assistants",
     "untitled": "Untitled",
     "loading": "Loading...",
     "date-today": "Today",
@@ -678,6 +679,7 @@
     "processed": "Processed",
     "preview": "Preview",
     "no-files": "No files",
+    "download": "Download",
     "search-placeholder": "Search in files..."
   },
   "file-delete-modal": {

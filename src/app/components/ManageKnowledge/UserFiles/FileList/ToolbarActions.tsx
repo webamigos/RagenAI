@@ -5,6 +5,7 @@ import { EllipsisVerticalIcon } from '@heroicons/react/20/solid';
 import {
   PencilSquareIcon,
   EyeIcon,
+  ArrowDownTrayIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
@@ -27,6 +28,7 @@ type ToolbarActionsProps = {
 export const ToolbarActions = ({
   filePublicId,
   documentPublicId,
+  fileName,
   toggleModal,
   isLoading,
 }: ToolbarActionsProps) => {
@@ -43,28 +45,44 @@ export const ToolbarActions = ({
         <EllipsisVerticalIcon className="size-5 text-zinc-500" />
       </DropdownButton>
 
-      <DropdownMenu anchor="bottom end">
+      <DropdownMenu anchor="bottom end" className="[&_[data-slot=icon]]:mr-2">
+        {documentPublicId && (
+          <DropdownItem
+            onClick={() => router.push(`/document/${documentPublicId}`)}
+          >
+            <EyeIcon className="size-4" data-slot="icon" />
+            {t('view')}
+          </DropdownItem>
+        )}
+
         {documentPublicId && (
           <DropdownItem
             onClick={() =>
               router.push(`/document/${documentPublicId}?edit=true`)
             }
           >
-            <PencilSquareIcon data-slot="icon" />
+            <PencilSquareIcon className="size-4" data-slot="icon" />
             {t('edit')}
           </DropdownItem>
         )}
 
-        {documentPublicId && (
+        {filePublicId && (
           <DropdownItem
-            onClick={() => router.push(`/document/${documentPublicId}`)}
+            onClick={() => {
+              const link = document.createElement('a');
+              link.href = `/api/files/${filePublicId}`;
+              link.download = fileName;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
           >
-            <EyeIcon data-slot="icon" />
-            {t('view')}
+            <ArrowDownTrayIcon className="size-4" data-slot="icon" />
+            {t('download')}
           </DropdownItem>
         )}
 
-        {documentPublicId && filePublicId && <DropdownDivider />}
+        {filePublicId && <DropdownDivider />}
 
         {filePublicId && (
           <DropdownItem
@@ -73,7 +91,7 @@ export const ToolbarActions = ({
           >
             <TrashIcon
               data-slot="icon"
-              className="!text-red-500 !fill-none !stroke-red-500"
+              className="!size-4 !text-red-500 !fill-none !stroke-red-500"
             />
             <span className="text-red-600 dark:text-red-400">
               {t('delete')}

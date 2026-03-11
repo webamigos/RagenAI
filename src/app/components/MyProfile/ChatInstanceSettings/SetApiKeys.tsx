@@ -101,9 +101,9 @@ export const SetApiKeys = () => {
     <form
       onSubmit={handleSubmit(onSubmit)}
       autoComplete="new-password"
-      className="flex items-center space-x-4"
+      className="flex items-end gap-3"
     >
-      <div className="relative w-3/4 flex items-end">
+      <div className="min-w-0 flex-1">
         <Input
           label="OpenAI API Key"
           autoComplete="new-password"
@@ -112,13 +112,16 @@ export const SetApiKeys = () => {
           errorMessage={errors.apiKey?.message}
           disabled={!isEditable}
           {...register('apiKey')}
-          containerClassName="w-full min-w-full"
+          containerClassName="w-full"
           className="setApiKeyInput"
         />
+      </div>
+      <div
+        className={`flex shrink-0 items-center gap-1 pb-1 ${errors.apiKey ? 'mb-6' : ''}`}
+      >
         {!isEditable ? (
           <button
             type="button"
-            className={`ml-2 ${errors.apiKey ? 'mb-4' : '-mb-1'}`}
             onClick={() => setIsEditable(true)}
             aria-label="Edit API Key"
           >
@@ -127,11 +130,7 @@ export const SetApiKeys = () => {
             </Tooltip>
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={() => handleSubmit(onSubmit)()}
-            className={`ml-2 ${errors.apiKey ? 'mb-4' : '-mb-1'}`}
-          >
+          <button type="button" onClick={() => handleSubmit(onSubmit)()}>
             <Tooltip id="save api key" content={t('save')}>
               <OpenLockIcon />
             </Tooltip>
@@ -140,11 +139,7 @@ export const SetApiKeys = () => {
         {isWarning && (
           <button>
             <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
-              <WarningIcon
-                className={`ml-2 ${
-                  errors.apiKey ? 'mb-4' : '-mb-1'
-                } text-yellow-600`}
-              />
+              <WarningIcon className="text-yellow-600" />
             </Tooltip>
           </button>
         )}

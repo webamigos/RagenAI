@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { useOrganization } from '@/app/hooks/use-auth';
 import { PlayIcon, PauseIcon } from '@heroicons/react/24/outline';
 
-import { Card } from '@ragenai/common-ui/Card';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
 import { fetchVoiceId, updateVoiceId } from './actions';
 import { toast } from 'sonner';
@@ -108,70 +107,61 @@ export const VoiceModeSettings = () => {
   };
 
   return (
-    <Card title={t('title')} size="full" collapsible defaultCollapsed>
-      <div className="flex flex-col gap-3">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {t('voice-select')}
-        </p>
-        <div className="flex flex-wrap gap-3">
-          {VOICE_OPTIONS.map((option) => {
-            const isSelected = selectedVoice === option.value;
-            const isPlaying = playingVoice === option.value;
-            return (
-              <div
-                key={option.value}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleVoiceSelect(option.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    handleVoiceSelect(option.value);
-                  }
-                }}
-                aria-pressed={isSelected}
-                className={classMerge(
-                  'relative flex flex-col items-center justify-center rounded-xl border-2 px-5 py-4 transition-all min-w-[110px] cursor-pointer',
-                  isSelected
-                    ? 'border-ragen-blue bg-blue-50/50 dark:border-blue-400 dark:bg-blue-950/30'
-                    : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600',
-                )}
-              >
-                <span
-                  className={classMerge(
-                    'text-sm font-medium',
-                    isSelected
-                      ? 'text-ragen-blue dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-200',
-                  )}
-                >
-                  {option.label}
-                </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                  {t(`voice-description.${option.description}`)}
-                </span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    togglePreview(option.value, option.sampleUrl);
-                  }}
-                  className="mt-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  aria-label={
-                    isPlaying ? t('pause-preview') : t('play-preview')
-                  }
-                >
-                  {isPlaying ? (
-                    <PauseIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  ) : (
-                    <PlayIcon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                  )}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </Card>
+    <div className="flex flex-wrap gap-3">
+      {VOICE_OPTIONS.map((option) => {
+        const isSelected = selectedVoice === option.value;
+        const isPlaying = playingVoice === option.value;
+        return (
+          <div
+            key={option.value}
+            role="button"
+            tabIndex={0}
+            onClick={() => handleVoiceSelect(option.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleVoiceSelect(option.value);
+              }
+            }}
+            aria-pressed={isSelected}
+            className={classMerge(
+              'relative flex flex-col items-center justify-center rounded-xl border-2 px-5 py-4 transition-all min-w-[110px] cursor-pointer',
+              isSelected
+                ? 'border-ragen-blue bg-blue-50/50 dark:border-blue-400 dark:bg-blue-950/30'
+                : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
+            )}
+          >
+            <span
+              className={classMerge(
+                'text-sm font-medium',
+                isSelected
+                  ? 'text-ragen-blue dark:text-blue-400'
+                  : 'text-zinc-700 dark:text-zinc-200',
+              )}
+            >
+              {option.label}
+            </span>
+            <span className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+              {t(`voice-description.${option.description}`)}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePreview(option.value, option.sampleUrl);
+              }}
+              className="mt-2 rounded-full p-1 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              aria-label={isPlaying ? t('pause-preview') : t('play-preview')}
+            >
+              {isPlaying ? (
+                <PauseIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+              ) : (
+                <PlayIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+              )}
+            </button>
+          </div>
+        );
+      })}
+    </div>
   );
 };

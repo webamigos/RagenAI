@@ -2,13 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useDebouncedCallback } from 'use-debounce';
 
 import { fetchSettings, saveSetting } from './actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { Input } from '@ragenai/common-ui/Input';
-import { Text } from '@ragenai/common-ui/Text';
-import { Card } from '@ragenai/common-ui/Card';
+import { Slider } from '@/components/ui/slider';
 import { SettingsType } from './types';
 import {
   defaultOrganizationSettings,
@@ -17,7 +14,7 @@ import {
 
 export const SetMaxDocumentsToRetrieve = () => {
   const [maxDocuments, setMaxDocuments] = useState<number>(
-    defaultOrganizationSettings.maxDocumentsToRetrieve
+    defaultOrganizationSettings.maxDocumentsToRetrieve,
   );
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -32,7 +29,7 @@ export const SetMaxDocumentsToRetrieve = () => {
     try {
       const { success } = await saveSetting(
         SettingsType.maxDocumentsToRetrieve,
-        value
+        value,
       );
 
       if (success) {
@@ -68,41 +65,28 @@ export const SetMaxDocumentsToRetrieve = () => {
     fetchMaxDocuments();
   }, []);
 
-  const debouncedUpdate = useDebouncedCallback(
-    (value: number) => update(value),
-    300
-  );
-
-  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseFloat(event.target.value);
-    setMaxDocuments(value);
-  };
-
-  const handleSliderInteractionEnd = () => {
-    debouncedUpdate(maxDocuments);
-  };
-
   return (
-    <Card title={t('title')} size="full">
-      <div className="flex items-center">
-        <Input
-          className="cursor-pointer"
-          containerClassName="w-full"
-          isLoading={isLoading}
-          skeletonHeight="h-5"
-          skeletonWidth="w-50"
-          id="max-documents"
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={maxDocuments}
-          onChange={handleValueChange}
-          onMouseUp={handleSliderInteractionEnd}
-          onTouchEnd={handleSliderInteractionEnd}
-        />
-        <Text className="ml-3 mt-4">{maxDocuments}</Text>
+    <div>
+      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+        {t('title')}
+      </label>
+      <div className="mt-3 flex items-center gap-3">
+        {isLoading ? (
+          <div className="h-1.5 w-full animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-700" />
+        ) : (
+          <Slider
+            min={min}
+            max={max}
+            step={step}
+            value={[maxDocuments]}
+            onValueChange={([val]) => setMaxDocuments(val)}
+            onValueCommit={([val]) => update(val)}
+          />
+        )}
+        <span className="w-8 shrink-0 tabular-nums text-sm text-zinc-500">
+          {maxDocuments}
+        </span>
       </div>
-    </Card>
+    </div>
   );
 };
