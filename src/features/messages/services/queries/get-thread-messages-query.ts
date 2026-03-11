@@ -10,7 +10,7 @@ export const getThreadMessagesQuery = async (
   visitorId: Thread['visitor_id'],
 ) => {
   try {
-    const thread = await db.thread.findUnique({
+    const thread = await db.thread.findFirst({
       where: { public_id: threadPublicId, visitor_id: visitorId },
       include: {
         project: {
