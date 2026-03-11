@@ -40,6 +40,13 @@ const STEP_COLORS: Record<string, string> = {
   EMBEDDINGS: '#8b5cf6',
 };
 
+const STEP_LABELS: Record<string, string> = {
+  CHAT_COMPLETION: 'COMPLETION',
+  MODERATION: 'MODERATION',
+  REPHRASING: 'REPHRASING',
+  EMBEDDINGS: 'EMBEDDINGS',
+};
+
 function formatCost(value: number): string {
   return `$${value.toFixed(4)}`;
 }
@@ -171,7 +178,9 @@ export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
                           '',
                       );
                       const pct = ((props.percent as number) ?? 0) * 100;
-                      return `${step.replace('_', ' ')} ${pct.toFixed(0)}%`;
+                      const label =
+                        STEP_LABELS[step] ?? step.replaceAll('_', ' ');
+                      return `${label} ${pct.toFixed(0)}%`;
                     }}
                     labelLine={false}
                   >

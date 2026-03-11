@@ -40,7 +40,8 @@
       "Skill(coderabbit:review)",
       "Bash(git:*)",
       "WebFetch(domain:developer.clickup.com)",
-      "WebFetch(domain:developers.hubspot.com)"
+      "WebFetch(domain:developers.hubspot.com)",
+      "Bash(ls -la /Users/patryk/Workspace/webamigos/ragen/ragen-app/src/app/\\\\[locale\\\\]/\\\\\\(panel\\\\\\)/settings/disk-usage/)"
     ]
   },
   "enabledPlugins": {

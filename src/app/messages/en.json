@@ -373,10 +373,19 @@
       "description-min-length": "Assistant customization instructions must contain at least 25 characters"
     },
     "voice-mode-settings": {
-      "title": "Voice Mode Settings",
-      "voice-select": "Select Voice",
+      "title": "Voice Settings",
+      "voice-select": "Voice",
       "voice-updated": "Voice updated successfully",
-      "voice-update-failed": "Failed to update voice"
+      "voice-update-failed": "Failed to update voice",
+      "play-preview": "Play preview",
+      "pause-preview": "Pause preview",
+      "voice-description": {
+        "warm-deep": "Warm & deep",
+        "calm-gentle": "Calm & gentle",
+        "deep-clear": "Deep & clear",
+        "soft-sweet": "Soft & sweet",
+        "expressive-bright": "Expressive & bright"
+      }
     }
   },
   "manage-knowledge": {

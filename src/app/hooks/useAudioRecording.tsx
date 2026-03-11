@@ -1,220 +1,253 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 
 import { logger } from '../lib/utils/logger';
 import { statusToast } from '../lib/utils/toast';
 
 type UseVoiceInputProps = {
-  onResult: (text: string) => void;
+  onTranscription: (fullText: string) => void;
+  onRecordingStart?: () => void;
 };
 
-const localeToSpeechLang = (locale: string): string => {
-  switch (locale) {
-    case 'en':
-      return 'en-US';
-    case 'pl':
-      return 'pl-PL';
-    default:
-      return 'pl-PL';
+const LOCALE_TO_LANGUAGE: Record<string, string> = {
+  en: 'eng',
+  pl: 'pol',
+};
+
+const localeToLanguageCode = (locale: string): string => {
+  const lang = LOCALE_TO_LANGUAGE[locale];
+  if (!lang) {
+    logger.warn(
+      { locale },
+      'Unsupported locale for transcription, falling back to Polish',
+    );
+    return 'pol';
   }
+  return lang;
 };
 
-export const useVoiceInput = ({ onResult }: UseVoiceInputProps) => {
+async function transcribeAudio(
+  audioBlob: Blob,
+  language: string,
+): Promise<string> {
+  const formData = new FormData();
+  formData.append('audio', audioBlob, 'recording.webm');
+  formData.append('language', language);
+
+  const response = await fetch('/api/transcribe', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let errorMessage = 'Transcription failed';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      // Response was not JSON
+    }
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  return data.text;
+}
+
+// How often to send accumulated audio for transcription (ms)
+const CHUNK_INTERVAL = 5000;
+
+export const useVoiceInput = ({
+  onTranscription,
+  onRecordingStart,
+}: UseVoiceInputProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Web Speech API types are incomplete in TypeScript's DOM lib
-  // (missing onspeechend, maxAlternatives, mismatched event types)
-  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const chunkIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isTranscribingRef = useRef(false);
+  const pendingTranscribeRef = useRef(false);
 
   const locale = useLocale();
-
   const t = useTranslations('useAudioRecorder');
-
   const { errorToast } = statusToast();
 
-  const speechEndDelay = 3000;
-
-  const cleanupRecognition = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.onstart = null;
-      recognitionRef.current.onend = null;
-      recognitionRef.current.onresult = null;
-      recognitionRef.current.onspeechend = null;
-      recognitionRef.current.onerror = null;
-
-      try {
-        recognitionRef.current.stop();
-      } catch (e) {
-        logger.error({ err: e });
-      }
-      recognitionRef.current = null;
+  const cleanupRecording = useCallback(() => {
+    if (chunkIntervalRef.current) {
+      clearInterval(chunkIntervalRef.current);
+      chunkIntervalRef.current = null;
     }
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === 'recording'
+    ) {
+      mediaRecorderRef.current.stop();
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+    isTranscribingRef.current = false;
+    pendingTranscribeRef.current = false;
     setIsRecording(false);
-  };
+  }, []);
 
-  const checkBrowserCompatibility = () => {
-    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-      logger.error('Browser does not support Web Speech API');
-      setError(t('browser-not-compatibility'));
-      return false;
-    }
-    return true;
-  };
-
-  const initializeRecognition = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    let silenceTimeout: NodeJS.Timeout | null = null;
-
-    if (!SpeechRecognition) {
-      setError(t('browser-not-compatibility'));
-      return null;
-    }
-
-    // Cast to any — TypeScript's SpeechRecognition types are incomplete
-    // (missing onspeechend, maxAlternatives, mismatched event types)
-    const recognition: any = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = localeToSpeechLang(locale);
-
-    logger.info(
-      {
-        continuous: recognition.continuous,
-        interimResults: recognition.interimResults,
-        lang: recognition.lang,
-        maxAlternatives: recognition.maxAlternatives,
-      },
-      'Speech recognition configuration',
-    );
-
-    recognition.onstart = () => {
-      setIsRecording(true);
-      setError(null);
-    };
-
-    recognition.onend = () => {
-      setIsRecording(false);
-    };
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let finalTranscript = '';
-      let interimTranscript = '';
-
-      // Process all results
-      for (let i = 0; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript + ' ';
-        } else {
-          interimTranscript += result[0].transcript + ' ';
-        }
-      }
-
-      // Only update if we have some text
-      const trimmedFinal = finalTranscript.trim();
-      const trimmedInterim = interimTranscript.trim();
-
-      if (trimmedFinal) {
-        onResult(trimmedFinal);
-      } else if (trimmedInterim) {
-        logger.info({ transcript: trimmedInterim }, 'Interim transcript');
-        onResult(trimmedInterim);
-      }
-
-      // Reset silence timeout
-      if (silenceTimeout) {
-        clearTimeout(silenceTimeout);
-      }
-
-      // Only start silence timeout if we have some text
-      if (trimmedFinal || trimmedInterim) {
-        silenceTimeout = setTimeout(() => {
-          cleanupRecognition();
-        }, speechEndDelay);
-      }
-    };
-
-    recognition.onspeechend = () => {
-      cleanupRecognition();
-    };
-
-    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-      const errorMessage =
-        e.error === 'not-allowed'
-          ? t('microphone-permission-denied')
-          : t('recognition-error');
-
-      setError(errorMessage);
-
-      logger.error(
-        {
-          error: {
-            type: e.error,
-            message: e.message,
-            event: e,
-          },
-        },
-        'Recognition error',
-      );
-
-      cleanupRecognition();
-    };
-
-    return recognition;
-  };
-
-  const startListening = async () => {
-    if (!checkBrowserCompatibility()) {
+  const sendForTranscription = useCallback(async () => {
+    if (audioChunksRef.current.length === 0) {
       return;
     }
 
-    cleanupRecognition();
+    if (isTranscribingRef.current) {
+      pendingTranscribeRef.current = true;
+      return;
+    }
+
+    isTranscribingRef.current = true;
+
+    // Always build blob from ALL chunks — webm header is in chunk 0
+    const audioBlob = new Blob([...audioChunksRef.current], {
+      type: 'audio/webm',
+    });
+
+    if (audioBlob.size > 0) {
+      try {
+        const language = localeToLanguageCode(locale);
+        const fullText = await transcribeAudio(audioBlob, language);
+        // Send the full transcription — the consumer handles replacing, not appending
+        onTranscription(fullText.trim());
+      } catch (err) {
+        logger.error({ error: err }, 'ElevenLabs chunk transcription error');
+      }
+    }
+
+    isTranscribingRef.current = false;
+
+    if (pendingTranscribeRef.current) {
+      pendingTranscribeRef.current = false;
+      sendForTranscription();
+    }
+  }, [locale, onTranscription]);
+
+  const startListening = async () => {
+    cleanupRecording();
+    setError(null);
 
     try {
-      // Check microphone permissions
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!stream) {
-        throw new Error('Microphone permission denied');
-      }
+      streamRef.current = stream;
 
-      // Ensure we have access to the microphone
       const audioTracks = stream.getAudioTracks();
       if (!audioTracks || audioTracks.length === 0) {
         throw new Error('No audio tracks available');
       }
 
-      const recognition = initializeRecognition();
-      if (recognition) {
-        recognitionRef.current = recognition;
-        recognition.start();
-      }
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
 
-      // Cleanup stream when done
-      return () => {
-        stream.getTracks().forEach((track) => track.stop());
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+          ? 'audio/webm;codecs=opus'
+          : 'audio/webm',
+      });
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+
+        if (audioContextRef.current) {
+          audioContextRef.current.close();
+          audioContextRef.current = null;
+        }
+
+        if (chunkIntervalRef.current) {
+          clearInterval(chunkIntervalRef.current);
+          chunkIntervalRef.current = null;
+        }
+
+        // Final transcription of everything
+        const audioBlob = new Blob([...audioChunksRef.current], {
+          type: 'audio/webm',
+        });
+        audioChunksRef.current = [];
+
+        if (audioBlob.size > 0) {
+          try {
+            const language = localeToLanguageCode(locale);
+            const fullText = await transcribeAudio(audioBlob, language);
+            onTranscription(fullText.trim());
+          } catch (err) {
+            const message =
+              err instanceof Error ? err.message : t('recognition-error');
+            setError(message);
+            errorToast({ message });
+            logger.error({ error: err }, 'ElevenLabs transcription error');
+          }
+        }
+
+        setIsRecording(false);
+      };
+
+      mediaRecorder.onerror = () => {
+        setError(t('recognition-error'));
+        cleanupRecording();
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start(1000);
+      setIsRecording(true);
+      onRecordingStart?.();
+
+      // Periodically transcribe all accumulated audio
+      chunkIntervalRef.current = setInterval(() => {
+        sendForTranscription();
+      }, CHUNK_INTERVAL);
     } catch (err) {
-      setError(t('recognition-error'));
+      const message =
+        err instanceof Error && err.name === 'NotAllowedError'
+          ? t('microphone-permission-denied')
+          : t('recognition-error');
+      setError(message);
       if (err instanceof Error) {
         errorToast({ message: err.message });
       }
-      logger.error({ error: err }, 'Recognition error');
-      cleanupRecognition();
+      logger.error({ error: err }, 'Recording error');
+      cleanupRecording();
     }
   };
 
   const stopListening = () => {
-    cleanupRecognition();
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state === 'recording'
+    ) {
+      mediaRecorderRef.current.stop();
+    } else {
+      cleanupRecording();
+    }
   };
 
   useEffect(() => {
     return () => {
-      cleanupRecognition();
+      cleanupRecording();
     };
-  }, []);
+  }, [cleanupRecording]);
 
   return {
     startListening,

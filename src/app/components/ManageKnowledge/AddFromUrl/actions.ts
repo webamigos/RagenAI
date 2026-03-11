@@ -67,6 +67,7 @@ export async function processUrl(
       projectId: defaultProjectId,
       orgSlug: org?.slug ?? undefined,
       userEmail: user?.email ?? undefined,
+      userId: user?.id ?? undefined,
     };
 
     const embeddingsHandle = await client.workflow.start(

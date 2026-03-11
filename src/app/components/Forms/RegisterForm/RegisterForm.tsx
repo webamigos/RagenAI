@@ -72,7 +72,7 @@ export const RegisterForm = () => {
           if (acceptResult.success) {
             logger.info('Invitation accepted automatically after registration');
             // Redirect to home page
-            window.location.href = `/${locale}/`;
+            window.location.href = `/${locale}/new`;
             return;
           } else {
             logger.warn(
@@ -104,7 +104,7 @@ export const RegisterForm = () => {
       }
 
       // Use window.location.href to force full page reload and session refresh
-      window.location.href = `/${locale}/`;
+      window.location.href = `/${locale}/new`;
     } catch (err) {
       logger.error({ error: err }, 'Registration error');
       const errorMessage =
