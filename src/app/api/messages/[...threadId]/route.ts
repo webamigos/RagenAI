@@ -63,10 +63,17 @@ export const GET = async (_request: Request, { params }: Params) => {
     const result = await fetchMessagesFromDb(threadPublicId, visitorId);
     return NextResponse.json(result);
   } catch (e) {
-    logger.error({ err: e }, 'Failed fetching messages');
+    logger.error(
+      {
+        err: e,
+        errorName: (e as Error)?.name,
+        errorMessage: (e as Error)?.message,
+      },
+      'Failed fetching messages',
+    );
     return NextResponse.json(
-      { error: 'Failed fetching messages' },
-      { status: StatusCodes.BAD_REQUEST },
+      { error: 'Failed fetching messages', details: (e as Error)?.message },
+      { status: StatusCodes.INTERNAL_SERVER_ERROR },
     );
   }
 };

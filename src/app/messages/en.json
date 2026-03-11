@@ -379,12 +379,13 @@
       "voice-update-failed": "Failed to update voice",
       "play-preview": "Play preview",
       "pause-preview": "Pause preview",
+      "preview-failed": "Failed to generate voice preview",
+      "sample-text": "Hello! This is a preview of how I sound when reading messages for you.",
       "voice-description": {
-        "warm-deep": "Warm & deep",
-        "calm-gentle": "Calm & gentle",
-        "deep-clear": "Deep & clear",
-        "soft-sweet": "Soft & sweet",
-        "expressive-bright": "Expressive & bright"
+        "warm-storyteller": "Warm & captivating",
+        "clear-educator": "Clear & engaging",
+        "energetic-bright": "Energetic & bright",
+        "soft-elegant": "Soft & elegant"
       }
     }
   },
@@ -421,7 +422,9 @@
       "appearance-description": "Choose how the application looks for you.",
       "theme-light": "Light",
       "theme-dark": "Dark",
-      "theme-system": "System"
+      "theme-system": "System",
+      "voice": "Voice",
+      "voice-description": "Select the preferred voice for reading messages aloud."
     },
     "account": {
       "title": "Account",
