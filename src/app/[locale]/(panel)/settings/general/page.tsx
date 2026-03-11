@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { ThemeSelector } from './components/ThemeSelector';
+import { VoiceSettings } from './components/VoiceSettings';
 
 export async function generateMetadata() {
   const t = await getTranslations('Metadata');
@@ -20,6 +21,18 @@ export default async function GeneralSettingsPage() {
         </p>
         <div className="mt-4">
           <ThemeSelector />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          {t('voice')}
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          {t('voice-description')}
+        </p>
+        <div className="mt-4">
+          <VoiceSettings />
         </div>
       </section>
     </div>

@@ -15,37 +15,30 @@ const VOICE_OPTIONS = [
   {
     value: 'JBFqnCBsd6RMkjVDRZzb',
     label: 'George',
-    description: 'warm-deep',
+    description: 'warm-storyteller',
     sampleUrl:
       'https://storage.googleapis.com/eleven-public-prod/premade/voices/JBFqnCBsd6RMkjVDRZzb/e6206d1a-0721-4787-aafb-06a6e705cac5.mp3',
   },
   {
-    value: '21m00Tcm4TlvDq8ikWAM',
-    label: 'Rachel',
-    description: 'calm-gentle',
+    value: 'Xb7hH8MSUJpSbSDYk0k2',
+    label: 'Alice',
+    description: 'clear-educator',
     sampleUrl:
-      'https://storage.googleapis.com/eleven-public-prod/premade/voices/21m00Tcm4TlvDq8ikWAM/d40b225f-0c4a-4fa4-a0be-e6964b5c9498.mp3',
+      'https://storage.googleapis.com/eleven-public-prod/premade/voices/Xb7hH8MSUJpSbSDYk0k2/d10f7534-11f6-41fe-a012-2de1e482d336.mp3',
   },
   {
-    value: 'TxGEqnHWrfWFTfGW9XjX',
-    label: 'Josh',
-    description: 'deep-clear',
+    value: 'TX3LPaxmHKxFdv7VOQHJ',
+    label: 'Liam',
+    description: 'energetic-bright',
     sampleUrl:
-      'https://storage.googleapis.com/eleven-public-prod/premade/voices/TxGEqnHWrfWFTfGW9XjX/07394e50-a2ff-4a5e-89b6-73eb87ccb449.mp3',
+      'https://storage.googleapis.com/eleven-public-prod/premade/voices/TX3LPaxmHKxFdv7VOQHJ/63148076-6363-42db-aea8-31424308b92c.mp3',
   },
   {
-    value: 'EXAVITQu4vr4xnSDxMaL',
-    label: 'Bella',
-    description: 'soft-sweet',
+    value: 'pFZP5JQG7iQjIQuC4Bku',
+    label: 'Lily',
+    description: 'soft-elegant',
     sampleUrl:
-      'https://storage.googleapis.com/eleven-public-prod/premade/voices/EXAVITQu4vr4xnSDxMaL/6851ec91-9a09-4156-b9e2-1b3a8e197786.mp3',
-  },
-  {
-    value: 'cgSgspJ2msm6clMCkdW9',
-    label: 'Jessica',
-    description: 'expressive-bright',
-    sampleUrl:
-      'https://storage.googleapis.com/eleven-public-prod/premade/voices/cgSgspJ2msm6clMCkdW9/56a97bf8-b69b-448f-846c-c3a11683d45a.mp3',
+      'https://storage.googleapis.com/eleven-public-prod/premade/voices/pFZP5JQG7iQjIQuC4Bku/89b68b35-b3dd-4348-a84a-a3c13a3c2b30.mp3',
   },
 ];
 

@@ -382,12 +382,13 @@
       "voice-update-failed": "Nie udało się zaktualizować głosu",
       "play-preview": "Odtwórz podgląd",
       "pause-preview": "Zatrzymaj podgląd",
+      "preview-failed": "Nie udało się wygenerować podglądu głosu",
+      "sample-text": "Cześć! Tak brzmi mój głos, gdy odczytuję dla Ciebie wiadomości.",
       "voice-description": {
-        "warm-deep": "Ciepły i głęboki",
-        "calm-gentle": "Spokojny i łagodny",
-        "deep-clear": "Głęboki i czysty",
-        "soft-sweet": "Delikatny i słodki",
-        "expressive-bright": "Ekspresyjny i jasny"
+        "warm-storyteller": "Ciepły i wciągający",
+        "clear-educator": "Wyraźny i angażujący",
+        "energetic-bright": "Energiczny i jasny",
+        "soft-elegant": "Delikatny i elegancki"
       }
     }
   },
@@ -424,7 +425,9 @@
       "appearance-description": "Wybierz jak aplikacja wygląda dla Ciebie.",
       "theme-light": "Jasny",
       "theme-dark": "Ciemny",
-      "theme-system": "Systemowy"
+      "theme-system": "Systemowy",
+      "voice": "Głos",
+      "voice-description": "Wybierz preferowany głos do odczytywania wiadomości."
     },
     "account": {
       "title": "Konto",

@@ -41,7 +41,11 @@
       "Bash(git:*)",
       "WebFetch(domain:developer.clickup.com)",
       "WebFetch(domain:developers.hubspot.com)",
-      "Bash(ls -la /Users/patryk/Workspace/webamigos/ragen/ragen-app/src/app/\\\\[locale\\\\]/\\\\\\(panel\\\\\\)/settings/disk-usage/)"
+      "Bash(ls -la /Users/patryk/Workspace/webamigos/ragen/ragen-app/src/app/\\\\[locale\\\\]/\\\\\\(panel\\\\\\)/settings/disk-usage/)",
+      "WebFetch(domain:elevenlabs.io)",
+      "WebFetch(domain:api.elevenlabs.io)",
+      "Bash(ls -la /Users/patryk/Workspace/webamigos/ragen/ragen-app/src/app/\\\\[locale\\\\]/\\\\\\(panel\\\\\\)/chats/)",
+      "Bash(ls -la /Users/patryk/Workspace/webamigos/ragen/ragen-app/src/app/\\\\[locale\\\\]/\\\\\\(panel\\\\\\)/chats/\\\\[publicId\\\\]/)"
     ]
   },
   "enabledPlugins": {
