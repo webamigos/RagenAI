@@ -67,7 +67,7 @@ export const LoginForm = () => {
       }
 
       // Use window.location.href to force full page reload and session refresh
-      window.location.href = `/${locale}/`;
+      window.location.href = `/${locale}/new`;
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {

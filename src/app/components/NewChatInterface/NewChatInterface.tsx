@@ -12,7 +12,6 @@ import { useNewThreadInput } from './useNewThreadInput';
 import { MentionTextarea, type MentionedProject } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
 
-import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 interface NewChatInterfaceProps {
@@ -64,7 +63,6 @@ export const NewChatInterface = ({
     isPending,
     handleInputChange,
     handleKeyDown,
-    createVoiceThread,
     handleSubmit,
     errors,
     setMentionedProjectInHook,
@@ -130,12 +128,6 @@ export const NewChatInterface = ({
     return null;
   }
 
-  const handleVoiceModeActivation = async () => {
-    sessionStorage.setItem('voice_mode_active', 'true');
-    sessionStorage.setItem('response_type', ChatResponseType.VOICE);
-    await createVoiceThread();
-  };
-
   const handleProjectMention = (project: MentionedProject | null) => {
     setMentionedProject(project);
     setMentionedProjectInHook(project);
@@ -171,9 +163,8 @@ export const NewChatInterface = ({
           placeholder={t('new-thread-placeholder')}
           className="w-full min-h-[100px]"
           disabled={isLoading || isPending}
-          showVoiceInput={false}
+          showVoiceInput={!isPublicAccess}
           error={errors.prompt}
-          handleResponseType={handleVoiceModeActivation}
           onProjectMention={handleProjectMention}
           mentionedProject={mentionedProject}
           threadDocuments={threadDocuments}

@@ -376,10 +376,19 @@
       "placeholder": "Wpisz instrukcję personalizacji asystenta..."
     },
     "voice-mode-settings": {
-      "title": "Ustawienia Trybu Głosowego",
-      "voice-select": "Wybierz Głos",
+      "title": "Ustawienia głosu",
+      "voice-select": "Głos",
       "voice-updated": "Głos został zaktualizowany",
-      "voice-update-failed": "Nie udało się zaktualizować głosu"
+      "voice-update-failed": "Nie udało się zaktualizować głosu",
+      "play-preview": "Odtwórz podgląd",
+      "pause-preview": "Zatrzymaj podgląd",
+      "voice-description": {
+        "warm-deep": "Ciepły i głęboki",
+        "calm-gentle": "Spokojny i łagodny",
+        "deep-clear": "Głęboki i czysty",
+        "soft-sweet": "Delikatny i słodki",
+        "expressive-bright": "Ekspresyjny i jasny"
+      }
     }
   },
   "manage-knowledge": {

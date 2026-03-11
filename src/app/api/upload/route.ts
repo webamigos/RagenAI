@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
               project_public_id: projectRecord?.public_id ?? null,
               organization_slug: org?.slug ?? undefined,
               user_email: user?.email ?? undefined,
+              user_id: user?.id ?? undefined,
             },
           ],
         });
