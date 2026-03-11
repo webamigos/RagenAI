@@ -3,6 +3,7 @@
 import {
   useId,
   forwardRef,
+  useCallback,
   type ForwardedRef,
   type ComponentPropsWithRef,
   useEffect,
@@ -32,7 +33,6 @@ type Props = {
   hint?: string;
   error?: FieldError;
   containerClassName?: string;
-  handleResponseType?: () => void;
   errorMessage?: string;
   maxHeight?: number;
   onSend?: () => void;
@@ -60,7 +60,6 @@ export const Textarea = forwardRef(
       hint,
       error,
       errorMessage,
-      handleResponseType,
       className,
       disabled,
       showVoiceInput = true,
@@ -87,8 +86,30 @@ export const Textarea = forwardRef(
     const id = useId();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const setValueRef = useRef(setValue);
+    // Text that existed before recording started — preserved as prefix
+    const prefixTextRef = useRef('');
     const t = useTranslations('text-area');
     const [isDragOver, setIsDragOver] = useState(false);
+
+    useEffect(() => {
+      setValueRef.current = setValue;
+    }, [setValue]);
+
+    const applyValue = useCallback((newValue: string) => {
+      if (setValueRef.current) {
+        setValueRef.current(newValue);
+      } else if (textareaRef.current) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLTextAreaElement.prototype,
+          'value',
+        )?.set;
+        nativeInputValueSetter?.call(textareaRef.current, newValue);
+        textareaRef.current.dispatchEvent(
+          new Event('input', { bubbles: true }),
+        );
+      }
+    }, []);
 
     const {
       startListening,
@@ -96,23 +117,20 @@ export const Textarea = forwardRef(
       isRecording,
       error: voiceError,
     } = useVoiceInput({
-      onResult: (text) => {
-        if (setValue) {
-          setValue(text);
-        }
+      onRecordingStart: () => {
+        // Snapshot current text as prefix
+        prefixTextRef.current = value?.trim() || '';
+      },
+      onTranscription: (fullText) => {
+        const prefix = prefixTextRef.current;
+        const newValue = prefix ? `${prefix} ${fullText}` : fullText;
+        applyValue(newValue);
       },
     });
 
     const handleStartListening = () => {
-      handleResponseType?.();
       startListening();
     };
-
-    useEffect(() => {
-      if (!isRecording && value?.trim()) {
-        onSend?.();
-      }
-    }, [isRecording]);
 
     const adjustHeight = () => {
       const textarea = textareaRef.current;
@@ -194,9 +212,6 @@ export const Textarea = forwardRef(
 
     const maxHeightClass = `max-h-[${maxHeight}px]`;
 
-    let icon = null;
-    let onClick: (() => void) | undefined = undefined;
-
     const attachmentIcon = showFileAttachment ? (
       <PlusIcon
         className={classMerge(
@@ -207,58 +222,68 @@ export const Textarea = forwardRef(
       />
     ) : null;
 
-    if (showVoiceInput) {
-      if (disabled && !value?.trim()) {
-        icon = <SpinnerSVG className="mb-1.5" aria-hidden="true" />;
-      } else if (isRecording) {
-        icon = (
-          <StopIcon
-            className="h-7 w-7 mb-1.5 text-red-500 hover:text-red-600 dark:text-red-400"
-            aria-hidden="true"
-          />
-        );
-        onClick = stopListening;
-      } else if (value?.trim() && showArrowIcon) {
-        icon = (
-          <ArrowRightCircleIcon
-            className={classMerge(
-              'h-9 w-9',
-              disabled
+    // Send button (arrow icon)
+    let sendIcon = null;
+    let sendOnClick: (() => void) | undefined = undefined;
+
+    if (showArrowIcon) {
+      const hasText = !!value?.trim();
+      sendIcon = (
+        <ArrowRightCircleIcon
+          className={classMerge(
+            'size-7',
+            hasText
+              ? disabled
                 ? 'text-gray-300 dark:text-gray-600'
-                : 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300',
-            )}
-            aria-hidden="true"
-          />
+                : 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
+              : 'text-gray-300 dark:text-gray-600',
+          )}
+          aria-hidden="true"
+        />
+      );
+      sendOnClick = hasText && !disabled ? sendAction : undefined;
+    }
+
+    // Voice/mic button (separate from send)
+    let voiceIcon = null;
+    let voiceOnClick: (() => void) | undefined = undefined;
+
+    if (showVoiceInput) {
+      if (isRecording) {
+        voiceIcon = (
+          <div className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors">
+            <div className="flex items-end gap-[3px] h-5">
+              {[...Array(5)].map((_, i) => (
+                <span
+                  key={i}
+                  className="w-[3px] rounded-full bg-red-500 dark:bg-red-400"
+                  style={{
+                    height: '6px',
+                    animation: `voice-wave 0.5s ease-in-out ${i * 0.1}s infinite alternate`,
+                  }}
+                />
+              ))}
+            </div>
+            <StopIcon
+              className="size-4 text-red-500 dark:text-red-400"
+              aria-hidden="true"
+            />
+          </div>
         );
-        onClick = disabled ? undefined : sendAction;
+        voiceOnClick = stopListening;
+      } else if (disabled && !value?.trim()) {
+        voiceIcon = <SpinnerSVG aria-hidden="true" />;
       } else {
-        icon = (
+        voiceIcon = (
           <MicrophoneIcon
             className={classMerge(
-              'h-7 w-7 mb-1.5',
-              'text-gray-600 dark:text-gray-200 hover:text-gray-700 dark:hover:text-gray-300',
+              'size-5',
+              'text-foreground/70 hover:text-foreground transition-colors',
             )}
             aria-hidden="true"
           />
         );
-        onClick = handleStartListening;
-      }
-    } else {
-      if (showArrowIcon) {
-        icon = (
-          <ArrowRightCircleIcon
-            className={classMerge(
-              'h-9 w-9',
-              value?.trim()
-                ? 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
-                : 'text-gray-300 dark:text-gray-600',
-            )}
-            aria-hidden="true"
-          />
-        );
-        onClick = value?.trim() ? sendAction : undefined;
-      } else {
-        icon = null;
+        voiceOnClick = handleStartListening;
       }
     }
 
@@ -327,8 +352,12 @@ export const Textarea = forwardRef(
               </div>
             )}
 
-            {/* Bottom bar: left addon / attachment + model selector + send */}
-            {(leftAddon || attachmentIcon || modelSelector || icon) && (
+            {/* Bottom bar: left addon / attachment + model selector + voice + send */}
+            {(leftAddon ||
+              attachmentIcon ||
+              modelSelector ||
+              voiceIcon ||
+              sendIcon) && (
               <div className="flex items-center justify-between px-3 pb-2 pt-0">
                 <div className="flex items-center">
                   {leftAddon && !attachmentIcon && leftAddon}
@@ -342,15 +371,24 @@ export const Textarea = forwardRef(
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
                   {modelSelector}
-                  {icon && (
+                  {voiceIcon && (
                     <button
                       type="button"
-                      onClick={onClick}
+                      onClick={voiceOnClick}
                       className="flex items-center"
                     >
-                      {icon}
+                      {voiceIcon}
+                    </button>
+                  )}
+                  {sendIcon && !isRecording && (
+                    <button
+                      type="button"
+                      onClick={sendOnClick}
+                      className="flex items-center"
+                    >
+                      {sendIcon}
                     </button>
                   )}
                 </div>

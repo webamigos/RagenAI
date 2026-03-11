@@ -4,7 +4,6 @@ import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
 import { useAssistantLogic } from './useAssistantLogic';
-import { VoiceMode } from './ChatOutput/VoiceMode/VoiceMode';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
@@ -14,10 +13,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
-import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
-import { setVoiceId, setRecording } from '@/store/voice/voiceSlice';
+import { setVoiceId } from '@/store/voice/voiceSlice';
 import { type RootState } from '@/store';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
@@ -36,7 +34,6 @@ type Props = {
 export const Assistant = ({ threadId }: Props) => {
   const {
     messageLoadingText,
-    handleResponseType,
     messagesEndDivRef,
     isGlobalLoading,
     streamedMessage,
@@ -49,9 +46,7 @@ export const Assistant = ({ threadId }: Props) => {
     onSubmit,
     isLocked,
     promptFormRef,
-    closeVoiceMode,
     setVoiceMessageAsPlayed,
-    handleVoiceResult,
   } = useAssistantLogic(threadId);
 
   const { messages: reduxMessages, error: assistantError } = useSelector(
@@ -63,9 +58,7 @@ export const Assistant = ({ threadId }: Props) => {
   const { organization } = useOrganization();
   const { user } = useUser();
   const dispatch = useDispatch();
-  const { voiceId, isRecording } = useSelector(
-    (state: RootState) => state.assistant.voice,
-  );
+  const { voiceId } = useSelector((state: RootState) => state.assistant.voice);
   const [availableProjects, setAvailableProjects] = useState<
     ProjectForContext[]
   >([]);
@@ -93,21 +86,6 @@ export const Assistant = ({ threadId }: Props) => {
     };
     getVoiceSettings();
   }, [organization?.id, dispatch]);
-
-  useEffect(() => {
-    const wasVoiceModeActive = sessionStorage.getItem('voice_mode_active');
-    const responseTypeStored = sessionStorage.getItem('response_type');
-
-    if (
-      wasVoiceModeActive === 'true' &&
-      responseTypeStored === ChatResponseType.VOICE
-    ) {
-      dispatch(setRecording(true));
-      handleResponseType();
-      sessionStorage.removeItem('voice_mode_active');
-      sessionStorage.removeItem('response_type');
-    }
-  }, []);
 
   useEffect(() => {
     const fetchAvailableProjects = async () => {
@@ -189,18 +167,6 @@ export const Assistant = ({ threadId }: Props) => {
   return (
     <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
       <div className="flex flex-1 min-w-0 flex-col font-sans">
-        {responseType === ChatResponseType.VOICE && (
-          <VoiceMode
-            onClose={closeVoiceMode}
-            isRecording={isRecording}
-            onResult={handleVoiceResult}
-            messages={messages}
-            onMessagePlayed={setVoiceMessageAsPlayed}
-            voiceId={voiceId}
-            assistantError={assistantError}
-          />
-        )}
-
         <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
           <BreadcrumbNavigation threadId={threadId} />
           <div className="flex items-center gap-2">
@@ -246,7 +212,6 @@ export const Assistant = ({ threadId }: Props) => {
           {isLimitLock && !isSignedIn && <LimitReached />}
           {!isLocked() && threadId && organizationDefaultModel !== null && (
             <PromptForm
-              handleResponseType={handleResponseType}
               ref={promptFormRef}
               isUserLogged={!!isSignedIn}
               isLoading={isGlobalLoading}

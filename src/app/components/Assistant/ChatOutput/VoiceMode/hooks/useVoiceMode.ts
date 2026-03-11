@@ -45,7 +45,7 @@ export const useVoiceMode = ({
     isRecording: localIsRecording,
     error: voiceError,
   } = useVoiceInput({
-    onResult: (text) => {
+    onTranscription: (text) => {
       dispatch({ type: 'SET_TRANSCRIPT_TEXT', payload: text });
     },
   });

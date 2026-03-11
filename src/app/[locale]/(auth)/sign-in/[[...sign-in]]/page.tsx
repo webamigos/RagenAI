@@ -35,7 +35,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`,
       );
     }
-    nextRedirect(`/${locale}`);
+    nextRedirect(`/${locale}/new`);
   }
 
   const signUpHref = invitationId

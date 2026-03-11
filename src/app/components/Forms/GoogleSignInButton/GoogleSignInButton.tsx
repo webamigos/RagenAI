@@ -32,7 +32,7 @@ export const GoogleSignInButton = ({
     try {
       const callbackURL = invitationId
         ? `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`
-        : `/${locale}/`;
+        : `/${locale}/new`;
 
       await signIn.social({
         provider: 'google',

@@ -10,6 +10,13 @@ type Props = {
 
 const PAGE_SIZE = 20;
 
+const STEP_LABELS: Record<string, string> = {
+  CHAT_COMPLETION: 'COMPLETION',
+  MODERATION: 'MODERATION',
+  REPHRASING: 'REPHRASING',
+  EMBEDDINGS: 'EMBEDDINGS',
+};
+
 const STEP_BADGE_COLORS: Record<string, string> = {
   CHAT_COMPLETION:
     'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
@@ -111,7 +118,7 @@ export function AiUsageTable({ items, isAppAdmin = false }: Props) {
                       'bg-muted text-muted-foreground'
                     }`}
                   >
-                    {item.step.replace('_', ' ')}
+                    {STEP_LABELS[item.step] ?? item.step.replace('_', ' ')}
                   </span>
                 </td>
                 <td className="p-3 font-mono text-xs max-w-[180px] truncate">

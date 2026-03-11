@@ -53,6 +53,7 @@ export interface ScrapeWebsiteWorkflowPayload {
   projectId: UserFile['project_id'];
   orgSlug?: string;
   userEmail?: string;
+  userId?: string;
 }
 
 export type ParsedFile = {

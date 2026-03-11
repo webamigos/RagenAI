@@ -11,12 +11,10 @@ type User = {
   name: string;
   image?: string | null;
 };
-import { setRecording } from '@/store/voice/voiceSlice';
 import {
   setMessages,
   setInitialLoad,
   setMode,
-  setResponseType,
   setMessagePlayed,
   setError,
   setThreadContext,
@@ -30,7 +28,6 @@ import { fetchMessagesFromApi } from '../../lib/services/api';
 import {
   ChatType,
   type CreateMessageDto,
-  ChatResponseType,
 } from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -204,25 +201,6 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
-  const handleResponseType = () => {
-    dispatch(setResponseType(ChatResponseType.VOICE));
-    dispatch(setRecording(true));
-  };
-
-  const closeVoiceMode = () => {
-    dispatch(setRecording(false));
-    dispatch(setResponseType(ChatResponseType.TEXT));
-  };
-
-  const handleVoiceResult = (text: string, recordingTime: number) => {
-    onSubmit({
-      mode,
-      prompt: text,
-      messageType: 'VOICE',
-      voiceDurationSeconds: recordingTime,
-    });
-  };
-
   const setVoiceMessageAsPlayed = async (messageId: string) => {
     try {
       dispatch(setMessagePlayed(messageId));
@@ -275,7 +253,6 @@ export const useAssistantLogic = (threadId: string) => {
 
   return {
     messageLoadingText,
-    handleResponseType,
     messagesEndDivRef,
     isGlobalLoading,
     streamedMessage,
@@ -290,8 +267,6 @@ export const useAssistantLogic = (threadId: string) => {
     onSubmit,
     isLocked: () => !isSignedIn && isLimitLock,
     promptFormRef,
-    closeVoiceMode,
     setVoiceMessageAsPlayed,
-    handleVoiceResult,
   };
 };

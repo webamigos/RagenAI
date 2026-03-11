@@ -41,7 +41,6 @@ import { isFirefliesConnected } from '@/app/actions/fireflies';
 type Props = {
   isLoading: boolean;
   isUserLogged: boolean;
-  handleResponseType?: () => void;
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
   responseType: ChatResponseType;
@@ -53,14 +52,7 @@ export type PromptFormRef = {
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
   (
-    {
-      isLoading,
-      isUserLogged,
-      onSubmit,
-      isPublicAccess,
-      handleResponseType,
-      responseType,
-    },
+    { isLoading, isUserLogged, onSubmit, isPublicAccess, responseType },
     ref,
   ) => {
     const t = useTranslations('form');
@@ -224,7 +216,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             register={register}
             onSend={handleSend}
             value={promptValue}
-            handleResponseType={handleResponseType}
+            showVoiceInput={!isPublicAccess}
             setPromptValue={(text: string) => setValue('prompt', text)}
             showFileAttachment={false}
             onFilesDrop={isPublicAccess ? undefined : handleFilesDrop}

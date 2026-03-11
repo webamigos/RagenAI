@@ -26,7 +26,7 @@ const PERIODS = [
 
 const STEPS = [
   { value: '', label: 'All steps' },
-  { value: AiUsageStep.CHAT_COMPLETION, label: 'Chat Completion' },
+  { value: AiUsageStep.CHAT_COMPLETION, label: 'Completion' },
   { value: AiUsageStep.MODERATION, label: 'Moderation' },
   { value: AiUsageStep.REPHRASING, label: 'Rephrasing' },
   { value: AiUsageStep.EMBEDDINGS, label: 'Embeddings' },

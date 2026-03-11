@@ -8,7 +8,7 @@ type Props = {
   disabled: boolean;
   error?: FieldError;
   isUserLogged: boolean;
-  handleResponseType?: () => void;
+  showVoiceInput?: boolean;
   register: UseFormRegister<{
     prompt: string;
   }>;
@@ -27,7 +27,7 @@ export const AskQuestion = ({
   disabled,
   error,
   value,
-  handleResponseType,
+  showVoiceInput = false,
   setPromptValue,
   register,
   onSend,
@@ -54,8 +54,7 @@ export const AskQuestion = ({
       {...register('prompt')}
       setValue={setPromptValue}
       placeholder={t('enter-your-question')}
-      handleResponseType={handleResponseType}
-      showVoiceInput={false}
+      showVoiceInput={showVoiceInput}
       showFileAttachment={showFileAttachment}
       onFilesDrop={onFilesDrop}
       threadDocuments={threadDocuments}
