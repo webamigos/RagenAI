@@ -13,18 +13,6 @@ const MCP_GOOGLE_SERVER_URL = (() => {
   return 'http://localhost:8000';
 })();
 
-const MCP_CLICKUP_SERVER_URL = (() => {
-  if (process.env.MCP_CLICKUP_SERVER_URL) {
-    return process.env.MCP_CLICKUP_SERVER_URL;
-  }
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'MCP_CLICKUP_SERVER_URL is required in non-development environments',
-    );
-  }
-  return 'http://localhost:8001';
-})();
-
 const MCP_HUBSPOT_SERVER_URL = (() => {
   if (process.env.MCP_HUBSPOT_SERVER_URL) {
     return process.env.MCP_HUBSPOT_SERVER_URL;
@@ -76,8 +64,8 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     name: 'ClickUp',
     description: 'Manage tasks, projects, and workspaces.',
     icon: 'check-square',
-    mcpServerUrl: MCP_CLICKUP_SERVER_URL,
-    authPath: '/auth/clickup',
+    mcpServerUrl: 'https://mcp.clickup.com/mcp',
+    authType: 'external_mcp',
   },
   {
     provider: McpConnectorProvider.HUBSPOT,

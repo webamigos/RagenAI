@@ -19,6 +19,10 @@ export const createConnectorCommand = async (
   }
 
   const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
+  const mcpServerUrl =
+    providerDef.authType === 'external_mcp'
+      ? providerDef.mcpServerUrl
+      : `${providerDef.mcpServerUrl}/mcp`;
 
   try {
     return await db.mcpConnector.upsert({
@@ -31,14 +35,14 @@ export const createConnectorCommand = async (
       },
       update: {
         status: McpConnectorStatus.PENDING,
-        mcp_server_url: `${providerDef.mcpServerUrl}/mcp`,
+        mcp_server_url: mcpServerUrl,
         customer_id: customerId,
       },
       create: {
         organization_id: organizationId,
         user_id: userId,
         provider,
-        mcp_server_url: `${providerDef.mcpServerUrl}/mcp`,
+        mcp_server_url: mcpServerUrl,
         customer_id: customerId,
         status: McpConnectorStatus.PENDING,
       },

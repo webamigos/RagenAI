@@ -16,8 +16,8 @@ export const registerApiKeyCommand = async (
   apiKey: string,
 ) => {
   const providerDef = getProviderDefinition(provider);
-  if (!providerDef) {
-    throw new Error(`Unknown provider: ${provider}`);
+  if (!providerDef || !providerDef.authPath) {
+    throw new Error(`Unknown provider or missing authPath: ${provider}`);
   }
 
   // Step 1: Create/upsert the connector record in PENDING state

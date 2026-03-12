@@ -53,6 +53,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const isConnected = currentConnector?.status === 'CONNECTED';
   const isPending = currentConnector?.status === 'PENDING';
   const isApiKeyAuth = provider.authType === 'api_key';
+  const isExternalMcp = provider.authType === 'external_mcp';
 
   useEffect(() => {
     return () => {
@@ -90,12 +91,88 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     }
   };
 
+  const handleExternalMcpConnect = async () => {
+    setLoading(true);
+    try {
+      // First create the connector record in PENDING state
+      const result = await initiateConnection(provider.provider);
+
+      const callbackUrl = `${window.location.origin}/api/connectors/external/callback?provider=${provider.provider}`;
+      const params = new URLSearchParams({
+        provider: provider.provider,
+        callback_url: callbackUrl,
+      });
+      const response = await fetch(
+        `/api/connectors/external/connect?${params.toString()}`,
+      );
+      if (!response.ok) {
+        setLoading(false);
+        return;
+      }
+      const data = await response.json();
+
+      if (data.status === 'already_authorized') {
+        handleAuthCallback(result.id);
+        return;
+      }
+
+      if (!data.authorization_url) {
+        setLoading(false);
+        return;
+      }
+
+      const popup = window.open(
+        data.authorization_url,
+        'oauth-popup',
+        'width=600,height=700',
+      );
+
+      if (!popup || popup.closed) {
+        setLoading(false);
+        return;
+      }
+
+      intervalRef.current = setInterval(() => {
+        let popupSuccess = false;
+        try {
+          if (popup.location?.search) {
+            const popupParams = new URLSearchParams(popup.location.search);
+            popupSuccess = popupParams.get('status') === 'success';
+          }
+        } catch {
+          // Cross-origin — can't read popup URL while on external OAuth domain
+        }
+
+        if (popupSuccess || popup.closed) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          if (!popup.closed) {
+            popup.close();
+          }
+          if (popupSuccess) {
+            handleAuthCallback(result.id);
+          } else {
+            setLoading(false);
+          }
+        }
+      }, 500);
+    } catch {
+      setLoading(false);
+    }
+  };
+
   const handleConnect = async () => {
     if (isApiKeyAuth) {
       setApiKeyDialogOpen(true);
       setApiKeyValue('');
       setApiKeyError(null);
       return;
+    }
+
+    if (isExternalMcp) {
+      return handleExternalMcpConnect();
     }
 
     setLoading(true);

@@ -1,11 +1,16 @@
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
+import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
+import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import { PrismaOAuthClientProvider } from './oauth-provider';
 
 export type McpConnectorInfo = {
   id: string;
   provider: string;
   mcp_server_url: string;
   customer_id: string;
+  organization_id: string;
+  user_id: string;
 };
 
 /**
@@ -21,15 +26,37 @@ export async function createMcpToolsFromConnectors(
 
   for (const connector of connectors) {
     try {
-      const client = await createMCPClient({
-        transport: {
-          type: 'http',
-          url: connector.mcp_server_url,
-          headers: {
-            'x-customer-id': connector.customer_id,
+      const providerDef = getProviderDefinition(
+        connector.provider as McpConnectorProvider,
+      );
+
+      let client: MCPClient;
+
+      if (providerDef?.authType === 'external_mcp') {
+        const authProvider = new PrismaOAuthClientProvider(
+          connector.organization_id,
+          connector.user_id,
+          connector.provider as McpConnectorProvider,
+          '', // No redirect needed for runtime token injection
+        );
+        client = await createMCPClient({
+          transport: {
+            type: 'http',
+            url: connector.mcp_server_url,
+            authProvider,
           },
-        },
-      });
+        });
+      } else {
+        client = await createMCPClient({
+          transport: {
+            type: 'http',
+            url: connector.mcp_server_url,
+            headers: {
+              'x-customer-id': connector.customer_id,
+            },
+          },
+        });
+      }
 
       clients.push(client);
 
