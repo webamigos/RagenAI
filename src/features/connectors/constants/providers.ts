@@ -13,18 +13,6 @@ const MCP_GOOGLE_SERVER_URL = (() => {
   return 'http://localhost:8000';
 })();
 
-const MCP_HUBSPOT_SERVER_URL = (() => {
-  if (process.env.MCP_HUBSPOT_SERVER_URL) {
-    return process.env.MCP_HUBSPOT_SERVER_URL;
-  }
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'MCP_HUBSPOT_SERVER_URL is required in non-development environments',
-    );
-  }
-  return 'http://localhost:8002';
-})();
-
 const MCP_FIREFLIES_SERVER_URL = (() => {
   if (process.env.MCP_FIREFLIES_SERVER_URL) {
     return process.env.MCP_FIREFLIES_SERVER_URL;
@@ -72,14 +60,10 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     name: 'HubSpot',
     description: 'Access contacts, companies, deals, and CRM data.',
     icon: 'database',
-    mcpServerUrl: MCP_HUBSPOT_SERVER_URL,
-    authPath: '/auth/hubspot',
-    scopes: [
-      'crm.objects.contacts.read',
-      'crm.objects.companies.read',
-      'crm.objects.deals.read',
-      'crm.objects.owners.read',
-    ],
+    mcpServerUrl: 'https://mcp.hubspot.com',
+    authType: 'external_mcp',
+    oauthClientId: process.env.HUBSPOT_MCP_CLIENT_ID,
+    oauthClientSecret: process.env.HUBSPOT_MCP_CLIENT_SECRET,
   },
   {
     provider: McpConnectorProvider.FIREFLIES,

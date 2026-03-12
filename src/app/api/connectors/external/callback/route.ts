@@ -38,12 +38,14 @@ export async function GET(request: NextRequest) {
     // The callback URL is this route itself (the same URL the user is hitting now)
     const callbackUrl = `${request.nextUrl.origin}/api/connectors/external/callback?provider=${provider}`;
 
-    const oauthProvider = new PrismaOAuthClientProvider(
+    const oauthProvider = new PrismaOAuthClientProvider({
       orgId,
       userId,
       provider,
       callbackUrl,
-    );
+      fixedClientId: providerDef.oauthClientId,
+      fixedClientSecret: providerDef.oauthClientSecret,
+    });
 
     const result = await mcpAuth(oauthProvider, {
       serverUrl: providerDef.mcpServerUrl,

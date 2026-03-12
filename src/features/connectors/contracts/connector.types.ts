@@ -26,6 +26,8 @@ export type ProviderDefinition = {
   authType?: 'oauth' | 'api_key' | 'external_mcp';
   apiKeyHelpUrl?: string;
   scopes?: string[];
+  oauthClientId?: string;
+  oauthClientSecret?: string;
 };
 
 export type { McpConnectorProvider, McpConnectorStatus };

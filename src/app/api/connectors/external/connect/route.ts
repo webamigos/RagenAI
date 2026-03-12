@@ -50,12 +50,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const oauthProvider = new PrismaOAuthClientProvider(
+    const oauthProvider = new PrismaOAuthClientProvider({
       orgId,
       userId,
       provider,
       callbackUrl,
-    );
+      fixedClientId: providerDef.oauthClientId,
+      fixedClientSecret: providerDef.oauthClientSecret,
+    });
     const result = await mcpAuth(oauthProvider, {
       serverUrl: providerDef.mcpServerUrl,
     });

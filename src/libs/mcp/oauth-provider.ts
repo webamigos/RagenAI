@@ -8,15 +8,32 @@ import type { McpConnectorProvider } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { encryptApiKey, decryptApiKey } from '@/app/lib/utils/hashApiKey';
 
+export type OAuthProviderOptions = {
+  orgId: string;
+  userId: string;
+  provider: McpConnectorProvider;
+  callbackUrl: string;
+  fixedClientId?: string;
+  fixedClientSecret?: string;
+};
+
 export class PrismaOAuthClientProvider implements OAuthClientProvider {
   private _authorizationUrl: URL | undefined;
+  private orgId: string;
+  private userId: string;
+  private provider: McpConnectorProvider;
+  private callbackUrl: string;
+  private fixedClientId?: string;
+  private fixedClientSecret?: string;
 
-  constructor(
-    private orgId: string,
-    private userId: string,
-    private provider: McpConnectorProvider,
-    private callbackUrl: string,
-  ) {}
+  constructor(opts: OAuthProviderOptions) {
+    this.orgId = opts.orgId;
+    this.userId = opts.userId;
+    this.provider = opts.provider;
+    this.callbackUrl = opts.callbackUrl;
+    this.fixedClientId = opts.fixedClientId;
+    this.fixedClientSecret = opts.fixedClientSecret;
+  }
 
   get redirectUrl() {
     return this.callbackUrl;
@@ -105,6 +122,15 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   }
 
   async clientInformation(): Promise<OAuthClientInformation | undefined> {
+    // If fixed credentials are provided (e.g. HubSpot pre-registered app), use them directly
+    if (this.fixedClientId) {
+      return {
+        client_id: this.fixedClientId,
+        client_secret: this.fixedClientSecret,
+      };
+    }
+
+    // Otherwise check DB for dynamically registered client info
     const record = await db.mcpOAuthToken.findUnique({
       where: {
         organization_id_user_id_provider: {

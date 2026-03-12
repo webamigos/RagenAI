@@ -33,12 +33,14 @@ export async function createMcpToolsFromConnectors(
       let client: MCPClient;
 
       if (providerDef?.authType === 'external_mcp') {
-        const authProvider = new PrismaOAuthClientProvider(
-          connector.organization_id,
-          connector.user_id,
-          connector.provider as McpConnectorProvider,
-          '', // No redirect needed for runtime token injection
-        );
+        const authProvider = new PrismaOAuthClientProvider({
+          orgId: connector.organization_id,
+          userId: connector.user_id,
+          provider: connector.provider as McpConnectorProvider,
+          callbackUrl: '', // No redirect needed for runtime token injection
+          fixedClientId: providerDef.oauthClientId,
+          fixedClientSecret: providerDef.oauthClientSecret,
+        });
         client = await createMCPClient({
           transport: {
             type: 'http',
