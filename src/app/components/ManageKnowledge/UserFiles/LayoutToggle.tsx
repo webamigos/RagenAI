@@ -1,3 +1,5 @@
+'use client';
+
 import { type ComponentProps } from 'react';
 
 import { classMerge } from '@ragenai/common-ui/utils/cn';

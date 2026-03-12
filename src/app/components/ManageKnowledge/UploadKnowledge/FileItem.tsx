@@ -27,6 +27,7 @@ export const FileItem = ({ file, onRemove, uploading }: Props) => {
       </span>
       {!uploading && (
         <button
+          type="button"
           onClick={onRemove}
           className="shrink-0 rounded p-1 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:text-zinc-500 dark:hover:bg-red-900/20 dark:hover:text-red-400"
           aria-label={`remove file ${file.name}`}

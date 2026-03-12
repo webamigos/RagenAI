@@ -30,7 +30,7 @@ export async function saveMarkdownWithMeta(
   ).length;
 
   try {
-    createMarkdownDocument(markdownData);
+    await createMarkdownDocument(markdownData);
     return {
       success: true,
       document: {

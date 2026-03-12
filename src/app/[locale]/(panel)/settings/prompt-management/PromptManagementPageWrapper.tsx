@@ -34,7 +34,7 @@ export default function PromptManagementPage({
             {showModelApiKey && (
               <section>
                 <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-                  API Key
+                  {t('api-key')}
                 </h2>
                 <div className="mt-4">
                   <SetApiKeyWrapper />
@@ -69,7 +69,7 @@ export default function PromptManagementPage({
         ) : (
           <section>
             <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-              API Key
+              {t('api-key')}
             </h2>
             <div className="mt-4">
               <SetApiKeyWrapper />

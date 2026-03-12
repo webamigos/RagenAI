@@ -13,10 +13,16 @@ import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
 type Props = {
   file: UserFileTypeSafe;
   isLoading: boolean;
+  deleteLoading?: boolean;
   toggleModal: (fileId: string | null) => void;
 };
 
-export const FileCard = ({ file, isLoading, toggleModal }: Props) => {
+export const FileCard = ({
+  file,
+  isLoading,
+  deleteLoading,
+  toggleModal,
+}: Props) => {
   const { file_name, file_size, file_type, public_id, created_at, document } =
     file;
 
@@ -86,7 +92,7 @@ export const FileCard = ({ file, isLoading, toggleModal }: Props) => {
         <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80">
           <ToolbarActionsMenu
             toggleModal={toggleModal}
-            isLoading={isLoading}
+            isLoading={deleteLoading ?? isLoading}
             filePublicId={public_id}
             documentPublicId={document?.public_id}
           />

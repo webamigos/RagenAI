@@ -5,7 +5,7 @@ import {
   type FileType,
   type EmbeddingStatus,
   type ParsingStatus,
-} from '@/generated/prisma/browser';
+} from '@/generated/prisma/client';
 
 export type ProjectType = {
   id: Project['id'];

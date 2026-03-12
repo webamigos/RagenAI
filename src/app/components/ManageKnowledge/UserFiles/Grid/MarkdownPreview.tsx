@@ -17,6 +17,7 @@ type Props = {
 
 export function MarkdownPreview({ documentPublicId }: Props) {
   const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState(false);
   const { organization } = useOrganization();
 
   useEffect(() => {
@@ -24,15 +25,25 @@ export function MarkdownPreview({ documentPublicId }: Props) {
       return;
     }
 
-    fetchDocumentByOrganization(organization.id, documentPublicId).then(
-      (result) => {
+    setError(false);
+    setHtml(null);
+    fetchDocumentByOrganization(organization.id, documentPublicId)
+      .then((result) => {
         if (result.success) {
           const content = result.documents.map((doc) => doc.content).join('\n');
           setHtml(DOMPurify.sanitize(md.render(content)));
+        } else {
+          setError(true);
         }
-      },
-    );
+      })
+      .catch(() => {
+        setError(true);
+      });
   }, [organization?.id, documentPublicId]);
+
+  if (error) {
+    return null;
+  }
 
   if (!html) {
     return (

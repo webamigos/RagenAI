@@ -112,23 +112,23 @@ export const ChatModelSelect = ({}) => {
             disabled={availableModels.length === 0}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={t('title')} />
+              <SelectValue
+                placeholder={
+                  availableModels.length === 0 ? t('no-models') : t('title')
+                }
+              />
             </SelectTrigger>
             <SelectContent position="popper">
-              {availableModels.length === 0 ? (
-                <SelectItem value="">No models available</SelectItem>
-              ) : (
-                groupedModels.map(({ origin, displayName, models }) => (
-                  <SelectGroup key={origin}>
-                    <SelectLabel>{displayName}</SelectLabel>
-                    {models.map(({ value, label }) => (
-                      <SelectItem key={value} value={value}>
-                        {isReasoningModel(value) ? `🧠 ${label}` : label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ))
-              )}
+              {groupedModels.map(({ origin, displayName, models }) => (
+                <SelectGroup key={origin}>
+                  <SelectLabel>{displayName}</SelectLabel>
+                  {models.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {isReasoningModel(value) ? `🧠 ${label}` : label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
             </SelectContent>
           </Select>
         )}

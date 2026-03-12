@@ -7,6 +7,7 @@ import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { type FileType, type UserFile } from '@/generated/prisma/browser';
+import { logger } from '@/app/lib/utils/logger';
 
 type FileItemProps = {
   file: {
@@ -16,7 +17,7 @@ type FileItemProps = {
     file_type: FileType;
     created_at: Date | null;
   };
-  onDelete: (publicFileId: UserFile['public_id']) => void;
+  onDelete: (publicFileId: UserFile['public_id']) => void | Promise<void>;
   isDeleting: boolean;
   t: any;
 };
@@ -29,9 +30,14 @@ export const FileItem = memo(
       ? new Date(file.created_at).toLocaleDateString()
       : '-';
 
-    const handleConfirmDelete = (filePublicId: UserFile['public_id']) => {
-      onDelete(filePublicId);
-      setShowDeleteModal(false);
+    const handleConfirmDelete = async (filePublicId: UserFile['public_id']) => {
+      try {
+        await onDelete(filePublicId);
+        setShowDeleteModal(false);
+      } catch (error) {
+        // Modal stays open on error to allow retry
+        logger.error({ err: error }, 'Failed to delete file');
+      }
     };
 
     return (

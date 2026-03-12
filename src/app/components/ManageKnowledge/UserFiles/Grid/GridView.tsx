@@ -67,6 +67,7 @@ export const GridView = ({
           key={file.public_id}
           file={file as UserFileTypeSafe}
           isLoading={isLoading}
+          deleteLoading={deleteLoading}
           toggleModal={toggleModal}
         />
       ))}

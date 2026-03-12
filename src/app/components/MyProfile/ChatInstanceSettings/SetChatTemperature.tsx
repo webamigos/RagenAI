@@ -66,6 +66,7 @@ export const SetChatTemperature = () => {
           <div className="h-1.5 w-full animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-700" />
         ) : (
           <Slider
+            aria-label={t('title')}
             min={0}
             max={1}
             step={0.1}

@@ -341,13 +341,15 @@
     }
   },
   "assistant-settings": {
+    "api-key": "API Key",
     "prompt-assistant-settings": "Assistant settings",
     "model-select": {
       "title": "Language model",
       "failed-to-fetch-model": "Error fetching language model",
       "failed-to-update-model": "Error updating language model",
       "failed-to-update-temperature": "Error updating temperature",
-      "model-updated-successfully": "Language model updated successfully"
+      "model-updated-successfully": "Language model updated successfully",
+      "no-models": "No models available"
     },
     "max-documents-to-retreive": {
       "title": "Max. number of search snippets",
@@ -444,6 +446,8 @@
       "api-key-help-link": "Learn how to get your API key.",
       "api-key-error": "Failed to register API key. Please check your key and try again.",
       "coming-soon": "Coming soon",
+      "gmail-description": "Search emails, read messages, and create drafts.",
+      "notion-description": "Search pages, databases, and manage content.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -650,7 +654,7 @@
     "updated": "Updated {time}"
   },
   "search-threads": {
-    "title": "Search chats and projects",
+    "title": "Search chats and assistants",
     "error-suggestions": "Error fetching suggestions",
     "error-threads": "Error fetching threads",
     "threads-not-found": "Thread not found",

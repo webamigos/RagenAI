@@ -44,6 +44,9 @@ export const FileUploader = ({
 
   const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    if (disabled) {
+      return;
+    }
     dragCounter.current += 1;
     if (dragCounter.current === 1) {
       setIsDragOver(true);
@@ -52,7 +55,10 @@ export const FileUploader = ({
 
   const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    dragCounter.current -= 1;
+    if (disabled) {
+      return;
+    }
+    dragCounter.current = Math.max(0, dragCounter.current - 1);
     if (dragCounter.current === 0) {
       setIsDragOver(false);
     }

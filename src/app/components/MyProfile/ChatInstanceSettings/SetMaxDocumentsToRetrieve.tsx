@@ -75,6 +75,7 @@ export const SetMaxDocumentsToRetrieve = () => {
           <div className="h-1.5 w-full animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-700" />
         ) : (
           <Slider
+            aria-label={t('title')}
             min={min}
             max={max}
             step={step}

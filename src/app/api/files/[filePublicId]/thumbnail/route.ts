@@ -42,7 +42,7 @@ export async function GET(
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=86400, immutable',
+        'Cache-Control': 'private, max-age=86400',
       },
     });
   } catch (error) {

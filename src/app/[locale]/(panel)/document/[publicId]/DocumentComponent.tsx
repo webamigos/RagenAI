@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useMemo, useReducer } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useOrganization } from '@/app/hooks/use-auth';
 // @ts-ignore -- UMD bundle has no type declarations
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';

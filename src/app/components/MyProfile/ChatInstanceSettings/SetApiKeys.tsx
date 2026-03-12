@@ -137,7 +137,7 @@ export const SetApiKeys = () => {
           </button>
         )}
         {isWarning && (
-          <button>
+          <button type="button" aria-label={t('no-api-key-warning')}>
             <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
               <WarningIcon className="text-yellow-600" />
             </Tooltip>

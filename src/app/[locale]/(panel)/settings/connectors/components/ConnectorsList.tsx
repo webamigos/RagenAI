@@ -15,13 +15,13 @@ const COMING_SOON_PROVIDERS = [
   {
     key: 'GMAIL',
     name: 'Gmail',
-    description: 'Search emails, read messages, and create drafts.',
+    descriptionKey: 'gmail-description' as const,
     icon: '/assets/connectors/gmail.svg',
   },
   {
     key: 'NOTION',
     name: 'Notion',
-    description: 'Search pages, databases, and manage content.',
+    descriptionKey: 'notion-description' as const,
     icon: '/assets/connectors/notion.svg',
   },
 ];
@@ -59,7 +59,7 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
               <Badge color="zinc">{t('coming-soon')}</Badge>
             </div>
             <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-              {provider.description}
+              {t(provider.descriptionKey)}
             </p>
           </div>
         </div>
