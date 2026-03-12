@@ -12,7 +12,7 @@ import {
   type MessageDto,
 } from '@/features/messages/contracts/message.types';
 import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
-import { deleteFromS3 } from '../lib/services/aws';
+import { deleteFromS3, deleteFromS3ByKey } from '../lib/services/aws';
 import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
@@ -278,6 +278,15 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
       )}`;
 
       await deleteFromS3(documentS3Path);
+
+      // Removal thumbnail from S3 (best-effort)
+      if (fileRecord.thumbnail_s3_key) {
+        try {
+          await deleteFromS3ByKey(fileRecord.thumbnail_s3_key);
+        } catch {
+          // Thumbnail cleanup is non-critical
+        }
+      }
 
       // Removal from `UserDocument`
       const documentId = fileRecord?.document_id;

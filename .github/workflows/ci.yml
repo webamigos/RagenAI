@@ -48,6 +48,7 @@ env:
   MCP_GOOGLE_SERVER_URL: "https://example.com"
   MCP_CLICKUP_SERVER_URL: "https://example.com"
   MCP_HUBSPOT_SERVER_URL: "https://example.com"
+  MCP_FIREFLIES_SERVER_URL: "https://example.com"
 
 on:
   push:

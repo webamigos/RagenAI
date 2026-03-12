@@ -344,13 +344,15 @@
     }
   },
   "assistant-settings": {
+    "api-key": "Klucz API",
     "prompt-assistant-settings": "Ustawienia asystenta",
     "model-select": {
       "title": "Model językowy",
       "failed-to-fetch-model": "Błąd podczas pobierania modelu językowego",
       "failed-to-update-model": "Błąd podczas aktualizacji modelu językowego",
       "failed-to-update-temperature": "Błąd podczas aktualizacji temperatury",
-      "model-updated-successfully": "Model językowy zaktualizowany pomyślnie"
+      "model-updated-successfully": "Model językowy zaktualizowany pomyślnie",
+      "no-models": "Brak dostępnych modeli"
     },
     "max-documents-to-retreive": {
       "title": "Maks. liczba fragmentów wyszukiwania",
@@ -446,6 +448,9 @@
       "api-key-placeholder": "Wprowadź klucz API...",
       "api-key-help-link": "Dowiedz się, jak uzyskać klucz API.",
       "api-key-error": "Nie udało się zarejestrować klucza API. Sprawdź klucz i spróbuj ponownie.",
+      "coming-soon": "Wkrótce",
+      "gmail-description": "Wyszukuj e-maile, czytaj wiadomości i twórz wersje robocze.",
+      "notion-description": "Wyszukuj strony, bazy danych i zarządzaj treścią.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -652,15 +657,15 @@
     "updated": "Zaktualizowany {time}"
   },
   "search-threads": {
-    "title": "Szukaj czatów i projektów",
+    "title": "Szukaj czatów i asystentów",
     "error-suggestions": "Błąd podczas pobierania sugestii",
     "error-threads": "Błąd podczas pobierania wątków",
     "threads-not-found": "Wątek nie znaleziony",
     "no-results": "Brak wyników.",
-    "placeholder": "Szukaj czatów i projektów...",
+    "placeholder": "Szukaj czatów i asystentów...",
     "recent": "Ostatnie",
     "threads": "Czaty",
-    "projects": "Projekty",
+    "projects": "Asystenci",
     "untitled": "Bez tytułu",
     "loading": "Ładowanie...",
     "date-today": "Dzisiaj",
@@ -681,13 +686,19 @@
     "processed": "Przetworzono",
     "preview": "Podgląd",
     "no-files": "Brak plików",
-    "search-placeholder": "Wyszukaj pliki"
+    "download": "Pobierz",
+    "search-placeholder": "Wyszukaj pliki",
+    "status-ready": "Gotowy",
+    "status-processing": "Przetwarzanie",
+    "status-failed": "Błąd",
+    "status-uploading": "Wysyłanie"
   },
   "file-delete-modal": {
-    "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
-    "deleting": "Usuwanie",
-    "yes": "Tak",
-    "no": "Nie"
+    "title": "Usuń plik",
+    "description": "Czy na pewno chcesz usunąć {fileName}? Tej operacji nie można cofnąć.",
+    "deleting": "Usuwanie...",
+    "delete": "Usuń",
+    "cancel": "Anuluj"
   },
   "set-openai-api-key": {
     "set-env": "Ustaw zmienne środowiskowe",

@@ -34,7 +34,6 @@ export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
     const orgId = (session.session?.activeOrganizationId as string) ?? null;
 
     if (orgId) {
-      logger.debug({ orgId }, 'Got orgId from session');
       return orgId;
     }
 
@@ -46,7 +45,6 @@ export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
 
     const firstOrgId = memberships?.[0]?.id;
     if (firstOrgId) {
-      logger.debug({ orgId: firstOrgId }, 'Got orgId from first membership');
       return firstOrgId;
     }
 

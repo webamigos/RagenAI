@@ -30,7 +30,7 @@ export async function saveMarkdownWithMeta(
   ).length;
 
   try {
-    createMarkdownDocument(markdownData);
+    await createMarkdownDocument(markdownData);
     return {
       success: true,
       document: {
@@ -48,9 +48,15 @@ export async function saveMarkdownWithMeta(
   }
 }
 
+type DocumentFile = {
+  public_id: string;
+  file_type: string;
+  file_extension: string | null;
+} | null;
+
 type DocumentSuccessResponse = {
   success: true;
-  documents: { content: string; title: string }[];
+  documents: { content: string; title: string; file: DocumentFile }[];
 };
 
 type DocumentErrorResponse = {
@@ -66,11 +72,10 @@ export async function fetchDocumentByOrganization(
   documentPublicId: string,
 ): Promise<DocumentResponse> {
   try {
-    const response: { content: string; title: string }[] =
-      await getDocumentPreview({
-        orgId: organizationId,
-        documentPublicId,
-      });
+    const response = await getDocumentPreview({
+      orgId: organizationId,
+      documentPublicId,
+    });
 
     return {
       success: true,

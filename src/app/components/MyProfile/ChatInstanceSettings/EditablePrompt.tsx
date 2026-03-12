@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@ragenai/common-ui/Button';
-import { Card } from '@ragenai/common-ui/Card';
 import { Textarea } from '@ragenai/common-ui/Textarea';
 import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
@@ -27,7 +26,7 @@ type PromptFormValues = z.infer<ReturnType<typeof promptSchema>>;
 
 export const EditablePrompt = () => {
   const [nonEditablePrompt, setNonEditablePrompt] = useState(
-    defaultOrganizationSettings.prompt
+    defaultOrganizationSettings.prompt,
   );
 
   const { successToast, errorToast } = statusToast();
@@ -85,28 +84,21 @@ export const EditablePrompt = () => {
   };
 
   return (
-    <Card size="full" className="py-4 max-h-fit mb-3" title={t('title')}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <Textarea
-            rows={4}
-            showArrowIcon={false}
-            error={errors.editablePrompt}
-            {...register('editablePrompt')}
-            errorMessage={errors.editablePrompt?.message}
-            label={t('label')}
-            className="mt-1 block w-full dark:bg-accent-dark-500 border border-primary-blue-500 dark:border-gray-600 shadow-none focus:ring-primary-blue-500 focus:border-primary-blue-500 sm:text-sm"
-            showVoiceInput={false}
-            placeholder={t('placeholder')}
-          />
-        </div>
-        <Button
-          isSubmit={true}
-          className="px-4 py-2 bg-primary-blue-400 dark:bg-accent-dark-500 text-white hover:bg-primary-blue-500 dark:hover:bg-accent-dark-700"
-        >
-          {t('update')}
-        </Button>
-      </form>
-    </Card>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Textarea
+        rows={4}
+        showArrowIcon={false}
+        error={errors.editablePrompt}
+        {...register('editablePrompt')}
+        errorMessage={errors.editablePrompt?.message}
+        label={t('label')}
+        className="mt-1 block w-full rounded-lg border border-zinc-200 bg-white shadow-none dark:border-zinc-700 dark:bg-zinc-900 sm:text-sm"
+        showVoiceInput={false}
+        placeholder={t('placeholder')}
+      />
+      <div className="flex justify-end">
+        <Button isSubmit={true}>{t('update')}</Button>
+      </div>
+    </form>
   );
 };

@@ -7,6 +7,7 @@ import { DeleteFileModal } from '../../../UserFiles/DeleteFileModal';
 
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { type FileType, type UserFile } from '@/generated/prisma/browser';
+import { logger } from '@/app/lib/utils/logger';
 
 type FileItemProps = {
   file: {
@@ -16,7 +17,7 @@ type FileItemProps = {
     file_type: FileType;
     created_at: Date | null;
   };
-  onDelete: (publicFileId: UserFile['public_id']) => void;
+  onDelete: (publicFileId: UserFile['public_id']) => void | Promise<void>;
   isDeleting: boolean;
   t: any;
 };
@@ -29,37 +30,26 @@ export const FileItem = memo(
       ? new Date(file.created_at).toLocaleDateString()
       : '-';
 
-    const toggleModal = (fileId: string | null) => {
-      setShowDeleteModal(fileId !== null);
-
-      // When opening the modal, ensure page scrolling is disabled
-      if (fileId !== null) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
+    const handleConfirmDelete = async (filePublicId: UserFile['public_id']) => {
+      try {
+        await onDelete(filePublicId);
+        setShowDeleteModal(false);
+      } catch (error) {
+        // Modal stays open on error to allow retry
+        logger.error({ err: error }, 'Failed to delete file');
       }
-    };
-
-    // Create a handler to manage deletion and modal closing
-    const handleConfirmDelete = (
-      filePublicId: UserFile['public_id'],
-      _fileName: UserFile['file_name'],
-    ) => {
-      onDelete(filePublicId);
-      toggleModal(null);
     };
 
     return (
       <>
-        {showDeleteModal && (
-          <DeleteFileModal
-            toggleModal={toggleModal}
-            handleDelete={handleConfirmDelete}
-            filePublicId={file.public_id}
-            fileName={file.file_name}
-            isLoading={isDeleting}
-          />
-        )}
+        <DeleteFileModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          filePublicId={file.public_id}
+          fileName={file.file_name}
+          isLoading={isDeleting}
+        />
         <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-accent-dark-700 transition-colors">
           <div className="h-8 w-8 text-gray-600 dark:text-gray-400 flex items-center justify-center">
             {getFileIcon(file.file_type as FileType)}
@@ -78,7 +68,7 @@ export const FileItem = memo(
             {file.file_type}
           </span>
           <button
-            onClick={() => toggleModal(file.public_id)}
+            onClick={() => setShowDeleteModal(true)}
             disabled={isDeleting}
             className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-full transition-colors"
             title={t('remove-file')}

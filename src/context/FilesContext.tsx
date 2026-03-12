@@ -36,7 +36,7 @@ function filesReducer(state: State, action: Action): State {
     case 'LOAD_ERROR':
       return { ...state, isLoading: false, isError: true };
     case 'ADD_FILE':
-      return { ...state, files: [...state.files, action.payload] };
+      return { ...state, files: [action.payload, ...state.files] };
     case 'REMOVE_FILE':
       return {
         ...state,
@@ -81,8 +81,8 @@ export const FilesProvider = ({ children }: Props) => {
     refreshFiles();
   }, []);
 
-  const addFile = (newFile: Omit<UserFileType, 'public_id' | 'document'>) => {
-    dispatch({ type: 'ADD_FILE', payload: newFile as UserFileType }); // TODO: quick fix it will be refactored
+  const addFile = (newFile: UserFileType) => {
+    dispatch({ type: 'ADD_FILE', payload: newFile });
   };
 
   const removeFile = (publicFileId: UserFile['public_id']) => {

@@ -17,6 +17,13 @@ export const getDocumentPreviewQuery = async ({
     select: {
       content: true,
       title: true,
+      file: {
+        select: {
+          public_id: true,
+          file_type: true,
+          file_extension: true,
+        },
+      },
     },
   });
 };

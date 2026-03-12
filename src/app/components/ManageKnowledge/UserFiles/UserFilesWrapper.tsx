@@ -13,7 +13,8 @@ import { useUser } from '@/app/hooks/use-auth';
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
-import { LayoutToggle } from './LayoutToggle';
+import { LayoutToggle, getSavedViewMode } from './LayoutToggle';
+
 import { type UserFile } from '@/generated/prisma/browser';
 
 export type ModalStateProps = {
@@ -41,15 +42,17 @@ export const FileListWrapper = () => {
   };
 
   useEffect(() => {
-    // TODO: Restore saved view mode from localStorage or user preferences
-    // This was previously stored in Clerk's publicMetadata
+    const saved = getSavedViewMode();
+    if (saved !== 'list') {
+      setViewMode(saved);
+    }
 
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [user]);
+  }, []);
 
   const { refreshSettings } = useSettings();
 
@@ -100,41 +103,44 @@ export const FileListWrapper = () => {
   }
 
   return (
-    <Card size="full" className="pt-2">
-      <div className="flex items-baseline justify-end gap-3">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex shrink-0 items-baseline justify-end gap-3">
         <FileSearch value={searchValue} onChange={handleSearchChange} />
         <LayoutToggle
-          clerkUserId={user!.id}
           className="hidden md:flex"
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
       </div>
-      {viewMode === 'list' ? (
-        <FileListView
-          isError={isError}
-          deleteLoading={deleteLoading}
-          isLoading={isLoading}
-          addFile={addFile}
-          removeFile={removeFile}
-          files={defaultProjectFiles}
-          showModal={showModal}
-          toggleModal={toggleModal}
-          handleDelete={handleDelete}
-        />
-      ) : (
-        <GridView
-          deleteLoading={deleteLoading}
-          isError={isError}
-          isLoading={isLoading}
-          addFile={addFile}
-          showModal={showModal}
-          removeFile={removeFile}
-          files={defaultProjectFiles}
-          toggleModal={toggleModal}
-          handleDelete={handleDelete}
-        />
-      )}
-    </Card>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {viewMode === 'list' ? (
+          <Card size="full">
+            <FileListView
+              isError={isError}
+              deleteLoading={deleteLoading}
+              isLoading={isLoading}
+              addFile={addFile}
+              removeFile={removeFile}
+              files={defaultProjectFiles}
+              showModal={showModal}
+              toggleModal={toggleModal}
+              handleDelete={handleDelete}
+            />
+          </Card>
+        ) : (
+          <GridView
+            deleteLoading={deleteLoading}
+            isError={isError}
+            isLoading={isLoading}
+            addFile={addFile}
+            showModal={showModal}
+            removeFile={removeFile}
+            files={defaultProjectFiles}
+            toggleModal={toggleModal}
+            handleDelete={handleDelete}
+          />
+        )}
+      </div>
+    </div>
   );
 };

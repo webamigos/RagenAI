@@ -9,6 +9,9 @@ import { Button } from '@ragenai/common-ui/Button';
 import { statusToast } from '@/app/lib/utils/toast';
 import { uploadFiles } from '@/app/lib/services/api';
 import { useSettings } from '@/app/hooks/useSettings';
+import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
+import { getFileType } from '@/app/lib/utils/getFileType';
+import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/browser';
 
 import { UploadList } from './UploadList';
 import { useRouter } from '@/i18n/routing';
@@ -19,20 +22,17 @@ export const UploadKnowledge = () => {
   const { push } = useRouter();
   const [_, startTransition] = useTransition();
 
-  // const { refreshFiles } = useUserFilesContext(); // Moved to worker
+  const { addFile } = useUserFilesContext();
   const { infoToast, errorToast } = statusToast();
   const t = useTranslations('admin-panel');
   const { refreshSettings } = useSettings();
 
   const handleFilesAdded = (newFiles: File[]) => {
-    //To refactor
     const processedFiles = newFiles.map((file) => {
       if (file.name.endsWith('.md')) {
-        // Added this line to fix the issue with mime type detection, it fallback to application/octet-stream while uploading markdown files
         return new File([file], file.name, { type: 'text/markdown' });
       }
       if (file.name.endsWith('.srt')) {
-        // Set correct MIME type for SRT subtitle files
         return new File([file], file.name, { type: 'application/x-subrip' });
       }
       return file;
@@ -59,16 +59,32 @@ export const UploadKnowledge = () => {
     setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    // security breach - everyone can set any organization
-    // do not use this kind of credentials in requests
-    // formData.append('organizationId', organization.id);
 
     try {
       const response = await uploadFiles(formData);
       if (response.status === 200) {
         infoToast({ message: t('success') });
+
+        // Optimistic update: add uploaded files to the list with "Processing" status
+        for (let i = 0; i < response.files.length; i++) {
+          const uploaded = response.files[i];
+          const originalFile = files[i];
+          addFile({
+            public_id: uploaded.uniqueFileId,
+            organization_id: '',
+            file_name: uploaded.fileName,
+            file_size: uploaded.fileSize,
+            file_type: getFileType(uploaded.fileName),
+            project_id: null,
+            project: null,
+            document: null,
+            created_at: new Date(),
+            embedding_status: EmbeddingStatus.NOT_STARTED,
+            parsing_status: ParsingStatus.NOT_STARTED,
+          });
+        }
+
         setFiles([]);
-        // refreshFiles();
         startTransition(() => {
           push('/knowledge/documents-list');
         });
@@ -96,7 +112,7 @@ export const UploadKnowledge = () => {
       <div className="w-full flex justify-center">
         <Button
           disabled={uploading || files.length < 1}
-          className="mt-5"
+          className="mt-5 min-w-[160px]"
           isLoading={uploading}
           isSubmit={!uploading}
           onClick={handleSend}
