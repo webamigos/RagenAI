@@ -18,11 +18,15 @@ export const UploadList = ({
   const t = useTranslations('admin-panel-page');
 
   return (
-    <div className="mt-4">
-      <Text fontSize="lg" fontWeight="medium">
-        {t('selected-files')}:
+    <div className="mt-5">
+      <Text
+        fontSize="sm"
+        fontWeight="medium"
+        className="mb-2 text-zinc-500 dark:text-zinc-400"
+      >
+        {t('selected-files')} ({files.length})
       </Text>
-      <ul>
+      <ul className="flex flex-col gap-2">
         {files.map((file, index) => (
           <FileItem
             key={file.name}

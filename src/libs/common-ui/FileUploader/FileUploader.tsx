@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, type ComponentPropsWithRef } from 'react';
+import { useRef, useState, type ComponentPropsWithRef } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { useTranslations } from 'next-intl';
 
@@ -23,9 +23,13 @@ export const FileUploader = ({
   const { setNodeRef } = useDroppable({ id: 'droppable' });
   const t = useTranslations('admin-panel');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const dragCounter = useRef(0);
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
+    dragCounter.current = 0;
+    setIsDragOver(false);
     if (disabled) {
       return;
     }
@@ -37,6 +41,28 @@ export const FileUploader = ({
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) =>
     event.preventDefault();
+
+  const handleDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (disabled) {
+      return;
+    }
+    dragCounter.current += 1;
+    if (dragCounter.current === 1) {
+      setIsDragOver(true);
+    }
+  };
+
+  const handleDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    if (disabled) {
+      return;
+    }
+    dragCounter.current = Math.max(0, dragCounter.current - 1);
+    if (dragCounter.current === 0) {
+      setIsDragOver(false);
+    }
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (disabled) {
@@ -63,10 +89,14 @@ export const FileUploader = ({
         ref={setNodeRef}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
         onClick={handleClick}
         className={classMerge(
-          'mb-5 p-5 text-center border-2 border-dashed dark:border-gray-600 rounded-md',
-          { 'bg-gray-100 dark:bg-gray-800': true }, // TODO: change after file is over this box
+          'mb-5 p-5 text-center border-2 border-dashed rounded-md transition-colors',
+          isDragOver
+            ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
+            : 'border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800',
           className,
         )}
         {...props}

@@ -11,8 +11,10 @@ export type State = {
   isEditing: boolean;
   isEditingTitle: boolean;
   isSaving: boolean;
+  showPdfPanel: boolean;
   documentContent: string;
   documentTitle: string;
+  pdfFilePublicId: string | null;
 };
 
 export type Action =
@@ -20,16 +22,20 @@ export type Action =
   | { type: 'SET_IS_EDITING'; payload: boolean }
   | { type: 'SET_IS_EDITING_TITLE'; payload: boolean }
   | { type: 'SET_IS_SAVING'; payload: boolean }
+  | { type: 'SET_SHOW_PDF_PANEL'; payload: boolean }
   | { type: 'SET_DOCUMENT_CONTENT'; payload: string }
-  | { type: 'SET_DOCUMENT_TITLE'; payload: string };
+  | { type: 'SET_DOCUMENT_TITLE'; payload: string }
+  | { type: 'SET_PDF_FILE_PUBLIC_ID'; payload: string | null };
 
 export const initialState: State = {
   isLoading: true,
   isEditing: false,
   isEditingTitle: false,
   isSaving: false,
+  showPdfPanel: false,
   documentContent: '',
   documentTitle: '',
+  pdfFilePublicId: null,
 };
 
 export function reducer(state: State, action: Action): State {
@@ -42,10 +48,14 @@ export function reducer(state: State, action: Action): State {
       return { ...state, isEditingTitle: action.payload };
     case 'SET_IS_SAVING':
       return { ...state, isSaving: action.payload };
+    case 'SET_SHOW_PDF_PANEL':
+      return { ...state, showPdfPanel: action.payload };
     case 'SET_DOCUMENT_CONTENT':
       return { ...state, documentContent: action.payload };
     case 'SET_DOCUMENT_TITLE':
       return { ...state, documentTitle: action.payload };
+    case 'SET_PDF_FILE_PUBLIC_ID':
+      return { ...state, pdfFilePublicId: action.payload };
     default:
       return state;
   }

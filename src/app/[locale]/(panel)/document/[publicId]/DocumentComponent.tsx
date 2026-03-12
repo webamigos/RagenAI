@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect, useReducer } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import React, { useEffect, useMemo, useReducer } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useOrganization } from '@/app/hooks/use-auth';
+// @ts-ignore -- UMD bundle has no type declarations
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import TurndownService from 'turndown';
+import hljs from 'highlight.js';
+import DOMPurify from 'dompurify';
 import { useTranslations } from 'next-intl';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,8 +26,34 @@ import {
 } from '@/app/components/ManageKnowledge/MarkdownDocumentsCreator/action';
 import { deleteFileAction } from '@/app/actions';
 import { uploadFiles } from '@/app/lib/services/api';
-import { ArrowLeftCircleIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowLeftCircleIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowDownTrayIcon,
+  DocumentIcon,
+} from '@heroicons/react/24/outline';
 import { initialState, reducer } from './documentReducer';
+import { PdfViewer } from './PdfViewer';
+
+import 'highlight.js/styles/github-dark.css';
+import '@/app/components/Assistant/ChatOutput/chat-response.css';
+import './document-preview.css';
+
+const createMarkdownRenderer = () => {
+  return new MarkdownIt({
+    highlight: (code: string, lang: string) => {
+      try {
+        const highlighted =
+          lang && hljs.getLanguage(lang)
+            ? hljs.highlight(code, { language: lang }).value
+            : hljs.highlightAuto(code).value;
+        return `<div class="code-wrapper"><pre class="hljs"><code>${highlighted}</code></pre></div>`;
+      } catch {
+        return code;
+      }
+    },
+  });
+};
 
 const turndownService = new TurndownService();
 const mdParser = new MarkdownIt();
@@ -36,6 +64,7 @@ type Props = {
 
 export function DocumentComponent({ publicId }: Props) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const md = useMemo(() => createMarkdownRenderer(), []);
 
   const {
     documentContent,
@@ -44,6 +73,8 @@ export function DocumentComponent({ publicId }: Props) {
     isEditingTitle,
     isLoading,
     isSaving,
+    showPdfPanel,
+    pdfFilePublicId,
   } = state;
 
   const { organization } = useOrganization();
@@ -188,6 +219,17 @@ export function DocumentComponent({ publicId }: Props) {
             dispatch({ type: 'SET_DOCUMENT_CONTENT', payload: documentText });
             dispatch({ type: 'SET_DOCUMENT_TITLE', payload: title });
 
+            const firstDoc = content.documents[0];
+            if (
+              firstDoc?.file?.file_type === 'PDF' &&
+              firstDoc.file.public_id
+            ) {
+              dispatch({
+                type: 'SET_PDF_FILE_PUBLIC_ID',
+                payload: firstDoc.file.public_id,
+              });
+            }
+
             reset({
               content: mdParser.render(documentText || ''),
             });
@@ -229,13 +271,13 @@ export function DocumentComponent({ publicId }: Props) {
   }
 
   return (
-    <>
-      <div className="relative top-16 lg:top-0 w-full h-16 flex items-center justify-between ml-4 lg:ml-0 overflow-auto border-b border-zinc-200 dark:border-zinc-700">
+    <div className="-mx-10 -mt-10 flex h-[calc(100vh-1rem)] flex-col">
+      <div className="w-full h-16 flex items-center px-4 border-b border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
               onClick={() => push('/knowledge/documents-list')}
-              className="h-8 w-8 cursor-pointer mr-2"
+              className="h-7 w-7 cursor-pointer mr-2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 stroke-1"
             />
           )}
           {isEditingTitle ? (
@@ -269,6 +311,65 @@ export function DocumentComponent({ publicId }: Props) {
             >
               {documentTitle}
             </Text>
+          )}
+          {!isEditing && (
+            <div className="ml-1 flex items-center gap-0.5">
+              {pdfFilePublicId && (
+                <a
+                  href={`/api/files/${pdfFilePublicId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  title="Open in new tab"
+                >
+                  <ArrowTopRightOnSquareIcon className="size-4 text-zinc-400" />
+                </a>
+              )}
+              {pdfFilePublicId ? (
+                <a
+                  href={`/api/files/${pdfFilePublicId}`}
+                  download
+                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  title="Download"
+                >
+                  <ArrowDownTrayIcon className="size-4 text-zinc-400" />
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const blob = new Blob([documentContent], {
+                      type: 'text/markdown',
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${documentTitle || 'document'}.md`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  title="Download"
+                >
+                  <ArrowDownTrayIcon className="size-4 text-zinc-400" />
+                </button>
+              )}
+              {pdfFilePublicId && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: 'SET_SHOW_PDF_PANEL',
+                      payload: !showPdfPanel,
+                    })
+                  }
+                  className={`rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${showPdfPanel ? 'bg-zinc-100 dark:bg-zinc-800' : ''}`}
+                  title={showPdfPanel ? 'Hide PDF preview' : 'Show PDF preview'}
+                >
+                  <DocumentIcon className="size-4 text-zinc-400" />
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -317,18 +418,36 @@ export function DocumentComponent({ publicId }: Props) {
             </Button>
           </div>
         </form>
+      ) : showPdfPanel && pdfFilePublicId ? (
+        <div className="flex flex-1 overflow-hidden">
+          <div
+            className="w-1/2 overflow-auto px-6 py-8 lg:px-10 border-r border-zinc-200 dark:border-zinc-700"
+            onDoubleClick={handleDoubleClick}
+          >
+            <div
+              className="chat-response document-preview"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(md.render(documentContent)),
+              }}
+            />
+          </div>
+          <div className="w-1/2 overflow-hidden">
+            <PdfViewer filePublicId={pdfFilePublicId} />
+          </div>
+        </div>
       ) : (
         <div
           className="flex-1 w-full overflow-auto px-6 py-8 lg:px-12"
           onDoubleClick={handleDoubleClick}
         >
-          <div className="prose prose-xl prose-zinc dark:prose-invert max-w-5xl prose-headings:font-semibold prose-p:leading-relaxed prose-li:leading-relaxed">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {documentContent}
-            </ReactMarkdown>
-          </div>
+          <div
+            className="chat-response document-preview max-w-5xl"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(md.render(documentContent)),
+            }}
+          />
         </div>
       )}
-    </>
+    </div>
   );
 }

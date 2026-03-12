@@ -5,6 +5,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../utils/auth-helpers';
+import db from '@ragenai/prisma-client';
 
 export const getAwsClient = () => {
   return new S3Client({
@@ -17,15 +18,24 @@ export const getAwsClient = () => {
   });
 };
 
+async function getOrgPublicId(): Promise<string> {
+  const orgId = await getOrgIdOrThrow();
+  const org = await db.organization.findUniqueOrThrow({
+    where: { id: orgId },
+    select: { publicId: true },
+  });
+  return org.publicId;
+}
+
 // function uses AWS SDK v3 and we can use parallelUploads and streaming in the future
 export async function uploadToS3(fileName: string, fileContent: Buffer) {
-  const orgId = await getOrgIdOrThrow();
+  const orgPublicId = await getOrgPublicId();
 
   const parallelUploads3 = new Upload({
     client: getAwsClient(),
     params: {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: `${orgId}/${fileName}`,
+      Key: `${orgPublicId}/${fileName}`,
       Body: fileContent,
     },
   });
@@ -34,35 +44,41 @@ export async function uploadToS3(fileName: string, fileContent: Buffer) {
 }
 
 export async function deleteFromS3(fileName: string) {
-  const orgId = await getOrgIdOrThrow();
+  const orgPublicId = await getOrgPublicId();
   await getAwsClient().send(
     new DeleteObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: `${orgId}/${fileName}`,
-    })
+      Key: `${orgPublicId}/${fileName}`,
+    }),
   );
 }
 
-/**
- * Retrieves file content from S3
- * @param fileName - The name of the file to retrieve
- * @returns A promise that resolves to the file content as a Buffer
- */
-export async function getFileFromS3(fileName: string): Promise<Buffer> {
-  const orgId = await getOrgIdOrThrow();
+export async function deleteFromS3ByKey(s3Key: string) {
+  await getAwsClient().send(
+    new DeleteObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: s3Key,
+    }),
+  );
+}
 
+export async function getFileFromS3(fileName: string): Promise<Buffer> {
+  const orgPublicId = await getOrgPublicId();
+  return await getFileFromS3ByKey(`${orgPublicId}/${fileName}`);
+}
+
+export async function getFileFromS3ByKey(s3Key: string): Promise<Buffer> {
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_S3_BUCKET_NAME,
-    Key: `${orgId}/${fileName}`,
+    Key: s3Key,
   });
 
   const response = await getAwsClient().send(command);
 
   if (!response.Body) {
-    throw new Error(`No content found for file: ${fileName}`);
+    throw new Error(`No content found for key: ${s3Key}`);
   }
 
-  // Convert the readable stream to a buffer
   const chunks: Uint8Array[] = [];
   for await (const chunk of response.Body as any) {
     chunks.push(chunk);

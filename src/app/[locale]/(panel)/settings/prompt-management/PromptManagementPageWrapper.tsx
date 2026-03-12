@@ -13,7 +13,6 @@ import {
 import { SetApiKeyWrapper } from '@/app/components/MyProfile/ChatInstanceSettings/SetApiKeyWrapper';
 import { Fallback } from '@/app/components/Fallback';
 import { useSettings } from '@/app/hooks/useSettings';
-import { Card } from '@ragenai/common-ui/Card';
 
 type Props = {
   showModelApiKey?: boolean;
@@ -28,30 +27,68 @@ export default function PromptManagementPage({
   const t = useTranslations('assistant-settings');
 
   return (
-    <div className="container flex flex-col gap-3">
+    <div className="max-w-2xl space-y-8">
       <Suspense fallback={<Fallback />}>
         {hasApiKey ? (
           <Suspense fallback={<Fallback />}>
-            {showModelApiKey && <SetApiKeyWrapper />}
-            <Card
-              title={t('prompt-assistant-settings')}
-              size="full"
-              collapsible
-              defaultCollapsed
-            >
-              <div className="flex md:justify-between mb-5 flex-col lg:flex-row gap-5">
+            {showModelApiKey && (
+              <section>
+                <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+                  {t('api-key')}
+                </h2>
+                <div className="mt-4">
+                  <SetApiKeyWrapper />
+                </div>
+              </section>
+            )}
+
+            <section>
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+                {t('prompt-assistant-settings')}
+              </h2>
+              <div className="mt-4 space-y-6">
                 {showModelSelect && <ChatModelSelect />}
-                <SetChatTemperature />
-                <SetMaxDocumentsToRetrieve />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <SetChatTemperature />
+                  <SetMaxDocumentsToRetrieve />
+                </div>
               </div>
-              <EditablePrompt />
-            </Card>
+            </section>
+
+            <hr className="border-zinc-200 dark:border-zinc-800" />
+
+            <section>
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+                {t('editable-prompt.title')}
+              </h2>
+              <div className="mt-4">
+                <EditablePrompt />
+              </div>
+            </section>
           </Suspense>
         ) : (
-          <SetApiKeyWrapper />
+          <section>
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              {t('api-key')}
+            </h2>
+            <div className="mt-4">
+              <SetApiKeyWrapper />
+            </div>
+          </section>
         )}
       </Suspense>
-      <VoiceModeSettings />
+
+      <section>
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          {t('voice-mode-settings.title')}
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          {t('voice-mode-settings.voice-select')}
+        </p>
+        <div className="mt-4">
+          <VoiceModeSettings />
+        </div>
+      </section>
     </div>
   );
 }

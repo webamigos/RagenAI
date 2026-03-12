@@ -35,9 +35,16 @@ export async function POST(request: NextRequest) {
     getCurrentUser(),
     db.organization.findUnique({
       where: { id: orgId },
-      select: { slug: true },
+      select: { slug: true, publicId: true },
     }),
   ]);
+
+  if (!org) {
+    return NextResponse.json(
+      { message: 'Organization not found' },
+      { status: 404 },
+    );
+  }
 
   try {
     const formData = await request.formData();
@@ -150,7 +157,8 @@ export async function POST(request: NextRequest) {
             {
               ...fileRecord,
               project_public_id: projectRecord?.public_id ?? null,
-              organization_slug: org?.slug ?? undefined,
+              organization_slug: org.slug,
+              organization_public_id: org.publicId,
               user_email: user?.email ?? undefined,
               user_id: user?.id ?? undefined,
             },
