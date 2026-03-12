@@ -9,7 +9,6 @@ import { Link } from '@/i18n/routing';
 
 import type { UserFileTypeSafe } from '../FileList/UserFilesTable';
 import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
-import { MarkdownPreview } from './MarkdownPreview';
 
 type Props = {
   file: UserFileTypeSafe;
@@ -26,11 +25,43 @@ export const FileCard = ({ file, isLoading, toggleModal }: Props) => {
     ? format(new Date(created_at), 'yyyy-MM-dd')
     : '-';
 
+  const hasThumbnail = !!file.thumbnail_s3_key;
   const isPdf = file_type === 'PDF';
-  const isMarkdown = file_type === 'MARKDOWN';
   const documentLink = document?.public_id
     ? `/document/${document.public_id}`
     : undefined;
+
+  const renderPreview = () => {
+    if (hasThumbnail) {
+      return (
+        <img
+          src={`/api/files/${public_id}/thumbnail`}
+          alt={`Preview of ${file_name}`}
+          className="w-full h-full object-cover object-top"
+          loading="lazy"
+        />
+      );
+    }
+
+    if (isPdf && public_id) {
+      return (
+        <div className="w-full h-full overflow-hidden pointer-events-none -m-1">
+          <iframe
+            src={`/api/files/${public_id}#navpanes=0&toolbar=0&view=FitH&scrollbar=0`}
+            className="w-[300%] h-[300%] border-0 origin-top-left scale-[0.35] -mt-[3%] -ml-[1%]"
+            title={`Preview ${file_name}`}
+            tabIndex={-1}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex h-full items-center justify-center text-5xl opacity-30">
+        {fileIcon}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group">
@@ -51,22 +82,7 @@ export const FileCard = ({ file, isLoading, toggleModal }: Props) => {
       </div>
 
       <div className="relative mx-3 mb-1 bg-white dark:bg-accent-dark-lightness rounded overflow-hidden aspect-[1/1.3]">
-        {isPdf && public_id ? (
-          <div className="w-full h-full overflow-hidden pointer-events-none -m-1">
-            <iframe
-              src={`/api/files/${public_id}#navpanes=0&toolbar=0&view=FitH&scrollbar=0`}
-              className="w-[300%] h-[300%] border-0 origin-top-left scale-[0.35] -mt-[3%] -ml-[1%]"
-              title={`Preview ${file_name}`}
-              tabIndex={-1}
-            />
-          </div>
-        ) : isMarkdown && document?.public_id ? (
-          <MarkdownPreview documentPublicId={document.public_id} />
-        ) : (
-          <div className="flex h-full items-center justify-center text-4xl opacity-40">
-            {fileIcon}
-          </div>
-        )}
+        {renderPreview()}
         <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80">
           <ToolbarActionsMenu
             toggleModal={toggleModal}

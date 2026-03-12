@@ -3,6 +3,8 @@ import {
   type UserFile,
   type Project,
   type FileType,
+  type EmbeddingStatus,
+  type ParsingStatus,
 } from '@/generated/prisma/browser';
 
 export type ProjectType = {
@@ -20,6 +22,12 @@ export type UserFileType = {
   metadata?: UserFile['metadata'];
   file_type: UserFile['file_type'];
   project_id: UserFile['project_id'];
+  thumbnail_s3_key?: string | null;
+  embedding_status?: EmbeddingStatus;
+  embedding_started_at?: UserFile['embedding_started_at'];
+  embedding_completed_at?: UserFile['embedding_completed_at'];
+  embedding_failed_at?: UserFile['embedding_failed_at'];
+  parsing_status?: ParsingStatus;
   project: ProjectType | null;
   document?: {
     public_id: UserDocument['public_id'];

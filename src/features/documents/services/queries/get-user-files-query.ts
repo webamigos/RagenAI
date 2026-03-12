@@ -32,6 +32,8 @@ export const getUserFilesQuery = async (
       embedding_completed_at: true,
       embedding_failed_at: true,
       embedding_started_at: true,
+      parsing_status: true,
+      thumbnail_s3_key: true,
       document: {
         select: {
           public_id: true,

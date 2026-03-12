@@ -680,13 +680,18 @@
     "preview": "Preview",
     "no-files": "No files",
     "download": "Download",
-    "search-placeholder": "Search in files..."
+    "search-placeholder": "Search in files...",
+    "status-ready": "Ready",
+    "status-processing": "Processing",
+    "status-failed": "Failed",
+    "status-uploading": "Uploading"
   },
   "file-delete-modal": {
-    "are-you-sure": "Are you sure you want to delete",
-    "deleting": "Deleting",
-    "yes": "Yes",
-    "no": "No"
+    "title": "Delete file",
+    "description": "Are you sure you want to delete {fileName}? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "delete": "Delete",
+    "cancel": "Cancel"
   },
   "set-openai-api-key": {
     "set-env": "Set Environment Variables",

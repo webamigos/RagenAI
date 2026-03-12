@@ -6,8 +6,16 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
+const SAFE_INLINE_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'application/pdf',
+]);
+
 function sanitizeFilename(filename: string): string {
-  return filename.replace(/["\r\n\\]/g, '_');
+  return filename.replace(/["\r\n\\;]/g, '_');
 }
 
 export async function GET(
@@ -37,7 +45,7 @@ export async function GET(
       },
     });
 
-    if (!file) {
+    if (!file || !file.file_extension) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
@@ -48,7 +56,7 @@ export async function GET(
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': file.file_mime_type || 'application/octet-stream',
-        'Content-Disposition': `inline; filename="${safeName}"`,
+        'Content-Disposition': `${SAFE_INLINE_TYPES.has(file.file_mime_type ?? '') ? 'inline' : 'attachment'}; filename="${safeName}"`,
         'Cache-Control': 'private, max-age=3600',
       },
     });

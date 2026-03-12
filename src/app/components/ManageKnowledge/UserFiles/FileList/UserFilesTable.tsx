@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 
 import {
   EmbeddingStatus,
+  ParsingStatus,
   type FileType,
   type UserFile,
 } from '@/generated/prisma/browser';
@@ -60,6 +61,55 @@ export type ModalStateProps = {
   filePublicId: UserFile['public_id'] | null;
 };
 
+function FileStatusBadge({
+  embeddingStatus,
+  parsingStatus,
+}: {
+  embeddingStatus?: EmbeddingStatus;
+  parsingStatus?: ParsingStatus;
+}) {
+  const t = useTranslations('files-table');
+
+  if (embeddingStatus === EmbeddingStatus.COMPLETED) {
+    return (
+      <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+        {t('status-ready')}
+      </span>
+    );
+  }
+
+  if (
+    embeddingStatus === EmbeddingStatus.FAILED ||
+    parsingStatus === ParsingStatus.FAILED
+  ) {
+    return (
+      <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+        {t('status-failed')}
+      </span>
+    );
+  }
+
+  if (
+    embeddingStatus === EmbeddingStatus.STARTED ||
+    parsingStatus === ParsingStatus.STARTED
+  ) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+        <span className="size-1.5 animate-pulse rounded-full bg-yellow-500" />
+        {t('status-processing')}
+      </span>
+    );
+  }
+
+  // NOT_STARTED — file just uploaded, waiting for worker
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+      <span className="size-1.5 animate-pulse rounded-full bg-yellow-500" />
+      {t('status-processing')}
+    </span>
+  );
+}
+
 const FileRow = ({
   file,
   showModal,
@@ -96,15 +146,14 @@ const FileRow = ({
 
   return (
     <>
-      {showModal.isOpen && showModal.filePublicId === file.public_id && (
-        <DeleteFileModal
-          toggleModal={toggleModal}
-          handleDelete={handleDelete}
-          filePublicId={file.public_id}
-          fileName={file.file_name}
-          isLoading={deleteLoading}
-        />
-      )}
+      <DeleteFileModal
+        isOpen={showModal.isOpen && showModal.filePublicId === file.public_id}
+        onClose={() => toggleModal(null)}
+        onConfirm={handleDelete}
+        filePublicId={file.public_id}
+        fileName={file.file_name}
+        isLoading={deleteLoading}
+      />
       <TableRow className="text-sm">
         <TableCell className={file.document?.public_id ? 'z-10' : ''}>
           <span className="flex items-center">
@@ -127,9 +176,17 @@ const FileRow = ({
         <TableCell>{prettyBytes(file_size)}</TableCell>
         <TableCell>{formattedCreatedAt}</TableCell>
         <TableCell>
-          {embedding_status === EmbeddingStatus.COMPLETED
-            ? formattedEmbeddingCompletedAt
-            : '-'}
+          <div className="flex items-center gap-2">
+            <FileStatusBadge
+              embeddingStatus={file.embedding_status}
+              parsingStatus={file.parsing_status}
+            />
+            {embedding_status === EmbeddingStatus.COMPLETED && (
+              <span className="text-xs text-zinc-400">
+                {formattedEmbeddingCompletedAt}
+              </span>
+            )}
+          </div>
         </TableCell>
         <TableCell className="text-right">
           <ToolbarActions

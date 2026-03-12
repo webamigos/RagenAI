@@ -683,13 +683,18 @@
     "preview": "Podgląd",
     "no-files": "Brak plików",
     "download": "Pobierz",
-    "search-placeholder": "Wyszukaj pliki"
+    "search-placeholder": "Wyszukaj pliki",
+    "status-ready": "Gotowy",
+    "status-processing": "Przetwarzanie",
+    "status-failed": "Błąd",
+    "status-uploading": "Wysyłanie"
   },
   "file-delete-modal": {
-    "are-you-sure": "Czy jesteś pewien, że chcesz usunąć",
-    "deleting": "Usuwanie",
-    "yes": "Tak",
-    "no": "Nie"
+    "title": "Usuń plik",
+    "description": "Czy na pewno chcesz usunąć {fileName}? Tej operacji nie można cofnąć.",
+    "deleting": "Usuwanie...",
+    "delete": "Usuń",
+    "cancel": "Anuluj"
   },
   "set-openai-api-key": {
     "set-env": "Ustaw zmienne środowiskowe",

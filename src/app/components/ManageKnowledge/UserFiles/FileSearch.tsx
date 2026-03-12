@@ -78,11 +78,7 @@ export const FileSearch = ({
         <Input
           value={value}
           onChange={onChange}
-          className={`
-          pl-3
-          transition-all duration-300 ease-in-out
-          w-56 focus:w-64
-        `}
+          className="pl-3 w-72 outline-none"
           iconRight={
             value ? (
               <button

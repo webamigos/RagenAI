@@ -2,40 +2,37 @@ import { type ComponentProps } from 'react';
 
 import { classMerge } from '@ragenai/common-ui/utils/cn';
 import { ListIcon, GridIcon } from '@ragenai/common-ui/icons';
-import { saveUserMetadata } from '@/app/actions';
-import { statusToast } from '@/app/lib/utils/toast';
+
+const VIEW_MODE_KEY = 'ragen:files-view-mode';
+
+export function getSavedViewMode(): 'list' | 'grid' {
+  if (typeof window === 'undefined') {
+    return 'list';
+  }
+  const saved = localStorage.getItem(VIEW_MODE_KEY);
+  return saved === 'grid' ? 'grid' : 'list';
+}
 
 type LayoutToggleProps = ComponentProps<'div'> & {
   viewMode: 'list' | 'grid';
   onViewModeChange: (mode: 'list' | 'grid') => void;
-  clerkUserId: string;
 };
 
 export const LayoutToggle = ({
   className,
   viewMode,
-  clerkUserId,
   onViewModeChange,
 }: LayoutToggleProps) => {
-  const { errorToast } = statusToast();
-
-  const handleViewModeChange = async (mode: 'list' | 'grid') => {
+  const handleViewModeChange = (mode: 'list' | 'grid') => {
     onViewModeChange(mode);
-
-    try {
-      await saveUserMetadata(clerkUserId, { viewMode: mode });
-    } catch (error) {
-      errorToast({
-        message: `${{ err: error }}Failed to save viewMode preference:`,
-      });
-    }
+    localStorage.setItem(VIEW_MODE_KEY, mode);
   };
 
   return (
     <div
       className={classMerge(
-        'flex items-center justify-center p-0.5 rounded-md border border-gray-400 dark:border-accent-dark-700 w-fit',
-        className
+        'flex items-center justify-center p-0.5 rounded-md border border-zinc-950/10 dark:border-white/10 w-fit',
+        className,
       )}
     >
       <button

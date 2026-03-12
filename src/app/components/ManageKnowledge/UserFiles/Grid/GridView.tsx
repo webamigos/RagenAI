@@ -61,28 +61,28 @@ export const GridView = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-10">
-      {files.map((file) => {
-        return (
-          <>
-            {showModal.isOpen && showModal.filePublicId === file.public_id && (
-              <DeleteFileModal
-                toggleModal={toggleModal}
-                handleDelete={handleDelete}
-                fileName={file.file_name}
-                filePublicId={file.public_id}
-                isLoading={deleteLoading}
-              />
-            )}
-            <FileCard
-              key={file.public_id}
-              file={file as UserFileTypeSafe}
-              isLoading={isLoading}
-              toggleModal={toggleModal}
-            />
-          </>
-        );
-      })}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-4">
+      {files.map((file) => (
+        <FileCard
+          key={file.public_id}
+          file={file as UserFileTypeSafe}
+          isLoading={isLoading}
+          toggleModal={toggleModal}
+        />
+      ))}
+      {showModal.filePublicId && (
+        <DeleteFileModal
+          isOpen={showModal.isOpen}
+          onClose={() => toggleModal(null)}
+          onConfirm={handleDelete}
+          fileName={
+            files.find((f) => f.public_id === showModal.filePublicId)
+              ?.file_name ?? ''
+          }
+          filePublicId={showModal.filePublicId}
+          isLoading={deleteLoading}
+        />
+      )}
     </div>
   );
 };
