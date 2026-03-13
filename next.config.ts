@@ -16,6 +16,7 @@ if (IS_API_MODE) {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
 
   async rewrites() {

@@ -182,6 +182,48 @@ const handle = await client.workflow.start('estimateAgeWorkflow', {
 import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 ```
 
+## Token Vault (ragen-auth)
+
+OAuth tokens and API keys for external connectors (Google, ClickUp, HubSpot, Fireflies) are stored in [ragen-auth](https://github.com/WebAmigos/ragen-auth) — a centralized token vault with AES-256-GCM encryption.
+
+### How ragen-app uses ragen-auth
+
+**Authentication**: All requests use HMAC-SHA256 with a shared secret (`RAGEN_AUTH_SERVICE_SECRET`). Include `X-Service-Name: ragen-app` for audit trail.
+
+```
+Authorization: HMAC-SHA256 ts={unix_timestamp},sig={hex_signature}
+X-Service-Name: ragen-app
+```
+
+Signature: `HMAC(secret, "{timestamp}\n{method}\n{path}\n{body_sha256}")`
+
+**Integration points:**
+
+| Current (ragen-app) | New (via ragen-auth) | Endpoint |
+|---|---|---|
+| `McpOAuthToken` Prisma model | `PUT /v1/tokens/:customerId/:provider` | Store token after OAuth callback |
+| `PrismaOAuthClientProvider` | `GET /v1/tokens/:customerId/:provider` | Fetch decrypted tokens for MCP tool calls |
+| Connector disconnect | `DELETE /v1/tokens/:customerId/:provider` | Remove tokens on disconnect |
+| Connector status check | `GET /v1/tokens/:customerId/:provider/status` | Check if token exists and is valid |
+| List user connectors | `GET /v1/tokens/:customerId` | List all connected providers (metadata only) |
+
+**Migration path:**
+
+1. Create `RagenAuthClient` — HTTP client wrapping ragen-auth API with HMAC signing
+2. Replace `PrismaOAuthClientProvider` with `RagenAuthOAuthClientProvider` (same interface, HTTP calls instead of Prisma)
+3. Update `createMcpToolsFromConnectors()` in `assistant-stream.ts` to fetch tokens from ragen-auth
+4. Migrate existing `McpOAuthToken` records to ragen-auth via migration script
+5. Remove `McpOAuthToken` model from Prisma schema
+
+**Environment variables:**
+
+```bash
+RAGEN_AUTH_URL="https://ragen-auth.up.railway.app"  # ragen-auth service URL
+RAGEN_AUTH_SERVICE_SECRET="..."                       # Shared HMAC secret (must match ragen-auth)
+```
+
+**Customer ID format**: `{orgId}:{userId}` — consistent with existing MCP connector `customer_id` field.
+
 ## Key Conventions
 
 - **ESM**: `"type": "module"` — all `.js` files are ESM, CommonJS uses `.cjs`
