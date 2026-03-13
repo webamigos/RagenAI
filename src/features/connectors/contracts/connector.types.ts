@@ -22,10 +22,12 @@ export type ProviderDefinition = {
   description: string;
   icon: string;
   mcpServerUrl: string;
-  authPath: string;
-  authType?: 'oauth' | 'api_key';
+  authPath?: string;
+  authType?: 'oauth' | 'api_key' | 'api_key_bearer' | 'external_mcp';
   apiKeyHelpUrl?: string;
   scopes?: string[];
+  oauthClientId?: string;
+  oauthClientSecret?: string;
 };
 
 export type { McpConnectorProvider, McpConnectorStatus };

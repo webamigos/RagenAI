@@ -16,6 +16,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'text-embedding-3-large': { input: 0.13, output: 0 },
     'text-embedding-ada-002': { input: 0.1, output: 0 },
     'omni-moderation-latest': { input: 0, output: 0 },
+    'text-moderation-latest': { input: 0, output: 0 },
   },
   anthropic: {
     'claude-3-5-sonnet-20241022': { input: 3, output: 15 },

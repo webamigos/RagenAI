@@ -44,6 +44,27 @@
   list-style-type: decimal;
 }
 
+/* LINKS */
+.chat-response a {
+  color: #8b5cf6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s;
+}
+
+.chat-response a:hover {
+  color: #7c3aed;
+}
+
+html.dark .chat-response a {
+  color: #a78bfa;
+}
+
+html.dark .chat-response a:hover {
+  color: #c4b5fd;
+}
+/* LINKS */
+
 /* CODE BLOCKS */
 pre.hljs {
   background-color: #1a1b26;

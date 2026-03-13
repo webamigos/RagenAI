@@ -21,6 +21,8 @@ export const getEnabledConnectorsQuery = async (
         provider: true,
         mcp_server_url: true,
         customer_id: true,
+        organization_id: true,
+        user_id: true,
       },
     });
   } catch (error) {

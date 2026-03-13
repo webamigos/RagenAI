@@ -11,6 +11,8 @@ import { markConnectorConnectedCommand } from '@/features/connectors/services/co
 import { disconnectConnectorCommand } from '@/features/connectors/services/commands/disconnect-connector-command';
 import { toggleConnectorCommand } from '@/features/connectors/services/commands/toggle-connector-command';
 import { registerApiKeyCommand } from '@/features/connectors/services/commands/register-api-key-command';
+import { registerApiKeyBearerCommand } from '@/features/connectors/services/commands/register-api-key-bearer-command';
+import { getProviderDefinition } from '@/features/connectors/constants/providers';
 
 export async function getConnectors() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -66,5 +68,11 @@ export async function registerApiKey(
   if (!userId) {
     throw new Error('Unauthorized');
   }
+
+  const providerDef = getProviderDefinition(provider);
+  if (providerDef?.authType === 'api_key_bearer') {
+    return registerApiKeyBearerCommand(orgId, userId, provider, apiKey);
+  }
+
   return registerApiKeyCommand(orgId, userId, provider, apiKey);
 }
