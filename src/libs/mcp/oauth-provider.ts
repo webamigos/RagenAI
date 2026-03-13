@@ -6,7 +6,6 @@ import type {
 } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-import { encryptApiKey, decryptApiKey } from '@/app/lib/utils/hashApiKey';
 
 export type OAuthProviderOptions = {
   orgId: string;
@@ -72,11 +71,9 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
     }
 
     return {
-      access_token: decryptApiKey(record.access_token),
+      access_token: record.access_token,
       token_type: record.token_type,
-      refresh_token: record.refresh_token
-        ? decryptApiKey(record.refresh_token)
-        : undefined,
+      refresh_token: record.refresh_token || undefined,
       expires_in: record.expires_at
         ? Math.max(
             0,
@@ -100,10 +97,8 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         },
       },
       update: {
-        access_token: encryptApiKey(tokens.access_token),
-        refresh_token: tokens.refresh_token
-          ? encryptApiKey(tokens.refresh_token)
-          : null,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token || null,
         expires_at: expiresAt,
         token_type: tokens.token_type || 'Bearer',
       },
@@ -111,10 +106,8 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         organization_id: this.orgId,
         user_id: this.userId,
         provider: this.provider,
-        access_token: encryptApiKey(tokens.access_token),
-        refresh_token: tokens.refresh_token
-          ? encryptApiKey(tokens.refresh_token)
-          : null,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token || null,
         expires_at: expiresAt,
         token_type: tokens.token_type || 'Bearer',
       },
@@ -147,9 +140,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
 
     return {
       client_id: record.client_id,
-      client_secret: record.client_secret
-        ? decryptApiKey(record.client_secret)
-        : undefined,
+      client_secret: record.client_secret || undefined,
     };
   }
 
@@ -164,9 +155,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       },
       update: {
         client_id: info.client_id,
-        client_secret: info.client_secret
-          ? encryptApiKey(info.client_secret)
-          : null,
+        client_secret: info.client_secret || null,
       },
       create: {
         organization_id: this.orgId,
@@ -174,9 +163,7 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         provider: this.provider,
         access_token: '',
         client_id: info.client_id,
-        client_secret: info.client_secret
-          ? encryptApiKey(info.client_secret)
-          : null,
+        client_secret: info.client_secret || null,
       },
     });
   }
@@ -195,14 +182,14 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
         },
       },
       update: {
-        code_verifier: encryptApiKey(verifier),
+        code_verifier: verifier,
       },
       create: {
         organization_id: this.orgId,
         user_id: this.userId,
         provider: this.provider,
         access_token: '',
-        code_verifier: encryptApiKey(verifier),
+        code_verifier: verifier,
       },
     });
   }
@@ -222,6 +209,6 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
       throw new Error('No code verifier found');
     }
 
-    return decryptApiKey(record.code_verifier);
+    return record.code_verifier;
   }
 }

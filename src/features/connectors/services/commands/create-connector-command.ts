@@ -19,10 +19,14 @@ export const createConnectorCommand = async (
   }
 
   const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
+  const baseUrl = providerDef.mcpServerUrl.replace(/\/+$/, '');
   const mcpServerUrl =
-    providerDef.authType === 'external_mcp'
-      ? providerDef.mcpServerUrl
-      : `${providerDef.mcpServerUrl}/mcp`;
+    providerDef.authType === 'external_mcp' ||
+    providerDef.authType === 'api_key_bearer'
+      ? baseUrl
+      : baseUrl.endsWith('/mcp')
+        ? baseUrl
+        : `${baseUrl}/mcp`;
 
   try {
     return await db.mcpConnector.upsert({

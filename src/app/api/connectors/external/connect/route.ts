@@ -9,6 +9,8 @@ import { getProviderDefinition } from '@/features/connectors/constants/providers
 import { PrismaOAuthClientProvider } from '@/libs/mcp/oauth-provider';
 import { logger } from '@/app/lib/utils/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const provider = request.nextUrl.searchParams.get(
     'provider',

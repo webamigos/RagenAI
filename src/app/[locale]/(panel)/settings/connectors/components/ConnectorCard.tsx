@@ -52,7 +52,8 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
   const isConnected = currentConnector?.status === 'CONNECTED';
   const isPending = currentConnector?.status === 'PENDING';
-  const isApiKeyAuth = provider.authType === 'api_key';
+  const isApiKeyAuth =
+    provider.authType === 'api_key' || provider.authType === 'api_key_bearer';
   const isExternalMcp = provider.authType === 'external_mcp';
 
   useEffect(() => {

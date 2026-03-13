@@ -16,8 +16,14 @@ export const registerApiKeyCommand = async (
   apiKey: string,
 ) => {
   const providerDef = getProviderDefinition(provider);
-  if (!providerDef || !providerDef.authPath) {
-    throw new Error(`Unknown provider or missing authPath: ${provider}`);
+  if (
+    !providerDef ||
+    providerDef.authType !== 'api_key' ||
+    !providerDef.authPath
+  ) {
+    throw new Error(
+      `Provider does not support API key registration: ${provider}`,
+    );
   }
 
   // Step 1: Create/upsert the connector record in PENDING state

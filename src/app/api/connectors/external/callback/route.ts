@@ -13,6 +13,8 @@ import { getProviderDefinition } from '@/features/connectors/constants/providers
 import { PrismaOAuthClientProvider } from '@/libs/mcp/oauth-provider';
 import { logger } from '@/app/lib/utils/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   const provider = request.nextUrl.searchParams.get(
@@ -88,8 +90,25 @@ export async function GET(request: NextRequest) {
 }
 
 function redirectWithStatus(request: NextRequest, status: string) {
-  // Redirect to the settings page with status param (popup will detect this)
-  const settingsUrl = new URL('/settings/connectors', request.nextUrl.origin);
+  // Extract locale from the referer or default to 'en'
+  const referer = request.headers.get('referer');
+  let locale = 'en';
+  if (referer) {
+    try {
+      const refererUrl = new URL(referer);
+      const pathLocale = refererUrl.pathname.split('/')[1];
+      if (pathLocale === 'en' || pathLocale === 'pl') {
+        locale = pathLocale;
+      }
+    } catch {
+      // Use default locale
+    }
+  }
+
+  const settingsUrl = new URL(
+    `/${locale}/settings/connectors`,
+    request.nextUrl.origin,
+  );
   settingsUrl.searchParams.set('status', status);
   return NextResponse.redirect(settingsUrl);
 }
