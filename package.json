@@ -6,8 +6,8 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "prisma generate && next build --webpack",
+    "dev": "next dev",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
     "serve": "npx http-server --port 5433 out",
