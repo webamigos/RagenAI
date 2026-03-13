@@ -18,6 +18,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 const createMarkdownRenderer = () => {
   const md = new MarkdownIt({
+    linkify: true,
     highlight: (code, lang) => {
       try {
         let highlightedCode;
@@ -40,6 +41,24 @@ const createMarkdownRenderer = () => {
     katexOptions: { throwOnError: false },
   });
 
+  // Open all links in new tab
+  const defaultLinkRender =
+    md.renderer.rules.link_open ||
+    ((tokens: any, idx: any, options: any, _env: any, self: any) =>
+      self.renderToken(tokens, idx, options));
+
+  md.renderer.rules.link_open = (
+    tokens: any,
+    idx: any,
+    options: any,
+    env: any,
+    self: any,
+  ) => {
+    tokens[idx].attrSet('target', '_blank');
+    tokens[idx].attrSet('rel', 'noopener noreferrer');
+    return defaultLinkRender(tokens, idx, options, env, self);
+  };
+
   return md;
 };
 
@@ -48,6 +67,7 @@ const sanitizeHtml = (html: string): string => {
     FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
     ALLOW_ARIA_ATTR: true,
     ALLOW_DATA_ATTR: false,
+    ADD_ATTR: ['target', 'rel'],
   });
 };
 

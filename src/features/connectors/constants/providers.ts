@@ -13,41 +13,12 @@ const MCP_GOOGLE_SERVER_URL = (() => {
   return 'http://localhost:8000';
 })();
 
-const MCP_CLICKUP_SERVER_URL = (() => {
-  if (process.env.MCP_CLICKUP_SERVER_URL) {
-    return process.env.MCP_CLICKUP_SERVER_URL;
-  }
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'MCP_CLICKUP_SERVER_URL is required in non-development environments',
-    );
-  }
-  return 'http://localhost:8001';
-})();
-
-const MCP_HUBSPOT_SERVER_URL = (() => {
-  if (process.env.MCP_HUBSPOT_SERVER_URL) {
-    return process.env.MCP_HUBSPOT_SERVER_URL;
-  }
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'MCP_HUBSPOT_SERVER_URL is required in non-development environments',
-    );
-  }
-  return 'http://localhost:8002';
-})();
-
-const MCP_FIREFLIES_SERVER_URL = (() => {
-  if (process.env.MCP_FIREFLIES_SERVER_URL) {
-    return process.env.MCP_FIREFLIES_SERVER_URL;
-  }
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'MCP_FIREFLIES_SERVER_URL is required in non-development environments',
-    );
-  }
-  return 'http://localhost:8003';
-})();
+const MCP_CLICKUP_SERVER_URL =
+  process.env.MCP_CLICKUP_SERVER_URL || 'https://mcp.clickup.com/mcp';
+const MCP_HUBSPOT_SERVER_URL =
+  process.env.MCP_HUBSPOT_SERVER_URL || 'https://mcp.hubspot.com';
+const MCP_FIREFLIES_SERVER_URL =
+  process.env.MCP_FIREFLIES_SERVER_URL || 'https://api.fireflies.ai/mcp';
 
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
@@ -77,7 +48,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Manage tasks, projects, and workspaces.',
     icon: 'check-square',
     mcpServerUrl: MCP_CLICKUP_SERVER_URL,
-    authPath: '/auth/clickup',
+    authType: 'external_mcp',
   },
   {
     provider: McpConnectorProvider.HUBSPOT,
@@ -85,13 +56,9 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Access contacts, companies, deals, and CRM data.',
     icon: 'database',
     mcpServerUrl: MCP_HUBSPOT_SERVER_URL,
-    authPath: '/auth/hubspot',
-    scopes: [
-      'crm.objects.contacts.read',
-      'crm.objects.companies.read',
-      'crm.objects.deals.read',
-      'crm.objects.owners.read',
-    ],
+    authType: 'external_mcp',
+    oauthClientId: process.env.HUBSPOT_MCP_CLIENT_ID,
+    oauthClientSecret: process.env.HUBSPOT_MCP_CLIENT_SECRET,
   },
   {
     provider: McpConnectorProvider.FIREFLIES,
@@ -99,10 +66,8 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Search meeting transcripts, summaries, and action items.',
     icon: 'mic',
     mcpServerUrl: MCP_FIREFLIES_SERVER_URL,
-    authPath: '/auth/register',
-    authType: 'api_key',
-    apiKeyHelpUrl:
-      'https://docs.fireflies.ai/getting-started/quickstart#obtaining-authentication-credentials',
+    authType: 'api_key_bearer',
+    apiKeyHelpUrl: 'https://app.fireflies.ai/integrations/custom/fireflies-api',
   },
   {
     provider: McpConnectorProvider.GOOGLE_ANALYTICS,

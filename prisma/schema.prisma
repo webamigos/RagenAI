@@ -328,7 +328,8 @@ model User {
   members       Member[]
   aiUsages      AiUsage[]
   teamMembers   TeamMember[]
-  mcpConnectors McpConnector[]
+  mcpConnectors  McpConnector[]
+  mcpOAuthTokens McpOAuthToken[]
 
   @@map("users")
 }
@@ -399,7 +400,8 @@ model Organization {
   aiUsages      AiUsage[]
   teams         Team[]
   folders       DocumentFolder[]
-  mcpConnectors McpConnector[]
+  mcpConnectors  McpConnector[]
+  mcpOAuthTokens McpOAuthToken[]
 
   @@index([publicId])
   @@map("organizations")
@@ -601,6 +603,30 @@ model McpConnector {
   @@index([organization_id, user_id])
 
   @@map("mcp_connectors")
+}
+
+model McpOAuthToken {
+  id              String               @id @default(uuid()) @db.Uuid
+  organization_id String
+  user_id         String
+  provider        McpConnectorProvider
+  access_token    String
+  refresh_token   String?
+  expires_at      DateTime?            @db.Timestamptz
+  token_type      String               @default("Bearer")
+  client_id       String?
+  client_secret   String?
+  code_verifier   String?
+  created_at      DateTime             @default(now()) @db.Timestamptz
+  updated_at      DateTime             @updatedAt @db.Timestamptz
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([organization_id, user_id, provider])
+  @@index([organization_id, user_id])
+
+  @@map("mcp_oauth_tokens")
 }
 
 model AiUsage {
