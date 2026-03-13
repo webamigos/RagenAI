@@ -27,7 +27,10 @@ export async function GET(request: NextRequest) {
   // Validate callback_url to prevent open redirects
   try {
     const parsed = new URL(callbackUrl);
-    if (parsed.origin !== request.nextUrl.origin) {
+    const appOrigin = process.env.NEXT_PUBLIC_APP_URL
+      ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+      : request.nextUrl.origin;
+    if (parsed.origin !== appOrigin) {
       return NextResponse.json(
         { error: 'Invalid callback_url' },
         { status: 400 },

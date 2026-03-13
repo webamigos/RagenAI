@@ -38,7 +38,10 @@ export async function GET(request: NextRequest) {
     }
 
     // The callback URL is this route itself (the same URL the user is hitting now)
-    const callbackUrl = `${request.nextUrl.origin}/api/connectors/external/callback?provider=${provider}`;
+    const appOrigin = process.env.NEXT_PUBLIC_APP_URL
+      ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+      : request.nextUrl.origin;
+    const callbackUrl = `${appOrigin}/api/connectors/external/callback?provider=${provider}`;
 
     const oauthProvider = new PrismaOAuthClientProvider({
       orgId,
@@ -105,10 +108,10 @@ function redirectWithStatus(request: NextRequest, status: string) {
     }
   }
 
-  const settingsUrl = new URL(
-    `/${locale}/settings/connectors`,
-    request.nextUrl.origin,
-  );
+  const appOrigin = process.env.NEXT_PUBLIC_APP_URL
+    ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+    : request.nextUrl.origin;
+  const settingsUrl = new URL(`/${locale}/settings/connectors`, appOrigin);
   settingsUrl.searchParams.set('status', status);
   return NextResponse.redirect(settingsUrl);
 }
