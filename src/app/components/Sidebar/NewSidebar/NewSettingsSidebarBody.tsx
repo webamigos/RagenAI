@@ -11,7 +11,6 @@ import {
   BuildingOfficeIcon,
   AdjustmentsHorizontalIcon,
   CreditCardIcon,
-  KeyIcon,
   CircleStackIcon,
   CpuChipIcon,
   UserGroupIcon,
@@ -55,10 +54,6 @@ export const NewSidebarSettingsBody = () => {
         <SidebarItem href="/settings/teams">
           <UserGroupIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('teams')}</SidebarLabel>
-        </SidebarItem>
-        <SidebarItem href="/settings/api-keys">
-          <KeyIcon className={iconClassName} />
-          <SidebarLabel className="font-normal">{t('api-keys')}</SidebarLabel>
         </SidebarItem>
         {isAppAdmin && (
           <SidebarItem href="/settings/users">

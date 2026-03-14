@@ -10,7 +10,6 @@ import {
   AdjustmentsHorizontalIcon,
   CreditCardIcon,
   UserGroupIcon,
-  KeyIcon,
   UsersIcon,
   CpuChipIcon,
   CircleStackIcon,
@@ -71,12 +70,6 @@ const navItems: NavItem[] = [
     labelKey: 'teams',
     icon: <UserGroupIcon className={iconClassName} />,
     permission: 'orgAdmin',
-  },
-  {
-    href: '/settings/api-keys',
-    labelKey: 'api-keys',
-    icon: <KeyIcon className={iconClassName} />,
-    permission: 'appAdmin',
   },
   {
     href: '/settings/users',
