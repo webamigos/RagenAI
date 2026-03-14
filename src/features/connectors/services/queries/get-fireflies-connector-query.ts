@@ -4,6 +4,7 @@ import {
   McpConnectorStatus,
 } from '@/generated/prisma/client';
 import { ragenAuthClient } from '@/libs/ragen-vault';
+import { logger } from '@/app/lib/utils/logger';
 
 export type FirefliesConnectorResult = {
   apiKey: string;
@@ -47,7 +48,10 @@ export const getFirefliesConnectorQuery = async (
     }
 
     return { apiKey: token.access_token };
-  } catch {
+  } catch (err) {
+    logger.warn('Failed to retrieve Fireflies token from vault', {
+      error: err,
+    });
     return null;
   }
 };
