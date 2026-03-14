@@ -13,9 +13,7 @@ import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 
-const stripeClient = new Stripe(
-  process.env.STRIPE_SECRET_KEY || 'sk_placeholder_for_build',
-);
+const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
 

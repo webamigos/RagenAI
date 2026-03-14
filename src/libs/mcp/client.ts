@@ -28,12 +28,6 @@ function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
     if (value === '' || value === null || value === undefined) {
       continue;
     }
-    if (value === false) {
-      continue;
-    }
-    if (typeof value === 'number' && value === 0) {
-      continue;
-    }
     if (Array.isArray(value) && value.length === 0) {
       continue;
     }
