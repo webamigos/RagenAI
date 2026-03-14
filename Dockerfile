@@ -68,9 +68,13 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
-# Install prisma CLI for predeploy migrations (after standalone copy so it lands in the right node_modules)
-RUN npm install --no-save prisma@7.3.0 \
-    && chown -R nextjs:nodejs node_modules/.bin node_modules/prisma node_modules/@prisma
+# Install prisma CLI with all deps in a temp dir (avoids standalone package.json conflicts)
+# Then merge into app's node_modules for predeploy migrations
+RUN cd /tmp && npm init -y > /dev/null 2>&1 && npm install prisma@7.3.0 > /dev/null 2>&1 \
+    && cp -r /tmp/node_modules/* /app/node_modules/ \
+    && cp -r /tmp/node_modules/.bin/* /app/node_modules/.bin/ 2>/dev/null || true \
+    && rm -rf /tmp/node_modules /tmp/package.json /tmp/package-lock.json \
+    && chown -R nextjs:nodejs /app/node_modules
 
 USER nextjs
 
