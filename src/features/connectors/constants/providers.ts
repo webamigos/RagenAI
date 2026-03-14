@@ -67,7 +67,8 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     icon: 'mic',
     mcpServerUrl: MCP_FIREFLIES_SERVER_URL,
     authType: 'api_key_bearer',
-    apiKeyHelpUrl: 'https://app.fireflies.ai/integrations/custom/fireflies-api',
+    apiKeyHelpUrl:
+      'https://docs.fireflies.ai/getting-started/quickstart#obtaining-authentication-credentials',
   },
   {
     provider: McpConnectorProvider.GOOGLE_ANALYTICS,

@@ -7,6 +7,7 @@ import {
 } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '../../constants/providers';
+import { ragenAuthClient } from '@/libs/ragen-vault';
 
 /**
  * Store an API key as a Bearer token for direct MCP server auth.
@@ -27,26 +28,10 @@ export const registerApiKeyBearerCommand = async (
   const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
 
   try {
-    // Store the API key as an access token
-    await db.mcpOAuthToken.upsert({
-      where: {
-        organization_id_user_id_provider: {
-          organization_id: organizationId,
-          user_id: userId,
-          provider,
-        },
-      },
-      update: {
-        access_token: apiKey,
-        token_type: 'Bearer',
-      },
-      create: {
-        organization_id: organizationId,
-        user_id: userId,
-        provider,
-        access_token: apiKey,
-        token_type: 'Bearer',
-      },
+    // Store the API key in ragen-vault (encrypted at rest)
+    await ragenAuthClient.storeToken(customerId, provider, {
+      access_token: apiKey,
+      token_type: 'Bearer',
     });
 
     // Create/update the connector and mark as connected
