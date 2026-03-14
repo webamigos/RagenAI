@@ -7,6 +7,24 @@ import '@testing-library/jest-dom';
 import { toHaveNoViolations } from 'jest-axe';
 // import { server } from "./src/mocks/node";
 
+// Mock next/navigation to avoid ESM resolution issues with next-intl
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  })),
+  usePathname: vi.fn(() => '/'),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
+  useParams: vi.fn(() => ({})),
+  redirect: vi.fn(),
+  permanentRedirect: vi.fn(),
+  notFound: vi.fn(),
+}));
+
 // Mock ioredis to prevent connection attempts in test/CI environments
 vi.mock('ioredis', () => {
   const RedisMock = vi.fn(() => ({

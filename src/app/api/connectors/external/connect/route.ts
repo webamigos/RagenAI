@@ -6,7 +6,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
-import { PrismaOAuthClientProvider } from '@/libs/mcp/oauth-provider';
+import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const oauthProvider = new PrismaOAuthClientProvider({
+    const oauthProvider = new RagenAuthOAuthClientProvider({
       orgId,
       userId,
       provider,

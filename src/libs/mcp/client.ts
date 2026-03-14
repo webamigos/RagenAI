@@ -1,9 +1,11 @@
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
-import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
-import { PrismaOAuthClientProvider } from './oauth-provider';
+import {
+  RagenAuthOAuthClientProvider,
+  ragenAuthClient,
+} from '@/libs/ragen-vault';
 
 export type McpConnectorInfo = {
   id: string;
@@ -23,10 +25,18 @@ export type McpConnectorInfo = {
 function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
   const cleaned: Record<string, any> = {};
   for (const [key, value] of Object.entries(args)) {
-    if (value === '' || value === null || value === undefined) {continue;}
-    if (value === false) {continue;}
-    if (typeof value === 'number' && value === 0) {continue;}
-    if (Array.isArray(value) && value.length === 0) {continue;}
+    if (value === '' || value === null || value === undefined) {
+      continue;
+    }
+    if (value === false) {
+      continue;
+    }
+    if (typeof value === 'number' && value === 0) {
+      continue;
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      continue;
+    }
     cleaned[key] = value;
   }
 
@@ -97,19 +107,14 @@ export async function createMcpToolsFromConnectors(
       let client: MCPClient;
 
       if (providerDef?.authType === 'api_key_bearer') {
-        // Read API key from McpOAuthToken and pass as Bearer token
-        const tokenRecord = await db.mcpOAuthToken.findUnique({
-          where: {
-            organization_id_user_id_provider: {
-              organization_id: connector.organization_id,
-              user_id: connector.user_id,
-              provider: connector.provider as McpConnectorProvider,
-            },
-          },
-          select: { access_token: true },
-        });
+        // Read API key from ragen-vault and pass as Bearer token
+        const customerId = connector.customer_id;
+        const tokenData = await ragenAuthClient.getToken(
+          customerId,
+          connector.provider,
+        );
 
-        if (!tokenRecord?.access_token) {
+        if (!tokenData?.access_token) {
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
@@ -118,12 +123,12 @@ export async function createMcpToolsFromConnectors(
             type: 'http',
             url: connector.mcp_server_url,
             headers: {
-              Authorization: `Bearer ${tokenRecord.access_token}`,
+              Authorization: `Bearer ${tokenData.access_token}`,
             },
           },
         });
       } else if (providerDef?.authType === 'external_mcp') {
-        const authProvider = new PrismaOAuthClientProvider({
+        const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organization_id,
           userId: connector.user_id,
           provider: connector.provider as McpConnectorProvider,
