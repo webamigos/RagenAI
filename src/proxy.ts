@@ -3,8 +3,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { routing } from './i18n/routing';
 
-const IS_API_MODE = process.env.IS_API_MODE === '1';
-
 // Create i18n middleware handler OUTSIDE the middleware function
 const handleI18nRouting = createMiddleware(routing);
 
@@ -23,11 +21,6 @@ export const config = {
 };
 
 export default async function proxy(request: NextRequest) {
-  // Ignore all below setup for API instance
-  if (IS_API_MODE) {
-    return NextResponse.next();
-  }
-
   const url = request.nextUrl.pathname;
 
   // Skip auth checks for API routes - early return

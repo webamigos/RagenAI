@@ -10,13 +10,13 @@ import db from '@ragenai/prisma-client';
 
 import { type ApiKeyDto } from './types';
 import { logger } from '@/app/lib/utils/logger';
-import { ApiKeysService } from '@/app/api/v1/__logic__/services/api-keys.service';
+import { ApiKeysService } from '@/libs/api-keys/api-keys.service';
 import {
   type OrgId,
   type UserId,
   type ProjectId,
   type KeyId,
-} from '@/app/api/v1/__logic__/types/brand';
+} from '@/libs/api-keys/types';
 import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 
 type SuccessResponse = {

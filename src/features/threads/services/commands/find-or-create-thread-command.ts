@@ -6,16 +6,30 @@ import type { CreateThreadDto } from '../../contracts/thread.types';
 
 export const findOrCreateThreadCommand = async (
   threadPublicId: CreateThreadDto['public_id'],
-  visitorId: string
+  visitorId: string,
+  organizationId?: string,
 ) => {
   try {
-    const threadRecord = await db.thread.findUniqueOrThrow({
-      where: { public_id: threadPublicId },
+    const whereClause: { public_id: string; organization_id?: string } = {
+      public_id: threadPublicId,
+    };
+
+    // Scope to organization when provided to prevent cross-tenant access
+    if (organizationId) {
+      whereClause.organization_id = organizationId;
+    }
+
+    const threadRecord = await db.thread.findFirst({
+      where: whereClause,
     });
+
+    if (!threadRecord) {
+      throw new Error(`Thread ${threadPublicId} not found`);
+    }
 
     if (!threadRecord.visitor_id || threadRecord.visitor_id === visitorId) {
       await db.thread.update({
-        where: { public_id: threadPublicId },
+        where: { id: threadRecord.id },
         data: {
           visitor_id: visitorId,
         },
@@ -27,7 +41,7 @@ export const findOrCreateThreadCommand = async (
           visitorId,
           existingVisitorId: threadRecord.visitor_id,
         },
-        'Visitor ID mismatch — thread already bound to another visitor'
+        'Visitor ID mismatch — thread already bound to another visitor',
       );
       throw new Error('Thread belongs to another session');
     }

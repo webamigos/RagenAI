@@ -7,10 +7,10 @@ import { logger } from '@/app/lib/utils/logger';
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/v1/ai-usage
+ * POST /api/ai-usage
  *
  * Internal endpoint for the worker (ragen-worker) to report embedding usage.
- * Secured via WORKER_SECRET_KEY header.
+ * Secured via WORKER_SECRET_KEY header (timing-safe comparison).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +30,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
 
     const {
       organizationId,
@@ -75,7 +80,7 @@ export async function POST(request: NextRequest) {
       inputTokens: inputTokens ?? 0,
       outputTokens: outputTokens ?? 0,
       totalTokens: totalTokens ?? 0,
-      estimatedCost,
+      estimatedCost: estimatedCost ?? null,
       durationMs: durationMs ?? null,
       metadata: metadata ?? null,
     });

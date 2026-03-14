@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: 'Failed to update thread model',
       },
       { status: 500 },
     );

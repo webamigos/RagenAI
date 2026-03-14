@@ -102,9 +102,26 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Disabled for development - users can login without email verification
+    requireEmailVerification:
+      process.env.NODE_ENV === 'production' ||
+      process.env.REQUIRE_EMAIL_VERIFICATION === 'true',
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
     async sendResetPassword({ user, url }) {
       await sendPasswordResetEmail({ to: user.email, resetUrl: url });
+    },
+    async sendVerificationEmail({
+      user,
+      url,
+    }: {
+      user: { email: string };
+      url: string;
+    }) {
+      // TODO: Create email template and send via mailer (like sendPasswordResetEmailViaMailer)
+      console.log('[AUTH] Verification email requested', {
+        to: user.email,
+        url,
+      });
     },
   },
 

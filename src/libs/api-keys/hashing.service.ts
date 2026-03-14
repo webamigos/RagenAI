@@ -1,8 +1,6 @@
 import { compare, genSalt, hash } from 'bcrypt';
 
-import { type Brand } from '../types/brand';
-
-export type HashedKey = Brand<string, 'HashedKey'>;
+import { type HashedKey } from './types';
 
 export class HashingService {
   async hash(data: string | Buffer): Promise<HashedKey> {

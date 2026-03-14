@@ -1,7 +1,7 @@
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { NotFoundException } from '@/app/api/v1/__logic__/services/api-errors.service';
+import { NotFoundException } from '@/libs/utils/errors';
 
 async function getProjectInfo(projectId: string) {
   if (!projectId) {
@@ -26,7 +26,7 @@ async function getProjectInfo(projectId: string) {
   if (project.organization_id !== orgId) {
     logger.error(
       { projectId, userOrgId: orgId, projectOrgId: project.organization_id },
-      'Unauthorized: Project does not belong to user organization'
+      'Unauthorized: Project does not belong to user organization',
     );
     throw new NotFoundException('Project not found');
   }
@@ -36,7 +36,7 @@ async function getProjectInfo(projectId: string) {
 
 export async function saveProjectInstructionCommand(
   projectId: string,
-  instruction: string
+  instruction: string,
 ): Promise<void> {
   const project = await getProjectInfo(projectId);
 

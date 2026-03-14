@@ -3,14 +3,13 @@ import { randomUUID } from 'crypto';
 import { HashingService } from './hashing.service';
 import {
   type ApiKey,
-  type HashedKey,
   type OrgId,
   type UserId,
   type ProjectId,
   type KeyId,
-} from '../types/brand';
-import { type GenerateApiKeyDto } from '../dtos/generate-api-key.dto';
-import { type GeneratedApiKeyPayload } from '../dtos/generate-api-key.payload';
+  type GenerateApiKeyDto,
+  type GeneratedApiKeyPayload,
+} from './types';
 
 export class ApiKeysService {
   private readonly hashingService: HashingService;
@@ -36,8 +35,6 @@ export class ApiKeysService {
 
   private generateApiKey(apiKeyDto: GenerateApiKeyDto): ApiKey {
     const { orgId, userId, projectId, keyId } = apiKeyDto;
-    // TODO: below random id generates each new key for same data set
-    // after removing it we can regenerate key (deactivate and activate). Activate will generate then the same value as before
     const content = `${randomUUID().substring(
       0,
       this.randomPartLength,
@@ -48,7 +45,6 @@ export class ApiKeysService {
   }
 
   extractDataFromApiKey(apiKey: ApiKey): GenerateApiKeyDto {
-    // key format: sk-YTdlNDlkIDU1NSA2NiA3Nw
     const plainKey = apiKey.replace(this.keyPrefix, '');
     const [
       _randomPart,
