@@ -1,4 +1,10 @@
-name: Lint Test Build
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
 
 env:
   OPENAI_API_KEY: "dummy"
@@ -10,7 +16,7 @@ env:
   NEXT_PUBLIC_APP_URL: "http://example.com"
   SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  SUPABASE_PROJECT_ID: ${{secrets.SUPABASE_PROJECT_ID }}
+  SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
   CLERK_SECRET_KEY: "dummy"
   CLERK_WEBHOOK_SIGNING_SECRET: "dummy"
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "dummy"
@@ -49,47 +55,44 @@ env:
   MCP_CLICKUP_SERVER_URL: "https://example.com"
   MCP_HUBSPOT_SERVER_URL: "https://example.com"
   MCP_FIREFLIES_SERVER_URL: "https://example.com"
-
-on:
-  push:
-    branches:
-      - dev
-      - main
-  pull_request:
-    branches:
-      - dev
-      - main
+  RAGEN_VAULT_URL: "http://localhost:3100"
+  RAGEN_VAULT_SERVICE_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
 
 jobs:
-  lint-test-build:
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
 
-      # Optional: Cache node modules to speed up the build process
-      - name: Cache dependencies
-        uses: actions/cache@v3
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx vitest run
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint app
-        run: npm run lint
-
-      # - name: Run app tests
-      #   run: npm run test
-
-      - name: Build Next.js app
-        run: npm run build
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build

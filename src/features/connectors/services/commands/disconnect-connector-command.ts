@@ -2,7 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { ragenAuthClient } from '@/libs/ragen-auth';
+import { ragenAuthClient } from '@/libs/ragen-vault';
 
 export const disconnectConnectorCommand = async (
   connectorId: string,
@@ -23,7 +23,7 @@ export const disconnectConnectorCommand = async (
       throw new Error('Connector not found');
     }
 
-    // Delete token from ragen-auth
+    // Delete token from ragen-vault
     try {
       await ragenAuthClient.deleteToken(
         connector.customer_id,
@@ -32,7 +32,7 @@ export const disconnectConnectorCommand = async (
     } catch (error) {
       logger.warn(
         { err: error, provider: connector.provider },
-        'Failed to delete token from ragen-auth (may not exist)',
+        'Failed to delete token from ragen-vault (may not exist)',
       );
     }
 

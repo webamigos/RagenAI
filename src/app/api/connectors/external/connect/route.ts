@@ -6,7 +6,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
-import { RagenAuthOAuthClientProvider } from '@/libs/ragen-auth';
+import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';

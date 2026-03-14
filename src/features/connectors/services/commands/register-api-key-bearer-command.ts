@@ -7,7 +7,7 @@ import {
 } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '../../constants/providers';
-import { ragenAuthClient } from '@/libs/ragen-auth';
+import { ragenAuthClient } from '@/libs/ragen-vault';
 
 /**
  * Store an API key as a Bearer token for direct MCP server auth.
@@ -28,7 +28,7 @@ export const registerApiKeyBearerCommand = async (
   const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
 
   try {
-    // Store the API key in ragen-auth (encrypted at rest)
+    // Store the API key in ragen-vault (encrypted at rest)
     await ragenAuthClient.storeToken(customerId, provider, {
       access_token: apiKey,
       token_type: 'Bearer',

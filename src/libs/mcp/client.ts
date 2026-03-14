@@ -5,7 +5,7 @@ import { getProviderDefinition } from '@/features/connectors/constants/providers
 import {
   RagenAuthOAuthClientProvider,
   ragenAuthClient,
-} from '@/libs/ragen-auth';
+} from '@/libs/ragen-vault';
 
 export type McpConnectorInfo = {
   id: string;
@@ -107,7 +107,7 @@ export async function createMcpToolsFromConnectors(
       let client: MCPClient;
 
       if (providerDef?.authType === 'api_key_bearer') {
-        // Read API key from ragen-auth and pass as Bearer token
+        // Read API key from ragen-vault and pass as Bearer token
         const customerId = connector.customer_id;
         const tokenData = await ragenAuthClient.getToken(
           customerId,

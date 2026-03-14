@@ -3,7 +3,7 @@ import {
   McpConnectorProvider,
   McpConnectorStatus,
 } from '@/generated/prisma/client';
-import { ragenAuthClient } from '@/libs/ragen-auth';
+import { ragenAuthClient } from '@/libs/ragen-vault';
 
 export type FirefliesConnectorResult = {
   apiKey: string;
