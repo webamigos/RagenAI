@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-preDeployCommand = "npx --yes prisma@7.3.0 migrate deploy"
+preDeployCommand = "npx prisma migrate deploy"
 startCommand = "node server.js"
 
 healthcheckPath = "/api/healthcheck"

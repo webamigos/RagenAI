@@ -68,6 +68,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
+# Install prisma CLI for predeploy migrations (after standalone copy so it lands in the right node_modules)
+RUN npm install --no-save prisma@7.3.0 \
+    && chown -R nextjs:nodejs node_modules/.bin node_modules/prisma node_modules/@prisma
+
 USER nextjs
 
 EXPOSE 3000
