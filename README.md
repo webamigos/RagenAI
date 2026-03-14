@@ -184,45 +184,78 @@ import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 
 ## Token Vault (ragen-auth)
 
-OAuth tokens and API keys for external connectors (Google, ClickUp, HubSpot, Fireflies) are stored in [ragen-auth](https://github.com/WebAmigos/ragen-auth) — a centralized token vault with AES-256-GCM encryption.
+OAuth tokens and API keys for external connectors are stored in [ragen-auth](https://github.com/WebAmigos/ragen-auth) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-auth/client.ts`) using HMAC-SHA256 service-to-service auth.
 
-### How ragen-app uses ragen-auth
+### Auth flows
 
-**Authentication**: All requests use HMAC-SHA256 with a shared secret (`RAGEN_AUTH_SERVICE_SECRET`). Include `X-Service-Name: ragen-app` for audit trail.
+Three auth types are supported for connectors. All store tokens in ragen-auth.
 
+```mermaid
+flowchart TD
+    subgraph "External MCP OAuth (ClickUp, HubSpot)"
+        A1[User clicks Connect] --> A2[ragen-app creates connector PENDING]
+        A2 --> A3["GET /api/connectors/external/connect"]
+        A3 --> A4["RagenAuthOAuthClientProvider<br/>saves client info + code verifier<br/>to ragen-auth"]
+        A4 --> A5[Returns authorization URL]
+        A5 --> A6[Browser popup → OAuth provider]
+        A6 --> A7[User authorizes]
+        A7 --> A8["GET /api/connectors/external/callback"]
+        A8 --> A9["mcpAuth() exchanges code → tokens"]
+        A9 --> A10["RagenAuthOAuthClientProvider<br/>saves tokens to ragen-auth"]
+        A10 --> A11[Connector marked CONNECTED]
+    end
+
+    subgraph "API Key Bearer (Fireflies)"
+        B1[User enters API key] --> B2["registerApiKeyBearerCommand()"]
+        B2 --> B3["ragenAuthClient.storeToken()<br/>stores encrypted API key"]
+        B3 --> B4[Connector marked CONNECTED]
+    end
+
+    subgraph "Custom OAuth (Google Calendar, Drive, Analytics, Ads)"
+        C1[User clicks Connect] --> C2["Browser → ragen-mcp /auth/google"]
+        C2 --> C3["ragen-mcp → ragen-auth<br/>GET /v1/oauth/google/authorize"]
+        C3 --> C4[ragen-auth generates PKCE + redirects to Google]
+        C4 --> C5[User authorizes]
+        C5 --> C6["Google → ragen-auth /v1/oauth/google/callback"]
+        C6 --> C7["ragen-auth exchanges code → tokens<br/>encrypts + stores"]
+        C7 --> C8[Redirect back to ragen-app]
+        C8 --> C9[Connector marked CONNECTED]
+    end
 ```
-Authorization: HMAC-SHA256 ts={unix_timestamp},sig={hex_signature}
-X-Service-Name: ragen-app
+
+```mermaid
+flowchart LR
+    subgraph "During Chat — Token Usage"
+        D1[User sends message] --> D2["Load enabled connectors"]
+        D2 --> D3{"Auth type?"}
+        D3 -->|api_key_bearer| D4["ragenAuthClient.getToken()"]
+        D4 --> D5["Authorization: Bearer {key}"]
+        D3 -->|external_mcp| D6["RagenAuthOAuthClientProvider.tokens()"]
+        D6 --> D7["Auto-refresh if expired"]
+        D7 --> D8["Authorization: Bearer {access_token}"]
+        D3 -->|custom oauth| D9["x-customer-id header"]
+        D5 --> D10[MCP server]
+        D8 --> D10
+        D9 --> D10
+        D10 --> D11[AI gets tools]
+    end
 ```
 
-Signature: `HMAC(secret, "{timestamp}\n{method}\n{path}\n{body_sha256}")`
+### Key files
 
-**Integration points:**
+| File | Purpose |
+|---|---|
+| `src/libs/ragen-auth/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for ragen-auth API |
+| `src/libs/ragen-auth/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
+| `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from ragen-auth during chat |
+| `src/features/connectors/services/commands/` | Connect/disconnect commands using `ragenAuthClient` |
+| `src/app/api/connectors/external/` | OAuth connect + callback routes |
 
-| Current (ragen-app) | New (via ragen-auth) | Endpoint |
-|---|---|---|
-| `McpOAuthToken` Prisma model | `PUT /v1/tokens/:customerId/:provider` | Store token after OAuth callback |
-| `PrismaOAuthClientProvider` | `GET /v1/tokens/:customerId/:provider` | Fetch decrypted tokens for MCP tool calls |
-| Connector disconnect | `DELETE /v1/tokens/:customerId/:provider` | Remove tokens on disconnect |
-| Connector status check | `GET /v1/tokens/:customerId/:provider/status` | Check if token exists and is valid |
-| List user connectors | `GET /v1/tokens/:customerId` | List all connected providers (metadata only) |
+### Conventions
 
-**Migration path:**
-
-1. Create `RagenAuthClient` — HTTP client wrapping ragen-auth API with HMAC signing
-2. Replace `PrismaOAuthClientProvider` with `RagenAuthOAuthClientProvider` (same interface, HTTP calls instead of Prisma)
-3. Update `createMcpToolsFromConnectors()` in `assistant-stream.ts` to fetch tokens from ragen-auth
-4. Migrate existing `McpOAuthToken` records to ragen-auth via migration script
-5. Remove `McpOAuthToken` model from Prisma schema
-
-**Environment variables:**
-
-```bash
-RAGEN_AUTH_URL="https://ragen-auth.up.railway.app"  # ragen-auth service URL
-RAGEN_AUTH_SERVICE_SECRET="..."                       # Shared HMAC secret (must match ragen-auth)
-```
-
-**Customer ID format**: `{orgId}:{userId}` — consistent with existing MCP connector `customer_id` field.
+- **Provider names** are UPPERCASE in ragen-auth (matches `McpConnectorProvider` Prisma enum: `CLICKUP`, `HUBSPOT`, `FIREFLIES`, `GOOGLE_CALENDAR`, etc.)
+- **Customer ID format**: `{orgId}:{userId}:{provider_lowercase}` (e.g. `abc123:user456:clickup`)
+- **Environment variables**: `RAGEN_AUTH_URL` and `RAGEN_AUTH_SERVICE_SECRET` (shared secret must match ragen-auth config)
 
 ## Key Conventions
 
