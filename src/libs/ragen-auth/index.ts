@@ -1,5 +1,6 @@
 export {
   RagenAuthClient,
+  getRagenAuthClient,
   ragenAuthClient,
   type StoreTokenData,
   type TokenResponse,

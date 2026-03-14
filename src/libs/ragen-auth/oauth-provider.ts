@@ -6,7 +6,7 @@ import type {
 } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
-import { ragenAuthClient } from './client';
+import { ragenAuthClient, type StoreTokenData } from './client';
 
 export type OAuthProviderOptions = {
   orgId: string;
@@ -40,7 +40,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   }
 
   private get providerKey(): string {
-    return this.provider.toLowerCase();
+    return this.provider;
   }
 
   get redirectUrl() {
@@ -71,7 +71,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         this.providerKey,
       );
 
-      if (!token?.access_token) {
+      if (!token?.access_token || token.access_token === '__placeholder__') {
         return undefined;
       }
 
@@ -147,19 +147,10 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   }
 
   async saveClientInformation(info: OAuthClientInformation): Promise<void> {
-    let existing: { access_token?: string; refresh_token?: string } = {};
-    try {
-      existing = await ragenAuthClient.getToken(
-        this.customerId,
-        this.providerKey,
-      );
-    } catch {
-      // No existing token — will create a new record
-    }
+    const existing = await this.getExistingTokenData();
 
     await ragenAuthClient.storeToken(this.customerId, this.providerKey, {
-      access_token: existing.access_token || '__placeholder__',
-      refresh_token: existing.refresh_token || undefined,
+      ...existing,
       client_id: info.client_id,
       client_secret: info.client_secret || undefined,
     });
@@ -170,21 +161,38 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   }
 
   async saveCodeVerifier(verifier: string): Promise<void> {
-    let existing: { access_token?: string; refresh_token?: string } = {};
+    const existing = await this.getExistingTokenData();
+
+    await ragenAuthClient.storeToken(this.customerId, this.providerKey, {
+      ...existing,
+      code_verifier: verifier,
+    });
+  }
+
+  /**
+   * Fetch existing token data to preserve all fields during partial updates.
+   * ragen-auth's PUT replaces the entire record, so we must merge.
+   */
+  private async getExistingTokenData(): Promise<StoreTokenData> {
     try {
-      existing = await ragenAuthClient.getToken(
+      const token = await ragenAuthClient.getToken(
         this.customerId,
         this.providerKey,
       );
+      return {
+        access_token: token.access_token || '__placeholder__',
+        refresh_token: token.refresh_token || undefined,
+        client_id: token.client_id || undefined,
+        client_secret: token.client_secret || undefined,
+        code_verifier: token.code_verifier || undefined,
+        token_type: token.token_type || undefined,
+        expires_at: token.expires_at || undefined,
+        scopes: token.scopes || undefined,
+        token_uri: token.token_uri || undefined,
+      };
     } catch {
-      // No existing token — will create a new record
+      return { access_token: '__placeholder__' };
     }
-
-    await ragenAuthClient.storeToken(this.customerId, this.providerKey, {
-      access_token: existing.access_token || '__placeholder__',
-      refresh_token: existing.refresh_token || undefined,
-      code_verifier: verifier,
-    });
   }
 
   async codeVerifier(): Promise<string> {

@@ -10,7 +10,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
-import { PrismaOAuthClientProvider } from '@/libs/mcp/oauth-provider';
+import { RagenAuthOAuthClientProvider } from '@/libs/ragen-auth';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       : request.nextUrl.origin;
     const callbackUrl = `${appOrigin}/api/connectors/external/callback?provider=${provider}`;
 
-    const oauthProvider = new PrismaOAuthClientProvider({
+    const oauthProvider = new RagenAuthOAuthClientProvider({
       orgId,
       userId,
       provider,

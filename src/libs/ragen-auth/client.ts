@@ -124,24 +124,28 @@ export class RagenAuthClient {
     }
   }
 
+  private tokenPath(customerId: string, provider: string): string {
+    return `/v1/tokens/${encodeURIComponent(customerId)}/${encodeURIComponent(provider)}`;
+  }
+
   async storeToken(
     customerId: string,
     provider: string,
     data: StoreTokenData,
   ): Promise<void> {
-    const path = `/v1/tokens/${encodeURIComponent(customerId)}/${encodeURIComponent(provider)}`;
-    await this.request<void>('PUT', path, data);
+    await this.request<void>('PUT', this.tokenPath(customerId, provider), data);
     logger.info({ provider }, 'Stored token in ragen-auth');
   }
 
   async getToken(customerId: string, provider: string): Promise<TokenResponse> {
-    const path = `/v1/tokens/${encodeURIComponent(customerId)}/${encodeURIComponent(provider)}`;
-    return this.request<TokenResponse>('GET', path);
+    return this.request<TokenResponse>(
+      'GET',
+      this.tokenPath(customerId, provider),
+    );
   }
 
   async deleteToken(customerId: string, provider: string): Promise<void> {
-    const path = `/v1/tokens/${encodeURIComponent(customerId)}/${encodeURIComponent(provider)}`;
-    await this.request<void>('DELETE', path);
+    await this.request<void>('DELETE', this.tokenPath(customerId, provider));
     logger.info({ provider }, 'Deleted token from ragen-auth');
   }
 
@@ -149,8 +153,10 @@ export class RagenAuthClient {
     customerId: string,
     provider: string,
   ): Promise<TokenStatusResponse> {
-    const path = `/v1/tokens/${encodeURIComponent(customerId)}/${encodeURIComponent(provider)}/status`;
-    return this.request<TokenStatusResponse>('GET', path);
+    return this.request<TokenStatusResponse>(
+      'GET',
+      `${this.tokenPath(customerId, provider)}/status`,
+    );
   }
 
   async listTokens(customerId: string): Promise<ListTokensResponse> {
@@ -159,15 +165,30 @@ export class RagenAuthClient {
   }
 }
 
-function createRagenAuthClient(): RagenAuthClient {
-  const baseUrl = process.env.RAGEN_AUTH_URL;
-  const secret = process.env.RAGEN_AUTH_SERVICE_SECRET;
+let _ragenAuthClient: RagenAuthClient | null = null;
 
-  if (!baseUrl || !secret) {
-    throw new Error('RAGEN_AUTH_URL and RAGEN_AUTH_SERVICE_SECRET must be set');
+export function getRagenAuthClient(): RagenAuthClient {
+  if (!_ragenAuthClient) {
+    const baseUrl = process.env.RAGEN_AUTH_URL;
+    const secret = process.env.RAGEN_AUTH_SERVICE_SECRET;
+
+    if (!baseUrl || !secret) {
+      throw new Error(
+        'RAGEN_AUTH_URL and RAGEN_AUTH_SERVICE_SECRET must be set',
+      );
+    }
+
+    _ragenAuthClient = new RagenAuthClient(baseUrl, secret);
   }
-
-  return new RagenAuthClient(baseUrl, secret);
+  return _ragenAuthClient;
 }
 
-export const ragenAuthClient = createRagenAuthClient();
+/**
+ * Lazy-initialized singleton. Access via property getter to avoid
+ * crashing at import time when env vars are not yet available.
+ */
+export const ragenAuthClient = new Proxy({} as RagenAuthClient, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getRagenAuthClient(), prop, receiver);
+  },
+});

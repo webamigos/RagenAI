@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { ragenAuthClient } from '@/libs/ragen-auth';
 
 export const disconnectConnectorCommand = async (
   connectorId: string,
@@ -15,29 +16,33 @@ export const disconnectConnectorCommand = async (
         organization_id: organizationId,
         user_id: userId,
       },
-      select: { provider: true },
+      select: { provider: true, customer_id: true },
     });
 
     if (!connector) {
       throw new Error('Connector not found');
     }
 
-    return await db.$transaction(async (tx) => {
-      await tx.mcpOAuthToken.deleteMany({
-        where: {
-          organization_id: organizationId,
-          user_id: userId,
-          provider: connector.provider,
-        },
-      });
+    // Delete token from ragen-auth
+    try {
+      await ragenAuthClient.deleteToken(
+        connector.customer_id,
+        connector.provider,
+      );
+    } catch (error) {
+      logger.warn(
+        { err: error, provider: connector.provider },
+        'Failed to delete token from ragen-auth (may not exist)',
+      );
+    }
 
-      return tx.mcpConnector.delete({
-        where: {
-          id: connectorId,
-          organization_id: organizationId,
-          user_id: userId,
-        },
-      });
+    // Delete the connector record
+    return await db.mcpConnector.delete({
+      where: {
+        id: connectorId,
+        organization_id: organizationId,
+        user_id: userId,
+      },
     });
   } catch (error) {
     logger.error({ err: error }, 'Error disconnecting connector');

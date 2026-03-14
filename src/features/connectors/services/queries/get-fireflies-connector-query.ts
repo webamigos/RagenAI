@@ -3,6 +3,7 @@ import {
   McpConnectorProvider,
   McpConnectorStatus,
 } from '@/generated/prisma/client';
+import { ragenAuthClient } from '@/libs/ragen-auth';
 
 export type FirefliesConnectorResult = {
   apiKey: string;
@@ -23,6 +24,7 @@ export const getFirefliesConnectorQuery = async (
     select: {
       enabled: true,
       status: true,
+      customer_id: true,
     },
   });
 
@@ -34,20 +36,18 @@ export const getFirefliesConnectorQuery = async (
     return null;
   }
 
-  const token = await db.mcpOAuthToken.findUnique({
-    where: {
-      organization_id_user_id_provider: {
-        organization_id: organizationId,
-        user_id: userId,
-        provider: McpConnectorProvider.FIREFLIES,
-      },
-    },
-    select: { access_token: true },
-  });
+  try {
+    const token = await ragenAuthClient.getToken(
+      connector.customer_id,
+      McpConnectorProvider.FIREFLIES,
+    );
 
-  if (!token?.access_token) {
+    if (!token?.access_token) {
+      return null;
+    }
+
+    return { apiKey: token.access_token };
+  } catch {
     return null;
   }
-
-  return { apiKey: token.access_token };
 };
