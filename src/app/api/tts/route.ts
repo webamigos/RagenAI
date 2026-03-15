@@ -1,11 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ElevenLabsClient } from 'elevenlabs';
 import { logger } from '@/app/lib/utils/logger';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const apiKey = process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
       return NextResponse.json(

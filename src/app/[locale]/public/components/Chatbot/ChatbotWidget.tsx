@@ -22,16 +22,18 @@ export const ChatbotWidget = ({ organizationId, searchParams }: Props) => {
     };
   }, []);
 
+  // TODO: Security — replace '*' with the actual parent origin to prevent data leakage
   // Send initial loaded message
   useEffect(() => {
     window.parent.postMessage(
       {
         type: 'loaded',
       },
-      '*'
+      '*',
     );
   }, []);
 
+  // TODO: Security — replace '*' with the actual parent origin to prevent data leakage
   const sendResizeMessage = (newIsOpen: boolean, newIsMinimized: boolean) => {
     window.parent.postMessage(
       {
@@ -39,7 +41,7 @@ export const ChatbotWidget = ({ organizationId, searchParams }: Props) => {
         width: newIsOpen ? (newIsMinimized ? 400 : 400) : 80,
         height: newIsOpen ? (newIsMinimized ? 64 : 600) : 80,
       },
-      '*'
+      '*',
     );
   };
 

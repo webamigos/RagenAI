@@ -1,17 +1,39 @@
 import { StatusCodes } from 'http-status-codes';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/app/lib/utils/logger';
+import { auth } from '@/lib/auth';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import db from '@ragenai/prisma-client';
 
 type Params = {
   params: Promise<{ messageId: string }>;
 };
 
-export const POST = async (request: Request, { params }: Params) => {
+export const dynamic = 'force-dynamic';
+
+export const POST = async (request: NextRequest, { params }: Params) => {
   const { messageId } = await params;
 
   try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: StatusCodes.UNAUTHORIZED },
+      );
+    }
+
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: StatusCodes.UNAUTHORIZED },
+      );
+    }
+
     const body = await request.json();
     const { feedback } = body;
 
@@ -22,8 +44,12 @@ export const POST = async (request: Request, { params }: Params) => {
       );
     }
 
-    const message = await db.message.findUnique({
-      where: { public_id: messageId },
+    // Find message scoped to the user's organization via thread relationship
+    const message = await db.message.findFirst({
+      where: {
+        public_id: messageId,
+        thread: { organization_id: orgId },
+      },
       select: { id: true },
     });
 

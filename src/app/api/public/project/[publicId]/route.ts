@@ -3,25 +3,24 @@ import { StatusCodes } from 'http-status-codes';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ publicId: string }> },
 ) {
   try {
     const { publicId } = await params;
-    logger.info('Request params:', { params, url: request.url });
 
-    // Find project by public_id
+    // Find project by access_token (public identifier)
     const project = await db.project.findFirst({
       where: {
         access_token: publicId,
       },
       select: {
-        id: true,
         public_id: true,
         title: true,
         is_public: true,
-        organization_id: true,
       },
     });
     if (!project) {
