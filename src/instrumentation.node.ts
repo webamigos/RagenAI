@@ -40,8 +40,9 @@ export async function registerOtel() {
 
     console.log('[otel] All modules imported successfully');
 
+    const serviceName = process.env.OTEL_SERVICE_NAME ?? 'ragen-app';
     const resource = resourceFromAttributes({
-      'service.name': 'ragen-app',
+      'service.name': serviceName,
       'service.version': process.env.RAILWAY_GIT_COMMIT_SHA ?? 'dev',
       'deployment.environment.name': process.env.TARGET_ENV ?? 'local',
     });

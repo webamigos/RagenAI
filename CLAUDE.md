@@ -126,7 +126,7 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `temporal/` — Temporal.io client for async document processing workflows
 - `payments/` — Stripe integration
 - `mcp/` — MCP (Model Context Protocol) client for connecting to external tool servers via `@ai-sdk/mcp`
-- `ragen-vault/` — HTTP client for the ragen-vault token vault (HMAC-SHA256 signed requests, lazy-initialized singleton)
+- `ragen-vault/` — HTTP client for the Ragen Token Vault (HMAC-SHA256 signed requests, lazy-initialized singleton)
 - `sse/` — Server-Sent Events for streaming
 - `tui/` — Tailwind UI component library (aliased as `@ragenai/tui`)
 - `common-ui/` — Shared UI utilities (aliased as `@ragenai/common-ui`)
@@ -152,22 +152,22 @@ Users can connect external services via Settings > Connectors. These are powered
 
 **How it works:**
 - Each connector stores an `mcp_server_url` and `customer_id` (format: `{orgId}:{userId}:{provider_lowercase}`) in the `McpConnector` Prisma model
-- OAuth tokens and API keys are stored in **ragen-vault** (centralized token vault), not in ragen-app's database
-- During chat, `assistant-stream.ts` loads enabled connectors, `createMcpToolsFromConnectors()` fetches tokens from ragen-vault, creates MCP clients via `@ai-sdk/mcp`, and passes the tools to `streamText()`
+- OAuth tokens and API keys are stored in **Ragen Token Vault** (centralized token vault), not in ragen-app's database
+- During chat, `assistant-stream.ts` loads enabled connectors, `createMcpToolsFromConnectors()` fetches tokens from Ragen Token Vault, creates MCP clients via `@ai-sdk/mcp`, and passes the tools to `streamText()`
 - AI SDK v6 uses `stopWhen: stepCountIs(N)` (not `maxSteps`) for multi-step tool use
 - MCP clients are closed after streaming completes (or on error)
 - System prompt includes per-provider guidance for tool usage (sorting, filtering, date handling) in `mcpContext`
 
-**Token storage (ragen-vault):**
+**Token storage (Ragen Token Vault):**
 - `src/libs/ragen-vault/client.ts` — `RagenAuthClient` with HMAC-SHA256 signing (lazy-initialized singleton via `ragenAuthClient`)
-- `src/libs/ragen-vault/oauth-provider.ts` — `RagenAuthOAuthClientProvider` implements `OAuthClientProvider` from `@ai-sdk/mcp`, stores/retrieves tokens via ragen-vault HTTP API
-- Provider names in ragen-vault use UPPERCASE (matches `McpConnectorProvider` Prisma enum)
-- Three auth types: `external_mcp` (ClickUp, HubSpot — full OAuth via MCP server), `api_key_bearer` (Fireflies — user-provided API key), custom OAuth (Google — flow handled by ragen-vault + ragen-mcp)
+- `src/libs/ragen-vault/oauth-provider.ts` — `RagenAuthOAuthClientProvider` implements `OAuthClientProvider` from `@ai-sdk/mcp`, stores/retrieves tokens via Ragen Token Vault HTTP API
+- Provider names in Ragen Token Vault use UPPERCASE (matches `McpConnectorProvider` Prisma enum)
+- Three auth types: `external_mcp` (ClickUp, HubSpot — full OAuth via MCP server), `api_key_bearer` (Fireflies — user-provided API key), custom OAuth (Google — flow handled by Ragen Token Vault + ragen-mcp)
 
 **Key files:**
 - `src/features/connectors/` — CQRS feature module (contracts, queries, commands)
-- `src/libs/mcp/client.ts` — Creates MCP clients from connector records, fetches tokens from ragen-vault, returns tools + cleanup function
-- `src/libs/ragen-vault/` — HTTP client + OAuth provider for ragen-vault token vault
+- `src/libs/mcp/client.ts` — Creates MCP clients from connector records, fetches tokens from Ragen Token Vault, returns tools + cleanup function
+- `src/libs/ragen-vault/` — HTTP client + OAuth provider for Ragen Token Vault
 - `src/libs/chains/basic-rag/chain.ts` and `conversation-chain/chain.ts` — Pass MCP tools to `streamText()` with `stopWhen: stepCountIs(10)`
 - `src/app/[locale]/(panel)/settings/connectors/` — UI for connecting/disconnecting providers (OAuth popup flow)
 - `src/app/api/connectors/external/` — OAuth connect + callback routes using `RagenAuthOAuthClientProvider`
@@ -185,7 +185,7 @@ Users can connect external services via Settings > Connectors. These are powered
 | ClickUp | Claude AI MCP | search, create/get/update_task, create/get/update_list, create/get/update_folder, docs, comments, time tracking |
 | Gmail | Claude AI MCP | search_messages, read_message, read_thread, create_draft, list_labels, get_profile |
 
-**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + FastAPI Python server deployed on Railway. Per-user OAuth with PKCE, tokens stored in ragen-vault (centralized vault). All Google tools (Calendar, Analytics, Ads, Drive) require `property_id` (GA4) or `ads_customer_id` (Ads) which the user must provide.
+**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + FastAPI Python server deployed on Railway. Per-user OAuth with PKCE, tokens stored in Ragen Token Vault (centralized vault). All Google tools (Calendar, Analytics, Ads, Drive) require `property_id` (GA4) or `ads_customer_id` (Ads) which the user must provide.
 
 ### Settings Pages
 
