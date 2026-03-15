@@ -182,26 +182,26 @@ const handle = await client.workflow.start('estimateAgeWorkflow', {
 import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 ```
 
-## Token Vault (ragen-vault)
+## Token Vault (ragen-token-vault)
 
-OAuth tokens and API keys for external connectors are stored in [ragen-vault](https://github.com/WebAmigos/ragen-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
+OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-token-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
 
 ### Auth flows
 
-Three auth types are supported for connectors. All store tokens in ragen-vault.
+Three auth types are supported for connectors. All store tokens in ragen-token-vault.
 
 ```mermaid
 flowchart TD
     subgraph "External MCP OAuth (ClickUp, HubSpot)"
         A1[User clicks Connect] --> A2[ragen-app creates connector PENDING]
         A2 --> A3["GET /api/connectors/external/connect"]
-        A3 --> A4["RagenAuthOAuthClientProvider<br/>saves client info + code verifier<br/>to ragen-vault"]
+        A3 --> A4["RagenAuthOAuthClientProvider<br/>saves client info + code verifier<br/>to ragen-token-vault"]
         A4 --> A5[Returns authorization URL]
         A5 --> A6[Browser popup → OAuth provider]
         A6 --> A7[User authorizes]
         A7 --> A8["GET /api/connectors/external/callback"]
         A8 --> A9["mcpAuth() exchanges code → tokens"]
-        A9 --> A10["RagenAuthOAuthClientProvider<br/>saves tokens to ragen-vault"]
+        A9 --> A10["RagenAuthOAuthClientProvider<br/>saves tokens to ragen-token-vault"]
         A10 --> A11[Connector marked CONNECTED]
     end
 
@@ -213,11 +213,11 @@ flowchart TD
 
     subgraph "Custom OAuth (Google Calendar, Drive, Analytics, Ads)"
         C1[User clicks Connect] --> C2["Browser → ragen-mcp /auth/google"]
-        C2 --> C3["ragen-mcp → ragen-vault<br/>GET /v1/oauth/google/authorize"]
-        C3 --> C4[ragen-vault generates PKCE + redirects to Google]
+        C2 --> C3["ragen-mcp → ragen-token-vault<br/>GET /v1/oauth/google/authorize"]
+        C3 --> C4[ragen-token-vault generates PKCE + redirects to Google]
         C4 --> C5[User authorizes]
-        C5 --> C6["Google → ragen-vault /v1/oauth/google/callback"]
-        C6 --> C7["ragen-vault exchanges code → tokens<br/>encrypts + stores"]
+        C5 --> C6["Google → ragen-token-vault /v1/oauth/google/callback"]
+        C6 --> C7["ragen-token-vault exchanges code → tokens<br/>encrypts + stores"]
         C7 --> C8[Redirect back to ragen-app]
         C8 --> C9[Connector marked CONNECTED]
     end
@@ -245,17 +245,17 @@ flowchart LR
 
 | File | Purpose |
 |---|---|
-| `src/libs/ragen-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for ragen-vault API |
-| `src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
-| `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from ragen-vault during chat |
+| `src/libs/ragen-token-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for ragen-token-vault API |
+| `src/libs/ragen-token-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
+| `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from ragen-token-vault during chat |
 | `src/features/connectors/services/commands/` | Connect/disconnect commands using `ragenAuthClient` |
 | `src/app/api/connectors/external/` | OAuth connect + callback routes |
 
 ### Conventions
 
-- **Provider names** are UPPERCASE in ragen-vault (matches `McpConnectorProvider` Prisma enum: `CLICKUP`, `HUBSPOT`, `FIREFLIES`, `GOOGLE_CALENDAR`, etc.)
+- **Provider names** are UPPERCASE in ragen-token-vault (matches `McpConnectorProvider` Prisma enum: `CLICKUP`, `HUBSPOT`, `FIREFLIES`, `GOOGLE_CALENDAR`, etc.)
 - **Customer ID format**: `{orgId}:{userId}:{provider_lowercase}` (e.g. `abc123:user456:clickup`)
-- **Environment variables**: `RAGEN_VAULT_URL` and `RAGEN_VAULT_SERVICE_SECRET` (shared secret must match ragen-vault config)
+- **Environment variables**: `RAGEN_TOKEN_VAULT_URL` and `RAGEN_TOKEN_VAULT_SERVICE_SECRET` (shared secret must match ragen-token-vault config)
 
 ## Key Conventions
 

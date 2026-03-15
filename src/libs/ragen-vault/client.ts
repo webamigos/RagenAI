@@ -104,7 +104,7 @@ export class RagenAuthClient {
       if (!response.ok) {
         const errorBody = await response.text().catch(() => 'unknown');
         throw new Error(
-          `ragen-vault ${method} ${path} returned ${response.status}: ${errorBody}`,
+          `ragen-token-vault ${method} ${path} returned ${response.status}: ${errorBody}`,
         );
       }
 
@@ -116,7 +116,7 @@ export class RagenAuthClient {
       return (await response.json()) as T;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`ragen-vault ${method} ${path} timed out`);
+        throw new Error(`ragen-token-vault ${method} ${path} timed out`);
       }
       throw error;
     } finally {
@@ -134,7 +134,7 @@ export class RagenAuthClient {
     data: StoreTokenData,
   ): Promise<void> {
     await this.request<void>('PUT', this.tokenPath(customerId, provider), data);
-    logger.info({ provider }, 'Stored token in ragen-vault');
+    logger.info({ provider }, 'Stored token in ragen-token-vault');
   }
 
   async getToken(customerId: string, provider: string): Promise<TokenResponse> {
@@ -146,7 +146,7 @@ export class RagenAuthClient {
 
   async deleteToken(customerId: string, provider: string): Promise<void> {
     await this.request<void>('DELETE', this.tokenPath(customerId, provider));
-    logger.info({ provider }, 'Deleted token from ragen-vault');
+    logger.info({ provider }, 'Deleted token from ragen-token-vault');
   }
 
   async getTokenStatus(
@@ -169,12 +169,12 @@ let _ragenAuthClient: RagenAuthClient | null = null;
 
 export function getRagenAuthClient(): RagenAuthClient {
   if (!_ragenAuthClient) {
-    const baseUrl = process.env.RAGEN_VAULT_URL;
-    const secret = process.env.RAGEN_VAULT_SERVICE_SECRET;
+    const baseUrl = process.env.RAGEN_TOKEN_VAULT_URL;
+    const secret = process.env.RAGEN_TOKEN_VAULT_SERVICE_SECRET;
 
     if (!baseUrl || !secret) {
       throw new Error(
-        'RAGEN_VAULT_URL and RAGEN_VAULT_SERVICE_SECRET must be set',
+        'RAGEN_TOKEN_VAULT_URL and RAGEN_TOKEN_VAULT_SERVICE_SECRET must be set',
       );
     }
 

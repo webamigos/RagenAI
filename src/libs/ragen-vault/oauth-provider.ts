@@ -94,7 +94,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
     } catch (error) {
       logger.error(
         { err: error, customerId: this.customerId, provider: this.providerKey },
-        'Failed to retrieve tokens from ragen-vault',
+        'Failed to retrieve tokens from ragen-token-vault',
       );
       return undefined;
     }
@@ -124,7 +124,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
       };
     }
 
-    // Otherwise check ragen-vault for dynamically registered client info
+    // Otherwise check ragen-token-vault for dynamically registered client info
     try {
       const token = await ragenAuthClient.getToken(
         this.customerId,
@@ -142,7 +142,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
     } catch (error) {
       logger.error(
         { err: error, customerId: this.customerId, provider: this.providerKey },
-        'Failed to retrieve client information from ragen-vault',
+        'Failed to retrieve client information from ragen-token-vault',
       );
       return undefined;
     }
@@ -173,7 +173,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
 
   /**
    * Fetch existing token data to preserve all fields during partial updates.
-   * ragen-vault's PUT replaces the entire record, so we must merge.
+   * ragen-token-vault's PUT replaces the entire record, so we must merge.
    */
   private async getExistingTokenData(): Promise<StoreTokenData> {
     try {
@@ -195,7 +195,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
     } catch (error) {
       logger.warn(
         { err: error, customerId: this.customerId, provider: this.providerKey },
-        'Failed to fetch existing token data from ragen-vault, using placeholder',
+        'Failed to fetch existing token data from ragen-token-vault, using placeholder',
       );
       return { access_token: '__placeholder__' };
     }
@@ -222,7 +222,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
       }
       logger.error(
         { err: error, customerId: this.customerId, provider: this.providerKey },
-        'Failed to retrieve code verifier from ragen-vault',
+        'Failed to retrieve code verifier from ragen-token-vault',
       );
       throw new Error('No code verifier found');
     }
