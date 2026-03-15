@@ -17,7 +17,7 @@ export const ROUTES = {
 } as const;
 
 export const LABELS = {
-  signIn: /zaloguj się/i,
+  signIn: /^zaloguj się$/i,
   signOut: /wyloguj się/i,
   newThread: /nowy wątek/i,
   emailInvalid: /nieprawidłowy adres email/i,
