@@ -169,8 +169,11 @@ let _ragenAuthClient: RagenAuthClient | null = null;
 
 export function getRagenAuthClient(): RagenAuthClient {
   if (!_ragenAuthClient) {
-    const baseUrl = process.env.RAGEN_TOKEN_VAULT_URL;
-    const secret = process.env.RAGEN_TOKEN_VAULT_SERVICE_SECRET;
+    const baseUrl =
+      process.env.RAGEN_TOKEN_VAULT_URL ?? process.env.RAGEN_VAULT_URL;
+    const secret =
+      process.env.RAGEN_TOKEN_VAULT_SERVICE_SECRET ??
+      process.env.RAGEN_VAULT_SERVICE_SECRET;
 
     if (!baseUrl || !secret) {
       throw new Error(

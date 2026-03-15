@@ -1,6 +1,6 @@
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 
-const logger = logs.getLogger('ragen-app');
+const logger = logs.getLogger(process.env.OTEL_SERVICE_NAME ?? 'ragen-app');
 
 function extractErrorAttrs(
   attrs?: Record<string, unknown>,

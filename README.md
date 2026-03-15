@@ -184,7 +184,7 @@ import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 
 ## Token Vault (ragen-token-vault)
 
-OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-token-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
+OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
 
 ### Auth flows
 
@@ -245,9 +245,9 @@ flowchart LR
 
 | File | Purpose |
 |---|---|
-| `src/libs/ragen-token-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for ragen-token-vault API |
-| `src/libs/ragen-token-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
-| `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from ragen-token-vault during chat |
+| `src/libs/ragen-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for Ragen Token Vault API |
+| `src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
+| `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from Ragen Token Vault during chat |
 | `src/features/connectors/services/commands/` | Connect/disconnect commands using `ragenAuthClient` |
 | `src/app/api/connectors/external/` | OAuth connect + callback routes |
 
