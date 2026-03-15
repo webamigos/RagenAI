@@ -36,5 +36,5 @@ export async function login(page: Page) {
   await page.locator('input[type="email"]').fill(CREDENTIALS.email);
   await page.locator('input[type="password"]').fill(CREDENTIALS.password);
   await page.getByTestId('sign-in-submit').click({ force: true });
-  await page.waitForURL('**/pl/**', { timeout: 15_000 });
+  await page.waitForURL('**/pl/new', { timeout: 15_000 });
 }

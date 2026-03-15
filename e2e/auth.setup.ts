@@ -9,7 +9,7 @@ import { login } from './helpers';
 
 setup('authenticate', async ({ page }) => {
   await login(page);
-  await expect(page).toHaveURL(/\/pl\//, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/pl\/new/, { timeout: 15_000 });
 
   // Set activeOrganizationId on the session so authenticated pages work.
   // The login form calls finalizeOnboardingCommand which does this via auth API,
