@@ -4,5 +4,5 @@ import { login } from './helpers';
 
 test('sign in success', async ({ page }) => {
   await login(page);
-  await expect(page).toHaveURL(/\/pl\//, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/pl\/new/, { timeout: 15_000 });
 });

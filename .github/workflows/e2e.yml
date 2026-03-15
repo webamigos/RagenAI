@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, dev]
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
 env:
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
@@ -106,6 +111,11 @@ jobs:
 
       - name: Build Next.js app
         run: npm run build
+
+      - name: Prepare standalone output
+        run: |
+          cp -r public .next/standalone/public
+          cp -r .next/static .next/standalone/.next/static
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps

@@ -113,6 +113,7 @@ export const CollapsedSidebarRail = () => {
           as="button"
           className="flex items-center justify-center rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors p-0.5"
           aria-label="User menu"
+          data-testid="user-menu"
         >
           <Avatar
             src={user?.image}

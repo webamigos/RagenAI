@@ -32,7 +32,9 @@ export default defineConfig({
   reporter: [['list'], ['html'], ['playwright-ctrf-json-reporter', {}]],
 
   webServer: {
-    command: 'npm run start',
+    command: process.env.CI
+      ? 'node .next/standalone/server.js'
+      : 'npm run start',
     url: baseURL,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
@@ -55,13 +57,13 @@ export default defineConfig({
     },
     {
       name: 'no-auth',
-      testMatch: /0[4-6]-.*\.spec\.ts/,
+      testMatch: /0[1-6]-.*\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'authenticated',
       testMatch: /\d{2}-.*\.spec\.ts/,
-      testIgnore: /0[4-6]-.*\.spec\.ts/,
+      testIgnore: /0[1-6]-.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: AUTH_FILE,
