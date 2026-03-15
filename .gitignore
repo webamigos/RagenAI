@@ -63,7 +63,9 @@ tmp/
 /src/generated/prisma/
 
 
+# Claude Code - personal files
 .claude/settings.local.json
+.claude/memory/
 
 # Nx
 .nx/
