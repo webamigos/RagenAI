@@ -17,7 +17,6 @@ export const ROUTES = {
 } as const;
 
 export const LABELS = {
-  signIn: /^zaloguj się$/i,
   signOut: /wyloguj się/i,
   newThread: /nowy wątek/i,
   emailInvalid: /nieprawidłowy adres email/i,
@@ -36,6 +35,6 @@ export async function login(page: Page) {
   await page.goto(ROUTES.signIn);
   await page.locator('input[type="email"]').fill(CREDENTIALS.email);
   await page.locator('input[type="password"]').fill(CREDENTIALS.password);
-  await page.getByRole('button', { name: LABELS.signIn }).click();
+  await page.getByTestId('sign-in-submit').click();
   await page.waitForURL('**/pl/**', { timeout: 15_000 });
 }

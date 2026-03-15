@@ -33,7 +33,7 @@ export default function AccountConfigurationPage() {
       </div>
       <div className="relative hidden w-0 flex-1 lg:block">
         <Image
-          className="absolute inset-0 w-full h-full object-cover dark:opacity-20 opacity-30"
+          className="pointer-events-none absolute inset-0 w-full h-full object-cover dark:opacity-20 opacity-30"
           src="/assets/documents_2.jpeg"
           fill
           alt=""

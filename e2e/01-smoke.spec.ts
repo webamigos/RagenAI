@@ -11,9 +11,7 @@ test.describe('Smoke tests', () => {
   test('sign-in page loads', async ({ page }) => {
     await page.goto(ROUTES.signIn);
     await expect(page).toHaveURL(/sign-in/);
-    await expect(
-      page.getByRole('button', { name: /^zaloguj się$/i }),
-    ).toBeVisible();
+    await expect(page.getByTestId('sign-in-submit')).toBeVisible();
   });
 
   test('sign-up page loads', async ({ page }) => {

@@ -13,7 +13,7 @@ test('sign out success', async ({ page }) => {
 
   await page.getByText(LABELS.signOut).click();
 
-  await expect(page.getByRole('button', { name: LABELS.signIn })).toBeVisible({
+  await expect(page.getByTestId('sign-in-submit')).toBeVisible({
     timeout: 10_000,
   });
 });
