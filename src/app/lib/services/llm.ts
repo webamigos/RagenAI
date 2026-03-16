@@ -33,6 +33,7 @@ export const MODELS_MAP = {
     'gpt-4o',
     'gpt-4o-mini',
     'o3-mini',
+    'openai/gpt-5.3-chat',
     'openai/gpt-5.2',
     'openai/gpt-5.2-chat',
     'openai/gpt-4o',
@@ -60,6 +61,7 @@ export const MODELS_MAP = {
   ],
   ollama: ['llama3.1'],
   openrouter: [
+    'openai/gpt-5.3-chat',
     'openai/gpt-5.2',
     'openai/gpt-5.2-chat',
     'openai/gpt-4o',
@@ -470,7 +472,7 @@ switch (modelConfig.provider) {
       provider: 'openrouter',
       apiKey: OPENROUTER_API_KEY,
     };
-    customChatModel = 'openai/gpt-4o';
+    customChatModel = 'google/gemini-3-flash-preview';
     break;
   }
 
