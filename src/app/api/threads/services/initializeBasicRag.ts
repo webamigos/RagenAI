@@ -122,8 +122,8 @@ export const initializeRagChain = async ({
 
 /**
  * Build Meilisearch filter based on project context:
- * - Thread with project: org_id AND (project_id = X OR file_id IN [imported_kb_source_ids])
- * - Thread without project (global KB): org_id AND project_id IS NULL
+ * - Thread with project: org_id AND (projectId = X OR fileId IN [imported_kb_source_ids])
+ * - Thread without project (global KB): org_id AND projectId IS NULL
  */
 async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
   const orgCondition = {
@@ -190,7 +190,7 @@ const createSupabaseVectorStore = (
   projectPublicId?: string,
 ): VectorStoreClient => {
   try {
-    // SECURITY CRITICAL: This organization_id filter is the primary security boundary
+    // SECURITY CRITICAL: This organizationId filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.

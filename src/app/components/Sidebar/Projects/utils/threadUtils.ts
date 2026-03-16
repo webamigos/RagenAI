@@ -3,7 +3,7 @@ import { format, subDays } from 'date-fns';
 import type { ThreadType } from '../types';
 
 export type BaseThreadType = {
-  created_at: string | Date;
+  createdAt: string | Date;
 };
 
 export type ThreadCategories<T extends BaseThreadType> = {
@@ -14,12 +14,12 @@ export type ThreadCategories<T extends BaseThreadType> = {
 
 export const getThreadTitle = (thread: ThreadType): string => {
   if (!thread.messages?.length) {
-    return `Thread ${thread.public_id.substring(0, 8)}...`;
+    return `Thread ${thread.publicId.substring(0, 8)}...`;
   }
 
   const firstMessage = thread.messages[0];
   if (!firstMessage?.content) {
-    return `Thread ${thread.public_id.substring(0, 8)}...`;
+    return `Thread ${thread.publicId.substring(0, 8)}...`;
   }
 
   return firstMessage.content.length > 30
@@ -36,7 +36,7 @@ export const categorizeThreadsByDate = <T extends BaseThreadType>(
 
   return threads.reduce(
     (acc, thread) => {
-      const threadDate = format(new Date(thread.created_at), 'EEE MMM dd yyyy');
+      const threadDate = format(new Date(thread.createdAt), 'EEE MMM dd yyyy');
 
       if (threadDate === todayDate) {
         acc.today.push(thread);

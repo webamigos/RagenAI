@@ -114,9 +114,7 @@ export const getAllOrgFiles = async () => {
 };
 
 // Get project files
-export const getProjectFiles = async (
-  projectPublicId: Project['public_id'],
-) => {
+export const getProjectFiles = async (projectPublicId: Project['publicId']) => {
   try {
     const files = await fetchProjectFiles(projectPublicId);
 
@@ -131,7 +129,7 @@ export const getProjectFiles = async (
 
 // Get project storage info (usage + limits)
 export const getProjectStorageInfo = async (
-  projectPublicId: Project['public_id'],
+  projectPublicId: Project['publicId'],
 ) => {
   try {
     const orgId = await getOrgIdOrThrow();
@@ -206,8 +204,8 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 
 // Delete project file
 export const deleteProjectFileAction = async (
-  filePublicId: UserFile['public_id'],
-  projectPublicId: Project['public_id'],
+  filePublicId: UserFile['publicId'],
+  projectPublicId: Project['publicId'],
 ) => {
   try {
     const fileRecord = await getFileDetailsByPublicId(filePublicId);
@@ -227,8 +225,8 @@ export const deleteProjectFileAction = async (
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
-      const documentS3Path = `${fileRecord.public_id}.${getFileExtension(
-        fileRecord.file_name,
+      const documentS3Path = `${fileRecord.publicId}.${getFileExtension(
+        fileRecord.fileName,
       )}`;
 
       try {
@@ -239,7 +237,7 @@ export const deleteProjectFileAction = async (
       }
 
       // Delete from UserDocument
-      const documentId = fileRecord.document_id;
+      const documentId = fileRecord.documentId;
       if (documentId) {
         const userDocument = await getDocumentByPublicId(documentId);
         if (userDocument) {
@@ -264,7 +262,7 @@ export const deleteProjectFileAction = async (
 };
 
 //remove user file
-export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
+export const deleteFileAction = async (filePublicId: UserFile['publicId']) => {
   try {
     const orgId = await getOrgIdOrThrow();
     //  Removal document from `UserFile`
@@ -274,22 +272,22 @@ export const deleteFileAction = async (filePublicId: UserFile['public_id']) => {
 
     if (fileRecord) {
       const documentS3Path = `${filePublicId}.${getFileExtension(
-        fileRecord.file_name,
+        fileRecord.fileName,
       )}`;
 
       await deleteFromS3(documentS3Path);
 
       // Removal thumbnail from S3 (best-effort)
-      if (fileRecord.thumbnail_s3_key) {
+      if (fileRecord.thumbnailS3Key) {
         try {
-          await deleteFromS3ByKey(fileRecord.thumbnail_s3_key);
+          await deleteFromS3ByKey(fileRecord.thumbnailS3Key);
         } catch {
           // Thumbnail cleanup is non-critical
         }
       }
 
       // Removal from `UserDocument`
-      const documentId = fileRecord?.document_id;
+      const documentId = fileRecord?.documentId;
       if (documentId) {
         await deleteDocumentFromDb(documentId);
       }

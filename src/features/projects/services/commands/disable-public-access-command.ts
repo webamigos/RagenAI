@@ -10,8 +10,8 @@ export const disablePublicAccessCommand = async (publicId: string) => {
 
     const project = await db.project.findFirst({
       where: {
-        public_id: publicId,
-        organization_id: orgId,
+        publicId: publicId,
+        organizationId: orgId,
       },
     });
 
@@ -23,9 +23,9 @@ export const disablePublicAccessCommand = async (publicId: string) => {
     await db.project.update({
       where: { id: project.id },
       data: {
-        is_public: false,
-        access_token: null,
-        published_at: null,
+        isPublic: false,
+        accessToken: null,
+        publishedAt: null,
       },
     });
 

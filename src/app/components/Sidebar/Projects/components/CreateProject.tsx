@@ -89,7 +89,7 @@ export function CreateProject({
       successToast({ message: t('projects.success.created') });
       startTransition(async () => {
         await refreshProjects();
-        router.push(`/projects/${project.public_id}`);
+        router.push(`/projects/${project.publicId}`);
         onClose();
         reset();
       });

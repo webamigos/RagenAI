@@ -37,7 +37,7 @@ export const POST = async (request: NextRequest) => {
         quality: 'high',
         avatar_name: HEYGEN_AVATAR_ID,
         voice: {
-          voice_id: '',
+          voiceId: '',
         },
       },
       {

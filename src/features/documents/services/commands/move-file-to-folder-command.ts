@@ -10,7 +10,7 @@ export async function moveFileToFolderCommand(
   organizationId: string,
 ): Promise<OperationResult> {
   const file = await db.userFile.findFirst({
-    where: { public_id: filePublicId, organization_id: organizationId },
+    where: { publicId: filePublicId, organizationId: organizationId },
     select: { id: true },
   });
 
@@ -29,7 +29,7 @@ export async function moveFileToFolderCommand(
 
   await db.userFile.update({
     where: { id: file.id },
-    data: { folder_id: folderId },
+    data: { folderId: folderId },
   });
 
   return { success: true };

@@ -31,30 +31,30 @@ export const createConnectorCommand = async (
   try {
     return await db.mcpConnector.upsert({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: organizationId,
-          user_id: userId,
+        organizationId_userId_provider: {
+          organizationId: organizationId,
+          userId: userId,
           provider,
         },
       },
       update: {
         status: McpConnectorStatus.PENDING,
-        mcp_server_url: mcpServerUrl,
-        customer_id: customerId,
+        mcpServerUrl: mcpServerUrl,
+        customerId: customerId,
       },
       create: {
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
         provider,
-        mcp_server_url: mcpServerUrl,
-        customer_id: customerId,
+        mcpServerUrl: mcpServerUrl,
+        customerId: customerId,
         status: McpConnectorStatus.PENDING,
       },
       select: {
         id: true,
         provider: true,
-        customer_id: true,
-        mcp_server_url: true,
+        customerId: true,
+        mcpServerUrl: true,
         status: true,
       },
     });

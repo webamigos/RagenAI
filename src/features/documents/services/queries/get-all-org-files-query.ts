@@ -8,10 +8,10 @@ export const getAllOrgFilesQuery = async (
 ) => {
   return await db.userFile.findMany({
     where: {
-      organization_id: organizationId,
-      embedding_status: 'COMPLETED',
+      organizationId: organizationId,
+      embeddingStatus: 'COMPLETED',
       OR: [
-        { folder_id: null },
+        { folderId: null },
         { folder: { teamId: null } },
         ...(userTeamIds.length > 0
           ? [{ folder: { teamId: { in: userTeamIds } } }]
@@ -19,12 +19,12 @@ export const getAllOrgFilesQuery = async (
       ],
     },
     select: {
-      public_id: true,
-      file_name: true,
-      file_size: true,
-      file_type: true,
-      created_at: true,
-      folder_id: true,
+      publicId: true,
+      fileName: true,
+      fileSize: true,
+      fileType: true,
+      createdAt: true,
+      folderId: true,
       project: {
         select: {
           id: true,
@@ -40,7 +40,7 @@ export const getAllOrgFilesQuery = async (
       },
     },
     orderBy: {
-      created_at: 'desc',
+      createdAt: 'desc',
     },
   });
 };

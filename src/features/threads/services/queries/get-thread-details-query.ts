@@ -11,22 +11,22 @@ export const getThreadDetailsQuery = async (
   try {
     const thread = await db.thread.findFirstOrThrow({
       where: {
-        public_id: publicThreadId,
-        organization_id: orgId,
+        publicId: publicThreadId,
+        organizationId: orgId,
       },
       select: {
         id: true,
-        public_id: true,
-        created_at: true,
-        visitor_id: true,
-        preferred_communication_type: true,
-        preferred_model: true,
-        project_id: true,
-        mentioned_project_id: true,
-        team_id: true,
+        publicId: true,
+        createdAt: true,
+        visitorId: true,
+        preferredCommunicationType: true,
+        preferredModel: true,
+        projectId: true,
+        mentionedProjectId: true,
+        teamId: true,
         project: {
           select: {
-            public_id: true,
+            publicId: true,
             id: true,
             title: true,
           },
@@ -44,7 +44,7 @@ export const getThreadDetailsQuery = async (
                   role: true,
                   content: true,
                 },
-                orderBy: { created_at: 'asc' as const },
+                orderBy: { createdAt: 'asc' as const },
               },
             }
           : {}),
@@ -54,7 +54,7 @@ export const getThreadDetailsQuery = async (
     // Convert Date object to ISO string for serialization
     return {
       ...thread,
-      created_at: thread.created_at.toISOString(),
+      createdAt: thread.createdAt.toISOString(),
     };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
@@ -69,13 +69,13 @@ export const getThreadMessagesListQuery = async (
   try {
     const thread = await db.thread.findFirst({
       where: {
-        public_id: publicThreadId,
-        organization_id: orgId,
+        publicId: publicThreadId,
+        organizationId: orgId,
       },
       select: {
         messages: {
           orderBy: {
-            created_at: 'asc',
+            createdAt: 'asc',
           },
         },
       },
@@ -87,7 +87,7 @@ export const getThreadMessagesListQuery = async (
         ...thread,
         messages: thread.messages.map((message) => ({
           ...message,
-          created_at: message.created_at.toISOString(),
+          createdAt: message.createdAt.toISOString(),
         })),
       };
     }

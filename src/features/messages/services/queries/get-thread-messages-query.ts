@@ -6,17 +6,17 @@ import { logger } from '@/app/lib/utils/logger';
 import type { MessageAttachment } from '../../contracts/message.types';
 
 export const getThreadMessagesQuery = async (
-  threadPublicId: Thread['public_id'],
-  visitorId: Thread['visitor_id'],
+  threadPublicId: Thread['publicId'],
+  visitorId: Thread['visitorId'],
 ) => {
   try {
     const thread = await db.thread.findFirst({
-      where: { public_id: threadPublicId, visitor_id: visitorId },
+      where: { publicId: threadPublicId, visitorId: visitorId },
       include: {
         project: {
           select: {
             id: true,
-            public_id: true,
+            publicId: true,
             title: true,
           },
         },
@@ -28,35 +28,35 @@ export const getThreadMessagesQuery = async (
     }
 
     const messages = await db.message.findMany({
-      where: { thread_id: thread?.id },
+      where: { threadId: thread?.id },
       select: {
-        public_id: true,
-        created_at: true,
+        publicId: true,
+        createdAt: true,
         content: true,
         role: true,
-        run_id: true,
+        runId: true,
         rate: true,
-        voice_duration_seconds: true,
-        message_type: true,
-        voice_played: true,
+        voiceDurationSeconds: true,
+        messageType: true,
+        voicePlayed: true,
         attachments: true,
       },
       orderBy: [
         {
-          created_at: 'asc',
+          createdAt: 'asc',
         },
       ],
     });
 
     // Get mentioned project details if exists
     let mentionedProject = null;
-    if (thread.mentioned_project_id) {
+    if (thread.mentionedProjectId) {
       try {
         mentionedProject = await db.project.findUnique({
-          where: { id: thread.mentioned_project_id },
+          where: { id: thread.mentionedProjectId },
           select: {
             id: true,
-            public_id: true,
+            publicId: true,
             title: true,
           },
         });
@@ -66,7 +66,7 @@ export const getThreadMessagesQuery = async (
           logger.warn(
             {
               threadId: thread.id,
-              mentionedProjectId: thread.mentioned_project_id,
+              mentionedProjectId: thread.mentionedProjectId,
             },
             'Mentioned project not found, will fallback to regular thread project',
           );
@@ -76,7 +76,7 @@ export const getThreadMessagesQuery = async (
           {
             err: error,
             threadId: thread.id,
-            mentionedProjectId: thread.mentioned_project_id,
+            mentionedProjectId: thread.mentionedProjectId,
           },
           'Error fetching mentioned project, will fallback to regular thread project',
         );
@@ -88,14 +88,14 @@ export const getThreadMessagesQuery = async (
     return {
       messages: messages.map((message) => ({
         ...message,
-        created_at: message.created_at.toISOString(),
+        createdAt: message.createdAt.toISOString(),
         attachments:
           (message.attachments as MessageAttachment[] | null) ?? undefined,
       })),
       threadContext: {
         project: thread.project,
         mentionedProject,
-        mentionedProjectId: thread.mentioned_project_id,
+        mentionedProjectId: thread.mentionedProjectId,
       },
     };
   } catch (error) {

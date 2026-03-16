@@ -34,29 +34,29 @@ export async function GET(
   try {
     const file = await db.userFile.findFirst({
       where: {
-        public_id: filePublicId,
-        organization_id: orgId,
+        publicId: filePublicId,
+        organizationId: orgId,
       },
       select: {
-        public_id: true,
-        file_extension: true,
-        file_mime_type: true,
-        file_name: true,
+        publicId: true,
+        fileExtension: true,
+        fileMimeType: true,
+        fileName: true,
       },
     });
 
-    if (!file || !file.file_extension) {
+    if (!file || !file.fileExtension) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    const s3Key = `${file.public_id}.${file.file_extension}`;
+    const s3Key = `${file.publicId}.${file.fileExtension}`;
     const buffer = await getFileFromS3(s3Key);
-    const safeName = sanitizeFilename(file.file_name);
+    const safeName = sanitizeFilename(file.fileName);
 
     return new NextResponse(buffer, {
       headers: {
-        'Content-Type': file.file_mime_type || 'application/octet-stream',
-        'Content-Disposition': `${SAFE_INLINE_TYPES.has(file.file_mime_type ?? '') ? 'inline' : 'attachment'}; filename="${safeName}"`,
+        'Content-Type': file.fileMimeType || 'application/octet-stream',
+        'Content-Disposition': `${SAFE_INLINE_TYPES.has(file.fileMimeType ?? '') ? 'inline' : 'attachment'}; filename="${safeName}"`,
         'Cache-Control': 'private, max-age=3600',
       },
     });

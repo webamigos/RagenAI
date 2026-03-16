@@ -11,18 +11,18 @@ export const getEnabledConnectorsQuery = async (
   try {
     return await db.mcpConnector.findMany({
       where: {
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
         enabled: true,
         status: McpConnectorStatus.CONNECTED,
       },
       select: {
         id: true,
         provider: true,
-        mcp_server_url: true,
-        customer_id: true,
-        organization_id: true,
-        user_id: true,
+        mcpServerUrl: true,
+        customerId: true,
+        organizationId: true,
+        userId: true,
       },
     });
   } catch (error) {

@@ -14,7 +14,7 @@ export const deleteThreadCommand = async (
     }
 
     const thread = await db.thread.findFirst({
-      where: { public_id: threadPublicId, organization_id: orgId },
+      where: { publicId: threadPublicId, organizationId: orgId },
     });
 
     if (!thread) {
@@ -22,8 +22,8 @@ export const deleteThreadCommand = async (
     }
 
     // Delete messages first, then the thread
-    await db.message.deleteMany({ where: { thread_id: thread.id } });
-    await db.threadDocument.deleteMany({ where: { thread_id: thread.id } });
+    await db.message.deleteMany({ where: { threadId: thread.id } });
+    await db.threadDocument.deleteMany({ where: { threadId: thread.id } });
     await db.thread.delete({ where: { id: thread.id } });
 
     logger.info({ threadId: threadPublicId }, 'Thread deleted');

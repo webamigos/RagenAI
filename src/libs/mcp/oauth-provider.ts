@@ -58,26 +58,26 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async tokens(): Promise<OAuthTokens | undefined> {
     const record = await db.mcpOAuthToken.findUnique({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: this.orgId,
-          user_id: this.userId,
+        organizationId_userId_provider: {
+          organizationId: this.orgId,
+          userId: this.userId,
           provider: this.provider,
         },
       },
     });
 
-    if (!record?.access_token) {
+    if (!record?.accessToken) {
       return undefined;
     }
 
     return {
-      access_token: record.access_token,
-      token_type: record.token_type,
-      refresh_token: record.refresh_token || undefined,
-      expires_in: record.expires_at
+      access_token: record.accessToken,
+      token_type: record.tokenType,
+      refresh_token: record.refreshToken || undefined,
+      expires_in: record.expiresAt
         ? Math.max(
             0,
-            Math.floor((record.expires_at.getTime() - Date.now()) / 1000),
+            Math.floor((record.expiresAt.getTime() - Date.now()) / 1000),
           )
         : undefined,
     };
@@ -90,26 +90,26 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
 
     await db.mcpOAuthToken.upsert({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: this.orgId,
-          user_id: this.userId,
+        organizationId_userId_provider: {
+          organizationId: this.orgId,
+          userId: this.userId,
           provider: this.provider,
         },
       },
       update: {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token || null,
-        expires_at: expiresAt,
-        token_type: tokens.token_type || 'Bearer',
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token || null,
+        expiresAt,
+        tokenType: tokens.token_type || 'Bearer',
       },
       create: {
-        organization_id: this.orgId,
-        user_id: this.userId,
+        organizationId: this.orgId,
+        userId: this.userId,
         provider: this.provider,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token || null,
-        expires_at: expiresAt,
-        token_type: tokens.token_type || 'Bearer',
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token || null,
+        expiresAt,
+        tokenType: tokens.token_type || 'Bearer',
       },
     });
   }
@@ -126,44 +126,44 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
     // Otherwise check DB for dynamically registered client info
     const record = await db.mcpOAuthToken.findUnique({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: this.orgId,
-          user_id: this.userId,
+        organizationId_userId_provider: {
+          organizationId: this.orgId,
+          userId: this.userId,
           provider: this.provider,
         },
       },
     });
 
-    if (!record?.client_id) {
+    if (!record?.clientId) {
       return undefined;
     }
 
     return {
-      client_id: record.client_id,
-      client_secret: record.client_secret || undefined,
+      client_id: record.clientId,
+      client_secret: record.clientSecret || undefined,
     };
   }
 
   async saveClientInformation(info: OAuthClientInformation): Promise<void> {
     await db.mcpOAuthToken.upsert({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: this.orgId,
-          user_id: this.userId,
+        organizationId_userId_provider: {
+          organizationId: this.orgId,
+          userId: this.userId,
           provider: this.provider,
         },
       },
       update: {
-        client_id: info.client_id,
-        client_secret: info.client_secret || null,
+        clientId: info.client_id,
+        clientSecret: info.client_secret || null,
       },
       create: {
-        organization_id: this.orgId,
-        user_id: this.userId,
+        organizationId: this.orgId,
+        userId: this.userId,
         provider: this.provider,
-        access_token: '',
-        client_id: info.client_id,
-        client_secret: info.client_secret || null,
+        accessToken: '',
+        clientId: info.client_id,
+        clientSecret: info.client_secret || null,
       },
     });
   }
@@ -175,21 +175,21 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async saveCodeVerifier(verifier: string): Promise<void> {
     await db.mcpOAuthToken.upsert({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: this.orgId,
-          user_id: this.userId,
+        organizationId_userId_provider: {
+          organizationId: this.orgId,
+          userId: this.userId,
           provider: this.provider,
         },
       },
       update: {
-        code_verifier: verifier,
+        codeVerifier: verifier,
       },
       create: {
-        organization_id: this.orgId,
-        user_id: this.userId,
+        organizationId: this.orgId,
+        userId: this.userId,
         provider: this.provider,
-        access_token: '',
-        code_verifier: verifier,
+        accessToken: '',
+        codeVerifier: verifier,
       },
     });
   }
@@ -197,18 +197,18 @@ export class PrismaOAuthClientProvider implements OAuthClientProvider {
   async codeVerifier(): Promise<string> {
     const record = await db.mcpOAuthToken.findUnique({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: this.orgId,
-          user_id: this.userId,
+        organizationId_userId_provider: {
+          organizationId: this.orgId,
+          userId: this.userId,
           provider: this.provider,
         },
       },
     });
 
-    if (!record?.code_verifier) {
+    if (!record?.codeVerifier) {
       throw new Error('No code verifier found');
     }
 
-    return record.code_verifier;
+    return record.codeVerifier;
   }
 }

@@ -23,39 +23,38 @@ export const FileCard = ({
   deleteLoading,
   toggleModal,
 }: Props) => {
-  const { file_name, file_size, file_type, public_id, created_at, document } =
-    file;
+  const { fileName, fileSize, fileType, publicId, createdAt, document } = file;
 
-  const fileIcon = getFileIcon(file_type);
-  const formattedCreatedAt = created_at
-    ? format(new Date(created_at), 'yyyy-MM-dd')
+  const fileIcon = getFileIcon(fileType);
+  const formattedCreatedAt = createdAt
+    ? format(new Date(createdAt), 'yyyy-MM-dd')
     : '-';
 
-  const hasThumbnail = !!file.thumbnail_s3_key;
-  const isPdf = file_type === 'PDF';
-  const documentLink = document?.public_id
-    ? `/document/${document.public_id}`
+  const hasThumbnail = !!file.thumbnailS3Key;
+  const isPdf = fileType === 'PDF';
+  const documentLink = document?.publicId
+    ? `/document/${document.publicId}`
     : undefined;
 
   const renderPreview = () => {
     if (hasThumbnail) {
       return (
         <img
-          src={`/api/files/${public_id}/thumbnail`}
-          alt={`Preview of ${file_name}`}
+          src={`/api/files/${publicId}/thumbnail`}
+          alt={`Preview of ${fileName}`}
           className="w-full h-full object-cover object-top"
           loading="lazy"
         />
       );
     }
 
-    if (isPdf && public_id) {
+    if (isPdf && publicId) {
       return (
         <div className="w-full h-full overflow-hidden pointer-events-none -m-1">
           <iframe
-            src={`/api/files/${public_id}#navpanes=0&toolbar=0&view=FitH&scrollbar=0`}
+            src={`/api/files/${publicId}#navpanes=0&toolbar=0&view=FitH&scrollbar=0`}
             className="w-[300%] h-[300%] border-0 origin-top-left scale-[0.35] -mt-[3%] -ml-[1%]"
-            title={`Preview ${file_name}`}
+            title={`Preview ${fileName}`}
             tabIndex={-1}
           />
         </div>
@@ -77,11 +76,11 @@ export const FileCard = ({
           <Tooltip
             delayShow={1000}
             place="top"
-            content={file_name}
-            id={`tooltip-${public_id}`}
+            content={fileName}
+            id={`tooltip-${publicId}`}
           >
             <Text fontSize="xs" className="truncate">
-              {truncateFileName(file_name, 35)}
+              {truncateFileName(fileName, 35)}
             </Text>
           </Tooltip>
         </div>
@@ -93,22 +92,22 @@ export const FileCard = ({
           <ToolbarActionsMenu
             toggleModal={toggleModal}
             isLoading={deleteLoading ?? isLoading}
-            filePublicId={public_id}
-            documentPublicId={document?.public_id}
+            filePublicId={publicId}
+            documentPublicId={document?.publicId}
           />
         </div>
         {documentLink && (
           <Link
             href={documentLink}
             className="absolute inset-0 z-0 group-hover:z-[-1]"
-            aria-label={`Open ${file_name}`}
+            aria-label={`Open ${fileName}`}
           />
         )}
       </div>
 
       <div className="px-3 py-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
         <span>{formattedCreatedAt}</span>
-        <span>{prettyBytes(file_size)}</span>
+        <span>{prettyBytes(fileSize)}</span>
       </div>
     </div>
   );

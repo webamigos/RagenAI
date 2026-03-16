@@ -146,7 +146,7 @@ const createSupabaseVectorStore = (
   organizationId: string,
 ): VectorStoreClient => {
   try {
-    // SECURITY CRITICAL: This organization_id filter is the primary security boundary
+    // SECURITY CRITICAL: This organizationId filter is the primary security boundary
     // that prevents unauthorized access to documents across different organizations.
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.

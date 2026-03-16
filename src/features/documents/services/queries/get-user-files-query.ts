@@ -8,9 +8,9 @@ export const getUserFilesQuery = async (
 ) => {
   return await db.userFile.findMany({
     where: {
-      organization_id: organizationId,
+      organizationId: organizationId,
       OR: [
-        { folder_id: null },
+        { folderId: null },
         { folder: { teamId: null } },
         ...(userTeamIds.length > 0
           ? [{ folder: { teamId: { in: userTeamIds } } }]
@@ -18,25 +18,25 @@ export const getUserFilesQuery = async (
       ],
     },
     select: {
-      created_at: true,
-      file_name: true,
-      file_size: true,
-      file_type: true,
-      updated_at: true,
+      createdAt: true,
+      fileName: true,
+      fileSize: true,
+      fileType: true,
+      updatedAt: true,
       metadata: true,
-      organization_id: true,
-      public_id: true,
-      project_id: true,
-      folder_id: true,
-      embedding_status: true,
-      embedding_completed_at: true,
-      embedding_failed_at: true,
-      embedding_started_at: true,
-      parsing_status: true,
-      thumbnail_s3_key: true,
+      organizationId: true,
+      publicId: true,
+      projectId: true,
+      folderId: true,
+      embeddingStatus: true,
+      embeddingCompletedAt: true,
+      embeddingFailedAt: true,
+      embeddingStartedAt: true,
+      parsingStatus: true,
+      thumbnailS3Key: true,
       document: {
         select: {
-          public_id: true,
+          publicId: true,
         },
       },
       project: {
@@ -54,7 +54,7 @@ export const getUserFilesQuery = async (
       },
     },
     orderBy: {
-      created_at: 'desc',
+      createdAt: 'desc',
     },
   });
 };

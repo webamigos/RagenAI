@@ -11,11 +11,11 @@ async function getProjectInfo(projectId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
 
   const project = await db.project.findUnique({
-    where: { public_id: projectId },
+    where: { publicId: projectId },
     select: {
       id: true,
-      public_id: true,
-      organization_id: true,
+      publicId: true,
+      organizationId: true,
     },
   });
 
@@ -23,9 +23,9 @@ async function getProjectInfo(projectId: string) {
     throw new NotFoundException('Project not found');
   }
 
-  if (project.organization_id !== orgId) {
+  if (project.organizationId !== orgId) {
     logger.error(
-      { projectId, userOrgId: orgId, projectOrgId: project.organization_id },
+      { projectId, userOrgId: orgId, projectOrgId: project.organizationId },
       'Unauthorized: Project does not belong to user organization',
     );
     throw new NotFoundException('Project not found');
@@ -44,7 +44,7 @@ export async function getProjectInstructionQuery(
   const project = await getProjectInfo(projectId);
 
   const settings = await db.projectSettings.findUnique({
-    where: { project_id: project.id },
+    where: { projectId: project.id },
     select: { instructions: true },
   });
 

@@ -166,25 +166,25 @@ export const useNewThread = () => {
 
       if (result.success) {
         await trackThreadCreated();
-        const threadId = result.thread.public_id;
+        const threadId = result.thread.publicId;
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
         if (user) {
           // Add thread to store immediately for logged in users
           const newThread: ThreadHistoryResponse = {
-            public_id: threadId,
-            project_id: result.thread.project_id,
+            publicId: threadId,
+            projectId: result.thread.projectId,
             messages: initialMessage
               ? [
                   {
                     content: initialMessage,
-                    created_at: new Date().toISOString(),
+                    createdAt: new Date().toISOString(),
                     role: 'USER' as const,
-                    message_type: 'TEXT' as const,
+                    messageType: 'TEXT' as const,
                   },
                 ]
               : [],
-            created_at: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
           };
 
           //this hook logic is reused for global and project-scoped threads
@@ -204,18 +204,18 @@ export const useNewThread = () => {
                 reduxDispatch(setProjects(fetchedProjects.projects));
               }
             }
-          } else if (result.thread.project_id != null) {
+          } else if (result.thread.projectId != null) {
             const threadForProject = {
-              created_at: new Date().toISOString(),
-              public_id: threadId,
-              visitor_id: user.id,
-              preferred_communication_type: 'TEXT' as const,
-              project_id: result.thread.project_id,
+              createdAt: new Date().toISOString(),
+              publicId: threadId,
+              visitorId: user.id,
+              preferredCommunicationType: 'TEXT' as const,
+              projectId: result.thread.projectId,
               messages: initialMessage ? [{ content: initialMessage }] : [],
             };
             reduxDispatch(
               addThreadToProject({
-                projectId: result.thread.project_id,
+                projectId: result.thread.projectId,
                 thread: threadForProject,
               }),
             );
@@ -227,12 +227,12 @@ export const useNewThread = () => {
           sidebarThreadEvents.emit({
             type: 'thread-created',
             thread: {
-              public_id: threadId,
-              created_at: new Date().toISOString(),
-              is_starred: false,
+              publicId: threadId,
+              createdAt: new Date().toISOString(),
+              isStarred: false,
               title: null,
-              project_id: result.thread.project_id ?? null,
-              team_id: null,
+              projectId: result.thread.projectId ?? null,
+              teamId: null,
               project: null,
               team: null,
               messages: initialMessage ? [{ content: initialMessage }] : [],

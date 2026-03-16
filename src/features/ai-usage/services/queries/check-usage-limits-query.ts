@@ -29,19 +29,19 @@ export async function checkUsageLimitsQuery(
     getUsageLimits(organizationId),
     db.aiUsage.aggregate({
       where: {
-        organization_id: organizationId,
-        created_at: { gte: getMonthStart() },
+        organizationId: organizationId,
+        createdAt: { gte: getMonthStart() },
       },
       _sum: {
-        total_tokens: true,
-        estimated_cost: true,
+        totalTokens: true,
+        estimatedCost: true,
       },
       _count: true,
     }),
   ]);
 
-  const totalTokens = aggregates._sum.total_tokens ?? 0;
-  const totalCost = aggregates._sum.estimated_cost ?? 0;
+  const totalTokens = aggregates._sum.totalTokens ?? 0;
+  const totalCost = aggregates._sum.estimatedCost ?? 0;
   const totalCostCents = Math.round(totalCost * 100);
   const totalMessages = aggregates._count;
 

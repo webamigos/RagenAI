@@ -74,7 +74,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
         );
       }
       const thread = await db.thread.findFirst({
-        where: { public_id: threadPublicId, organization_id: orgId },
+        where: { publicId: threadPublicId, organizationId: orgId },
         select: { id: true },
       });
       if (!thread) {
@@ -85,7 +85,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
       }
     }
 
-    // The query itself validates visitor_id ownership
+    // The query itself validates visitorId ownership
     const result = await fetchMessagesFromDb(threadPublicId, visitorId);
     return NextResponse.json(result);
   } catch (e) {

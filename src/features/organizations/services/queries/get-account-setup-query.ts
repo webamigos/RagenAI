@@ -45,7 +45,7 @@ export async function getAccountSetupStatusQuery(
 
     const [defaultProject, subscription] = await Promise.all([
       db.project.findFirst({
-        where: { organization_id: orgId, title: DEFAULT_PROJECT_TITLE },
+        where: { organizationId: orgId, title: DEFAULT_PROJECT_TITLE },
         select: { id: true },
       }),
       getSubscription(orgId),

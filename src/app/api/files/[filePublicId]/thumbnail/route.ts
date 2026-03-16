@@ -22,22 +22,22 @@ export async function GET(
   try {
     const file = await db.userFile.findFirst({
       where: {
-        public_id: filePublicId,
-        organization_id: orgId,
+        publicId: filePublicId,
+        organizationId: orgId,
       },
       select: {
-        thumbnail_s3_key: true,
+        thumbnailS3Key: true,
       },
     });
 
-    if (!file?.thumbnail_s3_key) {
+    if (!file?.thumbnailS3Key) {
       return NextResponse.json(
         { error: 'Thumbnail not found' },
         { status: 404 },
       );
     }
 
-    const buffer = await getFileFromS3ByKey(file.thumbnail_s3_key);
+    const buffer = await getFileFromS3ByKey(file.thumbnailS3Key);
 
     return new NextResponse(buffer, {
       headers: {

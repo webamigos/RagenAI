@@ -5,12 +5,12 @@ import db from '@ragenai/prisma-client';
 export const getDefaultProjectIdQuery = async (organizationId: string) => {
   const result = await db.project.findFirst({
     where: {
-      organization_id: organizationId,
+      organizationId: organizationId,
     },
     select: {
       id: true,
     },
-    orderBy: { created_at: 'asc' },
+    orderBy: { createdAt: 'asc' },
   });
 
   return result?.id ?? null;
@@ -21,13 +21,13 @@ export const getDefaultProjectPublicIdQuery = async (
 ) => {
   const result = await db.project.findFirst({
     where: {
-      organization_id: organizationId,
+      organizationId: organizationId,
     },
     select: {
-      public_id: true,
+      publicId: true,
     },
-    orderBy: { created_at: 'asc' },
+    orderBy: { createdAt: 'asc' },
   });
 
-  return result?.public_id ?? null;
+  return result?.publicId ?? null;
 };

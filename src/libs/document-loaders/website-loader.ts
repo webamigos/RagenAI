@@ -94,19 +94,19 @@ export class WebsiteDocumentLoader {
         enhancedMarkdown.length,
         this.organizationId,
         FileType.URL,
-        this.projectId
+        this.projectId,
       );
 
       await createMarkdownDocument({
-        public_id: this.fileId,
+        publicId: this.fileId,
         title: `${this.url} | ${this.mode}`,
-        organization_id: this.organizationId,
+        organizationId: this.organizationId,
         content: enhancedMarkdown,
-        file_id: fileRecord.id,
+        fileId: fileRecord.id,
       });
 
       logger.info(
-        `Website content stored as markdown document for URL: ${this.url}, file: ${this.fileName}`
+        `Website content stored as markdown document for URL: ${this.url}, file: ${this.fileName}`,
       );
       return docs;
     } catch (error) {

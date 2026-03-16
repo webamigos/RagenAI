@@ -30,38 +30,38 @@ export const registerApiKeyBearerCommand = async (
   try {
     // Store the API key in ragen-vault (encrypted at rest)
     await ragenAuthClient.storeToken(customerId, provider, {
-      access_token: apiKey,
-      token_type: 'Bearer',
+      accessToken: apiKey,
+      tokenType: 'Bearer',
     });
 
     // Create/update the connector and mark as connected
     return await db.mcpConnector.upsert({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: organizationId,
-          user_id: userId,
+        organizationId_userId_provider: {
+          organizationId: organizationId,
+          userId: userId,
           provider,
         },
       },
       update: {
         status: McpConnectorStatus.CONNECTED,
-        mcp_server_url: providerDef.mcpServerUrl,
-        customer_id: customerId,
-        connected_at: new Date(),
+        mcpServerUrl: providerDef.mcpServerUrl,
+        customerId: customerId,
+        connectedAt: new Date(),
       },
       create: {
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
         provider,
-        mcp_server_url: providerDef.mcpServerUrl,
-        customer_id: customerId,
+        mcpServerUrl: providerDef.mcpServerUrl,
+        customerId: customerId,
         status: McpConnectorStatus.CONNECTED,
-        connected_at: new Date(),
+        connectedAt: new Date(),
       },
       select: {
         id: true,
         status: true,
-        connected_at: true,
+        connectedAt: true,
       },
     });
   } catch (error) {

@@ -78,14 +78,14 @@ export const createMessageInDbCommand = async ({
   try {
     return await db.message.create({
       data: {
-        thread_id: threadId,
+        threadId: threadId,
         content: message.content,
         role,
         source: message.source ?? Source.UI,
-        visitor_id: visitorId,
-        run_id: runId,
-        message_type: messageType,
-        voice_duration_seconds: voiceDurationSeconds,
+        visitorId: visitorId,
+        runId: runId,
+        messageType: messageType,
+        voiceDurationSeconds: voiceDurationSeconds,
         attachments: sanitizedAttachments,
       },
     });
@@ -137,13 +137,13 @@ export const createAndStoreMessageCommand = async ({
     }
 
     return {
-      public_id: dbMessage.public_id,
+      publicId: dbMessage.publicId,
       role: dbMessage.role,
-      created_at: dbMessage.created_at.toISOString(),
+      createdAt: dbMessage.createdAt.toISOString(),
       content: dbMessage.content,
-      message_type: dbMessage.message_type,
-      voice_duration_seconds: dbMessage.voice_duration_seconds,
-      voice_played: dbMessage.voice_played,
+      messageType: dbMessage.messageType,
+      voiceDurationSeconds: dbMessage.voiceDurationSeconds,
+      voicePlayed: dbMessage.voicePlayed,
       attachments: savedAttachments ?? undefined,
     };
   } catch (error) {

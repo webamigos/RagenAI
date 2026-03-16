@@ -35,7 +35,7 @@ export const createProject = async (
     const project = await createProjectForOrganization(title, orgId, userId);
 
     logger.info(
-      { projectPublicId: project.public_id },
+      { projectPublicId: project.publicId },
       'Project created successfully',
     );
 

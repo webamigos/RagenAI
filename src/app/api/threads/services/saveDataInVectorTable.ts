@@ -175,14 +175,14 @@ export const convertAndStoreDocument = async ({
 
     logger.info({ mimeType }, 'Detected MIME type');
 
-    // Resolve project public_id for Meilisearch metadata
+    // Resolve project publicId for Meilisearch metadata
     let resolvedProjectPublicId = projectPublicId ?? null;
     if (!resolvedProjectPublicId && projectId) {
       const project = await db.project.findUnique({
         where: { id: projectId },
-        select: { public_id: true },
+        select: { publicId: true },
       });
-      resolvedProjectPublicId = project?.public_id ?? null;
+      resolvedProjectPublicId = project?.publicId ?? null;
     }
 
     const embeddingModel = await createEmbeddingsInstance({
@@ -321,6 +321,7 @@ export const convertAndStoreDocument = async ({
           id: index,
           organization_id: organizationId,
           file_id: fileId,
+          project_id: null,
           project_public_id: resolvedProjectPublicId,
           source_type: fileExtension,
           chunk_size: splitterSettings.chunkSize,

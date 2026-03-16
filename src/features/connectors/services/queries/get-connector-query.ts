@@ -5,8 +5,8 @@ import {
 } from '@/generated/prisma/client';
 
 export type ConnectorLookupResult = {
-  mcp_server_url: string;
-  customer_id: string;
+  mcpServerUrl: string;
+  customerId: string;
   baseUrl: string;
 } | null;
 
@@ -17,15 +17,15 @@ export const getConnectorQuery = async (
 ): Promise<ConnectorLookupResult> => {
   const connector = await db.mcpConnector.findUnique({
     where: {
-      organization_id_user_id_provider: {
-        organization_id: organizationId,
-        user_id: userId,
+      organizationId_userId_provider: {
+        organizationId: organizationId,
+        userId: userId,
         provider,
       },
     },
     select: {
-      mcp_server_url: true,
-      customer_id: true,
+      mcpServerUrl: true,
+      customerId: true,
       enabled: true,
       status: true,
     },
@@ -35,18 +35,18 @@ export const getConnectorQuery = async (
     !connector ||
     connector.status !== McpConnectorStatus.CONNECTED ||
     !connector.enabled ||
-    !connector.mcp_server_url ||
-    !connector.customer_id
+    !connector.mcpServerUrl ||
+    !connector.customerId
   ) {
     return null;
   }
 
-  // mcp_server_url has /mcp suffix (for MCP protocol), strip it for REST endpoints
-  const baseUrl = connector.mcp_server_url.replace(/\/mcp$/, '');
+  // mcpServerUrl has /mcp suffix (for MCP protocol), strip it for REST endpoints
+  const baseUrl = connector.mcpServerUrl.replace(/\/mcp$/, '');
 
   return {
-    mcp_server_url: connector.mcp_server_url,
-    customer_id: connector.customer_id,
+    mcpServerUrl: connector.mcpServerUrl,
+    customerId: connector.customerId,
     baseUrl,
   };
 };

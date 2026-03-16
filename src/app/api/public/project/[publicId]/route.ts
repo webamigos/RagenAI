@@ -12,15 +12,15 @@ export async function GET(
   try {
     const { publicId } = await params;
 
-    // Find project by access_token (public identifier)
+    // Find project by accessToken (public identifier)
     const project = await db.project.findFirst({
       where: {
-        access_token: publicId,
+        accessToken: publicId,
       },
       select: {
-        public_id: true,
+        publicId: true,
         title: true,
-        is_public: true,
+        isPublic: true,
       },
     });
     if (!project) {
@@ -31,7 +31,7 @@ export async function GET(
     }
 
     // Check if project is public
-    if (!project.is_public) {
+    if (!project.isPublic) {
       return NextResponse.json(
         { error: 'Project is not public' },
         { status: StatusCodes.FORBIDDEN },

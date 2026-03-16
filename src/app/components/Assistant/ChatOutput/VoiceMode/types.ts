@@ -7,9 +7,9 @@ export type VoiceModeProps = {
   messages: Array<{
     role: string;
     content: string;
-    message_type?: MessageContentType;
-    voice_played?: boolean;
-    public_id?: string;
+    messageType?: MessageContentType;
+    voicePlayed?: boolean;
+    publicId?: string;
   }>;
   onMessagePlayed?: (messageId: string) => void;
   voiceId: string;

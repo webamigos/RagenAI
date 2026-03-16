@@ -71,7 +71,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         this.providerKey,
       );
 
-      if (!token?.access_token || token.access_token === '__placeholder__') {
+      if (!token?.accessToken || token.accessToken === '__placeholder__') {
         return undefined;
       }
 
@@ -86,9 +86,9 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
       }
 
       return {
-        access_token: token.access_token,
-        token_type: token.token_type || 'Bearer',
-        refresh_token: token.refresh_token || undefined,
+        access_token: token.accessToken,
+        token_type: token.tokenType || 'Bearer',
+        refresh_token: token.refreshToken || undefined,
         expires_in: expiresIn,
       };
     } catch (error) {
@@ -108,9 +108,9 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
 
     await ragenAuthClient.storeToken(this.customerId, this.providerKey, {
       ...existing,
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token || undefined,
-      token_type: tokens.token_type || 'Bearer',
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token || undefined,
+      tokenType: tokens.token_type || 'Bearer',
       expires_at: expiresAt,
     });
   }
@@ -131,13 +131,13 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         this.providerKey,
       );
 
-      if (!token?.client_id) {
+      if (!token?.clientId) {
         return undefined;
       }
 
       return {
-        client_id: token.client_id,
-        client_secret: token.client_secret || undefined,
+        client_id: token.clientId,
+        client_secret: token.clientSecret || undefined,
       };
     } catch (error) {
       logger.error(
@@ -153,8 +153,8 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
 
     await ragenAuthClient.storeToken(this.customerId, this.providerKey, {
       ...existing,
-      client_id: info.client_id,
-      client_secret: info.client_secret || undefined,
+      clientId: info.client_id,
+      clientSecret: info.client_secret || undefined,
     });
   }
 
@@ -167,7 +167,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
 
     await ragenAuthClient.storeToken(this.customerId, this.providerKey, {
       ...existing,
-      code_verifier: verifier,
+      codeVerifier: verifier,
     });
   }
 
@@ -182,12 +182,12 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         this.providerKey,
       );
       return {
-        access_token: token.access_token || '__placeholder__',
-        refresh_token: token.refresh_token || undefined,
-        client_id: token.client_id || undefined,
-        client_secret: token.client_secret || undefined,
-        code_verifier: token.code_verifier || undefined,
-        token_type: token.token_type || undefined,
+        accessToken: token.accessToken || '__placeholder__',
+        refreshToken: token.refreshToken || undefined,
+        clientId: token.clientId || undefined,
+        clientSecret: token.clientSecret || undefined,
+        codeVerifier: token.codeVerifier || undefined,
+        tokenType: token.tokenType || undefined,
         expires_at: token.expires_at || undefined,
         scopes: token.scopes || undefined,
         token_uri: token.token_uri || undefined,
@@ -197,7 +197,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         { err: error, customerId: this.customerId, provider: this.providerKey },
         'Failed to fetch existing token data from ragen-token-vault, using placeholder',
       );
-      return { access_token: '__placeholder__' };
+      return { accessToken: '__placeholder__' };
     }
   }
 
@@ -208,11 +208,11 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         this.providerKey,
       );
 
-      if (!token?.code_verifier) {
+      if (!token?.codeVerifier) {
         throw new Error('No code verifier found');
       }
 
-      return token.code_verifier;
+      return token.codeVerifier;
     } catch (error) {
       if (
         error instanceof Error &&

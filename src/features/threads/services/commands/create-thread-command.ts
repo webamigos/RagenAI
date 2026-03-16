@@ -29,12 +29,12 @@ export const createThreadCommand = async ({
 
     const threadRecord = await db.thread.create({
       data: {
-        organization_id: orgId,
-        user_id: userId,
-        project_id: projectId ?? null,
-        mentioned_project_id: mentionedProjectId,
-        visitor_id: userId ? userId : visitorId,
-        preferred_model: preferredModel,
+        organizationId: orgId,
+        userId: userId,
+        projectId: projectId ?? null,
+        mentionedProjectId: mentionedProjectId,
+        visitorId: userId ? userId : visitorId,
+        preferredModel: preferredModel,
       },
     });
 
@@ -50,21 +50,21 @@ export const createThreadCommand = async ({
 
         const validFiles = await db.userFile.findMany({
           where: {
-            public_id: { in: userFileIds },
-            organization_id: orgId,
+            publicId: { in: userFileIds },
+            organizationId: orgId,
           },
-          select: { public_id: true },
+          select: { publicId: true },
         });
 
-        const validFileIds = new Set(validFiles.map((f) => f.public_id));
+        const validFileIds = new Set(validFiles.map((f) => f.publicId));
         const validDocuments = documentsWithUserFileId.filter((doc) =>
           validFileIds.has(doc.userFileId!),
         );
 
         if (validDocuments.length > 0) {
           const threadDocumentData = validDocuments.map((doc) => ({
-            thread_id: threadRecord.id,
-            user_file_id: doc.userFileId!,
+            threadId: threadRecord.id,
+            userFileId: doc.userFileId!,
           }));
 
           await db.threadDocument.createMany({
@@ -85,8 +85,8 @@ export const createThreadCommand = async ({
     }
 
     return {
-      public_id: threadRecord.public_id,
-      project_id: projectId ?? null,
+      publicId: threadRecord.publicId,
+      projectId: projectId ?? null,
     };
   } catch (error) {
     logger.error({ err: error }, 'Failed to create new thread');
@@ -116,8 +116,8 @@ export const createThreadAction = async (
     return {
       success: true,
       thread: {
-        public_id: thread.public_id,
-        project_id: thread.project_id,
+        publicId: thread.publicId,
+        projectId: thread.projectId,
       },
     };
   } catch (error) {

@@ -5,18 +5,18 @@ import { logger } from '@/app/lib/utils/logger';
 import type { CreateThreadDto } from '../../contracts/thread.types';
 
 export const findOrCreateThreadCommand = async (
-  threadPublicId: CreateThreadDto['public_id'],
+  threadPublicId: CreateThreadDto['publicId'],
   visitorId: string,
   organizationId?: string,
 ) => {
   try {
-    const whereClause: { public_id: string; organization_id?: string } = {
-      public_id: threadPublicId,
+    const whereClause: { publicId: string; organizationId?: string } = {
+      publicId: threadPublicId,
     };
 
     // Scope to organization when provided to prevent cross-tenant access
     if (organizationId) {
-      whereClause.organization_id = organizationId;
+      whereClause.organizationId = organizationId;
     }
 
     const threadRecord = await db.thread.findFirst({
@@ -27,11 +27,11 @@ export const findOrCreateThreadCommand = async (
       throw new Error(`Thread ${threadPublicId} not found`);
     }
 
-    if (!threadRecord.visitor_id || threadRecord.visitor_id === visitorId) {
+    if (!threadRecord.visitorId || threadRecord.visitorId === visitorId) {
       await db.thread.update({
         where: { id: threadRecord.id },
         data: {
-          visitor_id: visitorId,
+          visitorId: visitorId,
         },
       });
     } else {
@@ -39,7 +39,7 @@ export const findOrCreateThreadCommand = async (
         {
           threadPublicId,
           visitorId,
-          existingVisitorId: threadRecord.visitor_id,
+          existingVisitorId: threadRecord.visitorId,
         },
         'Visitor ID mismatch — thread already bound to another visitor',
       );

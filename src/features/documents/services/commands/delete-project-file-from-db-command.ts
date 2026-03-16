@@ -6,8 +6,8 @@ import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth
 import { getProjectByPublicIdQuery as getProjectByPublicId } from '@/features/projects/services/queries/get-project-query';
 
 export const deleteProjectFileFromDbCommand = async (
-  publicFileId: UserFile['public_id'],
-  projectPublicId: Project['public_id']
+  publicFileId: UserFile['publicId'],
+  projectPublicId: Project['publicId'],
 ) => {
   const orgId = await getOrgIdOrThrow();
   const projectRecord = await getProjectByPublicId(projectPublicId);
@@ -18,9 +18,9 @@ export const deleteProjectFileFromDbCommand = async (
 
   return await db.userFile.deleteMany({
     where: {
-      public_id: publicFileId,
-      organization_id: orgId,
-      project_id: projectRecord.id,
+      publicId: publicFileId,
+      organizationId: orgId,
+      projectId: projectRecord.id,
     },
   });
 };

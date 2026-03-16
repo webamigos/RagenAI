@@ -18,7 +18,7 @@ import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerD
 import { importFilesToProject } from '@/app/actions';
 type Props = {
   onFilesLoaded?: (hasFiles: boolean) => void;
-  projectPublicId: Project['public_id'];
+  projectPublicId: Project['publicId'];
   initialFileCount?: number;
 };
 
@@ -138,10 +138,10 @@ export const ProjectFilesList = memo(
           <div className="space-y-2">
             {files.map((file) => (
               <FileItem
-                key={file.public_id}
+                key={file.publicId}
                 file={file}
-                onDelete={() => handleDeleteFile(file.public_id)}
-                isDeleting={deletingFileId === file.public_id}
+                onDelete={() => handleDeleteFile(file.publicId)}
+                isDeleting={deletingFileId === file.publicId}
                 t={t}
               />
             ))}

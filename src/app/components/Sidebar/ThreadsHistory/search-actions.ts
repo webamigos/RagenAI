@@ -18,7 +18,7 @@ export async function searchAll(
 }
 
 export async function getRecentProjects(): Promise<
-  { public_id: string; title: string; created_at: string }[]
+  { publicId: string; title: string; createdAt: string }[]
 > {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
@@ -28,14 +28,14 @@ export async function getRecentProjects(): Promise<
   }
 
   const projects = await db.project.findMany({
-    where: { organization_id: orgId, owner_id: userId },
-    orderBy: { created_at: 'desc' },
+    where: { organizationId: orgId, ownerId: userId },
+    orderBy: { createdAt: 'desc' },
     take: 5,
-    select: { public_id: true, title: true, created_at: true },
+    select: { publicId: true, title: true, createdAt: true },
   });
 
   return projects.map((p) => ({
     ...p,
-    created_at: p.created_at.toISOString(),
+    createdAt: p.createdAt.toISOString(),
   }));
 }

@@ -5,24 +5,24 @@ const REQUEST_TIMEOUT_MS = 10_000;
 const SERVICE_NAME = 'ragen-app';
 
 export type StoreTokenData = {
-  access_token: string;
-  refresh_token?: string;
-  client_id?: string;
-  client_secret?: string;
-  code_verifier?: string;
-  token_type?: string;
+  accessToken: string;
+  refreshToken?: string;
+  clientId?: string;
+  clientSecret?: string;
+  codeVerifier?: string;
+  tokenType?: string;
   expires_at?: string;
   scopes?: string[];
   token_uri?: string;
 };
 
 export type TokenResponse = {
-  access_token: string;
-  refresh_token: string | null;
-  client_id: string | null;
-  client_secret: string | null;
-  code_verifier: string | null;
-  token_type: string | null;
+  accessToken: string;
+  refreshToken: string | null;
+  clientId: string | null;
+  clientSecret: string | null;
+  codeVerifier: string | null;
+  tokenType: string | null;
   expires_at: string | null;
   scopes: string[] | null;
   token_uri: string | null;
@@ -30,12 +30,12 @@ export type TokenResponse = {
 
 export type TokenStatusResponse = {
   provider: string;
-  token_type: string | null;
+  tokenType: string | null;
   expires_at: string | null;
   scopes: string[] | null;
   is_expired: boolean;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ListTokensResponse = {

@@ -93,7 +93,7 @@ export const useSidebarThreads = () => {
       if (event.type === 'thread-created') {
         setRecentThreads((prev) => {
           // Avoid duplicates
-          if (prev.some((t) => t.public_id === event.thread.public_id)) {
+          if (prev.some((t) => t.publicId === event.thread.publicId)) {
             return prev;
           }
           return [event.thread, ...prev];
@@ -112,20 +112,18 @@ export const useSidebarThreads = () => {
     async (threadPublicId: string, isStarred: boolean) => {
       // Optimistic update
       const updateThread = (thread: SidebarThreadItem): SidebarThreadItem =>
-        thread.public_id === threadPublicId
-          ? { ...thread, is_starred: isStarred }
+        thread.publicId === threadPublicId
+          ? { ...thread, isStarred: isStarred }
           : thread;
 
       if (isStarred) {
         // Moving from recent to starred
-        const thread = recentThreads.find(
-          (t) => t.public_id === threadPublicId,
-        );
+        const thread = recentThreads.find((t) => t.publicId === threadPublicId);
         if (thread) {
-          const updated = { ...thread, is_starred: true };
+          const updated = { ...thread, isStarred: true };
           setStarredThreads((prev) => [updated, ...prev]);
           setRecentThreads((prev) =>
-            prev.filter((t) => t.public_id !== threadPublicId),
+            prev.filter((t) => t.publicId !== threadPublicId),
           );
         } else {
           // Thread might be in starred already (shouldn't happen, but be safe)
@@ -134,12 +132,12 @@ export const useSidebarThreads = () => {
       } else {
         // Moving from starred to recent
         const thread = starredThreads.find(
-          (t) => t.public_id === threadPublicId,
+          (t) => t.publicId === threadPublicId,
         );
         if (thread) {
-          const updated = { ...thread, is_starred: false };
+          const updated = { ...thread, isStarred: false };
           setStarredThreads((prev) =>
-            prev.filter((t) => t.public_id !== threadPublicId),
+            prev.filter((t) => t.publicId !== threadPublicId),
           );
           setRecentThreads((prev) => [updated, ...prev]);
         }
@@ -161,7 +159,7 @@ export const useSidebarThreads = () => {
   const renameThread = useCallback(
     (threadPublicId: string, newTitle: string) => {
       const update = (t: SidebarThreadItem): SidebarThreadItem =>
-        t.public_id === threadPublicId ? { ...t, title: newTitle } : t;
+        t.publicId === threadPublicId ? { ...t, title: newTitle } : t;
       setStarredThreads((prev) => prev.map(update));
       setRecentThreads((prev) => prev.map(update));
     },
@@ -170,10 +168,10 @@ export const useSidebarThreads = () => {
 
   const removeThread = useCallback((threadPublicId: string) => {
     setStarredThreads((prev) =>
-      prev.filter((t) => t.public_id !== threadPublicId),
+      prev.filter((t) => t.publicId !== threadPublicId),
     );
     setRecentThreads((prev) =>
-      prev.filter((t) => t.public_id !== threadPublicId),
+      prev.filter((t) => t.publicId !== threadPublicId),
     );
   }, []);
 

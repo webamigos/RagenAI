@@ -13,8 +13,8 @@ export async function deleteMessageCommand(
 
     const message = await db.message.findFirst({
       where: {
-        public_id: publicId,
-        thread: { project: { organization_id: orgId } },
+        publicId: publicId,
+        thread: { project: { organizationId: orgId } },
       },
       select: { id: true },
     });

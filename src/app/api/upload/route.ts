@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     let projectRecord = undefined;
     if (formProjectId) {
       projectRecord = await getProjectByPublicIdOrThrow(formProjectId);
-      if (projectRecord.organization_id !== orgId) {
+      if (projectRecord.organizationId !== orgId) {
         return NextResponse.json(
           { message: 'Project does not belong to this organization' },
           { status: 403 },
@@ -129,18 +129,18 @@ export async function POST(request: NextRequest) {
 
         // Step 2: upload to S3
         await uploadToS3(
-          `${fileRecord.public_id}.${fileExtension}`,
+          `${fileRecord.publicId}.${fileExtension}`,
           parsedFile.content as Buffer,
         );
 
         await db.userFile.update({
           where: {
             id: fileRecord.id,
-            organization_id: orgId,
+            organizationId: orgId,
           },
           data: {
-            is_uploaded: true,
-            uploaded_at: new Date(),
+            isUploaded: true,
+            uploadedAt: new Date(),
           },
         });
 
@@ -156,11 +156,11 @@ export async function POST(request: NextRequest) {
           args: [
             {
               ...fileRecord,
-              project_public_id: projectRecord?.public_id ?? null,
+              project_public_id: projectRecord?.publicId ?? null,
               organization_slug: org.slug,
               organization_public_id: org.publicId,
               user_email: user?.email ?? undefined,
-              user_id: user?.id ?? undefined,
+              userId: user?.id ?? undefined,
             },
           ],
         });
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         processedFiles.push({
           fileName: parsedFile.fileName,
           fileSize: file.size,
-          uniqueFileId: fileRecord.public_id,
+          uniqueFileId: fileRecord.publicId,
         });
 
         // Update running totals for cumulative validation

@@ -38,14 +38,14 @@ async function loadThreadDocuments(
 ): Promise<ThreadDocumentUI[]> {
   try {
     const threadDocuments = await db.threadDocument.findMany({
-      where: { thread_id: threadId },
+      where: { threadId: threadId },
       include: {
         userFile: {
           select: {
-            public_id: true,
-            file_name: true,
-            file_size: true,
-            file_mime_type: true,
+            publicId: true,
+            fileName: true,
+            fileSize: true,
+            fileMimeType: true,
             document: {
               select: {
                 content: true,
@@ -60,18 +60,18 @@ async function loadThreadDocuments(
       {
         threadId,
         threadDocumentsFound: threadDocuments.length,
-        userFileIds: threadDocuments.map((td) => td.userFile.public_id),
-        fileNames: threadDocuments.map((td) => td.userFile.file_name),
+        userFileIds: threadDocuments.map((td) => td.userFile.publicId),
+        fileNames: threadDocuments.map((td) => td.userFile.fileName),
       },
       'loadThreadDocuments: Retrieved thread documents from database',
     );
 
     const threadDocumentsUI: ThreadDocumentUI[] = threadDocuments.map((td) => ({
-      name: td.userFile.file_name,
+      name: td.userFile.fileName,
       content: td.userFile.document?.content || '',
-      size: td.userFile.file_size,
-      type: td.userFile.file_mime_type || 'application/octet-stream',
-      userFileId: td.userFile.public_id,
+      size: td.userFile.fileSize,
+      type: td.userFile.fileMimeType || 'application/octet-stream',
+      userFileId: td.userFile.publicId,
     }));
 
     return threadDocumentsUI;
@@ -158,26 +158,26 @@ async function resolveProjectInstruction(
 
   try {
     // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
-    if (threadRecord.mentioned_project_id) {
+    if (threadRecord.mentionedProjectId) {
       const mentionedProject = await db.project.findFirst({
         where: {
-          id: threadRecord.mentioned_project_id,
-          organization_id: orgId,
+          id: threadRecord.mentionedProjectId,
+          organizationId: orgId,
         },
-        select: { id: true, public_id: true, title: true },
+        select: { id: true, publicId: true, title: true },
       });
 
       if (mentionedProject) {
         try {
           projectInstruction = await getProjectInstruction(
-            mentionedProject.public_id,
+            mentionedProject.publicId,
           );
-          effectiveProjectPublicId = mentionedProject.public_id;
+          effectiveProjectPublicId = mentionedProject.publicId;
 
           logger.info(
             {
-              mentionedProjectId: threadRecord.mentioned_project_id,
-              mentionedProjectPublicId: mentionedProject.public_id,
+              mentionedProjectId: threadRecord.mentionedProjectId,
+              mentionedProjectPublicId: mentionedProject.publicId,
               hasInstruction: Boolean(projectInstruction),
             },
             'Using instructions from mentioned project (highest priority)',
@@ -186,15 +186,15 @@ async function resolveProjectInstruction(
           logger.error(
             {
               err: error,
-              mentionedProjectId: threadRecord.mentioned_project_id,
-              mentionedProjectPublicId: mentionedProject.public_id,
+              mentionedProjectId: threadRecord.mentionedProjectId,
+              mentionedProjectPublicId: mentionedProject.publicId,
             },
             'Error getting instructions from mentioned project, falling back to thread project',
           );
         }
       } else {
         logger.warn(
-          { mentionedProjectId: threadRecord.mentioned_project_id },
+          { mentionedProjectId: threadRecord.mentionedProjectId },
           'Mentioned project not found, falling back to thread project',
         );
       }
@@ -203,19 +203,19 @@ async function resolveProjectInstruction(
     // 2. MEDIUM PRIORITY: Thread project
     if (
       !projectInstruction &&
-      threadRecord.project_id &&
-      threadRecord.project?.public_id
+      threadRecord.projectId &&
+      threadRecord.project?.publicId
     ) {
       try {
         projectInstruction = await getProjectInstruction(
-          threadRecord.project.public_id,
+          threadRecord.project.publicId,
         );
-        effectiveProjectPublicId = threadRecord.project.public_id;
+        effectiveProjectPublicId = threadRecord.project.publicId;
 
         logger.info(
           {
-            internalProjectId: threadRecord.project_id,
-            publicProjectId: threadRecord.project.public_id,
+            internalProjectId: threadRecord.projectId,
+            publicProjectId: threadRecord.project.publicId,
             hasInstruction: Boolean(projectInstruction),
           },
           'Using instructions from thread project (medium priority)',
@@ -224,16 +224,16 @@ async function resolveProjectInstruction(
         logger.error(
           {
             err: error,
-            projectId: threadRecord.project_id,
-            publicProjectId: threadRecord.project?.public_id,
+            projectId: threadRecord.projectId,
+            publicProjectId: threadRecord.project?.publicId,
           },
           'Error getting instructions from thread project, will use organization instructions',
         );
       }
-    } else if (!projectInstruction && threadRecord.project_id) {
+    } else if (!projectInstruction && threadRecord.projectId) {
       logger.warn(
-        { projectId: threadRecord.project_id },
-        'Project associated with thread, but missing public_id',
+        { projectId: threadRecord.projectId },
+        'Project associated with thread, but missing publicId',
       );
     }
 
@@ -244,7 +244,7 @@ async function resolveProjectInstruction(
           orgId,
           hasOrgPrompt: Boolean(effectiveSettings.prompt),
           effectiveModel: effectiveSettings.model,
-          threadModel: threadRecord.preferred_model,
+          threadModel: threadRecord.preferredModel,
           orgDefaultModel: rawSettings.model,
         },
         'No project instructions found, will use organization instructions (lowest priority fallback)',
@@ -297,12 +297,12 @@ export async function streamEvents({
           }
 
           sendApiEvent(controller, 'thread_found', {
-            id: threadRecord.public_id,
+            id: threadRecord.publicId,
           });
 
           const effectiveSettings = {
             apiKey: rawSettings.apiKey,
-            model: threadRecord.preferred_model || rawSettings.model,
+            model: threadRecord.preferredModel || rawSettings.model,
             temperature: rawSettings.temperature,
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
@@ -403,11 +403,11 @@ export async function streamEvents({
           }
 
           sendApiEvent(controller, 'user_message_saved', {
-            id: threadMessage.public_id,
+            id: threadMessage.publicId,
           });
 
           sendApiEvent(controller, 'user_message_created', {
-            id: threadMessage.public_id,
+            id: threadMessage.publicId,
           });
 
           const {
@@ -450,7 +450,7 @@ export async function streamEvents({
             name: `chat-${mode === AssistantMode.PUBLIC ? 'public' : filteredMode === ChatType.CONVERSATION ? 'conversation' : 'rag'}`,
             input: userMessage.prompt,
             userId: userId ?? undefined,
-            sessionId: `${orgId}:${threadRecord.public_id}`,
+            sessionId: `${orgId}:${threadRecord.publicId}`,
             tags: traceTags,
           });
 
@@ -466,15 +466,15 @@ export async function streamEvents({
                 mcpContext,
                 tracking: {
                   organizationId: orgId,
-                  projectId: threadRecord.project_id,
+                  projectId: threadRecord.projectId,
                   userId,
                 },
               });
             } else {
               const projectIdToUse =
-                threadRecord.mentioned_project_id || threadRecord.project_id;
+                threadRecord.mentionedProjectId || threadRecord.projectId;
               const projectPublicIdToUse =
-                effectiveProjectPublicId || threadRecord.project?.public_id;
+                effectiveProjectPublicId || threadRecord.project?.publicId;
 
               const inlineThreadDocuments = userMessage.threadDocuments || [];
               const threadDocuments = mergeThreadDocuments(
@@ -499,7 +499,7 @@ export async function streamEvents({
             }
           } else if (mode === AssistantMode.PUBLIC) {
             const projectPublicIdToUse =
-              effectiveProjectPublicId || threadRecord.project?.public_id;
+              effectiveProjectPublicId || threadRecord.project?.publicId;
             chainOutput = await initializePublicRagChain({
               settings: {
                 ...effectiveSettings,
@@ -625,8 +625,8 @@ export async function streamEvents({
 
             trackAiUsage({
               organizationId: orgId,
-              projectId: threadRecord.project_id ?? null,
-              threadId: threadRecord.public_id,
+              projectId: threadRecord.projectId ?? null,
+              threadId: threadRecord.publicId,
               userId,
               step: AiUsageStep.CHAT_COMPLETION,
               provider,
@@ -645,13 +645,13 @@ export async function streamEvents({
             const dbMessage = await createMessageInDB({
               threadId: threadRecord.id,
               message: {
-                id: threadMessage.public_id,
+                id: threadMessage.publicId,
                 content: fullMessage,
                 source: Source.UI,
               },
               role: Role.ASSISTANT,
               runId: '',
-              messageType: threadRecord.preferred_communication_type,
+              messageType: threadRecord.preferredCommunicationType,
             });
 
             sendApiEvent(controller, 'assistant_response_saved');
@@ -659,11 +659,11 @@ export async function streamEvents({
             try {
               // We create an object without the full content because it has already been sent in the delta events
               const messageToSend: ApiSseMessageEvent = {
-                id: dbMessage.public_id,
+                id: dbMessage.publicId,
                 role: dbMessage.role,
-                created_at: dbMessage.created_at.toISOString(),
+                createdAt: dbMessage.createdAt.toISOString(),
                 content: '', // We clear the content - the client already has the full message from the delta events
-                run_id: '',
+                runId: '',
               };
 
               sendApiEvent(controller, 'final_response', messageToSend);

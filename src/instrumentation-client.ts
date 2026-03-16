@@ -93,7 +93,7 @@ export function onRouterTransitionStart(
     const entries = list.getEntries();
     if (entries.length > 0) {
       span.setAttribute(
-        'navigation.duration_ms',
+        'navigation.durationMs',
         entries[entries.length - 1].startTime,
       );
     }
