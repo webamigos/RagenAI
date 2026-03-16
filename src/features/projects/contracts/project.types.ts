@@ -2,16 +2,16 @@ import type { Project } from '@/generated/prisma/client';
 
 export type ProjectPublicFields = Pick<
   Project,
-  | 'public_id'
+  | 'publicId'
   | 'title'
-  | 'created_at'
-  | 'updated_at'
-  | 'organization_id'
-  | 'owner_id'
-  | 'is_public'
-  | 'access_token'
-  | 'published_at'
-  | 'chatbot_enabled'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'organizationId'
+  | 'ownerId'
+  | 'isPublic'
+  | 'accessToken'
+  | 'publishedAt'
+  | 'chatbotEnabled'
   | 'source'
 > & {
   threads: unknown[];

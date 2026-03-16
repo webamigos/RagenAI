@@ -23,11 +23,11 @@ export const createGuestThreadCommand = async ({
 
     const threadRecord = await db.thread.create({
       data: {
-        organization_id: organizationId,
-        visitor_id: visitorId,
-        project_id: projectId,
-        mentioned_project_id: mentionedProjectId,
-        preferred_model: preferredModel,
+        organizationId: organizationId,
+        visitorId: visitorId,
+        projectId: projectId,
+        mentionedProjectId: mentionedProjectId,
+        preferredModel: preferredModel,
       },
     });
 
@@ -38,8 +38,8 @@ export const createGuestThreadCommand = async ({
     return {
       success: true,
       thread: {
-        public_id: threadRecord.public_id,
-        project_id: projectId ?? null,
+        publicId: threadRecord.publicId,
+        projectId: projectId ?? null,
       },
     };
   } catch (error) {

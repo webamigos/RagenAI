@@ -16,8 +16,8 @@ export async function loadThreadMessages(
 
     const thread = await db.thread.findFirst({
       where: {
-        public_id: threadId,
-        project: { organization_id: orgId },
+        publicId: threadId,
+        project: { organizationId: orgId },
       },
       select: { id: true },
     });
@@ -27,18 +27,18 @@ export async function loadThreadMessages(
     }
 
     const messages = await db.message.findMany({
-      where: { thread_id: thread.id },
+      where: { threadId: thread.id },
       select: {
-        public_id: true,
+        publicId: true,
         role: true,
         content: true,
-        created_at: true,
+        createdAt: true,
       },
-      orderBy: { created_at: 'asc' },
+      orderBy: { createdAt: 'asc' },
     });
 
     return messages.map((msg) => ({
-      id: msg.public_id,
+      id: msg.publicId,
       role: msg.role === 'USER' ? ('user' as const) : ('assistant' as const),
       parts: [{ type: 'text' as const, text: msg.content }],
     }));

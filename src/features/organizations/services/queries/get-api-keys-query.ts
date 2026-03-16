@@ -5,7 +5,7 @@ export const getOrganizationDefaultProjectQuery = async (
 ) => {
   return await db.project.findFirstOrThrow({
     where: {
-      organization_id: organizationId,
+      organizationId: organizationId,
     },
   });
 };
@@ -13,22 +13,22 @@ export const getOrganizationDefaultProjectQuery = async (
 export const getApiKeysQuery = async (organizationId: string) => {
   return await db.apiKey.findMany({
     where: {
-      organization_id: organizationId,
+      organizationId: organizationId,
     },
     select: {
-      public_id: true,
+      publicId: true,
       name: true,
-      masked_value: true,
-      created_at: true,
+      maskedValue: true,
+      createdAt: true,
       project: {
         select: {
-          public_id: true,
+          publicId: true,
           title: true,
         },
       },
     },
     orderBy: {
-      created_at: 'desc',
+      createdAt: 'desc',
     },
   });
 };

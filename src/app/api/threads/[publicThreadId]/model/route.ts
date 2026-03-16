@@ -43,25 +43,25 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     // Update thread model
     const updatedThread = await db.thread.update({
       where: {
-        public_id: publicThreadId,
-        organization_id: orgId,
+        publicId: publicThreadId,
+        organizationId: orgId,
         OR: [
           {
-            user_id: userId,
+            userId: userId,
           },
           {
-            visitor_id: userId,
+            visitorId: userId,
           },
         ],
       },
       data: {
-        preferred_model: model,
+        preferredModel: model,
       },
       select: {
-        public_id: true,
+        publicId: true,
         title: true,
-        preferred_model: true,
-        created_at: true,
+        preferredModel: true,
+        createdAt: true,
       },
     });
 

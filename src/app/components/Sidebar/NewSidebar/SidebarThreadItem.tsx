@@ -25,7 +25,7 @@ function getThreadDisplayTitle(thread: SidebarThreadItemType): string {
 }
 
 function getThreadHref(thread: SidebarThreadItemType): string {
-  return `/chats/${thread.public_id}`;
+  return `/chats/${thread.publicId}`;
 }
 
 export const SidebarThreadItem = ({

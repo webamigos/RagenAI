@@ -23,7 +23,7 @@ import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
 
 type ProjectForContext = {
   id: number;
-  public_id: string;
+  publicId: string;
   title: string;
 };
 
@@ -99,7 +99,7 @@ export const Assistant = ({ threadId }: Props) => {
           const mappedProjects: ProjectForContext[] = response.projects.map(
             (project) => ({
               id: project.id,
-              public_id: project.public_id,
+              publicId: project.publicId,
               title: project.title,
             }),
           );

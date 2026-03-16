@@ -76,12 +76,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: updated.id,
         provider: provider.provider,
-        mcp_server_url: provider.mcpServerUrl,
-        customer_id: '',
+        mcpServerUrl: provider.mcpServerUrl,
+        customerId: '',
         status: updated.status,
-        connected_at: updated.connected_at,
+        connectedAt: updated.connectedAt,
         enabled: true,
-        created_at: new Date(),
+        createdAt: new Date(),
       });
       setApiKeyDialogOpen(false);
       setApiKeyValue('');
@@ -183,7 +183,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       const mcpServerBaseUrl = provider.mcpServerUrl;
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       const authParams = new URLSearchParams({
-        customer_id: result.customer_id,
+        customerId: result.customerId,
         redirect_uri: callbackUrl,
       });
       if (provider.scopes?.length) {
@@ -237,12 +237,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: connectorId,
         provider: provider.provider,
-        mcp_server_url: provider.mcpServerUrl,
-        customer_id: '',
+        mcpServerUrl: provider.mcpServerUrl,
+        customerId: '',
         status: updated.status,
-        connected_at: updated.connected_at,
+        connectedAt: updated.connectedAt,
         enabled: true,
-        created_at: new Date(),
+        createdAt: new Date(),
       });
     } catch {
       // Auth may have failed or user closed popup before completing

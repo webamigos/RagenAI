@@ -152,14 +152,14 @@ export const useAssistantLogic = (threadId: string) => {
     }
     scrollToBottom();
     const userMessage = {
-      public_id: `user-${Date.now()}`,
+      publicId: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       mode: data.mode,
-      message_type: data.messageType,
-      voice_duration_seconds: data.voiceDurationSeconds,
-      voice_played: false,
+      messageType: data.messageType,
+      voiceDurationSeconds: data.voiceDurationSeconds,
+      voicePlayed: false,
       attachments: data.threadDocuments?.map((doc) => ({
         name: doc.name,
         size: doc.size,

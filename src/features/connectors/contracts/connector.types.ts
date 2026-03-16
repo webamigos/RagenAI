@@ -8,12 +8,12 @@ export type ConnectorDto = Pick<
   McpConnector,
   | 'id'
   | 'provider'
-  | 'mcp_server_url'
-  | 'customer_id'
+  | 'mcpServerUrl'
+  | 'customerId'
   | 'enabled'
   | 'status'
-  | 'connected_at'
-  | 'created_at'
+  | 'connectedAt'
+  | 'createdAt'
 >;
 
 export type ProviderDefinition = {

@@ -24,8 +24,8 @@ export async function searchAllQuery(
   const [threads, projects] = await Promise.all([
     db.thread.findMany({
       where: {
-        organization_id: orgId,
-        visitor_id: visitorId,
+        organizationId: orgId,
+        visitorId: visitorId,
         messages: { some: {} },
         OR: [
           { title: { contains: trimmed, mode: 'insensitive' } },
@@ -36,46 +36,46 @@ export async function searchAllQuery(
           },
         ],
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
-        public_id: true,
+        publicId: true,
         title: true,
-        created_at: true,
+        createdAt: true,
         messages: {
           select: { content: true },
           take: 1,
-          orderBy: { created_at: 'asc' as const },
+          orderBy: { createdAt: 'asc' as const },
         },
       },
     }),
     db.project.findMany({
       where: {
-        organization_id: orgId,
+        organizationId: orgId,
         title: { contains: trimmed, mode: 'insensitive' },
       },
-      orderBy: { created_at: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
-        public_id: true,
+        publicId: true,
         title: true,
-        created_at: true,
+        createdAt: true,
       },
     }),
   ]);
 
   const results: SearchResultItem[] = [
     ...projects.map((p) => ({
-      id: p.public_id,
+      id: p.publicId,
       title: p.title,
       type: 'project' as const,
-      createdAt: p.created_at.toISOString(),
+      createdAt: p.createdAt.toISOString(),
     })),
     ...threads.map((t) => ({
-      id: t.public_id,
+      id: t.publicId,
       title: t.title || t.messages[0]?.content.slice(0, 60) || 'Untitled',
       type: 'thread' as const,
-      createdAt: t.created_at.toISOString(),
+      createdAt: t.createdAt.toISOString(),
     })),
   ];
 

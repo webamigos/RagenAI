@@ -15,12 +15,12 @@ export const updateDocumentTitleCommand = async ({
 }) => {
   await db.userDocument.updateMany({
     where: {
-      organization_id: orgId,
-      public_id: documentId,
+      organizationId: orgId,
+      publicId: documentId,
     },
     data: {
       title,
-      updated_at: new Date(),
+      updatedAt: new Date(),
     },
   });
 };
@@ -36,24 +36,24 @@ export const updateDocumentContentCommand = async ({
 }) => {
   await db.userDocument.updateMany({
     where: {
-      organization_id: orgId,
-      public_id: documentId,
+      organizationId: orgId,
+      publicId: documentId,
     },
     data: {
       content,
-      updated_at: new Date(),
+      updatedAt: new Date(),
     },
   });
 };
 
 export const deleteDocumentFromDbCommand = async (
-  documentId: UserDocument['id']
+  documentId: UserDocument['id'],
 ) => {
   const orgId = await getOrgIdOrThrow();
   return await db.userDocument.deleteMany({
     where: {
       id: documentId,
-      organization_id: orgId,
+      organizationId: orgId,
     },
   });
 };

@@ -40,7 +40,7 @@ function filesReducer(state: State, action: Action): State {
     case 'REMOVE_FILE':
       return {
         ...state,
-        files: state.files.filter((file) => file.public_id !== action.payload),
+        files: state.files.filter((file) => file.publicId !== action.payload),
       };
     default:
       return state;
@@ -51,7 +51,7 @@ type FilesContextType = {
   files: UserFileType[];
   refreshFiles: () => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (filePublicId: UserFile['public_id']) => void;
+  removeFile: (filePublicId: UserFile['publicId']) => void;
   isLoading: boolean;
   isError: boolean;
 };
@@ -85,7 +85,7 @@ export const FilesProvider = ({ children }: Props) => {
     dispatch({ type: 'ADD_FILE', payload: newFile });
   };
 
-  const removeFile = (publicFileId: UserFile['public_id']) => {
+  const removeFile = (publicFileId: UserFile['publicId']) => {
     dispatch({ type: 'REMOVE_FILE', payload: publicFileId });
   };
 

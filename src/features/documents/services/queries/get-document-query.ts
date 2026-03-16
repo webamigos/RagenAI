@@ -8,20 +8,20 @@ export const getDocumentByIdQuery = async (documentId: UserDocument['id']) => {
   const orgId = await getOrgIdOrThrow();
   return await db.userDocument.findFirst({
     where: {
-      organization_id: orgId,
+      organizationId: orgId,
       id: documentId,
     },
   });
 };
 
 export const getDocumentByPublicIdQuery = async (
-  documentPublicId: UserDocument['public_id']
+  documentPublicId: UserDocument['publicId'],
 ) => {
   const orgId = await getOrgIdOrThrow();
   return await db.userDocument.findFirst({
     where: {
-      organization_id: orgId,
-      public_id: documentPublicId,
+      organizationId: orgId,
+      publicId: documentPublicId,
     },
     include: {
       file: true,

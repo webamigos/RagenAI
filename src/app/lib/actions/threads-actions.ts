@@ -23,7 +23,7 @@ export const getThreadDetailsAction = async (
 
     return {
       success: true,
-      preferredModel: threadRecord.preferred_model,
+      preferredModel: threadRecord.preferredModel,
     };
   } catch (error) {
     logger.error({ err: error, threadId }, 'Error fetching thread details');

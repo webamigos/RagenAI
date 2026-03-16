@@ -12,6 +12,7 @@ export type VectorStoreDocumentMetadata = {
   organization_id: string;
   file_id: string;
   file_public_id?: string;
+  project_id: number | null;
   project_public_id: string | null;
   source_type: string;
   chunk_size: number;

@@ -27,7 +27,7 @@ function getThreadTitle(thread: AllThreadsItem): string {
 }
 
 function getThreadHref(thread: AllThreadsItem): string {
-  return `/chats/${thread.public_id}`;
+  return `/chats/${thread.publicId}`;
 }
 
 function formatRelativeTime(dateStr: string, locale: string): string {
@@ -128,7 +128,7 @@ export const ChatsPage = () => {
   const handleToggleStar = (threadPublicId: string, isStarred: boolean) => {
     setThreads((prev) =>
       prev.map((t) =>
-        t.public_id === threadPublicId ? { ...t, is_starred: isStarred } : t,
+        t.publicId === threadPublicId ? { ...t, isStarred: isStarred } : t,
       ),
     );
   };
@@ -136,13 +136,13 @@ export const ChatsPage = () => {
   const handleRenamed = (threadPublicId: string, newTitle: string) => {
     setThreads((prev) =>
       prev.map((t) =>
-        t.public_id === threadPublicId ? { ...t, title: newTitle } : t,
+        t.publicId === threadPublicId ? { ...t, title: newTitle } : t,
       ),
     );
   };
 
   const handleDeleted = (threadPublicId: string) => {
-    setThreads((prev) => prev.filter((t) => t.public_id !== threadPublicId));
+    setThreads((prev) => prev.filter((t) => t.publicId !== threadPublicId));
     setTotal((prev) => prev - 1);
   };
 
@@ -182,7 +182,7 @@ export const ChatsPage = () => {
       <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {threads.map((thread) => (
           <div
-            key={thread.public_id}
+            key={thread.publicId}
             className="group flex items-center gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ export const ChatsPage = () => {
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="text-xs text-zinc-500 dark:text-zinc-400">
                   {t('last-message', {
-                    time: formatRelativeTime(thread.created_at, locale),
+                    time: formatRelativeTime(thread.createdAt, locale),
                   })}
                 </span>
                 {thread.project && (

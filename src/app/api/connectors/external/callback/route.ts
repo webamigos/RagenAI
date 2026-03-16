@@ -64,24 +64,24 @@ export async function GET(request: NextRequest) {
     // Mark the connector as connected
     await db.mcpConnector.upsert({
       where: {
-        organization_id_user_id_provider: {
-          organization_id: orgId,
-          user_id: userId,
+        organizationId_userId_provider: {
+          organizationId: orgId,
+          userId: userId,
           provider,
         },
       },
       update: {
         status: McpConnectorStatus.CONNECTED,
-        connected_at: new Date(),
+        connectedAt: new Date(),
       },
       create: {
-        organization_id: orgId,
-        user_id: userId,
+        organizationId: orgId,
+        userId: userId,
         provider,
-        mcp_server_url: providerDef.mcpServerUrl,
-        customer_id: `${orgId}:${userId}:${provider.toLowerCase()}`,
+        mcpServerUrl: providerDef.mcpServerUrl,
+        customerId: `${orgId}:${userId}:${provider.toLowerCase()}`,
         status: McpConnectorStatus.CONNECTED,
-        connected_at: new Date(),
+        connectedAt: new Date(),
       },
     });
 

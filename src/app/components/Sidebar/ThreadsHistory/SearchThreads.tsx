@@ -55,12 +55,12 @@ function formatRelativeDate(dateStr: string, t: TranslateFn): string {
 
 type RecentData = {
   threads: {
-    public_id: string;
+    publicId: string;
     title: string | null;
-    created_at: string;
+    createdAt: string;
     messages: { content: string }[];
   }[];
-  projects: { public_id: string; title: string; created_at: string }[];
+  projects: { publicId: string; title: string; createdAt: string }[];
 };
 
 export const SearchThreads = React.forwardRef<
@@ -99,10 +99,10 @@ export const SearchThreads = React.forwardRef<
             ...threadsResult.recent,
           ]
             .filter((thread) => {
-              if (seen.has(thread.public_id)) {
+              if (seen.has(thread.publicId)) {
                 return false;
               }
-              seen.add(thread.public_id);
+              seen.add(thread.publicId);
               return true;
             })
             .slice(0, 10);
@@ -271,9 +271,9 @@ export const SearchThreads = React.forwardRef<
               <CommandGroup heading={t('projects')}>
                 {recentData.projects.map((project) => (
                   <CommandItem
-                    key={`recent-project-${project.public_id}`}
-                    value={`recent-project-${project.public_id}-${project.title}`}
-                    onSelect={() => handleSelect('project', project.public_id)}
+                    key={`recent-project-${project.publicId}`}
+                    value={`recent-project-${project.publicId}-${project.title}`}
+                    onSelect={() => handleSelect('project', project.publicId)}
                     className="cursor-pointer"
                   >
                     <FolderIcon className="size-4 shrink-0 text-zinc-500" />
@@ -286,9 +286,9 @@ export const SearchThreads = React.forwardRef<
               <CommandGroup heading={t('recent')}>
                 {recentData.threads.map((thread) => (
                   <CommandItem
-                    key={`recent-${thread.public_id}`}
-                    value={`recent-thread-${thread.public_id}-${thread.title || thread.messages[0]?.content}`}
-                    onSelect={() => handleSelect('thread', thread.public_id)}
+                    key={`recent-${thread.publicId}`}
+                    value={`recent-thread-${thread.publicId}-${thread.title || thread.messages[0]?.content}`}
+                    onSelect={() => handleSelect('thread', thread.publicId)}
                     className="cursor-pointer"
                   >
                     <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
@@ -298,7 +298,7 @@ export const SearchThreads = React.forwardRef<
                         t('untitled')}
                     </span>
                     <span className="text-xs text-zinc-400 shrink-0">
-                      {formatRelativeDate(thread.created_at, t)}
+                      {formatRelativeDate(thread.createdAt, t)}
                     </span>
                   </CommandItem>
                 ))}

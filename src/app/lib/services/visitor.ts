@@ -15,8 +15,8 @@ export const createVisitorEntry = async (
 ) => {
   return await db.visitorMessages.create({
     data: {
-      message_id: message.id,
-      visitor_id: visitorId,
+      messageId: message.id,
+      visitorId: visitorId,
     },
   });
 };
@@ -28,10 +28,10 @@ export const getLast24hVisitorMessages = async (
     where: {
       AND: [
         {
-          visitor_id: visitorId,
+          visitorId: visitorId,
         },
         {
-          created_at: {
+          createdAt: {
             gte: midnightToday,
           },
         },
@@ -43,7 +43,7 @@ export const getLast24hVisitorMessages = async (
 export const clearVisitorMessages = async () => {
   return await db.visitorMessages.deleteMany({
     where: {
-      created_at: {
+      createdAt: {
         gte: midnightToday,
       },
     },

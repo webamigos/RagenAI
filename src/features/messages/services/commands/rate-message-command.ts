@@ -18,8 +18,8 @@ export async function rateMessageCommand(
 
     const message = await db.message.findFirst({
       where: {
-        public_id: messagePublicId,
-        thread: { organization_id: orgId },
+        publicId: messagePublicId,
+        thread: { organizationId: orgId },
       },
       select: { id: true },
     });

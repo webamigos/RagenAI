@@ -34,15 +34,15 @@ function buildWhereClause(filters?: AiUsageFilters): Prisma.AiUsageWhereInput {
   const where: Prisma.AiUsageWhereInput = {};
 
   if (filters?.organizationId) {
-    where.organization_id = filters.organizationId;
+    where.organizationId = filters.organizationId;
   }
 
   if (filters?.projectPublicId) {
-    where.project = { public_id: filters.projectPublicId };
+    where.project = { publicId: filters.projectPublicId };
   }
 
   if (filters?.userId) {
-    where.user_id = filters.userId;
+    where.userId = filters.userId;
   }
 
   if (filters?.step) {
@@ -51,7 +51,7 @@ function buildWhereClause(filters?: AiUsageFilters): Prisma.AiUsageWhereInput {
 
   const dateFrom = buildDateFilter(filters);
   if (dateFrom) {
-    where.created_at = { gte: dateFrom };
+    where.createdAt = { gte: dateFrom };
   } else if (filters?.period === 'custom') {
     const createdAt: Prisma.DateTimeFilter = {};
     if (filters.dateFrom) {
@@ -63,7 +63,7 @@ function buildWhereClause(filters?: AiUsageFilters): Prisma.AiUsageWhereInput {
       createdAt.lte = endDate;
     }
     if (Object.keys(createdAt).length > 0) {
-      where.created_at = createdAt;
+      where.createdAt = createdAt;
     }
   }
 
@@ -79,11 +79,11 @@ export async function getAiUsageDashboardQuery(
     await Promise.all([
       db.aiUsage.findMany({
         where,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: 500,
         include: {
           project: {
-            select: { public_id: true, title: true },
+            select: { publicId: true, title: true },
           },
           user: {
             select: { id: true, name: true, email: true },
@@ -94,63 +94,62 @@ export async function getAiUsageDashboardQuery(
         where,
         _count: true,
         _sum: {
-          input_tokens: true,
-          output_tokens: true,
-          total_tokens: true,
-          estimated_cost: true,
+          inputTokens: true,
+          outputTokens: true,
+          totalTokens: true,
+          estimatedCost: true,
         },
       }),
       db.aiUsage.groupBy({
         by: ['step'],
         where,
         _count: true,
-        _sum: { total_tokens: true, estimated_cost: true },
+        _sum: { totalTokens: true, estimatedCost: true },
       }),
       db.aiUsage.groupBy({
         by: ['model'],
         where,
         _count: true,
-        _sum: { total_tokens: true, estimated_cost: true },
+        _sum: { totalTokens: true, estimatedCost: true },
       }),
       db.aiUsage.groupBy({
-        by: ['organization_id'],
+        by: ['organizationId'],
         where,
         _count: true,
-        _sum: { total_tokens: true, estimated_cost: true },
+        _sum: { totalTokens: true, estimatedCost: true },
       }),
       getDailyChartData(filters),
     ]);
 
   // Collect all org IDs from items + chart data for name resolution
-  const itemOrgIds = items.map((i) => i.organization_id);
-  const chartOrgIds = byOrgRaw.map((r) => r.organization_id);
+  const itemOrgIds = items.map((i) => i.organizationId);
+  const chartOrgIds = byOrgRaw.map((r) => r.organizationId);
   const allOrgIds = [...new Set([...itemOrgIds, ...chartOrgIds])];
   const orgNames = await getOrgNameMap(allOrgIds);
 
   const summary: AiUsageSummary = {
     totalCalls: aggregates._count,
-    totalTokens: aggregates._sum.total_tokens ?? 0,
-    totalInputTokens: aggregates._sum.input_tokens ?? 0,
-    totalOutputTokens: aggregates._sum.output_tokens ?? 0,
-    totalCost: aggregates._sum.estimated_cost ?? 0,
+    totalTokens: aggregates._sum.totalTokens ?? 0,
+    totalInputTokens: aggregates._sum.inputTokens ?? 0,
+    totalOutputTokens: aggregates._sum.outputTokens ?? 0,
+    totalCost: aggregates._sum.estimatedCost ?? 0,
   };
 
   const mappedItems: AiUsageListItem[] = items.map((item) => ({
-    publicId: item.public_id,
+    publicId: item.publicId,
     step: item.step,
     provider: item.provider,
     model: item.model,
-    inputTokens: item.input_tokens,
-    outputTokens: item.output_tokens,
-    totalTokens: item.total_tokens,
-    estimatedCost: item.estimated_cost,
-    durationMs: item.duration_ms,
-    createdAt: item.created_at,
-    organizationName:
-      orgNames.get(item.organization_id) ?? item.organization_id,
-    organizationId: item.organization_id,
+    inputTokens: item.inputTokens,
+    outputTokens: item.outputTokens,
+    totalTokens: item.totalTokens,
+    estimatedCost: item.estimatedCost,
+    durationMs: item.durationMs,
+    createdAt: item.createdAt,
+    organizationName: orgNames.get(item.organizationId) ?? item.organizationId,
+    organizationId: item.organizationId,
     project: item.project
-      ? { publicId: item.project.public_id, title: item.project.title }
+      ? { publicId: item.project.publicId, title: item.project.title }
       : null,
     user: item.user
       ? { id: item.user.id, name: item.user.name, email: item.user.email }
@@ -163,24 +162,24 @@ export async function getAiUsageDashboardQuery(
       .map((r) => ({
         step: r.step,
         calls: r._count,
-        tokens: r._sum.total_tokens ?? 0,
-        cost: r._sum.estimated_cost ?? 0,
+        tokens: r._sum.totalTokens ?? 0,
+        cost: r._sum.estimatedCost ?? 0,
       }))
       .sort((a, b) => b.cost - a.cost),
     byModel: byModelRaw
       .map((r) => ({
         model: r.model,
         calls: r._count,
-        tokens: r._sum.total_tokens ?? 0,
-        cost: r._sum.estimated_cost ?? 0,
+        tokens: r._sum.totalTokens ?? 0,
+        cost: r._sum.estimatedCost ?? 0,
       }))
       .sort((a, b) => b.cost - a.cost),
     byOrg: byOrgRaw
       .map((r) => ({
-        organizationName: orgNames.get(r.organization_id) ?? r.organization_id,
+        organizationName: orgNames.get(r.organizationId) ?? r.organizationId,
         calls: r._count,
-        tokens: r._sum.total_tokens ?? 0,
-        cost: r._sum.estimated_cost ?? 0,
+        tokens: r._sum.totalTokens ?? 0,
+        cost: r._sum.estimatedCost ?? 0,
       }))
       .sort((a, b) => b.cost - a.cost),
   };
@@ -203,19 +202,19 @@ async function getDailyChartData(
   let idx = 1;
 
   if (filters?.organizationId) {
-    conditions.push(`organization_id = $${idx++}`);
+    conditions.push(`organizationId = $${idx++}`);
     params.push(filters.organizationId);
   }
 
   if (filters?.projectPublicId) {
     conditions.push(
-      `project_id IN (SELECT id FROM projects WHERE public_id = $${idx++})`,
+      `projectId IN (SELECT id FROM projects WHERE publicId = $${idx++})`,
     );
     params.push(filters.projectPublicId);
   }
 
   if (filters?.userId) {
-    conditions.push(`user_id = $${idx++}`);
+    conditions.push(`userId = $${idx++}`);
     params.push(filters.userId);
   }
 
@@ -226,30 +225,30 @@ async function getDailyChartData(
 
   const dateFrom = buildDateFilter(filters);
   if (dateFrom) {
-    conditions.push(`created_at >= $${idx++}`);
+    conditions.push(`createdAt >= $${idx++}`);
     params.push(dateFrom);
   } else if (filters?.period === 'custom') {
     if (filters.dateFrom) {
-      conditions.push(`created_at >= $${idx++}`);
+      conditions.push(`createdAt >= $${idx++}`);
       params.push(new Date(filters.dateFrom));
     }
     if (filters.dateTo) {
       const endDate = new Date(filters.dateTo);
       endDate.setHours(23, 59, 59, 999);
-      conditions.push(`created_at <= $${idx++}`);
+      conditions.push(`createdAt <= $${idx++}`);
       params.push(endDate);
     }
   }
 
   const rows = await db.$queryRawUnsafe<DailyRawRow[]>(
     `SELECT
-       DATE(created_at AT TIME ZONE 'UTC') AS date,
+       DATE(createdAt AT TIME ZONE 'UTC') AS date,
        COUNT(*)::bigint AS calls,
-       COALESCE(SUM(total_tokens), 0)::bigint AS tokens,
-       COALESCE(SUM(estimated_cost), 0)::float8 AS cost
+       COALESCE(SUM(totalTokens), 0)::bigint AS tokens,
+       COALESCE(SUM(estimatedCost), 0)::float8 AS cost
      FROM ai_usages
      WHERE ${conditions.join(' AND ')}
-     GROUP BY DATE(created_at AT TIME ZONE 'UTC')
+     GROUP BY DATE(createdAt AT TIME ZONE 'UTC')
      ORDER BY date ASC`,
     ...params,
   );
@@ -293,17 +292,17 @@ export async function getUsersForFilterQuery(
 ): Promise<{ id: string; name: string | null; email: string }[]> {
   const where: Prisma.AiUsageWhereInput = {};
   if (orgId) {
-    where.organization_id = orgId;
+    where.organizationId = orgId;
   }
 
   const usageRecords = await db.aiUsage.findMany({
-    where: { ...where, user_id: { not: null } },
-    select: { user_id: true },
-    distinct: ['user_id'],
+    where: { ...where, userId: { not: null } },
+    select: { userId: true },
+    distinct: ['userId'],
   });
 
   const userIds = usageRecords
-    .map((r) => r.user_id)
+    .map((r) => r.userId)
     .filter((id): id is string => id != null);
 
   if (userIds.length === 0) {
@@ -324,28 +323,28 @@ export async function getProjectsForFilterQuery(
 ): Promise<{ publicId: string; title: string; orgName: string }[]> {
   const where: Prisma.ProjectWhereInput = {};
   if (orgId) {
-    where.organization_id = orgId;
+    where.organizationId = orgId;
   }
 
   const projects = await db.project.findMany({
     where,
     select: {
-      public_id: true,
+      publicId: true,
       title: true,
-      organization_id: true,
+      organizationId: true,
     },
     orderBy: { title: 'asc' },
   });
 
   // Resolve org names from the Better Auth Organization table
   const orgIds = [
-    ...new Set(projects.map((p) => p.organization_id).filter(Boolean)),
+    ...new Set(projects.map((p) => p.organizationId).filter(Boolean)),
   ] as string[];
   const orgNameMap = await getOrgNameMap(orgIds);
 
   return projects.map((p) => ({
-    publicId: p.public_id,
+    publicId: p.publicId,
     title: p.title,
-    orgName: p.organization_id ? (orgNameMap.get(p.organization_id) ?? '') : '',
+    orgName: p.organizationId ? (orgNameMap.get(p.organizationId) ?? '') : '',
   }));
 }

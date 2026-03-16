@@ -12,17 +12,17 @@ export async function shareThreadWithTeamCommand(
 ): Promise<OperationResult> {
   const thread = await db.thread.findFirst({
     where: {
-      public_id: threadPublicId,
-      organization_id: organizationId,
+      publicId: threadPublicId,
+      organizationId: organizationId,
     },
-    select: { id: true, visitor_id: true },
+    select: { id: true, visitorId: true },
   });
 
   if (!thread) {
     return { success: false, error: 'Thread not found' };
   }
 
-  if (thread.visitor_id !== userId) {
+  if (thread.visitorId !== userId) {
     return { success: false, error: 'Only the thread creator can share it' };
   }
 
@@ -50,7 +50,7 @@ export async function shareThreadWithTeamCommand(
 
   await db.thread.update({
     where: { id: thread.id },
-    data: { team_id: teamId },
+    data: { teamId: teamId },
   });
 
   return { success: true };

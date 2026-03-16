@@ -30,35 +30,35 @@ type Props = {
   files: UserFileType[];
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
+  toggleModal: (filePublicId: UserFile['publicId'] | null) => void;
   onAddFile: (newFile: UserFileType) => void;
-  onRemoveFile: (filePublicId: UserFile['public_id']) => void;
+  onRemoveFile: (filePublicId: UserFile['publicId']) => void;
   handleDelete: (
-    filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name'],
+    filePublicId: UserFile['publicId'],
+    fileName: UserFile['fileName'],
   ) => void;
 };
 
 export type UserFileTypeSafe = UserFileType & {
-  file_type: FileType;
-  embedding_status: EmbeddingStatus;
-  embedding_started_at: UserFile['embedding_started_at'];
-  embedding_completed_at: UserFile['embedding_completed_at'];
-  embedding_failed_at: UserFile['embedding_failed_at'];
+  fileType: FileType;
+  embeddingStatus: EmbeddingStatus;
+  embeddingStartedAt: UserFile['embeddingStartedAt'];
+  embeddingCompletedAt: UserFile['embeddingCompletedAt'];
+  embeddingFailedAt: UserFile['embeddingFailedAt'];
 };
 
 type FileRowProps = {
   file: UserFileTypeSafe;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  handleDelete: (filePublicId: UserFile['public_id'], fileName: string) => void;
-  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
-  onRemoveFile: (filePublicId: UserFile['public_id']) => void;
+  handleDelete: (filePublicId: UserFile['publicId'], fileName: string) => void;
+  toggleModal: (filePublicId: UserFile['publicId'] | null) => void;
+  onRemoveFile: (filePublicId: UserFile['publicId']) => void;
 };
 
 export type ModalStateProps = {
   isOpen: boolean;
-  filePublicId: UserFile['public_id'] | null;
+  filePublicId: UserFile['publicId'] | null;
 };
 
 function FileStatusBadge({
@@ -120,68 +120,68 @@ const FileRow = ({
   const [isLoading] = useState(false);
 
   const {
-    created_at,
-    updated_at,
-    file_name,
-    file_size,
-    public_id,
-    embedding_status,
-    embedding_completed_at,
+    createdAt,
+    updatedAt,
+    fileName,
+    fileSize,
+    publicId,
+    embeddingStatus,
+    embeddingCompletedAt,
   } = file;
 
-  const fileIcon = getFileIcon(file.file_type);
+  const fileIcon = getFileIcon(file.fileType);
 
   const {
-    created_at: formattedCreatedAt,
-    embedding_completed_at: formattedEmbeddingCompletedAt,
+    createdAt: formattedCreatedAt,
+    embeddingCompletedAt: formattedEmbeddingCompletedAt,
   } = useMemo(
-    () => formatDates({ created_at, updated_at, embedding_completed_at }),
-    [created_at, updated_at, embedding_completed_at],
+    () => formatDates({ createdAt, updatedAt, embeddingCompletedAt }),
+    [createdAt, updatedAt, embeddingCompletedAt],
   );
 
   const truncatedFileName = useMemo(
-    () => truncateFileName(file_name, 40),
-    [file_name],
+    () => truncateFileName(fileName, 40),
+    [fileName],
   );
 
   return (
     <>
       <DeleteFileModal
-        isOpen={showModal.isOpen && showModal.filePublicId === file.public_id}
+        isOpen={showModal.isOpen && showModal.filePublicId === file.publicId}
         onClose={() => toggleModal(null)}
         onConfirm={handleDelete}
-        filePublicId={file.public_id}
-        fileName={file.file_name}
+        filePublicId={file.publicId}
+        fileName={file.fileName}
         isLoading={deleteLoading}
       />
       <TableRow className="text-sm">
-        <TableCell className={file.document?.public_id ? 'z-10' : ''}>
+        <TableCell className={file.document?.publicId ? 'z-10' : ''}>
           <span className="flex items-center">
             <span className="mr-1 inline-flex size-6 shrink-0 items-center">
               {fileIcon}
             </span>
-            {file.document?.public_id ? (
+            {file.document?.publicId ? (
               <Link
-                href={`/document/${file.document.public_id}`}
-                title={file_name}
+                href={`/document/${file.document.publicId}`}
+                title={fileName}
                 className="cursor-pointer"
               >
                 {truncatedFileName}
               </Link>
             ) : (
-              <span title={file_name}>{truncatedFileName}</span>
+              <span title={fileName}>{truncatedFileName}</span>
             )}
           </span>
         </TableCell>
-        <TableCell>{prettyBytes(file_size)}</TableCell>
+        <TableCell>{prettyBytes(fileSize)}</TableCell>
         <TableCell>{formattedCreatedAt}</TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
             <FileStatusBadge
-              embeddingStatus={file.embedding_status}
-              parsingStatus={file.parsing_status}
+              embeddingStatus={file.embeddingStatus}
+              parsingStatus={file.parsingStatus}
             />
-            {embedding_status === EmbeddingStatus.COMPLETED && (
+            {embeddingStatus === EmbeddingStatus.COMPLETED && (
               <span className="text-xs text-zinc-400">
                 {formattedEmbeddingCompletedAt}
               </span>
@@ -190,9 +190,9 @@ const FileRow = ({
         </TableCell>
         <TableCell className="text-right">
           <ToolbarActions
-            filePublicId={public_id!}
-            documentPublicId={file.document?.public_id}
-            fileName={file_name}
+            filePublicId={publicId!}
+            documentPublicId={file.document?.publicId}
+            fileName={fileName}
             toggleModal={toggleModal}
             isLoading={isLoading}
           />
@@ -220,7 +220,7 @@ export const UserFilesTable = ({
 
     return files.filter(
       (file) =>
-        file.file_name.toLowerCase().includes(searchValue.toLowerCase()) &&
+        file.fileName.toLowerCase().includes(searchValue.toLowerCase()) &&
         file.project?.title === 'Default',
     ) as UserFileTypeSafe[];
   }, [files, searchValue]);
@@ -244,7 +244,7 @@ export const UserFilesTable = ({
             filteredDocuments.map((file) => (
               <FileRow
                 deleteLoading={deleteLoading}
-                key={file.public_id}
+                key={file.publicId}
                 file={file}
                 showModal={showModal}
                 toggleModal={toggleModal}

@@ -46,7 +46,7 @@ export const registerApiKeyCommand = async (
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        customer_id: connector.customer_id,
+        customerId: connector.customerId,
         api_key: apiKey,
       }),
     });

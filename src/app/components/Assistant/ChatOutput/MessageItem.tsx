@@ -51,7 +51,7 @@ export const MessageItem = ({
         <div className="flex items-center justify-end">
           {showMessageDetails ? (
             <span className="font-light transition-transform duration-300 ease-in-out transform translate-x-0 opacity-100">
-              {format(new Date(message.created_at), 'dd.MM.yyyy HH:mm:ss')}
+              {format(new Date(message.createdAt), 'dd.MM.yyyy HH:mm:ss')}
             </span>
           ) : (
             <ArrowIcon
@@ -64,7 +64,7 @@ export const MessageItem = ({
           <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <RateAnswer
               initialRated={message.rate}
-              publicId={message.public_id}
+              publicId={message.publicId}
             />
             <CopyToClipboardButton message={message} />
           </div>

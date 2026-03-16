@@ -14,7 +14,7 @@ export const TUIThreadItem = ({
 
   return (
     <SidebarItem
-      href={`/chats/${thread.public_id}`}
+      href={`/chats/${thread.publicId}`}
       current={isActive}
       onClick={onClose}
       aria-label={`Thread: ${getThreadTitle(thread)}`}

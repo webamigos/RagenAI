@@ -58,29 +58,29 @@ export type MessageAttachment = {
 export type MessageDto = {
   role: Role;
   content: MessageModel['content'];
-  created_at: string;
-  public_id: MessageModel['public_id'];
-  run_id?: MessageModel['run_id'];
+  createdAt: string;
+  publicId: MessageModel['publicId'];
+  runId?: MessageModel['runId'];
   rate?: MessageModel['rate'];
-  message_type?: MessageModel['message_type'];
-  voice_duration_seconds?: MessageModel['voice_duration_seconds'];
-  voice_played?: MessageModel['voice_played'];
+  messageType?: MessageModel['messageType'];
+  voiceDurationSeconds?: MessageModel['voiceDurationSeconds'];
+  voicePlayed?: MessageModel['voicePlayed'];
   attachments?: MessageAttachment[];
 };
 
 export type ApiMessageDto = {
-  id: MessageModel['public_id'];
+  id: MessageModel['publicId'];
   content: MessageModel['content'];
   role: Role;
-  created_at: string;
-  run_id: string; // TODO: to remove
+  createdAt: string;
+  runId: string; // TODO: to remove
 };
 
-export type MessageDtoWithoutPublicId = Omit<MessageDto, 'public_id'>;
+export type MessageDtoWithoutPublicId = Omit<MessageDto, 'publicId'>;
 
 export type StreamedMessageDto = {
   content: string;
-  created_at: string;
+  createdAt: string;
   runId: string;
   reasoningContent?: string;
   isReasoning?: boolean;
@@ -90,6 +90,6 @@ export type DbMessageDto = {
   id: MessageModel['id'];
   content: MessageModel['content'];
   role: MessageModel['role'];
-  run_id?: MessageModel['run_id'];
+  runId?: MessageModel['runId'];
   source?: MessageModel['source'];
 };

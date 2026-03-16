@@ -68,7 +68,7 @@ export class HttpProvider implements ApiProvider {
           'x-api-key': apiKey,
         },
         body: JSON.stringify({
-          thread_id: thread.id,
+          threadId: thread.id,
           question: prompt,
         }),
       });

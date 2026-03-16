@@ -47,8 +47,8 @@ export const POST = async (request: NextRequest, { params }: Params) => {
     // Find message scoped to the user's organization via thread relationship
     const message = await db.message.findFirst({
       where: {
-        public_id: messageId,
-        thread: { organization_id: orgId },
+        publicId: messageId,
+        thread: { organizationId: orgId },
       },
       select: { id: true },
     });

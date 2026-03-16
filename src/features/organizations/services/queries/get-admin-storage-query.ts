@@ -18,21 +18,21 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
         id: true,
         name: true,
         settings: {
-          select: { storage_limit_bytes: true },
+          select: { storageLimitBytes: true },
         },
       },
     }),
     db.userFile.groupBy({
-      by: ['organization_id'],
-      _sum: { file_size: true },
+      by: ['organizationId'],
+      _sum: { fileSize: true },
       _count: { id: true },
     }),
   ]);
 
   const usageMap = new Map(
     fileAggs.map((a) => [
-      a.organization_id,
-      { totalBytes: a._sum.file_size ?? 0, fileCount: a._count.id },
+      a.organizationId,
+      { totalBytes: a._sum.fileSize ?? 0, fileCount: a._count.id },
     ]),
   );
 
@@ -46,8 +46,8 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
       orgName: org.name,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,
-      storageLimitBytes: org.settings?.storage_limit_bytes
-        ? Number(org.settings.storage_limit_bytes)
+      storageLimitBytes: org.settings?.storageLimitBytes
+        ? Number(org.settings.storageLimitBytes)
         : null,
     };
   });
@@ -63,21 +63,21 @@ export async function getAdminOrgProjectsStorageQuery(
 ): Promise<ProjectStorageSummary[]> {
   const [projects, fileAggs] = await Promise.all([
     db.project.findMany({
-      where: { organization_id: orgId },
-      select: { id: true, public_id: true, title: true },
+      where: { organizationId: orgId },
+      select: { id: true, publicId: true, title: true },
     }),
     db.userFile.groupBy({
-      by: ['project_id'],
-      where: { organization_id: orgId },
-      _sum: { file_size: true },
+      by: ['projectId'],
+      where: { organizationId: orgId },
+      _sum: { fileSize: true },
       _count: { id: true },
     }),
   ]);
 
   const usageMap = new Map(
     fileAggs.map((a) => [
-      a.project_id,
-      { totalBytes: a._sum.file_size ?? 0, fileCount: a._count.id },
+      a.projectId,
+      { totalBytes: a._sum.fileSize ?? 0, fileCount: a._count.id },
     ]),
   );
 
@@ -85,7 +85,7 @@ export async function getAdminOrgProjectsStorageQuery(
     const usage = usageMap.get(project.id) ?? { totalBytes: 0, fileCount: 0 };
     return {
       projectId: project.id,
-      projectPublicId: project.public_id,
+      projectPublicId: project.publicId,
       projectTitle: project.title,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,

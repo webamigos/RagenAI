@@ -10,7 +10,7 @@ export const generateProjectKeyCommand = async (publicId: string) => {
     const orgId = await getOrgIdOrThrow();
 
     const existing = await db.project.findFirst({
-      where: { public_id: publicId, organization_id: orgId },
+      where: { publicId: publicId, organizationId: orgId },
     });
 
     if (!existing) {
@@ -22,17 +22,17 @@ export const generateProjectKeyCommand = async (publicId: string) => {
     const project = await db.project.update({
       where: { id: existing.id },
       data: {
-        access_token: crypto.randomUUID(),
-        is_public: true,
-        published_at: new Date(),
+        accessToken: crypto.randomUUID(),
+        isPublic: true,
+        publishedAt: new Date(),
       },
       select: {
-        access_token: true,
+        accessToken: true,
       },
     });
 
     return {
-      accessToken: project.access_token,
+      accessToken: project.accessToken,
     };
   } catch (error) {
     logger.error({ err: error }, 'Error generating access token:');

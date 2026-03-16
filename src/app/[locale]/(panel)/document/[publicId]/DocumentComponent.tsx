@@ -220,13 +220,10 @@ export function DocumentComponent({ publicId }: Props) {
             dispatch({ type: 'SET_DOCUMENT_TITLE', payload: title });
 
             const firstDoc = content.documents[0];
-            if (
-              firstDoc?.file?.file_type === 'PDF' &&
-              firstDoc.file.public_id
-            ) {
+            if (firstDoc?.file?.fileType === 'PDF' && firstDoc.file.publicId) {
               dispatch({
                 type: 'SET_PDF_FILE_PUBLIC_ID',
-                payload: firstDoc.file.public_id,
+                payload: firstDoc.file.publicId,
               });
             }
 

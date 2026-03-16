@@ -11,17 +11,17 @@ export const getDocumentPreviewQuery = async ({
 }) => {
   return await db.userDocument.findMany({
     where: {
-      organization_id: orgId,
-      public_id: documentPublicId,
+      organizationId: orgId,
+      publicId: documentPublicId,
     },
     select: {
       content: true,
       title: true,
       file: {
         select: {
-          public_id: true,
-          file_type: true,
-          file_extension: true,
+          publicId: true,
+          fileType: true,
+          fileExtension: true,
         },
       },
     },

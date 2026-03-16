@@ -10,7 +10,7 @@ const HUBSPOT_INSTRUCTIONS = `For HubSpot (CRM):
 - INDEX DELAY: HubSpot search results may have a slight delay for very recently created or modified records (up to a few hours). When showing recent records, add a brief note that very recent changes may not appear immediately in search results. If the user asks about a specific contact/deal that doesn't appear in search, try searching by email/name using the "query" parameter which uses a different, more real-time lookup.`;
 
 const CLICKUP_INSTRUCTIONS = `For ClickUp:
-- SORTING: When listing tasks, sort by updated_at DESC by default to show most recently active items first.
+- SORTING: When listing tasks, sort by updatedAt DESC by default to show most recently active items first.
 - "MY TASKS": When the user says "my tasks" or uses first-person language, first call clickup_get_workspace_members to find the authenticated user's member ID, then use that ID as an assignee filter in clickup_search. If clickup_resolve_assignees is available, you can try it with the user's name — but do NOT use ["me"] as it may not be supported.
 - ASSET TYPE: When the user asks about tasks specifically, filter by asset_types: ["task"]. When asking about docs, use ["doc"].
 - STATUS FILTERING: For "current", "active", or "in progress" work, filter by task_statuses: ["active"]. For "todo" or "backlog", use ["unstarted"]. For "done" or "completed", use ["done", "closed"]. Don't filter by status when user asks for "all" tasks.

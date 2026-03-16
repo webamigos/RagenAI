@@ -13,8 +13,8 @@ export const updateMessagePlayedCommand = async (messagePublicId: string) => {
 
     const message = await db.message.findFirst({
       where: {
-        public_id: messagePublicId,
-        thread: { organization_id: orgId },
+        publicId: messagePublicId,
+        thread: { organizationId: orgId },
       },
       select: { id: true },
     });
@@ -26,8 +26,8 @@ export const updateMessagePlayedCommand = async (messagePublicId: string) => {
     return await db.message.update({
       where: { id: message.id },
       data: {
-        voice_played: true,
-        message_type: 'VOICE',
+        voicePlayed: true,
+        messageType: 'VOICE',
       },
     });
   } catch (error) {

@@ -60,8 +60,7 @@ export const threadsSlice = createSlice({
       const newThreads = action.payload.filter(
         (newThread) =>
           !state.userThreads.some(
-            (existingThread) =>
-              existingThread.public_id === newThread.public_id,
+            (existingThread) => existingThread.publicId === newThread.publicId,
           ),
       );
       state.isLoading = false;
@@ -70,20 +69,20 @@ export const threadsSlice = createSlice({
     },
     addThread: (state, action: PayloadAction<ThreadHistoryResponse>) => {
       const existingThreadIndex = state.userThreads.findIndex(
-        (thread) => thread.public_id === action.payload.public_id,
+        (thread) => thread.publicId === action.payload.publicId,
       );
 
       if (existingThreadIndex !== -1) {
         state.userThreads[existingThreadIndex] = {
           ...state.userThreads[existingThreadIndex],
           messages: [...action.payload.messages],
-          project_id: action.payload.project_id,
+          projectId: action.payload.projectId,
         };
       } else {
         const newThread = {
           ...action.payload,
           messages: action.payload.messages || [],
-          project_id: action.payload.project_id,
+          projectId: action.payload.projectId,
         };
         state.userThreads = [newThread, ...state.userThreads];
       }
@@ -114,9 +113,9 @@ export const threadsSlice = createSlice({
       action: PayloadAction<{ threadId: string; model: string | null }>,
     ) => {
       const { threadId, model } = action.payload;
-      const thread = state.userThreads.find((t) => t.public_id === threadId);
+      const thread = state.userThreads.find((t) => t.publicId === threadId);
       if (thread) {
-        thread.preferred_model = model;
+        thread.preferredModel = model;
       }
     },
   },

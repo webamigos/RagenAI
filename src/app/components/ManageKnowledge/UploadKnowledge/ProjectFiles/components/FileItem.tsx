@@ -11,13 +11,13 @@ import { logger } from '@/app/lib/utils/logger';
 
 type FileItemProps = {
   file: {
-    public_id: string;
-    file_name: string;
-    file_size: number;
-    file_type: FileType;
-    created_at: Date | null;
+    publicId: string;
+    fileName: string;
+    fileSize: number;
+    fileType: FileType;
+    createdAt: Date | null;
   };
-  onDelete: (publicFileId: UserFile['public_id']) => void | Promise<void>;
+  onDelete: (publicFileId: UserFile['publicId']) => void | Promise<void>;
   isDeleting: boolean;
   t: any;
 };
@@ -25,12 +25,12 @@ type FileItemProps = {
 export const FileItem = memo(
   ({ file, onDelete, isDeleting, t }: FileItemProps) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const formattedSize = prettyBytes(file.file_size);
-    const formattedDate = file.created_at
-      ? new Date(file.created_at).toLocaleDateString()
+    const formattedSize = prettyBytes(file.fileSize);
+    const formattedDate = file.createdAt
+      ? new Date(file.createdAt).toLocaleDateString()
       : '-';
 
-    const handleConfirmDelete = async (filePublicId: UserFile['public_id']) => {
+    const handleConfirmDelete = async (filePublicId: UserFile['publicId']) => {
       try {
         await onDelete(filePublicId);
         setShowDeleteModal(false);
@@ -46,17 +46,17 @@ export const FileItem = memo(
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleConfirmDelete}
-          filePublicId={file.public_id}
-          fileName={file.file_name}
+          filePublicId={file.publicId}
+          fileName={file.fileName}
           isLoading={isDeleting}
         />
         <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-accent-dark-700 transition-colors">
           <div className="h-8 w-8 text-gray-600 dark:text-gray-400 flex items-center justify-center">
-            {getFileIcon(file.file_type as FileType)}
+            {getFileIcon(file.fileType as FileType)}
           </div>
           <div className="flex-1 min-w-0">
             <Text className="font-medium text-gray-700 dark:text-gray-200 truncate">
-              {file.file_name}
+              {file.fileName}
             </Text>
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <span>{formattedSize}</span>
@@ -65,7 +65,7 @@ export const FileItem = memo(
             </div>
           </div>
           <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-accent-dark-300 text-gray-700 dark:text-gray-200">
-            {file.file_type}
+            {file.fileType}
           </span>
           <button
             onClick={() => setShowDeleteModal(true)}

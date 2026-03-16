@@ -10,10 +10,10 @@ import {
 export type McpConnectorInfo = {
   id: string;
   provider: string;
-  mcp_server_url: string;
-  customer_id: string;
-  organization_id: string;
-  user_id: string;
+  mcpServerUrl: string;
+  customerId: string;
+  organizationId: string;
+  userId: string;
 };
 
 /**
@@ -102,29 +102,29 @@ export async function createMcpToolsFromConnectors(
 
       if (providerDef?.authType === 'api_key_bearer') {
         // Read API key from ragen-vault and pass as Bearer token
-        const customerId = connector.customer_id;
+        const customerId = connector.customerId;
         const tokenData = await ragenAuthClient.getToken(
           customerId,
           connector.provider,
         );
 
-        if (!tokenData?.access_token) {
+        if (!tokenData?.accessToken) {
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcp_server_url,
+            url: connector.mcpServerUrl,
             headers: {
-              Authorization: `Bearer ${tokenData.access_token}`,
+              Authorization: `Bearer ${tokenData.accessToken}`,
             },
           },
         });
       } else if (providerDef?.authType === 'external_mcp') {
         const authProvider = new RagenAuthOAuthClientProvider({
-          orgId: connector.organization_id,
-          userId: connector.user_id,
+          orgId: connector.organizationId,
+          userId: connector.userId,
           provider: connector.provider as McpConnectorProvider,
           callbackUrl: '', // No redirect needed for runtime token injection
           fixedClientId: providerDef.oauthClientId,
@@ -133,7 +133,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcp_server_url,
+            url: connector.mcpServerUrl,
             authProvider,
           },
         });
@@ -141,9 +141,9 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcp_server_url,
+            url: connector.mcpServerUrl,
             headers: {
-              'x-customer-id': connector.customer_id,
+              'x-customer-id': connector.customerId,
             },
           },
         });
@@ -174,7 +174,7 @@ export async function createMcpToolsFromConnectors(
         {
           err: error,
           provider: connector.provider,
-          mcpServerUrl: connector.mcp_server_url,
+          mcpServerUrl: connector.mcpServerUrl,
         },
         'Failed to initialize MCP connector, skipping',
       );

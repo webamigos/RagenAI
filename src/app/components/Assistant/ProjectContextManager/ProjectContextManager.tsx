@@ -15,7 +15,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 
 type ProjectForContext = {
   id: number;
-  public_id: string;
+  publicId: string;
   title: string;
 };
 
@@ -57,7 +57,7 @@ export const ProjectContextManager = ({
           mentionedProject: project
             ? {
                 id: project.id,
-                public_id: project.public_id,
+                publicId: project.publicId,
                 title: project.title,
               }
             : null,
@@ -195,7 +195,7 @@ export const ProjectContextManager = ({
                       ? 'Wymieniony projekt (@)'
                       : isCurrentThreadProject
                         ? 'Projekt wątku (domyślny)'
-                        : `ID: ${project.public_id}`}
+                        : `ID: ${project.publicId}`}
                   </div>
                 </div>
                 {(isSelected || isCurrentThreadProject) && (

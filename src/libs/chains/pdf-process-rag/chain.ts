@@ -15,7 +15,7 @@ export async function processPDFDocument(
   fileName: string,
   fileId: string,
   organizationId: string,
-  projectId?: number
+  projectId?: number,
 ): Promise<{
   rawDocs: VectorStoreDocument[];
   success: boolean;
@@ -35,12 +35,12 @@ export async function processPDFDocument(
 
     const { convertedPages, directory } = await convertPDFToImages(
       filePath,
-      fileId
+      fileId,
     );
     const pageDescriptions = await processPDFInBatches(
       convertedPages,
       directory,
-      chatInstance
+      chatInstance,
     );
 
     let finalDocument = '';
@@ -55,11 +55,11 @@ export async function processPDFDocument(
     });
 
     await createMarkdownDocument({
-      public_id: fileId,
+      publicId: fileId,
       title: fileName,
-      organization_id: organizationId,
+      organizationId: organizationId,
       content: finalDocument,
-      project_id: projectId,
+      projectId: projectId,
     });
 
     // Parse PDF text content using pdf-parse
@@ -82,13 +82,13 @@ export async function processPDFDocument(
     } catch (pdfError) {
       logger.warn(
         { err: pdfError },
-        'Could not parse PDF text content, using OCR results only'
+        'Could not parse PDF text content, using OCR results only',
       );
     }
 
     await removeDirectory(directory);
     logger.info(
-      `PDF converted to ${convertedPages.length} images and analyzed for file: ${fileName}`
+      `PDF converted to ${convertedPages.length} images and analyzed for file: ${fileName}`,
     );
 
     return {

@@ -36,13 +36,13 @@ async function cleanup() {
 
   // Delete in order respecting foreign key constraints
   await prisma.project.deleteMany({
-    where: { public_id: TEST_PROJECT_PUBLIC_ID },
+    where: { publicId: TEST_PROJECT_PUBLIC_ID },
   });
   await prisma.subscription.deleteMany({
     where: { referenceId: TEST_ORG_ID },
   });
   await prisma.organizationSettings.deleteMany({
-    where: { organization_id: TEST_ORG_ID },
+    where: { organizationId: TEST_ORG_ID },
   });
   await prisma.member.deleteMany({
     where: { id: { in: [TEST_MEMBER_ID, TEST_MEMBER2_ID] } },
@@ -54,7 +54,7 @@ async function cleanup() {
     where: { userId: TEST_USER_ID },
   });
   await prisma.organizationSettings.deleteMany({
-    where: { organization_id: TEST_ORG2_ID },
+    where: { organizationId: TEST_ORG2_ID },
   });
   await prisma.organization.deleteMany({
     where: { id: { in: [TEST_ORG_ID, TEST_ORG2_ID] } },
@@ -120,7 +120,7 @@ async function seed() {
   // 5. Create organization settings (required for upload storage limit checks)
   await prisma.organizationSettings.create({
     data: {
-      organization_id: TEST_ORG_ID,
+      organizationId: TEST_ORG_ID,
     },
   });
   console.log('Created organization settings');
@@ -156,10 +156,10 @@ async function seed() {
   // 8. Create project
   await prisma.project.create({
     data: {
-      public_id: TEST_PROJECT_PUBLIC_ID,
+      publicId: TEST_PROJECT_PUBLIC_ID,
       title: TEST_PROJECT_TITLE,
-      organization_id: TEST_ORG_ID,
-      owner_id: TEST_USER_ID,
+      organizationId: TEST_ORG_ID,
+      ownerId: TEST_USER_ID,
     },
   });
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
@@ -189,7 +189,7 @@ async function seed() {
   // 11. Create org settings for second org
   await prisma.organizationSettings.create({
     data: {
-      organization_id: TEST_ORG2_ID,
+      organizationId: TEST_ORG2_ID,
     },
   });
   console.log('Created organization settings for second org');

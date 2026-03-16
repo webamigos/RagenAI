@@ -32,11 +32,11 @@ export type ApiSseReasoningDelta = {
 };
 
 export type ApiSseThreadFound = {
-  id: Thread['public_id'];
+  id: Thread['publicId'];
 };
 
 export type ApiSseMessageCreated = {
-  id: Message['public_id'];
+  id: Message['publicId'];
 };
 
 export type SseMessageError = {

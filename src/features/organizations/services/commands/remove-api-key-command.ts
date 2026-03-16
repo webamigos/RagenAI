@@ -3,12 +3,12 @@ import type { ApiKey } from '@/generated/prisma/client';
 
 export const removeApiKeyCommand = async (
   organizationId: string,
-  publicApiKeyId: ApiKey['public_id'],
+  publicApiKeyId: ApiKey['publicId'],
 ) => {
   const apiKey = await db.apiKey.findUniqueOrThrow({
     where: {
-      public_id: publicApiKeyId,
-      organization_id: organizationId,
+      publicId: publicApiKeyId,
+      organizationId: organizationId,
     },
   });
 

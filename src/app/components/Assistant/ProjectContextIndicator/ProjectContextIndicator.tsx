@@ -7,7 +7,7 @@ import { ProjectContextManager } from '../ProjectContextManager';
 // Simplified Project type for context management
 type ProjectForContext = {
   id: number;
-  public_id: string;
+  publicId: string;
   title: string;
 };
 

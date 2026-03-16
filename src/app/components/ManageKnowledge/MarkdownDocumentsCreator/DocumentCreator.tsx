@@ -81,15 +81,15 @@ export const DocumentCreator = () => {
 
       if (response.status === 200 && response.files) {
         // const document = response.files[0];
-        // const projectId = document.project_id;
+        // const projectId = document.projectId;
 
         // MOVED TO WORKER
         // addDocument({
-        //   organization_id: organizationId,
-        //   file_name: document.fileName,
-        //   file_size: document.fileSize,
-        //   file_type: FileType.MARKDOWN,
-        //   project_id: projectId,
+        //   organizationId: organizationId,
+        //   fileName: document.fileName,
+        //   fileSize: document.fileSize,
+        //   fileType: FileType.MARKDOWN,
+        //   projectId: projectId,
         //   project: { id: projectId, title: document.fileName },
         // } as UserFileType); // TODO: temporary, will be refactored
         reset();

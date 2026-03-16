@@ -7,8 +7,8 @@ export const deleteFileFromDbCommand = async (filePublicId: string) => {
   const orgId = await getOrgIdOrThrow();
   return await db.userFile.deleteMany({
     where: {
-      public_id: filePublicId,
-      organization_id: orgId,
+      publicId: filePublicId,
+      organizationId: orgId,
     },
   });
 };

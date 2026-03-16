@@ -46,18 +46,18 @@ export const TUIThreadsList = ({
                 aria-label={`${title} project threads`}
               >
                 {threads.map((thread) => (
-                  <div key={thread.public_id} role="listitem">
+                  <div key={thread.publicId} role="listitem">
                     <TUIThreadItem
                       thread={thread}
                       projectPublicId={projectPublicId}
-                      isActive={activeThread === thread.public_id}
+                      isActive={activeThread === thread.publicId}
                       onClose={onClose}
                     />
                   </div>
                 ))}
               </div>
             </div>
-          )
+          ),
       )}
     </div>
   );

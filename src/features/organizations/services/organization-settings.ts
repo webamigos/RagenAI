@@ -17,15 +17,15 @@ async function upsertSettings(
   data: Record<string, unknown>,
 ): Promise<void> {
   await db.organizationSettings.upsert({
-    where: { organization_id: orgId },
+    where: { organizationId: orgId },
     update: data,
-    create: { organization_id: orgId, ...data },
+    create: { organizationId: orgId, ...data },
   });
 }
 
 async function getSettings(orgId: string) {
   return db.organizationSettings.findUnique({
-    where: { organization_id: orgId },
+    where: { organizationId: orgId },
   });
 }
 
@@ -50,15 +50,15 @@ export async function saveOpenaiAPIKey(
   apiKey: string,
 ): Promise<void> {
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(orgId, { openai_api_key: encrypted });
+  await upsertSettings(orgId, { openaiApiKey: encrypted });
 }
 
 export async function getOpenaiAPIKey(orgId: string): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.openai_api_key) {
+  if (!settings?.openaiApiKey) {
     return getApiKeyFromPool();
   }
-  return decryptApiKey(settings.openai_api_key);
+  return decryptApiKey(settings.openaiApiKey);
 }
 
 // --- Anthropic API Key ---
@@ -68,17 +68,17 @@ export async function saveAnthropicAPIKey(
   apiKey: string,
 ): Promise<void> {
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(orgId, { anthropic_api_key: encrypted });
+  await upsertSettings(orgId, { anthropicApiKey: encrypted });
 }
 
 export async function getAnthropicAPIKey(
   orgId: string,
 ): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.anthropic_api_key) {
+  if (!settings?.anthropicApiKey) {
     return null;
   }
-  return decryptApiKey(settings.anthropic_api_key);
+  return decryptApiKey(settings.anthropicApiKey);
 }
 
 // --- Google API Key ---
@@ -88,15 +88,15 @@ export async function saveGoogleAPIKey(
   apiKey: string,
 ): Promise<void> {
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(orgId, { google_api_key: encrypted });
+  await upsertSettings(orgId, { googleApiKey: encrypted });
 }
 
 export async function getGoogleAPIKey(orgId: string): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.google_api_key) {
+  if (!settings?.googleApiKey) {
     return null;
   }
-  return decryptApiKey(settings.google_api_key);
+  return decryptApiKey(settings.googleApiKey);
 }
 
 // --- Bedrock Credentials ---
@@ -107,7 +107,7 @@ export async function saveBedrockCredentials(
 ): Promise<void> {
   const encrypted = encryptApiKey(JSON.stringify(credentials));
   await upsertSettings(orgId, {
-    bedrock_credentials: encrypted,
+    bedrockCredentials: encrypted,
   });
 }
 
@@ -117,11 +117,11 @@ export async function getBedrockCredentials(orgId: string): Promise<{
   secretAccessKey: string;
 } | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.bedrock_credentials) {
+  if (!settings?.bedrockCredentials) {
     return null;
   }
   try {
-    return JSON.parse(decryptApiKey(settings.bedrock_credentials));
+    return JSON.parse(decryptApiKey(settings.bedrockCredentials));
   } catch {
     return null;
   }
@@ -133,12 +133,12 @@ export async function saveOllamaHost(
   orgId: string,
   host: string,
 ): Promise<void> {
-  await upsertSettings(orgId, { ollama_host: host });
+  await upsertSettings(orgId, { ollamaHost: host });
 }
 
 export async function getOllamaHost(orgId: string): Promise<string | null> {
   const settings = await getSettings(orgId);
-  return settings?.ollama_host ?? null;
+  return settings?.ollamaHost ?? null;
 }
 
 // --- OpenRouter API Key ---
@@ -148,17 +148,17 @@ export async function saveOpenrouterAPIKey(
   apiKey: string,
 ): Promise<void> {
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(orgId, { openrouter_api_key: encrypted });
+  await upsertSettings(orgId, { openrouterApiKey: encrypted });
 }
 
 export async function getOpenrouterAPIKey(
   orgId: string,
 ): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.openrouter_api_key) {
+  if (!settings?.openrouterApiKey) {
     return null;
   }
-  return decryptApiKey(settings.openrouter_api_key);
+  return decryptApiKey(settings.openrouterApiKey);
 }
 
 // --- Fireworks API Key ---
@@ -168,17 +168,17 @@ export async function saveFireworksAPIKey(
   apiKey: string,
 ): Promise<void> {
   const encrypted = encryptApiKey(apiKey);
-  await upsertSettings(orgId, { fireworks_api_key: encrypted });
+  await upsertSettings(orgId, { fireworksApiKey: encrypted });
 }
 
 export async function getFireworksAPIKey(
   orgId: string,
 ): Promise<string | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.fireworks_api_key) {
+  if (!settings?.fireworksApiKey) {
     return null;
   }
-  return decryptApiKey(settings.fireworks_api_key);
+  return decryptApiKey(settings.fireworksApiKey);
 }
 
 // --- Azure OpenAI Credentials ---
@@ -194,7 +194,7 @@ export async function saveAzureOpenAICredentials(
 ): Promise<void> {
   const encrypted = encryptApiKey(JSON.stringify(credentials));
   await upsertSettings(orgId, {
-    azure_openai_credentials: encrypted,
+    azureOpenaiCredentials: encrypted,
   });
 }
 
@@ -205,11 +205,11 @@ export async function getAzureOpenAICredentials(orgId: string): Promise<{
   apiVersion: string;
 } | null> {
   const settings = await getSettings(orgId);
-  if (!settings?.azure_openai_credentials) {
+  if (!settings?.azureOpenaiCredentials) {
     return null;
   }
   try {
-    return JSON.parse(decryptApiKey(settings.azure_openai_credentials));
+    return JSON.parse(decryptApiKey(settings.azureOpenaiCredentials));
   } catch {
     return null;
   }
@@ -249,7 +249,7 @@ export async function saveMaxDocumentsToRetrieve(
   maxDocumentsToRetrieve: number,
 ): Promise<void> {
   await upsertSettings(orgId, {
-    max_documents_to_retrieve: maxDocumentsToRetrieve,
+    maxDocumentsToRetrieve: maxDocumentsToRetrieve,
   });
 }
 
@@ -258,7 +258,7 @@ export async function getMaxDocumentsToRetrieve(
 ): Promise<number> {
   const settings = await getSettings(orgId);
   return (
-    settings?.max_documents_to_retrieve ??
+    settings?.maxDocumentsToRetrieve ??
     defaultOrganizationSettings.maxDocumentsToRetrieve
   );
 }
@@ -269,12 +269,12 @@ export async function saveVoiceId(
   orgId: string,
   voiceId: string,
 ): Promise<void> {
-  await upsertSettings(orgId, { voice_id: voiceId });
+  await upsertSettings(orgId, { voiceId: voiceId });
 }
 
 export async function getVoiceId(orgId: string): Promise<string> {
   const settings = await getSettings(orgId);
-  return settings?.voice_id ?? 'JBFqnCBsd6RMkjVDRZzb';
+  return settings?.voiceId ?? 'JBFqnCBsd6RMkjVDRZzb';
 }
 
 // --- Storage Limits ---
@@ -285,13 +285,13 @@ export async function saveStorageLimits(
 ): Promise<void> {
   const data: Record<string, unknown> = {};
   if (limits.storageLimitBytes !== undefined) {
-    data.storage_limit_bytes = BigInt(limits.storageLimitBytes);
+    data.storageLimitBytes = BigInt(limits.storageLimitBytes);
   }
   if (limits.projectStorageLimitBytes !== undefined) {
-    data.project_storage_limit_bytes = BigInt(limits.projectStorageLimitBytes);
+    data.projectStorageLimitBytes = BigInt(limits.projectStorageLimitBytes);
   }
   if (limits.singleFileLimitBytes !== undefined) {
-    data.single_file_limit_bytes = BigInt(limits.singleFileLimitBytes);
+    data.singleFileLimitBytes = BigInt(limits.singleFileLimitBytes);
   }
   await upsertSettings(orgId, data);
 }
@@ -301,14 +301,14 @@ function mapStorageLimits(
 ): StorageLimits {
   return {
     storageLimitBytes: Number(
-      settings?.storage_limit_bytes ?? defaultStorageLimits.storageLimitBytes,
+      settings?.storageLimitBytes ?? defaultStorageLimits.storageLimitBytes,
     ),
     projectStorageLimitBytes: Number(
-      settings?.project_storage_limit_bytes ??
+      settings?.projectStorageLimitBytes ??
         defaultStorageLimits.projectStorageLimitBytes,
     ),
     singleFileLimitBytes: Number(
-      settings?.single_file_limit_bytes ??
+      settings?.singleFileLimitBytes ??
         defaultStorageLimits.singleFileLimitBytes,
     ),
   };
@@ -330,19 +330,19 @@ export async function saveUsageLimits(
 ): Promise<void> {
   const data: Record<string, unknown> = {};
   if (limits.monthlyTokenLimit !== undefined) {
-    data.monthly_token_limit =
+    data.monthlyTokenLimit =
       limits.monthlyTokenLimit !== null
         ? BigInt(limits.monthlyTokenLimit)
         : null;
   }
   if (limits.monthlyCostLimitCents !== undefined) {
-    data.monthly_cost_limit_cents = limits.monthlyCostLimitCents;
+    data.monthlyCostLimitCents = limits.monthlyCostLimitCents;
   }
   if (limits.monthlyMessageLimit !== undefined) {
-    data.monthly_message_limit = limits.monthlyMessageLimit;
+    data.monthlyMessageLimit = limits.monthlyMessageLimit;
   }
   if (limits.maxMembers !== undefined) {
-    data.max_members = limits.maxMembers;
+    data.maxMembers = limits.maxMembers;
   }
   await upsertSettings(orgId, data);
 }
@@ -351,12 +351,12 @@ export async function getUsageLimits(orgId: string): Promise<UsageLimits> {
   const settings = await getSettings(orgId);
   return {
     monthlyTokenLimit:
-      settings?.monthly_token_limit != null
-        ? Number(settings.monthly_token_limit)
+      settings?.monthlyTokenLimit != null
+        ? Number(settings.monthlyTokenLimit)
         : null,
-    monthlyCostLimitCents: settings?.monthly_cost_limit_cents ?? null,
-    monthlyMessageLimit: settings?.monthly_message_limit ?? null,
-    maxMembers: settings?.max_members ?? null,
+    monthlyCostLimitCents: settings?.monthlyCostLimitCents ?? null,
+    monthlyMessageLimit: settings?.monthlyMessageLimit ?? null,
+    maxMembers: settings?.maxMembers ?? null,
   };
 }
 
@@ -425,27 +425,25 @@ export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
   const data: Record<string, unknown> = {};
 
   if (defaults.storageLimitBytes !== null) {
-    data.storage_limit_bytes = BigInt(defaults.storageLimitBytes);
+    data.storageLimitBytes = BigInt(defaults.storageLimitBytes);
   }
   if (defaults.projectStorageLimitBytes !== null) {
-    data.project_storage_limit_bytes = BigInt(
-      defaults.projectStorageLimitBytes,
-    );
+    data.projectStorageLimitBytes = BigInt(defaults.projectStorageLimitBytes);
   }
   if (defaults.singleFileLimitBytes !== null) {
-    data.single_file_limit_bytes = BigInt(defaults.singleFileLimitBytes);
+    data.singleFileLimitBytes = BigInt(defaults.singleFileLimitBytes);
   }
   if (defaults.monthlyTokenLimit !== null) {
-    data.monthly_token_limit = BigInt(defaults.monthlyTokenLimit);
+    data.monthlyTokenLimit = BigInt(defaults.monthlyTokenLimit);
   }
   if (defaults.monthlyCostLimitCents !== null) {
-    data.monthly_cost_limit_cents = defaults.monthlyCostLimitCents;
+    data.monthlyCostLimitCents = defaults.monthlyCostLimitCents;
   }
   if (defaults.monthlyMessageLimit !== null) {
-    data.monthly_message_limit = defaults.monthlyMessageLimit;
+    data.monthlyMessageLimit = defaults.monthlyMessageLimit;
   }
   if (defaults.maxMembers !== null) {
-    data.max_members = defaults.maxMembers;
+    data.maxMembers = defaults.maxMembers;
   }
 
   if (Object.keys(data).length > 0) {
@@ -479,28 +477,28 @@ export async function getAllSettings(
     };
   }
 
-  const apiKey = settings.openai_api_key
-    ? decryptApiKey(settings.openai_api_key)
+  const apiKey = settings.openaiApiKey
+    ? decryptApiKey(settings.openaiApiKey)
     : getApiKeyFromPool();
 
-  const anthropicApiKey = settings.anthropic_api_key
-    ? decryptApiKey(settings.anthropic_api_key)
+  const anthropicApiKey = settings.anthropicApiKey
+    ? decryptApiKey(settings.anthropicApiKey)
     : null;
-  const googleApiKey = settings.google_api_key
-    ? decryptApiKey(settings.google_api_key)
+  const googleApiKey = settings.googleApiKey
+    ? decryptApiKey(settings.googleApiKey)
     : null;
-  const openrouterApiKey = settings.openrouter_api_key
-    ? decryptApiKey(settings.openrouter_api_key)
+  const openrouterApiKey = settings.openrouterApiKey
+    ? decryptApiKey(settings.openrouterApiKey)
     : null;
-  const fireworksApiKey = settings.fireworks_api_key
-    ? decryptApiKey(settings.fireworks_api_key)
+  const fireworksApiKey = settings.fireworksApiKey
+    ? decryptApiKey(settings.fireworksApiKey)
     : null;
 
   let bedrockCredentials = null;
-  if (settings.bedrock_credentials) {
+  if (settings.bedrockCredentials) {
     try {
       bedrockCredentials = JSON.parse(
-        decryptApiKey(settings.bedrock_credentials),
+        decryptApiKey(settings.bedrockCredentials),
       );
     } catch {
       bedrockCredentials = null;
@@ -508,10 +506,10 @@ export async function getAllSettings(
   }
 
   let azureOpenaiCredentials = null;
-  if (settings.azure_openai_credentials) {
+  if (settings.azureOpenaiCredentials) {
     try {
       azureOpenaiCredentials = JSON.parse(
-        decryptApiKey(settings.azure_openai_credentials),
+        decryptApiKey(settings.azureOpenaiCredentials),
       );
     } catch {
       azureOpenaiCredentials = null;
@@ -523,7 +521,7 @@ export async function getAllSettings(
     anthropicApiKey,
     googleApiKey,
     bedrockCredentials,
-    ollamaHost: settings.ollama_host || null,
+    ollamaHost: settings.ollamaHost || null,
     openrouterApiKey,
     fireworksApiKey,
     azureOpenaiCredentials,
@@ -532,8 +530,8 @@ export async function getAllSettings(
       settings.temperature ?? defaultOrganizationSettings.temperature,
     prompt: settings.prompt || defaultOrganizationSettings.prompt,
     maxDocumentsToRetrieve:
-      settings.max_documents_to_retrieve ??
+      settings.maxDocumentsToRetrieve ??
       defaultOrganizationSettings.maxDocumentsToRetrieve,
-    voiceId: settings.voice_id || 'JBFqnCBsd6RMkjVDRZzb',
+    voiceId: settings.voiceId || 'JBFqnCBsd6RMkjVDRZzb',
   };
 }
