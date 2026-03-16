@@ -11,8 +11,6 @@ model Settings {
   key   String @id
   value String
 
-  @@unique([key])
-
   @@map("settings")
 }
 
@@ -33,7 +31,6 @@ model Message {
   thread               Thread?            @relation(fields: [threadId], references: [id])
   source               Source             @default(UI)
 
-  @@index([publicId])
   @@index([threadId])
   @@index([visitorId])
   @@map("messages")
@@ -46,7 +43,6 @@ model FlaggedMessage {
   role      Role     @default(USER)
   id        String   @id @default(uuid())
 
-  @@index([publicId])
   @@map("flagged_messages")
 }
 
@@ -70,7 +66,6 @@ model Thread {
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
-  @@index([publicId])
   @@index([organizationId])
   @@index([userId])
   @@index([visitorId, isStarred, createdAt])
@@ -127,7 +122,6 @@ model UserFile {
 
   @@unique([id, organizationId])
   @@index([organizationId])
-  @@index([publicId])
   @@index([projectId])
   @@index([sourceFileId])
   @@index([folderId])
@@ -265,10 +259,8 @@ model Project {
   settings         ProjectSettings?
   aiUsages         AiUsage[]
 
-  @@index([publicId])
   @@index([organizationId])
   @@index([ownerId])
-  @@index([accessToken])
 
   @@map("projects")
 }
@@ -404,7 +396,6 @@ model Organization {
   mcpConnectors  McpConnector[]
   mcpOAuthTokens McpOAuthToken[]
 
-  @@index([publicId])
   @@map("organizations")
 }
 
@@ -523,7 +514,6 @@ model McpConnector {
   @@unique([organizationId, userId, provider])
   @@index([organizationId])
   @@index([userId])
-  @@index([organizationId, userId])
 
   @@map("mcp_connectors")
 }
