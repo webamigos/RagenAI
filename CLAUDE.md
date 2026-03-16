@@ -254,6 +254,11 @@ App admins can access all pages regardless of permission level.
 - Pre-commit hooks: lint-staged runs `eslint --fix` + `prettier --write` on staged files
 - Commit messages follow conventional commits (commitlint enforced via Husky)
 
+## Model Defaults
+
+- **Default chat model**: `google/gemini-3-flash-preview` (set in organization settings and OpenRouter fallback)
+- **Rephrase model**: `google/gemini-2.0-flash-001` — intentionally kept on the older, cheaper Flash model for question rephrasing. Do not upgrade this without explicit approval.
+
 ## Post-Task Code Review
 
 After completing any coding task that modifies or creates files, always run `/coderabbit:review` to review the changes before reporting completion to the user.
