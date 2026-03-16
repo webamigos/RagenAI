@@ -46,9 +46,10 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
       orgName: org.name,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,
-      storageLimitBytes: org.settings?.storageLimitBytes
-        ? Number(org.settings.storageLimitBytes)
-        : null,
+      storageLimitBytes:
+        org.settings?.storageLimitBytes != null
+          ? Number(org.settings.storageLimitBytes)
+          : null,
     };
   });
 

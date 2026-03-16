@@ -31,7 +31,7 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
       await supabaseVectorStoreClient
         .from(VECTOR_STORE_TABLE_NAME)
         .delete()
-        .eq('metadata->>fileId', fileId);
+        .eq('metadata->>file_id', fileId);
     }
   } catch (error) {
     logger.error({ err: error }, 'Error in deleteDocument function');

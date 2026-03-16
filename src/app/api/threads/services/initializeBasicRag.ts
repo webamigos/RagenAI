@@ -195,7 +195,7 @@ const createSupabaseVectorStore = (
     // Removing or modifying this filter could lead to data leakage between organizations
     // and allow unauthorized access to sensitive documentation.
     const metadataFilter: Record<string, any> = {
-      organizationId: organizationId,
+      organization_id: organizationId,
     };
 
     if (projectPublicId) {

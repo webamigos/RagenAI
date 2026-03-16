@@ -59,6 +59,7 @@ export async function processPDFDocument(
       title: fileName,
       organizationId: organizationId,
       content: finalDocument,
+      fileId: fileId,
       projectId: projectId,
     });
 

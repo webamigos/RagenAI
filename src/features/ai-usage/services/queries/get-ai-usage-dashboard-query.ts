@@ -202,19 +202,19 @@ async function getDailyChartData(
   let idx = 1;
 
   if (filters?.organizationId) {
-    conditions.push(`organizationId = $${idx++}`);
+    conditions.push(`organization_id = $${idx++}`);
     params.push(filters.organizationId);
   }
 
   if (filters?.projectPublicId) {
     conditions.push(
-      `projectId IN (SELECT id FROM projects WHERE publicId = $${idx++})`,
+      `project_id IN (SELECT id FROM projects WHERE public_id = $${idx++})`,
     );
     params.push(filters.projectPublicId);
   }
 
   if (filters?.userId) {
-    conditions.push(`userId = $${idx++}`);
+    conditions.push(`user_id = $${idx++}`);
     params.push(filters.userId);
   }
 
@@ -225,30 +225,30 @@ async function getDailyChartData(
 
   const dateFrom = buildDateFilter(filters);
   if (dateFrom) {
-    conditions.push(`createdAt >= $${idx++}`);
+    conditions.push(`created_at >= $${idx++}`);
     params.push(dateFrom);
   } else if (filters?.period === 'custom') {
     if (filters.dateFrom) {
-      conditions.push(`createdAt >= $${idx++}`);
+      conditions.push(`created_at >= $${idx++}`);
       params.push(new Date(filters.dateFrom));
     }
     if (filters.dateTo) {
       const endDate = new Date(filters.dateTo);
       endDate.setHours(23, 59, 59, 999);
-      conditions.push(`createdAt <= $${idx++}`);
+      conditions.push(`created_at <= $${idx++}`);
       params.push(endDate);
     }
   }
 
   const rows = await db.$queryRawUnsafe<DailyRawRow[]>(
     `SELECT
-       DATE(createdAt AT TIME ZONE 'UTC') AS date,
+       DATE(created_at AT TIME ZONE 'UTC') AS date,
        COUNT(*)::bigint AS calls,
-       COALESCE(SUM(totalTokens), 0)::bigint AS tokens,
-       COALESCE(SUM(estimatedCost), 0)::float8 AS cost
+       COALESCE(SUM(total_tokens), 0)::bigint AS tokens,
+       COALESCE(SUM(estimated_cost), 0)::float8 AS cost
      FROM ai_usages
      WHERE ${conditions.join(' AND ')}
-     GROUP BY DATE(createdAt AT TIME ZONE 'UTC')
+     GROUP BY DATE(created_at AT TIME ZONE 'UTC')
      ORDER BY date ASC`,
     ...params,
   );

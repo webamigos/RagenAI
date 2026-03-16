@@ -23,7 +23,7 @@ export const getDriveFileContentQuery = async (
 
   try {
     const params = new URLSearchParams({
-      customerId: connector.customerId,
+      customer_id: connector.customerId,
     });
 
     const response = await fetchWithTimeout(
