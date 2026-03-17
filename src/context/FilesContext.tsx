@@ -1,4 +1,10 @@
-import { createContext, useReducer, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import { getUserFiles } from '@/app/actions';
 import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { type UserFile } from '@/generated/prisma/browser';
@@ -72,14 +78,21 @@ export const FilesContext = createContext<FilesContextType | undefined>(
 
 export const FilesProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(filesReducer, initialState);
+  const isRefreshingRef = useRef(false);
 
   const refreshFiles = useCallback(async () => {
+    if (isRefreshingRef.current) {
+      return;
+    }
+    isRefreshingRef.current = true;
     dispatch({ type: 'LOAD_START' });
     try {
       const { files } = await getUserFiles();
       dispatch({ type: 'LOAD_SUCCESS', payload: files ?? [] });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });
+    } finally {
+      isRefreshingRef.current = false;
     }
   }, []);
 

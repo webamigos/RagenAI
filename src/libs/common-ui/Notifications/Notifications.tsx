@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
@@ -17,6 +17,15 @@ export function Notifications() {
   const t = useTranslations('notifications');
   const router = useRouter();
 
+  const handlersRef = useRef({
+    t,
+    router,
+    successToast,
+    errorToast,
+    infoToast,
+  });
+  handlersRef.current = { t, router, successToast, errorToast, infoToast };
+
   // INFO: in dev mode you will see notifications twice
   // don't worry - this won't happen on production
   useEffect(() => {
@@ -30,9 +39,11 @@ export function Notifications() {
     channel.bind(
       NotificationEvent.SUCCESS_EVENT,
       (notification: NotificationMessage) => {
-        successToast({ message: t(notification.intlKey) });
+        handlersRef.current.successToast({
+          message: handlersRef.current.t(notification.intlKey),
+        });
         if (notification.meta?.forceRefresh) {
-          router.refresh();
+          handlersRef.current.router.refresh();
         }
       },
     );
@@ -40,14 +51,18 @@ export function Notifications() {
     channel.bind(
       NotificationEvent.ERROR_EVENT,
       (notification: NotificationMessage) => {
-        errorToast({ message: t(notification.intlKey) });
+        handlersRef.current.errorToast({
+          message: handlersRef.current.t(notification.intlKey),
+        });
       },
     );
 
     channel.bind(
       NotificationEvent.INFO_EVENT,
       (notification: NotificationMessage) => {
-        infoToast({ message: t(notification.intlKey) });
+        handlersRef.current.infoToast({
+          message: handlersRef.current.t(notification.intlKey),
+        });
       },
     );
 
@@ -55,7 +70,7 @@ export function Notifications() {
       channel.unbind_all();
       pusher.unsubscribe(NOTIFICATIONS_DEFAULT_CHANNEL);
     };
-  });
+  }, []);
 
   return <></>;
 }
