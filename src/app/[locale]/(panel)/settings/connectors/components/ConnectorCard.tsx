@@ -31,6 +31,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
   GOOGLE_ADS: '/assets/connectors/google-ads.svg',
   GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
+  GMAIL: '/assets/connectors/gmail.svg',
   CLICKUP: '/assets/connectors/clickup.svg',
   HUBSPOT: '/assets/connectors/hubspot.svg',
   FIREFLIES: '/assets/connectors/fireflies.svg',

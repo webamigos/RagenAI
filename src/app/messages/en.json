@@ -446,7 +446,7 @@
       "api-key-help-link": "Learn how to get your API key.",
       "api-key-error": "Failed to register API key. Please check your key and try again.",
       "coming-soon": "Coming soon",
-      "gmail-description": "Search emails, read messages, and create drafts.",
+      "gmail-description": "Search emails and read messages.",
       "notion-description": "Search pages, databases, and manage content.",
       "providers": {
         "GOOGLE_DRIVE": {
@@ -476,6 +476,10 @@
         "FIREFLIES": {
           "name": "Fireflies.ai",
           "description": "Search meeting transcripts, summaries, and action items."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Search emails and read messages."
         }
       }
     }
