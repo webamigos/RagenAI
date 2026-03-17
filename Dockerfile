@@ -47,6 +47,7 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     GOOGLE_CLIENT_SECRET="dummy" \
     GOOGLE_API_KEY="dummy" \
     MCP_GOOGLE_SERVER_URL="https://example.com" \
+    MCP_GOOGLE_AUTH_URL="https://example.com" \
     MCP_CLICKUP_SERVER_URL="https://example.com" \
     MCP_HUBSPOT_SERVER_URL="https://example.com" \
     MCP_FIREFLIES_SERVER_URL="https://example.com" \
