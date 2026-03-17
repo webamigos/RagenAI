@@ -4,8 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-import { NOTIFICATIONS_DEFAULT_CHANNEL } from '@/app/lib/services/notifications/config';
-import { getPusherClient } from '@/app/lib/services/notifications/pusher-client';
+import { subscribeNotification } from '@/app/lib/services/notifications/notification-client';
 import { statusToast } from '@/app/lib/utils/toast';
 import {
   NotificationEvent,
@@ -29,14 +28,7 @@ export function Notifications() {
   // INFO: in dev mode you will see notifications twice
   // don't worry - this won't happen on production
   useEffect(() => {
-    const pusher = getPusherClient();
-    if (!pusher) {
-      return;
-    }
-
-    const channel = pusher.subscribe(NOTIFICATIONS_DEFAULT_CHANNEL);
-
-    channel.bind(
+    const unsubSuccess = subscribeNotification(
       NotificationEvent.SUCCESS_EVENT,
       (notification: NotificationMessage) => {
         handlersRef.current.successToast({
@@ -48,7 +40,7 @@ export function Notifications() {
       },
     );
 
-    channel.bind(
+    const unsubError = subscribeNotification(
       NotificationEvent.ERROR_EVENT,
       (notification: NotificationMessage) => {
         handlersRef.current.errorToast({
@@ -57,7 +49,7 @@ export function Notifications() {
       },
     );
 
-    channel.bind(
+    const unsubInfo = subscribeNotification(
       NotificationEvent.INFO_EVENT,
       (notification: NotificationMessage) => {
         handlersRef.current.infoToast({
@@ -67,8 +59,9 @@ export function Notifications() {
     );
 
     return () => {
-      channel.unbind_all();
-      pusher.unsubscribe(NOTIFICATIONS_DEFAULT_CHANNEL);
+      unsubSuccess();
+      unsubError();
+      unsubInfo();
     };
   }, []);
 

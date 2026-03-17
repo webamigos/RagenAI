@@ -8,8 +8,7 @@ import {
 import { getUserFiles } from '@/app/actions';
 import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { type UserFile } from '@/generated/prisma/browser';
-import { NOTIFICATIONS_DEFAULT_CHANNEL } from '@/app/lib/services/notifications/config';
-import { getPusherClient } from '@/app/lib/services/notifications/pusher-client';
+import { subscribeNotification } from '@/app/lib/services/notifications/notification-client';
 import {
   NotificationEvent,
   type NotificationMessage,
@@ -102,24 +101,16 @@ export const FilesProvider = ({ children }: Props) => {
 
   // Auto-refresh file list when worker sends a forceRefresh notification
   useEffect(() => {
-    const pusher = getPusherClient();
-    if (!pusher) {
-      return;
-    }
+    const unsubscribe = subscribeNotification(
+      NotificationEvent.SUCCESS_EVENT,
+      (notification: NotificationMessage) => {
+        if (notification.meta?.forceRefresh) {
+          refreshFiles();
+        }
+      },
+    );
 
-    const channel = pusher.subscribe(NOTIFICATIONS_DEFAULT_CHANNEL);
-
-    const handleNotification = (notification: NotificationMessage) => {
-      if (notification.meta?.forceRefresh) {
-        refreshFiles();
-      }
-    };
-
-    channel.bind(NotificationEvent.SUCCESS_EVENT, handleNotification);
-
-    return () => {
-      channel.unbind(NotificationEvent.SUCCESS_EVENT, handleNotification);
-    };
+    return unsubscribe;
   }, [refreshFiles]);
 
   const addFile = (newFile: UserFileType) => {
