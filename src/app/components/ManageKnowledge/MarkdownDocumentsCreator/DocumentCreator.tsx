@@ -2,7 +2,7 @@
 
 import parse from 'html-react-parser';
 import DOMPurify from 'dompurify';
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { z } from 'zod';
@@ -17,6 +17,9 @@ import { Tabs, TabList, Tab, TabPanel } from '@ragenai/common-ui/Tabs';
 import { WysiwygEditor } from '@ragenai/common-ui/WysywigEditor';
 import { Button } from '@ragenai/common-ui/Button';
 import { uploadFiles } from '@/app/lib/services/api';
+import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
+import { getFileType } from '@/app/lib/utils/getFileType';
+import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/browser';
 
 const turndownService = new TurndownService();
 import { logger } from '@/app/lib/utils/logger';
@@ -36,10 +39,12 @@ export type DocumentSchema = z.infer<typeof schema>;
 export const DocumentCreator = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [_, startTransition] = useTransition();
 
   const t = useTranslations('create-document');
   const { infoToast, errorToast } = statusToast();
   const router = useRouter();
+  const { addFile } = useUserFilesContext();
 
   const {
     handleSubmit,
@@ -80,22 +85,28 @@ export const DocumentCreator = () => {
       const response = await uploadFiles(formData);
 
       if (response.status === 200 && response.files) {
-        // const document = response.files[0];
-        // const projectId = document.projectId;
-
-        // MOVED TO WORKER
-        // addDocument({
-        //   organizationId: organizationId,
-        //   fileName: document.fileName,
-        //   fileSize: document.fileSize,
-        //   fileType: FileType.MARKDOWN,
-        //   projectId: projectId,
-        //   project: { id: projectId, title: document.fileName },
-        // } as UserFileType); // TODO: temporary, will be refactored
-        reset();
-        router.push('/knowledge/documents-list');
-
         infoToast({ message: t('created-successful') });
+
+        for (const uploaded of response.files) {
+          addFile({
+            publicId: uploaded.uniqueFileId,
+            organizationId: '',
+            fileName: uploaded.fileName,
+            fileSize: uploaded.fileSize,
+            fileType: getFileType(uploaded.fileName),
+            projectId: null,
+            project: null,
+            document: null,
+            createdAt: new Date(),
+            embeddingStatus: EmbeddingStatus.NOT_STARTED,
+            parsingStatus: ParsingStatus.NOT_STARTED,
+          });
+        }
+
+        reset();
+        startTransition(() => {
+          router.push('/knowledge/documents-list');
+        });
       } else if (response.message) {
         errorToast({ message: response.message });
       }
