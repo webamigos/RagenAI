@@ -52,6 +52,7 @@ env:
   GOOGLE_CLIENT_ID: "dummy"
   GOOGLE_CLIENT_SECRET: "dummy"
   MCP_GOOGLE_SERVER_URL: "https://example.com"
+  MCP_GOOGLE_AUTH_URL: "https://example.com"
   MCP_CLICKUP_SERVER_URL: "https://example.com"
   MCP_HUBSPOT_SERVER_URL: "https://example.com"
   MCP_FIREFLIES_SERVER_URL: "https://example.com"
