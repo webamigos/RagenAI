@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 
-type NotificationPayload = {
+interface NotificationPayload {
   event: string;
   data: unknown;
-};
+}
 
 type PayloadHandler = (payload: NotificationPayload) => void;
 
