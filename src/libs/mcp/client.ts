@@ -67,9 +67,11 @@ function wrapToolsForConnector(
       if (parameters?.jsonSchema?.properties?.customer_id) {
         const { customer_id: _, ...restProps } =
           parameters.jsonSchema.properties;
-        const required = (parameters.jsonSchema.required || []).filter(
-          (r: string) => r !== 'customer_id',
-        );
+        const required = (
+          Array.isArray(parameters.jsonSchema.required)
+            ? parameters.jsonSchema.required
+            : []
+        ).filter((r: string) => r !== 'customer_id');
         parameters = {
           ...parameters,
           jsonSchema: {
