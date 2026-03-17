@@ -6,6 +6,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
 import type { ChainTrackingContext } from '@/libs/chains/types/common';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type InitializeConversationChainParams = {
   settings: OrganizationSettings;
@@ -14,6 +15,7 @@ type InitializeConversationChainParams = {
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   tracking?: ChainTrackingContext;
+  threadDocuments?: ThreadDocumentUI[];
 };
 
 export const initializeConversationChain = async ({
@@ -22,6 +24,7 @@ export const initializeConversationChain = async ({
   mcpTools,
   mcpContext,
   tracking,
+  threadDocuments,
 }: InitializeConversationChainParams) => {
   try {
     const { apiKey, model, temperature, prompt } = settings;
@@ -41,6 +44,7 @@ export const initializeConversationChain = async ({
         mcpTools,
         mcpContext,
         tracking,
+        threadDocuments,
       },
     });
   } catch (error) {

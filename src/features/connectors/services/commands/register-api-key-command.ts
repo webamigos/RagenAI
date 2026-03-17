@@ -19,7 +19,8 @@ export const registerApiKeyCommand = async (
   if (
     !providerDef ||
     providerDef.authType !== 'api_key' ||
-    !providerDef.authPath
+    !providerDef.authPath ||
+    (!providerDef.authBaseUrl && !providerDef.mcpServerUrl)
   ) {
     throw new Error(
       `Provider does not support API key registration: ${provider}`,
@@ -35,11 +36,10 @@ export const registerApiKeyCommand = async (
 
   // Step 2: Register the API key with the external MCP service
   try {
+    const baseUrl = providerDef.authBaseUrl || providerDef.mcpServerUrl;
     const url = new URL(
       providerDef.authPath,
-      providerDef.mcpServerUrl.endsWith('/')
-        ? providerDef.mcpServerUrl
-        : `${providerDef.mcpServerUrl}/`,
+      baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`,
     );
 
     const response = await fetchWithTimeout(url.toString(), {
