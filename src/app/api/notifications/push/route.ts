@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createHash, timingSafeEqual } from 'crypto';
 
-import { broadcastSSE } from '../stream/route';
+import { publish } from '@/app/lib/services/notifications/sse-bus';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,16 +33,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { event, message } = body as Record<string, unknown>;
-
-  if (!event || !message) {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
     return NextResponse.json(
-      { error: 'Missing event or message' },
+      { error: 'Missing or invalid event/message' },
       { status: 400 },
     );
   }
 
-  broadcastSSE(event as string, message);
+  const { event, message } = body as Record<string, unknown>;
+
+  if (typeof event !== 'string' || !event || !message) {
+    return NextResponse.json(
+      { error: 'Missing or invalid event/message' },
+      { status: 400 },
+    );
+  }
+
+  publish(event, message);
 
   return NextResponse.json({ ok: true });
 }

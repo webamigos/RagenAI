@@ -1,5 +1,7 @@
 import { type NextRequest } from 'next/server';
 
+import { subscribe } from '@/app/lib/services/notifications/sse-bus';
+
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -8,9 +10,11 @@ type SSEClient = {
   encoder: TextEncoder;
 };
 
-const clients = new Set<SSEClient>();
-
-export function broadcastSSE(event: string, data: unknown) {
+function broadcastToClients(
+  clients: Set<SSEClient>,
+  event: string,
+  data: unknown,
+) {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 
   for (const client of clients) {
@@ -21,6 +25,12 @@ export function broadcastSSE(event: string, data: unknown) {
     }
   }
 }
+
+const clients = new Set<SSEClient>();
+
+subscribe(({ event, data }) => {
+  broadcastToClients(clients, event, data);
+});
 
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();

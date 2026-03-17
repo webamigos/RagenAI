@@ -4,6 +4,8 @@ import { NotificationEvent, type NotificationMessage } from './types';
 const PUSHER_APP_ID = process.env.PUSHER_APP_ID;
 const PUSHER_KEY = process.env.PUSHER_KEY;
 const PUSHER_SECRET = process.env.PUSHER_SECRET;
+const PUSHER_CLUSTER =
+  process.env.PUSHER_CLUSTER || process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'eu';
 
 const isPusherConfigured = Boolean(
   PUSHER_APP_ID && PUSHER_KEY && PUSHER_SECRET,
@@ -15,7 +17,7 @@ async function getPusherInstance() {
     appId: PUSHER_APP_ID!,
     key: PUSHER_KEY!,
     secret: PUSHER_SECRET!,
-    cluster: 'eu',
+    cluster: PUSHER_CLUSTER,
     useTLS: true,
   });
 }
@@ -29,15 +31,15 @@ async function pushViaPusher(
   if (!pusherInstance) {
     pusherInstance = await getPusherInstance();
   }
-  pusherInstance.trigger(NOTIFICATIONS_DEFAULT_CHANNEL, event, message);
+  await pusherInstance.trigger(NOTIFICATIONS_DEFAULT_CHANNEL, event, message);
 }
 
 async function pushViaSSE(
   event: NotificationEvent,
   message: NotificationMessage,
 ) {
-  const { broadcastSSE } = await import('@/app/api/notifications/stream/route');
-  broadcastSSE(event, message);
+  const { publish } = await import('./sse-bus');
+  publish(event, message);
 }
 
 export const pushNotification = async ({

@@ -17,14 +17,22 @@ function ensureConnection() {
   for (const eventType of Object.values(NotificationEvent)) {
     eventSource.addEventListener(eventType, (e: MessageEvent) => {
       const callbacks = listeners.get(eventType);
-      if (callbacks) {
+      if (!callbacks) {
+        return;
+      }
+
+      let data: NotificationMessage;
+      try {
+        data = JSON.parse(e.data) as NotificationMessage;
+      } catch {
+        return;
+      }
+
+      for (const cb of callbacks) {
         try {
-          const data = JSON.parse(e.data) as NotificationMessage;
-          for (const cb of callbacks) {
-            cb(data);
-          }
+          cb(data);
         } catch {
-          // Ignore malformed messages
+          // Prevent one failing listener from blocking others
         }
       }
     });
