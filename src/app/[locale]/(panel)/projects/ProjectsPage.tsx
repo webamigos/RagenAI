@@ -18,10 +18,10 @@ import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
 
 type ProjectItem = {
-  public_id: string;
+  publicId: string;
   title: string;
-  created_at: Date;
-  threads: { public_id: string }[];
+  createdAt: Date;
+  threads: { publicId: string }[];
 };
 
 function formatRelativeTime(date: Date): string {
@@ -73,7 +73,7 @@ export const AssistantsPage = () => {
 
   const filteredProjects = useMemo(() => {
     const nonDefault = projects.filter(
-      (p) => p.public_id !== defaultProjectPublicId,
+      (p) => p.publicId !== defaultProjectPublicId,
     );
     if (!searchQuery.trim()) {
       return nonDefault;
@@ -130,8 +130,8 @@ export const AssistantsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredProjects.map((project) => (
             <Link
-              key={project.public_id}
-              href={`/projects/${project.public_id}`}
+              key={project.publicId}
+              href={`/projects/${project.publicId}`}
               className="group flex flex-col justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
             >
               <div className="flex items-start gap-3">
@@ -146,7 +146,7 @@ export const AssistantsPage = () => {
                 </span>
                 <span>
                   {t('updated', {
-                    time: formatRelativeTime(project.created_at),
+                    time: formatRelativeTime(project.createdAt),
                   })}
                 </span>
               </div>

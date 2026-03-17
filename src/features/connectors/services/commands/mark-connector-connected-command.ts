@@ -13,12 +13,12 @@ export const markConnectorConnectedCommand = async (
     return await db.mcpConnector.update({
       where: {
         id: connectorId,
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
       },
       data: {
         status: McpConnectorStatus.CONNECTED,
-        connected_at: new Date(),
+        connectedAt: new Date(),
       },
     });
   } catch (error) {

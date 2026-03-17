@@ -87,8 +87,8 @@ export const assistantSlice = createSlice({
     },
     setMessagePlayed: (state, action: PayloadAction<string>) => {
       state.messages = state.messages.map((message) =>
-        message.public_id === action.payload
-          ? { ...message, voice_played: true }
+        message.publicId === action.payload
+          ? { ...message, voicePlayed: true }
           : message,
       );
     },
@@ -99,7 +99,7 @@ export const assistantSlice = createSlice({
       state,
       action: PayloadAction<{
         id: number;
-        public_id: string;
+        publicId: string;
         title: string;
       } | null>,
     ) => {

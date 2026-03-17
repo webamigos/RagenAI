@@ -13,10 +13,10 @@ export const disconnectConnectorCommand = async (
     const connector = await db.mcpConnector.findUnique({
       where: {
         id: connectorId,
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
       },
-      select: { provider: true, customer_id: true },
+      select: { provider: true, customerId: true },
     });
 
     if (!connector) {
@@ -26,7 +26,7 @@ export const disconnectConnectorCommand = async (
     // Delete token from ragen-vault
     try {
       await ragenAuthClient.deleteToken(
-        connector.customer_id,
+        connector.customerId,
         connector.provider,
       );
     } catch (error) {
@@ -40,8 +40,8 @@ export const disconnectConnectorCommand = async (
     return await db.mcpConnector.delete({
       where: {
         id: connectorId,
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
       },
     });
   } catch (error) {

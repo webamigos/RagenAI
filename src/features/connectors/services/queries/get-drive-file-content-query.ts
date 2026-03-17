@@ -4,7 +4,7 @@ import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 
 export type DriveContentResponse = {
   success: boolean;
-  file_id?: string;
+  fileId?: string;
   name?: string;
   mime_type?: string;
   content?: string;
@@ -23,7 +23,7 @@ export const getDriveFileContentQuery = async (
 
   try {
     const params = new URLSearchParams({
-      customer_id: connector.customer_id,
+      customer_id: connector.customerId,
     });
 
     const response = await fetchWithTimeout(

@@ -1,7 +1,18 @@
-import { createContext, useReducer, useEffect } from 'react';
+import {
+  createContext,
+  useReducer,
+  useEffect,
+  useCallback,
+  useRef,
+} from 'react';
 import { getUserFiles } from '@/app/actions';
 import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { type UserFile } from '@/generated/prisma/browser';
+import { subscribeNotification } from '@/app/lib/services/notifications/notification-client';
+import {
+  NotificationEvent,
+  type NotificationMessage,
+} from '@/app/lib/services/notifications/types';
 
 type State = {
   files: UserFileType[];
@@ -40,7 +51,7 @@ function filesReducer(state: State, action: Action): State {
     case 'REMOVE_FILE':
       return {
         ...state,
-        files: state.files.filter((file) => file.public_id !== action.payload),
+        files: state.files.filter((file) => file.publicId !== action.payload),
       };
     default:
       return state;
@@ -51,7 +62,7 @@ type FilesContextType = {
   files: UserFileType[];
   refreshFiles: () => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (filePublicId: UserFile['public_id']) => void;
+  removeFile: (filePublicId: UserFile['publicId']) => void;
   isLoading: boolean;
   isError: boolean;
 };
@@ -66,26 +77,47 @@ export const FilesContext = createContext<FilesContextType | undefined>(
 
 export const FilesProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(filesReducer, initialState);
+  const isRefreshingRef = useRef(false);
 
-  const refreshFiles = async () => {
+  const refreshFiles = useCallback(async () => {
+    if (isRefreshingRef.current) {
+      return;
+    }
+    isRefreshingRef.current = true;
     dispatch({ type: 'LOAD_START' });
     try {
       const { files } = await getUserFiles();
       dispatch({ type: 'LOAD_SUCCESS', payload: files ?? [] });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });
+    } finally {
+      isRefreshingRef.current = false;
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshFiles();
-  }, []);
+  }, [refreshFiles]);
+
+  // Auto-refresh file list when worker sends a forceRefresh notification
+  useEffect(() => {
+    const unsubscribe = subscribeNotification(
+      NotificationEvent.SUCCESS_EVENT,
+      (notification: NotificationMessage) => {
+        if (notification.meta?.forceRefresh) {
+          refreshFiles();
+        }
+      },
+    );
+
+    return unsubscribe;
+  }, [refreshFiles]);
 
   const addFile = (newFile: UserFileType) => {
     dispatch({ type: 'ADD_FILE', payload: newFile });
   };
 
-  const removeFile = (publicFileId: UserFile['public_id']) => {
+  const removeFile = (publicFileId: UserFile['publicId']) => {
     dispatch({ type: 'REMOVE_FILE', payload: publicFileId });
   };
 

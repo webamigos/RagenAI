@@ -87,8 +87,8 @@ export const useVoiceMode = ({
     const lastMessage = state.currentMessages[state.currentMessages.length - 1];
     if (
       lastMessage?.role === Role.ASSISTANT &&
-      !lastMessage.voice_played &&
-      lastMessage?.message_type === MessageContentType.VOICE
+      !lastMessage.voicePlayed &&
+      lastMessage?.messageType === MessageContentType.VOICE
     ) {
       playAssistantResponse(lastMessage);
     }
@@ -129,15 +129,15 @@ export const useVoiceMode = ({
         dispatch({ type: 'SET_PLAYING_AUDIO', payload: true });
         audioRef.current.play();
 
-        if (message.public_id) {
-          await updateMessagePlayedStatus(message.public_id);
+        if (message.publicId) {
+          await updateMessagePlayedStatus(message.publicId);
           dispatch({
             type: 'UPDATE_MESSAGE_PLAYED_STATUS',
-            payload: message.public_id,
+            payload: message.publicId,
           });
 
           if (onMessagePlayed) {
-            onMessagePlayed(message.public_id);
+            onMessagePlayed(message.publicId);
           }
         }
       }

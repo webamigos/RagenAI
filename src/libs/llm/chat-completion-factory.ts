@@ -116,7 +116,7 @@ export class ChatCompletionFactory {
       apiKey: credentials.apiKey,
     });
 
-    return openrouter(config.model || 'openai/gpt-4o', {
+    return openrouter(config.model || 'google/gemini-3-flash-preview', {
       ...(config.reasoning
         ? { reasoning: { enabled: true, max_tokens: 2048 } }
         : {}),

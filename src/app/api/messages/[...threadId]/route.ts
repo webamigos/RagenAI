@@ -1,10 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { StatusCodes } from 'http-status-codes';
-// Auth is now handled via Better Auth in middleware
 
 import { createMessageSchema } from '@/features/messages/contracts/message.types';
 import { getThreadMessagesQuery as fetchMessagesFromDb } from '@/features/messages/services/queries/get-thread-messages-query';
 import { logger } from '@/app/lib/utils/logger';
+import { auth } from '@/lib/auth';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import db from '@ragenai/prisma-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,14 +14,15 @@ type Params = {
   params: Promise<{ threadId: string[] }>;
 };
 
-/**
- * Send new message from client
- * @param request
- * @param param1
- * @returns
- */
-export const POST = async (request: Request) => {
+export const POST = async (request: NextRequest) => {
   try {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const requestData = await createMessageSchema().safeParseAsync(
       await request.json(),
     );
@@ -42,11 +45,9 @@ export const POST = async (request: Request) => {
   }
 };
 
-export const GET = async (_request: Request, { params }: Params) => {
+export const GET = async (request: NextRequest, { params }: Params) => {
   try {
     const { threadId } = await params;
-    // TODO: Add user authentication check if needed for messages endpoint
-    // For now, this endpoint might be accessed without authentication for guest threads
 
     // Validate threadId array
     if (!threadId || threadId.length < 2) {
@@ -58,8 +59,33 @@ export const GET = async (_request: Request, { params }: Params) => {
     const threadPublicId = threadId[0];
     const visitorId = threadId[1];
 
-    // 🚨 what if someone from outside organization somehow will with get thread id
-    // and then will use /messages/{threadId} endpoint?
+    // Verify the thread belongs to the authenticated user's org (if logged in)
+    // or validate visitor ownership for guest threads
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (session?.user) {
+      const orgId = await getOrgIdFromAuth();
+      if (!orgId) {
+        return NextResponse.json(
+          { error: 'Organization not found' },
+          { status: StatusCodes.FORBIDDEN },
+        );
+      }
+      const thread = await db.thread.findFirst({
+        where: { publicId: threadPublicId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!thread) {
+        return NextResponse.json(
+          { error: 'Thread not found' },
+          { status: StatusCodes.NOT_FOUND },
+        );
+      }
+    }
+
+    // The query itself validates visitorId ownership
     const result = await fetchMessagesFromDb(threadPublicId, visitorId);
     return NextResponse.json(result);
   } catch (e) {
@@ -67,12 +93,11 @@ export const GET = async (_request: Request, { params }: Params) => {
       {
         err: e,
         errorName: (e as Error)?.name,
-        errorMessage: (e as Error)?.message,
       },
       'Failed fetching messages',
     );
     return NextResponse.json(
-      { error: 'Failed fetching messages', details: (e as Error)?.message },
+      { error: 'Failed fetching messages' },
       { status: StatusCodes.INTERNAL_SERVER_ERROR },
     );
   }

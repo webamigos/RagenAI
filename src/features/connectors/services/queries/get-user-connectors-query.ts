@@ -11,21 +11,21 @@ export const getUserConnectorsQuery = async (
   try {
     return await db.mcpConnector.findMany({
       where: {
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
       },
       select: {
         id: true,
         provider: true,
-        mcp_server_url: true,
-        customer_id: true,
+        mcpServerUrl: true,
+        customerId: true,
         enabled: true,
         status: true,
-        connected_at: true,
-        created_at: true,
+        connectedAt: true,
+        createdAt: true,
       },
       orderBy: {
-        created_at: 'desc',
+        createdAt: 'desc',
       },
     });
   } catch (error) {

@@ -22,7 +22,7 @@ const validateHeaders = (request: Request) => {
     const allowedDomain = new URL(allowed).hostname;
     return [originDomain, refererDomain].some(
       (domain) =>
-        domain === allowedDomain || domain?.endsWith(`.${allowedDomain}`)
+        domain === allowedDomain || domain?.endsWith(`.${allowedDomain}`),
     );
   });
 
@@ -39,7 +39,7 @@ const validateHeaders = (request: Request) => {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ organizationId: string }> }
+  { params }: { params: Promise<{ organizationId: string }> },
 ) {
   const { organizationId } = await params;
   try {
@@ -53,14 +53,14 @@ export async function GET(
     const script = createEmbedScript(
       organizationId,
       { title, message },
-      appOrigin
+      appOrigin,
     );
 
     return new Response(script, {
       headers: {
         'Content-Type': 'text/javascript',
         'Cache-Control': 'no-cache',
-        'Access-Control-Allow-Origin': origin || '*',
+        ...(origin ? { 'Access-Control-Allow-Origin': origin } : {}),
       },
     });
   } catch (error) {
@@ -69,7 +69,7 @@ export async function GET(
       error instanceof Error ? error.message : 'Internal server error',
       {
         status: 500,
-      }
+      },
     );
   }
 }

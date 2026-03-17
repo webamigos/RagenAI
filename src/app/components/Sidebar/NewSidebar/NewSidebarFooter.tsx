@@ -48,7 +48,7 @@ export const NewSidebarFooter = () => {
   return (
     <SidebarFooter>
       <Dropdown>
-        <DropdownButton as={SidebarItem}>
+        <DropdownButton as={SidebarItem} data-testid="user-menu">
           <span className="flex min-w-0 items-center gap-3">
             {userAvatar ? (
               <img

@@ -31,6 +31,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
   GOOGLE_ADS: '/assets/connectors/google-ads.svg',
   GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
+  GMAIL: '/assets/connectors/gmail.svg',
   CLICKUP: '/assets/connectors/clickup.svg',
   HUBSPOT: '/assets/connectors/hubspot.svg',
   FIREFLIES: '/assets/connectors/fireflies.svg',
@@ -76,12 +77,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: updated.id,
         provider: provider.provider,
-        mcp_server_url: provider.mcpServerUrl,
-        customer_id: '',
+        mcpServerUrl: provider.mcpServerUrl,
+        customerId: '',
         status: updated.status,
-        connected_at: updated.connected_at,
+        connectedAt: updated.connectedAt,
         enabled: true,
-        created_at: new Date(),
+        createdAt: new Date(),
       });
       setApiKeyDialogOpen(false);
       setApiKeyValue('');
@@ -180,10 +181,10 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     try {
       const result = await initiateConnection(provider.provider);
 
-      const mcpServerBaseUrl = provider.mcpServerUrl;
+      const mcpServerBaseUrl = provider.authBaseUrl || provider.mcpServerUrl;
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       const authParams = new URLSearchParams({
-        customer_id: result.customer_id,
+        customer_id: result.customerId,
         redirect_uri: callbackUrl,
       });
       if (provider.scopes?.length) {
@@ -237,12 +238,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         ...currentConnector,
         id: connectorId,
         provider: provider.provider,
-        mcp_server_url: provider.mcpServerUrl,
-        customer_id: '',
+        mcpServerUrl: provider.mcpServerUrl,
+        customerId: '',
         status: updated.status,
-        connected_at: updated.connected_at,
+        connectedAt: updated.connectedAt,
         enabled: true,
-        created_at: new Date(),
+        createdAt: new Date(),
       });
     } catch {
       // Auth may have failed or user closed popup before completing

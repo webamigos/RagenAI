@@ -22,8 +22,10 @@ import { initErrorTracking } from '@/providers/Telemetry/error-tracking';
 const COLLECTOR_URL = process.env.NEXT_PUBLIC_OTEL_COLLECTOR_URL;
 
 if (COLLECTOR_URL) {
+  const clientServiceName =
+    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-app-client';
   const resourceAttrs: Record<string, string> = {
-    'service.name': 'ragen-app-client',
+    'service.name': clientServiceName,
   };
   const targetEnv = process.env.NEXT_PUBLIC_TARGET_ENV;
   if (targetEnv) {
@@ -76,7 +78,9 @@ export function onRouterTransitionStart(
     return;
   }
 
-  const tracer = trace.getTracer('ragen-app-client');
+  const tracer = trace.getTracer(
+    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-app-client',
+  );
   const span = tracer.startSpan('navigation', {
     attributes: {
       'page.url': url,
@@ -89,7 +93,7 @@ export function onRouterTransitionStart(
     const entries = list.getEntries();
     if (entries.length > 0) {
       span.setAttribute(
-        'navigation.duration_ms',
+        'navigation.durationMs',
         entries[entries.length - 1].startTime,
       );
     }

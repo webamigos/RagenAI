@@ -70,17 +70,17 @@ export const UploadKnowledge = () => {
           const uploaded = response.files[i];
           const originalFile = files[i];
           addFile({
-            public_id: uploaded.uniqueFileId,
-            organization_id: '',
-            file_name: uploaded.fileName,
-            file_size: uploaded.fileSize,
-            file_type: getFileType(uploaded.fileName),
-            project_id: null,
+            publicId: uploaded.uniqueFileId,
+            organizationId: '',
+            fileName: uploaded.fileName,
+            fileSize: uploaded.fileSize,
+            fileType: getFileType(uploaded.fileName),
+            projectId: null,
             project: null,
             document: null,
-            created_at: new Date(),
-            embedding_status: EmbeddingStatus.NOT_STARTED,
-            parsing_status: ParsingStatus.NOT_STARTED,
+            createdAt: new Date(),
+            embeddingStatus: EmbeddingStatus.NOT_STARTED,
+            parsingStatus: ParsingStatus.NOT_STARTED,
           });
         }
 

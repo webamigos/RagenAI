@@ -13,24 +13,24 @@ export type ProjectType = {
 };
 
 export type UserFileType = {
-  public_id: UserFile['public_id'];
-  organization_id: UserFile['organization_id'];
-  file_name: UserFile['file_name'];
-  file_size: UserFile['file_size'];
-  created_at?: UserFile['created_at'];
-  updated_at?: UserFile['updated_at'];
+  publicId: UserFile['publicId'];
+  organizationId: UserFile['organizationId'];
+  fileName: UserFile['fileName'];
+  fileSize: UserFile['fileSize'];
+  createdAt?: UserFile['createdAt'];
+  updatedAt?: UserFile['updatedAt'];
   metadata?: UserFile['metadata'];
-  file_type: UserFile['file_type'];
-  project_id: UserFile['project_id'];
-  thumbnail_s3_key?: string | null;
-  embedding_status?: EmbeddingStatus;
-  embedding_started_at?: UserFile['embedding_started_at'];
-  embedding_completed_at?: UserFile['embedding_completed_at'];
-  embedding_failed_at?: UserFile['embedding_failed_at'];
-  parsing_status?: ParsingStatus;
+  fileType: UserFile['fileType'];
+  projectId: UserFile['projectId'];
+  thumbnailS3Key?: string | null;
+  embeddingStatus?: EmbeddingStatus;
+  embeddingStartedAt?: UserFile['embeddingStartedAt'];
+  embeddingCompletedAt?: UserFile['embeddingCompletedAt'];
+  embeddingFailedAt?: UserFile['embeddingFailedAt'];
+  parsingStatus?: ParsingStatus;
   project: ProjectType | null;
   document?: {
-    public_id: UserDocument['public_id'];
+    publicId: UserDocument['publicId'];
   } | null;
 };
 
@@ -57,8 +57,8 @@ export enum Workflow {
 export interface ScrapeWebsiteWorkflowPayload {
   url: string;
   mode: WebsiteLoaderMode;
-  orgId: UserFile['organization_id'];
-  projectId: UserFile['project_id'];
+  orgId: UserFile['organizationId'];
+  projectId: UserFile['projectId'];
   orgSlug?: string;
   userEmail?: string;
   userId?: string;
@@ -80,10 +80,10 @@ export type DocumentFolderItem = {
 };
 
 export type CreateMarkdownDocumentInput = {
-  public_id: string;
+  publicId: string;
   title: string;
   content: string;
-  organization_id: string;
-  file_id?: string;
-  project_id?: number;
+  organizationId: string;
+  fileId?: string;
+  projectId?: number;
 };

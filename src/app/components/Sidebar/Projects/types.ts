@@ -3,20 +3,20 @@ import { z } from 'zod';
 import { type ThreadCommunicationType } from '@/generated/prisma/browser';
 
 export type ThreadType = {
-  created_at: string;
-  public_id: string;
-  visitor_id: string | null;
-  preferred_communication_type: ThreadCommunicationType;
-  project_id: number | null;
-  preferred_model?: string | null;
+  createdAt: string;
+  publicId: string;
+  visitorId: string | null;
+  preferredCommunicationType: ThreadCommunicationType;
+  projectId: number | null;
+  preferredModel?: string | null;
   messages: {
     content: string;
   }[];
 };
 
 export type ProjectType = {
-  created_at: string;
-  public_id: string;
+  createdAt: string;
+  publicId: string;
   title: string;
   threads: ThreadType[];
 };

@@ -10,10 +10,10 @@ import {
 export type McpConnectorInfo = {
   id: string;
   provider: string;
-  mcp_server_url: string;
-  customer_id: string;
-  organization_id: string;
-  user_id: string;
+  mcpServerUrl: string;
+  customerId: string;
+  organizationId: string;
+  userId: string;
 };
 
 /**
@@ -26,12 +26,6 @@ function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
   const cleaned: Record<string, any> = {};
   for (const [key, value] of Object.entries(args)) {
     if (value === '' || value === null || value === undefined) {
-      continue;
-    }
-    if (value === false) {
-      continue;
-    }
-    if (typeof value === 'number' && value === 0) {
       continue;
     }
     if (Array.isArray(value) && value.length === 0) {
@@ -54,20 +48,48 @@ function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
 }
 
 /**
- * Wrap tool execute functions to sanitize args before calling the MCP server.
+ * Wrap tool execute functions to:
+ * 1. Sanitize args (strip empty values)
+ * 2. Auto-inject customer_id from connector config (remove it from LLM-visible params)
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrapToolsWithArgSanitization(
+function wrapToolsForConnector(
   tools: Record<string, any>,
+  customerId: string,
 ): Record<string, any> {
   const wrapped: Record<string, any> = {};
   for (const [name, tool] of Object.entries(tools)) {
     if (typeof tool.execute === 'function') {
       const originalExecute = tool.execute;
+
+      // Remove customer_id from the tool's parameter schema so the LLM doesn't see it
+      let parameters = tool.parameters;
+      if (parameters?.jsonSchema?.properties?.customer_id) {
+        const { customer_id: _, ...restProps } =
+          parameters.jsonSchema.properties;
+        const required = (
+          Array.isArray(parameters.jsonSchema.required)
+            ? parameters.jsonSchema.required
+            : []
+        ).filter((r: string) => r !== 'customer_id');
+        parameters = {
+          ...parameters,
+          jsonSchema: {
+            ...parameters.jsonSchema,
+            properties: restProps,
+            required,
+          },
+        };
+      }
+
       wrapped[name] = {
         ...tool,
+        parameters,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
+          // Inject customer_id from connector config
+          cleaned.customer_id = customerId;
           logger.info(
             {
               toolName: name,
@@ -108,29 +130,29 @@ export async function createMcpToolsFromConnectors(
 
       if (providerDef?.authType === 'api_key_bearer') {
         // Read API key from ragen-vault and pass as Bearer token
-        const customerId = connector.customer_id;
+        const customerId = connector.customerId;
         const tokenData = await ragenAuthClient.getToken(
           customerId,
           connector.provider,
         );
 
-        if (!tokenData?.access_token) {
+        if (!tokenData?.accessToken) {
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcp_server_url,
+            url: connector.mcpServerUrl,
             headers: {
-              Authorization: `Bearer ${tokenData.access_token}`,
+              Authorization: `Bearer ${tokenData.accessToken}`,
             },
           },
         });
       } else if (providerDef?.authType === 'external_mcp') {
         const authProvider = new RagenAuthOAuthClientProvider({
-          orgId: connector.organization_id,
-          userId: connector.user_id,
+          orgId: connector.organizationId,
+          userId: connector.userId,
           provider: connector.provider as McpConnectorProvider,
           callbackUrl: '', // No redirect needed for runtime token injection
           fixedClientId: providerDef.oauthClientId,
@@ -139,7 +161,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcp_server_url,
+            url: connector.mcpServerUrl,
             authProvider,
           },
         });
@@ -147,9 +169,9 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcp_server_url,
+            url: connector.mcpServerUrl,
             headers: {
-              'x-customer-id': connector.customer_id,
+              'x-customer-id': connector.customerId,
             },
           },
         });
@@ -159,9 +181,12 @@ export async function createMcpToolsFromConnectors(
 
       const tools = await client.tools();
 
+      // Wrap tools: inject customer_id, strip it from LLM params, sanitize args
+      const wrappedTools = wrapToolsForConnector(tools, connector.customerId);
+
       // Prefix tool names with provider to avoid collisions
       const prefix = connector.provider.toLowerCase();
-      for (const [name, tool] of Object.entries(tools)) {
+      for (const [name, tool] of Object.entries(wrappedTools)) {
         mergedTools[`${prefix}__${name}`] = tool;
       }
 
@@ -180,7 +205,7 @@ export async function createMcpToolsFromConnectors(
         {
           err: error,
           provider: connector.provider,
-          mcpServerUrl: connector.mcp_server_url,
+          mcpServerUrl: connector.mcpServerUrl,
         },
         'Failed to initialize MCP connector, skipping',
       );
@@ -198,7 +223,7 @@ export async function createMcpToolsFromConnectors(
   };
 
   return {
-    tools: wrapToolsWithArgSanitization(mergedTools),
+    tools: mergedTools,
     loadedProviders,
     closeAll,
   };

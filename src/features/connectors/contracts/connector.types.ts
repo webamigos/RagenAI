@@ -8,12 +8,12 @@ export type ConnectorDto = Pick<
   McpConnector,
   | 'id'
   | 'provider'
-  | 'mcp_server_url'
-  | 'customer_id'
+  | 'mcpServerUrl'
+  | 'customerId'
   | 'enabled'
   | 'status'
-  | 'connected_at'
-  | 'created_at'
+  | 'connectedAt'
+  | 'createdAt'
 >;
 
 export type ProviderDefinition = {
@@ -22,6 +22,7 @@ export type ProviderDefinition = {
   description: string;
   icon: string;
   mcpServerUrl: string;
+  authBaseUrl?: string;
   authPath?: string;
   authType?: 'oauth' | 'api_key' | 'api_key_bearer' | 'external_mcp';
   apiKeyHelpUrl?: string;

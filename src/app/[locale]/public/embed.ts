@@ -1,9 +1,31 @@
+/**
+ * Escape a string for safe interpolation inside a JavaScript string literal.
+ * Prevents XSS by encoding characters that could break out of string context.
+ */
+function escapeJsString(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/'/g, "\\'")
+    .replace(/`/g, '\\`')
+    .replace(/\$/g, '\\$')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+    .replace(/<\//g, '<\\/');
+}
+
 export const createEmbedScript = (
   organizationId: string,
   config: { title: string; message: string },
-  origin: string
+  origin: string,
 ) => {
-  const { title, message } = config;
+  const safeTitle = escapeJsString(config.title);
+  const safeMessage = escapeJsString(config.message);
+  const safeOrgId = escapeJsString(organizationId);
+  const safeOrigin = escapeJsString(origin);
+
   return `
 (function() {
   // Prevent multiple widget instances
@@ -11,13 +33,13 @@ export const createEmbedScript = (
     console.warn('RAGENAI chatbot widget already exists');
     return;
   }
-  
+
   console.info('RAGENAI chatbot widget script loaded');
-  
+
   // Construct query parameters
   const queryParams = new URLSearchParams({
-    title: "${title}",
-    message: "${message}",
+    title: "${safeTitle}",
+    message: "${safeMessage}",
   }).toString();
 
   const iframe = document.createElement('iframe');
@@ -38,12 +60,12 @@ export const createEmbedScript = (
   iframe.style.opacity = '0';
   iframe.style.boxShadow = 'var(--widget-shadow)';
   iframe.style.border = 'var(--widget-border)';
-  
-  iframe.src = 'http://localhost:3000/en/public/${organizationId}/widget' + 
+
+  iframe.src = "${safeOrigin}/en/public/${safeOrgId}/widget" +
     (queryParams ? '?' + queryParams : '');
-  
+
   console.info('Creating iframe with src:', iframe.src);
-  
+
   // Add error handling for iframe loading
   iframe.onerror = function() {
     console.error('Failed to load RAGENAI chatbot widget');
@@ -51,12 +73,11 @@ export const createEmbedScript = (
 
   // Verify message origin for security
   window.addEventListener('message', function(event) {
-    if (event.origin !== '${origin}') {
+    if (event.origin !== '${safeOrigin}') {
       console.warn('Received message from unknown origin:', event.origin);
       return;
     }
-    
-    console.info('Received message:', event.data);
+
     if (event.data.type === 'loaded') {
       iframe.style.opacity = '1';
     }
@@ -66,7 +87,7 @@ export const createEmbedScript = (
       iframe.style.borderRadius = event.data.width === 80 ? '50%' : '16px';
     }
   });
-  
+
   document.body.appendChild(iframe);
   console.info('Iframe appended to body');
 

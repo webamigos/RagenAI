@@ -19,11 +19,11 @@ import { Input } from '@/components/ui/input';
 import { getAllOrgFiles } from '@/app/actions';
 
 type KnowledgeFile = {
-  public_id: string;
-  file_name: string;
-  file_size: number;
-  file_type: string;
-  created_at: Date;
+  publicId: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  createdAt: Date;
   project: { id: number; title: string } | null;
 };
 
@@ -77,13 +77,13 @@ export const KnowledgeBasePickerDialog = ({
   }, [open, loadFiles]);
 
   const filteredFiles = files.filter((file) => {
-    if (excludeFileIds.includes(file.public_id)) {
+    if (excludeFileIds.includes(file.publicId)) {
       return false;
     }
     if (!search) {
       return true;
     }
-    return file.file_name.toLowerCase().includes(search.toLowerCase());
+    return file.fileName.toLowerCase().includes(search.toLowerCase());
   });
 
   const toggleFile = (fileId: string) => {
@@ -100,12 +100,12 @@ export const KnowledgeBasePickerDialog = ({
 
   const handleConfirm = () => {
     const selected = files
-      .filter((f) => selectedIds.has(f.public_id))
+      .filter((f) => selectedIds.has(f.publicId))
       .map((f) => ({
-        publicId: f.public_id,
-        name: f.file_name,
-        size: f.file_size,
-        type: f.file_type,
+        publicId: f.publicId,
+        name: f.fileName,
+        size: f.fileSize,
+        type: f.fileType,
       }));
     onFilesSelected(selected);
     onOpenChange(false);
@@ -141,12 +141,12 @@ export const KnowledgeBasePickerDialog = ({
           ) : (
             <div className="flex flex-col gap-0.5">
               {filteredFiles.map((file) => {
-                const isSelected = selectedIds.has(file.public_id);
+                const isSelected = selectedIds.has(file.publicId);
                 return (
                   <button
-                    key={file.public_id}
+                    key={file.publicId}
                     type="button"
-                    onClick={() => toggleFile(file.public_id)}
+                    onClick={() => toggleFile(file.publicId)}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${
                       isSelected
                         ? 'bg-blue-50 dark:bg-blue-900/20'
@@ -155,9 +155,9 @@ export const KnowledgeBasePickerDialog = ({
                   >
                     <DocumentIcon className="size-5 shrink-0 text-muted-foreground" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm truncate">{file.file_name}</div>
+                      <div className="text-sm truncate">{file.fileName}</div>
                       <div className="text-xs text-muted-foreground">
-                        {formatFileSize(file.file_size)}
+                        {formatFileSize(file.fileSize)}
                         {file.project && (
                           <span className="ml-2">{file.project.title}</span>
                         )}

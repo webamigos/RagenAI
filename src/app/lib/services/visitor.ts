@@ -6,8 +6,9 @@ import { startOfDay, setHours } from 'date-fns';
 
 import db from '@ragenai/prisma-client';
 
-const today = new Date();
-const midnightToday = setHours(startOfDay(today), 0);
+function getMidnightToday(): Date {
+  return setHours(startOfDay(new Date()), 0);
+}
 
 export const createVisitorEntry = async (
   message: Message,
@@ -15,8 +16,8 @@ export const createVisitorEntry = async (
 ) => {
   return await db.visitorMessages.create({
     data: {
-      message_id: message.id,
-      visitor_id: visitorId,
+      messageId: message.id,
+      visitorId: visitorId,
     },
   });
 };
@@ -28,11 +29,11 @@ export const getLast24hVisitorMessages = async (
     where: {
       AND: [
         {
-          visitor_id: visitorId,
+          visitorId: visitorId,
         },
         {
-          created_at: {
-            gte: midnightToday,
+          createdAt: {
+            gte: getMidnightToday(),
           },
         },
       ],
@@ -43,8 +44,8 @@ export const getLast24hVisitorMessages = async (
 export const clearVisitorMessages = async () => {
   return await db.visitorMessages.deleteMany({
     where: {
-      created_at: {
-        gte: midnightToday,
+      createdAt: {
+        gte: getMidnightToday(),
       },
     },
   });

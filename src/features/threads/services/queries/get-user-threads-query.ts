@@ -26,12 +26,12 @@ export const getUserThreadsQuery = async (
 
   const threads = await db.thread.findMany({
     where: {
-      visitor_id: visitorId,
-      project_id: defaultProjectId,
+      visitorId: visitorId,
+      projectId: defaultProjectId,
       messages: query
         ? {
             some: {
-              created_at: {
+              createdAt: {
                 gte: thirtyDaysAgo,
               },
               content: {
@@ -45,20 +45,20 @@ export const getUserThreadsQuery = async (
           },
     },
     orderBy: {
-      created_at: 'desc',
+      createdAt: 'desc',
     },
     skip: skip,
     take: take,
     select: {
-      public_id: true,
-      created_at: true,
-      visitor_id: true,
-      project_id: true,
-      is_starred: true,
+      publicId: true,
+      createdAt: true,
+      visitorId: true,
+      projectId: true,
+      isStarred: true,
       messages: {
         select: {
           content: true,
-          created_at: true,
+          createdAt: true,
           role: true,
         },
       },
@@ -68,10 +68,10 @@ export const getUserThreadsQuery = async (
   // Convert Date objects to ISO strings for Redux serialization
   return threads.map((thread) => ({
     ...thread,
-    created_at: thread.created_at.toISOString(),
+    createdAt: thread.createdAt.toISOString(),
     messages: thread.messages.map((msg) => ({
       ...msg,
-      created_at: msg.created_at.toISOString(),
+      createdAt: msg.createdAt.toISOString(),
     })),
   }));
 };

@@ -57,7 +57,7 @@ type CommonConfig = {
   t: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
-  threadId: Thread['public_id'];
+  threadId: Thread['publicId'];
   responseType: ChatResponseType;
   data: CreateMessageDto;
   scrollFn: () => void;
@@ -102,7 +102,7 @@ const handleStreamError = async ({
 
     const updatedMessages = messages.filter(
       (message) =>
-        message.public_id !== (lastUserMessageId || userMessage.public_id),
+        message.publicId !== (lastUserMessageId || userMessage.publicId),
     );
     reduxDispatch(setMessages(updatedMessages));
     promptFormRef.current?.reset(userMessage.content || '');
@@ -236,7 +236,7 @@ export const handleAssistantStream = async ({
               const { id } = messageData as { id: string };
               lastUserMessageId = id;
               reduxDispatch(
-                setMessages([...messages, { ...userMessage, public_id: id }]),
+                setMessages([...messages, { ...userMessage, publicId: id }]),
               );
             }
             break;
@@ -247,7 +247,7 @@ export const handleAssistantStream = async ({
               setStreamedMessage({
                 content: accumulatingMessage,
                 runId,
-                created_at: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
                 reasoningContent: accumulatingReasoning,
                 isReasoning: true,
               }),
@@ -262,7 +262,7 @@ export const handleAssistantStream = async ({
               setStreamedMessage({
                 content: accumulatingMessage,
                 runId,
-                created_at: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
                 reasoningContent: accumulatingReasoning,
                 isReasoning: true,
               }),
@@ -279,7 +279,7 @@ export const handleAssistantStream = async ({
               setStreamedMessage({
                 content: accumulatingMessage,
                 runId,
-                created_at: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
                 reasoningContent: accumulatingReasoning,
                 isReasoning: false,
               }),
@@ -293,7 +293,7 @@ export const handleAssistantStream = async ({
               setStreamedMessage({
                 content: accumulatingMessage,
                 runId,
-                created_at: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
                 reasoningContent: accumulatingReasoning || undefined,
                 isReasoning: isCurrentlyReasoning,
               }),
@@ -306,19 +306,23 @@ export const handleAssistantStream = async ({
 
           case 'final_response':
             if (messageData) {
-              const { id, role, run_id } = messageData as ApiSseMessageEvent;
-              runId = run_id;
+              const {
+                id,
+                role,
+                runId: messageRunId,
+              } = messageData as ApiSseMessageEvent;
+              runId = messageRunId;
               const finalMessage = {
-                public_id: id,
+                publicId: id,
                 role,
                 content: accumulatingMessage,
-                created_at: new Date().toISOString(),
-                run_id: runId,
-                message_type: responseType,
+                createdAt: new Date().toISOString(),
+                runId: messageRunId,
+                messageType: responseType,
               };
 
               const effectiveUserMessage = lastUserMessageId
-                ? { ...userMessage, public_id: lastUserMessageId }
+                ? { ...userMessage, publicId: lastUserMessageId }
                 : userMessage;
 
               const uniqueMessages = [
@@ -328,7 +332,7 @@ export const handleAssistantStream = async ({
               ].filter(
                 (message, index, self) =>
                   index ===
-                  self.findIndex((m) => m.public_id === message.public_id),
+                  self.findIndex((m) => m.publicId === message.publicId),
               );
 
               reduxDispatch(setMessages(uniqueMessages));

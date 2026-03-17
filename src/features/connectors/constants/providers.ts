@@ -1,17 +1,10 @@
 import { McpConnectorProvider } from '@/generated/prisma/client';
 import type { ProviderDefinition } from '../contracts/connector.types';
 
-const MCP_GOOGLE_SERVER_URL = (() => {
-  if (process.env.MCP_GOOGLE_SERVER_URL) {
-    return process.env.MCP_GOOGLE_SERVER_URL;
-  }
-  if (process.env.NODE_ENV !== 'development') {
-    throw new Error(
-      'MCP_GOOGLE_SERVER_URL is required in non-development environments',
-    );
-  }
-  return 'http://localhost:8000';
-})();
+const MCP_GOOGLE_SERVER_URL =
+  process.env.MCP_GOOGLE_SERVER_URL || 'http://localhost:8000';
+const MCP_GOOGLE_AUTH_URL =
+  process.env.MCP_GOOGLE_AUTH_URL || MCP_GOOGLE_SERVER_URL;
 
 const MCP_CLICKUP_SERVER_URL =
   process.env.MCP_CLICKUP_SERVER_URL || 'https://mcp.clickup.com/mcp';
@@ -27,6 +20,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Search and read documents from your Google Drive.',
     icon: 'folder',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authBaseUrl: MCP_GOOGLE_AUTH_URL,
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/drive.readonly'],
   },
@@ -36,11 +30,22 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'View calendar events and check availability.',
     icon: 'calendar',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authBaseUrl: MCP_GOOGLE_AUTH_URL,
     authPath: '/auth/google',
     scopes: [
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/calendar.events.readonly',
     ],
+  },
+  {
+    provider: McpConnectorProvider.GMAIL,
+    name: 'Gmail',
+    description: 'Search emails and read messages.',
+    icon: 'mail',
+    mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authBaseUrl: MCP_GOOGLE_AUTH_URL,
+    authPath: '/auth/google',
+    scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
   },
   {
     provider: McpConnectorProvider.CLICKUP,
@@ -76,6 +81,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'Access traffic reports, conversions, and audience insights.',
     icon: 'chart-bar',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authBaseUrl: MCP_GOOGLE_AUTH_URL,
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
   },
@@ -85,6 +91,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     description: 'View campaigns, performance, and track costs.',
     icon: 'megaphone',
     mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authBaseUrl: MCP_GOOGLE_AUTH_URL,
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/adwords'],
   },

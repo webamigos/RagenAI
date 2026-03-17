@@ -5,24 +5,24 @@ const REQUEST_TIMEOUT_MS = 10_000;
 const SERVICE_NAME = 'ragen-app';
 
 export type StoreTokenData = {
-  access_token: string;
-  refresh_token?: string;
-  client_id?: string;
-  client_secret?: string;
-  code_verifier?: string;
-  token_type?: string;
+  accessToken: string;
+  refreshToken?: string;
+  clientId?: string;
+  clientSecret?: string;
+  codeVerifier?: string;
+  tokenType?: string;
   expires_at?: string;
   scopes?: string[];
   token_uri?: string;
 };
 
 export type TokenResponse = {
-  access_token: string;
-  refresh_token: string | null;
-  client_id: string | null;
-  client_secret: string | null;
-  code_verifier: string | null;
-  token_type: string | null;
+  accessToken: string;
+  refreshToken: string | null;
+  clientId: string | null;
+  clientSecret: string | null;
+  codeVerifier: string | null;
+  tokenType: string | null;
   expires_at: string | null;
   scopes: string[] | null;
   token_uri: string | null;
@@ -30,12 +30,12 @@ export type TokenResponse = {
 
 export type TokenStatusResponse = {
   provider: string;
-  token_type: string | null;
+  tokenType: string | null;
   expires_at: string | null;
   scopes: string[] | null;
   is_expired: boolean;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ListTokensResponse = {
@@ -104,7 +104,7 @@ export class RagenAuthClient {
       if (!response.ok) {
         const errorBody = await response.text().catch(() => 'unknown');
         throw new Error(
-          `ragen-vault ${method} ${path} returned ${response.status}: ${errorBody}`,
+          `ragen-token-vault ${method} ${path} returned ${response.status}: ${errorBody}`,
         );
       }
 
@@ -116,7 +116,7 @@ export class RagenAuthClient {
       return (await response.json()) as T;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error(`ragen-vault ${method} ${path} timed out`);
+        throw new Error(`ragen-token-vault ${method} ${path} timed out`);
       }
       throw error;
     } finally {
@@ -133,20 +133,90 @@ export class RagenAuthClient {
     provider: string,
     data: StoreTokenData,
   ): Promise<void> {
-    await this.request<void>('PUT', this.tokenPath(customerId, provider), data);
-    logger.info({ provider }, 'Stored token in ragen-vault');
+    // Convert to snake_case for the vault API
+    const payload: Record<string, unknown> = {
+      access_token: data.accessToken,
+    };
+    if (data.refreshToken) {
+      payload.refresh_token = data.refreshToken;
+    }
+    if (data.clientId) {
+      payload.client_id = data.clientId;
+    }
+    if (data.clientSecret) {
+      payload.client_secret = data.clientSecret;
+    }
+    if (data.codeVerifier) {
+      payload.code_verifier = data.codeVerifier;
+    }
+    if (data.tokenType) {
+      payload.token_type = data.tokenType;
+    }
+    if (data.expires_at) {
+      payload.expires_at = data.expires_at;
+    }
+    if (data.scopes) {
+      payload.scopes = data.scopes;
+    }
+    if (data.token_uri) {
+      payload.token_uri = data.token_uri;
+    }
+
+    await this.request<void>(
+      'PUT',
+      this.tokenPath(customerId, provider),
+      payload,
+    );
+    logger.info({ provider }, 'Stored token in ragen-token-vault');
   }
 
   async getToken(customerId: string, provider: string): Promise<TokenResponse> {
-    return this.request<TokenResponse>(
+    // Vault returns snake_case, convert to camelCase
+    const raw = await this.request<Record<string, unknown>>(
       'GET',
       this.tokenPath(customerId, provider),
     );
+    const accessToken =
+      (raw.access_token as string) ?? (raw.accessToken as string);
+    if (!accessToken) {
+      throw new Error(
+        `Token response missing access_token for provider ${provider}`,
+      );
+    }
+    return {
+      accessToken,
+      refreshToken:
+        (raw.refresh_token as string | null) ??
+        (raw.refreshToken as string | null) ??
+        null,
+      clientId:
+        (raw.client_id as string | null) ??
+        (raw.clientId as string | null) ??
+        null,
+      clientSecret:
+        (raw.client_secret as string | null) ??
+        (raw.clientSecret as string | null) ??
+        null,
+      codeVerifier:
+        (raw.code_verifier as string | null) ??
+        (raw.codeVerifier as string | null) ??
+        null,
+      tokenType:
+        (raw.token_type as string | null) ??
+        (raw.tokenType as string | null) ??
+        null,
+      expires_at: (raw.expires_at as string | null) ?? null,
+      scopes: (raw.scopes as string[] | null) ?? null,
+      token_uri:
+        (raw.token_uri as string | null) ??
+        (raw.tokenUri as string | null) ??
+        null,
+    };
   }
 
   async deleteToken(customerId: string, provider: string): Promise<void> {
     await this.request<void>('DELETE', this.tokenPath(customerId, provider));
-    logger.info({ provider }, 'Deleted token from ragen-vault');
+    logger.info({ provider }, 'Deleted token from ragen-token-vault');
   }
 
   async getTokenStatus(
@@ -169,12 +239,15 @@ let _ragenAuthClient: RagenAuthClient | null = null;
 
 export function getRagenAuthClient(): RagenAuthClient {
   if (!_ragenAuthClient) {
-    const baseUrl = process.env.RAGEN_VAULT_URL;
-    const secret = process.env.RAGEN_VAULT_SERVICE_SECRET;
+    const baseUrl =
+      process.env.RAGEN_TOKEN_VAULT_URL ?? process.env.RAGEN_VAULT_URL;
+    const secret =
+      process.env.RAGEN_TOKEN_VAULT_SERVICE_SECRET ??
+      process.env.RAGEN_VAULT_SERVICE_SECRET;
 
     if (!baseUrl || !secret) {
       throw new Error(
-        'RAGEN_VAULT_URL and RAGEN_VAULT_SERVICE_SECRET must be set',
+        'RAGEN_TOKEN_VAULT_URL and RAGEN_TOKEN_VAULT_SERVICE_SECRET must be set',
       );
     }
 

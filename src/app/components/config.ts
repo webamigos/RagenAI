@@ -27,6 +27,12 @@ export type AvailableModel = {
 export const availableModels: AvailableModel[] = [
   // OpenAI Models
   {
+    value: 'openai/gpt-5.3-chat',
+    label: 'GPT-5.3 Chat',
+    provider: 'openrouter',
+    origin: 'openai',
+  },
+  {
     value: 'openai/gpt-5.2',
     label: 'GPT-5.2 Thinking',
     provider: 'openrouter',
@@ -76,13 +82,16 @@ export const availableModels: AvailableModel[] = [
 
 /** Maps legacy model IDs (stored in DB) to current OpenRouter model IDs */
 const legacyModelIdMap: Record<string, string> = {
+  'gpt-5.3-chat': 'openai/gpt-5.3-chat',
   'gpt-5.2': 'openai/gpt-5.2',
-  'gpt-5.2-chat-latest': 'openai/gpt-5.2-chat',
-  'gpt-4o': 'openai/gpt-5.2-chat',
-  'gpt-4o-mini': 'openai/gpt-5.2-chat',
+  'gpt-5.2-chat-latest': 'openai/gpt-5.3-chat',
+  'gpt-5.2-chat': 'openai/gpt-5.3-chat',
+  'openai/gpt-5.2-chat': 'openai/gpt-5.3-chat',
+  'gpt-4o': 'openai/gpt-5.3-chat',
+  'gpt-4o-mini': 'openai/gpt-5.3-chat',
   'o3-mini': 'openai/gpt-5.2',
-  'openai/gpt-4o': 'openai/gpt-5.2-chat',
-  'openai/gpt-4o-mini': 'openai/gpt-5.2-chat',
+  'openai/gpt-4o': 'openai/gpt-5.3-chat',
+  'openai/gpt-4o-mini': 'openai/gpt-5.3-chat',
   'openai/o3-mini': 'openai/gpt-5.2',
   'gemini-3-flash-preview': 'google/gemini-3-flash-preview',
   'gemini-2.0-flash': 'google/gemini-3-flash-preview',

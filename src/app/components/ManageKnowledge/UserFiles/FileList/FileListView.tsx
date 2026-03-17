@@ -13,12 +13,12 @@ type FileListViewProps = {
   deleteLoading: boolean;
   isError: boolean;
   showModal: ModalStateProps;
-  toggleModal: (filePublicId: UserFile['public_id'] | null) => void;
+  toggleModal: (filePublicId: UserFile['publicId'] | null) => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (filePublicId: UserFile['public_id']) => void;
+  removeFile: (filePublicId: UserFile['publicId']) => void;
   handleDelete: (
-    filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name'],
+    filePublicId: UserFile['publicId'],
+    fileName: UserFile['fileName'],
   ) => void;
 };
 

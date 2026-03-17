@@ -5,18 +5,18 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 
 const THREAD_SELECT = {
-  public_id: true,
-  created_at: true,
-  is_starred: true,
+  publicId: true,
+  createdAt: true,
+  isStarred: true,
   title: true,
-  project_id: true,
-  team_id: true,
-  project: { select: { public_id: true, title: true } },
+  projectId: true,
+  teamId: true,
+  project: { select: { publicId: true, title: true } },
   team: { select: { id: true, name: true } },
   messages: {
     select: { content: true },
     take: 1,
-    orderBy: { created_at: 'asc' as const },
+    orderBy: { createdAt: 'asc' as const },
   },
 } as const;
 
@@ -34,29 +34,29 @@ export const getSidebarThreadsQuery = async (
   }
 
   const baseWhere = {
-    organization_id: orgId,
+    organizationId: orgId,
     messages: { some: {} },
     OR: [
-      { visitor_id: visitorId },
-      ...(userTeamIds.length > 0 ? [{ team_id: { in: userTeamIds } }] : []),
+      { visitorId: visitorId },
+      ...(userTeamIds.length > 0 ? [{ teamId: { in: userTeamIds } }] : []),
     ],
   };
 
   const [starred, recent, _totalRecent] = await Promise.all([
     db.thread.findMany({
-      where: { ...baseWhere, is_starred: true },
-      orderBy: { created_at: 'desc' },
+      where: { ...baseWhere, isStarred: true },
+      orderBy: { createdAt: 'desc' },
       select: THREAD_SELECT,
     }),
     db.thread.findMany({
-      where: { ...baseWhere, is_starred: false },
-      orderBy: { created_at: 'desc' },
+      where: { ...baseWhere, isStarred: false },
+      orderBy: { createdAt: 'desc' },
       skip: recentSkip,
       take: recentLimit + 1,
       select: THREAD_SELECT,
     }),
     db.thread.count({
-      where: { ...baseWhere, is_starred: false },
+      where: { ...baseWhere, isStarred: false },
     }),
   ]);
 
@@ -66,7 +66,7 @@ export const getSidebarThreadsQuery = async (
   const serialize = (threads: typeof starred) =>
     threads.map((t) => ({
       ...t,
-      created_at: t.created_at.toISOString(),
+      createdAt: t.createdAt.toISOString(),
     }));
 
   return {

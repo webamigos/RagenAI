@@ -41,8 +41,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
       where: {
-        public_id: publicThreadId,
-        organization_id: orgId,
+        publicId: publicThreadId,
+        organizationId: orgId,
       },
     });
 
@@ -55,7 +55,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       const project = await db.project.findFirst({
         where: {
           id: mentionedProjectId,
-          organization_id: orgId,
+          organizationId: orgId,
         },
       });
 
@@ -82,7 +82,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     return Response.json({
       success: true,
-      mentionedProjectId: updatedThread.mentioned_project_id,
+      mentionedProjectId: updatedThread.mentionedProjectId,
     });
   } catch (error) {
     logger.error({ err: error }, 'Error updating thread project context');
@@ -110,8 +110,8 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
       where: {
-        public_id: publicThreadId,
-        organization_id: orgId,
+        publicId: publicThreadId,
+        organizationId: orgId,
       },
     });
 

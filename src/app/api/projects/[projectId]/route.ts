@@ -40,26 +40,26 @@ export async function GET(
 
     const project = await db.project.findFirst({
       where: {
-        public_id: projectId,
-        organization_id: orgId,
+        publicId: projectId,
+        organizationId: orgId,
       },
       select: {
         id: true,
-        public_id: true,
+        publicId: true,
         title: true,
-        is_public: true,
-        access_token: true,
-        published_at: true,
-        chatbot_enabled: true,
+        isPublic: true,
+        accessToken: true,
+        publishedAt: true,
+        chatbotEnabled: true,
         threads: {
-          orderBy: { created_at: 'desc' },
+          orderBy: { createdAt: 'desc' },
           select: {
-            public_id: true,
+            publicId: true,
             title: true,
-            created_at: true,
-            is_starred: true,
+            createdAt: true,
+            isStarred: true,
             messages: {
-              orderBy: { created_at: 'asc' },
+              orderBy: { createdAt: 'asc' },
               take: 1,
               select: { content: true },
             },

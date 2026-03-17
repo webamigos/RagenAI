@@ -7,16 +7,16 @@ import type { ThreadContextAction } from '../../contracts/thread.types';
 
 export const updateThreadProjectContextCommand = async (
   publicThreadId: string,
-  mentionedProjectId: number | null
+  mentionedProjectId: number | null,
 ) => {
   try {
     const updatedThread = await db.thread.update({
-      where: { public_id: publicThreadId },
-      data: { mentioned_project_id: mentionedProjectId },
+      where: { publicId: publicThreadId },
+      data: { mentionedProjectId: mentionedProjectId },
       select: {
         id: true,
-        public_id: true,
-        mentioned_project_id: true,
+        publicId: true,
+        mentionedProjectId: true,
       },
     });
 
@@ -25,14 +25,14 @@ export const updateThreadProjectContextCommand = async (
         threadId: publicThreadId,
         mentionedProjectId,
       },
-      'Thread project context updated successfully'
+      'Thread project context updated successfully',
     );
 
     return updatedThread;
   } catch (error) {
     logger.error(
       { err: error },
-      `Failed to update thread context ${publicThreadId}`
+      `Failed to update thread context ${publicThreadId}`,
     );
     throw error;
   }
@@ -40,7 +40,7 @@ export const updateThreadProjectContextCommand = async (
 
 export const updateThreadContextCommand = async (
   threadId: string,
-  mentionedProjectId: number | null
+  mentionedProjectId: number | null,
 ): Promise<ThreadContextAction> => {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
@@ -54,8 +54,8 @@ export const updateThreadContextCommand = async (
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
       where: {
-        public_id: threadId,
-        organization_id: orgId,
+        publicId: threadId,
+        organizationId: orgId,
       },
     });
 
@@ -71,7 +71,7 @@ export const updateThreadContextCommand = async (
       const project = await db.project.findFirst({
         where: {
           id: mentionedProjectId,
-          organization_id: orgId,
+          organizationId: orgId,
         },
       });
 
@@ -85,26 +85,26 @@ export const updateThreadContextCommand = async (
 
     const updatedThread = await updateThreadProjectContextCommand(
       threadId,
-      mentionedProjectId
+      mentionedProjectId,
     );
 
     logger.info(
       {
         threadId,
-        mentionedProjectId: updatedThread.mentioned_project_id,
+        mentionedProjectId: updatedThread.mentionedProjectId,
         orgId,
       },
-      'Thread context updated successfully'
+      'Thread context updated successfully',
     );
 
     return {
       success: true,
-      mentionedProjectId: updatedThread.mentioned_project_id,
+      mentionedProjectId: updatedThread.mentionedProjectId,
     };
   } catch (error) {
     logger.error(
       { err: error, threadId, mentionedProjectId },
-      'Error updating thread context'
+      'Error updating thread context',
     );
     return {
       success: false,

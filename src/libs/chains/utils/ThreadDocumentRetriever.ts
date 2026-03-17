@@ -93,7 +93,7 @@ export class ThreadDocumentRetriever {
         {
           vectorstoreResultsCount: vectorstoreResults.length,
           retrievedSources: vectorstoreResults.map(
-            (doc) => doc.metadata?.file_name,
+            (doc) => doc.metadata?.fileName,
           ),
         },
         'ThreadDocumentRetriever: Using vectorstore results',
@@ -124,19 +124,19 @@ export class ThreadDocumentRetriever {
     maxChunks: number,
   ): Promise<VectorStoreDocument[]> {
     try {
-      // Lookup internal UserFile.id from UserFile.public_id
+      // Lookup internal UserFile.id from UserFile.publicId
       const userFilePublicIds = threadDocuments
         .map((doc) => doc.userFileId)
         .filter(Boolean) as string[];
       const userFiles = await db.userFile.findMany({
         where: {
-          public_id: {
+          publicId: {
             in: userFilePublicIds,
           },
         },
         select: {
           id: true,
-          public_id: true,
+          publicId: true,
         },
       });
 
@@ -150,7 +150,7 @@ export class ThreadDocumentRetriever {
 
       const internalUserFileIds = userFiles.map((file) => file.id);
 
-      // Search vectorstore with file_id filter (Meilisearch format)
+      // Search vectorstore with fileId filter (Meilisearch format)
       const meilisearchFilter = {
         should: internalUserFileIds.map((fileId) => ({
           key: 'metadata.file_id',
@@ -169,7 +169,7 @@ export class ThreadDocumentRetriever {
       // Additional filtering to ensure results match our files
       const filteredResults = searchResults
         .filter((doc) => {
-          const fileId = doc.metadata?.file_id;
+          const fileId = doc.metadata?.fileId;
           return fileId && internalUserFileIds.includes(fileId);
         })
         .slice(0, maxChunks);
@@ -241,8 +241,8 @@ export class ThreadDocumentRetriever {
       const results: VectorStoreDocument[] = topResults.map((result) => ({
         pageContent: result.document.content,
         metadata: {
-          file_name: result.document.name,
-          file_id: result.document.userFileId,
+          fileName: result.document.name,
+          fileId: result.document.userFileId,
           source_type: 'thread_document_inline',
           similarity_score: result.similarity,
         },

@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, dev]
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
 env:
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
@@ -48,11 +53,12 @@ env:
   GOOGLE_CLIENT_ID: 'dummy'
   GOOGLE_CLIENT_SECRET: 'dummy'
   MCP_GOOGLE_SERVER_URL: 'https://example.com'
+  MCP_GOOGLE_AUTH_URL: 'https://example.com'
   MCP_CLICKUP_SERVER_URL: 'https://example.com'
   MCP_HUBSPOT_SERVER_URL: 'https://example.com'
   MCP_FIREFLIES_SERVER_URL: 'https://example.com'
-  RAGEN_VAULT_URL: 'http://localhost:3100'
-  RAGEN_VAULT_SERVICE_SECRET: '0000000000000000000000000000000000000000000000000000000000000000'
+  RAGEN_TOKEN_VAULT_URL: 'http://localhost:3100'
+  RAGEN_TOKEN_VAULT_SERVICE_SECRET: '0000000000000000000000000000000000000000000000000000000000000000'
 
 jobs:
   test-e2e:
@@ -106,6 +112,11 @@ jobs:
 
       - name: Build Next.js app
         run: npm run build
+
+      - name: Prepare standalone output
+        run: |
+          cp -r public .next/standalone/public
+          cp -r .next/static .next/standalone/.next/static
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps

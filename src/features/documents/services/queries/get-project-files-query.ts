@@ -6,28 +6,28 @@ import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth
 import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 
 export const getProjectFilesQuery = async (
-  projectPublicId: Project['public_id']
+  projectPublicId: Project['publicId'],
 ) => {
   const orgId = await getOrgIdOrThrow();
   const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
   return await db.userFile.findMany({
     where: {
-      organization_id: orgId,
-      project_id: project.id,
+      organizationId: orgId,
+      projectId: project.id,
     },
     select: {
-      created_at: true,
-      file_name: true,
-      file_size: true,
-      file_type: true,
-      updated_at: true,
+      createdAt: true,
+      fileName: true,
+      fileSize: true,
+      fileType: true,
+      updatedAt: true,
       metadata: true,
-      organization_id: true,
-      public_id: true,
+      organizationId: true,
+      publicId: true,
     },
     orderBy: {
-      created_at: 'desc',
+      createdAt: 'desc',
     },
   });
 };

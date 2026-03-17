@@ -20,10 +20,10 @@ export async function saveMarkdownWithMeta(
   const turndownService = new TurndownService();
   const markdownContent = turndownService.turndown(data.content);
   const markdownData = {
-    public_id: uniqueFileId,
+    publicId: uniqueFileId,
     title: data.title,
     content: markdownContent,
-    organization_id: organizationId,
+    organizationId: organizationId,
   };
   const markdownDataSize = new TextEncoder().encode(
     JSON.stringify(markdownData.content),
@@ -36,10 +36,10 @@ export async function saveMarkdownWithMeta(
       document: {
         id: uniqueFileId,
         title: data.title,
-        file_size: markdownDataSize,
-        organization_id: organizationId,
-        file_name: data.title,
-        created_at: new Date(),
+        fileSize: markdownDataSize,
+        organizationId: organizationId,
+        fileName: data.title,
+        createdAt: new Date(),
       },
     };
   } catch (error) {
@@ -49,9 +49,9 @@ export async function saveMarkdownWithMeta(
 }
 
 type DocumentFile = {
-  public_id: string;
-  file_type: string;
-  file_extension: string | null;
+  publicId: string;
+  fileType: string;
+  fileExtension: string | null;
 } | null;
 
 type DocumentSuccessResponse = {

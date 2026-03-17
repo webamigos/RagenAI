@@ -35,30 +35,30 @@ import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
 import type { FileType } from '@/generated/prisma/browser';
 
 type ProjectThread = {
-  public_id: string;
+  publicId: string;
   title: string | null;
-  created_at: string;
-  is_starred: boolean;
+  createdAt: string;
+  isStarred: boolean;
   messages: { content: string }[];
 };
 
 type Project = {
   id: number;
-  public_id: string;
+  publicId: string;
   title: string;
-  is_public: boolean;
-  access_token: string | null;
-  published_at: string | null;
-  chatbot_enabled: boolean;
+  isPublic: boolean;
+  accessToken: string | null;
+  publishedAt: string | null;
+  chatbotEnabled: boolean;
   threads: ProjectThread[];
 };
 
 type ProjectFile = {
-  public_id: string;
-  file_name: string;
-  file_size: number;
-  file_type: FileType;
-  created_at: Date | null;
+  publicId: string;
+  fileName: string;
+  fileSize: number;
+  fileType: FileType;
+  createdAt: Date | null;
 };
 
 type Props = {
@@ -137,8 +137,8 @@ export function ProjectComponent({ projectId }: Props) {
       try {
         const projectData = await fetchProject(projectId);
         setProject(projectData);
-        loadFiles(projectData.public_id);
-        getProjectInstructionAction(projectData.public_id).then((result) => {
+        loadFiles(projectData.publicId);
+        getProjectInstructionAction(projectData.publicId).then((result) => {
           if (result.success && result.instruction) {
             setInstructionText(result.instruction);
           }
@@ -163,13 +163,13 @@ export function ProjectComponent({ projectId }: Props) {
     try {
       const result = await deleteProjectFileAction(
         publicFileId,
-        project.public_id,
+        project.publicId,
       );
       if (result.error) {
         throw new Error(result.error);
       }
       infoToast({ message: t('file-deleted') });
-      loadFiles(project.public_id);
+      loadFiles(project.publicId);
     } catch {
       errorToast({ message: t('file-delete-fail') });
     } finally {
@@ -191,12 +191,12 @@ export function ProjectComponent({ projectId }: Props) {
     const { uploadProjectFiles } = await import('@/app/lib/services/api');
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));
-    formData.append('projectId', project.public_id);
+    formData.append('projectId', project.publicId);
 
     try {
-      await uploadProjectFiles(project.public_id, formData);
+      await uploadProjectFiles(project.publicId, formData);
       successToast({ message: t('file-uploaded') });
-      loadFiles(project.public_id);
+      loadFiles(project.publicId);
     } catch {
       errorToast({ message: t('file-upload-fail') });
     }
@@ -248,10 +248,10 @@ export function ProjectComponent({ projectId }: Props) {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
         <ShareDialogTrigger
-          publishedAt={project.published_at ?? ''}
-          accessToken={project.access_token ?? ''}
-          projectPublicId={project.public_id}
-          isPublicProject={project.is_public}
+          publishedAt={project.publishedAt ?? ''}
+          accessToken={project.accessToken ?? ''}
+          projectPublicId={project.publicId}
+          isPublicProject={project.isPublic}
         />
       </div>
 
@@ -262,7 +262,7 @@ export function ProjectComponent({ projectId }: Props) {
           <div className="mb-6">
             <NewChatInterface
               projectId={project.id}
-              projectPublicId={project.public_id}
+              projectPublicId={project.publicId}
               projectTitle={project.title}
               className="!max-w-none !mx-0 !px-0"
             />
@@ -283,8 +283,8 @@ export function ProjectComponent({ projectId }: Props) {
             <div className="space-y-0.5">
               {project.threads.map((thread) => (
                 <Link
-                  key={thread.public_id}
-                  href={`/chats/${thread.public_id}`}
+                  key={thread.publicId}
+                  href={`/chats/${thread.publicId}`}
                   className="flex items-center gap-3 px-3 py-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors group border-b border-border/30 last:border-b-0"
                 >
                   <div className="flex-1 min-w-0">
@@ -292,7 +292,7 @@ export function ProjectComponent({ projectId }: Props) {
                       {getThreadTitle(thread)}
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      Last message {formatRelativeTime(thread.created_at)}
+                      Last message {formatRelativeTime(thread.createdAt)}
                     </p>
                   </div>
                 </Link>
@@ -365,10 +365,10 @@ export function ProjectComponent({ projectId }: Props) {
               <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto">
                 {files.map((file) => (
                   <InlineFileCard
-                    key={file.public_id}
+                    key={file.publicId}
                     file={file}
                     onRemove={handleRemoveFile}
-                    isRemoving={removingFileId === file.public_id}
+                    isRemoving={removingFileId === file.publicId}
                   />
                 ))}
               </div>
@@ -386,10 +386,10 @@ export function ProjectComponent({ projectId }: Props) {
             <DialogTitle>{t('project-instructions.title')}</DialogTitle>
           </DialogHeader>
           <ProjectInstructionForm
-            projectId={project.public_id}
+            projectId={project.publicId}
             onSuccess={() => {
               setShowInstructions(false);
-              getProjectInstructionAction(project.public_id).then((result) => {
+              getProjectInstructionAction(project.publicId).then((result) => {
                 setInstructionText(result.success ? result.instruction : null);
               });
             }}

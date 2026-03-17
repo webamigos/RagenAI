@@ -35,7 +35,7 @@ export const searchDriveFilesQuery = async (
 
   try {
     const params = new URLSearchParams({
-      customer_id: connector.customer_id,
+      customer_id: connector.customerId,
       query,
       page_size: '20',
       mime_type: 'application/vnd.google-apps.document',

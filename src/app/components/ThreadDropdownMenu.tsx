@@ -38,8 +38,8 @@ import { Input } from '@/components/ui/input';
 import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
 
 type ThreadInfo = {
-  public_id: string;
-  is_starred: boolean;
+  publicId: string;
+  isStarred: boolean;
   title?: string | null;
   messages?: { content: string }[];
 };
@@ -69,11 +69,11 @@ export const ThreadDropdownMenu = ({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleStar = async () => {
-    const newStarred = !thread.is_starred;
-    onStarred?.(thread.public_id, newStarred);
-    const result = await toggleThreadStarred(thread.public_id, newStarred);
+    const newStarred = !thread.isStarred;
+    onStarred?.(thread.publicId, newStarred);
+    const result = await toggleThreadStarred(thread.publicId, newStarred);
     if (!result.success) {
-      onStarred?.(thread.public_id, thread.is_starred);
+      onStarred?.(thread.publicId, thread.isStarred);
     }
   };
 
@@ -88,14 +88,14 @@ export const ThreadDropdownMenu = ({
       return;
     }
     setIsRenameOpen(false);
-    onRenamed?.(thread.public_id, renameValue.trim());
-    await renameThread(thread.public_id, renameValue.trim());
+    onRenamed?.(thread.publicId, renameValue.trim());
+    await renameThread(thread.publicId, renameValue.trim());
   };
 
   const handleDelete = async () => {
     setIsDeleteOpen(false);
-    onDeleted?.(thread.public_id);
-    await deleteThread(thread.public_id);
+    onDeleted?.(thread.publicId);
+    await deleteThread(thread.publicId);
   };
 
   return (
@@ -115,12 +115,12 @@ export const ThreadDropdownMenu = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align={align} side={side} className="w-44">
           <DropdownMenuItem onClick={handleStar}>
-            {thread.is_starred ? (
+            {thread.isStarred ? (
               <StarIconSolid className="size-4 text-yellow-500" />
             ) : (
               <StarIconOutline className="size-4" />
             )}
-            {thread.is_starred ? t('unstar') : t('star')}
+            {thread.isStarred ? t('unstar') : t('star')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleRenameStart}>
             <PencilSquareIcon className="size-4" />

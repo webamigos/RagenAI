@@ -17,8 +17,8 @@ export const toggleThreadStarredCommand = async (
 
     const thread = await db.thread.findFirst({
       where: {
-        public_id: threadPublicId,
-        organization_id: orgId,
+        publicId: threadPublicId,
+        organizationId: orgId,
       },
     });
 
@@ -27,9 +27,9 @@ export const toggleThreadStarredCommand = async (
     }
 
     const updated = await db.thread.update({
-      where: { public_id: threadPublicId },
-      data: { is_starred: isStarred },
-      select: { public_id: true, is_starred: true },
+      where: { publicId: threadPublicId },
+      data: { isStarred: isStarred },
+      select: { publicId: true, isStarred: true },
     });
 
     logger.info(
@@ -39,8 +39,8 @@ export const toggleThreadStarredCommand = async (
 
     return {
       success: true,
-      public_id: updated.public_id,
-      is_starred: updated.is_starred,
+      publicId: updated.publicId,
+      isStarred: updated.isStarred,
     };
   } catch (error) {
     logger.error(

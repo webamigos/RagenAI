@@ -104,7 +104,7 @@ export const useNewThread = ({
           throw new Error('Invalid response from server');
         }
 
-        const newThreadId = result.thread.public_id;
+        const newThreadId = result.thread.publicId;
         setStoredThreadId(accessToken, newThreadId);
 
         if (initialMessage) {

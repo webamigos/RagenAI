@@ -58,9 +58,9 @@ export const NewMainSidebarBody = () => {
           <SidebarHeading>{t('starred.title')}</SidebarHeading>
           {starredThreads.map((thread) => (
             <SidebarThreadItem
-              key={thread.public_id}
+              key={thread.publicId}
               thread={thread}
-              isActive={thread.public_id === activeThread}
+              isActive={thread.publicId === activeThread}
               onClose={closeSidebar}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
@@ -85,9 +85,9 @@ export const NewMainSidebarBody = () => {
           <>
             {recentThreads.map((thread) => (
               <SidebarThreadItem
-                key={thread.public_id}
+                key={thread.publicId}
                 thread={thread}
-                isActive={thread.public_id === activeThread}
+                isActive={thread.publicId === activeThread}
                 onClose={closeSidebar}
                 onToggleStar={toggleStar}
                 onRenamed={renameThread}

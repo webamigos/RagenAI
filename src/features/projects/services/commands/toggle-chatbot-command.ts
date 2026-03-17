@@ -6,7 +6,7 @@ import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth
 
 export const toggleChatbotCommand = async (
   projectId: number,
-  enabled: boolean
+  enabled: boolean,
 ) => {
   try {
     const orgId = await getOrgIdOrThrow();
@@ -14,7 +14,7 @@ export const toggleChatbotCommand = async (
     const project = await db.project.findFirst({
       where: {
         id: projectId,
-        organization_id: orgId,
+        organizationId: orgId,
       },
     });
 
@@ -26,7 +26,7 @@ export const toggleChatbotCommand = async (
     await db.project.update({
       where: { id: projectId },
       data: {
-        chatbot_enabled: enabled,
+        chatbotEnabled: enabled,
       },
     });
 

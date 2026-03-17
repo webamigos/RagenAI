@@ -14,12 +14,12 @@ export enum FileListState {
 }
 
 type ProjectFile = {
-  public_id: string;
-  file_name: string;
-  file_size: number;
-  file_type: FileType;
-  created_at: Date | null;
-  updated_at?: Date | null;
+  publicId: string;
+  fileName: string;
+  fileSize: number;
+  fileType: FileType;
+  createdAt: Date | null;
+  updatedAt?: Date | null;
   metadata?: any;
 };
 
@@ -76,7 +76,7 @@ export const useProjectFiles = (
   }, [projectPublicId, onFilesLoaded]);
 
   const handleDeleteFile = useCallback(
-    async (publicFileId: UserFile['public_id']) => {
+    async (publicFileId: UserFile['publicId']) => {
       if (deletingFileId) {
         return;
       }

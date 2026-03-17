@@ -5,23 +5,23 @@ import type { UserFile } from '@/generated/prisma/client';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const getFileDetailsByPublicIdQuery = async (
-  publicFileId: UserFile['public_id']
+  publicFileId: UserFile['publicId'],
 ) => {
   const orgId = await getOrgIdOrThrow();
   return await db.userFile.findFirst({
     where: {
-      organization_id: orgId,
-      public_id: publicFileId,
+      organizationId: orgId,
+      publicId: publicFileId,
     },
   });
 };
 
 export const getOrganizationFilesCountQuery = async (
-  organizationId: string
+  organizationId: string,
 ): Promise<number> => {
   const count = await db.userFile.count({
     where: {
-      organization_id: organizationId,
+      organizationId: organizationId,
     },
   });
   return count;

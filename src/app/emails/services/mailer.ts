@@ -6,7 +6,13 @@ import { PasswordResetEmail } from '../password-reset-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+const getResend = () => {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
+};
 
 const FROM_EMAIL = 'Ragen AI <noreply@updates.webamigos.pl>';
 
@@ -18,7 +24,7 @@ export const sendWelcomeEmail = async ({
   name: string | undefined;
 }) => {
   try {
-    const response = await resend.emails.send({
+    const response = await getResend().emails.send({
       from: FROM_EMAIL,
       to: [to],
       subject: 'Witaj w Ragen!',
@@ -46,7 +52,7 @@ export const sendContactEmail = async ({
   try {
     const attachments = files && files.length > 0 ? files : [];
 
-    const response = await resend.emails.send({
+    const response = await getResend().emails.send({
       from: FROM_EMAIL,
       to: ['hello@webamigos.pl'],
       replyTo: email,
@@ -57,7 +63,7 @@ export const sendContactEmail = async ({
 
     const { subject, text } = getUserResponseEmailContent(title, message);
 
-    const userResponse = await resend.emails.send({
+    const userResponse = await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: `[Ragen Support] ${subject}`,
@@ -75,7 +81,7 @@ export const sendContactEmail = async ({
 export const addEmailToAudience = async (
   resendContactDetails: CreateContactOptions,
 ) => {
-  return await resend.contacts.create(resendContactDetails);
+  return await getResend().contacts.create(resendContactDetails);
 };
 
 export const sendPasswordResetEmailViaMailer = async ({
@@ -86,7 +92,7 @@ export const sendPasswordResetEmailViaMailer = async ({
   resetUrl: string;
 }) => {
   try {
-    const response = await resend.emails.send({
+    const response = await getResend().emails.send({
       from: FROM_EMAIL,
       to: [to],
       subject: 'Zresetuj hasło do Ragen',
@@ -121,7 +127,7 @@ export const sendInvitationEmail = async ({
       'Attempting to send invitation email',
     );
 
-    const response = await resend.emails.send({
+    const response = await getResend().emails.send({
       from: FROM_EMAIL,
       to: [to],
       subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,

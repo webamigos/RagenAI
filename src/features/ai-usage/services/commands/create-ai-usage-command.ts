@@ -18,18 +18,18 @@ export async function createAiUsageCommand(
 
     await db.aiUsage.create({
       data: {
-        organization_id: input.organizationId,
-        project_id: input.projectId ?? null,
-        thread_id: input.threadId ?? null,
-        user_id: input.userId ?? null,
+        organizationId: input.organizationId,
+        projectId: input.projectId ?? null,
+        threadId: input.threadId ?? null,
+        userId: input.userId ?? null,
         step: input.step,
         provider: input.provider,
         model: input.model,
-        input_tokens: input.inputTokens,
-        output_tokens: input.outputTokens,
-        total_tokens: input.totalTokens,
-        estimated_cost: estimatedCost,
-        duration_ms: input.durationMs ?? null,
+        inputTokens: input.inputTokens,
+        outputTokens: input.outputTokens,
+        totalTokens: input.totalTokens,
+        estimatedCost: estimatedCost,
+        durationMs: input.durationMs ?? null,
         metadata: input.metadata ?? undefined,
       },
     });

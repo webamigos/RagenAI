@@ -6,7 +6,7 @@ import { logger } from '@/app/lib/utils/logger';
 import type { PublicProjectDto } from '../../contracts/project.types';
 
 export const getProjectByPublicIdQuery = async (
-  publicId: Project['public_id'],
+  publicId: Project['publicId'],
 ) => {
   try {
     return await getProjectByPublicIdOrThrowQuery(publicId);
@@ -17,36 +17,36 @@ export const getProjectByPublicIdQuery = async (
 };
 
 export const getProjectByPublicIdOrThrowQuery = async (
-  publicId: Project['public_id'],
+  publicId: Project['publicId'],
 ) => {
   return await db.project.findUniqueOrThrow({
     where: {
-      public_id: publicId,
+      publicId: publicId,
     },
     select: {
       id: true,
-      public_id: true,
+      publicId: true,
       title: true,
       threads: {
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         select: {
-          public_id: true,
+          publicId: true,
           title: true,
-          created_at: true,
-          is_starred: true,
+          createdAt: true,
+          isStarred: true,
           messages: {
-            orderBy: { created_at: 'asc' },
+            orderBy: { createdAt: 'asc' },
             take: 1,
             select: { content: true },
           },
         },
       },
-      organization_id: true,
-      is_public: true,
-      access_token: true,
-      published_at: true,
-      chatbot_enabled: true,
-      owner_id: true,
+      organizationId: true,
+      isPublic: true,
+      accessToken: true,
+      publishedAt: true,
+      chatbotEnabled: true,
+      ownerId: true,
     },
   });
 };
@@ -57,22 +57,22 @@ export const getPublicProjectQuery = async (
   try {
     const project = await db.project.findFirst({
       where: {
-        access_token: publicAccessTokenId,
-        is_public: true,
+        accessToken: publicAccessTokenId,
+        isPublic: true,
       },
       select: {
-        organization_id: true,
+        organizationId: true,
         id: true,
         title: true,
       },
     });
 
-    if (!project || !project.organization_id) {
+    if (!project || !project.organizationId) {
       return null;
     }
 
     return {
-      organizationId: project.organization_id,
+      organizationId: project.organizationId,
       projectId: project.id,
       title: project.title,
     };

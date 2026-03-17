@@ -6,16 +6,16 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import type { ThreadContextAction } from '../../contracts/thread.types';
 
 export const removeThreadProjectContextCommand = async (
-  publicThreadId: string
+  publicThreadId: string,
 ) => {
   try {
     const updatedThread = await db.thread.update({
-      where: { public_id: publicThreadId },
-      data: { mentioned_project_id: null },
+      where: { publicId: publicThreadId },
+      data: { mentionedProjectId: null },
       select: {
         id: true,
-        public_id: true,
-        mentioned_project_id: true,
+        publicId: true,
+        mentionedProjectId: true,
       },
     });
 
@@ -23,21 +23,21 @@ export const removeThreadProjectContextCommand = async (
       {
         threadId: publicThreadId,
       },
-      'Thread project context removed successfully'
+      'Thread project context removed successfully',
     );
 
     return updatedThread;
   } catch (error) {
     logger.error(
       { err: error },
-      `Failed to remove thread context ${publicThreadId}`
+      `Failed to remove thread context ${publicThreadId}`,
     );
     throw error;
   }
 };
 
 export const removeThreadContextCommand = async (
-  threadId: string
+  threadId: string,
 ): Promise<ThreadContextAction> => {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
@@ -51,8 +51,8 @@ export const removeThreadContextCommand = async (
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
       where: {
-        public_id: threadId,
-        organization_id: orgId,
+        publicId: threadId,
+        organizationId: orgId,
       },
     });
 
@@ -70,12 +70,12 @@ export const removeThreadContextCommand = async (
         threadId,
         orgId,
       },
-      'Thread context removed successfully'
+      'Thread context removed successfully',
     );
 
     return {
       success: true,
-      mentionedProjectId: updatedThread.mentioned_project_id, // should be null
+      mentionedProjectId: updatedThread.mentionedProjectId, // should be null
     };
   } catch (error) {
     logger.error({ err: error, threadId }, 'Error removing thread context');

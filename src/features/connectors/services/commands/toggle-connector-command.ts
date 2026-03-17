@@ -13,8 +13,8 @@ export const toggleConnectorCommand = async (
     return await db.mcpConnector.update({
       where: {
         id: connectorId,
-        organization_id: organizationId,
-        user_id: userId,
+        organizationId: organizationId,
+        userId: userId,
       },
       data: {
         enabled,

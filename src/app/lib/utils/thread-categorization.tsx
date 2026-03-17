@@ -1,7 +1,7 @@
 import { format, subDays } from 'date-fns';
 
 export type BaseThreadType = {
-  created_at: string | Date;
+  createdAt: string | Date;
 };
 
 export type ThreadCategories<T extends BaseThreadType> = {
@@ -19,7 +19,7 @@ export const categorizeThreadsByDate = <T extends BaseThreadType>(
 
   return threads.reduce(
     (acc, thread) => {
-      const threadDate = format(new Date(thread.created_at), 'EEE MMM dd yyyy');
+      const threadDate = format(new Date(thread.createdAt), 'EEE MMM dd yyyy');
 
       if (threadDate === todayDate) {
         acc.today.push(thread);

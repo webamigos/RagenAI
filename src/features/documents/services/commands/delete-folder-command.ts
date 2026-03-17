@@ -20,8 +20,8 @@ export async function deleteFolderCommand(
     await db.$transaction(async (tx) => {
       // Unassign files from this folder before deleting
       await tx.userFile.updateMany({
-        where: { folder_id: folderId },
-        data: { folder_id: null },
+        where: { folderId: folderId },
+        data: { folderId: null },
       });
 
       await tx.documentFolder.delete({

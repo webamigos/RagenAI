@@ -18,7 +18,7 @@ export async function createCheckoutSession(priceId: string) {
     const orgId = await getOrgIdFromAuthOrThrow();
     if (!orgId) {
       throw new Error(
-        'Cannot create checkout session, no organization id found'
+        'Cannot create checkout session, no organization id found',
       );
     }
 
@@ -53,7 +53,7 @@ export async function createCheckoutSession(priceId: string) {
     });
 
     return {
-      client_secret: checkoutSession.client_secret,
+      clientSecret: checkoutSession.client_secret,
       url: checkoutSession.url,
     };
   } catch (error: any) {

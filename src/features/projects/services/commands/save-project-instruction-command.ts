@@ -1,7 +1,7 @@
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { NotFoundException } from '@/app/api/v1/__logic__/services/api-errors.service';
+import { NotFoundException } from '@/libs/utils/errors';
 
 async function getProjectInfo(projectId: string) {
   if (!projectId) {
@@ -11,11 +11,11 @@ async function getProjectInfo(projectId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
 
   const project = await db.project.findUnique({
-    where: { public_id: projectId },
+    where: { publicId: projectId },
     select: {
       id: true,
-      public_id: true,
-      organization_id: true,
+      publicId: true,
+      organizationId: true,
     },
   });
 
@@ -23,10 +23,10 @@ async function getProjectInfo(projectId: string) {
     throw new NotFoundException('Project not found');
   }
 
-  if (project.organization_id !== orgId) {
+  if (project.organizationId !== orgId) {
     logger.error(
-      { projectId, userOrgId: orgId, projectOrgId: project.organization_id },
-      'Unauthorized: Project does not belong to user organization'
+      { projectId, userOrgId: orgId, projectOrgId: project.organizationId },
+      'Unauthorized: Project does not belong to user organization',
     );
     throw new NotFoundException('Project not found');
   }
@@ -36,13 +36,13 @@ async function getProjectInfo(projectId: string) {
 
 export async function saveProjectInstructionCommand(
   projectId: string,
-  instruction: string
+  instruction: string,
 ): Promise<void> {
   const project = await getProjectInfo(projectId);
 
   await db.projectSettings.upsert({
-    where: { project_id: project.id },
+    where: { projectId: project.id },
     update: { instructions: instruction },
-    create: { project_id: project.id, instructions: instruction },
+    create: { projectId: project.id, instructions: instruction },
   });
 }

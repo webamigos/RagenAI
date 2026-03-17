@@ -88,10 +88,10 @@ export const usePublicAssistantLogic = (
         );
         if (tempMessage) {
           const userMessage = {
-            public_id: `user-${Date.now()}`,
+            publicId: `user-${Date.now()}`,
             role: Role.USER,
             content: tempMessage,
-            created_at: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
           };
 
           sessionStorage.removeItem(SESSION_STORAGE_TEMP_MESSAGE_KEY);
@@ -100,7 +100,7 @@ export const usePublicAssistantLogic = (
             mode: AssistantMode.PUBLIC,
             organizationId,
             messages: response.data.messages,
-            userMessageId: userMessage.public_id,
+            userMessageId: userMessage.publicId,
             userMessage,
             t,
             tChainErrors,
@@ -158,10 +158,10 @@ export const usePublicAssistantLogic = (
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
-      public_id: `user-${Date.now()}`,
+      publicId: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
-      created_at: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
       visitorId: visitorId,
     };
 

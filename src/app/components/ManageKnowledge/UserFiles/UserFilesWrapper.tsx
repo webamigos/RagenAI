@@ -19,7 +19,7 @@ import { type UserFile } from '@/generated/prisma/browser';
 
 export type ModalStateProps = {
   isOpen: boolean;
-  filePublicId: UserFile['public_id'] | null;
+  filePublicId: UserFile['publicId'] | null;
 };
 
 export const FileListWrapper = () => {
@@ -56,7 +56,7 @@ export const FileListWrapper = () => {
 
   const { refreshSettings } = useSettings();
 
-  const toggleModal = (filePublicId: UserFile['public_id'] | null = null) => {
+  const toggleModal = (filePublicId: UserFile['publicId'] | null = null) => {
     setShowModal((prevState) => ({
       ...prevState,
       isOpen: !prevState.isOpen,
@@ -74,13 +74,13 @@ export const FileListWrapper = () => {
 
   const defaultProjectFiles = useMemo(() => {
     return files.filter((file) =>
-      file.file_name.toLowerCase().includes(searchValue.toLowerCase()),
+      file.fileName.toLowerCase().includes(searchValue.toLowerCase()),
     );
   }, [files, searchValue]);
 
   const handleDelete = async (
-    filePublicId: UserFile['public_id'],
-    fileName: UserFile['file_name'],
+    filePublicId: UserFile['publicId'],
+    fileName: UserFile['fileName'],
   ) => {
     try {
       setDeleteLoading(true);

@@ -16,16 +16,16 @@ export const getFirefliesConnectorQuery = async (
 ): Promise<FirefliesConnectorResult> => {
   const connector = await db.mcpConnector.findUnique({
     where: {
-      organization_id_user_id_provider: {
-        organization_id: organizationId,
-        user_id: userId,
+      organizationId_userId_provider: {
+        organizationId: organizationId,
+        userId: userId,
         provider: McpConnectorProvider.FIREFLIES,
       },
     },
     select: {
       enabled: true,
       status: true,
-      customer_id: true,
+      customerId: true,
     },
   });
 
@@ -39,15 +39,15 @@ export const getFirefliesConnectorQuery = async (
 
   try {
     const token = await ragenAuthClient.getToken(
-      connector.customer_id,
+      connector.customerId,
       McpConnectorProvider.FIREFLIES,
     );
 
-    if (!token?.access_token) {
+    if (!token?.accessToken) {
       return null;
     }
 
-    return { apiKey: token.access_token };
+    return { apiKey: token.accessToken };
   } catch (err) {
     logger.warn('Failed to retrieve Fireflies token from vault', {
       error: err,

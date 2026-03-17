@@ -110,10 +110,7 @@ const MessageContent = ({
       />
       {role === 'ASSISTANT' && message && (
         <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <RateAnswer
-            initialRated={message.rate}
-            publicId={message.public_id}
-          />
+          <RateAnswer initialRated={message.rate} publicId={message.publicId} />
           <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
           {!isPublicAccess && (
             <ReadAnswer content={content} voiceId={voiceId!} />
@@ -121,9 +118,9 @@ const MessageContent = ({
         </div>
       )}
       {role === 'USER' &&
-        message?.message_type === 'VOICE' &&
-        message.voice_duration_seconds && (
-          <DurationTime messageDurationTime={message.voice_duration_seconds} />
+        message?.messageType === 'VOICE' &&
+        message.voiceDurationSeconds && (
+          <DurationTime messageDurationTime={message.voiceDurationSeconds} />
         )}
     </div>
   );
@@ -143,7 +140,7 @@ export const ChatOutput = ({
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
       <div className="flex flex-col gap-2">
         {messages.map((message, messageIndex) => (
-          <div key={`message-${message.public_id}-${messageIndex}`}>
+          <div key={`message-${message.publicId}-${messageIndex}`}>
             {message.role === 'USER' &&
               message.attachments &&
               message.attachments.length > 0 && (

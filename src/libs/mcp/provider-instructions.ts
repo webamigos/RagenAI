@@ -10,7 +10,7 @@ const HUBSPOT_INSTRUCTIONS = `For HubSpot (CRM):
 - INDEX DELAY: HubSpot search results may have a slight delay for very recently created or modified records (up to a few hours). When showing recent records, add a brief note that very recent changes may not appear immediately in search results. If the user asks about a specific contact/deal that doesn't appear in search, try searching by email/name using the "query" parameter which uses a different, more real-time lookup.`;
 
 const CLICKUP_INSTRUCTIONS = `For ClickUp:
-- SORTING: When listing tasks, sort by updated_at DESC by default to show most recently active items first.
+- SORTING: When listing tasks, sort by updatedAt DESC by default to show most recently active items first.
 - "MY TASKS": When the user says "my tasks" or uses first-person language, first call clickup_get_workspace_members to find the authenticated user's member ID, then use that ID as an assignee filter in clickup_search. If clickup_resolve_assignees is available, you can try it with the user's name — but do NOT use ["me"] as it may not be supported.
 - ASSET TYPE: When the user asks about tasks specifically, filter by asset_types: ["task"]. When asking about docs, use ["doc"].
 - STATUS FILTERING: For "current", "active", or "in progress" work, filter by task_statuses: ["active"]. For "todo" or "backlog", use ["unstarted"]. For "done" or "completed", use ["done", "closed"]. Don't filter by status when user asks for "all" tasks.
@@ -34,7 +34,7 @@ const GMAIL_INSTRUCTIONS = `For Gmail:
 - SEARCH SYNTAX: Use Gmail search operators: from:, to:, subject:, is:unread, is:starred, has:attachment, after:YYYY/M/D, before:YYYY/M/D. Combine with spaces for AND, OR for alternatives.
 - DATE QUERIES: For "emails from today", use after: with today's date in YYYY/M/D format. For "emails this week", calculate the Monday date.
 - THREADS: When the user asks about a conversation or wants full context, use gmail_read_thread with the threadId from search results, not just gmail_read_message.
-- DRAFTS: When user says "draft a reply" or "compose an email", use gmail_create_draft — never claim to send emails directly. Make clear it creates a draft, not a sent message.`;
+- READ-ONLY: Gmail access is read-only. You can search and read emails but cannot send, draft, or modify messages.`;
 
 const GOOGLE_ANALYTICS_INSTRUCTIONS = `For Google Analytics (GA4):
 - PROPERTY ID: All Analytics tools require a property_id (numeric GA4 property ID). If the user hasn't provided it, ask them for it. Do NOT guess.
