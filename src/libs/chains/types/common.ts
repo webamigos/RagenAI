@@ -33,12 +33,12 @@ export interface ChainConfig {
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   tracking?: ChainTrackingContext;
+  threadDocuments?: import('@/features/documents/contracts/document.types').ThreadDocumentUI[];
 }
 
 export interface RagChainConfig extends ChainConfig {
   maxDocumentsToRetrieve?: number;
   metadataFilter?: object;
-  threadDocuments?: import('@/features/documents/contracts/document.types').ThreadDocumentUI[];
 }
 
 export interface ChainUsage {

@@ -6,11 +6,25 @@ import {
 import type { ConversationChainParams } from '../types/conversation';
 import { MAX_TOOL_STEPS } from '../types/common';
 import type { BaseChatChainOutput } from '../types/common';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import {
   sanitizeAndValidateInput,
   moderateContent,
 } from '../utils/common-operations';
 import { mapFullStream } from '../utils/stream-mapper';
+
+function formatThreadDocuments(docs: ThreadDocumentUI[]): string {
+  const withContent = docs.filter((d) => d.content?.trim());
+  if (withContent.length === 0) {
+    return '';
+  }
+
+  const formatted = withContent
+    .map((doc) => `[${doc.name}]:\n${doc.content}`)
+    .join('\n\n');
+
+  return `\n\n<thread_documents>\n${formatted}\n</thread_documents>\n\nIMPORTANT: The user has attached the documents above. Use them to answer the question. If the information is found in thread_documents, use it first.`;
+}
 
 export const conversationChain = async ({
   models,
@@ -42,9 +56,15 @@ export const conversationChain = async ({
       const hasTools =
         config?.mcpTools && Object.keys(config.mcpTools).length > 0;
 
-      const effectiveSystem = config?.mcpContext
-        ? `${system}\n\n${config.mcpContext}`
-        : system;
+      let effectiveSystem = system;
+
+      if (config?.threadDocuments && config.threadDocuments.length > 0) {
+        effectiveSystem += formatThreadDocuments(config.threadDocuments);
+      }
+
+      if (config?.mcpContext) {
+        effectiveSystem += `\n\n${config.mcpContext}`;
+      }
 
       const result = streamText({
         model: models.answerGenerator,

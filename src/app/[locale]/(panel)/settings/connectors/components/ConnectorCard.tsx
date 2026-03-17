@@ -180,10 +180,10 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     try {
       const result = await initiateConnection(provider.provider);
 
-      const mcpServerBaseUrl = provider.mcpServerUrl;
+      const mcpServerBaseUrl = provider.authBaseUrl || provider.mcpServerUrl;
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       const authParams = new URLSearchParams({
-        customerId: result.customerId,
+        customer_id: result.customerId,
         redirect_uri: callbackUrl,
       });
       if (provider.scopes?.length) {

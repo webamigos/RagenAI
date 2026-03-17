@@ -133,15 +133,85 @@ export class RagenAuthClient {
     provider: string,
     data: StoreTokenData,
   ): Promise<void> {
-    await this.request<void>('PUT', this.tokenPath(customerId, provider), data);
+    // Convert to snake_case for the vault API
+    const payload: Record<string, unknown> = {
+      access_token: data.accessToken,
+    };
+    if (data.refreshToken) {
+      payload.refresh_token = data.refreshToken;
+    }
+    if (data.clientId) {
+      payload.client_id = data.clientId;
+    }
+    if (data.clientSecret) {
+      payload.client_secret = data.clientSecret;
+    }
+    if (data.codeVerifier) {
+      payload.code_verifier = data.codeVerifier;
+    }
+    if (data.tokenType) {
+      payload.token_type = data.tokenType;
+    }
+    if (data.expires_at) {
+      payload.expires_at = data.expires_at;
+    }
+    if (data.scopes) {
+      payload.scopes = data.scopes;
+    }
+    if (data.token_uri) {
+      payload.token_uri = data.token_uri;
+    }
+
+    await this.request<void>(
+      'PUT',
+      this.tokenPath(customerId, provider),
+      payload,
+    );
     logger.info({ provider }, 'Stored token in ragen-token-vault');
   }
 
   async getToken(customerId: string, provider: string): Promise<TokenResponse> {
-    return this.request<TokenResponse>(
+    // Vault returns snake_case, convert to camelCase
+    const raw = await this.request<Record<string, unknown>>(
       'GET',
       this.tokenPath(customerId, provider),
     );
+    const accessToken =
+      (raw.access_token as string) ?? (raw.accessToken as string);
+    if (!accessToken) {
+      throw new Error(
+        `Token response missing access_token for provider ${provider}`,
+      );
+    }
+    return {
+      accessToken,
+      refreshToken:
+        (raw.refresh_token as string | null) ??
+        (raw.refreshToken as string | null) ??
+        null,
+      clientId:
+        (raw.client_id as string | null) ??
+        (raw.clientId as string | null) ??
+        null,
+      clientSecret:
+        (raw.client_secret as string | null) ??
+        (raw.clientSecret as string | null) ??
+        null,
+      codeVerifier:
+        (raw.code_verifier as string | null) ??
+        (raw.codeVerifier as string | null) ??
+        null,
+      tokenType:
+        (raw.token_type as string | null) ??
+        (raw.tokenType as string | null) ??
+        null,
+      expires_at: (raw.expires_at as string | null) ?? null,
+      scopes: (raw.scopes as string[] | null) ?? null,
+      token_uri:
+        (raw.token_uri as string | null) ??
+        (raw.tokenUri as string | null) ??
+        null,
+    };
   }
 
   async deleteToken(customerId: string, provider: string): Promise<void> {

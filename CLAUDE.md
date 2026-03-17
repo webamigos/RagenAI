@@ -185,7 +185,7 @@ Users can connect external services via Settings > Connectors. These are powered
 | ClickUp | Claude AI MCP | search, create/get/update_task, create/get/update_list, create/get/update_folder, docs, comments, time tracking |
 | Gmail | Claude AI MCP | search_messages, read_message, read_thread, create_draft, list_labels, get_profile |
 
-**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + FastAPI Python server deployed on Railway. Per-user OAuth with PKCE, tokens stored in Ragen Token Vault (centralized vault). All Google tools (Calendar, Analytics, Ads, Drive) require `property_id` (GA4) or `ads_customer_id` (Ads) which the user must provide.
+**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + FastAPI Python server deployed on Railway. MCP protocol on port 9001 (`/mcp`), HTTP/OAuth on port 8001. Per-user OAuth with PKCE, tokens stored in Ragen Token Vault (centralized vault). All Google tools (Calendar, Analytics, Ads, Drive) require `property_id` (GA4) or `ads_customer_id` (Ads) which the user must provide. Env vars: `MCP_GOOGLE_SERVER_URL` (MCP endpoint, e.g. `http://localhost:9001/mcp`), `MCP_GOOGLE_AUTH_URL` (OAuth endpoint, e.g. `http://localhost:8001` — falls back to `MCP_GOOGLE_SERVER_URL` if not set).
 
 ### Settings Pages
 

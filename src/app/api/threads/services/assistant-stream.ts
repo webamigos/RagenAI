@@ -456,6 +456,12 @@ export async function streamEvents({
 
           if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
+              const inlineThreadDocuments = userMessage.threadDocuments || [];
+              const conversationThreadDocuments = mergeThreadDocuments(
+                dbThreadDocuments,
+                inlineThreadDocuments,
+              );
+
               chainOutput = await initializeConversationChain({
                 settings: {
                   ...effectiveSettings,
@@ -469,6 +475,7 @@ export async function streamEvents({
                   projectId: threadRecord.projectId,
                   userId,
                 },
+                threadDocuments: conversationThreadDocuments,
               });
             } else {
               const projectIdToUse =

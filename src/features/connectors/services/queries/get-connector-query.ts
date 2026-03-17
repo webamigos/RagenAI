@@ -3,6 +3,7 @@ import {
   type McpConnectorProvider,
   McpConnectorStatus,
 } from '@/generated/prisma/client';
+import { getProviderDefinition } from '../../constants/providers';
 
 export type ConnectorLookupResult = {
   mcpServerUrl: string;
@@ -41,8 +42,11 @@ export const getConnectorQuery = async (
     return null;
   }
 
-  // mcpServerUrl has /mcp suffix (for MCP protocol), strip it for REST endpoints
-  const baseUrl = connector.mcpServerUrl.replace(/\/mcp$/, '');
+  // Use authBaseUrl from provider definition for REST endpoints (HTTP API),
+  // falling back to mcpServerUrl with /mcp suffix stripped
+  const providerDef = getProviderDefinition(provider);
+  const baseUrl =
+    providerDef?.authBaseUrl || connector.mcpServerUrl.replace(/\/mcp$/, '');
 
   return {
     mcpServerUrl: connector.mcpServerUrl,
