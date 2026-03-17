@@ -1,7 +1,13 @@
-import { createContext, useReducer, useEffect } from 'react';
+import { createContext, useReducer, useEffect, useCallback } from 'react';
 import { getUserFiles } from '@/app/actions';
 import { type UserFileType } from '@/features/documents/contracts/document.types';
 import { type UserFile } from '@/generated/prisma/browser';
+import { NOTIFICATIONS_DEFAULT_CHANNEL } from '@/app/lib/services/notifications/config';
+import { getPusherClient } from '@/app/lib/services/notifications/pusher-client';
+import {
+  NotificationEvent,
+  type NotificationMessage,
+} from '@/app/lib/services/notifications/types';
 
 type State = {
   files: UserFileType[];
@@ -67,7 +73,7 @@ export const FilesContext = createContext<FilesContextType | undefined>(
 export const FilesProvider = ({ children }: Props) => {
   const [state, dispatch] = useReducer(filesReducer, initialState);
 
-  const refreshFiles = async () => {
+  const refreshFiles = useCallback(async () => {
     dispatch({ type: 'LOAD_START' });
     try {
       const { files } = await getUserFiles();
@@ -75,11 +81,33 @@ export const FilesProvider = ({ children }: Props) => {
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshFiles();
-  }, []);
+  }, [refreshFiles]);
+
+  // Auto-refresh file list when worker sends a forceRefresh notification
+  useEffect(() => {
+    const pusher = getPusherClient();
+    if (!pusher) {
+      return;
+    }
+
+    const channel = pusher.subscribe(NOTIFICATIONS_DEFAULT_CHANNEL);
+
+    const handleNotification = (notification: NotificationMessage) => {
+      if (notification.meta?.forceRefresh) {
+        refreshFiles();
+      }
+    };
+
+    channel.bind(NotificationEvent.SUCCESS_EVENT, handleNotification);
+
+    return () => {
+      channel.unbind(NotificationEvent.SUCCESS_EVENT, handleNotification);
+    };
+  }, [refreshFiles]);
 
   const addFile = (newFile: UserFileType) => {
     dispatch({ type: 'ADD_FILE', payload: newFile });
