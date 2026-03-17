@@ -60,11 +60,14 @@ const envSchema = z.object({
   // Firecrawl
   FIRECRAWL_API_KEY: z.string(),
 
-  // Pusher
-  PUSHER_APP_ID: z.string(),
-  PUSHER_KEY: z.string(),
-  PUSHER_SECRET: z.string(),
-  NEXT_PUBLIC_PUSHER_KEY: z.string(),
+  // Pusher (optional — not needed for on-premise SSE mode)
+  PUSHER_APP_ID: z.string().optional(),
+  PUSHER_KEY: z.string().optional(),
+  PUSHER_SECRET: z.string().optional(),
+  NEXT_PUBLIC_PUSHER_KEY: z.string().optional(),
+
+  // Worker auth (used by SSE push endpoint when Pusher is not configured)
+  WORKER_SECRET_KEY: z.string().optional(),
 });
 
 export const validateEnvs = () => envSchema.safeParse(process.env);
