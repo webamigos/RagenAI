@@ -70,34 +70,41 @@ const envSchema = z
     // Worker auth (used by SSE push endpoint when Pusher is not configured)
     WORKER_SECRET_KEY: z.string().optional(),
   })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  .superRefine((env: Record<string, string | undefined>, ctx: any) => {
-    const pusherVars = [
-      env.PUSHER_APP_ID,
-      env.PUSHER_KEY,
-      env.PUSHER_SECRET,
-      env.NEXT_PUBLIC_PUSHER_KEY,
-    ];
-    const hasSomePusher = pusherVars.some(Boolean);
-    const hasAllPusher = pusherVars.every(Boolean);
+  .superRefine(
+    (
+      env: Record<string, string | undefined>,
+      ctx: import('zod').RefinementCtx,
+    ) => {
+      const isSet = (v: string | undefined) =>
+        typeof v === 'string' && v.trim() !== '';
 
-    if (hasSomePusher && !hasAllPusher) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'Pusher requires all four vars: PUSHER_APP_ID, PUSHER_KEY, PUSHER_SECRET, NEXT_PUBLIC_PUSHER_KEY',
-        path: ['PUSHER_APP_ID'],
-      });
-    }
+      const pusherVars = [
+        env.PUSHER_APP_ID,
+        env.PUSHER_KEY,
+        env.PUSHER_SECRET,
+        env.NEXT_PUBLIC_PUSHER_KEY,
+      ];
+      const hasSomePusher = pusherVars.some(isSet);
+      const hasAllPusher = pusherVars.every(isSet);
 
-    if (!hasAllPusher && !env.WORKER_SECRET_KEY) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'WORKER_SECRET_KEY is required when Pusher is not configured (SSE mode)',
-        path: ['WORKER_SECRET_KEY'],
-      });
-    }
-  });
+      if (hasSomePusher && !hasAllPusher) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'Pusher requires all four vars: PUSHER_APP_ID, PUSHER_KEY, PUSHER_SECRET, NEXT_PUBLIC_PUSHER_KEY',
+          path: ['PUSHER_APP_ID'],
+        });
+      }
+
+      if (!hasAllPusher && !isSet(env.WORKER_SECRET_KEY)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'WORKER_SECRET_KEY is required when Pusher is not configured (SSE mode)',
+          path: ['WORKER_SECRET_KEY'],
+        });
+      }
+    },
+  );
 
 export const validateEnvs = () => envSchema.safeParse(process.env);

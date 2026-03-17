@@ -1,14 +1,16 @@
 import { type NextRequest } from 'next/server';
 
+import { getSession } from '@/lib/auth-guards';
+import { logger } from '@/app/lib/utils/logger';
 import { subscribe } from '@/app/lib/services/notifications/sse-bus';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-type SSEClient = {
+interface SSEClient {
   controller: ReadableStreamDefaultController;
   encoder: TextEncoder;
-};
+}
 
 function broadcastToClients(
   clients: Set<SSEClient>,
@@ -20,7 +22,8 @@ function broadcastToClients(
   for (const client of clients) {
     try {
       client.controller.enqueue(client.encoder.encode(payload));
-    } catch {
+    } catch (error) {
+      logger.warn('Failed to send SSE broadcast to client: %o', error);
       clients.delete(client);
     }
   }
@@ -33,6 +36,11 @@ subscribe(({ event, data }) => {
 });
 
 export async function GET(request: NextRequest) {
+  const session = await getSession();
+  if (!session?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -47,7 +55,8 @@ export async function GET(request: NextRequest) {
       const keepAlive = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': ping\n\n'));
-        } catch {
+        } catch (error) {
+          logger.warn('SSE keep-alive failed, removing client: %o', error);
           clearInterval(keepAlive);
           clients.delete(client);
         }
