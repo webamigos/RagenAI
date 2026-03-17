@@ -58,7 +58,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
     const results = await index.search(query, {
       limit: k,
       hybrid: {
-        semanticRatio: 1.0,
+        semanticRatio: 0.7,
         embedder: EMBEDDER_NAME,
       },
       vector: queryEmbedding,
@@ -166,6 +166,14 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
       'metadata.organization_id',
     ]);
     await this.client.waitForTask(filterableTask.taskUid);
+
+    // Configure searchable attributes — include file_name for keyword matching
+    const searchableTask = await index.updateSearchableAttributes([
+      'content',
+      'pageContent',
+      'metadata.file_name',
+    ]);
+    await this.client.waitForTask(searchableTask.taskUid);
 
     // Restrict displayed attributes to avoid leaking internal IDs and vectors
     const displayedTask = await index.updateDisplayedAttributes([
