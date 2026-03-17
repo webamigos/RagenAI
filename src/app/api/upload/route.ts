@@ -156,10 +156,10 @@ export async function POST(request: NextRequest) {
           args: [
             {
               ...fileRecord,
-              project_public_id: projectRecord?.publicId ?? null,
-              organization_slug: org.slug,
-              organization_public_id: org.publicId,
-              user_email: user?.email ?? undefined,
+              projectPublicId: projectRecord?.publicId ?? null,
+              organizationSlug: org.slug,
+              organizationPublicId: org.publicId,
+              userEmail: user?.email ?? undefined,
               userId: user?.id ?? undefined,
             },
           ],
