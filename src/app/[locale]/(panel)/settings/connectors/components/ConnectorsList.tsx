@@ -13,12 +13,6 @@ type ConnectorsListProps = {
 
 const COMING_SOON_PROVIDERS = [
   {
-    key: 'GMAIL',
-    name: 'Gmail',
-    descriptionKey: 'gmail-description' as const,
-    icon: '/assets/connectors/gmail.svg',
-  },
-  {
     key: 'NOTION',
     name: 'Notion',
     descriptionKey: 'notion-description' as const,

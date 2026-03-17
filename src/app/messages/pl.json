@@ -449,7 +449,7 @@
       "api-key-help-link": "Dowiedz się, jak uzyskać klucz API.",
       "api-key-error": "Nie udało się zarejestrować klucza API. Sprawdź klucz i spróbuj ponownie.",
       "coming-soon": "Wkrótce",
-      "gmail-description": "Wyszukuj e-maile, czytaj wiadomości i twórz wersje robocze.",
+      "gmail-description": "Wyszukuj e-maile i czytaj wiadomości.",
       "notion-description": "Wyszukuj strony, bazy danych i zarządzaj treścią.",
       "providers": {
         "GOOGLE_DRIVE": {
@@ -479,6 +479,10 @@
         "FIREFLIES": {
           "name": "Fireflies.ai",
           "description": "Przeszukuj transkrypcje spotkań, podsumowania i zadania do wykonania."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Wyszukuj e-maile i czytaj wiadomości."
         }
       }
     }

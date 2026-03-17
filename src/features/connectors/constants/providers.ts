@@ -38,6 +38,16 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     ],
   },
   {
+    provider: McpConnectorProvider.GMAIL,
+    name: 'Gmail',
+    description: 'Search emails and read messages.',
+    icon: 'mail',
+    mcpServerUrl: MCP_GOOGLE_SERVER_URL,
+    authBaseUrl: MCP_GOOGLE_AUTH_URL,
+    authPath: '/auth/google',
+    scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
+  },
+  {
     provider: McpConnectorProvider.CLICKUP,
     name: 'ClickUp',
     description: 'Manage tasks, projects, and workspaces.',
