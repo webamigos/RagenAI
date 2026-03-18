@@ -113,7 +113,7 @@ export const KnowledgeBasePickerDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
         </DialogHeader>
@@ -129,7 +129,7 @@ export const KnowledgeBasePickerDialog = ({
           />
         </div>
 
-        <div className="max-h-64 overflow-y-auto -mx-1">
+        <div className="h-96 overflow-y-auto -mx-1">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />

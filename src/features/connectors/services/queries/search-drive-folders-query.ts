@@ -1,33 +1,18 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getDriveConnectorQuery } from './get-drive-connector-query';
 import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
+import type {
+  DriveFile,
+  DriveSearchResponse,
+} from './search-drive-files-query';
 
-export type DriveFile = {
-  id: string;
-  name: string;
-  mime_type: string;
-  icon: string;
-  modified_time: string;
-  size: number | null;
-  web_view_link: string;
-  icon_link: string;
-  owner: string;
-};
+export type { DriveFile, DriveSearchResponse };
 
-export type DriveSearchResponse = {
-  success: boolean;
-  files?: DriveFile[];
-  count?: number;
-  next_page_token?: string;
-  error?: string;
-};
-
-export const searchDriveFilesQuery = async (
+export const searchDriveFoldersQuery = async (
   organizationId: string,
   userId: string,
   query: string = '',
   pageToken?: string,
-  mimeType: string = 'application/vnd.google-apps.document',
 ): Promise<DriveSearchResponse> => {
   const connector = await getDriveConnectorQuery(organizationId, userId);
   if (!connector) {
@@ -39,10 +24,8 @@ export const searchDriveFilesQuery = async (
       customer_id: connector.customerId,
       query,
       page_size: '20',
+      mime_type: 'application/vnd.google-apps.folder',
     });
-    if (mimeType) {
-      params.set('mime_type', mimeType);
-    }
     if (pageToken) {
       params.set('page_token', pageToken);
     }
@@ -53,21 +36,24 @@ export const searchDriveFilesQuery = async (
     if (!response.ok) {
       logger.error(
         { status: response.status },
-        'Google Drive search returned error status',
+        'Google Drive folder search returned error status',
       );
-      return { success: false, error: 'Failed to search Google Drive' };
+      return { success: false, error: 'Failed to search Google Drive folders' };
     }
     const data: DriveSearchResponse = await response.json();
     if (!data.success) {
-      logger.error({ error: data.error }, 'Google Drive search API error');
+      logger.error(
+        { error: data.error },
+        'Google Drive folder search API error',
+      );
       return {
         success: false,
-        error: data.error || 'Failed to search Google Drive',
+        error: data.error || 'Failed to search Google Drive folders',
       };
     }
     return data;
   } catch (error) {
-    logger.error({ err: error }, 'Error searching Google Drive');
-    return { success: false, error: 'Failed to search Google Drive' };
+    logger.error({ err: error }, 'Error searching Google Drive folders');
+    return { success: false, error: 'Failed to search Google Drive folders' };
   }
 };

@@ -613,7 +613,25 @@
     "upload-file": "Upload file",
     "from-knowledge-base": "From Knowledge Base",
     "from-google-drive": "From Google Drive",
-    "from-fireflies": "From Fireflies"
+    "from-fireflies": "From Fireflies",
+    "from-google-drive-folder": "From Google Drive folder"
+  },
+  "drive-folder-picker": {
+    "title": "Select Google Drive folder",
+    "search-placeholder": "Search folders...",
+    "no-folders": "No folders found",
+    "no-results": "No folders match your search",
+    "no-files": "This folder is empty",
+    "select-files-title": "Select files",
+    "back": "Back",
+    "attach-selected": "Attach selected",
+    "import-selected": "Import selected",
+    "loading-content": "Loading content...",
+    "progress": "Loading {current}/{total}...",
+    "select-all": "Select all",
+    "deselect-all": "Deselect all",
+    "fetch-error": "Failed to load folder content",
+    "use-search-hint": "Use the search box above to find more folders"
   },
   "drive-picker": {
     "title": "Select from Google Drive",
@@ -621,7 +639,13 @@
     "no-results": "No documents match your search",
     "no-files": "No documents found",
     "fetch-error": "Failed to load document content",
-    "use-search-hint": "Use the search box above to find more documents"
+    "use-search-hint": "Use the search box above to find more documents",
+    "folders": "Folders",
+    "show-folders": "Show folders",
+    "select-all": "Select all",
+    "deselect-all": "Deselect all",
+    "attach-selected": "Attach {count} files",
+    "attach-progress": "Loading {current}/{total}..."
   },
   "fireflies-picker": {
     "title": "Select from Fireflies",
@@ -900,6 +924,8 @@
       "remove-file": "Remove file",
       "add-files": "Add files",
       "from-knowledge-base": "From Knowledge Base",
+      "from-google-drive": "From Google Drive",
+      "importing-from-drive": "Importing from Google Drive...",
       "drop-to-upload": "Drop files to upload",
       "uploading": "Uploading..."
     },
