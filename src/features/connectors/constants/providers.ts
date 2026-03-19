@@ -76,6 +76,15 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     authType: 'external_mcp',
     oauthClientId: process.env.SLACK_MCP_CLIENT_ID,
     oauthClientSecret: process.env.SLACK_MCP_CLIENT_SECRET,
+    scopes: [
+      'search:read.public',
+      'search:read.private',
+      'channels:history',
+      'groups:history',
+      'mpim:history',
+      'im:history',
+      'users:read',
+    ],
   },
   {
     provider: McpConnectorProvider.FIREFLIES,
