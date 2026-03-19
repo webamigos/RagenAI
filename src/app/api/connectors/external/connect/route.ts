@@ -65,6 +65,9 @@ export async function GET(request: NextRequest) {
     });
     const result = await mcpAuth(oauthProvider, {
       serverUrl: providerDef.mcpServerUrl,
+      ...(providerDef.scopes?.length && {
+        scope: providerDef.scopes.join(' '),
+      }),
     });
 
     if (result === 'AUTHORIZED') {
