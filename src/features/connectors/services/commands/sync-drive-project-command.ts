@@ -132,12 +132,32 @@ export const syncDriveProjectCommand = async (
         newContent,
       );
 
+      // Delete existing document + reset embedding status so workflow can re-create
+      if (userFile.documentId) {
+        await db.userDocument
+          .delete({
+            where: { id: userFile.documentId },
+          })
+          .catch(() => {
+            // Document may not exist, ignore
+          });
+      }
+
       await db.userFile.update({
         where: { id: userFile.id, organizationId: orgId },
         data: {
           fileSize: newContent.byteLength,
           isUploaded: true,
           uploadedAt: new Date(),
+          documentId: null,
+          parsingStatus: 'NOT_STARTED',
+          parsingStartedAt: null,
+          parsingCompletedAt: null,
+          parsingFailedAt: null,
+          embeddingStatus: 'NOT_STARTED',
+          embeddingStartedAt: null,
+          embeddingCompletedAt: null,
+          embeddingFailedAt: null,
         },
       });
 

@@ -171,6 +171,17 @@ export const syncDriveFolderCommand = async (
           fileContent,
         );
 
+        // Delete existing document so workflow can re-create it
+        if (existingFile.documentId) {
+          await db.userDocument
+            .delete({
+              where: { id: existingFile.documentId },
+            })
+            .catch(() => {
+              // Document may not exist, ignore
+            });
+        }
+
         await db.userFile.update({
           where: { id: existingFile.id, organizationId: orgId },
           data: {
@@ -185,6 +196,15 @@ export const syncDriveFolderCommand = async (
             },
             isUploaded: true,
             uploadedAt: new Date(),
+            documentId: null,
+            parsingStatus: 'NOT_STARTED',
+            parsingStartedAt: null,
+            parsingCompletedAt: null,
+            parsingFailedAt: null,
+            embeddingStatus: 'NOT_STARTED',
+            embeddingStartedAt: null,
+            embeddingCompletedAt: null,
+            embeddingFailedAt: null,
           },
         });
 
