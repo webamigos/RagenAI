@@ -12,6 +12,8 @@ const MCP_HUBSPOT_SERVER_URL =
   process.env.MCP_HUBSPOT_SERVER_URL || 'https://mcp.hubspot.com';
 const MCP_FIREFLIES_SERVER_URL =
   process.env.MCP_FIREFLIES_SERVER_URL || 'https://api.fireflies.ai/mcp';
+const MCP_SLACK_SERVER_URL =
+  process.env.MCP_SLACK_SERVER_URL || 'https://mcp.slack.com/mcp';
 
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
@@ -64,6 +66,26 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     authType: 'external_mcp',
     oauthClientId: process.env.HUBSPOT_MCP_CLIENT_ID,
     oauthClientSecret: process.env.HUBSPOT_MCP_CLIENT_SECRET,
+  },
+  {
+    provider: McpConnectorProvider.SLACK,
+    name: 'Slack',
+    description: 'Search messages, channels, and send messages.',
+    icon: 'message-square',
+    mcpServerUrl: MCP_SLACK_SERVER_URL,
+    authType: 'external_mcp',
+    oauthClientId: process.env.SLACK_MCP_CLIENT_ID,
+    oauthClientSecret: process.env.SLACK_MCP_CLIENT_SECRET,
+    useUserScope: true,
+    scopes: [
+      'search:read.public',
+      'search:read.private',
+      'channels:history',
+      'groups:history',
+      'mpim:history',
+      'im:history',
+      'users:read',
+    ],
   },
   {
     provider: McpConnectorProvider.FIREFLIES,

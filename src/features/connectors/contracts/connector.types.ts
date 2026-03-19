@@ -29,6 +29,8 @@ export type ProviderDefinition = {
   scopes?: string[];
   oauthClientId?: string;
   oauthClientSecret?: string;
+  /** If true, rewrites `scope` → `user_scope` in the OAuth authorization URL (required by Slack). */
+  useUserScope?: boolean;
 };
 
 export type { McpConnectorProvider, McpConnectorStatus };

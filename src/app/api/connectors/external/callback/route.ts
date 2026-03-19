@@ -15,6 +15,64 @@ import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Slack's token response nests user tokens under `authed_user` instead of the
+ * standard top-level OAuth2 format. This function exchanges the code manually
+ * and stores the tokens via the provider.
+ */
+async function exchangeSlackToken(
+  oauthProvider: RagenAuthOAuthClientProvider,
+  code: string,
+  callbackUrl: string,
+  clientId: string,
+  clientSecret: string,
+) {
+  const codeVerifier = await oauthProvider.codeVerifier();
+
+  const params = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: callbackUrl,
+    client_id: clientId,
+    client_secret: clientSecret,
+    code_verifier: codeVerifier,
+  });
+
+  const response = await fetch('https://slack.com/api/oauth.v2.user.access', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+    },
+    body: params,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Slack token exchange HTTP error: ${response.status}`);
+  }
+
+  const data = await response.json();
+
+  if (!data.ok) {
+    throw new Error(`Slack token exchange error: ${data.error}`);
+  }
+
+  // Slack v2 user token response: access_token is at the top level for v2_user endpoint
+  const accessToken = data.access_token || data.authed_user?.access_token;
+  const tokenType = data.token_type || data.authed_user?.token_type || 'bearer';
+  const refreshToken = data.refresh_token || data.authed_user?.refresh_token;
+
+  if (!accessToken) {
+    throw new Error('No access_token in Slack token response');
+  }
+
+  await oauthProvider.saveTokens({
+    access_token: accessToken,
+    token_type: tokenType,
+    refresh_token: refreshToken,
+  });
+}
+
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
   const provider = request.nextUrl.searchParams.get(
@@ -52,13 +110,25 @@ export async function GET(request: NextRequest) {
       fixedClientSecret: providerDef.oauthClientSecret,
     });
 
-    const result = await mcpAuth(oauthProvider, {
-      serverUrl: providerDef.mcpServerUrl,
-      authorizationCode: code,
-    });
+    // Slack uses a non-standard token response (nested under authed_user),
+    // so we handle the token exchange manually instead of via mcpAuth.
+    if (providerDef.useUserScope) {
+      await exchangeSlackToken(
+        oauthProvider,
+        code,
+        callbackUrl,
+        providerDef.oauthClientId!,
+        providerDef.oauthClientSecret!,
+      );
+    } else {
+      const result = await mcpAuth(oauthProvider, {
+        serverUrl: providerDef.mcpServerUrl,
+        authorizationCode: code,
+      });
 
-    if (result !== 'AUTHORIZED') {
-      return redirectWithStatus(request, 'error');
+      if (result !== 'AUTHORIZED') {
+        return redirectWithStatus(request, 'error');
+      }
     }
 
     // Mark the connector as connected
