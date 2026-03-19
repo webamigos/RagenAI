@@ -485,6 +485,10 @@
         "GMAIL": {
           "name": "Gmail",
           "description": "Wyszukuj e-maile i czytaj wiadomości."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Wyszukuj wiadomości, kanały i wysyłaj wiadomości."
         }
       }
     }

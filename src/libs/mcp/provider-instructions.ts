@@ -60,6 +60,15 @@ const FIREFLIES_INSTRUCTIONS = `For Fireflies.ai (meeting transcripts):
 - DATE FILTERING: Use fromDate and toDate in ISO 8601 format (e.g., "2026-01-01") only when the user explicitly asks about a specific time period.
 - USER INFO: Use fireflies_get_user (no parameters) if you need the user's email or account details.`;
 
+const SLACK_INSTRUCTIONS = `For Slack:
+- SEARCHING: Use search tools to find messages, files, users, and channels. Provide relevant keywords from the user's query.
+- "MY MESSAGES": When user says "my messages" or uses first-person language, search for messages from the authenticated user.
+- CHANNELS: When searching for messages in a specific channel, use the channel name filter. If the user mentions a channel by name, search for it first.
+- THREADS: When the user asks about a conversation or wants full context, read the entire thread, not just individual messages.
+- SENDING MESSAGES: When the user asks to send a message, confirm the channel and content before sending. Always double-check the target channel.
+- CANVASES: Use canvas tools for creating or reading structured documents within Slack.
+- USER LOOKUP: When the user asks about a specific person, use user search/profile tools to find them by name or email.`;
+
 const PROVIDER_INSTRUCTIONS: Record<
   string,
   string | ((timeZone: string) => string)
@@ -72,6 +81,7 @@ const PROVIDER_INSTRUCTIONS: Record<
   GOOGLE_ANALYTICS: GOOGLE_ANALYTICS_INSTRUCTIONS,
   GOOGLE_ADS: GOOGLE_ADS_INSTRUCTIONS,
   FIREFLIES: FIREFLIES_INSTRUCTIONS,
+  SLACK: SLACK_INSTRUCTIONS,
 };
 
 export function buildMcpContext(
