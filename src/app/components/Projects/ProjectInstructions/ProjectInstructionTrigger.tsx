@@ -36,7 +36,7 @@ export const ProjectInstructionTrigger = ({
         <Text fontSize="xs">{t('project-instructions.description')}</Text>
       </Card>
       <Dialog
-        className=" w-full max-w-lg max-h-[600px] overflow-y-auto"
+        className="w-full max-w-2xl max-h-[700px] overflow-y-auto"
         open={showInstructionsModal}
         onClose={handleDialogClose}
       >

@@ -7,9 +7,18 @@ import {
 import { getDriveConnectorQuery } from '@/features/connectors/services/queries/get-drive-connector-query';
 import { searchDriveFilesQuery } from '@/features/connectors/services/queries/search-drive-files-query';
 import { getDriveFileContentQuery } from '@/features/connectors/services/queries/get-drive-file-content-query';
+import { searchDriveFoldersQuery } from '@/features/connectors/services/queries/search-drive-folders-query';
+import { listDriveFolderFilesQuery } from '@/features/connectors/services/queries/list-drive-folder-files-query';
+import { importDriveFolderCommand } from '@/features/connectors/services/commands/import-drive-folder-command';
+import { getDriveSyncsQuery } from '@/features/connectors/services/queries/get-drive-syncs-query';
+import { deleteDriveSyncCommand } from '@/features/connectors/services/commands/delete-drive-sync-command';
+import { syncDriveFolderCommand } from '@/features/connectors/services/commands/sync-drive-folder-command';
+import { syncDriveProjectCommand } from '@/features/connectors/services/commands/sync-drive-project-command';
+import { importDriveFileToProjectCommand } from '@/features/connectors/services/commands/import-drive-file-to-project-command';
 
 export type { DriveSearchResponse } from '@/features/connectors/services/queries/search-drive-files-query';
 export type { DriveContentResponse } from '@/features/connectors/services/queries/get-drive-file-content-query';
+export type { DriveFolderFilesResponse } from '@/features/connectors/services/queries/list-drive-folder-files-query';
 
 export async function isDriveConnected(): Promise<boolean> {
   try {
@@ -28,7 +37,11 @@ export async function isDriveConnected(): Promise<boolean> {
   }
 }
 
-export async function searchDriveFiles(query: string = '', pageToken?: string) {
+export async function searchDriveFiles(
+  query: string = '',
+  pageToken?: string,
+  includeFolders: boolean = false,
+) {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
     return { success: false as const, error: 'Unauthorized' };
@@ -37,7 +50,9 @@ export async function searchDriveFiles(query: string = '', pageToken?: string) {
   if (!userId) {
     return { success: false as const, error: 'Unauthorized' };
   }
-  return searchDriveFilesQuery(orgId, userId, query, pageToken);
+  // Empty string = no mime_type filter (show all file types including folders)
+  const mimeType = includeFolders ? '' : 'application/vnd.google-apps.document';
+  return searchDriveFilesQuery(orgId, userId, query, pageToken, mimeType);
 }
 
 export async function getDriveFileContent(fileId: string) {
@@ -50,4 +65,146 @@ export async function getDriveFileContent(fileId: string) {
     return { success: false as const, error: 'Unauthorized' };
   }
   return getDriveFileContentQuery(orgId, userId, fileId);
+}
+
+export async function searchDriveFolders(
+  query: string = '',
+  pageToken?: string,
+) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  return searchDriveFoldersQuery(orgId, userId, query, pageToken);
+}
+
+export async function listDriveFolderFiles(
+  folderId: string,
+  pageToken?: string,
+) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  return listDriveFolderFilesQuery(orgId, userId, folderId, 50, pageToken);
+}
+
+export async function importDriveFolder(
+  folderId: string,
+  folderName: string,
+  projectPublicId: string,
+) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  return importDriveFolderCommand(
+    orgId,
+    userId,
+    folderId,
+    folderName,
+    projectPublicId,
+  );
+}
+
+export async function getDriveSyncs(projectPublicId?: string) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized', syncs: [] };
+  }
+  return getDriveSyncsQuery(orgId, projectPublicId);
+}
+
+export async function removeDriveSync(syncId: string) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  return deleteDriveSyncCommand(orgId, syncId);
+}
+
+export async function syncDriveFolder(syncId: string) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return {
+      success: false as const,
+      error: 'Unauthorized',
+      newCount: 0,
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedCount: 0,
+    };
+  }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return {
+      success: false as const,
+      error: 'Unauthorized',
+      newCount: 0,
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedCount: 0,
+    };
+  }
+  return syncDriveFolderCommand(orgId, userId, syncId);
+}
+
+export async function syncDriveProject(projectPublicId: string) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return {
+      success: false as const,
+      error: 'Unauthorized',
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedCount: 0,
+    };
+  }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return {
+      success: false as const,
+      error: 'Unauthorized',
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedCount: 0,
+    };
+  }
+  return syncDriveProjectCommand(orgId, userId, projectPublicId);
+}
+
+export async function importDriveFileToProject(
+  driveFileId: string,
+  driveFileName: string,
+  driveModifiedTime: string,
+  projectPublicId: string,
+) {
+  const orgId = await getOrgIdFromAuth();
+  if (!orgId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false as const, error: 'Unauthorized' };
+  }
+  return importDriveFileToProjectCommand(
+    orgId,
+    userId,
+    driveFileId,
+    driveFileName,
+    driveModifiedTime,
+    projectPublicId,
+  );
 }

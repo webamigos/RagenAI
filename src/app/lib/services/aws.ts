@@ -43,6 +43,23 @@ export async function uploadToS3(fileName: string, fileContent: Buffer) {
   return await parallelUploads3.done();
 }
 
+export async function uploadToS3WithOrg(
+  orgPublicId: string,
+  fileName: string,
+  fileContent: Buffer,
+) {
+  const parallelUploads3 = new Upload({
+    client: getAwsClient(),
+    params: {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: `${orgPublicId}/${fileName}`,
+      Body: fileContent,
+    },
+  });
+
+  return await parallelUploads3.done();
+}
+
 export async function deleteFromS3(fileName: string) {
   const orgPublicId = await getOrgPublicId();
   await getAwsClient().send(
