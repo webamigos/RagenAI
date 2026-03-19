@@ -313,6 +313,8 @@ export const GoogleDrivePickerDialog = ({
           size: new Blob([result.content]).size,
           type: file.mime_type || 'text/plain',
           sourceUrl: file.web_view_link,
+          driveFileId: file.id,
+          driveModifiedTime: file.modified_time,
         };
         onFileSelected(doc);
         onOpenChange(false);
@@ -392,6 +394,8 @@ export const GoogleDrivePickerDialog = ({
               size: new Blob([result.content]).size,
               type: file.mime_type || 'text/plain',
               sourceUrl: file.web_view_link,
+              driveFileId: file.id,
+              driveModifiedTime: file.modified_time,
             } satisfies ThreadDocumentUI;
           }
           return null;

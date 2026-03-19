@@ -614,7 +614,8 @@
     "from-knowledge-base": "From Knowledge Base",
     "from-google-drive": "From Google Drive",
     "from-fireflies": "From Fireflies",
-    "from-google-drive-folder": "From Google Drive folder"
+    "from-google-drive-folder": "From Google Drive folder",
+    "sync-google-drive": "Sync Google Drive"
   },
   "drive-folder-picker": {
     "title": "Select Google Drive folder",
@@ -926,6 +927,11 @@
       "from-knowledge-base": "From Knowledge Base",
       "from-google-drive": "From Google Drive",
       "importing-from-drive": "Importing from Google Drive...",
+      "syncing-drive": "Syncing Google Drive...",
+      "sync-complete": "Sync complete: {newCount} new, {updatedCount} updated",
+      "sync-up-to-date": "All files are up to date",
+      "sync-failed": "Sync failed",
+      "sync-hint": "Re-sync files from connected Google Drive folders. Updates modified files and imports new ones.",
       "drop-to-upload": "Drop files to upload",
       "uploading": "Uploading..."
     },

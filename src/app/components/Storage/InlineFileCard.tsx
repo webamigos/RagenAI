@@ -10,14 +10,20 @@ type Props = {
     fileName: string;
     fileSize: number;
     fileType: FileType;
+    metadata?: Record<string, unknown> | null;
   };
   onRemove: (publicId: string) => void;
   isRemoving?: boolean;
 };
 
 export const InlineFileCard = memo(({ file, onRemove, isRemoving }: Props) => {
+  const isFromDrive =
+    file.metadata &&
+    typeof file.metadata === 'object' &&
+    'driveFileId' in file.metadata;
+
   return (
-    <div className="relative group rounded-lg border border-border/60 p-3 min-w-[160px] max-w-[200px] flex flex-col justify-between bg-card hover:bg-muted/30 transition-colors">
+    <div className="relative group rounded-lg border border-border/60 p-3 flex flex-col justify-between bg-card hover:bg-muted/30 transition-colors">
       <button
         onClick={() => onRemove(file.publicId)}
         disabled={isRemoving}
@@ -35,9 +41,18 @@ export const InlineFileCard = memo(({ file, onRemove, isRemoving }: Props) => {
         {file.fileName}
       </p>
 
-      <span className="inline-flex items-center self-start px-1.5 py-0.5 text-[10px] font-medium rounded border border-border/60 text-muted-foreground bg-muted/50">
-        {file.fileType}
-      </span>
+      <div className="flex items-center gap-1.5">
+        {isFromDrive && (
+          <img
+            src="/assets/connectors/google-drive.svg"
+            alt="Google Drive"
+            className="size-3.5"
+          />
+        )}
+        <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded border border-border/60 text-muted-foreground bg-muted/50">
+          {file.fileType}
+        </span>
+      </div>
     </div>
   );
 });

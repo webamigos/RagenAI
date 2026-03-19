@@ -208,8 +208,8 @@ export const importDriveFolderCommand = async (
     }
   }
 
-  // Create or update sync record if enabled
-  if (enableSync) {
+  // Always create/update sync record for future re-sync
+  if (importedCount > 0) {
     await db.googleDriveSync.upsert({
       where: {
         organizationId_projectId_driveFolderId: {

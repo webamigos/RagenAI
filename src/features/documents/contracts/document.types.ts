@@ -41,6 +41,8 @@ export interface ThreadDocumentUI {
   type: string;
   userFileId?: string;
   sourceUrl?: string;
+  driveFileId?: string;
+  driveModifiedTime?: string;
 }
 
 export enum WebsiteLoaderMode {
