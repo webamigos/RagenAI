@@ -482,6 +482,10 @@
         "GMAIL": {
           "name": "Gmail",
           "description": "Search emails and read messages."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Search messages, channels, and send messages."
         }
       }
     }

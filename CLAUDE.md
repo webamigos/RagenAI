@@ -184,6 +184,7 @@ Users can connect external services via Settings > Connectors. These are powered
 | HubSpot | Claude AI MCP | get_crm_objects, search_crm_objects, get/search_properties, get_user_details, search_owners |
 | ClickUp | Claude AI MCP | search, create/get/update_task, create/get/update_list, create/get/update_folder, docs, comments, time tracking |
 | Gmail | Claude AI MCP | search_messages, read_message, read_thread, create_draft, list_labels, get_profile |
+| Slack | Slack MCP (`mcp.slack.com`) | search messages/files/users/channels, send messages, read threads, canvas CRUD, user profiles |
 
 **External MCP server (own):** `ragen-mcp/services/google` — FastMCP + Hono TypeScript server deployed on Railway. MCP protocol on port 9001 (`/mcp`), HTTP/OAuth on port 8001. Per-user OAuth with PKCE, tokens stored in Ragen Token Vault (centralized vault). Google Analytics tools require `property_id` (GA4) and Google Ads tools require `ads_customer_id` (Ads) which the user must provide. Calendar, Drive, and Gmail tools do not require these parameters. Env vars: `MCP_GOOGLE_SERVER_URL` (MCP endpoint, e.g. `http://localhost:9001/mcp`), `MCP_GOOGLE_AUTH_URL` (OAuth endpoint, e.g. `http://localhost:8001` — falls back to `MCP_GOOGLE_SERVER_URL` if not set).
 

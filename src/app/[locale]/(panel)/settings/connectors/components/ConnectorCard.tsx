@@ -35,6 +35,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   CLICKUP: '/assets/connectors/clickup.svg',
   HUBSPOT: '/assets/connectors/hubspot.svg',
   FIREFLIES: '/assets/connectors/fireflies.svg',
+  SLACK: '/assets/connectors/slack.svg',
 };
 
 type ConnectorCardProps = {
