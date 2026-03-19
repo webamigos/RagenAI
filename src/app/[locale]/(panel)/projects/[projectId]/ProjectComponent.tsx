@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeftIcon,
+  ArrowUpTrayIcon,
+  BookOpenIcon,
   ChatBubbleLeftIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
@@ -13,6 +15,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { Link } from '@/i18n/routing';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
@@ -31,6 +39,12 @@ import { getProjectInstructionAction } from '@/app/components/Projects/ProjectIn
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
+import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
+import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
+import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
+import { isDriveConnected } from '@/app/actions/google-drive';
+import { isFirefliesConnected } from '@/app/actions/fireflies';
+import { importFilesToProject } from '@/app/actions';
 
 import type { FileType } from '@/generated/prisma/browser';
 
@@ -111,10 +125,25 @@ export function ProjectComponent({ projectId }: Props) {
   const [storageUsed, setStorageUsed] = useState(0);
   const [storageLimit, setStorageLimit] = useState(20 * 1024 * 1024);
   const [removingFileId, setRemovingFileId] = useState<string | null>(null);
+  const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
+  const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
+  const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
+  const [hasDriveConnector, setHasDriveConnector] = useState(false);
+  const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
+  const tAttach = useTranslations('prompt-attachments');
+
+  useEffect(() => {
+    isDriveConnected()
+      .then(setHasDriveConnector)
+      .catch(() => setHasDriveConnector(false));
+    isFirefliesConnected()
+      .then(setHasFirefliesConnector)
+      .catch(() => setHasFirefliesConnector(false));
+  }, []);
 
   const loadFiles = useCallback(async (pubId: string) => {
     try {
@@ -154,6 +183,48 @@ export function ProjectComponent({ projectId }: Props) {
     loadProject();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
+
+  const handleKbFilesSelected = async (
+    selected: {
+      publicId: string;
+      name: string;
+      size: number;
+      type: string;
+    }[],
+  ) => {
+    if (!project) {
+      return;
+    }
+    const fileIds = selected.map((f) => f.publicId);
+    await importFilesToProject(fileIds, project.publicId);
+    loadFiles(project.publicId);
+  };
+
+  const handleExternalFileSelected = async (doc: {
+    name: string;
+    content: string;
+    type: string;
+  }) => {
+    if (!project) {
+      return;
+    }
+    try {
+      const blob = new Blob([doc.content], { type: 'text/markdown' });
+      const fileName = doc.name.endsWith('.md') ? doc.name : `${doc.name}.md`;
+      const file = new File([blob], fileName, { type: 'text/markdown' });
+
+      const { uploadProjectFiles } = await import('@/app/lib/services/api');
+      const formData = new FormData();
+      formData.append('files', file);
+      formData.append('projectId', project.publicId);
+
+      await uploadProjectFiles(project.publicId, formData);
+      successToast({ message: t('file-uploaded') });
+      loadFiles(project.publicId);
+    } catch {
+      errorToast({ message: t('file-upload-fail') });
+    }
+  };
 
   const handleRemoveFile = async (publicFileId: string) => {
     if (!project || removingFileId) {
@@ -331,12 +402,55 @@ export function ProjectComponent({ projectId }: Props) {
               <h3 className="text-sm font-semibold">
                 {t('project-view.files')}
               </h3>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-0.5 rounded hover:bg-muted/50 transition-colors"
-              >
-                <PlusIcon className="size-4 text-muted-foreground" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-0.5 rounded hover:bg-muted/50 transition-colors">
+                    <PlusIcon className="size-4 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 p-2">
+                  <DropdownMenuItem
+                    className="py-2.5"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <ArrowUpTrayIcon className="size-4" />
+                    {tAttach('upload-file')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="py-2.5"
+                    onClick={() => setIsKbPickerOpen(true)}
+                  >
+                    <BookOpenIcon className="size-4" />
+                    {tAttach('from-knowledge-base')}
+                  </DropdownMenuItem>
+                  {hasDriveConnector && (
+                    <DropdownMenuItem
+                      className="py-2.5"
+                      onClick={() => setIsDrivePickerOpen(true)}
+                    >
+                      <img
+                        src="/assets/connectors/google-drive.svg"
+                        alt="Google Drive"
+                        className="size-4"
+                      />
+                      {tAttach('from-google-drive')}
+                    </DropdownMenuItem>
+                  )}
+                  {hasFirefliesConnector && (
+                    <DropdownMenuItem
+                      className="py-2.5"
+                      onClick={() => setIsFirefliesPickerOpen(true)}
+                    >
+                      <img
+                        src="/assets/connectors/fireflies.svg"
+                        alt="Fireflies"
+                        className="size-4"
+                      />
+                      {tAttach('from-fireflies')}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <input
                 ref={fileInputRef}
                 className="hidden"
@@ -378,6 +492,24 @@ export function ProjectComponent({ projectId }: Props) {
           </div>
         </div>
       </div>
+
+      <KnowledgeBasePickerDialog
+        open={isKbPickerOpen}
+        onOpenChange={setIsKbPickerOpen}
+        onFilesSelected={handleKbFilesSelected}
+      />
+
+      <GoogleDrivePickerDialog
+        open={isDrivePickerOpen}
+        onOpenChange={setIsDrivePickerOpen}
+        onFileSelected={handleExternalFileSelected}
+      />
+
+      <FirefliesPickerDialog
+        open={isFirefliesPickerOpen}
+        onOpenChange={setIsFirefliesPickerOpen}
+        onFileSelected={handleExternalFileSelected}
+      />
 
       {/* Instructions dialog */}
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>

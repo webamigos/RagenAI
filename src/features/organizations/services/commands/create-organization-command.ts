@@ -6,7 +6,7 @@ export const createOrganizationWithDefaultProjectCommand = async (
 ) => {
   await db.project.create({
     data: {
-      title: 'Default',
+      title: 'Default Assistant',
       organizationId: organizationId,
       ownerId: userId,
     },

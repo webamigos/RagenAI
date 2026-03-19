@@ -220,8 +220,9 @@ export const UserFilesTable = ({
 
     return files.filter(
       (file) =>
-        file.fileName.toLowerCase().includes(searchValue.toLowerCase()) &&
-        file.project?.title === 'Default',
+        (file.fileName.toLowerCase().includes(searchValue.toLowerCase()) &&
+          file.project?.title === 'Default') ||
+        file.project?.title === 'Default Assistant',
     ) as UserFileTypeSafe[];
   }, [files, searchValue]);
 

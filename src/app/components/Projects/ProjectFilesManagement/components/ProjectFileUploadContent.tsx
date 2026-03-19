@@ -11,11 +11,13 @@ export type FileStatus = {
 type ProjectFileUploadContentProps = {
   status: FileStatus;
   t: (value: string) => string;
+  compact?: boolean;
 };
 
 export const ProjectFileUploadContent = ({
   status,
   t,
+  compact,
 }: ProjectFileUploadContentProps) => {
   const { hasFiles, fileCount, loading } = status;
 
