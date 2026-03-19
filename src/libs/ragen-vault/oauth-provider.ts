@@ -163,13 +163,22 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   }
 
   async redirectToAuthorization(url: URL): Promise<void> {
-    // Slack's OAuth v2 requires `user_scope` for user permissions — `scope` is for bot permissions.
-    // Both params must be present; set `scope` to empty string so Slack doesn't try to install a bot.
+    // Slack's MCP metadata advertises v2_user/authorize, but that endpoint doesn't support
+    // user_scope. Rewrite to the standard v2/authorize which properly handles user_scope
+    // (user permissions) separately from scope (bot permissions).
     if (this.useUserScope) {
       const scope = url.searchParams.get('scope');
       if (scope) {
-        url.searchParams.set('scope', '');
-        url.searchParams.set('user_scope', scope);
+        // Switch to standard OAuth v2 endpoint
+        const rewritten = new URL(
+          url
+            .toString()
+            .replace('/oauth/v2_user/authorize', '/oauth/v2/authorize'),
+        );
+        rewritten.searchParams.delete('scope');
+        rewritten.searchParams.set('user_scope', scope);
+        this._authorizationUrl = rewritten;
+        return;
       }
     }
     this._authorizationUrl = url;
