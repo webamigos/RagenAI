@@ -163,14 +163,10 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   }
 
   async redirectToAuthorization(url: URL): Promise<void> {
-    // Slack uses `user_scope` instead of `scope` for user token OAuth
-    if (this.useUserScope) {
-      const scope = url.searchParams.get('scope');
-      if (scope) {
-        url.searchParams.delete('scope');
-        url.searchParams.set('user_scope', scope);
-      }
-    }
+    logger.info(
+      { provider: this.provider, authorizationUrl: url.toString() },
+      'OAuth redirectToAuthorization called',
+    );
     this._authorizationUrl = url;
   }
 
