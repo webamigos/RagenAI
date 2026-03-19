@@ -134,11 +134,16 @@ export const importDriveFolderCommand = async (
       return 'failed' as const;
     }
 
+    // Ensure filename has .md extension
+    const fileName = driveFile.name.endsWith('.md')
+      ? driveFile.name
+      : `${driveFile.name}.md`;
+
     // Create UserFile record
     const fileRecord = await db.userFile.create({
       data: {
         organizationId: orgId,
-        fileName: driveFile.name,
+        fileName,
         fileSize: Buffer.byteLength(contentResult.content, 'utf-8'),
         fileType: FileType.MARKDOWN,
         projectId: project.id,

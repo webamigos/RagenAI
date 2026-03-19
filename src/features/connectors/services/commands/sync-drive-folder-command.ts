@@ -175,7 +175,9 @@ export const syncDriveFolderCommand = async (
           where: { id: existingFile.id, organizationId: orgId },
           data: {
             fileSize: fileContent.byteLength,
-            fileName: driveFile.name,
+            fileName: driveFile.name.endsWith('.md')
+              ? driveFile.name
+              : `${driveFile.name}.md`,
             metadata: {
               driveFileId: driveFile.id,
               driveFolderId: syncRecord.driveFolderId,
@@ -195,7 +197,9 @@ export const syncDriveFolderCommand = async (
             {
               ...existingFile,
               fileSize: fileContent.byteLength,
-              fileName: driveFile.name,
+              fileName: driveFile.name.endsWith('.md')
+                ? driveFile.name
+                : `${driveFile.name}.md`,
               metadata: {
                 driveFileId: driveFile.id,
                 driveFolderId: syncRecord.driveFolderId,
@@ -232,10 +236,14 @@ export const syncDriveFolderCommand = async (
         return 'failed';
       }
 
+      const newFileName = driveFile.name.endsWith('.md')
+        ? driveFile.name
+        : `${driveFile.name}.md`;
+
       const fileRecord = await db.userFile.create({
         data: {
           organizationId: orgId,
-          fileName: driveFile.name,
+          fileName: newFileName,
           fileSize: Buffer.byteLength(contentResult.content, 'utf-8'),
           fileType: FileType.MARKDOWN,
           projectId: project.id,

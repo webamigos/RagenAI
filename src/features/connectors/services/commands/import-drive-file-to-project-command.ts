@@ -74,11 +74,16 @@ export const importDriveFileToProjectCommand = async (
     };
   }
 
+  // Ensure filename has .md extension (Drive files are exported as text)
+  const fileName = driveFileName.endsWith('.md')
+    ? driveFileName
+    : `${driveFileName}.md`;
+
   // Create UserFile with Drive metadata
   const fileRecord = await db.userFile.create({
     data: {
       organizationId: orgId,
-      fileName: driveFileName,
+      fileName,
       fileSize: Buffer.byteLength(contentResult.content, 'utf-8'),
       fileType: FileType.MARKDOWN,
       projectId: project.id,
