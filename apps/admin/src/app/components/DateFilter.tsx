@@ -17,7 +17,7 @@ export function DateFilter({
         const params = new URLSearchParams();
         params.set('days', String(d));
         for (const [k, v] of Object.entries(extraParams)) {
-          if (v) {
+          if (v && k !== 'days') {
             params.set(k, v);
           }
         }

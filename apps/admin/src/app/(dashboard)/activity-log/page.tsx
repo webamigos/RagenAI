@@ -116,6 +116,8 @@ export default async function ActivityLogPage({
     search: params.search,
     orgId: params.orgId,
     days: String(days),
+    sort: params.sort,
+    order: params.order,
   };
 
   return (

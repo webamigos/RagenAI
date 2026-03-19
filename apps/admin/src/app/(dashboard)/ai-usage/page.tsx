@@ -99,6 +99,8 @@ export default async function AiUsagePage({
   const extraParams = {
     orgId: params.orgId,
     days: String(days),
+    sort: params.sort,
+    order: params.order,
   };
 
   return (

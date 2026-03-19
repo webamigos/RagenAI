@@ -18,9 +18,9 @@ export function ThemeToggle() {
   }
 
   const options = [
-    { value: 'light', icon: Sun },
-    { value: 'dark', icon: Moon },
-    { value: 'system', icon: Monitor },
+    { value: 'light', label: 'Light theme', icon: Sun },
+    { value: 'dark', label: 'Dark theme', icon: Moon },
+    { value: 'system', label: 'System theme', icon: Monitor },
   ] as const;
 
   return (
@@ -28,6 +28,7 @@ export function ThemeToggle() {
       {options.map((opt) => (
         <button
           key={opt.value}
+          type="button"
           onClick={() => setTheme(opt.value)}
           className={cn(
             'rounded-sm p-1.5 transition-colors',
@@ -35,7 +36,9 @@ export function ThemeToggle() {
               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
               : 'text-sidebar-foreground/50 hover:text-sidebar-foreground/80',
           )}
-          title={opt.value}
+          title={opt.label}
+          aria-label={opt.label}
+          aria-pressed={theme === opt.value}
         >
           <opt.icon className="h-3.5 w-3.5" />
         </button>

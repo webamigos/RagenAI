@@ -26,7 +26,7 @@ export const auth = betterAuth({
   },
   callbacks: {
     async onBeforeCreateUser({ user }: { user: { email: string } }) {
-      const email = user.email;
+      const email = user.email?.trim().toLowerCase();
       if (!email?.endsWith(`@${ALLOWED_DOMAIN}`)) {
         throw new Error(
           `Only @${ALLOWED_DOMAIN} email addresses are allowed to sign in.`,

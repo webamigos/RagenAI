@@ -7,10 +7,6 @@
     ".": {
       "import": "./index.ts",
       "types": "./index.ts"
-    },
-    "./client": {
-      "import": "../../src/generated/prisma/client.ts",
-      "types": "../../src/generated/prisma/client.ts"
     }
   },
   "dependencies": {

@@ -56,11 +56,15 @@ async function getDiskUsage(params: SearchParams) {
     ]),
   );
 
-  const totalFiles = fileSizes.reduce((sum, f) => sum + f._count, 0);
-  const totalSize = fileSizes.reduce(
-    (sum, f) => sum + (f._sum.fileSize ?? 0),
-    0,
-  );
+  // Compute totals only for filtered organizations
+  const filteredOrgIds = new Set(organizations.map((o) => o.id));
+
+  const totalFiles = fileSizes
+    .filter((f) => filteredOrgIds.has(f.organizationId))
+    .reduce((sum, f) => sum + f._count, 0);
+  const totalSize = fileSizes
+    .filter((f) => filteredOrgIds.has(f.organizationId))
+    .reduce((sum, f) => sum + (f._sum.fileSize ?? 0), 0);
 
   const orgsWithUsage = organizations
     .map((org) => {

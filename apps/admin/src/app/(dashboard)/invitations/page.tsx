@@ -62,13 +62,8 @@ async function getInvitations(params: SearchParams) {
       .then((r) => r.map((s) => s.status)),
   ]);
 
-  // Fetch org names for display
-  const orgIds = [...new Set(invitations.map((i) => i.organizationId))];
-  const orgs = await prisma.organization.findMany({
-    where: { id: { in: orgIds } },
-    select: { id: true, name: true },
-  });
-  const orgMap = new Map(orgs.map((o) => [o.id, o.name]));
+  // Reuse already-fetched organizations for display names
+  const orgMap = new Map(organizations.map((o) => [o.id, o.name]));
 
   // Fetch inviter names
   const inviterIds = [
@@ -118,6 +113,8 @@ export default async function InvitationsPage({
     search: params.search,
     status: params.status,
     orgId: params.orgId,
+    sort: params.sort,
+    order: params.order,
   };
 
   return (
