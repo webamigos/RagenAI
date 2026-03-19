@@ -61,8 +61,6 @@ export const createConnectorCommand = async (
     });
 
     trackAudit({
-      orgId: organizationId,
-      userId,
       action: 'connector.connected',
       entityType: 'connector',
       entityId: connector.id,

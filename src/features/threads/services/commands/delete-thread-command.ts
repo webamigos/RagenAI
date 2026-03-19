@@ -28,8 +28,6 @@ export const deleteThreadCommand = async (
     await db.thread.delete({ where: { id: thread.id } });
 
     trackAudit({
-      orgId,
-      userId: thread.userId ?? undefined,
       action: 'thread.deleted',
       entityType: 'thread',
       entityId: threadPublicId,

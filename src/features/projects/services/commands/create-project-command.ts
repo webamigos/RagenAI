@@ -35,8 +35,6 @@ export const createProjectCommand = async (
     });
 
     trackAudit({
-      orgId: organizationId,
-      userId,
       action: 'project.created',
       entityType: 'project',
       entityId: project.publicId,

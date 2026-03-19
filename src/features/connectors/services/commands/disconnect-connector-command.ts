@@ -47,8 +47,6 @@ export const disconnectConnectorCommand = async (
     });
 
     trackAudit({
-      orgId: organizationId,
-      userId,
       action: 'connector.disconnected',
       entityType: 'connector',
       entityId: connectorId,

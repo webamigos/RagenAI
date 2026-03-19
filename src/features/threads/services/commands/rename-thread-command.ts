@@ -31,7 +31,6 @@ export const renameThreadCommand = async (
     });
 
     trackAudit({
-      orgId,
       action: 'thread.renamed',
       entityType: 'thread',
       entityId: threadPublicId,

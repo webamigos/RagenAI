@@ -4,17 +4,11 @@ import crypto from 'crypto';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import {
-  getOrgIdFromAuthOrThrow as getOrgIdOrThrow,
-  getCurrentUserId,
-} from '@/app/lib/utils/auth-helpers';
+import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const generateProjectKeyCommand = async (publicId: string) => {
   try {
-    const [orgId, userId] = await Promise.all([
-      getOrgIdOrThrow(),
-      getCurrentUserId(),
-    ]);
+    const orgId = await getOrgIdOrThrow();
 
     const existing = await db.project.findFirst({
       where: { publicId: publicId, organizationId: orgId },
@@ -39,8 +33,6 @@ export const generateProjectKeyCommand = async (publicId: string) => {
     });
 
     trackAudit({
-      orgId,
-      userId,
       action: 'project.key_generated',
       entityType: 'project',
       entityId: publicId,

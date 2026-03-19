@@ -1,6 +1,8 @@
 import db from '@ragenai/prisma-client';
 import type { Prisma } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
+import { getSession } from '@/lib/auth-guards';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
 const SENSITIVE_FIELDS = new Set([
   'password',
@@ -32,7 +34,13 @@ function stripSensitiveFields(
   for (const [key, value] of Object.entries(data)) {
     if (SENSITIVE_FIELDS.has(key)) {
       cleaned[key] = '[REDACTED]';
-    } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+    } else if (Array.isArray(value)) {
+      cleaned[key] = value.map((item) =>
+        item && typeof item === 'object' && !Array.isArray(item)
+          ? stripSensitiveFields(item as Record<string, unknown>)
+          : item,
+      );
+    } else if (value && typeof value === 'object') {
       cleaned[key] = stripSensitiveFields(value as Record<string, unknown>);
     } else {
       cleaned[key] = value;
@@ -41,9 +49,7 @@ function stripSensitiveFields(
   return cleaned;
 }
 
-type LogAuditInput = {
-  orgId: string;
-  userId?: string | null;
+type TrackAuditInput = {
   action: string;
   entityType: string;
   entityId?: string | null;
@@ -51,29 +57,64 @@ type LogAuditInput = {
   newData?: Record<string, unknown> | null;
 };
 
-export async function logAudit(input: LogAuditInput) {
+async function resolveAuditContext() {
+  const [session, orgId] = await Promise.all([
+    getSession(),
+    getOrgIdFromAuth(),
+  ]);
+
+  const userId = session?.user?.id ?? null;
+  // When an app admin impersonates a user, Better Auth sets impersonatedBy
+  // on the session. We record the real actor (admin) in newData for traceability.
+  const impersonatedBy = (
+    session?.session as Record<string, unknown> | undefined
+  )?.impersonatedBy as string | null | undefined;
+
+  return { orgId, userId, impersonatedBy: impersonatedBy ?? null };
+}
+
+async function logAudit(input: TrackAuditInput) {
+  const ctx = await resolveAuditContext();
+
+  if (!ctx.orgId) {
+    logger.warn(
+      { audit: input.action },
+      'Skipping audit log: no organization context',
+    );
+    return;
+  }
+
+  const newData = input.newData ?? {};
+  const dataWithImpersonation = ctx.impersonatedBy
+    ? { ...newData, _impersonatedBy: ctx.impersonatedBy }
+    : newData;
+
   await db.auditLog.create({
     data: {
-      organizationId: input.orgId,
-      userId: input.userId ?? null,
+      organizationId: ctx.orgId,
+      userId: ctx.userId,
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId ?? null,
       oldData: (stripSensitiveFields(input.oldData) ?? undefined) as
         | Prisma.InputJsonValue
         | undefined,
-      newData: (stripSensitiveFields(input.newData) ?? undefined) as
-        | Prisma.InputJsonValue
-        | undefined,
+      newData: (stripSensitiveFields(
+        Object.keys(dataWithImpersonation).length > 0
+          ? dataWithImpersonation
+          : null,
+      ) ?? undefined) as Prisma.InputJsonValue | undefined,
     },
   });
 }
 
 /**
- * Fire-and-forget wrapper — swallows errors and logs them.
+ * Fire-and-forget audit logger. Resolves orgId, userId, and impersonation
+ * context from the current session automatically.
+ *
  * Use this in commands where audit logging should never break the main flow.
  */
-export function trackAudit(input: LogAuditInput) {
+export function trackAudit(input: TrackAuditInput) {
   logAudit(input).catch((error) => {
     logger.error(
       { err: error, audit: input.action },

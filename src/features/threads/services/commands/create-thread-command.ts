@@ -86,8 +86,6 @@ export const createThreadCommand = async ({
     }
 
     trackAudit({
-      orgId,
-      userId,
       action: 'thread.created',
       entityType: 'thread',
       entityId: threadRecord.publicId,

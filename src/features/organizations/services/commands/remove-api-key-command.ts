@@ -20,7 +20,6 @@ export const removeApiKeyCommand = async (
   });
 
   trackAudit({
-    orgId: organizationId,
     action: 'api-key.deleted',
     entityType: 'api-key',
     entityId: publicApiKeyId,
