@@ -417,9 +417,12 @@ export const GoogleDrivePickerDialog = ({
       for (const doc of docs) {
         onFileSelected(doc);
       }
+      setIsAttaching(false);
+      onOpenChange(false);
+    } else {
+      setIsAttaching(false);
+      setError(t('fetch-error'));
     }
-    setIsAttaching(false);
-    onOpenChange(false);
   };
 
   const formatDate = (dateStr: string) => {

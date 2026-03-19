@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useOrganization } from '@/app/hooks/use-auth';
 import { Card } from '@ragenai/common-ui/Card';
@@ -51,8 +51,6 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
     fileCount: 0,
     loading: true,
   });
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const t = useTranslations('projects');
   const tAttach = useTranslations('prompt-attachments');
   const { organization } = useOrganization();
@@ -108,20 +106,15 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
       type: string;
     }[],
   ) => {
-    const fileIds = selected.map((f) => f.publicId);
-    await importFilesToProject(fileIds, projectPublicId);
+    try {
+      const fileIds = selected.map((f) => f.publicId);
+      await importFilesToProject(fileIds, projectPublicId);
+    } catch {
+      // Import error is non-critical
+    }
     // Refresh file status
     setShowUploader((v) => !v);
     setTimeout(() => setShowUploader(false), 0);
-  };
-
-  const handleFileInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    if (event.target.files?.length) {
-      // Open the full dialog to handle upload
-      setShowUploader(true);
-    }
   };
 
   const handleCardClick = () => {
@@ -193,15 +186,6 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
           <ProjectFileUploadContent status={fileStatus} t={t} compact />
         </div>
       </Card>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".md,.epub,.srt,.pdf"
-        multiple
-        className="hidden"
-        onChange={handleFileInputChange}
-      />
 
       <Dialog
         className="max-h-[500px] overflow-y-auto"

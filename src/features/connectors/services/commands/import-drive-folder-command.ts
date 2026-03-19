@@ -27,7 +27,6 @@ export const importDriveFolderCommand = async (
   folderId: string,
   folderName: string,
   projectPublicId: string,
-  enableSync: boolean = false,
 ): Promise<ImportResult> => {
   const project = await db.project.findFirst({
     where: { publicId: projectPublicId, organizationId: orgId },
@@ -44,10 +43,20 @@ export const importDriveFolderCommand = async (
     };
   }
 
-  const org = await db.organization.findUniqueOrThrow({
+  const org = await db.organization.findUnique({
     where: { id: orgId },
     select: { slug: true, publicId: true },
   });
+
+  if (!org) {
+    return {
+      success: false,
+      importedCount: 0,
+      skippedCount: 0,
+      failedCount: 0,
+      error: 'Organization not found',
+    };
+  }
 
   const user = await db.user.findUnique({
     where: { id: userId },

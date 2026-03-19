@@ -65,10 +65,20 @@ export const syncDriveProjectCommand = async (
     };
   }
 
-  const org = await db.organization.findUniqueOrThrow({
+  const org = await db.organization.findUnique({
     where: { id: orgId },
     select: { slug: true, publicId: true },
   });
+
+  if (!org) {
+    return {
+      success: false,
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedCount: 0,
+      error: 'Organization not found',
+    };
+  }
 
   const user = await db.user.findUnique({
     where: { id: userId },

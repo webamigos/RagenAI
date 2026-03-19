@@ -645,7 +645,7 @@
     "show-folders": "Show folders",
     "select-all": "Select all",
     "deselect-all": "Deselect all",
-    "attach-selected": "Attach {count} files",
+    "attach-selected": "{count, plural, one {Attach # file} other {Attach # files}}",
     "attach-progress": "Loading {current}/{total}..."
   },
   "fireflies-picker": {
@@ -988,7 +988,8 @@
       "instructions": "Instructions",
       "files": "Files",
       "share": "Share",
-      "storage-used": "{percentage}% memory used"
+      "storage-used": "{percentage}% memory used",
+      "selected": "selected"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

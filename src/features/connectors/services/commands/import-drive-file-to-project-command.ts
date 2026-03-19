@@ -47,10 +47,14 @@ export const importDriveFileToProjectCommand = async (
     return { success: true }; // Already imported
   }
 
-  const org = await db.organization.findUniqueOrThrow({
+  const org = await db.organization.findUnique({
     where: { id: orgId },
     select: { slug: true, publicId: true },
   });
+
+  if (!org) {
+    return { success: false, error: 'Organization not found' };
+  }
 
   const user = await db.user.findUnique({
     where: { id: userId },

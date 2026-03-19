@@ -648,7 +648,7 @@
     "show-folders": "Pokaż foldery",
     "select-all": "Zaznacz wszystko",
     "deselect-all": "Odznacz wszystko",
-    "attach-selected": "Dołącz {count} plików",
+    "attach-selected": "{count, plural, one {Dołącz # plik} few {Dołącz # pliki} other {Dołącz # plików}}",
     "attach-progress": "Ładowanie {current}/{total}..."
   },
   "fireflies-picker": {
@@ -946,7 +946,8 @@
       "instructions": "Instrukcje",
       "files": "Pliki",
       "share": "Udostępnij",
-      "storage-used": "{percentage}% użycia pamięci"
+      "storage-used": "{percentage}% użycia pamięci",
+      "selected": "zaznaczonych"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

@@ -9,6 +9,8 @@ import {
   BookOpenIcon,
   ChatBubbleLeftIcon,
   PlusIcon,
+  TrashIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
   Dialog,
@@ -38,6 +40,7 @@ import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
 import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
+import { Checkbox } from '@ragenai/tui';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
@@ -130,7 +133,10 @@ export function ProjectComponent({ projectId }: Props) {
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [storageUsed, setStorageUsed] = useState(0);
   const [storageLimit, setStorageLimit] = useState(20 * 1024 * 1024);
-  const [removingFileId, setRemovingFileId] = useState<string | null>(null);
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
   const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
   const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
   const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
@@ -292,25 +298,46 @@ export function ProjectComponent({ projectId }: Props) {
     }
   };
 
-  const handleRemoveFile = async (publicFileId: string) => {
-    if (!project || removingFileId) {
+  const toggleFileSelect = (publicId: string) => {
+    setSelectedFileIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(publicId)) {
+        next.delete(publicId);
+      } else {
+        next.add(publicId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedFileIds.size === files.length) {
+      setSelectedFileIds(new Set());
+    } else {
+      setSelectedFileIds(new Set(files.map((f) => f.publicId)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedFileIds(new Set());
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!project || selectedFileIds.size === 0 || isDeletingSelected) {
       return;
     }
-    setRemovingFileId(publicFileId);
+    setIsDeletingSelected(true);
     try {
-      const result = await deleteProjectFileAction(
-        publicFileId,
-        project.publicId,
-      );
-      if (result.error) {
-        throw new Error(result.error);
+      for (const fileId of selectedFileIds) {
+        await deleteProjectFileAction(fileId, project.publicId);
       }
       infoToast({ message: t('file-deleted') });
+      setSelectedFileIds(new Set());
       loadFiles(project.publicId);
     } catch {
       errorToast({ message: t('file-delete-fail') });
     } finally {
-      setRemovingFileId(null);
+      setIsDeletingSelected(false);
     }
   };
 
@@ -562,15 +589,52 @@ export function ProjectComponent({ projectId }: Props) {
               })}
             />
 
+            {/* Selection toolbar */}
+            {selectedFileIds.size > 0 && (
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <button onClick={toggleSelectAll}>
+                  <Checkbox
+                    checked={selectedFileIds.size === files.length}
+                    indeterminate={
+                      selectedFileIds.size > 0 &&
+                      selectedFileIds.size < files.length
+                    }
+                  />
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  {selectedFileIds.size} {t('project-view.selected')}
+                </span>
+                <button
+                  onClick={handleDeleteSelected}
+                  disabled={isDeletingSelected}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                  title={t('upload.remove-file')}
+                >
+                  {isDeletingSelected ? (
+                    <div className="size-4 border-t-2 border-current rounded-full animate-spin" />
+                  ) : (
+                    <TrashIcon className="size-4" />
+                  )}
+                </button>
+                <button
+                  onClick={clearSelection}
+                  className="ml-auto p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <XMarkIcon className="size-4" />
+                </button>
+              </div>
+            )}
+
             {/* File cards grid */}
             {files.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 max-h-72 overflow-y-auto">
                 {files.map((file) => (
                   <InlineFileCard
                     key={file.publicId}
                     file={file}
-                    onRemove={handleRemoveFile}
-                    isRemoving={removingFileId === file.publicId}
+                    selected={selectedFileIds.has(file.publicId)}
+                    selectionMode={selectedFileIds.size > 0}
+                    onToggleSelect={toggleFileSelect}
                   />
                 ))}
               </div>

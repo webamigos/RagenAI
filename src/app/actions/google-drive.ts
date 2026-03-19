@@ -101,7 +101,6 @@ export async function importDriveFolder(
   folderId: string,
   folderName: string,
   projectPublicId: string,
-  enableSync: boolean = false,
 ) {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
@@ -117,7 +116,6 @@ export async function importDriveFolder(
     folderId,
     folderName,
     projectPublicId,
-    enableSync,
   );
 }
 

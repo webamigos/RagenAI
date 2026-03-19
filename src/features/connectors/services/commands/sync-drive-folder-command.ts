@@ -42,10 +42,21 @@ export const syncDriveFolderCommand = async (
     };
   }
 
-  const org = await db.organization.findUniqueOrThrow({
+  const org = await db.organization.findUnique({
     where: { id: orgId },
     select: { slug: true, publicId: true },
   });
+
+  if (!org) {
+    return {
+      success: false,
+      newCount: 0,
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedCount: 0,
+      error: 'Organization not found',
+    };
+  }
 
   const project = await db.project.findUnique({
     where: { id: syncRecord.projectId },
@@ -185,6 +196,11 @@ export const syncDriveFolderCommand = async (
               ...existingFile,
               fileSize: fileContent.byteLength,
               fileName: driveFile.name,
+              metadata: {
+                driveFileId: driveFile.id,
+                driveFolderId: syncRecord.driveFolderId,
+                driveModifiedTime: driveFile.modified_time,
+              },
               projectPublicId: project.publicId,
               organizationSlug: org.slug,
               organizationPublicId: org.publicId,
