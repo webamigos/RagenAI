@@ -4,7 +4,14 @@ export async function register() {
     process.env.NEXT_RUNTIME,
   );
 
-  if (process.env.NEXT_RUNTIME !== 'nodejs') {return;}
+  if (process.env.NEXT_RUNTIME !== 'nodejs') {
+    return;
+  }
+
+  // Skip instrumentation for apps that don't need it (e.g. ragen-admin)
+  if (process.env.DISABLE_OTEL === '1') {
+    return;
+  }
 
   // Dynamic import keeps Node.js-only APIs (process.exit, process.on)
   // out of the Edge Runtime static analysis.
