@@ -14,7 +14,7 @@ import db from '@ragenai/prisma-client';
  * 1. Sets activeOrganizationId in session
  * 2. Creates trial subscription
  */
-export async function finalizeOnboardingCommand() {
+export async function finalizeOnboardingCommand(preferredOrgId?: string) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
 
@@ -25,13 +25,16 @@ export async function finalizeOnboardingCommand() {
     const userId = session.user.id;
     const userName = session.user.name || 'User';
 
-    // Get user's first organization
+    // Get user's organizations
     // listOrganizations returns orgs for authenticated user (from session cookie)
     let memberships = (await (auth.api as any).listOrganizations({
       headers: await headers(),
     })) as any[];
 
-    let firstOrg = memberships?.[0];
+    // Find personal org by slug pattern (created by user.created hook with slug `${userId}-org`)
+    let firstOrg =
+      memberships?.find((m: any) => m.slug === `${userId}-org`) ||
+      memberships?.[0];
 
     // If no organization exists, create one
     // (user.created hook may not have finished yet, or may have failed)
@@ -109,24 +112,29 @@ export async function finalizeOnboardingCommand() {
       throw new Error('No organization found or created for user');
     }
 
+    // If user was invited to an org, set that as active; otherwise use personal org
+    const isMemberOfPreferred =
+      preferredOrgId && memberships?.some((m: any) => m.id === preferredOrgId);
+    const activeOrgId = isMemberOfPreferred ? preferredOrgId : firstOrg.id;
+
     // Set active organization in session
     // Use Better Auth API to properly update both database and session cookie
     try {
       // @ts-ignore - setActiveOrganization exists but is not properly typed in Better Auth API
       await auth.api.setActiveOrganization({
         body: {
-          organizationId: firstOrg.id,
+          organizationId: activeOrgId,
         },
         headers: await headers(),
       });
 
       logger.info(
-        { userId, orgId: firstOrg.id },
+        { userId, orgId: activeOrgId, preferredOrgId },
         'Set activeOrganizationId via Better Auth API',
       );
     } catch (setActiveError) {
       logger.error(
-        { err: setActiveError, userId, orgId: firstOrg.id },
+        { err: setActiveError, userId, orgId: activeOrgId },
         'Failed to set active organization via API, trying direct update',
       );
 
@@ -140,11 +148,11 @@ export async function finalizeOnboardingCommand() {
       if (userSessions[0]) {
         await db.session.update({
           where: { id: userSessions[0].id },
-          data: { activeOrganizationId: firstOrg.id },
+          data: { activeOrganizationId: activeOrgId },
         });
 
         logger.info(
-          { userId, orgId: firstOrg.id, sessionId: userSessions[0].id },
+          { userId, orgId: activeOrgId, sessionId: userSessions[0].id },
           'Set activeOrganizationId via direct Prisma update fallback',
         );
       } else {
@@ -153,7 +161,8 @@ export async function finalizeOnboardingCommand() {
       }
     }
 
-    // Create trial subscription via new Subscription model
+    // Create trial subscription for user's personal org
+    // (inviting org already has its own subscription)
     const now = new Date();
     const trialEnd = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
     await db.subscription.create({
@@ -170,11 +179,11 @@ export async function finalizeOnboardingCommand() {
     });
 
     logger.info(
-      { userId, orgId: firstOrg.id },
+      { userId, activeOrgId, personalOrgId: firstOrg.id },
       'User onboarding finalized successfully',
     );
 
-    return { success: true, organizationId: firstOrg.id };
+    return { success: true, organizationId: activeOrgId };
   } catch (error) {
     logger.error({ err: error }, 'Error finalizing user onboarding');
     throw error;

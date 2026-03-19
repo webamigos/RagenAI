@@ -136,6 +136,22 @@ export async function acceptInvitation(invitationId: string) {
       headers: await headers(),
     });
 
+    // Set the inviting organization as active so the user lands in the right org
+    try {
+      // @ts-ignore - setActiveOrganization exists but typing is incomplete
+      await auth.api.setActiveOrganization({
+        body: {
+          organizationId: invitation.organizationId,
+        },
+        headers: await headers(),
+      });
+    } catch (setActiveError) {
+      logger.warn(
+        { err: setActiveError, organizationId: invitation.organizationId },
+        'Failed to set active org after invitation acceptance',
+      );
+    }
+
     logger.info(
       {
         invitationId,
