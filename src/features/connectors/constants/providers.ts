@@ -76,6 +76,7 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     authType: 'external_mcp',
     oauthClientId: process.env.SLACK_MCP_CLIENT_ID,
     oauthClientSecret: process.env.SLACK_MCP_CLIENT_SECRET,
+    useUserScope: true,
     scopes: [
       'search:read.public',
       'search:read.private',

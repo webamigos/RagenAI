@@ -62,6 +62,7 @@ export async function GET(request: NextRequest) {
       callbackUrl,
       fixedClientId: providerDef.oauthClientId,
       fixedClientSecret: providerDef.oauthClientSecret,
+      useUserScope: providerDef.useUserScope,
     });
     const result = await mcpAuth(oauthProvider, {
       serverUrl: providerDef.mcpServerUrl,
