@@ -62,6 +62,7 @@ export const RegisterForm = () => {
       }
 
       // Check if user came from invitation link
+      let invitingOrgId: string | undefined;
       if (invitationId) {
         // Auto-accept invitation after registration
         try {
@@ -69,32 +70,29 @@ export const RegisterForm = () => {
             await import('@/app/[locale]/(auth)/accept-invitation/actions');
           const acceptResult = await acceptInvitation(invitationId);
 
-          if (acceptResult.success) {
+          if (acceptResult.success && acceptResult.organizationId) {
             logger.info('Invitation accepted automatically after registration');
-            // Redirect to home page
-            window.location.href = `/${locale}/new`;
-            return;
+            invitingOrgId = acceptResult.organizationId;
           } else {
             logger.warn(
               { error: acceptResult.error },
               'Failed to auto-accept invitation',
             );
-            // Continue with normal onboarding
           }
         } catch (inviteError) {
           logger.error(
             { error: inviteError },
             'Error auto-accepting invitation',
           );
-          // Continue with normal onboarding
         }
       }
 
       // Email verification is disabled (requireEmailVerification: false)
       // User is automatically logged in after registration
       // Finalize user onboarding (set activeOrganizationId + trial subscription)
+      // Pass invitingOrgId so the user lands in the inviting org, not their personal one
       try {
-        await finalizeUserOnboarding();
+        await finalizeUserOnboarding(invitingOrgId);
       } catch (err) {
         logger.warn(
           { error: err },
