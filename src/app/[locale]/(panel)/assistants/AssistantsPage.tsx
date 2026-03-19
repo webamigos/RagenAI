@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   MagnifyingGlassIcon,
   FolderIcon,
@@ -23,25 +23,25 @@ type ProjectItem = {
   threads: { publicId: string }[];
 };
 
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: Date, locale: string): string {
   const now = new Date();
   const diffMs = now.getTime() - new Date(date).getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
-  if (diffDays < 1) {
-    return 'Today';
+  if (diffHours < 24) {
+    return rtf.format(-diffHours, 'hour');
   }
-  if (diffDays === 1) {
-    return 'Yesterday';
-  }
+  const diffDays = Math.floor(diffHours / 24);
   if (diffDays < 7) {
-    return `${diffDays} days ago`;
+    return rtf.format(-diffDays, 'day');
   }
-  return new Date(date).toLocaleDateString();
+  return new Date(date).toLocaleDateString(locale);
 }
 
 export const AssistantsPage = () => {
   const t = useTranslations('assistants-page');
+  const locale = useLocale();
   const { organization } = useOrganization();
   const { user } = useUser();
   const { defaultProjectPublicId } = useAppSelector((state) => state.threads);
@@ -137,9 +137,9 @@ export const AssistantsPage = () => {
               href={`/assistants/${project.publicId}`}
               className="group flex flex-col justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
             >
-              <div className="flex items-start gap-3">
-                <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0 mt-0.5" />
-                <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <div className="flex items-center gap-3">
+                <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {project.title}
                 </p>
               </div>
@@ -149,7 +149,7 @@ export const AssistantsPage = () => {
                 </span>
                 <span>
                   {t('updated', {
-                    time: formatRelativeTime(project.createdAt),
+                    time: formatRelativeTime(project.createdAt, locale),
                   })}
                 </span>
               </div>

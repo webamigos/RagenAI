@@ -98,7 +98,7 @@ export const VerifyEmailForm = () => {
 
         <Button
           type="submit"
-          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-500"
+          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           isLoading={isSubmitting}
           isSubmit={true}
         >
@@ -110,7 +110,7 @@ export const VerifyEmailForm = () => {
             type="button"
             onClick={handleResend}
             disabled={isResending}
-            className="text-sm text-indigo-600 hover:text-indigo-500 disabled:opacity-50"
+            className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50"
           >
             {isResending ? 'Resending...' : "Didn't receive the code? Resend"}
           </button>

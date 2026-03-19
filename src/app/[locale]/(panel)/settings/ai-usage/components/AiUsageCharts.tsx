@@ -27,7 +27,7 @@ const COLORS = [
   '#10b981',
   '#f59e0b',
   '#ef4444',
-  '#8b5cf6',
+  '#4f46e5',
   '#06b6d4',
   '#ec4899',
   '#84cc16',
@@ -37,7 +37,7 @@ const STEP_COLORS: Record<string, string> = {
   CHAT_COMPLETION: '#3b82f6',
   MODERATION: '#10b981',
   REPHRASING: '#f59e0b',
-  EMBEDDINGS: '#8b5cf6',
+  EMBEDDINGS: '#4f46e5',
 };
 
 const STEP_LABELS: Record<string, string> = {

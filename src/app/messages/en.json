@@ -17,6 +17,7 @@
     "new-thread-description": "Just ask me anything!",
     "new-thread-placeholder": "Type your question...",
     "new-thread-greeting": "Hi, {name}",
+    "new-thread-tip": "Tip: you can also integrate your tools - Google Drive, Calendar, ClickUp, HubSpot",
     "suggestion-summarize": "Summarize a document",
     "suggestion-explain": "Explain a concept",
     "suggestion-analyze": "Analyze data",
@@ -989,7 +990,8 @@
       "files": "Files",
       "share": "Share",
       "storage-used": "{percentage}% memory used",
-      "selected": "selected"
+      "selected": "selected",
+      "last-message": "Last message {time}"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
