@@ -192,6 +192,7 @@ export const NewChatInterface = ({
           <Link
             href="/settings/connectors"
             className="text-muted-foreground/40 hover:text-muted-foreground/60"
+            aria-label="Open connectors settings"
           >
             &rarr;
           </Link>

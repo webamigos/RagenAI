@@ -27,6 +27,7 @@ import {
 
 import { Link } from '@/i18n/routing';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
+import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -87,31 +88,6 @@ type ProjectFile = {
 type Props = {
   projectId: string;
 };
-
-function formatRelativeTime(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-
-  if (diffSec < 60) {
-    return rtf.format(-diffSec, 'second');
-  }
-  const diffMins = Math.floor(diffSec / 60);
-  if (diffMins < 60) {
-    return rtf.format(-diffMins, 'minute');
-  }
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) {
-    return rtf.format(-diffHours, 'hour');
-  }
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) {
-    return rtf.format(-diffDays, 'day');
-  }
-  return date.toLocaleDateString(locale);
-}
 
 function getThreadTitle(thread: ProjectThread): string {
   if (thread.title) {

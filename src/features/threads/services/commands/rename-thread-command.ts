@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const renameThreadCommand = async (
@@ -27,6 +28,14 @@ export const renameThreadCommand = async (
     await db.thread.update({
       where: { publicId: threadPublicId },
       data: { title: title.trim() },
+    });
+
+    trackAudit({
+      action: 'thread.renamed',
+      entityType: 'thread',
+      entityId: threadPublicId,
+      oldData: { title: thread.title },
+      newData: { title: title.trim() },
     });
 
     logger.info({ threadId: threadPublicId, title }, 'Thread renamed');

@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { requireAppAdmin } from '@/lib/auth-guards';
 import { revalidatePath } from 'next/cache';
 import db from '@ragenai/prisma-client';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 
 export async function impersonateUserAction(userId: string) {
   await requireAppAdmin();
@@ -35,6 +36,13 @@ export async function banUserAction(userId: string, reason?: string) {
     headers: await headers(),
   });
 
+  trackAudit({
+    action: 'user.banned',
+    entityType: 'user',
+    entityId: userId,
+    newData: { reason },
+  });
+
   revalidatePath('/settings/users');
 }
 
@@ -44,6 +52,12 @@ export async function unbanUserAction(userId: string) {
   await auth.api.unbanUser({
     body: { userId },
     headers: await headers(),
+  });
+
+  trackAudit({
+    action: 'user.unbanned',
+    entityType: 'user',
+    entityId: userId,
   });
 
   revalidatePath('/settings/users');
@@ -76,6 +90,12 @@ export async function createUserAction(data: {
       role: data.role,
     },
     headers: await headers(),
+  });
+
+  trackAudit({
+    action: 'user.created',
+    entityType: 'user',
+    newData: { name: data.name, email: data.email, role: data.role },
   });
 
   revalidatePath('/settings/users');

@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { ThreadAction } from '../../contracts/thread.types';
 
@@ -83,6 +84,13 @@ export const createThreadCommand = async ({
         'Created ThreadDocument relationships for uploaded files',
       );
     }
+
+    trackAudit({
+      action: 'thread.created',
+      entityType: 'thread',
+      entityId: threadRecord.publicId,
+      newData: { projectId: projectId ?? null },
+    });
 
     return {
       publicId: threadRecord.publicId,

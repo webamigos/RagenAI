@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
 import type { AllThreadsItem } from '@/features/threads/contracts/thread.types';
 import { logger } from '@/app/lib/utils/logger';
+import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 
 const PAGE_SIZE = 20;
 
@@ -28,33 +29,6 @@ function getThreadTitle(thread: AllThreadsItem): string {
 
 function getThreadHref(thread: AllThreadsItem): string {
   return `/chats/${thread.publicId}`;
-}
-
-function formatRelativeTime(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-
-  // Use Intl.RelativeTimeFormat for localized relative times
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-
-  if (diffSec < 60) {
-    return rtf.format(-diffSec, 'second');
-  }
-  const diffMins = Math.floor(diffSec / 60);
-  if (diffMins < 60) {
-    return rtf.format(-diffMins, 'minute');
-  }
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) {
-    return rtf.format(-diffHours, 'hour');
-  }
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) {
-    return rtf.format(-diffDays, 'day');
-  }
-  return date.toLocaleDateString(locale);
 }
 
 export const ChatsPage = () => {

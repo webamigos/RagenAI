@@ -6,6 +6,7 @@ import {
   McpConnectorStatus,
 } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getProviderDefinition } from '../../constants/providers';
 
 export const createConnectorCommand = async (
@@ -29,7 +30,7 @@ export const createConnectorCommand = async (
         : `${baseUrl}/mcp`;
 
   try {
-    return await db.mcpConnector.upsert({
+    const connector = await db.mcpConnector.upsert({
       where: {
         organizationId_userId_provider: {
           organizationId: organizationId,
@@ -58,6 +59,15 @@ export const createConnectorCommand = async (
         status: true,
       },
     });
+
+    trackAudit({
+      action: 'connector.connected',
+      entityType: 'connector',
+      entityId: connector.id,
+      newData: { provider: connector.provider },
+    });
+
+    return connector;
   } catch (error) {
     logger.error({ err: error }, 'Error creating connector');
     throw error;
