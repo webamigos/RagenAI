@@ -15,6 +15,8 @@ export type OAuthProviderOptions = {
   callbackUrl: string;
   fixedClientId?: string;
   fixedClientSecret?: string;
+  /** If true, rewrites the `scope` query param to `user_scope` in the authorization URL (required by Slack). */
+  useUserScope?: boolean;
 };
 
 export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
@@ -25,6 +27,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   private callbackUrl: string;
   private fixedClientId?: string;
   private fixedClientSecret?: string;
+  private useUserScope: boolean;
 
   constructor(opts: OAuthProviderOptions) {
     this.orgId = opts.orgId;
@@ -33,6 +36,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
     this.callbackUrl = opts.callbackUrl;
     this.fixedClientId = opts.fixedClientId;
     this.fixedClientSecret = opts.fixedClientSecret;
+    this.useUserScope = opts.useUserScope ?? false;
   }
 
   private get customerId(): string {
@@ -159,6 +163,14 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
   }
 
   async redirectToAuthorization(url: URL): Promise<void> {
+    // Slack uses `user_scope` instead of `scope` for user token OAuth
+    if (this.useUserScope) {
+      const scope = url.searchParams.get('scope');
+      if (scope) {
+        url.searchParams.delete('scope');
+        url.searchParams.set('user_scope', scope);
+      }
+    }
     this._authorizationUrl = url;
   }
 
