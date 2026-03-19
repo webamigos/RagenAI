@@ -34,7 +34,6 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Standalone output preserves monorepo structure: server.js is at apps/admin/
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/public ./apps/admin/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/static ./apps/admin/.next/static
 
