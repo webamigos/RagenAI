@@ -113,11 +113,9 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
     }
 
     // If user was invited to an org, set that as active; otherwise use personal org
-    const activeOrgId = preferredOrgId
-      ? memberships?.find((m: any) => m.id === preferredOrgId)
-        ? preferredOrgId
-        : firstOrg.id
-      : firstOrg.id;
+    const isMemberOfPreferred =
+      preferredOrgId && memberships?.some((m: any) => m.id === preferredOrgId);
+    const activeOrgId = isMemberOfPreferred ? preferredOrgId : firstOrg.id;
 
     // Set active organization in session
     // Use Better Auth API to properly update both database and session cookie
