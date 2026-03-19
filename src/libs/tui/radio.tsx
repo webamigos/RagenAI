@@ -111,7 +111,7 @@ const colors = {
   sky: '[--radio-checked-indicator:var(--color-white)] [--radio-checked-bg:var(--color-sky-500)] [--radio-checked-border:var(--color-sky-600)]/80',
   blue: '[--radio-checked-indicator:var(--color-white)] [--radio-checked-bg:var(--color-blue-600)] [--radio-checked-border:var(--color-blue-700)]/90',
   indigo:
-    '[--radio-checked-indicator:var(--color-white)] [--radio-checked-bg:var(--color-indigo-500)] [--radio-checked-border:var(--color-indigo-600)]/90',
+    '[--radio-checked-indicator:var(--color-white)] [--radio-checked-bg:var(--color-indigo-600)] [--radio-checked-border:var(--color-indigo-700)]/90',
   violet:
     '[--radio-checked-indicator:var(--color-white)] [--radio-checked-bg:var(--color-violet-500)] [--radio-checked-border:var(--color-violet-600)]/90',
   purple:

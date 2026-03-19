@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
+import { isAppAdmin } from '@/lib/auth-access-control';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { Dialog, DialogTitle, DialogActions } from '@ragenai/common-ui/Dialog';
@@ -241,8 +242,8 @@ export function UsersList({ users, currentUserId }: Props) {
             {/* Role badge */}
             <span
               className={
-                u.role === 'admin'
-                  ? 'shrink-0 rounded-md px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                isAppAdmin(u)
+                  ? 'shrink-0 rounded-md px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
                   : 'shrink-0 rounded-md px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
               }
             >
@@ -486,7 +487,7 @@ export function UsersList({ users, currentUserId }: Props) {
                 setCreateForm((p) => ({ ...p, role: e.target.value }))
               }
               disabled={isPending}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
             >
               <option value="user">User</option>
               <option value="admin">Admin</option>

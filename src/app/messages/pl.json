@@ -17,6 +17,7 @@
     "new-thread-description": "Skorzystaj z mojej bazy wiedzy lub wgraj plik",
     "new-thread-placeholder": "Wpisz swoje pytanie...",
     "new-thread-greeting": "Cześć, {name}",
+    "new-thread-tip": "Porada: możesz również zintegrować swoje narzędzia - Google Drive, Calendar, ClickUp, HubSpot",
     "suggestion-summarize": "Podsumuj dokument",
     "suggestion-explain": "Wyjaśnij zagadnienie",
     "suggestion-analyze": "Przeanalizuj dane",
@@ -413,7 +414,8 @@
       "api-keys": "Klucze API",
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
-      "disk-usage": "Użycie dysku"
+      "disk-usage": "Użycie dysku",
+      "audit-logs": "Dziennik zdarzeń"
     },
     "general": {
       "profile": "Profil",
@@ -947,7 +949,8 @@
       "files": "Pliki",
       "share": "Udostępnij",
       "storage-used": "{percentage}% użycia pamięci",
-      "selected": "zaznaczonych"
+      "selected": "zaznaczonych",
+      "last-message": "Ostatnia wiadomość {time}"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

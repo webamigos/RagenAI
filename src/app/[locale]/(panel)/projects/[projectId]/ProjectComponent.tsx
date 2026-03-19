@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
@@ -27,6 +27,7 @@ import {
 
 import { Link } from '@/i18n/routing';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
+import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
@@ -88,29 +89,6 @@ type Props = {
   projectId: string;
 };
 
-function formatRelativeTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) {
-    return 'just now';
-  }
-  if (diffMins < 60) {
-    return `${diffMins}m ago`;
-  }
-  if (diffHours < 24) {
-    return `${diffHours}h ago`;
-  }
-  if (diffDays < 7) {
-    return `${diffDays}d ago`;
-  }
-  return date.toLocaleDateString();
-}
-
 function getThreadTitle(thread: ProjectThread): string {
   if (thread.title) {
     return thread.title;
@@ -149,6 +127,7 @@ export function ProjectComponent({ projectId }: Props) {
   const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
   const tAttach = useTranslations('prompt-attachments');
+  const locale = useLocale();
 
   useEffect(() => {
     isDriveConnected()
@@ -461,7 +440,9 @@ export function ProjectComponent({ projectId }: Props) {
                       {getThreadTitle(thread)}
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      Last message {formatRelativeTime(thread.createdAt)}
+                      {t('project-view.last-message', {
+                        time: formatRelativeTime(thread.createdAt, locale),
+                      })}
                     </p>
                   </div>
                 </Link>

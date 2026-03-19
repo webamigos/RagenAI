@@ -48,7 +48,7 @@ export default async function InitialAccountPage({ params }: Props) {
               {t('already-have-account')}{' '}
               <Link
                 href="/sign-in"
-                className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-500"
+                className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-300"
               >
                 {t('sign-in')}
               </Link>

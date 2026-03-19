@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { ragenAuthClient } from '@/libs/ragen-vault';
 
 export const disconnectConnectorCommand = async (
@@ -37,13 +38,22 @@ export const disconnectConnectorCommand = async (
     }
 
     // Delete the connector record
-    return await db.mcpConnector.delete({
+    const deleted = await db.mcpConnector.delete({
       where: {
         id: connectorId,
         organizationId: organizationId,
         userId: userId,
       },
     });
+
+    trackAudit({
+      action: 'connector.disconnected',
+      entityType: 'connector',
+      entityId: connectorId,
+      oldData: { provider: connector.provider },
+    });
+
+    return deleted;
   } catch (error) {
     logger.error({ err: error }, 'Error disconnecting connector');
     throw error;

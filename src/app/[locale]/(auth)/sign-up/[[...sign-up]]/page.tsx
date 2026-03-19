@@ -46,7 +46,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
                 {t('Already-have-an-account')}{' '}
                 <Link
                   href={signInHref}
-                  className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-500"
+                  className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-300"
                 >
                   {t('sign-in')}
                 </Link>
