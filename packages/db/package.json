@@ -1,0 +1,20 @@
+{
+  "name": "@ragenai/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.ts",
+      "types": "./index.ts"
+    },
+    "./client": {
+      "import": "../../src/generated/prisma/client.ts",
+      "types": "../../src/generated/prisma/client.ts"
+    }
+  },
+  "dependencies": {
+    "@prisma/client": "^7.0.0",
+    "@prisma/adapter-pg": "^7.0.0"
+  }
+}
