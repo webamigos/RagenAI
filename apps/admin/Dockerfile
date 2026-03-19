@@ -33,9 +33,10 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/public ./public
+# Standalone output preserves monorepo structure: server.js is at apps/admin/
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/public ./apps/admin/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/admin/.next/static ./apps/admin/.next/static
 
 USER nextjs
 
@@ -43,4 +44,4 @@ EXPOSE 3200
 ENV PORT=3200
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/admin/server.js"]
