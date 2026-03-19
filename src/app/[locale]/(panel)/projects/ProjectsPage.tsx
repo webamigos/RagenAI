@@ -13,6 +13,7 @@ import { Link } from '@/i18n/routing';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@/components/ui/input';
+import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
 import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
@@ -23,22 +24,6 @@ type ProjectItem = {
   createdAt: Date;
   threads: { publicId: string }[];
 };
-
-function formatRelativeTime(date: Date, locale: string): string {
-  const now = new Date();
-  const diffMs = now.getTime() - new Date(date).getTime();
-  const diffHours = Math.floor(diffMs / 3600000);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-
-  if (diffHours < 24) {
-    return rtf.format(-diffHours, 'hour');
-  }
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) {
-    return rtf.format(-diffDays, 'day');
-  }
-  return new Date(date).toLocaleDateString(locale);
-}
 
 export const AssistantsPage = () => {
   const t = useTranslations('assistants-page');

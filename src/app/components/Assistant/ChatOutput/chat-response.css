@@ -46,22 +46,22 @@
 
 /* LINKS */
 .chat-response a {
-  color: #4f46e5;
+  color: @theme('colors.ragen-blue');
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.15s;
 }
 
 .chat-response a:hover {
-  color: #4338ca;
+  color: @theme('colors.primary-dark');
 }
 
 html.dark .chat-response a {
-  color: #818cf8;
+  color: @theme('colors.primary-blue-400');
 }
 
 html.dark .chat-response a:hover {
-  color: #a5b4fc;
+  color: @theme('colors.primary-blue-500');
 }
 /* LINKS */
 

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
+import { isAppAdmin } from '@/lib/auth-access-control';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { Dialog, DialogTitle, DialogActions } from '@ragenai/common-ui/Dialog';
@@ -241,7 +242,7 @@ export function UsersList({ users, currentUserId }: Props) {
             {/* Role badge */}
             <span
               className={
-                u.role === 'admin'
+                isAppAdmin(u)
                   ? 'shrink-0 rounded-md px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
                   : 'shrink-0 rounded-md px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
               }

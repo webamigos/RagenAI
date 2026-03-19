@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const deleteThreadCommand = async (
@@ -25,6 +26,15 @@ export const deleteThreadCommand = async (
     await db.message.deleteMany({ where: { threadId: thread.id } });
     await db.threadDocument.deleteMany({ where: { threadId: thread.id } });
     await db.thread.delete({ where: { id: thread.id } });
+
+    trackAudit({
+      orgId,
+      userId: thread.userId ?? undefined,
+      action: 'thread.deleted',
+      entityType: 'thread',
+      entityId: threadPublicId,
+      oldData: { title: thread.title },
+    });
 
     logger.info({ threadId: threadPublicId }, 'Thread deleted');
 

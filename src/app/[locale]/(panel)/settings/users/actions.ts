@@ -2,9 +2,11 @@
 
 import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
-import { requireAppAdmin } from '@/lib/auth-guards';
+import { requireAppAdmin, getSessionOrThrow } from '@/lib/auth-guards';
 import { revalidatePath } from 'next/cache';
 import db from '@ragenai/prisma-client';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export async function impersonateUserAction(userId: string) {
   await requireAppAdmin();
@@ -29,10 +31,21 @@ export async function stopImpersonationAction() {
 
 export async function banUserAction(userId: string, reason?: string) {
   await requireAppAdmin();
+  const session = await getSessionOrThrow();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   await auth.api.banUser({
     body: { userId, banReason: reason },
     headers: await headers(),
+  });
+
+  trackAudit({
+    orgId,
+    userId: session.user.id,
+    action: 'user.banned',
+    entityType: 'user',
+    entityId: userId,
+    newData: { reason },
   });
 
   revalidatePath('/settings/users');
@@ -40,10 +53,20 @@ export async function banUserAction(userId: string, reason?: string) {
 
 export async function unbanUserAction(userId: string) {
   await requireAppAdmin();
+  const session = await getSessionOrThrow();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   await auth.api.unbanUser({
     body: { userId },
     headers: await headers(),
+  });
+
+  trackAudit({
+    orgId,
+    userId: session.user.id,
+    action: 'user.unbanned',
+    entityType: 'user',
+    entityId: userId,
   });
 
   revalidatePath('/settings/users');
@@ -67,6 +90,8 @@ export async function createUserAction(data: {
   role: 'admin' | 'user';
 }) {
   await requireAppAdmin();
+  const session = await getSessionOrThrow();
+  const orgId = await getOrgIdFromAuthOrThrow();
 
   await auth.api.createUser({
     body: {
@@ -76,6 +101,14 @@ export async function createUserAction(data: {
       role: data.role,
     },
     headers: await headers(),
+  });
+
+  trackAudit({
+    orgId,
+    userId: session.user.id,
+    action: 'user.created',
+    entityType: 'user',
+    newData: { name: data.name, email: data.email, role: data.role },
   });
 
   revalidatePath('/settings/users');

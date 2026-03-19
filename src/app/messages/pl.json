@@ -414,7 +414,8 @@
       "api-keys": "Klucze API",
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
-      "disk-usage": "Użycie dysku"
+      "disk-usage": "Użycie dysku",
+      "audit-logs": "Dziennik zdarzeń"
     },
     "general": {
       "profile": "Profil",

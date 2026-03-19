@@ -1,5 +1,6 @@
 import db from '@ragenai/prisma-client';
 import type { ApiKey } from '@/generated/prisma/client';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 
 export const removeApiKeyCommand = async (
   organizationId: string,
@@ -12,9 +13,19 @@ export const removeApiKeyCommand = async (
     },
   });
 
-  return await db.apiKey.delete({
+  const result = await db.apiKey.delete({
     where: {
       id: apiKey.id,
     },
   });
+
+  trackAudit({
+    orgId: organizationId,
+    action: 'api-key.deleted',
+    entityType: 'api-key',
+    entityId: publicApiKeyId,
+    oldData: { name: apiKey.name },
+  });
+
+  return result;
 };

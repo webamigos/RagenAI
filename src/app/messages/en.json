@@ -411,7 +411,8 @@
       "api-keys": "API Keys",
       "users": "Users",
       "ai-usage": "AI Usage",
-      "disk-usage": "Disk Usage"
+      "disk-usage": "Disk Usage",
+      "audit-logs": "Audit Logs"
     },
     "general": {
       "profile": "Profile",

@@ -325,6 +325,7 @@ model User {
   mcpConnectors   McpConnector[]
   mcpOAuthTokens  McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
+  auditLogs        AuditLog[]
 
   @@map("users")
 }
@@ -398,6 +399,7 @@ model Organization {
   mcpConnectors    McpConnector[]
   mcpOAuthTokens   McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
+  auditLogs        AuditLog[]
 
   @@map("organizations")
 }
@@ -679,4 +681,26 @@ model GoogleDriveSync {
   @@index([projectId])
   @@index([enabled])
   @@map("google_drive_syncs")
+}
+
+model AuditLog {
+  id             Int      @id @default(autoincrement())
+  organizationId String   @map("organization_id")
+  userId         String?  @map("user_id")
+  action         String
+  entityType     String   @map("entity_type")
+  entityId       String?  @map("entity_id")
+  oldData        Json?    @map("old_data")
+  newData        Json?    @map("new_data")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entityType])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
