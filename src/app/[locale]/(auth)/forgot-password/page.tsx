@@ -39,7 +39,7 @@ export default async function ForgotPasswordPage({ params }: PropsWihLocale) {
               {tsu('Already-have-an-account')}{' '}
               <Link
                 href="/sign-in"
-                className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-500"
+                className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-300"
               >
                 {tsu('sign-in')}
               </Link>

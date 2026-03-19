@@ -72,7 +72,7 @@ const ButtonComponent = forwardRef(
               )
         }
       >
-        <span className="flex items-center">
+        <span className="flex items-center gap-1.5">
           {label && <span>{label}</span>}
           {children}
           {iconRight && !isLoading && <span className="pl-2">{iconRight}</span>}

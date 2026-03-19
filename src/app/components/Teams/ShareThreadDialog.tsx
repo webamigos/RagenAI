@@ -86,7 +86,7 @@ export function ShareThreadDialog({
               value={selectedTeamId}
               onChange={(e) => setSelectedTeamId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
             >
               <option value="">No team (private)</option>
               {userTeams.map((team) => (

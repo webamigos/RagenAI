@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   ArrowLeftIcon,
   ArrowPathIcon,
@@ -88,27 +88,29 @@ type Props = {
   projectId: string;
 };
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+  const diffSec = Math.floor(diffMs / 1000);
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
-  if (diffMins < 1) {
-    return 'just now';
+  if (diffSec < 60) {
+    return rtf.format(-diffSec, 'second');
   }
+  const diffMins = Math.floor(diffSec / 60);
   if (diffMins < 60) {
-    return `${diffMins}m ago`;
+    return rtf.format(-diffMins, 'minute');
   }
+  const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24) {
-    return `${diffHours}h ago`;
+    return rtf.format(-diffHours, 'hour');
   }
+  const diffDays = Math.floor(diffHours / 24);
   if (diffDays < 7) {
-    return `${diffDays}d ago`;
+    return rtf.format(-diffDays, 'day');
   }
-  return date.toLocaleDateString();
+  return date.toLocaleDateString(locale);
 }
 
 function getThreadTitle(thread: ProjectThread): string {
@@ -149,6 +151,7 @@ export function ProjectComponent({ projectId }: Props) {
   const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
   const tAttach = useTranslations('prompt-attachments');
+  const locale = useLocale();
 
   useEffect(() => {
     isDriveConnected()
@@ -461,7 +464,9 @@ export function ProjectComponent({ projectId }: Props) {
                       {getThreadTitle(thread)}
                     </p>
                     <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      Last message {formatRelativeTime(thread.createdAt)}
+                      {t('project-view.last-message', {
+                        time: formatRelativeTime(thread.createdAt, locale),
+                      })}
                     </p>
                   </div>
                 </Link>

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useOrganization, useUser, useAuth } from '@/app/hooks/use-auth';
 
 import { classMerge } from '@ragenai/common-ui/index';
+import { Link } from '@/i18n/routing';
 import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettings';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -184,6 +185,18 @@ export const NewChatInterface = ({
           }
         />
       </div>
+
+      {!projectTitle && !isPublicAccess && (
+        <p className="text-center text-sm text-muted-foreground/60 mt-4">
+          {t('new-thread-tip')}{' '}
+          <Link
+            href="/settings/connectors"
+            className="text-muted-foreground/40 hover:text-muted-foreground/60"
+          >
+            &rarr;
+          </Link>
+        </p>
+      )}
     </div>
   );
 };

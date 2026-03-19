@@ -99,7 +99,7 @@ export function CreateFolderDialog({
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
             disabled={isSubmitting}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-600 focus:ring-indigo-600"
           >
             <option value="">Organization-wide (visible to all)</option>
             {teams.map((team) => (
