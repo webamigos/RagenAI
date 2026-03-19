@@ -613,7 +613,26 @@
     "upload-file": "Upload file",
     "from-knowledge-base": "From Knowledge Base",
     "from-google-drive": "From Google Drive",
-    "from-fireflies": "From Fireflies"
+    "from-fireflies": "From Fireflies",
+    "from-google-drive-folder": "From Google Drive folder",
+    "sync-google-drive": "Sync Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Select Google Drive folder",
+    "search-placeholder": "Search folders...",
+    "no-folders": "No folders found",
+    "no-results": "No folders match your search",
+    "no-files": "This folder is empty",
+    "select-files-title": "Select files",
+    "back": "Back",
+    "attach-selected": "Attach selected",
+    "import-selected": "Import selected",
+    "loading-content": "Loading content...",
+    "progress": "Loading {current}/{total}...",
+    "select-all": "Select all",
+    "deselect-all": "Deselect all",
+    "fetch-error": "Failed to load folder content",
+    "use-search-hint": "Use the search box above to find more folders"
   },
   "drive-picker": {
     "title": "Select from Google Drive",
@@ -621,7 +640,13 @@
     "no-results": "No documents match your search",
     "no-files": "No documents found",
     "fetch-error": "Failed to load document content",
-    "use-search-hint": "Use the search box above to find more documents"
+    "use-search-hint": "Use the search box above to find more documents",
+    "folders": "Folders",
+    "show-folders": "Show folders",
+    "select-all": "Select all",
+    "deselect-all": "Deselect all",
+    "attach-selected": "{count, plural, one {Attach # file} other {Attach # files}}",
+    "attach-progress": "Loading {current}/{total}..."
   },
   "fireflies-picker": {
     "title": "Select from Fireflies",
@@ -900,6 +925,13 @@
       "remove-file": "Remove file",
       "add-files": "Add files",
       "from-knowledge-base": "From Knowledge Base",
+      "from-google-drive": "From Google Drive",
+      "importing-from-drive": "Importing from Google Drive...",
+      "syncing-drive": "Syncing Google Drive...",
+      "sync-complete": "Sync complete: {newCount} new, {updatedCount} updated",
+      "sync-up-to-date": "All files are up to date",
+      "sync-failed": "Sync failed",
+      "sync-hint": "Re-sync files from connected Google Drive folders. Updates modified files and imports new ones.",
       "drop-to-upload": "Drop files to upload",
       "uploading": "Uploading..."
     },
@@ -956,7 +988,8 @@
       "instructions": "Instructions",
       "files": "Files",
       "share": "Share",
-      "storage-used": "{percentage}% memory used"
+      "storage-used": "{percentage}% memory used",
+      "selected": "selected"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

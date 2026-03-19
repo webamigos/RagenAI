@@ -4,8 +4,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ArrowLeftIcon,
+  ArrowPathIcon,
+  ArrowUpTrayIcon,
+  BookOpenIcon,
   ChatBubbleLeftIcon,
   PlusIcon,
+  TrashIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import {
   Dialog,
@@ -13,6 +18,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { Link } from '@/i18n/routing';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
@@ -29,8 +40,19 @@ import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
 import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
+import { Checkbox } from '@ragenai/tui';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
+import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
+import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
+import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
+import {
+  isDriveConnected,
+  importDriveFileToProject,
+  syncDriveProject,
+} from '@/app/actions/google-drive';
+import { isFirefliesConnected } from '@/app/actions/fireflies';
+import { importFilesToProject } from '@/app/actions';
 
 import type { FileType } from '@/generated/prisma/browser';
 
@@ -59,6 +81,7 @@ type ProjectFile = {
   fileSize: number;
   fileType: FileType;
   createdAt: Date | null;
+  metadata?: Record<string, unknown> | null;
 };
 
 type Props = {
@@ -110,11 +133,31 @@ export function ProjectComponent({ projectId }: Props) {
   const [files, setFiles] = useState<ProjectFile[]>([]);
   const [storageUsed, setStorageUsed] = useState(0);
   const [storageLimit, setStorageLimit] = useState(20 * 1024 * 1024);
-  const [removingFileId, setRemovingFileId] = useState<string | null>(null);
+  const [selectedFileIds, setSelectedFileIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [isDeletingSelected, setIsDeletingSelected] = useState(false);
+  const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
+  const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
+  const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
+  const [hasDriveConnector, setHasDriveConnector] = useState(false);
+  const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
+  const [hasDriveFiles, setHasDriveFiles] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
+  const tAttach = useTranslations('prompt-attachments');
+
+  useEffect(() => {
+    isDriveConnected()
+      .then(setHasDriveConnector)
+      .catch(() => setHasDriveConnector(false));
+    isFirefliesConnected()
+      .then(setHasFirefliesConnector)
+      .catch(() => setHasFirefliesConnector(false));
+  }, []);
 
   const loadFiles = useCallback(async (pubId: string) => {
     try {
@@ -123,7 +166,16 @@ export function ProjectComponent({ projectId }: Props) {
         getProjectStorageInfo(pubId),
       ]);
       if (filesResult.files) {
-        setFiles(filesResult.files as ProjectFile[]);
+        const projectFiles = filesResult.files as ProjectFile[];
+        setFiles(projectFiles);
+        setHasDriveFiles(
+          projectFiles.some(
+            (f) =>
+              f.metadata &&
+              typeof f.metadata === 'object' &&
+              'driveFileId' in f.metadata,
+          ),
+        );
       }
       setStorageUsed(storageInfo.usedBytes);
       setStorageLimit(storageInfo.limitBytes);
@@ -155,25 +207,142 @@ export function ProjectComponent({ projectId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
-  const handleRemoveFile = async (publicFileId: string) => {
-    if (!project || removingFileId) {
+  const handleSyncDrive = async () => {
+    if (!project || isSyncing) {
       return;
     }
-    setRemovingFileId(publicFileId);
+    setIsSyncing(true);
     try {
-      const result = await deleteProjectFileAction(
-        publicFileId,
-        project.publicId,
-      );
-      if (result.error) {
-        throw new Error(result.error);
+      const result = await syncDriveProject(project.publicId);
+      if (result.success) {
+        if (result.updatedCount > 0) {
+          successToast({
+            message: t('upload.sync-complete', {
+              newCount: 0,
+              updatedCount: result.updatedCount,
+            }),
+          });
+        } else {
+          infoToast({ message: t('upload.sync-up-to-date') });
+        }
+      } else {
+        errorToast({ message: t('upload.sync-failed') });
       }
-      infoToast({ message: t('file-deleted') });
       loadFiles(project.publicId);
     } catch {
-      errorToast({ message: t('file-delete-fail') });
+      errorToast({ message: t('upload.sync-failed') });
     } finally {
-      setRemovingFileId(null);
+      setIsSyncing(false);
+    }
+  };
+
+  const handleKbFilesSelected = async (
+    selected: {
+      publicId: string;
+      name: string;
+      size: number;
+      type: string;
+    }[],
+  ) => {
+    if (!project) {
+      return;
+    }
+    const fileIds = selected.map((f) => f.publicId);
+    await importFilesToProject(fileIds, project.publicId);
+    loadFiles(project.publicId);
+  };
+
+  const handleExternalFileSelected = async (doc: {
+    name: string;
+    content: string;
+    type: string;
+    driveFileId?: string;
+    driveModifiedTime?: string;
+  }) => {
+    if (!project) {
+      return;
+    }
+    try {
+      // If it's a Drive file, use the proper import (with metadata for sync)
+      if (doc.driveFileId) {
+        const result = await importDriveFileToProject(
+          doc.driveFileId,
+          doc.name,
+          doc.driveModifiedTime || '',
+          project.publicId,
+        );
+        if (!result.success) {
+          errorToast({ message: result.error || t('file-upload-fail') });
+          return;
+        }
+        successToast({ message: t('file-uploaded') });
+        loadFiles(project.publicId);
+        return;
+      }
+
+      // Non-Drive files: upload via FormData
+      const blob = new Blob([doc.content], { type: 'text/markdown' });
+      const fileName = doc.name.endsWith('.md') ? doc.name : `${doc.name}.md`;
+      const file = new File([blob], fileName, { type: 'text/markdown' });
+
+      const { uploadProjectFiles } = await import('@/app/lib/services/api');
+      const formData = new FormData();
+      formData.append('files', file);
+      formData.append('projectId', project.publicId);
+
+      await uploadProjectFiles(project.publicId, formData);
+      successToast({ message: t('file-uploaded') });
+      loadFiles(project.publicId);
+    } catch {
+      errorToast({ message: t('file-upload-fail') });
+    }
+  };
+
+  const toggleFileSelect = (publicId: string) => {
+    setSelectedFileIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(publicId)) {
+        next.delete(publicId);
+      } else {
+        next.add(publicId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedFileIds.size === files.length) {
+      setSelectedFileIds(new Set());
+    } else {
+      setSelectedFileIds(new Set(files.map((f) => f.publicId)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedFileIds(new Set());
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!project || selectedFileIds.size === 0 || isDeletingSelected) {
+      return;
+    }
+    setIsDeletingSelected(true);
+    try {
+      const results = await Promise.allSettled(
+        Array.from(selectedFileIds).map((fileId) =>
+          deleteProjectFileAction(fileId, project.publicId),
+        ),
+      );
+      const failed = results.filter((r) => r.status === 'rejected');
+      if (failed.length > 0) {
+        errorToast({ message: t('file-delete-fail') });
+      } else {
+        infoToast({ message: t('file-deleted') });
+      }
+      setSelectedFileIds(new Set());
+      loadFiles(project.publicId);
+    } finally {
+      setIsDeletingSelected(false);
     }
   };
 
@@ -224,7 +393,7 @@ export function ProjectComponent({ projectId }: Props) {
             </div>
           </div>
           {/* Right column */}
-          <div className="w-72 lg:w-80 shrink-0 hidden md:block space-y-4">
+          <div className="w-80 lg:w-96 shrink-0 hidden md:block space-y-4">
             <div className="h-20 w-full bg-muted rounded-xl" />
             <div className="h-40 w-full bg-muted rounded-xl" />
           </div>
@@ -255,7 +424,7 @@ export function ProjectComponent({ projectId }: Props) {
         />
       </div>
 
-      <div className="flex gap-6 w-full">
+      <div className="flex items-start gap-6 w-full">
         {/* Left column: chat input, thread list */}
         <div className="flex-1 min-w-0">
           {/* Chat input */}
@@ -302,10 +471,10 @@ export function ProjectComponent({ projectId }: Props) {
         </div>
 
         {/* Right column: instructions + files */}
-        <div className="w-72 lg:w-80 shrink-0 hidden md:block space-y-4">
+        <div className="w-80 lg:w-96 shrink-0 hidden md:block space-y-4 mt-2">
           {/* Instructions section */}
           <div
-            className="rounded-xl border border-border/60 p-4 hover:bg-muted/30 transition-colors cursor-pointer"
+            className="rounded-xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/40 transition-colors cursor-pointer"
             onClick={() => setShowInstructions(true)}
           >
             <div className="flex items-center justify-between mb-1">
@@ -326,17 +495,82 @@ export function ProjectComponent({ projectId }: Props) {
           </div>
 
           {/* Files section - inline */}
-          <div className="rounded-xl border border-border/60 p-4">
+          <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold">
                 {t('project-view.files')}
               </h3>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-0.5 rounded hover:bg-muted/50 transition-colors"
-              >
-                <PlusIcon className="size-4 text-muted-foreground" />
-              </button>
+              <div className="flex items-center gap-1">
+                {hasDriveFiles && (
+                  <div className="relative group/sync">
+                    <button
+                      onClick={handleSyncDrive}
+                      disabled={isSyncing}
+                      className="p-1 rounded hover:bg-muted/50 transition-colors disabled:opacity-50"
+                      title={tAttach('sync-google-drive')}
+                    >
+                      <ArrowPathIcon
+                        className={`size-4 text-muted-foreground ${isSyncing ? 'animate-spin' : ''}`}
+                      />
+                    </button>
+                    <div className="absolute bottom-full right-0 mb-2 w-48 p-2 text-xs text-zinc-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg opacity-0 pointer-events-none group-hover/sync:opacity-100 transition-opacity z-10">
+                      {t('upload.sync-hint', {
+                        defaultMessage:
+                          'Re-sync files from connected Google Drive folders. Updates modified files and imports new ones.',
+                      })}
+                    </div>
+                  </div>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-0.5 rounded hover:bg-muted/50 transition-colors">
+                      <PlusIcon className="size-4 text-muted-foreground" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-52 p-2">
+                    <DropdownMenuItem
+                      className="py-2.5"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <ArrowUpTrayIcon className="size-4" />
+                      {tAttach('upload-file')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="py-2.5"
+                      onClick={() => setIsKbPickerOpen(true)}
+                    >
+                      <BookOpenIcon className="size-4" />
+                      {tAttach('from-knowledge-base')}
+                    </DropdownMenuItem>
+                    {hasDriveConnector && (
+                      <DropdownMenuItem
+                        className="py-2.5"
+                        onClick={() => setIsDrivePickerOpen(true)}
+                      >
+                        <img
+                          src="/assets/connectors/google-drive.svg"
+                          alt="Google Drive"
+                          className="size-4"
+                        />
+                        {tAttach('from-google-drive')}
+                      </DropdownMenuItem>
+                    )}
+                    {hasFirefliesConnector && (
+                      <DropdownMenuItem
+                        className="py-2.5"
+                        onClick={() => setIsFirefliesPickerOpen(true)}
+                      >
+                        <img
+                          src="/assets/connectors/fireflies.svg"
+                          alt="Fireflies"
+                          className="size-4"
+                        />
+                        {tAttach('from-fireflies')}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <input
                 ref={fileInputRef}
                 className="hidden"
@@ -360,15 +594,52 @@ export function ProjectComponent({ projectId }: Props) {
               })}
             />
 
+            {/* Selection toolbar */}
+            {selectedFileIds.size > 0 && (
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <button onClick={toggleSelectAll}>
+                  <Checkbox
+                    checked={selectedFileIds.size === files.length}
+                    indeterminate={
+                      selectedFileIds.size > 0 &&
+                      selectedFileIds.size < files.length
+                    }
+                  />
+                </button>
+                <span className="text-xs text-muted-foreground">
+                  {selectedFileIds.size} {t('project-view.selected')}
+                </span>
+                <button
+                  onClick={handleDeleteSelected}
+                  disabled={isDeletingSelected}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                  title={t('upload.remove-file')}
+                >
+                  {isDeletingSelected ? (
+                    <div className="size-4 border-t-2 border-current rounded-full animate-spin" />
+                  ) : (
+                    <TrashIcon className="size-4" />
+                  )}
+                </button>
+                <button
+                  onClick={clearSelection}
+                  className="ml-auto p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <XMarkIcon className="size-4" />
+                </button>
+              </div>
+            )}
+
             {/* File cards grid */}
             {files.length > 0 ? (
-              <div className="flex flex-wrap gap-2 max-h-72 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 max-h-72 overflow-y-auto">
                 {files.map((file) => (
                   <InlineFileCard
                     key={file.publicId}
                     file={file}
-                    onRemove={handleRemoveFile}
-                    isRemoving={removingFileId === file.publicId}
+                    selected={selectedFileIds.has(file.publicId)}
+                    selectionMode={selectedFileIds.size > 0}
+                    onToggleSelect={toggleFileSelect}
                   />
                 ))}
               </div>
@@ -378,6 +649,24 @@ export function ProjectComponent({ projectId }: Props) {
           </div>
         </div>
       </div>
+
+      <KnowledgeBasePickerDialog
+        open={isKbPickerOpen}
+        onOpenChange={setIsKbPickerOpen}
+        onFilesSelected={handleKbFilesSelected}
+      />
+
+      <GoogleDrivePickerDialog
+        open={isDrivePickerOpen}
+        onOpenChange={setIsDrivePickerOpen}
+        onFileSelected={handleExternalFileSelected}
+      />
+
+      <FirefliesPickerDialog
+        open={isFirefliesPickerOpen}
+        onOpenChange={setIsFirefliesPickerOpen}
+        onFileSelected={handleExternalFileSelected}
+      />
 
       {/* Instructions dialog */}
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>

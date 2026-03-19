@@ -2,6 +2,7 @@ import { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { DEFAULT_PROJECT_TITLE } from '@/features/organizations/constants/settings';
 
 import {
   EmbeddingStatus,
@@ -221,7 +222,8 @@ export const UserFilesTable = ({
     return files.filter(
       (file) =>
         file.fileName.toLowerCase().includes(searchValue.toLowerCase()) &&
-        file.project?.title === 'Default',
+        (file.project?.title === 'Default' ||
+          file.project?.title === DEFAULT_PROJECT_TITLE),
     ) as UserFileTypeSafe[];
   }, [files, searchValue]);
 

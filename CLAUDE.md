@@ -180,12 +180,22 @@ Users can connect external services via Settings > Connectors. These are powered
 | Google Calendar | `ragen-mcp` (own) | list_calendars, list_calendar_events, get_calendar_event, check_free_busy |
 | Google Analytics | `ragen-mcp` (own) | get_traffic_report, get_conversion_data, get_top_pages, get_audience_insights |
 | Google Ads | `ragen-mcp` (own) | list_campaigns, get_campaign_performance, get_cost_summary |
-| Google Drive | `ragen-mcp` (own) | search_drive_files, read_drive_file, get_drive_file_info |
+| Google Drive | `ragen-mcp` (own) | search_drive_files, read_drive_file, get_drive_file_info, list_drive_folder_files |
 | HubSpot | Claude AI MCP | get_crm_objects, search_crm_objects, get/search_properties, get_user_details, search_owners |
 | ClickUp | Claude AI MCP | search, create/get/update_task, create/get/update_list, create/get/update_folder, docs, comments, time tracking |
 | Gmail | Claude AI MCP | search_messages, read_message, read_thread, create_draft, list_labels, get_profile |
 
-**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + FastAPI Python server deployed on Railway. MCP protocol on port 9001 (`/mcp`), HTTP/OAuth on port 8001. Per-user OAuth with PKCE, tokens stored in Ragen Token Vault (centralized vault). All Google tools (Calendar, Analytics, Ads, Drive) require `property_id` (GA4) or `ads_customer_id` (Ads) which the user must provide. Env vars: `MCP_GOOGLE_SERVER_URL` (MCP endpoint, e.g. `http://localhost:9001/mcp`), `MCP_GOOGLE_AUTH_URL` (OAuth endpoint, e.g. `http://localhost:8001` — falls back to `MCP_GOOGLE_SERVER_URL` if not set).
+**External MCP server (own):** `ragen-mcp/services/google` — FastMCP + Hono TypeScript server deployed on Railway. MCP protocol on port 9001 (`/mcp`), HTTP/OAuth on port 8001. Per-user OAuth with PKCE, tokens stored in Ragen Token Vault (centralized vault). Google Analytics tools require `property_id` (GA4) and Google Ads tools require `ads_customer_id` (Ads) which the user must provide. Calendar, Drive, and Gmail tools do not require these parameters. Env vars: `MCP_GOOGLE_SERVER_URL` (MCP endpoint, e.g. `http://localhost:9001/mcp`), `MCP_GOOGLE_AUTH_URL` (OAuth endpoint, e.g. `http://localhost:8001` — falls back to `MCP_GOOGLE_SERVER_URL` if not set).
+
+**Google Drive folder attachment & import:**
+
+Users with a Google Drive connector can attach entire folder contents to chat or import them into project knowledge bases:
+
+- **Prompt form**: "From Google Drive folder" opens a two-step dialog (folder search → file selection with checkboxes). Selected files' content is fetched in parallel and attached as `ThreadDocumentUI[]`.
+- **Project KB import**: "From Google Drive" button in project files list. Selects a folder, then `importDriveFolderCommand` lists all files (max 200), fetches content, creates `UserFile` records, uploads to S3, and starts Temporal embedding workflows in batches of 5.
+- **Sync tracking**: `GoogleDriveSync` Prisma model tracks which folders have been imported per project (for future auto-sync via Temporal cron — Phase 3, deferred). Imported files store `driveFileId`, `driveFolderId`, `driveModifiedTime` in `UserFile.metadata` JSON.
+- **Key files**: `src/app/components/GoogleDriveFolderPickerDialog.tsx` (two-step dialog), `src/features/connectors/services/commands/import-drive-folder-command.ts` (KB import), `src/features/connectors/services/queries/list-drive-folder-files-query.ts` + `search-drive-folders-query.ts` (REST queries), `src/app/actions/google-drive.ts` (server actions).
+- **REST endpoint on ragen-mcp**: `GET /drive/folder/:folder_id/files?customer_id=X&page_size=50&page_token=Y` — returns `{ success, files, folder_name, count, next_page_token }`.
 
 ### Settings Pages
 

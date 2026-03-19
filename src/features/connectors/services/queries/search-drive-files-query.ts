@@ -27,6 +27,7 @@ export const searchDriveFilesQuery = async (
   userId: string,
   query: string = '',
   pageToken?: string,
+  mimeType: string = 'application/vnd.google-apps.document',
 ): Promise<DriveSearchResponse> => {
   const connector = await getDriveConnectorQuery(organizationId, userId);
   if (!connector) {
@@ -38,8 +39,10 @@ export const searchDriveFilesQuery = async (
       customer_id: connector.customerId,
       query,
       page_size: '20',
-      mime_type: 'application/vnd.google-apps.document',
     });
+    if (mimeType) {
+      params.set('mime_type', mimeType);
+    }
     if (pageToken) {
       params.set('page_token', pageToken);
     }

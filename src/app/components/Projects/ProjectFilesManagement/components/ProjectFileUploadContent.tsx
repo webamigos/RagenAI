@@ -2,20 +2,22 @@ import { Text } from '@ragenai/common-ui/Text';
 import { Skeleton } from '@ragenai/common-ui/Skeleton';
 import { DocumentIcon, CloudArrowIcon } from '@ragenai/common-ui/icons';
 
-export type FileStatus = {
+export interface FileStatus {
   hasFiles: boolean;
   fileCount: number;
   loading: boolean;
-};
+}
 
-type ProjectFileUploadContentProps = {
+interface ProjectFileUploadContentProps {
   status: FileStatus;
   t: (value: string) => string;
-};
+  compact?: boolean;
+}
 
 export const ProjectFileUploadContent = ({
   status,
   t,
+  compact,
 }: ProjectFileUploadContentProps) => {
   const { hasFiles, fileCount, loading } = status;
 

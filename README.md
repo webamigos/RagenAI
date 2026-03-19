@@ -66,6 +66,7 @@ src/
 │
 ├── features/                     # Domain feature modules (CQRS pattern)
 │   ├── assistants/               # Assistant mode types
+│   ├── connectors/               # External connectors (Google Drive, etc.)
 │   ├── documents/                # Document & file management
 │   ├── messages/                 # Chat messages
 │   ├── onboarding/               # User onboarding flow
@@ -83,6 +84,8 @@ src/
 │   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
 │   ├── temporal/                 # Temporal.io client
 │   ├── payments/                 # Stripe integration
+│   ├── mcp/                      # MCP client for external tool servers
+│   ├── ragen-vault/              # HTTP client for Ragen Token Vault
 │   ├── sse/                      # Server-Sent Events for streaming
 │   ├── tui/                      # Tailwind UI component library (@ragenai/tui)
 │   └── common-ui/                # Shared UI utilities (@ragenai/common-ui)
@@ -147,6 +150,8 @@ App admins can access all settings pages. Theme switching (Light/Dark/System) is
 ### Document Processing
 
 Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use OpenAI `text-embedding-3-small` (1536 dimensions).
+
+**Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
 
 ### State Management
 

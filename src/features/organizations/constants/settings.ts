@@ -4,6 +4,8 @@ import type {
   StorageLimits,
 } from '../contracts/organization.types';
 
+export const DEFAULT_PROJECT_TITLE = 'Default Assistant';
+
 export const defaultOrganizationSettings: RawOrganizationSettings = {
   apiKey: null,
   prompt: '',

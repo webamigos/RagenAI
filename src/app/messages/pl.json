@@ -29,10 +29,10 @@
   },
   "Breadcrumbs": {
     "assistants": "Asystenci",
-    "projects": "Projekty",
+    "projects": "Asystenci",
     "mainThreads": "Główne wątki",
     "conversation": "Konwersacja",
-    "unknownProject": "Nieznany projekt"
+    "unknownProject": "Nieznany asystent"
   },
   "sign-up": {
     "create-account": "Załóż konto",
@@ -213,7 +213,7 @@
       "title": "Czaty | Ragen AI"
     },
     "projects": {
-      "title": "Projekty | Ragen AI"
+      "title": "Asystenci | Ragen AI"
     },
     "project-detail": {
       "title": "{title} | Ragen AI"
@@ -616,7 +616,26 @@
     "upload-file": "Wgraj plik",
     "from-knowledge-base": "Z Bazy Wiedzy",
     "from-google-drive": "Z Google Drive",
-    "from-fireflies": "Z Fireflies"
+    "from-fireflies": "Z Fireflies",
+    "from-google-drive-folder": "Z folderu Google Drive",
+    "sync-google-drive": "Synchronizuj Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Wybierz folder Google Drive",
+    "search-placeholder": "Szukaj folderów...",
+    "no-folders": "Nie znaleziono folderów",
+    "no-results": "Brak folderów pasujących do wyszukiwania",
+    "no-files": "Ten folder jest pusty",
+    "select-files-title": "Wybierz pliki",
+    "back": "Wstecz",
+    "attach-selected": "Dołącz wybrane",
+    "import-selected": "Importuj wybrane",
+    "loading-content": "Ładowanie zawartości...",
+    "progress": "Ładowanie {current}/{total}...",
+    "select-all": "Zaznacz wszystko",
+    "deselect-all": "Odznacz wszystko",
+    "fetch-error": "Nie udało się załadować zawartości folderu",
+    "use-search-hint": "Użyj wyszukiwarki powyżej, aby znaleźć więcej folderów"
   },
   "drive-picker": {
     "title": "Wybierz z Google Drive",
@@ -624,7 +643,13 @@
     "no-results": "Brak dokumentów pasujących do wyszukiwania",
     "no-files": "Nie znaleziono dokumentów",
     "fetch-error": "Nie udało się pobrać zawartości dokumentu",
-    "use-search-hint": "Użyj wyszukiwarki powyżej, aby znaleźć więcej dokumentów"
+    "use-search-hint": "Użyj wyszukiwarki powyżej, aby znaleźć więcej dokumentów",
+    "folders": "Foldery",
+    "show-folders": "Pokaż foldery",
+    "select-all": "Zaznacz wszystko",
+    "deselect-all": "Odznacz wszystko",
+    "attach-selected": "{count, plural, one {Dołącz # plik} few {Dołącz # pliki} other {Dołącz # plików}}",
+    "attach-progress": "Ładowanie {current}/{total}..."
   },
   "fireflies-picker": {
     "title": "Wybierz z Fireflies",
@@ -903,18 +928,26 @@
       "remove-file": "Usuń plik",
       "add-files": "Dodaj pliki",
       "from-knowledge-base": "Z Bazy Wiedzy",
+      "from-google-drive": "Z Google Drive",
+      "importing-from-drive": "Importowanie z Google Drive...",
+      "syncing-drive": "Synchronizacja Google Drive...",
+      "sync-complete": "Synchronizacja zakończona: {newCount} nowych plików, {updatedCount} zaktualizowanych plików",
+      "sync-up-to-date": "Wszystkie pliki są aktualne",
+      "sync-failed": "Synchronizacja nie powiodła się",
+      "sync-hint": "Synchronizuj pliki z połączonych folderów Google Drive. Aktualizuje zmienione pliki i importuje nowe.",
       "drop-to-upload": "Upuść pliki, aby je wgrać",
       "uploading": "Przesyłanie..."
     },
     "project-view": {
-      "all-projects": "Wszystkie projekty",
+      "all-projects": "Lista asystentów",
       "threads": "Konwersacje",
       "no-threads": "Brak konwersacji",
       "no-threads-description": "Rozpocznij nową rozmowę powyżej",
       "instructions": "Instrukcje",
       "files": "Pliki",
       "share": "Udostępnij",
-      "storage-used": "{percentage}% użycia pamięci"
+      "storage-used": "{percentage}% użycia pamięci",
+      "selected": "zaznaczonych"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
