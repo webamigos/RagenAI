@@ -30,7 +30,7 @@ import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
 import { importFilesToProject } from '@/app/actions';
 import {
   isDriveConnected,
-  importDriveFolder,
+  importDriveFileToProject,
 } from '@/app/actions/google-drive';
 import { isFirefliesConnected } from '@/app/actions/fireflies';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
@@ -111,6 +111,34 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
       await importFilesToProject(fileIds, projectPublicId);
     } catch {
       // Import error is non-critical
+    }
+    // Refresh file status
+    setShowUploader((v) => !v);
+    setTimeout(() => setShowUploader(false), 0);
+  };
+
+  const handleExternalFileSelected = async (doc: ThreadDocumentUI) => {
+    try {
+      if (doc.driveFileId) {
+        await importDriveFileToProject(
+          doc.driveFileId,
+          doc.name,
+          doc.driveModifiedTime || '',
+          projectPublicId,
+        );
+      } else {
+        // Non-Drive files (e.g. Fireflies): upload via FormData
+        const blob = new Blob([doc.content], { type: 'text/markdown' });
+        const fileName = doc.name.endsWith('.md') ? doc.name : `${doc.name}.md`;
+        const file = new File([blob], fileName, { type: 'text/markdown' });
+        const { uploadProjectFiles } = await import('@/app/lib/services/api');
+        const formData = new FormData();
+        formData.append('files', file);
+        formData.append('projectId', projectPublicId);
+        await uploadProjectFiles(projectPublicId, formData);
+      }
+    } catch {
+      // Import error handled silently — file list will refresh
     }
     // Refresh file status
     setShowUploader((v) => !v);
@@ -207,21 +235,13 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
       <GoogleDrivePickerDialog
         open={isDrivePickerOpen}
         onOpenChange={setIsDrivePickerOpen}
-        onFileSelected={() => {
-          // Refresh after drive file import
-          setShowUploader((v) => !v);
-          setTimeout(() => setShowUploader(false), 0);
-        }}
+        onFileSelected={handleExternalFileSelected}
       />
 
       <FirefliesPickerDialog
         open={isFirefliesPickerOpen}
         onOpenChange={setIsFirefliesPickerOpen}
-        onFileSelected={() => {
-          // Refresh after fireflies import
-          setShowUploader((v) => !v);
-          setTimeout(() => setShowUploader(false), 0);
-        }}
+        onFileSelected={handleExternalFileSelected}
       />
     </>
   );

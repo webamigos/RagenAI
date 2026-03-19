@@ -658,6 +658,7 @@ enum McpConnectorProvider {
 
 model GoogleDriveSync {
   id             String    @id @default(uuid()) @db.Uuid
+  publicId       String    @unique @default(uuid()) @map("public_id") @db.Uuid
   organizationId String    @map("organization_id")
   userId         String    @map("user_id")
   projectId      Int       @map("project_id")
@@ -674,6 +675,8 @@ model GoogleDriveSync {
 
   @@unique([organizationId, projectId, driveFolderId])
   @@index([organizationId])
+  @@index([userId])
+  @@index([projectId])
   @@index([enabled])
   @@map("google_drive_syncs")
 }

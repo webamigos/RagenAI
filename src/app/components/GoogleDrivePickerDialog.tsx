@@ -261,8 +261,9 @@ export const GoogleDrivePickerDialog = ({
   // Reload when showFolders changes (only at root level)
   useEffect(() => {
     if (open && !insideFolder) {
+      setSearch('');
       rootCacheRef.current = null;
-      loadRootItems(search, showFolders);
+      loadRootItems('', showFolders);
     }
   }, [showFolders]); // eslint-disable-line react-hooks/exhaustive-deps
 

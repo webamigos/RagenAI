@@ -13,13 +13,13 @@ import { Workflow } from '@/features/documents/contracts/document.types';
 const MAX_IMPORT_FILES = 200;
 const IMPORT_BATCH_SIZE = 5;
 
-type ImportResult = {
+interface ImportResult {
   success: boolean;
   importedCount: number;
   skippedCount: number;
   failedCount: number;
   error?: string;
-};
+}
 
 export const importDriveFolderCommand = async (
   orgId: string,
@@ -126,7 +126,7 @@ export const importDriveFolderCommand = async (
       userId,
       driveFile.id,
     );
-    if (!contentResult.success || !contentResult.content) {
+    if (!contentResult.success || contentResult.content == null) {
       logger.warn(
         { driveFileId: driveFile.id, error: contentResult.error },
         'Failed to fetch Drive file content during import',
@@ -223,7 +223,7 @@ export const importDriveFolderCommand = async (
   }
 
   // Always create/update sync record for future re-sync
-  if (importedCount > 0) {
+  {
     await db.googleDriveSync.upsert({
       where: {
         organizationId_projectId_driveFolderId: {
@@ -245,6 +245,7 @@ export const importDriveFolderCommand = async (
         lastSyncedAt: new Date(),
         enabled: true,
         folderName,
+        userId,
       },
     });
   }

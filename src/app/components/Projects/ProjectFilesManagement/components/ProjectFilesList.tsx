@@ -149,7 +149,10 @@ export const ProjectFilesList = memo(
               </button>
               {hasDriveConnector && (
                 <button
-                  onClick={() => setIsDriveFolderPickerOpen(true)}
+                  onClick={() => {
+                    setDriveImportError(null);
+                    setIsDriveFolderPickerOpen(true);
+                  }}
                   disabled={isDriveImporting}
                   className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors disabled:opacity-50"
                 >

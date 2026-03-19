@@ -931,7 +931,7 @@
       "from-google-drive": "Z Google Drive",
       "importing-from-drive": "Importowanie z Google Drive...",
       "syncing-drive": "Synchronizacja Google Drive...",
-      "sync-complete": "Synchronizacja zakończona: {newCount} nowych, {updatedCount} zaktualizowanych",
+      "sync-complete": "Synchronizacja zakończona: {newCount} nowych plików, {updatedCount} zaktualizowanych plików",
       "sync-up-to-date": "Wszystkie pliki są aktualne",
       "sync-failed": "Synchronizacja nie powiodła się",
       "sync-hint": "Synchronizuj pliki z połączonych folderów Google Drive. Aktualizuje zmienione pliki i importuje nowe.",

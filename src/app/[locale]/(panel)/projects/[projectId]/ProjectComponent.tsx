@@ -328,14 +328,19 @@ export function ProjectComponent({ projectId }: Props) {
     }
     setIsDeletingSelected(true);
     try {
-      for (const fileId of selectedFileIds) {
-        await deleteProjectFileAction(fileId, project.publicId);
+      const results = await Promise.allSettled(
+        Array.from(selectedFileIds).map((fileId) =>
+          deleteProjectFileAction(fileId, project.publicId),
+        ),
+      );
+      const failed = results.filter((r) => r.status === 'rejected');
+      if (failed.length > 0) {
+        errorToast({ message: t('file-delete-fail') });
+      } else {
+        infoToast({ message: t('file-deleted') });
       }
-      infoToast({ message: t('file-deleted') });
       setSelectedFileIds(new Set());
       loadFiles(project.publicId);
-    } catch {
-      errorToast({ message: t('file-delete-fail') });
     } finally {
       setIsDeletingSelected(false);
     }

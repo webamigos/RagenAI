@@ -569,7 +569,12 @@ export const GoogleDriveFolderPickerDialog = ({
             <div className="flex justify-end pt-2">
               <Button
                 onClick={handleAttachSelected}
-                disabled={selectedFileIds.size === 0 || isAttaching}
+                disabled={
+                  isAttaching ||
+                  (mode === 'import'
+                    ? !selectedFolder
+                    : selectedFileIds.size === 0)
+                }
                 size="sm"
               >
                 {isAttaching

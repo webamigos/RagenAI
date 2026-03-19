@@ -3,14 +3,14 @@ import { getDriveConnectorQuery } from './get-drive-connector-query';
 import { fetchWithTimeout } from '../../utils/fetch-with-timeout';
 import type { DriveFile } from './search-drive-files-query';
 
-export type DriveFolderFilesResponse = {
+export interface DriveFolderFilesResponse {
   success: boolean;
   files?: DriveFile[];
   folderName?: string;
   count?: number;
   nextPageToken?: string;
   error?: string;
-};
+}
 
 export const listDriveFolderFilesQuery = async (
   organizationId: string,

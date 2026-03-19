@@ -1,14 +1,15 @@
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
-export type DriveSyncDto = {
+export interface DriveSyncDto {
   id: string;
+  publicId: string;
   driveFolderId: string;
   folderName: string;
   enabled: boolean;
   lastSyncedAt: Date | null;
   createdAt: Date;
-};
+}
 
 export const getDriveSyncsQuery = async (
   organizationId: string,
@@ -34,6 +35,7 @@ export const getDriveSyncsQuery = async (
       },
       select: {
         id: true,
+        publicId: true,
         driveFolderId: true,
         folderName: true,
         enabled: true,

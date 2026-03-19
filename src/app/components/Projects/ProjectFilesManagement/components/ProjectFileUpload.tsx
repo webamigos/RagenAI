@@ -1,13 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useOrganization } from '@/app/hooks/use-auth';
 import { Suspense, lazy } from 'react';
 
 import { LoadingSkeleton } from '@ragenai/common-ui/Skeleton';
-import {
-  ErrorBoundaryWithTranslations as ErrorBoundary,
-  FileErrorFallback,
-} from '@/app/components/ErrorBoundary';
+import { ErrorBoundaryWithTranslations as ErrorBoundary } from '@/app/components/ErrorBoundary';
 
 const ProjectFilesList = lazy(() =>
   import('./ProjectFilesList').then((mod) => ({
@@ -15,30 +13,24 @@ const ProjectFilesList = lazy(() =>
   })),
 );
 
-type Props = {
+interface Props {
   projectPublicId: string;
   initialFileCount?: number;
-};
+}
 
 export const ProjectFileUpload = ({
   projectPublicId,
   initialFileCount,
 }: Props) => {
   const { organization } = useOrganization();
+  const [resetKey, setResetKey] = useState(0);
 
   if (!organization) {
     return null;
   }
 
   return (
-    <ErrorBoundary
-      fallback={
-        <FileErrorFallback
-          error={new Error('Failed to load files')}
-          resetErrorBoundary={() => {}}
-        />
-      }
-    >
+    <ErrorBoundary key={resetKey} onReset={() => setResetKey((k) => k + 1)}>
       <Suspense fallback={<LoadingSkeleton />}>
         <ProjectFilesList
           projectPublicId={projectPublicId}

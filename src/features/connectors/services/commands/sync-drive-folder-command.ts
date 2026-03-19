@@ -25,10 +25,10 @@ type SyncResult = {
 export const syncDriveFolderCommand = async (
   orgId: string,
   userId: string,
-  syncId: string,
+  syncPublicId: string,
 ): Promise<SyncResult> => {
   const syncRecord = await db.googleDriveSync.findFirst({
-    where: { id: syncId, organizationId: orgId },
+    where: { publicId: syncPublicId, organizationId: orgId },
   });
 
   if (!syncRecord) {
@@ -351,7 +351,7 @@ export const syncDriveFolderCommand = async (
 
   // Update sync record
   await db.googleDriveSync.update({
-    where: { id: syncId },
+    where: { id: syncRecord.id },
     data: { lastSyncedAt: new Date() },
   });
 

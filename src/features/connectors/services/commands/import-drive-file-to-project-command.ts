@@ -9,10 +9,11 @@ import { uploadToS3WithOrg } from '@/app/lib/services/aws';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 
-type ImportFileResult = {
+interface ImportFileResult {
   success: boolean;
+  alreadyExists?: boolean;
   error?: string;
-};
+}
 
 export const importDriveFileToProjectCommand = async (
   orgId: string,
@@ -44,7 +45,7 @@ export const importDriveFileToProjectCommand = async (
   });
 
   if (existingFile) {
-    return { success: true }; // Already imported
+    return { success: true, alreadyExists: true };
   }
 
   const org = await db.organization.findUnique({

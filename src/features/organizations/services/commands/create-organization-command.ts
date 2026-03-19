@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { DEFAULT_PROJECT_TITLE } from '../../constants/settings';
 
 export const createOrganizationWithDefaultProjectCommand = async (
   organizationId: string,
@@ -6,7 +7,7 @@ export const createOrganizationWithDefaultProjectCommand = async (
 ) => {
   await db.project.create({
     data: {
-      title: 'Default Assistant',
+      title: DEFAULT_PROJECT_TITLE,
       organizationId: organizationId,
       ownerId: userId,
     },
