@@ -120,6 +120,9 @@ export class ChatCompletionFactory {
       ...(config.reasoning
         ? { reasoning: { enabled: true, max_tokens: 2048 } }
         : {}),
+      ...(config.providerPreferences
+        ? { provider: config.providerPreferences }
+        : {}),
     });
   }
 

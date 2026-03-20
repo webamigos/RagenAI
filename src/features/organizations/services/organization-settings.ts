@@ -360,6 +360,49 @@ export async function getUsageLimits(orgId: string): Promise<UsageLimits> {
   };
 }
 
+// --- Allowed Models ---
+
+export async function getAllowedModels(orgId: string): Promise<string[]> {
+  const settings = await getSettings(orgId);
+  return settings?.allowedModels ?? [];
+}
+
+export async function saveAllowedModels(
+  orgId: string,
+  models: string[],
+): Promise<void> {
+  await upsertSettings(orgId, { allowedModels: models });
+}
+
+// --- Default Allowed Models ---
+
+const DEFAULT_ALLOWED_MODELS_KEY = 'default_allowed_models';
+
+export async function getDefaultAllowedModels(): Promise<string[]> {
+  const row = await db.settings.findUnique({
+    where: { key: DEFAULT_ALLOWED_MODELS_KEY },
+  });
+  if (!row) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(row.value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDefaultAllowedModels(
+  models: string[],
+): Promise<void> {
+  await db.settings.upsert({
+    where: { key: DEFAULT_ALLOWED_MODELS_KEY },
+    update: { value: JSON.stringify(models) },
+    create: { key: DEFAULT_ALLOWED_MODELS_KEY, value: JSON.stringify(models) },
+  });
+}
+
 // --- Default Organization Limits ---
 
 const DEFAULT_LIMITS_KEY = 'default_organization_limits';
@@ -421,7 +464,10 @@ export async function saveDefaultOrganizationLimits(
 }
 
 export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
-  const defaults = await getDefaultOrganizationLimits();
+  const [defaults, defaultModels] = await Promise.all([
+    getDefaultOrganizationLimits(),
+    getDefaultAllowedModels(),
+  ]);
   const data: Record<string, unknown> = {};
 
   if (defaults.storageLimitBytes !== null) {
@@ -444,6 +490,9 @@ export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
   }
   if (defaults.maxMembers !== null) {
     data.maxMembers = defaults.maxMembers;
+  }
+  if (defaultModels.length > 0) {
+    data.allowedModels = defaultModels;
   }
 
   if (Object.keys(data).length > 0) {

@@ -15,6 +15,7 @@ import {
   PanelLeftOpen,
   CreditCard,
   Gauge,
+  Bot,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -34,6 +35,7 @@ const navItems = [
   { href: '/invitations', label: 'Invitations', icon: Mail },
   { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/limits', label: 'Limits', icon: Gauge },
+  { href: '/models', label: 'Models', icon: Bot },
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },
   { href: '/activity-log', label: 'Activity Log', icon: ScrollText },
