@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
+import { formatDateTime } from '@/lib/format';
 import { formatDistanceToNow } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
@@ -29,6 +30,7 @@ async function getUserDetails(userId: string) {
     messageCount,
     aiUsageSummary,
     diskUsage,
+    connectors,
     recentAuditLogs,
   ] = await Promise.all([
     prisma.thread.count({
@@ -53,6 +55,17 @@ async function getUserDetails(userId: string) {
       where: { organizationId: { in: orgIds } },
       _sum: { fileSize: true },
       _count: true,
+    }),
+    prisma.mcpConnector.findMany({
+      where: { userId: user.id },
+      select: {
+        provider: true,
+        status: true,
+        enabled: true,
+        connectedAt: true,
+        organization: { select: { name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
     }),
     prisma.auditLog.findMany({
       where: { userId: user.id },
@@ -79,6 +92,7 @@ async function getUserDetails(userId: string) {
       totalFiles: diskUsage._count,
       totalSize: diskUsage._sum.fileSize ?? 0,
     },
+    connectors,
     recentAuditLogs,
   };
 }
@@ -101,6 +115,7 @@ export default async function UserDetailPage({
     messageCount,
     aiUsage,
     diskUsage,
+    connectors,
     recentAuditLogs,
   } = data;
 
@@ -214,6 +229,61 @@ export default async function UserDetailPage({
         </div>
       </div>
 
+      {/* Connectors */}
+      {connectors.length > 0 && (
+        <div>
+          <h2 className="mb-4 text-xl font-semibold">
+            Connectors ({connectors.length})
+          </h2>
+          <div className="rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-4 py-3 text-left font-medium">Provider</th>
+                  <th className="px-4 py-3 text-left font-medium">
+                    Organization
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium">Status</th>
+                  <th className="px-4 py-3 text-left font-medium">Enabled</th>
+                  <th className="px-4 py-3 text-left font-medium">Connected</th>
+                </tr>
+              </thead>
+              <tbody>
+                {connectors.map((c, i) => (
+                  <tr key={i} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 font-medium">
+                      {c.provider.replace(/_/g, ' ')}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {c.organization.name}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          c.status === 'CONNECTED'
+                            ? 'bg-green-500/10 text-green-600'
+                            : c.status === 'ERROR'
+                              ? 'bg-destructive/10 text-destructive'
+                              : 'bg-yellow-500/10 text-yellow-600'
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {c.enabled ? 'Yes' : 'No'}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {c.connectedAt ? formatDateTime(c.connectedAt) : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Recent Audit Logs */}
       <div>
         <h2 className="mb-4 text-xl font-semibold">Recent Activity Log</h2>
@@ -237,7 +307,7 @@ export default async function UserDetailPage({
                   className="border-b border-border last:border-0"
                 >
                   <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                    {new Date(log.createdAt).toLocaleString()}
+                    {formatDateTime(log.createdAt)}
                   </td>
                   <td className="px-4 py-3">{log.organization?.name ?? '—'}</td>
                   <td className="px-4 py-3">

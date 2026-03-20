@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { notFound } from 'next/navigation';
+import { formatDate, formatDateTime } from '@/lib/format';
 import { formatDistanceToNow } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
@@ -220,7 +221,7 @@ export default async function OrgDetailPage({
               {subscription.periodStart && (
                 <Row
                   label="Period"
-                  value={`${new Date(subscription.periodStart).toLocaleDateString()} — ${subscription.periodEnd ? new Date(subscription.periodEnd).toLocaleDateString() : 'ongoing'}`}
+                  value={`${formatDate(subscription.periodStart)} — ${subscription.periodEnd ? formatDate(subscription.periodEnd) : 'ongoing'}`}
                 />
               )}
               <Row
@@ -446,7 +447,7 @@ export default async function OrgDetailPage({
                   className="border-b border-border last:border-0"
                 >
                   <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                    {new Date(log.createdAt).toLocaleString()}
+                    {formatDateTime(log.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {log.user?.name || log.user?.email || '—'}

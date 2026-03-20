@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { formatDistanceToNow } from 'date-fns';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
@@ -132,30 +133,23 @@ export default async function InvitationsPage({
           defaultValue={params.search}
           className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        <select
+        <SearchableSelect
           name="orgId"
-          defaultValue={params.orgId || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All organizations</option>
-          {organizations.map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
-        <select
+          value={params.orgId}
+          placeholder="All organizations"
+          options={organizations.map((org) => ({
+            value: org.id,
+            label: org.name,
+          }))}
+          className="w-56"
+        />
+        <SearchableSelect
           name="status"
-          defaultValue={params.status || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All statuses</option>
-          {statuses.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
+          value={params.status}
+          placeholder="All statuses"
+          options={statuses.map((s) => ({ value: s, label: s }))}
+          className="w-40"
+        />
         {params.sort && <input type="hidden" name="sort" value={params.sort} />}
         {params.order && (
           <input type="hidden" name="order" value={params.order} />

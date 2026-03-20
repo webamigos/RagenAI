@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/db';
+import { formatDateTime } from '@/lib/format';
+import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { DateFilter } from '@/app/components/DateFilter';
@@ -115,18 +117,16 @@ export default async function AiUsagePage({
       </div>
 
       <form className="flex flex-wrap gap-2">
-        <select
+        <SearchableSelect
           name="orgId"
-          defaultValue={params.orgId || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All organizations</option>
-          {organizations.map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
+          value={params.orgId}
+          placeholder="All organizations"
+          options={organizations.map((org) => ({
+            value: org.id,
+            label: org.name,
+          }))}
+          className="w-56"
+        />
         <input type="hidden" name="days" value={days} />
         <button
           type="submit"
@@ -224,7 +224,7 @@ export default async function AiUsagePage({
                 className="border-b border-border last:border-0"
               >
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                  {new Date(record.createdAt).toLocaleString()}
+                  {formatDateTime(record.createdAt)}
                 </td>
                 <td className="px-4 py-3">{record.organization.name}</td>
                 <td className="px-4 py-3 text-muted-foreground">

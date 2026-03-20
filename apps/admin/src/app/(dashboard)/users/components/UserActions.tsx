@@ -15,6 +15,7 @@ export function UserActions({ userId, userName, isBanned }: UserActionsProps) {
   const [dialog, setDialog] = useState<'rename' | 'ban' | null>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const openMenu = useCallback(
     (e: React.MouseEvent) => {
@@ -36,9 +37,14 @@ export function UserActions({ userId, userName, isBanned }: UserActionsProps) {
       return;
     }
     function handleClose(e: MouseEvent) {
-      if (btnRef.current && !btnRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
+      const target = e.target as Node;
+      if (
+        btnRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
+        return;
       }
+      setMenuOpen(false);
     }
     document.addEventListener('mousedown', handleClose);
     return () => document.removeEventListener('mousedown', handleClose);
@@ -60,6 +66,7 @@ export function UserActions({ userId, userName, isBanned }: UserActionsProps) {
 
       {menuOpen && (
         <div
+          ref={menuRef}
           className="fixed z-[100] w-48 rounded-md border border-border bg-popover py-1 shadow-lg"
           style={{ top: menuPos.top, right: menuPos.right }}
         >
