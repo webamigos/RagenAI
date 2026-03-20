@@ -45,6 +45,8 @@
   ],
   "exclude": [
     "node_modules",
+    "apps",
+    "packages",
     "src/temporal",
     "scripts",
     "prisma.config.ts",
