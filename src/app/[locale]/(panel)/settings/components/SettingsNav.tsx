@@ -13,7 +13,6 @@ import {
   UsersIcon,
   CpuChipIcon,
   CircleStackIcon,
-  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
@@ -89,12 +88,6 @@ const navItems: NavItem[] = [
     labelKey: 'disk-usage',
     icon: <CircleStackIcon className={iconClassName} />,
     permission: 'orgAdmin',
-  },
-  {
-    href: '/settings/audit-logs',
-    labelKey: 'audit-logs',
-    icon: <ClipboardDocumentListIcon className={iconClassName} />,
-    permission: 'appAdmin',
   },
 ];
 
