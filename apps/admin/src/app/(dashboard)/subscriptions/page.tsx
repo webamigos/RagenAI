@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { SubscriptionActions } from './components/SubscriptionActions';
+import { formatDate } from '@/lib/format';
+import { SearchableSelect } from '@/app/components/SearchableSelect';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
@@ -181,30 +183,26 @@ export default async function SubscriptionsPage({
           defaultValue={params.search}
           className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        <select
+        <SearchableSelect
           name="status"
-          defaultValue={params.status || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All statuses</option>
-          {statuses.map((s) => (
-            <option key={s.status} value={s.status}>
-              {s.status} ({s.count})
-            </option>
-          ))}
-        </select>
-        <select
+          value={params.status}
+          placeholder="All statuses"
+          options={statuses.map((s) => ({
+            value: s.status,
+            label: `${s.status} (${s.count})`,
+          }))}
+          className="w-48"
+        />
+        <SearchableSelect
           name="plan"
-          defaultValue={params.plan || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All plans</option>
-          {plans.map((p) => (
-            <option key={p.plan} value={p.plan}>
-              {p.plan} ({p.count})
-            </option>
-          ))}
-        </select>
+          value={params.plan}
+          placeholder="All plans"
+          options={plans.map((p) => ({
+            value: p.plan,
+            label: `${p.plan} (${p.count})`,
+          }))}
+          className="w-48"
+        />
         {params.sort && <input type="hidden" name="sort" value={params.sort} />}
         {params.order && (
           <input type="hidden" name="order" value={params.order} />
@@ -312,14 +310,10 @@ export default async function SubscriptionsPage({
                   {sub.seats}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                  {sub.periodStart
-                    ? new Date(sub.periodStart).toLocaleDateString()
-                    : '—'}
+                  {sub.periodStart ? formatDate(sub.periodStart) : '—'}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                  {sub.periodEnd
-                    ? new Date(sub.periodEnd).toLocaleDateString()
-                    : '—'}
+                  {sub.periodEnd ? formatDate(sub.periodEnd) : '—'}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {sub.cancelAtPeriodEnd ? (
@@ -331,8 +325,7 @@ export default async function SubscriptionsPage({
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                   {sub.trialStart && sub.trialEnd ? (
                     <span className="text-xs">
-                      {new Date(sub.trialStart).toLocaleDateString()} –{' '}
-                      {new Date(sub.trialEnd).toLocaleDateString()}
+                      {formatDate(sub.trialStart)} – {formatDate(sub.trialEnd)}
                     </span>
                   ) : (
                     '—'

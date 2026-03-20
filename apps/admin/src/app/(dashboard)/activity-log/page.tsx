@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/db';
+import { formatDateTime } from '@/lib/format';
+import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { DateFilter } from '@/app/components/DateFilter';
@@ -135,42 +137,30 @@ export default async function ActivityLogPage({
           defaultValue={params.search}
           className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        <select
+        <SearchableSelect
           name="orgId"
-          defaultValue={params.orgId || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All organizations</option>
-          {organizations.map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
-        <select
+          value={params.orgId}
+          placeholder="All organizations"
+          options={organizations.map((org) => ({
+            value: org.id,
+            label: org.name,
+          }))}
+          className="w-48"
+        />
+        <SearchableSelect
           name="action"
-          defaultValue={params.action || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All actions</option>
-          {actions.map((action) => (
-            <option key={action} value={action}>
-              {action}
-            </option>
-          ))}
-        </select>
-        <select
+          value={params.action}
+          placeholder="All actions"
+          options={actions.map((a) => ({ value: a, label: a }))}
+          className="w-48"
+        />
+        <SearchableSelect
           name="entityType"
-          defaultValue={params.entityType || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All entity types</option>
-          {entityTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+          value={params.entityType}
+          placeholder="All entity types"
+          options={entityTypes.map((t) => ({ value: t, label: t }))}
+          className="w-48"
+        />
         <input type="hidden" name="days" value={days} />
         {params.sort && <input type="hidden" name="sort" value={params.sort} />}
         {params.order && (
@@ -224,7 +214,7 @@ export default async function ActivityLogPage({
             {logs.map((log) => (
               <tr key={log.id} className="border-b border-border last:border-0">
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                  {new Date(log.createdAt).toLocaleString()}
+                  {formatDateTime(log.createdAt)}
                 </td>
                 <td className="px-4 py-3">{log.organization?.name ?? '—'}</td>
                 <td className="px-4 py-3 text-muted-foreground">

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { SearchableSelect } from '@/app/components/SearchableSelect';
 import prettyBytes from 'pretty-bytes';
 import { SortableHeader } from '@/app/components/SortableHeader';
 
@@ -146,18 +147,13 @@ export default async function DiskUsagePage({
           defaultValue={params.search}
           className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
-        <select
+        <SearchableSelect
           name="orgId"
-          defaultValue={params.orgId || ''}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          <option value="">All organizations</option>
-          {allOrgs.map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </select>
+          value={params.orgId}
+          placeholder="All organizations"
+          options={allOrgs.map((org) => ({ value: org.id, label: org.name }))}
+          className="w-56"
+        />
         {params.sort && <input type="hidden" name="sort" value={params.sort} />}
         {params.order && (
           <input type="hidden" name="order" value={params.order} />

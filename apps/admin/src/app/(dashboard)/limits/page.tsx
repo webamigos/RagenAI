@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { SearchableSelect } from '@/app/components/SearchableSelect';
 import prettyBytes from 'pretty-bytes';
 import { DefaultLimitsForm } from './DefaultLimitsForm';
 import { OrgLimitsForm } from './OrgLimitsForm';
@@ -65,19 +66,16 @@ export default async function LimitsPage({
       <div className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-xl font-semibold">Organization Limits</h2>
         <form className="mb-6 flex gap-2">
-          <select
+          <SearchableSelect
             name="orgId"
-            defaultValue={params.orgId || ''}
-            aria-label="Select organization"
-            className="w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm"
-          >
-            <option value="">Select an organization...</option>
-            {orgs.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name} ({org._count.members} members)
-              </option>
-            ))}
-          </select>
+            value={params.orgId}
+            placeholder="Select an organization..."
+            options={orgs.map((org) => ({
+              value: org.id,
+              label: `${org.name} (${org._count.members} members)`,
+            }))}
+            className="w-80"
+          />
           <button
             type="submit"
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
