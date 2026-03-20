@@ -1,18 +1,32 @@
 import { prisma } from '@/lib/db';
 import { formatDistanceToNow } from 'date-fns';
+import { UserActions } from './components/UserActions';
+import { SortableHeader } from '@/app/components/SortableHeader';
+import { Pagination } from '@/app/components/Pagination';
 
 export const dynamic = 'force-dynamic';
 
 interface SearchParams {
   page?: string;
   search?: string;
+  sort?: string;
+  order?: string;
 }
 
 const PAGE_SIZE = 25;
+const BASE_URL = '/users';
+
+type SortField = 'name' | 'email' | 'createdAt';
+const VALID_SORTS: SortField[] = ['name', 'email', 'createdAt'];
 
 async function getUsers(params: SearchParams) {
   const page = Math.max(1, Number(params.page) || 1);
   const search = params.search || '';
+
+  const sortField = VALID_SORTS.includes(params.sort as SortField)
+    ? (params.sort as SortField)
+    : 'createdAt';
+  const sortOrder = params.order === 'asc' ? 'asc' : 'desc';
 
   const where = search
     ? {
@@ -32,7 +46,7 @@ async function getUsers(params: SearchParams) {
         },
         _count: { select: { sessions: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [sortField]: sortOrder },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
@@ -49,6 +63,12 @@ export default async function UsersPage({
 }) {
   const params = await searchParams;
   const { users, total, page, totalPages } = await getUsers(params);
+
+  const extraParams = {
+    search: params.search,
+    sort: params.sort,
+    order: params.order,
+  };
 
   return (
     <div className="space-y-6">
@@ -73,26 +93,55 @@ export default async function UsersPage({
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">Name</th>
-              <th className="px-4 py-3 text-left font-medium">Email</th>
+              <SortableHeader
+                label="Name"
+                field="name"
+                currentSort={params.sort || 'createdAt'}
+                currentOrder={params.order || 'desc'}
+                baseUrl={BASE_URL}
+                extraParams={extraParams}
+                className="text-left"
+              />
+              <SortableHeader
+                label="Email"
+                field="email"
+                currentSort={params.sort || 'createdAt'}
+                currentOrder={params.order || 'desc'}
+                baseUrl={BASE_URL}
+                extraParams={extraParams}
+                className="text-left"
+              />
               <th className="px-4 py-3 text-left font-medium">Role</th>
               <th className="px-4 py-3 text-left font-medium">Organizations</th>
               <th className="px-4 py-3 text-left font-medium">Sessions</th>
-              <th className="px-4 py-3 text-left font-medium">Joined</th>
+              <SortableHeader
+                label="Joined"
+                field="createdAt"
+                currentSort={params.sort || 'createdAt'}
+                currentOrder={params.order || 'desc'}
+                baseUrl={BASE_URL}
+                extraParams={extraParams}
+                className="text-left"
+              />
               <th className="px-4 py-3 text-left font-medium">Status</th>
+              <th className="w-10 px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {users.map((user) => (
               <tr
                 key={user.id}
-                className="border-b border-border last:border-0"
+                className="border-b border-border last:border-0 transition-colors hover:bg-muted/50"
               >
-                <td className="px-4 py-3 font-medium">{user.name || '—'}</td>
+                <td className="px-4 py-3 font-medium">
+                  <a href={`/users/${user.id}`} className="hover:underline">
+                    {user.name || '—'}
+                  </a>
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {user.email}
                 </td>
@@ -130,37 +179,26 @@ export default async function UsersPage({
                     </span>
                   )}
                 </td>
+                <td className="px-4 py-3">
+                  <UserActions
+                    userId={user.id}
+                    userName={user.name}
+                    isBanned={user.banned ?? false}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <a
-                href={`/users?page=${page - 1}${params.search ? `&search=${params.search}` : ''}`}
-                className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
-              >
-                Previous
-              </a>
-            )}
-            {page < totalPages && (
-              <a
-                href={`/users?page=${page + 1}${params.search ? `&search=${params.search}` : ''}`}
-                className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
-              >
-                Next
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        baseUrl={BASE_URL}
+        extraParams={extraParams}
+      />
     </div>
   );
 }

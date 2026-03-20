@@ -1,21 +1,40 @@
 import { prisma } from '@/lib/db';
 import { formatDistanceToNow } from 'date-fns';
+import { OrgActions } from './components/OrgActions';
+import { SortableHeader } from '@/app/components/SortableHeader';
+import { Pagination } from '@/app/components/Pagination';
 
 export const dynamic = 'force-dynamic';
 
 interface SearchParams {
   page?: string;
   search?: string;
+  sort?: string;
+  order?: string;
 }
 
 const PAGE_SIZE = 25;
+const BASE_URL = '/organizations';
+
+type SortField = 'name' | 'slug' | 'createdAt';
+const VALID_SORTS: SortField[] = ['name', 'slug', 'createdAt'];
 
 async function getOrganizations(params: SearchParams) {
   const page = Math.max(1, Number(params.page) || 1);
   const search = params.search || '';
 
+  const sortField = VALID_SORTS.includes(params.sort as SortField)
+    ? (params.sort as SortField)
+    : 'createdAt';
+  const sortOrder = params.order === 'asc' ? 'asc' : 'desc';
+
   const where = search
-    ? { name: { contains: search, mode: 'insensitive' as const } }
+    ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { slug: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }
     : {};
 
   const [organizations, total] = await Promise.all([
@@ -37,7 +56,7 @@ async function getOrganizations(params: SearchParams) {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [sortField]: sortOrder },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),
@@ -61,6 +80,12 @@ export default async function OrganizationsPage({
   const { organizations, total, page, totalPages } =
     await getOrganizations(params);
 
+  const extraParams = {
+    search: params.search,
+    sort: params.sort,
+    order: params.order,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -72,7 +97,7 @@ export default async function OrganizationsPage({
         <input
           name="search"
           type="text"
-          placeholder="Search by name..."
+          placeholder="Search by name or slug..."
           defaultValue={params.search}
           className="w-full max-w-sm rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
@@ -84,23 +109,58 @@ export default async function OrganizationsPage({
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
+      <div className="rounded-lg border border-border">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">Name</th>
-              <th className="px-4 py-3 text-left font-medium">Slug</th>
+              <SortableHeader
+                label="Name"
+                field="name"
+                currentSort={params.sort || 'createdAt'}
+                currentOrder={params.order || 'desc'}
+                baseUrl={BASE_URL}
+                extraParams={extraParams}
+                className="text-left"
+              />
+              <SortableHeader
+                label="Slug"
+                field="slug"
+                currentSort={params.sort || 'createdAt'}
+                currentOrder={params.order || 'desc'}
+                baseUrl={BASE_URL}
+                extraParams={extraParams}
+                className="text-left"
+              />
               <th className="px-4 py-3 text-left font-medium">Members</th>
               <th className="px-4 py-3 text-left font-medium">Projects</th>
               <th className="px-4 py-3 text-left font-medium">API Keys</th>
               <th className="px-4 py-3 text-left font-medium">Model</th>
-              <th className="px-4 py-3 text-left font-medium">Created</th>
+              <SortableHeader
+                label="Created"
+                field="createdAt"
+                currentSort={params.sort || 'createdAt'}
+                currentOrder={params.order || 'desc'}
+                baseUrl={BASE_URL}
+                extraParams={extraParams}
+                className="text-left"
+              />
+              <th className="w-10 px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {organizations.map((org) => (
-              <tr key={org.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium">{org.name}</td>
+              <tr
+                key={org.id}
+                className="border-b border-border last:border-0 transition-colors hover:bg-muted/50"
+              >
+                <td className="px-4 py-3 font-medium">
+                  <a
+                    href={`/organizations/${org.id}`}
+                    className="hover:underline"
+                  >
+                    {org.name}
+                  </a>
+                </td>
                 <td className="px-4 py-3 text-muted-foreground">
                   {org.slug || '—'}
                 </td>
@@ -113,7 +173,7 @@ export default async function OrganizationsPage({
                 <td className="px-4 py-3 text-muted-foreground">
                   {org._count.apiKeys}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">
+                <td className="px-4 py-3 text-xs text-muted-foreground">
                   {org.settings?.model || 'default'}
                 </td>
                 <td className="px-4 py-3 text-muted-foreground">
@@ -121,37 +181,26 @@ export default async function OrganizationsPage({
                     addSuffix: true,
                   })}
                 </td>
+                <td className="px-4 py-3">
+                  <OrgActions
+                    orgId={org.id}
+                    orgName={org.name}
+                    orgSlug={org.slug}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <a
-                href={`/organizations?page=${page - 1}${params.search ? `&search=${params.search}` : ''}`}
-                className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
-              >
-                Previous
-              </a>
-            )}
-            {page < totalPages && (
-              <a
-                href={`/organizations?page=${page + 1}${params.search ? `&search=${params.search}` : ''}`}
-                className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
-              >
-                Next
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={total}
+        baseUrl={BASE_URL}
+        extraParams={extraParams}
+      />
     </div>
   );
 }
