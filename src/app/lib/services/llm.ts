@@ -446,6 +446,8 @@ function getOpenRouterProviderPreferences():
   if (zdr === 'true') {
     prefs.zdr = true;
   }
+  // sort, allow_fallbacks, require_parameters intentionally omitted —
+  // not needed for the current provider routing use case (cloud routing + ZDR)
   return prefs;
 }
 

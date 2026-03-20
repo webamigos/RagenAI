@@ -387,7 +387,10 @@ export async function getDefaultAllowedModels(): Promise<string[]> {
   }
   try {
     const parsed = JSON.parse(row.value);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((item): item is string => typeof item === 'string');
   } catch {
     return [];
   }
