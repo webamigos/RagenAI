@@ -15,7 +15,10 @@ export function proxy(request: NextRequest) {
   }
 
   // Check for session cookie (better-auth cookie with custom prefix)
-  const sessionCookie = request.cookies.get('ragen-admin.session_token');
+  // Over HTTPS, better-auth prefixes cookies with __Secure-
+  const sessionCookie =
+    request.cookies.get('__Secure-ragen-admin.session_token') ||
+    request.cookies.get('ragen-admin.session_token');
   if (!sessionCookie) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('callbackUrl', pathname + request.nextUrl.search);
