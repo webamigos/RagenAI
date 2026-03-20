@@ -270,6 +270,26 @@ App admins can access all pages regardless of permission level.
 - **Default chat model**: `google/gemini-3-flash-preview` (set in organization settings and OpenRouter fallback)
 - **Rephrase model**: `google/gemini-2.0-flash-001` — intentionally kept on the older, cheaper Flash model for question rephrasing. Do not upgrade this without explicit approval.
 
+## OpenRouter Provider Routing
+
+OpenRouter requests can be routed through specific cloud providers with data collection controls via env vars:
+- `OPENROUTER_PROVIDER_ORDER` — comma-separated provider slugs (e.g. `google-vertex,amazon-bedrock,azure`)
+- `OPENROUTER_PROVIDER_ONLY` — restrict to only these providers
+- `OPENROUTER_PROVIDER_IGNORE` — exclude specific providers
+- `OPENROUTER_DATA_COLLECTION` — `deny` or `allow`
+- `OPENROUTER_ZDR` — `true` for Zero Data Retention endpoints only
+
+Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/services/llm.ts` and passed through `BaseCompletionConfig.providerPreferences` → `ChatCompletionFactory` → `@openrouter/ai-sdk-provider` SDK's `provider` option.
+
+## Per-Organization Model Management
+
+- `OrganizationSettings.allowedModels` (`String[]`, default `[]`) controls which models an org can use
+- Empty `[]` = no restriction (backward compatible)
+- Filtered in `getAvailableModelsForOrganization()` (`src/app/lib/actions/checkAvailableProviders.ts`)
+- Default allowed models stored in `Settings` table (key `default_allowed_models`) — applied to new orgs via `applyDefaultLimitsToOrg()`
+- Admin UI: `apps/admin/src/app/(dashboard)/models/` (follows same pattern as Limits page)
+- Key functions: `getAllowedModels()`, `saveAllowedModels()`, `getDefaultAllowedModels()`, `saveDefaultAllowedModels()` in `src/features/organizations/services/organization-settings.ts`
+
 ## Post-Task Code Review
 
 After completing any coding task that modifies or creates files, always run `/coderabbit:review` to review the changes before reporting completion to the user.
