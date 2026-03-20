@@ -6,7 +6,11 @@ import { Suspense } from 'react';
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const rawCallbackUrl = searchParams.get('callbackUrl') || '/';
+  const callbackUrl =
+    rawCallbackUrl.startsWith('/') && !rawCallbackUrl.startsWith('//')
+      ? rawCallbackUrl
+      : '/';
 
   const handleGoogleSignIn = () => {
     signIn.social({

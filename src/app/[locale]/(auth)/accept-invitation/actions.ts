@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { syncSeatsToStripe } from '@/features/subscriptions/services/commands/sync-seats-command';
 
 /**
  * Get invitation details for display
@@ -160,6 +161,9 @@ export async function acceptInvitation(invitationId: string) {
       },
       'Invitation accepted successfully',
     );
+
+    // Sync seat count to Stripe (non-blocking)
+    syncSeatsToStripe(invitation.organizationId);
 
     return {
       success: true,
