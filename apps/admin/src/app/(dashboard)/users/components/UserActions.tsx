@@ -51,6 +51,9 @@ export function UserActions({ userId, userName, isBanned }: UserActionsProps) {
         type="button"
         onClick={openMenu}
         className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        aria-label="User actions"
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
@@ -137,7 +140,10 @@ function RenameDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-border bg-popover p-6 shadow-xl"
@@ -195,7 +201,10 @@ function BanDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-border bg-popover p-6 shadow-xl"

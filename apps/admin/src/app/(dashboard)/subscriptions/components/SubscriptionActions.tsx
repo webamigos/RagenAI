@@ -6,11 +6,15 @@ import {
   ArrowRightLeft,
   XCircle,
   RotateCcw,
+  Users,
+  RefreshCw,
 } from 'lucide-react';
 import {
   changePlanAction,
   cancelSubscriptionAction,
   reactivateSubscriptionAction,
+  syncSeatsAction,
+  updateSeatsAction,
 } from '../actions';
 
 interface Plan {
@@ -22,6 +26,7 @@ interface Plan {
 interface SubscriptionActionsProps {
   subscriptionId: string;
   currentPlan: string;
+  currentSeats: number;
   cancelAtPeriodEnd: boolean;
   hasStripeId: boolean;
   plans: Plan[];
@@ -30,12 +35,15 @@ interface SubscriptionActionsProps {
 export function SubscriptionActions({
   subscriptionId,
   currentPlan,
+  currentSeats,
   cancelAtPeriodEnd,
   hasStripeId,
   plans,
 }: SubscriptionActionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [dialog, setDialog] = useState<'changePlan' | null>(null);
+  const [dialog, setDialog] = useState<'changePlan' | 'updateSeats' | null>(
+    null,
+  );
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -78,6 +86,9 @@ export function SubscriptionActions({
         type="button"
         onClick={openMenu}
         className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        aria-label="Subscription actions"
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
@@ -123,6 +134,28 @@ export function SubscriptionActions({
               Cancel at Period End
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(false);
+              setDialog('updateSeats');
+            }}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-accent"
+          >
+            <Users className="h-3.5 w-3.5" />
+            Update Seats
+          </button>
+          <button
+            type="button"
+            onClick={async () => {
+              setMenuOpen(false);
+              await syncSeatsAction(subscriptionId);
+            }}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-accent"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+            Sync Seats from Members
+          </button>
         </div>
       )}
 
@@ -131,6 +164,13 @@ export function SubscriptionActions({
           subscriptionId={subscriptionId}
           currentPlan={currentPlan}
           plans={plans}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog === 'updateSeats' && (
+        <UpdateSeatsDialog
+          subscriptionId={subscriptionId}
+          currentSeats={currentSeats}
           onClose={() => setDialog(null)}
         />
       )}
@@ -171,7 +211,10 @@ function ChangePlanDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-border bg-popover p-6 shadow-xl"
@@ -209,6 +252,83 @@ function ChangePlanDialog({
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {loading ? 'Updating...' : 'Change Plan'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function UpdateSeatsDialog({
+  subscriptionId,
+  currentSeats,
+  onClose,
+}: {
+  subscriptionId: string;
+  currentSeats: number;
+  onClose: () => void;
+}) {
+  const [seats, setSeats] = useState(String(currentSeats));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const num = parseInt(seats, 10);
+    if (isNaN(num) || num < 1) {
+      setError('Seats must be at least 1');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await updateSeatsAction(subscriptionId, num);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm rounded-lg border border-border bg-popover p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="mb-2 text-lg font-semibold">Update Seats</h3>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Current seats: <span className="font-medium">{currentSeats}</span>.
+          Proration will be applied.
+        </p>
+        <input
+          type="number"
+          min={1}
+          value={seats}
+          onChange={(e) => setSeats(e.target.value)}
+          className="mb-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          autoFocus
+        />
+        {error && <p className="mb-2 text-sm text-destructive">{error}</p>}
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-border px-4 py-2 text-sm hover:bg-accent"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {loading ? 'Updating...' : 'Update Seats'}
           </button>
         </div>
       </form>

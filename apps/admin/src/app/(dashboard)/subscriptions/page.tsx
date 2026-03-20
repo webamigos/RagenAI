@@ -205,6 +205,10 @@ export default async function SubscriptionsPage({
             </option>
           ))}
         </select>
+        {params.sort && <input type="hidden" name="sort" value={params.sort} />}
+        {params.order && (
+          <input type="hidden" name="order" value={params.order} />
+        )}
         <button
           type="submit"
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
@@ -341,6 +345,7 @@ export default async function SubscriptionsPage({
                   <SubscriptionActions
                     subscriptionId={sub.id}
                     currentPlan={sub.plan}
+                    currentSeats={sub.seats}
                     cancelAtPeriodEnd={sub.cancelAtPeriodEnd}
                     hasStripeId={!!sub.stripeSubscriptionId}
                     plans={plansForActions}

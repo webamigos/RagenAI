@@ -51,6 +51,9 @@ export function OrgActions({ orgId, orgName, orgSlug }: OrgActionsProps) {
         type="button"
         onClick={openMenu}
         className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        aria-label="Organization actions"
+        aria-expanded={menuOpen}
+        aria-haspopup="menu"
       >
         <MoreHorizontal className="h-4 w-4" />
       </button>
@@ -142,7 +145,10 @@ function EditDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-border bg-popover p-6 shadow-xl"

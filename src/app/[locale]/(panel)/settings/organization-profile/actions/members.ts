@@ -9,6 +9,7 @@ import db from '@ragenai/prisma-client';
 import { getActiveMember, getSession } from '@/lib/auth-guards';
 import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 import { getUsageLimits } from '@/features/organizations/services/organization-settings';
+import { syncSeatsToStripe } from '@/features/subscriptions/services/commands/sync-seats-command';
 
 const TRIAL_PLAN_NAME = 'Trial';
 const FREE_PLAN_NAME = 'Free';
@@ -249,6 +250,9 @@ export async function removeMember(
       { memberIdOrEmail, organizationId },
       'Member removed successfully',
     );
+
+    // Sync seat count to Stripe (non-blocking)
+    syncSeatsToStripe(organizationId);
 
     revalidatePath('/settings/organization-profile');
 

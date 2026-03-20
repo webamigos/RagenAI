@@ -54,17 +54,20 @@ export function useSidebar() {
 }
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-    try {
-      return localStorage.getItem('admin-sidebar-collapsed') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Sync collapsed state from localStorage after mount to avoid hydration mismatch
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('admin-sidebar-collapsed');
+      if (saved === 'true') {
+        setCollapsed(true);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const toggle = useCallback(() => {
     setCollapsed((prev) => {

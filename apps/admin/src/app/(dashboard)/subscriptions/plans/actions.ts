@@ -12,6 +12,7 @@ export async function syncPlansFromStripeAction() {
   });
 
   let synced = 0;
+  const syncedProductIds: string[] = [];
 
   for (const product of products.data) {
     const defaultPrice = product.default_price;
@@ -19,17 +20,29 @@ export async function syncPlansFromStripeAction() {
       continue;
     }
 
+    syncedProductIds.push(product.id);
+
     const existing = await prisma.subscriptionPlan.findUnique({
       where: { productId: product.id },
     });
 
-    const limits = product.metadata?.limits
-      ? JSON.parse(product.metadata.limits)
-      : {};
+    let limits = {};
+    try {
+      if (product.metadata?.limits) {
+        limits = JSON.parse(product.metadata.limits);
+      }
+    } catch {
+      // Skip malformed JSON, use empty defaults
+    }
 
-    const features = product.metadata?.features
-      ? JSON.parse(product.metadata.features)
-      : undefined;
+    let features;
+    try {
+      if (product.metadata?.features) {
+        features = JSON.parse(product.metadata.features);
+      }
+    } catch {
+      // Skip malformed JSON
+    }
 
     const metadata = product.metadata || undefined;
 
@@ -66,6 +79,18 @@ export async function syncPlansFromStripeAction() {
     }
 
     synced++;
+  }
+
+  // Deactivate Stripe-backed plans that are no longer active in Stripe
+  if (syncedProductIds.length > 0) {
+    await prisma.subscriptionPlan.updateMany({
+      where: {
+        type: 'STRIPE',
+        productId: { notIn: syncedProductIds },
+        status: 'ACTIVE',
+      },
+      data: { status: 'ARCHIVED' },
+    });
   }
 
   revalidatePath('/subscriptions/plans');

@@ -32,7 +32,7 @@ export const auth = betterAuth({
           `Only @${ALLOWED_DOMAIN} email addresses are allowed to sign in.`,
         );
       }
-      return user;
+      return { ...user, email };
     },
   },
 });

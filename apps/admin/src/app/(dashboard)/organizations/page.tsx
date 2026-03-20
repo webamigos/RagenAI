@@ -190,6 +190,16 @@ export default async function OrganizationsPage({
                 </td>
               </tr>
             ))}
+            {organizations.length === 0 && (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="px-4 py-8 text-center text-muted-foreground"
+                >
+                  No organizations found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

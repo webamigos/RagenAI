@@ -239,7 +239,7 @@ export default async function UserDetailPage({
                   <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                     {new Date(log.createdAt).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3">{log.organization.name}</td>
+                  <td className="px-4 py-3">{log.organization?.name ?? '—'}</td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium">
                       {log.action}
