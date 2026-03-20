@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { formatDateTime } from '@/lib/format';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { SyncPlansButton } from './SyncPlansButton';
@@ -99,9 +100,7 @@ export default async function PlansPage() {
                   <LimitsDisplay limits={plan.limits} />
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                  {plan.lastSyncedAt
-                    ? new Date(plan.lastSyncedAt).toLocaleString()
-                    : '—'}
+                  {plan.lastSyncedAt ? formatDateTime(plan.lastSyncedAt) : '—'}
                 </td>
               </tr>
             ))}
