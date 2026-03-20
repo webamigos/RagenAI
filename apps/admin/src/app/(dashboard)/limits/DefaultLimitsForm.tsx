@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useId } from 'react';
+import { useState } from 'react';
 import { saveDefaultLimitsAction } from './actions';
 
 interface DefaultLimits {

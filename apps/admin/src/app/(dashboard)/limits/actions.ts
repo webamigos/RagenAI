@@ -83,25 +83,34 @@ export async function saveOrgLimitsAction(
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
-  const data: Record<string, unknown> = {};
+  const toBigIntBytes = (mb: number | null): bigint | null => {
+    if (mb === null || !Number.isFinite(mb)) {
+      return null;
+    }
+    return BigInt(Math.floor(mb)) * BigInt(1024 * 1024);
+  };
 
-  data.storageLimitBytes =
-    limits.storageLimitMb !== null
-      ? BigInt(limits.storageLimitMb) * BigInt(1024 * 1024)
-      : null;
-  data.projectStorageLimitBytes =
-    limits.projectStorageLimitMb !== null
-      ? BigInt(limits.projectStorageLimitMb) * BigInt(1024 * 1024)
-      : null;
-  data.singleFileLimitBytes =
-    limits.singleFileLimitMb !== null
-      ? BigInt(limits.singleFileLimitMb) * BigInt(1024 * 1024)
-      : null;
-  data.monthlyTokenLimit =
-    limits.monthlyTokenLimit !== null ? BigInt(limits.monthlyTokenLimit) : null;
-  data.monthlyCostLimitCents = limits.monthlyCostLimitCents;
-  data.monthlyMessageLimit = limits.monthlyMessageLimit;
-  data.maxMembers = limits.maxMembers;
+  const toBigInt = (val: number | null): bigint | null => {
+    if (val === null || !Number.isFinite(val)) {
+      return null;
+    }
+    return BigInt(Math.floor(val));
+  };
+
+  const data: Record<string, unknown> = {};
+  data.storageLimitBytes = toBigIntBytes(limits.storageLimitMb);
+  data.projectStorageLimitBytes = toBigIntBytes(limits.projectStorageLimitMb);
+  data.singleFileLimitBytes = toBigIntBytes(limits.singleFileLimitMb);
+  data.monthlyTokenLimit = toBigInt(limits.monthlyTokenLimit);
+  data.monthlyCostLimitCents = Number.isFinite(limits.monthlyCostLimitCents)
+    ? limits.monthlyCostLimitCents
+    : null;
+  data.monthlyMessageLimit = Number.isFinite(limits.monthlyMessageLimit)
+    ? limits.monthlyMessageLimit
+    : null;
+  data.maxMembers = Number.isFinite(limits.maxMembers)
+    ? limits.maxMembers
+    : null;
 
   await prisma.organizationSettings.upsert({
     where: { organizationId: orgId },

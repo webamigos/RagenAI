@@ -55,26 +55,23 @@ export function OrgLimitsForm({
     setSaved(false);
     setError('');
     try {
+      const toNum = (v: string): number | null => {
+        if (!v) {
+          return null;
+        }
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      };
       await saveOrgLimitsAction(orgId, {
-        storageLimitMb: values.storageLimitMb
-          ? Number(values.storageLimitMb)
-          : null,
-        projectStorageLimitMb: values.projectStorageLimitMb
-          ? Number(values.projectStorageLimitMb)
-          : null,
-        singleFileLimitMb: values.singleFileLimitMb
-          ? Number(values.singleFileLimitMb)
-          : null,
-        monthlyTokenLimit: values.monthlyTokenLimit
-          ? Number(values.monthlyTokenLimit)
-          : null,
+        storageLimitMb: toNum(values.storageLimitMb),
+        projectStorageLimitMb: toNum(values.projectStorageLimitMb),
+        singleFileLimitMb: toNum(values.singleFileLimitMb),
+        monthlyTokenLimit: toNum(values.monthlyTokenLimit),
         monthlyCostLimitCents: values.monthlyCostLimitCents
-          ? Math.round(Number(values.monthlyCostLimitCents) * 100)
+          ? Math.round(Number(values.monthlyCostLimitCents) * 100) || null
           : null,
-        monthlyMessageLimit: values.monthlyMessageLimit
-          ? Number(values.monthlyMessageLimit)
-          : null,
-        maxMembers: values.maxMembers ? Number(values.maxMembers) : null,
+        monthlyMessageLimit: toNum(values.monthlyMessageLimit),
+        maxMembers: toNum(values.maxMembers),
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
