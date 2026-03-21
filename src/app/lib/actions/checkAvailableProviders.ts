@@ -14,6 +14,7 @@ import {
   getOpenrouterAPIKey,
   getFireworksAPIKey,
   getAzureOpenAICredentials,
+  getAllowedModels,
 } from '@/features/organizations/services/organization-settings';
 
 const providerStatusCache = new Map<
@@ -156,12 +157,22 @@ export async function checkAvailableProviders(
 export async function getAvailableModelsForOrganization(
   orgId: string,
 ): Promise<AvailableModel[]> {
-  const providerStatuses = await checkAvailableProviders(orgId);
+  const [providerStatuses, allowedModels] = await Promise.all([
+    checkAvailableProviders(orgId),
+    getAllowedModels(orgId),
+  ]);
+
   const availableProviders = providerStatuses
     .filter((status) => status.available)
     .map((status) => status.provider);
 
-  return availableModels.filter((model) =>
+  let models = availableModels.filter((model) =>
     availableProviders.includes(model.provider),
   );
+
+  if (allowedModels.length > 0) {
+    models = models.filter((model) => allowedModels.includes(model.value));
+  }
+
+  return models;
 }
