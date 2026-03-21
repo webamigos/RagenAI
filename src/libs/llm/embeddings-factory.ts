@@ -102,7 +102,7 @@ export class EmbeddingsFactory {
       secretAccessKey: credentials.credentials.secretAccessKey,
     });
 
-    const modelName = config.model || 'amazon.titan-embed-text-v1';
+    const modelName = config.model || 'cohere.embed-multilingual-v3';
     return new TrackedEmbeddingsProvider(
       bedrock.textEmbeddingModel(modelName),
       modelName,
