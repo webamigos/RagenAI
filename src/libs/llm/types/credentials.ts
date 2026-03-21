@@ -40,6 +40,7 @@ export type GoogleCredentials = BaseProviderCredentials & {
 export type OpenRouterCredentials = BaseProviderCredentials & {
   provider: 'openrouter';
   apiKey: string;
+  baseURL?: string;
 };
 
 export type FireworksCredentials = BaseProviderCredentials & {

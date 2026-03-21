@@ -273,13 +273,15 @@ App admins can access all pages regardless of permission level.
 ## OpenRouter Provider Routing
 
 OpenRouter requests can be routed through specific cloud providers with data collection controls via env vars:
-- `OPENROUTER_PROVIDER_ORDER` — comma-separated provider slugs (e.g. `google-vertex,amazon-bedrock,azure`)
-- `OPENROUTER_PROVIDER_ONLY` — restrict to only these providers
-- `OPENROUTER_PROVIDER_IGNORE` — exclude specific providers
-- `OPENROUTER_DATA_COLLECTION` — `deny` or `allow`
-- `OPENROUTER_ZDR` — `true` for Zero Data Retention endpoints only
+All defaults are secure-by-default (EU region, ZDR, deny data collection). Override via env vars:
+- `OPENROUTER_BASE_URL` — default: `https://eu.openrouter.ai/api` (EU region)
+- `OPENROUTER_PROVIDER_ORDER` — default: `google-vertex,amazon-bedrock`
+- `OPENROUTER_DATA_COLLECTION` — default: `deny`
+- `OPENROUTER_ZDR` — default: `true`
+- `OPENROUTER_PROVIDER_ONLY` — no default (restrict to only these providers)
+- `OPENROUTER_PROVIDER_IGNORE` — no default (exclude specific providers)
 
-Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/services/llm.ts` and passed through `BaseCompletionConfig.providerPreferences` → `ChatCompletionFactory` → `@openrouter/ai-sdk-provider` SDK's `provider` option.
+Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/services/llm.ts` and passed through `BaseCompletionConfig.providerPreferences` → `ChatCompletionFactory` → `@openrouter/ai-sdk-provider` SDK's `provider` option. The `OPENROUTER_BASE_URL` is passed via `OpenRouterCredentials.baseURL` → `createOpenRouter({ baseURL })`.
 
 ## Per-Organization Model Management
 

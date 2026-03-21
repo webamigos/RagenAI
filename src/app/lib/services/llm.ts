@@ -202,6 +202,7 @@ const createCredentialsForProvider = (
       return {
         provider: 'openrouter',
         apiKey: OPENROUTER_API_KEY,
+        baseURL: openrouterBaseURL,
       };
     }
 
@@ -355,6 +356,7 @@ const createCredentialsForProviderWithOrg = async (
         return {
           provider: 'openrouter',
           apiKey: orgKey,
+          baseURL: openrouterBaseURL,
         };
       }
       const envKey = process.env.OPENROUTER_API_KEY;
@@ -362,6 +364,7 @@ const createCredentialsForProviderWithOrg = async (
         return {
           provider: 'openrouter',
           apiKey: envKey,
+          baseURL: openrouterBaseURL,
         };
       }
       return null;
@@ -417,18 +420,13 @@ const createCredentialsForProviderWithOrg = async (
   }
 };
 
-function getOpenRouterProviderPreferences():
-  | OpenRouterProviderPreferences
-  | undefined {
-  const order = process.env.OPENROUTER_PROVIDER_ORDER;
+function getOpenRouterProviderPreferences(): OpenRouterProviderPreferences {
+  const order =
+    process.env.OPENROUTER_PROVIDER_ORDER ?? 'google-vertex,amazon-bedrock';
   const only = process.env.OPENROUTER_PROVIDER_ONLY;
   const ignore = process.env.OPENROUTER_PROVIDER_IGNORE;
-  const dataCollection = process.env.OPENROUTER_DATA_COLLECTION;
-  const zdr = process.env.OPENROUTER_ZDR;
-
-  if (!order && !only && !ignore && !dataCollection && !zdr) {
-    return undefined;
-  }
+  const dataCollection = process.env.OPENROUTER_DATA_COLLECTION ?? 'deny';
+  const zdr = process.env.OPENROUTER_ZDR ?? 'true';
 
   const prefs: OpenRouterProviderPreferences = {};
   if (order) {
@@ -450,6 +448,10 @@ function getOpenRouterProviderPreferences():
   // not needed for the current provider routing use case (cloud routing + ZDR)
   return prefs;
 }
+
+const OPENROUTER_DEFAULT_BASE_URL = 'https://eu.openrouter.ai/api';
+const openrouterBaseURL =
+  process.env.OPENROUTER_BASE_URL || OPENROUTER_DEFAULT_BASE_URL;
 
 let customChatModel: string | null = null;
 let customCredentials: ProviderCredentials | null = null;
@@ -508,6 +510,7 @@ switch (modelConfig.provider) {
     customCredentials = {
       provider: 'openrouter',
       apiKey: OPENROUTER_API_KEY,
+      baseURL: openrouterBaseURL,
     };
     customChatModel = 'google/gemini-3-flash-preview';
     break;
