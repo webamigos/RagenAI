@@ -53,6 +53,9 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     const { embeddings, usage } = await embedMany({
       model: this.embeddingModel,
       values: texts,
+      providerOptions: {
+        bedrock: { inputType: 'search_document' },
+      },
     });
 
     if (usage) {
@@ -66,6 +69,9 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     const { embedding, usage } = await embed({
       model: this.embeddingModel,
       value: text,
+      providerOptions: {
+        bedrock: { inputType: 'search_query' },
+      },
     });
 
     if (usage) {

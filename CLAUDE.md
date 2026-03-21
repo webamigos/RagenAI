@@ -141,7 +141,7 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 - Client: `src/libs/vector-store/meilisearch-client.ts` — implements `VectorStoreClient` interface
 - Interface: `src/libs/vector-store/types.ts` — `similaritySearch()`, `addDocuments()`
 - Organization index: each org gets its own Meilisearch index (named by org ID)
-- Embeddings: `userProvided` embedder with OpenAI `text-embedding-3-small` (1536 dimensions)
+- Embeddings: `userProvided` embedder with Cohere `cohere.embed-multilingual-v3` via AWS Bedrock (1024 dimensions)
 - Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
 - Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
 - Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`

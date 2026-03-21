@@ -45,7 +45,7 @@ export const initializePublicRagChain = async ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    const embeddingModel = createEmbeddingsInstance({ apiKey, organizationId });
+    const embeddingModel = createEmbeddingsInstance({ organizationId });
     const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
