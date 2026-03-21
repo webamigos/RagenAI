@@ -114,11 +114,15 @@ export class ChatCompletionFactory {
 
     const openrouter = createOpenRouter({
       apiKey: credentials.apiKey,
+      ...(credentials.baseURL ? { baseURL: credentials.baseURL } : {}),
     });
 
     return openrouter(config.model || 'google/gemini-3-flash-preview', {
       ...(config.reasoning
         ? { reasoning: { enabled: true, max_tokens: 2048 } }
+        : {}),
+      ...(config.providerPreferences
+        ? { provider: config.providerPreferences }
         : {}),
     });
   }

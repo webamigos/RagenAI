@@ -188,6 +188,7 @@ model OrganizationSettings {
   monthlyCostLimitCents   Int?     @map("monthly_cost_limit_cents")
   monthlyMessageLimit     Int?     @map("monthly_message_limit")
   maxMembers              Int?     @map("max_members")
+  allowedModels           String[] @default([]) @map("allowed_models")
   createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

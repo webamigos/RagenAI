@@ -1,6 +1,7 @@
 export {
   type BaseCompletionConfig,
   type ChatCompletionOptions,
+  type OpenRouterProviderPreferences,
 } from './chat-completion';
 export {
   type ModelConfig,

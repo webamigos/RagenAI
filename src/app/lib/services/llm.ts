@@ -3,7 +3,10 @@ import type { LanguageModelV3 } from '@ai-sdk/provider';
 import OpenAI from 'openai';
 import { ChatCompletionFactory, type ProviderCredentials } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
-import type { ChatCompletionOptions } from '@/libs/llm/types/chat-completion';
+import type {
+  ChatCompletionOptions,
+  OpenRouterProviderPreferences,
+} from '@/libs/llm/types/chat-completion';
 import {
   getModelProvider,
   isReasoningModel,
@@ -199,6 +202,7 @@ const createCredentialsForProvider = (
       return {
         provider: 'openrouter',
         apiKey: OPENROUTER_API_KEY,
+        baseURL: openrouterBaseURL,
       };
     }
 
@@ -352,6 +356,7 @@ const createCredentialsForProviderWithOrg = async (
         return {
           provider: 'openrouter',
           apiKey: orgKey,
+          baseURL: openrouterBaseURL,
         };
       }
       const envKey = process.env.OPENROUTER_API_KEY;
@@ -359,6 +364,7 @@ const createCredentialsForProviderWithOrg = async (
         return {
           provider: 'openrouter',
           apiKey: envKey,
+          baseURL: openrouterBaseURL,
         };
       }
       return null;
@@ -413,6 +419,39 @@ const createCredentialsForProviderWithOrg = async (
       return null;
   }
 };
+
+function getOpenRouterProviderPreferences(): OpenRouterProviderPreferences {
+  const order =
+    process.env.OPENROUTER_PROVIDER_ORDER ?? 'google-vertex,amazon-bedrock';
+  const only = process.env.OPENROUTER_PROVIDER_ONLY;
+  const ignore = process.env.OPENROUTER_PROVIDER_IGNORE;
+  const dataCollection = process.env.OPENROUTER_DATA_COLLECTION ?? 'deny';
+  const zdr = process.env.OPENROUTER_ZDR ?? 'true';
+
+  const prefs: OpenRouterProviderPreferences = {};
+  if (order) {
+    prefs.order = order.split(',').map((s) => s.trim());
+  }
+  if (only) {
+    prefs.only = only.split(',').map((s) => s.trim());
+  }
+  if (ignore) {
+    prefs.ignore = ignore.split(',').map((s) => s.trim());
+  }
+  if (dataCollection === 'deny' || dataCollection === 'allow') {
+    prefs.data_collection = dataCollection;
+  }
+  if (zdr === 'true') {
+    prefs.zdr = true;
+  }
+  // sort, allow_fallbacks, require_parameters intentionally omitted —
+  // not needed for the current provider routing use case (cloud routing + ZDR)
+  return prefs;
+}
+
+const OPENROUTER_DEFAULT_BASE_URL = 'https://eu.openrouter.ai/api';
+const openrouterBaseURL =
+  process.env.OPENROUTER_BASE_URL || OPENROUTER_DEFAULT_BASE_URL;
 
 let customChatModel: string | null = null;
 let customCredentials: ProviderCredentials | null = null;
@@ -471,6 +510,7 @@ switch (modelConfig.provider) {
     customCredentials = {
       provider: 'openrouter',
       apiKey: OPENROUTER_API_KEY,
+      baseURL: openrouterBaseURL,
     };
     customChatModel = 'google/gemini-3-flash-preview';
     break;
@@ -609,12 +649,17 @@ export const createChatCompletionInstance = (
   }
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
+  const providerPreferences =
+    credentials.provider === 'openrouter'
+      ? getOpenRouterProviderPreferences()
+      : undefined;
 
   return ChatCompletionFactory.createInstance(credentials, {
     model: selectedModel,
     temperature,
     streaming,
     reasoning,
+    providerPreferences,
   });
 };
 
@@ -690,12 +735,17 @@ export const createChatCompletionInstanceWithOrg = async (
   }
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
+  const providerPreferences =
+    credentials.provider === 'openrouter'
+      ? getOpenRouterProviderPreferences()
+      : undefined;
 
   return ChatCompletionFactory.createInstance(credentials, {
     model: selectedModel,
     temperature,
     streaming,
     reasoning,
+    providerPreferences,
   });
 };
 
