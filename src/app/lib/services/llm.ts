@@ -449,7 +449,7 @@ function getOpenRouterProviderPreferences(): OpenRouterProviderPreferences {
   return prefs;
 }
 
-const OPENROUTER_DEFAULT_BASE_URL = 'https://eu.openrouter.ai/api';
+const OPENROUTER_DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
 const openrouterBaseURL =
   process.env.OPENROUTER_BASE_URL || OPENROUTER_DEFAULT_BASE_URL;
 
