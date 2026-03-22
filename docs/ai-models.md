@@ -6,7 +6,7 @@ Ragen uses AI models in four distinct areas. This document describes each, how t
 
 | Area | Provider | Connection | Env Var | Default |
 |---|---|---|---|---|
-| **Embedding** | OpenAI | Direct (native API) | `EMBEDDING_MODEL` | `text-embedding-3-small` |
+| **Embedding** | Cohere (via AWS Bedrock) | AWS Bedrock | `EMBEDDING_MODEL` | `cohere.embed-multilingual-v3` |
 | **Moderation** | OpenAI | Direct (native API) | — (not configurable) | `omni-moderation-latest` |
 | **Rephrasing** | Any (via OpenRouter) | OpenRouter | `REPHRASE_MODEL` | `google/gemini-2.0-flash-001` |
 | **Answer generation** | Any (via OpenRouter or native) | Configurable per-org | Per-org settings | `openai/gpt-4o` |
@@ -15,21 +15,21 @@ Ragen uses AI models in four distinct areas. This document describes each, how t
 
 **Purpose**: Generates vector embeddings for document chunks during indexing and for user queries during retrieval.
 
-**Provider**: OpenAI only (direct API, not routed through OpenRouter).
+**Provider**: Cohere via AWS Bedrock. Uses `inputType` differentiation (`search_document` for indexing, `search_query` for retrieval) for improved retrieval quality.
 
 **Configuration**:
-- `EMBEDDING_MODEL` — model name (default: `text-embedding-3-small`)
-- `OPENAI_API_KEY` — required for authentication
+- `EMBEDDING_MODEL` — model name (default: `cohere.embed-multilingual-v3`)
+- `AWS_BEDROCK_REGION` — Bedrock region (defaults to `AWS_DEFAULT_REGION`, then `eu-central-1`)
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — AWS credentials (shared with S3)
 
 **Code**: `src/app/lib/services/llm.ts` → `createEmbeddingsInstance()`
 
 > **Warning**: Changing the embedding model after documents have been indexed will produce incompatible vectors. You must re-index all documents if you change this value.
 
-**Recommendations**:
+**Current model**:
 | Model | Dimensions | Cost (per 1M tokens) | Notes |
 |---|---|---|---|
-| `text-embedding-3-small` | 1536 | ~$0.02 | Default. Good balance of cost and quality |
-| `text-embedding-3-large` | 3072 | ~$0.13 | Higher quality, higher cost |
+| `cohere.embed-multilingual-v3` | 1024 | ~$0.10 | Default. Strong multilingual (Polish+English) support, EU data residency via `eu-central-1` |
 
 ## 2. Moderation
 
@@ -90,10 +90,13 @@ DEFAULT_MODEL=gpt-4o
 REPHRASE_MODEL=google/gemini-2.0-flash-001
 REPHRASE_TEMPERATURE=0.5
 
-# Embedding model (OpenAI direct)
-EMBEDDING_MODEL=text-embedding-3-small
+# Embedding model (Cohere via AWS Bedrock)
+EMBEDDING_MODEL=cohere.embed-multilingual-v3
+# AWS_BEDROCK_REGION=eu-central-1  # defaults to AWS_DEFAULT_REGION, then eu-central-1
 
 # API keys
-OPENAI_API_KEY=sk-...
-OPENAI_MODERATION_KEY=sk-...  # Optional, falls back to OPENAI_API_KEY
+OPENAI_API_KEY=sk-...          # Still needed for moderation
+OPENAI_MODERATION_KEY=sk-...   # Optional, falls back to OPENAI_API_KEY
+AWS_ACCESS_KEY_ID=...          # Shared with S3
+AWS_SECRET_ACCESS_KEY=...      # Shared with S3
 ```

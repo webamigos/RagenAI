@@ -45,7 +45,7 @@ export const initializePublicRagChain = async ({
       maxDocumentsToRetrieve,
     } = settings;
 
-    const embeddingModel = createEmbeddingsInstance({ apiKey, organizationId });
+    const embeddingModel = createEmbeddingsInstance({ organizationId });
     const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
@@ -128,7 +128,7 @@ const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
   indexName: string,
 ): VectorStoreClient => {
-  logger.info('creating meilisearch vector store', {
+  logger.debug('creating meilisearch vector store', {
     url: process.env.MEILISEARCH_URL,
     indexName,
   });

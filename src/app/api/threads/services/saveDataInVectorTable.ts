@@ -9,7 +9,6 @@ import {
 } from '@/libs/db/constants/vectorStore';
 import { type VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
-import { getOpenaiAPIKey } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
@@ -160,11 +159,6 @@ export const convertAndStoreDocument = async ({
     }
 
     let rawDocs: VectorStoreDocument[] = [];
-    const apiKey = await getOpenaiAPIKey(organizationId);
-
-    if (!apiKey) {
-      throw new Error('OpenAI API key is required.');
-    }
 
     if (!mimeType) {
       return {
@@ -185,8 +179,7 @@ export const convertAndStoreDocument = async ({
       resolvedProjectPublicId = project?.publicId ?? null;
     }
 
-    const embeddingModel = await createEmbeddingsInstance({
-      apiKey,
+    const embeddingModel = createEmbeddingsInstance({
       organizationId,
     });
 

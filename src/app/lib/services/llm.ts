@@ -449,7 +449,7 @@ function getOpenRouterProviderPreferences(): OpenRouterProviderPreferences {
   return prefs;
 }
 
-const OPENROUTER_DEFAULT_BASE_URL = 'https://eu.openrouter.ai/api';
+const OPENROUTER_DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
 const openrouterBaseURL =
   process.env.OPENROUTER_BASE_URL || OPENROUTER_DEFAULT_BASE_URL;
 
@@ -749,21 +749,34 @@ export const createChatCompletionInstanceWithOrg = async (
   });
 };
 
-// We use openai embeddings always, independent of the provider
+// Embeddings via AWS Bedrock (Cohere Embed v3 Multilingual)
 export const createEmbeddingsInstance = ({
-  apiKey,
   organizationId,
 }: {
-  apiKey: string;
   organizationId?: string;
-}) => {
-  if (!apiKey) {
-    throw new Error('Cannot create embeddings instance, apiKey is required');
+} = {}) => {
+  const region =
+    process.env.AWS_BEDROCK_REGION ||
+    process.env.AWS_DEFAULT_REGION ||
+    'eu-central-1';
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+  if (!accessKeyId || !secretAccessKey) {
+    throw new Error(
+      'Cannot create embeddings instance, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required',
+    );
   }
 
   return EmbeddingsFactory.createInstance(
-    { provider: 'openai', apiKey },
-    { model: process.env.EMBEDDING_MODEL || 'text-embedding-3-small' },
+    {
+      provider: 'bedrock',
+      region,
+      credentials: { accessKeyId, secretAccessKey },
+    },
+    {
+      model: process.env.EMBEDDING_MODEL || 'cohere.embed-multilingual-v3',
+    },
     organizationId,
   );
 };
