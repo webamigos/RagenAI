@@ -35,6 +35,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'anthropic.claude-3-5-haiku-20241022-v1:0': { input: 0.8, output: 4 },
     'anthropic.claude-3-5-sonnet-20241022-v2:0': { input: 3, output: 15 },
     'amazon.titan-embed-text-v1': { input: 0.1, output: 0 },
+    'cohere.embed-multilingual-v3': { input: 0.1, output: 0 },
   },
   openrouter: {
     'openai/gpt-4o': { input: 2.5, output: 10 },

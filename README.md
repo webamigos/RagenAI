@@ -149,7 +149,7 @@ App admins can access all settings pages. Theme switching (Light/Dark/System) is
 
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use OpenAI `text-embedding-3-small` (1536 dimensions).
+Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use Cohere `cohere.embed-multilingual-v3` via AWS Bedrock (1024 dimensions).
 
 **Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
 
