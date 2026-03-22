@@ -7,19 +7,15 @@ import type { ChatCompletionOptions } from '@/libs/llm/types/chat-completion';
 import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 import { isReasoningModel, normalizeModelId } from '../../components/config';
 import { logger } from '../utils/logger';
+import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 
 export const modelsSchema = z.object({
   provider: z.literal('litellm'),
   model: z.string().min(1),
 });
 
-const modelConfig = modelsSchema.parse({
-  provider: process.env.DEFAULT_MODEL_PROVIDER,
-  model: process.env.DEFAULT_MODEL,
-});
-
 // Models that don't support temperature parameter (reasoning/thinking models)
-const modelsWithoutTemperature = ['o1', 'o3-mini', 'o4-mini'];
+const modelsWithoutTemperature = ['o1', 'o3', 'o3-mini', 'o4-mini'];
 
 const supportsTemperature = (model: string): boolean => {
   if (!model) {
@@ -28,27 +24,50 @@ const supportsTemperature = (model: string): boolean => {
   return !modelsWithoutTemperature.some((m) => model.includes(m));
 };
 
-const LITELLM_PROXY_URL = process.env.LITELLM_PROXY_URL;
-const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY;
-
-if (!LITELLM_PROXY_URL) {
-  throw new Error('LITELLM_PROXY_URL is required');
+function getLiteLLMCredentials(): LiteLLMCredentials {
+  const baseUrl = process.env.LITELLM_PROXY_URL;
+  if (!baseUrl) {
+    throw new Error('LITELLM_PROXY_URL is required');
+  }
+  return {
+    provider: 'litellm',
+    baseUrl,
+    apiKey: process.env.LITELLM_MASTER_KEY,
+  };
 }
 
-const litellmCredentials: LiteLLMCredentials = {
-  provider: 'litellm',
-  baseUrl: LITELLM_PROXY_URL,
-  apiKey: LITELLM_MASTER_KEY,
-};
+function getDefaultModel(): string {
+  const config = modelsSchema.parse({
+    provider: process.env.DEFAULT_MODEL_PROVIDER,
+    model: process.env.DEFAULT_MODEL,
+  });
+  return config.model;
+}
 
-const defaultModel = modelConfig.model;
+// Lazy-initialized credentials and model (deferred to first use, not import time)
+let _litellmCredentials: LiteLLMCredentials | null = null;
+let _defaultModel: string | null = null;
+
+function litellmCredentials(): LiteLLMCredentials {
+  if (!_litellmCredentials) {
+    _litellmCredentials = getLiteLLMCredentials();
+  }
+  return _litellmCredentials;
+}
+
+function defaultModel(): string {
+  if (!_defaultModel) {
+    _defaultModel = getDefaultModel();
+  }
+  return _defaultModel;
+}
 
 export const createChatCompletionInstance = (
-  options: ChatCompletionOptions,
+  options: ChatCompletionOptions & { litellmApiKey?: string },
   streaming: boolean = true,
 ): LanguageModelV3 => {
   const rawModel =
-    options.model || options.modelName || defaultModel || undefined;
+    options.model || options.modelName || defaultModel() || undefined;
   const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
 
   let temperature = options.temperature;
@@ -64,7 +83,11 @@ export const createChatCompletionInstance = (
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
 
-  return ChatCompletionFactory.createInstance(litellmCredentials, {
+  const credentials: LiteLLMCredentials = options.litellmApiKey
+    ? { ...litellmCredentials(), apiKey: options.litellmApiKey }
+    : litellmCredentials();
+
+  return ChatCompletionFactory.createInstance(credentials, {
     model: selectedModel,
     temperature,
     streaming,
@@ -72,23 +95,57 @@ export const createChatCompletionInstance = (
   });
 };
 
-// Organization-aware version — with LiteLLM, credentials are always the same (proxy handles routing)
+// Organization-aware version — uses org's LiteLLM virtual key for per-team budget tracking
 export const createChatCompletionInstanceWithOrg = async (
   options: ChatCompletionOptions,
-  _orgId: string,
+  orgId: string,
   streaming: boolean = true,
 ): Promise<LanguageModelV3> => {
-  return createChatCompletionInstance(options, streaming);
+  const orgKey = await getLiteLLMOrgApiKey(orgId);
+
+  const credentials: LiteLLMCredentials = orgKey
+    ? { ...litellmCredentials(), apiKey: orgKey }
+    : litellmCredentials();
+
+  const rawModel =
+    options.model || options.modelName || defaultModel() || undefined;
+  const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
+
+  let temperature = options.temperature;
+  if (selectedModel && !supportsTemperature(selectedModel)) {
+    if (temperature !== undefined) {
+      logger.info(
+        { model: selectedModel, temperature },
+        'Temperature parameter excluded for model that does not support it',
+      );
+    }
+    temperature = undefined;
+  }
+
+  const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
+
+  return ChatCompletionFactory.createInstance(credentials, {
+    model: selectedModel,
+    temperature,
+    streaming,
+    reasoning,
+  });
 };
 
 // Embeddings via LiteLLM proxy (Cohere Embed v3 Multilingual on Bedrock)
 export const createEmbeddingsInstance = ({
   organizationId,
+  litellmApiKey,
 }: {
   organizationId?: string;
+  litellmApiKey?: string;
 } = {}) => {
+  const credentials: LiteLLMCredentials = litellmApiKey
+    ? { ...litellmCredentials(), apiKey: litellmApiKey }
+    : litellmCredentials();
+
   return EmbeddingsFactory.createInstance(
-    litellmCredentials,
+    credentials,
     {
       model: process.env.EMBEDDING_MODEL || 'cohere-embed-multilingual-v3',
     },

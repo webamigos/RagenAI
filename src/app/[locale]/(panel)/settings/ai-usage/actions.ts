@@ -10,12 +10,14 @@ import {
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import type { AiUsageFilters } from '@/features/ai-usage/contracts/ai-usage.types';
 import {
-  getAiUsageDashboardQuery,
   getOrganizationsForFilterQuery,
   getProjectsForFilterQuery,
   getUsersForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
-import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
+import {
+  getLiteLLMUsageDashboardQuery,
+  getLiteLLMOrgUsageLimitsQuery,
+} from '@/features/ai-usage/services/queries/get-litellm-usage-query';
 import {
   saveUsageLimits,
   getDefaultOrganizationLimits,
@@ -25,6 +27,11 @@ import type {
   UsageLimits,
   DefaultOrganizationLimits,
 } from '@/features/organizations/contracts/organization.types';
+import {
+  syncLiteLLMTeamBudgetCommand,
+  syncLiteLLMTeamModelsCommand,
+} from '@/features/organizations/services/commands/litellm-team-command';
+import { logger } from '@/app/lib/utils/logger';
 
 /**
  * Ensures the caller is an app admin or org admin.
@@ -61,7 +68,7 @@ export async function getAiUsageDashboard(filters?: AiUsageFilters) {
     ...(!access.isAppAdmin ? { organizationId: access.orgId } : {}),
   };
 
-  return getAiUsageDashboardQuery(scopedFilters);
+  return getLiteLLMUsageDashboardQuery(scopedFilters);
 }
 
 export async function getOrganizationsForFilter() {
@@ -83,12 +90,7 @@ export async function getUsersForFilter(orgId?: string) {
 
 export async function getOrgUsageLimitsAction(orgId: string) {
   await requireAppAdmin();
-  const status = await checkUsageLimitsQuery(orgId);
-  return {
-    limits: status.limits,
-    current: status.current,
-    exceeded: status.exceeded,
-  };
+  return getLiteLLMOrgUsageLimitsQuery(orgId);
 }
 
 export async function updateOrgUsageLimitsAction(
@@ -97,6 +99,13 @@ export async function updateOrgUsageLimitsAction(
 ) {
   await requireAppAdmin();
   await saveUsageLimits(orgId, limits);
+
+  // Sync budget and models to LiteLLM team
+  try {
+    await syncLiteLLMTeamBudgetCommand(orgId);
+  } catch (error) {
+    logger.error({ err: error, orgId }, 'Failed to sync LiteLLM team budget');
+  }
 }
 
 export async function getDefaultLimitsAction() {

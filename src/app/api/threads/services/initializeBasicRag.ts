@@ -17,7 +17,7 @@ import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/featu
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 type InitializeRagChainParams = {
-  settings: OrganizationSettings;
+  settings: OrganizationSettings & { litellmApiKey?: string };
   orgId: string;
   userId?: string | null;
   projectInstruction?: string | null;
@@ -54,10 +54,12 @@ export const initializeRagChain = async ({
       temperature: answerTemperature,
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
+      litellmApiKey,
     } = settings;
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId: orgId,
+      litellmApiKey,
     });
     const contentModerator = createModerationInstance();
 
@@ -65,11 +67,13 @@ export const initializeRagChain = async ({
       apiKey,
       model: DEFAULT_REPHRASE_MODEL,
       temperature: DEFAULT_REPHRASE_TEMPERATURE,
+      litellmApiKey,
     });
     const answerGenerator = createChatCompletionInstance({
       apiKey,
       model: answerModel,
       temperature: answerTemperature,
+      litellmApiKey,
     });
 
     const orgMetadata = await getOrganizationMetadata(orgId);

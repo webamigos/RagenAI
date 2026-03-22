@@ -17,7 +17,7 @@ import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-cl
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 
 type InitializePublicRagChainParams = {
-  settings: OrganizationSettings;
+  settings: OrganizationSettings & { litellmApiKey?: string };
   organizationId: string;
   projectInstruction?: string | null;
   projectPublicId?: string;
@@ -43,20 +43,26 @@ export const initializePublicRagChain = async ({
       temperature: answerTemperature,
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
+      litellmApiKey,
     } = settings;
 
-    const embeddingModel = createEmbeddingsInstance({ organizationId });
+    const embeddingModel = createEmbeddingsInstance({
+      organizationId,
+      litellmApiKey,
+    });
     const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
       apiKey,
       model: DEFAULT_REPHRASE_MODEL,
       temperature: DEFAULT_REPHRASE_TEMPERATURE,
+      litellmApiKey,
     });
     const answerGenerator = createChatCompletionInstance({
       apiKey,
       model: answerModel,
       temperature: answerTemperature,
+      litellmApiKey,
     });
 
     const orgMetadata = await getOrganizationMetadata(organizationId);

@@ -1,5 +1,14 @@
 import { logger } from '@/app/lib/utils/logger';
 import type { AvailableModel, ModelOrigin } from '@/app/components/config';
+import type {
+  LiteLLMTeamCreateParams,
+  LiteLLMTeamUpdateParams,
+  LiteLLMTeamInfo,
+  LiteLLMKeyGenerateParams,
+  LiteLLMKeyInfo,
+  LiteLLMSpendLog,
+  LiteLLMSpendLogsParams,
+} from './types';
 
 type LiteLLMModel = {
   id: string;
@@ -134,3 +143,216 @@ export function getLiteLLMProxyUrl(): string {
 export function getLiteLLMApiKey(): string | undefined {
   return LITELLM_MASTER_KEY;
 }
+
+// --- Helper for master-key-authenticated requests ---
+
+function masterKeyHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (LITELLM_MASTER_KEY) {
+    headers['Authorization'] = `Bearer ${LITELLM_MASTER_KEY}`;
+  }
+  return headers;
+}
+
+// --- Team Management ---
+
+export async function createLiteLLMTeam(
+  params: LiteLLMTeamCreateParams,
+): Promise<LiteLLMTeamInfo> {
+  const body: Record<string, unknown> = {
+    team_id: params.teamId,
+    team_alias: params.teamAlias,
+  };
+  if (params.maxBudget != null) {
+    body.max_budget = params.maxBudget;
+  }
+  if (params.budgetDuration) {
+    body.budget_duration = params.budgetDuration;
+  }
+  if (params.models && params.models.length > 0) {
+    body.models = params.models;
+  }
+  if (params.tpmLimit != null) {
+    body.tpm_limit = params.tpmLimit;
+  }
+  if (params.rpmLimit != null) {
+    body.rpm_limit = params.rpmLimit;
+  }
+
+  const response = await fetch(`${LITELLM_PROXY_URL}/team/new`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to create LiteLLM team: ${response.status} ${text}`,
+    );
+  }
+
+  return (await response.json()) as LiteLLMTeamInfo;
+}
+
+export async function updateLiteLLMTeam(
+  params: LiteLLMTeamUpdateParams,
+): Promise<LiteLLMTeamInfo> {
+  const body: Record<string, unknown> = {
+    team_id: params.teamId,
+  };
+  if (params.maxBudget !== undefined) {
+    body.max_budget = params.maxBudget;
+  }
+  if (params.budgetDuration !== undefined) {
+    body.budget_duration = params.budgetDuration;
+  }
+  if (params.models !== undefined) {
+    body.models = params.models;
+  }
+  if (params.tpmLimit !== undefined) {
+    body.tpm_limit = params.tpmLimit;
+  }
+  if (params.rpmLimit !== undefined) {
+    body.rpm_limit = params.rpmLimit;
+  }
+
+  const response = await fetch(`${LITELLM_PROXY_URL}/team/update`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to update LiteLLM team: ${response.status} ${text}`,
+    );
+  }
+
+  return (await response.json()) as LiteLLMTeamInfo;
+}
+
+export async function getLiteLLMTeamInfo(
+  teamId: string,
+): Promise<LiteLLMTeamInfo | null> {
+  try {
+    const response = await fetch(
+      `${LITELLM_PROXY_URL}/team/info?team_id=${encodeURIComponent(teamId)}`,
+      {
+        headers: masterKeyHeaders(),
+        signal: AbortSignal.timeout(5000),
+      },
+    );
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      throw new Error(
+        `Failed to get LiteLLM team info: ${response.status} ${text}`,
+      );
+    }
+
+    const data = await response.json();
+    return (data.team_info ?? data) as LiteLLMTeamInfo;
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes('Failed to get LiteLLM team info')
+    ) {
+      throw error;
+    }
+    logger.error({ err: error, teamId }, 'Error fetching LiteLLM team info');
+    return null;
+  }
+}
+
+// --- Key Management ---
+
+export async function generateLiteLLMKey(
+  params: LiteLLMKeyGenerateParams,
+): Promise<LiteLLMKeyInfo> {
+  const body: Record<string, unknown> = {
+    team_id: params.teamId,
+  };
+  if (params.keyAlias) {
+    body.key_alias = params.keyAlias;
+  }
+  if (params.models && params.models.length > 0) {
+    body.models = params.models;
+  }
+  if (params.maxBudget != null) {
+    body.max_budget = params.maxBudget;
+  }
+
+  const response = await fetch(`${LITELLM_PROXY_URL}/key/generate`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to generate LiteLLM key: ${response.status} ${text}`,
+    );
+  }
+
+  return (await response.json()) as LiteLLMKeyInfo;
+}
+
+export async function deleteLiteLLMKey(keyToken: string): Promise<void> {
+  const response = await fetch(`${LITELLM_PROXY_URL}/key/delete`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify({ keys: [keyToken] }),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(`Failed to delete LiteLLM key: ${response.status} ${text}`);
+  }
+}
+
+// --- Spend Logs ---
+
+export async function getLiteLLMSpendLogs(
+  params: LiteLLMSpendLogsParams,
+): Promise<LiteLLMSpendLog[]> {
+  const searchParams = new URLSearchParams();
+  searchParams.set('team_id', params.teamId);
+  if (params.startDate) {
+    searchParams.set('start_date', params.startDate);
+  }
+  if (params.endDate) {
+    searchParams.set('end_date', params.endDate);
+  }
+
+  const response = await fetch(
+    `${LITELLM_PROXY_URL}/spend/logs?${searchParams.toString()}`,
+    {
+      headers: masterKeyHeaders(),
+      signal: AbortSignal.timeout(10000),
+    },
+  );
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to fetch LiteLLM spend logs: ${response.status} ${text}`,
+    );
+  }
+
+  return (await response.json()) as LiteLLMSpendLog[];
+}
+
+export { inferOrigin };

@@ -51,6 +51,15 @@ export async function saveOrgAllowedModelsAction(
     create: { organizationId: orgId, allowedModels: models },
   });
 
+  // Sync allowed models to LiteLLM team
+  try {
+    const { syncLiteLLMTeamModelsCommand } =
+      await import('@/features/organizations/services/commands/litellm-team-command');
+    await syncLiteLLMTeamModelsCommand(orgId);
+  } catch {
+    // LiteLLM sync is best-effort — don't block the admin action
+  }
+
   revalidatePath('/models');
   revalidatePath(`/organizations/${orgId}`);
 }
