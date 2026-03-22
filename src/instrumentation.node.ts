@@ -36,7 +36,6 @@ export async function registerOtel() {
     const { PrismaInstrumentation } = await import('@prisma/instrumentation');
     const { registerInstrumentations } =
       await import('@opentelemetry/instrumentation');
-    const { langfuseSpanProcessor } = await import('@/libs/langfuse');
 
     console.log('[otel] All modules imported successfully');
 
@@ -47,9 +46,10 @@ export async function registerOtel() {
       'deployment.environment.name': process.env.TARGET_ENV ?? 'local',
     });
 
-    // Span processors: Langfuse always, OTLP when endpoint is set
+    // Span processors: OTLP when endpoint is set
+    // Note: LLM call tracing is handled by LiteLLM proxy → Langfuse
     const spanProcessors: import('@opentelemetry/sdk-trace-node').SpanProcessor[] =
-      [langfuseSpanProcessor];
+      [];
 
     if (endpoint) {
       const traceExporter = new OTLPTraceExporter({
@@ -63,7 +63,7 @@ export async function registerOtel() {
       spanProcessors,
     });
     tracerProvider.register();
-    console.log('[otel] TracerProvider registered (Langfuse active)');
+    console.log('[otel] TracerProvider registered');
 
     let meterProviderInstance: InstanceType<typeof MeterProvider> | undefined;
     let loggerProviderInstance: InstanceType<typeof LoggerProvider> | undefined;
