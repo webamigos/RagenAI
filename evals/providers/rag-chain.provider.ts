@@ -5,12 +5,10 @@ import { MockVectorStoreClient } from '../fixtures/mock-vector-store';
 import {
   createNoopModeration,
   createNoopEmbeddings,
-  resolveApiKey,
+  getLiteLLMCredentials,
 } from './shared';
-import type { ProviderCredentials } from '@/libs/llm/types';
 
 export interface RagChainProviderConfig {
-  provider?: ProviderCredentials['provider'];
   model?: string;
   answerInstructions?: string;
   projectInstruction?: string;
@@ -24,25 +22,18 @@ export class RagChainProvider implements ApiProvider {
   }
 
   id(): string {
-    return `rag-chain:${this.providerConfig.provider ?? 'openrouter'}:${this.providerConfig.model ?? 'openai/gpt-4o'}`;
+    return `rag-chain:litellm:${this.providerConfig.model ?? 'gpt-4o'}`;
   }
 
   async callApi(prompt: string): Promise<ProviderResponse> {
-    const provider = this.providerConfig.provider ?? 'openrouter';
-    const model = this.providerConfig.model ?? 'openai/gpt-4o';
+    const model = this.providerConfig.model ?? 'gpt-4o';
+    const credentials = getLiteLLMCredentials();
 
-    const apiKey = resolveApiKey(provider);
-
-    if (!apiKey) {
-      return { error: `Missing API key for provider ${provider}` };
-    }
-
-    const answerGenerator = ChatCompletionFactory.createInstance(
-      { provider, apiKey } as ProviderCredentials,
-      { model },
-    );
+    const answerGenerator = ChatCompletionFactory.createInstance(credentials, {
+      model,
+    });
     const questionRephraser = ChatCompletionFactory.createInstance(
-      { provider, apiKey } as ProviderCredentials,
+      credentials,
       { model },
     );
 

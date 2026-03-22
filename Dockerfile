@@ -55,8 +55,9 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     MCP_FIREFLIES_SERVER_URL="https://example.com" \
     RAGEN_TOKEN_VAULT_URL="http://localhost:3100" \
     RAGEN_TOKEN_VAULT_SERVICE_SECRET="0000000000000000000000000000000000000000000000000000000000000000" \
-    DEFAULT_MODEL_PROVIDER="google" \
-    DEFAULT_MODEL="gemini-3-flash-preview"
+    DEFAULT_MODEL_PROVIDER="litellm" \
+    DEFAULT_MODEL="gpt-5.4-nano" \
+    LITELLM_PROXY_URL="http://localhost:4000"
 
 RUN npm run build
 

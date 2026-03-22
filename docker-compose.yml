@@ -76,6 +76,47 @@ services:
     networks:
       - ragen-network
 
+  litellm-postgres:
+    image: postgres
+    container_name: ragen-litellm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${LITELLM_DB_USER:-litellm}
+      POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm123}
+      POSTGRES_DB: ${LITELLM_DB_NAME:-litellm}
+    ports:
+      - "${LITELLM_DB_PORT:-5433}:5432"
+    volumes:
+      - litellm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LITELLM_DB_USER:-litellm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ragen-network
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: ragen-litellm
+    restart: unless-stopped
+    depends_on:
+      litellm-postgres:
+        condition: service_healthy
+    env_file:
+      - .env.local
+    environment:
+      # These override .env.local — internal Docker networking values
+      LITELLM_DATABASE_URL: "postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-litellm123}@litellm-postgres:5432/${LITELLM_DB_NAME:-litellm}"
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-litellm-dev-key}
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    networks:
+      - ragen-network
+
   # Optional — only needed for API rate limiting
   redis:
     image: redis:7-alpine
@@ -99,6 +140,8 @@ volumes:
     name: ragen-redis-data
   meilisearch_data:
     name: ragen-meilisearch-data
+  litellm_postgres_data:
+    name: ragen-litellm-postgres-data
 
 networks:
   ragen-network:

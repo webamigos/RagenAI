@@ -1,13 +1,10 @@
 import { embed, embedMany } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
-import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
 import type { EmbeddingModelV3 } from '@ai-sdk/provider';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import type {
-  BedrockCredentials,
-  OpenAICredentials,
-  ProviderCredentials,
+  LiteLLMCredentials,
   BaseEmbeddingsConfig,
   EmbeddingsProvider,
 } from './types';
@@ -53,9 +50,6 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     const { embeddings, usage } = await embedMany({
       model: this.embeddingModel,
       values: texts,
-      providerOptions: {
-        bedrock: { inputType: 'search_document' },
-      },
     });
 
     if (usage) {
@@ -69,9 +63,6 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     const { embedding, usage } = await embed({
       model: this.embeddingModel,
       value: text,
-      providerOptions: {
-        bedrock: { inputType: 'search_query' },
-      },
     });
 
     if (usage) {
@@ -83,70 +74,30 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
 }
 
 export class EmbeddingsFactory {
-  private static createBedrockInstance(
-    credentials: BedrockCredentials,
-    config: BaseEmbeddingsConfig,
-    organizationId?: string,
-  ): EmbeddingsProvider {
-    if (!credentials.credentials) {
-      throw new Error('Credentials are required for Bedrock');
-    }
-
-    if (!credentials.region) {
-      throw new Error('Region is required for Bedrock');
-    }
-
-    const bedrock = createAmazonBedrock({
-      region: credentials.region,
-      accessKeyId: credentials.credentials.accessKeyId,
-      secretAccessKey: credentials.credentials.secretAccessKey,
-    });
-
-    const modelName = config.model || 'cohere.embed-multilingual-v3';
-    return new TrackedEmbeddingsProvider(
-      bedrock.textEmbeddingModel(modelName),
-      modelName,
-      'bedrock',
-      organizationId,
-    );
-  }
-
-  private static createOpenAIInstance(
-    credentials: OpenAICredentials,
-    config: BaseEmbeddingsConfig,
-    organizationId?: string,
-  ): EmbeddingsProvider {
-    if (!credentials.apiKey) {
-      throw new Error('API key is required for OpenAI');
-    }
-
-    const openai = createOpenAI({
-      apiKey: credentials.apiKey,
-    });
-
-    const modelName = config.model || 'text-embedding-3-small';
-    return new TrackedEmbeddingsProvider(
-      openai.textEmbeddingModel(modelName),
-      modelName,
-      'openai',
-      organizationId,
-    );
-  }
-
   static createInstance(
-    credentials: ProviderCredentials,
+    credentials: LiteLLMCredentials,
     config: BaseEmbeddingsConfig,
     organizationId?: string,
   ): EmbeddingsProvider {
-    switch (credentials.provider) {
-      case 'bedrock':
-        return this.createBedrockInstance(credentials, config, organizationId);
-
-      case 'openai':
-        return this.createOpenAIInstance(credentials, config, organizationId);
-
-      default:
-        throw new Error('Unsupported provider');
+    if (!credentials.baseUrl) {
+      throw new Error('LiteLLM baseUrl is required for embeddings');
     }
+
+    const baseUrl = credentials.baseUrl.endsWith('/')
+      ? credentials.baseUrl.slice(0, -1)
+      : credentials.baseUrl;
+
+    const litellm = createOpenAI({
+      baseURL: `${baseUrl}/v1`,
+      apiKey: credentials.apiKey || 'sk-litellm',
+    });
+
+    const modelName = config.model || 'cohere-embed-multilingual-v3';
+    return new TrackedEmbeddingsProvider(
+      litellm.textEmbeddingModel(modelName),
+      modelName,
+      'litellm',
+      organizationId,
+    );
   }
 }
