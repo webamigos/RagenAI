@@ -1,11 +1,14 @@
 FROM ghcr.io/berriai/litellm:main-stable
 
+# Install socat for IPv4→IPv6 port forwarding
+RUN apk add --no-cache socat 2>/dev/null || apt-get update && apt-get install -y socat && rm -rf /var/lib/apt/lists/*
+
 COPY config.yaml /app/config.yaml
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Railway sets PORT dynamically — LiteLLM must listen on it
 ENV PORT=4000
 
 ENTRYPOINT []
-# Bind to :: (dual-stack: accepts both IPv6 and IPv4)
-# Required for Railway internal networking which resolves to IPv6
-CMD ["sh", "-c", "litellm --config /app/config.yaml --host '::' --port ${PORT}"]
+CMD ["/app/entrypoint.sh"]
