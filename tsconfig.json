@@ -49,6 +49,7 @@
     "packages",
     "src/temporal",
     "scripts",
+    "src/scripts",
     "prisma.config.ts",
     "vitest.config.ts"
   ]

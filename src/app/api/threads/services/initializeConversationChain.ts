@@ -9,7 +9,7 @@ import type { ChainTrackingContext } from '@/libs/chains/types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type InitializeConversationChainParams = {
-  settings: OrganizationSettings;
+  settings: OrganizationSettings & { litellmApiKey?: string };
   projectInstruction?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
@@ -27,7 +27,7 @@ export const initializeConversationChain = async ({
   threadDocuments,
 }: InitializeConversationChainParams) => {
   try {
-    const { apiKey, model, temperature, prompt } = settings;
+    const { apiKey, model, temperature, prompt, litellmApiKey } = settings;
 
     return await conversationChain({
       models: {
@@ -36,6 +36,7 @@ export const initializeConversationChain = async ({
           apiKey,
           model,
           temperature,
+          litellmApiKey,
         }),
       },
       config: {

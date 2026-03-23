@@ -189,6 +189,7 @@ model OrganizationSettings {
   monthlyMessageLimit     Int?     @map("monthly_message_limit")
   maxMembers              Int?     @map("max_members")
   allowedModels           String[] @default([]) @map("allowed_models")
+  litellmApiKey           String?  @map("litellm_api_key")
   createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz
 

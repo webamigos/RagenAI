@@ -1,8 +1,5 @@
 export { ChatCompletionFactory } from './chat-completion-factory';
-export {
-  TrackedEmbeddingsProvider,
-  EmbeddingsFactory,
-} from './embeddings-factory';
+export { EmbeddingsFactory } from './embeddings-factory';
 export {
   type BaseCompletionConfig,
   type ChatCompletionOptions,

@@ -12,6 +12,7 @@ import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
+import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -229,6 +230,16 @@ export const auth = betterAuth({
             // Create default project and apply default limits
             await createOrganizationWithDefaultProject(orgId, user.id);
             await applyDefaultLimitsToOrg(orgId);
+
+            // Create LiteLLM team + virtual key for this organization
+            try {
+              await ensureLiteLLMTeamCommand(orgId, organizationName);
+            } catch (litellmError) {
+              console.error(
+                '[AUTH] Failed to create LiteLLM team (will retry later)',
+                { orgId, error: litellmError },
+              );
+            }
 
             // Set default vector store (meilisearch for local dev, can be changed in settings)
             const defaultVectorStore =

@@ -1,4 +1,4 @@
-import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
+import { Role, Source } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
@@ -22,13 +22,13 @@ import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
-import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
+import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 
 /**
  * Load thread documents from database for a specific thread
@@ -285,11 +285,12 @@ export async function streamEvents({
           // Phase 1: Fetch settings and thread details (with messages) in parallel
           sendApiEvent(controller, 'find_thread');
 
-          const [rawSettings, threadRecord] = await Promise.all([
+          const [rawSettings, threadRecord, litellmApiKey] = await Promise.all([
             getAllSettings(orgId),
             getThreadDetails(publicThreadId, orgId, {
               includeMessages: true,
             }),
+            getLiteLLMOrgApiKey(orgId),
           ]);
 
           if (!rawSettings.apiKey) {
@@ -307,6 +308,7 @@ export async function streamEvents({
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
             voiceId: rawSettings.voiceId,
+            litellmApiKey: litellmApiKey ?? undefined,
           };
 
           // Build conversation history from thread record (no separate DB query needed)
@@ -415,25 +417,9 @@ export async function streamEvents({
             projectPublicId: effectiveProjectPublicId,
           } = projectResult;
 
-          // Phase 3: Check usage limits before proceeding
-          const { checkUsageLimitsQuery } =
-            await import('@/features/ai-usage/services/queries/check-usage-limits-query');
-          const usageLimitStatus = await checkUsageLimitsQuery(orgId);
-          if (usageLimitStatus.isAnyLimitExceeded) {
-            const reasons: string[] = [];
-            if (usageLimitStatus.exceeded.tokens) {
-              reasons.push('token limit');
-            }
-            if (usageLimitStatus.exceeded.cost) {
-              reasons.push('cost limit');
-            }
-            if (usageLimitStatus.exceeded.messages) {
-              reasons.push('message limit');
-            }
-            throw new Error(
-              `Monthly usage limit exceeded: ${reasons.join(', ')}. Please contact your organization administrator.`,
-            );
-          }
+          // Phase 3: Usage limits are now enforced by LiteLLM budget on the team's virtual key.
+          // LiteLLM returns a 400 error when budget is exceeded, which is caught in the
+          // error handler below and translated to a user-friendly message.
 
           // Phase 4: Initialize the appropriate chain
           let chainOutput: BaseChatChainOutput | undefined = undefined;
@@ -623,28 +609,7 @@ export async function streamEvents({
 
           sendApiEvent(controller, 'llm_completed');
 
-          // Track AI usage (fire-and-forget)
-          try {
-            const usage = await streamResult.usage;
-            const modelId = effectiveSettings.model || '';
-            const provider =
-              getModelProvider(normalizeModelId(modelId)) || 'openrouter';
-
-            trackAiUsage({
-              organizationId: orgId,
-              projectId: threadRecord.projectId ?? null,
-              threadId: threadRecord.publicId,
-              userId,
-              step: AiUsageStep.CHAT_COMPLETION,
-              provider,
-              model: modelId,
-              inputTokens: usage.inputTokens ?? 0,
-              outputTokens: usage.outputTokens ?? 0,
-              totalTokens: usage.totalTokens ?? 0,
-            });
-          } catch (usageError) {
-            logger.error({ err: usageError }, 'Failed to track AI usage');
-          }
+          // AI usage is now tracked automatically by LiteLLM via the org's virtual key
 
           sendApiEvent(controller, 'save_assistant_response');
 
@@ -702,10 +667,27 @@ export async function streamEvents({
             );
           }
         } catch (error) {
-          const exceptionFilter = new SseExceptionFilter();
-          logger.error({ err: error }, 'Error processing SSE');
-          // this also sends error event which can be handled in UI
-          exceptionFilter.handleError(error, controller);
+          // Translate LiteLLM budget exceeded errors to user-friendly message
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          if (
+            errorMessage.includes('Budget has been exceeded') ||
+            errorMessage.includes('ExceededBudget')
+          ) {
+            logger.warn(
+              { err: error, orgId },
+              'LiteLLM budget exceeded for organization',
+            );
+            const budgetError = new Error(
+              'Monthly usage limit exceeded. Please contact your organization administrator.',
+            );
+            const exceptionFilter = new SseExceptionFilter();
+            exceptionFilter.handleError(budgetError, controller);
+          } else {
+            const exceptionFilter = new SseExceptionFilter();
+            logger.error({ err: error }, 'Error processing SSE');
+            exceptionFilter.handleError(error, controller);
+          }
 
           // Ensure MCP clients are closed on error
           if (closeMcpClients) {
