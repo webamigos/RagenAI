@@ -8,6 +8,10 @@ const envSchema = z
     DEFAULT_MODEL_PROVIDER: z.string(),
     DEFAULT_MODEL: z.string(),
 
+    // LiteLLM Proxy
+    LITELLM_PROXY_URL: z.string().url(),
+    LITELLM_MASTER_KEY: z.string(),
+
     // Supabase for the App
     DATABASE_URL: z.string().url(),
 
