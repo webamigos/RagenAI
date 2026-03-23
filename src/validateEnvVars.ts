@@ -10,7 +10,7 @@ const envSchema = z
 
     // LiteLLM Proxy
     LITELLM_PROXY_URL: z.string().url(),
-    LITELLM_MASTER_KEY: z.string(),
+    LITELLM_MASTER_KEY: z.string().optional(),
 
     // Supabase for the App
     DATABASE_URL: z.string().url(),
@@ -106,6 +106,18 @@ const envSchema = z
           message:
             'WORKER_SECRET_KEY is required when Pusher is not configured (SSE mode)',
           path: ['WORKER_SECRET_KEY'],
+        });
+      }
+
+      if (
+        (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
+        !isSet(env.LITELLM_MASTER_KEY)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'LITELLM_MASTER_KEY is required when TARGET_ENV is "staging" or "production"',
+          path: ['LITELLM_MASTER_KEY'],
         });
       }
     },
