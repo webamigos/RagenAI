@@ -6,4 +6,6 @@ COPY config.yaml /app/config.yaml
 ENV PORT=4000
 
 ENTRYPOINT []
-CMD ["sh", "-c", "litellm --config /app/config.yaml --port ${PORT}"]
+# Bind to :: (dual-stack: accepts both IPv6 and IPv4)
+# Required for Railway internal networking which resolves to IPv6
+CMD ["sh", "-c", "litellm --config /app/config.yaml --host '::' --port ${PORT}"]
