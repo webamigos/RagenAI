@@ -72,12 +72,12 @@ model_list:
   # mounts are not available).
   # ---------------------------------------------------------------------------
 
-  # --- Gemini 3.x models (us-central1 — preview models require this region) ---
+  # --- Gemini 3.x models (global — preview models require this region) ---
   - model_name: gemini-3-flash-preview
     litellm_params:
       model: vertex_ai/gemini-3-flash-preview
       vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: us-central1
+      vertex_location: global
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # --- Stable models (VERTEX_LOCATION env var — typically europe-west1 for EU) ---
@@ -104,16 +104,9 @@ model_list:
 
   - model_name: gemini-2.0-flash
     litellm_params:
-      model: vertex_ai/gemini-2.0-flash
+      model: vertex_ai/gemini-2.0-flash-001
       vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  - model_name: gemini-2.0-flash-lite
-    litellm_params:
-      model: vertex_ai/gemini-2.0-flash-lite
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
+      vertex_location: global
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # ---------------------------------------------------------------------------
@@ -135,8 +128,8 @@ litellm_settings:
   cache: false
   # Langfuse tracing — logs all LLM calls (chat + embeddings) to Langfuse
   # Requires LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST env vars
-  success_callback: ["langfuse"]
-  failure_callback: ["langfuse"]
+  success_callback: ['langfuse']
+  failure_callback: ['langfuse']
 
 general_settings:
   # Master key — set LITELLM_MASTER_KEY env var for staging/production

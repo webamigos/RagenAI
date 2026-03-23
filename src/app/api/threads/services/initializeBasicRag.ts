@@ -29,7 +29,7 @@ type InitializeRagChainParams = {
   mcpContext?: string;
 };
 
-const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.0-flash';
+const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
 const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
 const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   ? 0.5
