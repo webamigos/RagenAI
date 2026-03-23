@@ -88,5 +88,7 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+# Prefer IPv6 DNS resolution for Railway internal networking (neutral on IPv4-only networks)
+ENV NODE_OPTIONS="--dns-result-order=ipv6first"
 
 CMD ["node", "server.js"]
