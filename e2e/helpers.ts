@@ -10,10 +10,28 @@ export const CREDENTIALS = {
 export const ROUTES = {
   signIn: '/pl/sign-in',
   signUp: '/pl/sign-up',
+  forgotPassword: '/pl/forgot-password',
   home: '/pl',
+  newChat: '/pl/new',
+  chats: '/pl/chats',
+  assistants: '/pl/assistants',
   knowledgeUpload: '/pl/knowledge/upload-files',
   knowledgeDocuments: '/pl/knowledge/documents-list',
+  knowledgeCreate: '/pl/knowledge/create-document',
+  knowledgeFromUrl: '/pl/knowledge/add-from-url',
   projects: '/pl/projects',
+  userProfile: '/pl/user/profile',
+  support: '/pl/support',
+  settingsGeneral: '/pl/settings/general',
+  settingsAccount: '/pl/settings/account',
+  settingsConnectors: '/pl/settings/connectors',
+  settingsOrganization: '/pl/settings/organization-profile',
+  settingsPromptManagement: '/pl/settings/prompt-management',
+  settingsSubscription: '/pl/settings/subscription',
+  settingsTeams: '/pl/settings/teams',
+  settingsUsers: '/pl/settings/users',
+  settingsAiUsage: '/pl/settings/ai-usage',
+  settingsDiskUsage: '/pl/settings/disk-usage',
 } as const;
 
 export const LABELS = {
