@@ -13,6 +13,7 @@ import {
 import { useTranslations } from 'next-intl';
 import {
   ArrowRightCircleIcon,
+  DocumentTextIcon,
   ExclamationCircleIcon,
   MicrophoneIcon,
   PlusIcon,
@@ -46,11 +47,13 @@ type Props = {
   onFilesDrop?: (files: File[]) => void;
   threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentRemove?: (index: number) => void;
+  loadingDocuments?: { id: string; typeLabel: string }[];
   disabled?: boolean;
   handleSubmit?: (e?: React.BaseSyntheticEvent) => Promise<void>;
   modelSelector?: React.ReactNode;
   leftAddon?: React.ReactNode;
   leftAddonPosition?: 'center' | 'bottom';
+  onPasteIntercept?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
 } & ComponentPropsWithRef<'textarea'>;
 
 export const Textarea = forwardRef(
@@ -69,6 +72,7 @@ export const Textarea = forwardRef(
       onFilesDrop,
       threadDocuments = [],
       onThreadDocumentRemove,
+      loadingDocuments = [],
       containerClassName,
       mandatory = false,
       maxHeight = 200,
@@ -79,6 +83,7 @@ export const Textarea = forwardRef(
       modelSelector,
       leftAddon,
       leftAddonPosition = 'center',
+      onPasteIntercept,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>,
@@ -314,6 +319,32 @@ export const Textarea = forwardRef(
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
+            {/* Attached documents (inside the input container) */}
+            {(threadDocuments.length > 0 || loadingDocuments.length > 0) && (
+              <div className="flex flex-wrap gap-2 px-3 pt-3">
+                {threadDocuments.map((document, index) => (
+                  <FileBadge
+                    key={`${document.name}-${index}`}
+                    document={document}
+                    onRemove={() => onThreadDocumentRemove?.(index)}
+                  />
+                ))}
+                {loadingDocuments.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="relative flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 animate-pulse"
+                  >
+                    <div className="h-4 w-24 rounded bg-muted" />
+                    <div className="h-3 w-16 rounded bg-muted" />
+                    <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
+                      <DocumentTextIcon className="size-3 text-blue-500" />
+                      {doc.typeLabel}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <textarea
               id={id}
               ref={(el) => {
@@ -336,11 +367,14 @@ export const Textarea = forwardRef(
                 },
                 'pl-3 pr-3',
               )}
+              {...rest}
               onInput={adjustHeight}
               onKeyDown={handleKeyDown}
+              onPaste={(e) => {
+                onPasteIntercept?.(e);
+              }}
               value={value}
               placeholder={t('placeholder')}
-              {...rest}
             />
 
             {isDragOver && (
@@ -396,18 +430,6 @@ export const Textarea = forwardRef(
             )}
           </div>
         </div>
-
-        {threadDocuments.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {threadDocuments.map((document, index) => (
-              <FileBadge
-                key={`${document.name}-${index}`}
-                document={document}
-                onRemove={() => onThreadDocumentRemove?.(index)}
-              />
-            ))}
-          </div>
-        )}
 
         {error && (
           <Text

@@ -19,6 +19,8 @@ type Props = {
   onFilesDrop?: (files: File[]) => void;
   threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentRemove?: (index: number) => void;
+  loadingDocuments?: { id: string; typeLabel: string }[];
+  onPasteIntercept?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
   textareaClassName?: string;
   leftAddon?: React.ReactNode;
 };
@@ -36,11 +38,12 @@ export const AskQuestion = ({
   onFilesDrop,
   threadDocuments,
   onThreadDocumentRemove,
+  loadingDocuments,
+  onPasteIntercept,
   textareaClassName,
   leftAddon,
 }: Props) => {
   const t = useTranslations('form');
-
   return (
     <Textarea
       autoFocus={true}
@@ -59,6 +62,8 @@ export const AskQuestion = ({
       onFilesDrop={onFilesDrop}
       threadDocuments={threadDocuments}
       onThreadDocumentRemove={onThreadDocumentRemove}
+      loadingDocuments={loadingDocuments}
+      onPasteIntercept={onPasteIntercept}
       leftAddon={leftAddon}
     />
   );
