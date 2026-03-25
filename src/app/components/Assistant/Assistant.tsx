@@ -10,6 +10,12 @@ import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useMemo, useState } from 'react';
+import {
+  PageDropOverlay,
+  usePageDrop,
+  type DropZoneConfig,
+} from '@/app/components/PageDropOverlay';
+import { useTranslations } from 'next-intl';
 import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
@@ -69,6 +75,20 @@ export const Assistant = ({ threadId }: Props) => {
     string | null
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
+  const tDrop = useTranslations('page-drop');
+  const { isDragging } = usePageDrop();
+
+  const dropZones: DropZoneConfig[] = useMemo(() => {
+    if (isPublicAccess) {
+      return [];
+    }
+    return [
+      {
+        label: tDrop('drop-to-chat'),
+        onDrop: (files) => promptFormRef.current?.dropFiles(files),
+      },
+    ];
+  }, [isPublicAccess, tDrop]);
 
   const allAttachments = useMemo(
     () => messages.flatMap((m) => m.attachments ?? []),
@@ -166,6 +186,7 @@ export const Assistant = ({ threadId }: Props) => {
 
   return (
     <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
+      <PageDropOverlay visible={isDragging} zones={dropZones} />
       <div className="flex flex-1 min-w-0 flex-col font-sans">
         <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
           <BreadcrumbNavigation threadId={threadId} />

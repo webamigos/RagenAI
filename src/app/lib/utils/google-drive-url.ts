@@ -7,13 +7,14 @@
  * - https://docs.google.com/presentation/d/FILE_ID/...
  * - https://drive.google.com/file/d/FILE_ID/...
  * - https://drive.google.com/open?id=FILE_ID
+ * - https://docs.google.com/document/u/0/d/FILE_ID/...  (account selector)
  */
 
 const DRIVE_FILE_ID_REGEX =
-  /https?:\/\/(?:docs|drive)\.google\.com\/(?:document|spreadsheets|presentation|file)\/d\/([a-zA-Z0-9_-]+)/;
+  /https?:\/\/(?:docs|drive)\.google\.com\/(?:document|spreadsheets|presentation|file)\/(?:u\/\d+\/)?d\/([a-zA-Z0-9_-]+)/;
 
 const DRIVE_OPEN_REGEX =
-  /https?:\/\/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/;
+  /https?:\/\/drive\.google\.com\/(?:u\/\d+\/)?open\?id=([a-zA-Z0-9_-]+)/;
 
 export function extractDriveFileId(url: string): string | null {
   const match = url.match(DRIVE_FILE_ID_REGEX) || url.match(DRIVE_OPEN_REGEX);
