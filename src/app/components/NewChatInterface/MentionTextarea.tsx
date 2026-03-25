@@ -11,8 +11,16 @@ import { logger } from '@/app/lib/utils/logger';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
 import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
 import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
-import { isDriveConnected } from '@/app/actions/google-drive';
+import {
+  isDriveConnected,
+  getDriveFileContent,
+} from '@/app/actions/google-drive';
 import { isFirefliesConnected } from '@/app/actions/fireflies';
+import {
+  extractDriveLinksFromText,
+  getDriveFileTypeFromUrl,
+} from '@/app/lib/utils/google-drive-url';
+import { toast } from 'sonner';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -65,6 +73,12 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
   const mentionStartRef = useRef<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [loadingDriveLinks, setLoadingDriveLinks] = useState<
+    { id: string; typeLabel: string }[]
+  >([]);
+  const attachedDriveFileIds = useRef<Set<string>>(new Set());
+  const threadDocumentsRef = useRef(threadDocuments);
+  threadDocumentsRef.current = threadDocuments;
 
   const { errorToast } = statusToast();
   const handleTextChange = useCallback(
@@ -218,6 +232,10 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
 
   const handleThreadDocumentRemove = useCallback(
     (index: number) => {
+      const removed = threadDocuments[index];
+      if (removed?.driveFileId) {
+        attachedDriveFileIds.current.delete(removed.driveFileId);
+      }
       setThreadDocuments(threadDocuments.filter((_, i) => i !== index));
     },
     [threadDocuments, setThreadDocuments],
@@ -266,6 +284,71 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
       setThreadDocuments([...threadDocuments, doc]);
     },
     [threadDocuments, setThreadDocuments],
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      if (!hasDriveConnector || hideAttachments) {
+        return;
+      }
+
+      const pastedText = e.clipboardData.getData('text/plain');
+      const driveLinks = extractDriveLinksFromText(pastedText);
+
+      if (driveLinks.length === 0) {
+        return;
+      }
+
+      const newLinks = driveLinks.filter(
+        (link) => !attachedDriveFileIds.current.has(link.fileId),
+      );
+
+      if (newLinks.length === 0) {
+        return;
+      }
+
+      e.preventDefault();
+
+      const loadingItems = newLinks.map((link) => ({
+        id: link.fileId,
+        typeLabel: getDriveFileTypeFromUrl(link.url),
+      }));
+      setLoadingDriveLinks((prev) => [...prev, ...loadingItems]);
+
+      for (const link of newLinks) {
+        attachedDriveFileIds.current.add(link.fileId);
+      }
+
+      for (const link of newLinks) {
+        getDriveFileContent(link.fileId)
+          .then((result) => {
+            if (result.success && result.content) {
+              const doc: ThreadDocumentUI = {
+                name: result.name || 'Google Drive Document',
+                content: result.content,
+                size: result.content.length,
+                type: result.mime_type || 'text/plain',
+                sourceUrl: link.url,
+                driveFileId: link.fileId,
+              };
+              setThreadDocuments([...threadDocumentsRef.current, doc]);
+            } else {
+              attachedDriveFileIds.current.delete(link.fileId);
+              toast.error('Failed to fetch Google Drive file');
+            }
+          })
+          .catch(() => {
+            attachedDriveFileIds.current.delete(link.fileId);
+            toast.error('Failed to fetch Google Drive file');
+          })
+          .finally(() => {
+            setLoadingDriveLinks((prev) =>
+              prev.filter((item) => item.id !== link.fileId),
+            );
+          });
+      }
+    },
+    [hasDriveConnector, hideAttachments, setThreadDocuments],
   );
 
   const excludeFileIds = threadDocuments
@@ -322,6 +405,8 @@ export const MentionTextarea: React.FC<MentionTextareaProps> = ({
         onThreadDocumentRemove={
           hideAttachments ? undefined : handleThreadDocumentRemove
         }
+        loadingDocuments={hideAttachments ? undefined : loadingDriveLinks}
+        onPasteIntercept={hideAttachments ? undefined : handlePaste}
         leftAddonPosition="bottom"
         leftAddon={
           hideAttachments ? undefined : (

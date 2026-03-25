@@ -35,8 +35,16 @@ import type { ThreadDocumentUI } from '@/features/documents/contracts/document.t
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
 import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
 import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
-import { isDriveConnected } from '@/app/actions/google-drive';
+import {
+  isDriveConnected,
+  getDriveFileContent,
+} from '@/app/actions/google-drive';
 import { isFirefliesConnected } from '@/app/actions/fireflies';
+import { toast } from 'sonner';
+import {
+  extractDriveLinksFromText,
+  getDriveFileTypeFromUrl,
+} from '@/app/lib/utils/google-drive-url';
 
 type Props = {
   isLoading: boolean;
@@ -66,6 +74,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
     const [hasDriveConnector, setHasDriveConnector] = useState(false);
     const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
+    const [loadingDriveLinks, setLoadingDriveLinks] = useState<
+      { id: string; typeLabel: string }[]
+    >([]);
+    const attachedDriveFileIds = useRef<Set<string>>(new Set());
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
@@ -141,7 +153,13 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     }, []);
 
     const handleThreadDocumentRemove = useCallback((index: number) => {
-      setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
+      setThreadDocuments((prev) => {
+        const removed = prev[index];
+        if (removed?.driveFileId) {
+          attachedDriveFileIds.current.delete(removed.driveFileId);
+        }
+        return prev.filter((_, i) => i !== index);
+      });
     }, []);
 
     const handleExternalDocumentSelected = useCallback(
@@ -172,6 +190,76 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       [],
     );
 
+    const handlePaste = useCallback(
+      (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        if (!hasDriveConnector) {
+          return;
+        }
+
+        const pastedText = e.clipboardData.getData('text/plain');
+        const driveLinks = extractDriveLinksFromText(pastedText);
+
+        if (driveLinks.length === 0) {
+          return;
+        }
+
+        // Filter out already-attached files
+        const newLinks = driveLinks.filter(
+          (link) => !attachedDriveFileIds.current.has(link.fileId),
+        );
+
+        if (newLinks.length === 0) {
+          return;
+        }
+
+        // Prevent the paste from inserting the URL into the textarea
+        e.preventDefault();
+
+        // Add loading placeholders
+        const loadingItems = newLinks.map((link) => ({
+          id: link.fileId,
+          typeLabel: getDriveFileTypeFromUrl(link.url),
+        }));
+        setLoadingDriveLinks((prev) => [...prev, ...loadingItems]);
+
+        // Mark as in-flight to prevent duplicates
+        for (const link of newLinks) {
+          attachedDriveFileIds.current.add(link.fileId);
+        }
+
+        // Fetch content for each file
+        for (const link of newLinks) {
+          getDriveFileContent(link.fileId)
+            .then((result) => {
+              if (result.success && result.content) {
+                const doc: ThreadDocumentUI = {
+                  name: result.name || 'Google Drive Document',
+                  content: result.content,
+                  size: result.content.length,
+                  type: result.mime_type || 'text/plain',
+                  sourceUrl: link.url,
+                  driveFileId: link.fileId,
+                };
+                setThreadDocuments((prev) => [...prev, doc]);
+              } else {
+                attachedDriveFileIds.current.delete(link.fileId);
+                toast.error('Failed to fetch Google Drive file');
+              }
+            })
+            .catch(() => {
+              attachedDriveFileIds.current.delete(link.fileId);
+              toast.error('Failed to fetch Google Drive file');
+            })
+            .finally(() => {
+              setLoadingDriveLinks((prev) =>
+                prev.filter((item) => item.id !== link.fileId),
+              );
+            });
+        }
+      },
+      [hasDriveConnector],
+    );
+
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
       reset({ prompt: '' });
       onSubmit({
@@ -183,6 +271,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           threadDocuments.length > 0 ? threadDocuments : undefined,
       });
       setThreadDocuments([]);
+      attachedDriveFileIds.current.clear();
     };
 
     const handleSend = () => {
@@ -224,6 +313,8 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             onThreadDocumentRemove={
               isPublicAccess ? undefined : handleThreadDocumentRemove
             }
+            loadingDocuments={isPublicAccess ? undefined : loadingDriveLinks}
+            onPasteIntercept={isPublicAccess ? undefined : handlePaste}
             textareaClassName=""
             leftAddon={
               !isPublicAccess ? (
