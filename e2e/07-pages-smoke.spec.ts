@@ -59,8 +59,9 @@ test.describe('Authenticated pages smoke tests', () => {
     test('knowledge documents list loads', async ({ page }) => {
       await page.goto(ROUTES.knowledgeDocuments);
       await expect(page).toHaveURL(/documents-list/);
-      // Page should render without error (sidebar nav or page content visible)
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await expect(page.getByPlaceholder(/wyszukaj pliki/i)).toBeVisible({
+        timeout: 10_000,
+      });
     });
 
     test('knowledge create document page loads', async ({ page }) => {
