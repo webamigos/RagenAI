@@ -58,30 +58,9 @@ model_list:
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: os.environ/AWS_BEDROCK_REGION
 
-  - model_name: claude-sonnet-4-5
-    litellm_params:
-      model: bedrock/eu.anthropic.claude-sonnet-4-5-20250929-v1:0
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
-
-  - model_name: claude-opus-4-5
-    litellm_params:
-      model: bedrock/eu.anthropic.claude-opus-4-5-20251101-v1:0
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
-
   - model_name: claude-haiku-4-5
     litellm_params:
       model: bedrock/eu.anthropic.claude-haiku-4-5-20251001-v1:0
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
-
-  - model_name: claude-sonnet-4
-    litellm_params:
-      model: bedrock/eu.anthropic.claude-sonnet-4-20250514-v1:0
       aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
       aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
       aws_region_name: os.environ/AWS_BEDROCK_REGION
@@ -93,50 +72,15 @@ model_list:
   # mounts are not available).
   # ---------------------------------------------------------------------------
 
-  # --- Preview models ---
-  - model_name: gemini-3.1-pro-preview
-    litellm_params:
-      model: vertex_ai/gemini-3.1-pro-preview
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  - model_name: gemini-3.1-flash-lite-preview
-    litellm_params:
-      model: vertex_ai/gemini-3.1-flash-lite-preview
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  - model_name: gemini-3-pro-preview
-    litellm_params:
-      model: vertex_ai/gemini-3-pro-preview
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
+  # --- Gemini 3.x models (global — preview models require this region) ---
   - model_name: gemini-3-flash-preview
     litellm_params:
       model: vertex_ai/gemini-3-flash-preview
       vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
+      vertex_location: global
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
-  - model_name: gemini-2.5-flash-lite-preview
-    litellm_params:
-      model: vertex_ai/gemini-2.5-flash-lite-preview
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  - model_name: gemini-2.5-flash-preview
-    litellm_params:
-      model: vertex_ai/gemini-2.5-flash-preview
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  # --- Stable models ---
+  # --- Stable models (VERTEX_LOCATION env var — typically europe-west1 for EU) ---
   - model_name: gemini-2.5-pro
     litellm_params:
       model: vertex_ai/gemini-2.5-pro
@@ -160,16 +104,9 @@ model_list:
 
   - model_name: gemini-2.0-flash
     litellm_params:
-      model: vertex_ai/gemini-2.0-flash
+      model: vertex_ai/gemini-2.0-flash-001
       vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  - model_name: gemini-2.0-flash-lite
-    litellm_params:
-      model: vertex_ai/gemini-2.0-flash-lite
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
+      vertex_location: global
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # ---------------------------------------------------------------------------
@@ -191,8 +128,8 @@ litellm_settings:
   cache: false
   # Langfuse tracing — logs all LLM calls (chat + embeddings) to Langfuse
   # Requires LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST env vars
-  success_callback: ["langfuse"]
-  failure_callback: ["langfuse"]
+  success_callback: ['langfuse']
+  failure_callback: ['langfuse']
 
 general_settings:
   # Master key — set LITELLM_MASTER_KEY env var for staging/production

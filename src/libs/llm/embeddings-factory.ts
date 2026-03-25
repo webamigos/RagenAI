@@ -57,6 +57,22 @@ export class EmbeddingsFactory {
     const litellm = createOpenAI({
       baseURL: `${baseUrl}/v1`,
       apiKey: credentials.apiKey || 'sk-litellm',
+      // Strip encoding_format from embedding requests to avoid LiteLLM/Bedrock Cohere bug
+      // where embedding_types is sent as string instead of array
+      fetch: async (url, init) => {
+        if (init?.body && typeof init.body === 'string') {
+          try {
+            const body = JSON.parse(init.body);
+            if (body.encoding_format !== undefined) {
+              delete body.encoding_format;
+              init = { ...init, body: JSON.stringify(body) };
+            }
+          } catch {
+            // not JSON, pass through
+          }
+        }
+        return fetch(url, init);
+      },
     });
 
     const modelName = config.model || 'cohere-embed-multilingual-v3';

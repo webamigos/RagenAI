@@ -9,7 +9,7 @@ export const DEFAULT_PROJECT_TITLE = 'Default Assistant';
 export const defaultOrganizationSettings: RawOrganizationSettings = {
   apiKey: null,
   prompt: '',
-  model: 'gemini-3-flash-preview',
+  model: 'gemini-2.5-flash',
   temperature: 0.8,
   maxDocumentsToRetrieve: 5,
   voiceId: 'JBFqnCBsd6RMkjVDRZzb',
