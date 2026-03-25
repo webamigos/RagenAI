@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { requireAppAdmin } from '@/lib/auth-guards';
 import { createOrganizationWithDefaultProjectCommand } from '@/features/organizations/services/commands/create-organization-command';
+import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
 import db from '@ragenai/prisma-client';
 
 export async function createOrganizationAction(name: string, slug: string) {
@@ -22,6 +23,13 @@ export async function createOrganizationAction(name: string, slug: string) {
 
   // Create default project
   await createOrganizationWithDefaultProjectCommand(org.id, adminUser.id);
+
+  // Create LiteLLM team + virtual key
+  try {
+    await ensureLiteLLMTeamCommand(org.id, name);
+  } catch {
+    // Best-effort — team can be provisioned later via migration script
+  }
 
   // Set default vector store (merge with existing metadata)
   const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'meilisearch';

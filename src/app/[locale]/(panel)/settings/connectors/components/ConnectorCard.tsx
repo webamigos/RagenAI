@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
 import { Loader2Icon } from 'lucide-react';
 import { Button } from '@ragenai/tui/button';
 import { Badge } from '@ragenai/tui/badge';
@@ -45,6 +46,7 @@ type ConnectorCardProps = {
 
 export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const t = useTranslations('settings-page.connectors');
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [currentConnector, setCurrentConnector] = useState(connector);
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
@@ -87,6 +89,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       });
       setApiKeyDialogOpen(false);
       setApiKeyValue('');
+      router.refresh();
     } catch {
       setApiKeyError(t('api-key-error'));
     } finally {
@@ -246,6 +249,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         enabled: true,
         createdAt: new Date(),
       });
+      router.refresh();
     } catch {
       // Auth may have failed or user closed popup before completing
     } finally {
@@ -261,6 +265,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     try {
       await disconnectProvider(currentConnector.id);
       setCurrentConnector(undefined);
+      router.refresh();
     } finally {
       setLoading(false);
     }

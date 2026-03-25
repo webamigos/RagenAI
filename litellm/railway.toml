@@ -1,0 +1,11 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "litellm/Dockerfile"
+watchPatterns = ["litellm/**"]
+
+[deploy]
+# /health/liveliness does not require auth (unlike /health which needs master key)
+healthcheckPath = "/health/liveliness"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

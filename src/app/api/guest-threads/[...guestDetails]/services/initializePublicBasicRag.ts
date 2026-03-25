@@ -17,14 +17,13 @@ import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-cl
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 
 type InitializePublicRagChainParams = {
-  settings: OrganizationSettings;
+  settings: OrganizationSettings & { litellmApiKey?: string };
   organizationId: string;
   projectInstruction?: string | null;
   projectPublicId?: string;
 };
 
-const DEFAULT_REPHRASE_MODEL =
-  process.env.REPHRASE_MODEL || 'google/gemini-2.0-flash-001';
+const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
 const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
 const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   ? 0.5
@@ -43,20 +42,26 @@ export const initializePublicRagChain = async ({
       temperature: answerTemperature,
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
+      litellmApiKey,
     } = settings;
 
-    const embeddingModel = createEmbeddingsInstance({ apiKey, organizationId });
+    const embeddingModel = createEmbeddingsInstance({
+      organizationId,
+      litellmApiKey,
+    });
     const contentModerator = createModerationInstance();
 
     const questionRephraser = createChatCompletionInstance({
       apiKey,
       model: DEFAULT_REPHRASE_MODEL,
       temperature: DEFAULT_REPHRASE_TEMPERATURE,
+      litellmApiKey,
     });
     const answerGenerator = createChatCompletionInstance({
       apiKey,
       model: answerModel,
       temperature: answerTemperature,
+      litellmApiKey,
     });
 
     const orgMetadata = await getOrganizationMetadata(organizationId);
@@ -128,7 +133,7 @@ const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
   indexName: string,
 ): VectorStoreClient => {
-  logger.info('creating meilisearch vector store', {
+  logger.debug('creating meilisearch vector store', {
     url: process.env.MEILISEARCH_URL,
     indexName,
   });

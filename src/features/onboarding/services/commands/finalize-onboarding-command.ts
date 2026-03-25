@@ -97,6 +97,18 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           'Set default vector store for new organization',
         );
 
+        // Create LiteLLM team + virtual key
+        try {
+          const { ensureLiteLLMTeamCommand } =
+            await import('@/features/organizations/services/commands/litellm-team-command');
+          await ensureLiteLLMTeamCommand(orgId, `${userName}'s Organization`);
+        } catch (litellmError) {
+          logger.error(
+            { err: litellmError, orgId },
+            'Failed to create LiteLLM team during onboarding (will retry later)',
+          );
+        }
+
         // Set firstOrg to the created organization
         firstOrg = { id: orgId, name: `${userName}'s Organization` };
       } catch (createError) {

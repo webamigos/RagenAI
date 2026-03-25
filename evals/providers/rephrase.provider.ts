@@ -5,11 +5,9 @@ import type {
 } from 'promptfoo';
 import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { rephraseQuestion } from '@/libs/chains/basic-rag/operations';
-import { resolveApiKey } from './shared';
-import type { ProviderCredentials } from '@/libs/llm/types';
+import { getLiteLLMCredentials } from './shared';
 
 export interface RephraseProviderConfig {
-  provider?: ProviderCredentials['provider'];
   model?: string;
 }
 
@@ -21,24 +19,17 @@ export class RephraseProvider implements ApiProvider {
   }
 
   id(): string {
-    return `rephrase:${this.providerConfig.provider ?? 'openrouter'}:${this.providerConfig.model ?? 'openai/gpt-4o'}`;
+    return `rephrase:litellm:${this.providerConfig.model ?? 'gpt-4o'}`;
   }
 
   async callApi(
     prompt: string,
     context?: CallApiContextParams,
   ): Promise<ProviderResponse> {
-    const provider = this.providerConfig.provider ?? 'openrouter';
-    const model = this.providerConfig.model ?? 'openai/gpt-4o';
-
-    const apiKey = resolveApiKey(provider);
-
-    if (!apiKey) {
-      return { error: `Missing API key for provider ${provider}` };
-    }
+    const model = this.providerConfig.model ?? 'gpt-4o';
 
     const questionRephraser = ChatCompletionFactory.createInstance(
-      { provider, apiKey } as ProviderCredentials,
+      getLiteLLMCredentials(),
       { model },
     );
 

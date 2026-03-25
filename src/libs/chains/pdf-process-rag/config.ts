@@ -14,8 +14,8 @@ export const PDF_PROCESSING_CONFIG = {
 };
 
 export const availableModels = {
-  gpt4o: 'gpt-4o',
-  gpt4o_mini: 'gpt-4o-mini',
+  gpt4o: 'gpt-5.4-mini',
+  gpt4o_mini: 'gpt-5.4-nano',
 };
 
 export const systemTemplates = {

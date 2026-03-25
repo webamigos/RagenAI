@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-docker compose up        # Start local Postgres, Redis, Meilisearch, Temporal
+docker compose up        # Start local Postgres, Redis, Meilisearch, Temporal, LiteLLM
 npm run dev              # Start Next.js dev server
 npm run build            # Production build (runs prisma generate first)
 npm run lint             # ESLint
@@ -20,18 +20,22 @@ npm run db:seed          # Seed database (uses .env.local)
 
 ## Local Development
 
-Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, Temporal on 7233, Temporal UI on 8080, optional Redis on 6379). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, Temporal on 7233, Temporal UI on 8080, LiteLLM on 4000, optional Redis on 6379). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+LITELLM_PROXY_URL=http://localhost:4000
+LITELLM_MASTER_KEY=sk-litellm-dev-key
+DEFAULT_MODEL_PROVIDER=litellm
+DEFAULT_MODEL=gpt-4o
 ```
 
 ## Architecture
 
-**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search) + Temporal.io (async workflow orchestration)
+**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search) + Temporal.io (async workflow orchestration) + LiteLLM (unified LLM proxy)
 
-**What it does**: RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
+**What it does**: RAG (Retrieval Augmented Generation) AI chat application with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
 ### Routing & Layouts
 
@@ -118,7 +122,8 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 
 ### Libraries (`src/libs/`)
 
-- `llm/` — Chat completion & embeddings factories supporting OpenAI, Anthropic, Google, Bedrock, Ollama, OpenRouter, Fireworks, Azure
+- `llm/` — Chat completion & embeddings factories, all routed through LiteLLM proxy via `@ai-sdk/openai` with `.chat()` (OpenAI-compatible `/chat/completions` endpoint)
+- `litellm/` — LiteLLM proxy client: dynamic model fetching from `/v1/models`, health checks, caching
 - `chains/` — RAG chains
 - `vector-store/` — Vector store clients (Meilisearch, Supabase) implementing `VectorStoreClient` interface
 - `document-loaders/` — PDF, EPUB, Markdown, SRT, URL parsing
@@ -141,7 +146,7 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 - Client: `src/libs/vector-store/meilisearch-client.ts` — implements `VectorStoreClient` interface
 - Interface: `src/libs/vector-store/types.ts` — `similaritySearch()`, `addDocuments()`
 - Organization index: each org gets its own Meilisearch index (named by org ID)
-- Embeddings: `userProvided` embedder with OpenAI `text-embedding-3-small` (1536 dimensions)
+- Embeddings: `userProvided` embedder with Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions)
 - Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
 - Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
 - Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
@@ -261,27 +266,49 @@ App admins can access all pages regardless of permission level.
 - Custom error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`
 - Temporal workflows: use string names, not function imports (workflow definition limitation)
 - Logging: Pino (server & client) with OpenTelemetry integration; webpack replaces server logger with client logger on client builds
-- Observability: OpenTelemetry for traces, metrics, and logs — server (`ragen-app`) and client (`ragen-app-client`). Configured in `src/instrumentation.ts` and `src/instrumentation-client.ts`
+- Observability: OpenTelemetry for traces, metrics, and logs — server (`ragen-app`) and client (`ragen-app-client`). Configured in `src/instrumentation.ts` and `src/instrumentation-client.ts`. LLM call tracing handled by LiteLLM → Langfuse (not by ragen-app OTel pipeline). App-level Langfuse tracing (`@langfuse/tracing`) remains in `assistant-stream.ts` for thread context.
 - Pre-commit hooks: lint-staged runs `eslint --fix` + `prettier --write` on staged files
 - Commit messages follow conventional commits (commitlint enforced via Husky)
 
+## LiteLLM Proxy (Unified LLM Gateway)
+
+All LLM calls (chat completions and embeddings) are routed through a **LiteLLM proxy** server. LiteLLM provides a single OpenAI-compatible API that routes to underlying providers (Azure OpenAI, AWS Bedrock, Google Vertex AI).
+
+**Architecture**: ragen-app → `@ai-sdk/openai` (`.chat()`) → LiteLLM proxy (`/v1/chat/completions`) → Azure/Bedrock/Vertex
+
+**Key files**:
+- `litellm/config.yaml` — Model definitions and provider routing (baked into Docker image for Railway)
+- `litellm/Dockerfile` — Railway deployment image
+- `src/libs/litellm/client.ts` — Fetches available models from `/v1/models`, health checks
+- `src/libs/llm/chat-completion-factory.ts` — Single factory using `createOpenAI({ baseURL })` with `.chat()`
+- `src/libs/llm/embeddings-factory.ts` — Embeddings via LiteLLM using `.textEmbeddingModel()`
+- `src/app/lib/services/llm.ts` — Credential setup, model creation
+- `src/app/lib/actions/checkAvailableProviders.ts` — Dynamically fetches model list from LiteLLM
+
+**Configured models** (in `litellm/config.yaml`):
+- Azure OpenAI: `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`
+- AWS Bedrock: `claude-sonnet-4-20250514`, `claude-opus-4-20250514`, `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022`
+- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`
+- Embeddings: `cohere-embed-multilingual-v3` (Bedrock)
+
+**Model management**: Add/remove models via LiteLLM UI (`http://localhost:4000/ui`, login: `admin` / `LITELLM_MASTER_KEY`). Changes are reflected in ragen-app automatically via `/v1/models` endpoint.
+
+**Env vars**:
+- `LITELLM_PROXY_URL` — proxy URL (default: `http://localhost:4000`)
+- `LITELLM_MASTER_KEY` — API key for proxy auth (default for local dev: `sk-litellm-dev-key`)
+- `DEFAULT_MODEL_PROVIDER` — must be `litellm`
+- `DEFAULT_MODEL` — model name matching `litellm/config.yaml` (e.g., `gpt-4o`)
+- `REPHRASE_MODEL` — cheap/fast model for question rephrasing (e.g., `gpt-4.1-nano`)
+- `EMBEDDING_MODEL` — embedding model name (default: `cohere-embed-multilingual-v3`)
+
+**Langfuse tracing**: LiteLLM automatically traces all LLM calls (chat + embeddings) to Langfuse via `success_callback` / `failure_callback` in `config.yaml`. Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` env vars on the LiteLLM container. App-level tracing (thread context, user messages, tags) is still handled by `@langfuse/tracing` in `assistant-stream.ts`. The OTel-based `@langfuse/otel` span processor was removed — LiteLLM replaces it.
+
+**Railway deployment**: `litellm/Dockerfile` bakes `config.yaml` into the image. Set provider credentials (`AZURE_API_KEY`, `AWS_ACCESS_KEY_ID`, `VERTEX_CREDENTIALS`, `LANGFUSE_*`, etc.) as Railway env vars. Use Railway managed Postgres for `LITELLM_DATABASE_URL`.
+
 ## Model Defaults
 
-- **Default chat model**: `google/gemini-3-flash-preview` (set in organization settings and OpenRouter fallback)
-- **Rephrase model**: `google/gemini-2.0-flash-001` — intentionally kept on the older, cheaper Flash model for question rephrasing. Do not upgrade this without explicit approval.
-
-## OpenRouter Provider Routing
-
-OpenRouter requests can be routed through specific cloud providers with data collection controls via env vars:
-All defaults are secure-by-default (EU region, ZDR, deny data collection). Override via env vars:
-- `OPENROUTER_BASE_URL` — default: `https://eu.openrouter.ai/api` (EU region)
-- `OPENROUTER_PROVIDER_ORDER` — default: `google-vertex,amazon-bedrock`
-- `OPENROUTER_DATA_COLLECTION` — default: `deny`
-- `OPENROUTER_ZDR` — default: `true`
-- `OPENROUTER_PROVIDER_ONLY` — no default (restrict to only these providers)
-- `OPENROUTER_PROVIDER_IGNORE` — no default (exclude specific providers)
-
-Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/services/llm.ts` and passed through `BaseCompletionConfig.providerPreferences` → `ChatCompletionFactory` → `@openrouter/ai-sdk-provider` SDK's `provider` option. The `OPENROUTER_BASE_URL` is passed via `OpenRouterCredentials.baseURL` → `createOpenRouter({ baseURL })`.
+- **Default chat model**: `gpt-4o` (via LiteLLM → Azure OpenAI)
+- **Rephrase model**: `gpt-4.1-nano` — cheapest/fastest model for question rephrasing. Do not upgrade this without explicit approval.
 
 ## Per-Organization Model Management
 
@@ -291,6 +318,31 @@ Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/se
 - Default allowed models stored in `Settings` table (key `default_allowed_models`) — applied to new orgs via `applyDefaultLimitsToOrg()`
 - Admin UI: `apps/admin/src/app/(dashboard)/models/` (follows same pattern as Limits page)
 - Key functions: `getAllowedModels()`, `saveAllowedModels()`, `getDefaultAllowedModels()`, `saveDefaultAllowedModels()` in `src/features/organizations/services/organization-settings.ts`
+
+## Testing Requirements
+
+All new code must include tests. Use Vitest + React Testing Library (`jsdom` environment). Test files live next to the code they test in `__tests__/` directories.
+
+**Required tests by file type:**
+
+| File type | Tests required | Example |
+|-----------|---------------|---------|
+| **Utility functions** (pure JS/TS) | Unit tests | `src/app/lib/utils/__tests__/fileValidation.test.ts` |
+| **Redux slices** | Unit tests for all reducers | `src/store/__tests__/threadsSlice.test.ts` |
+| **Zod schemas / validators** | Unit tests for valid/invalid inputs | `src/features/messages/contracts/__tests__/message.types.test.ts` |
+| **React components** | Integration tests (render, interaction, state) | `src/app/components/__tests__/KnowledgeBasePickerDialog.test.tsx` |
+| **Complex components** | Unit tests for logic + integration for UI | `src/app/components/Assistant/PromptForm/__tests__/PromptForm.test.tsx` |
+| **New screens / pages** | At minimum E2E smoke test (Playwright) | `npm run test:e2e` |
+
+**Conventions:**
+- Wrap components with `<NextIntlClientProvider messages={...} locale="en">` for i18n
+- Mock server actions (`vi.mock`) — never call real APIs in tests
+- Mock external modules (Stripe, Prisma, logger) that would fail in jsdom
+- Use `vi.hoisted()` for mock functions referenced inside `vi.mock()` factories
+- Add `ResizeObserver` polyfill when testing cmdk/Radix components
+- Use `@testing-library/user-event` for realistic user interactions
+- Use `waitFor` for async state changes
+- Follow existing patterns in `src/store/__tests__/`, `src/app/lib/utils/__tests__/`
 
 ## Post-Task Code Review
 

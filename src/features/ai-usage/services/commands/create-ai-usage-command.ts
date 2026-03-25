@@ -16,19 +16,32 @@ export async function createAiUsageCommand(
         input.outputTokens,
       );
 
+    const inputTokens = Number.isFinite(input.inputTokens)
+      ? input.inputTokens
+      : 0;
+    const outputTokens = Number.isFinite(input.outputTokens)
+      ? input.outputTokens
+      : 0;
+    const totalTokens = Number.isFinite(input.totalTokens)
+      ? input.totalTokens
+      : inputTokens + outputTokens;
+    const safeCost = Number.isFinite(estimatedCost) ? estimatedCost : 0;
+
     await db.aiUsage.create({
       data: {
-        organizationId: input.organizationId,
-        projectId: input.projectId ?? null,
+        organization: { connect: { id: input.organizationId } },
+        ...(input.projectId
+          ? { project: { connect: { id: input.projectId } } }
+          : {}),
+        ...(input.userId ? { user: { connect: { id: input.userId } } } : {}),
         threadId: input.threadId ?? null,
-        userId: input.userId ?? null,
         step: input.step,
         provider: input.provider,
         model: input.model,
-        inputTokens: input.inputTokens,
-        outputTokens: input.outputTokens,
-        totalTokens: input.totalTokens,
-        estimatedCost: estimatedCost,
+        inputTokens,
+        outputTokens,
+        totalTokens,
+        estimatedCost: safeCost,
         durationMs: input.durationMs ?? null,
         metadata: input.metadata ?? undefined,
       },
