@@ -210,6 +210,10 @@ export const MentionTextarea = forwardRef<
           }
         }
 
+        if (validFiles.length === 0) {
+          return;
+        }
+
         try {
           const { uploadFiles } = await import('@/app/lib/services/api');
 
@@ -240,12 +244,14 @@ export const MentionTextarea = forwardRef<
             }
           }
 
-          setThreadDocuments([...threadDocuments, ...newDocuments]);
+          const updated = [...threadDocumentsRef.current, ...newDocuments];
+          threadDocumentsRef.current = updated;
+          setThreadDocuments(updated);
         } catch (error) {
           errorToast({ message: 'Błąd podczas wgrywania plików' });
         }
       },
-      [threadDocuments, setThreadDocuments],
+      [setThreadDocuments],
     );
 
     useImperativeHandle(
@@ -258,13 +264,16 @@ export const MentionTextarea = forwardRef<
 
     const handleThreadDocumentRemove = useCallback(
       (index: number) => {
-        const removed = threadDocuments[index];
+        const current = threadDocumentsRef.current;
+        const removed = current[index];
         if (removed?.driveFileId) {
           attachedDriveFileIds.current.delete(removed.driveFileId);
         }
-        setThreadDocuments(threadDocuments.filter((_, i) => i !== index));
+        const updated = current.filter((_, i) => i !== index);
+        threadDocumentsRef.current = updated;
+        setThreadDocuments(updated);
       },
-      [threadDocuments, setThreadDocuments],
+      [setThreadDocuments],
     );
 
     const handleKbFilesSelected = useCallback(
@@ -283,9 +292,11 @@ export const MentionTextarea = forwardRef<
           type: f.type,
           userFileId: f.publicId,
         }));
-        setThreadDocuments([...threadDocuments, ...newDocs]);
+        const updated = [...threadDocumentsRef.current, ...newDocs];
+        threadDocumentsRef.current = updated;
+        setThreadDocuments(updated);
       },
-      [threadDocuments, setThreadDocuments],
+      [setThreadDocuments],
     );
 
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -307,9 +318,11 @@ export const MentionTextarea = forwardRef<
 
     const handleDriveFileSelected = useCallback(
       (doc: ThreadDocumentUI) => {
-        setThreadDocuments([...threadDocuments, doc]);
+        const updated = [...threadDocumentsRef.current, doc];
+        threadDocumentsRef.current = updated;
+        setThreadDocuments(updated);
       },
-      [threadDocuments, setThreadDocuments],
+      [setThreadDocuments],
     );
 
     const handlePaste = useCallback(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOrganization, useUser, useAuth } from '@/app/hooks/use-auth';
 
 import { classMerge } from '@ragenai/common-ui/index';
@@ -96,20 +96,22 @@ export const NewChatInterface = ({
     onThreadDocumentsChange: setThreadDocuments,
   });
 
-  // Build drop zone config
-  const dropZones: DropZoneConfig[] = [];
-  if (!isPublicAccess && !hidePageDrop && !isEmbedded) {
-    dropZones.push({
-      label: tDrop('drop-to-chat'),
-      onDrop: (files) => mentionTextareaRef.current?.dropFiles(files),
-    });
-    if (onProjectFilesDrop) {
-      dropZones.push({
-        label: tDrop('drop-to-project'),
-        onDrop: onProjectFilesDrop,
+  const dropZones = useMemo(() => {
+    const zones: DropZoneConfig[] = [];
+    if (!isPublicAccess && !hidePageDrop && !isEmbedded) {
+      zones.push({
+        label: tDrop('drop-to-chat'),
+        onDrop: (files) => mentionTextareaRef.current?.dropFiles(files),
       });
+      if (onProjectFilesDrop) {
+        zones.push({
+          label: tDrop('drop-to-project'),
+          onDrop: onProjectFilesDrop,
+        });
+      }
     }
-  }
+    return zones;
+  }, [isPublicAccess, hidePageDrop, isEmbedded, onProjectFilesDrop, tDrop]);
 
   useEffect(() => {
     const getOrganizationModel = async () => {

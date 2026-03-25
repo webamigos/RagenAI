@@ -8,6 +8,7 @@
  * - https://drive.google.com/file/d/FILE_ID/...
  * - https://drive.google.com/open?id=FILE_ID
  * - https://docs.google.com/document/u/0/d/FILE_ID/...  (account selector)
+ * - https://drive.google.com/u/0/open?id=FILE_ID  (account selector)
  */
 
 const DRIVE_FILE_ID_REGEX =
