@@ -88,6 +88,12 @@ export const Textarea = forwardRef(
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>,
   ) => {
+    const {
+      onKeyDown: outerOnKeyDown,
+      onInput: outerOnInput,
+      ...restWithoutHandlers
+    } = rest;
+
     const id = useId();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -367,9 +373,17 @@ export const Textarea = forwardRef(
                 },
                 'pl-3 pr-3',
               )}
-              {...rest}
-              onInput={adjustHeight}
-              onKeyDown={handleKeyDown}
+              {...restWithoutHandlers}
+              onInput={(e) => {
+                outerOnInput?.(e);
+                adjustHeight();
+              }}
+              onKeyDown={(e) => {
+                outerOnKeyDown?.(e);
+                if (!e.defaultPrevented) {
+                  handleKeyDown(e);
+                }
+              }}
               onPaste={(e) => {
                 onPasteIntercept?.(e);
               }}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useOrganization, useUser, useAuth } from '@/app/hooks/use-auth';
 
 import { classMerge } from '@ragenai/common-ui/index';
@@ -10,8 +10,17 @@ import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettin
 import { logger } from '@/app/lib/utils/logger';
 
 import { useNewThreadInput } from './useNewThreadInput';
-import { MentionTextarea, type MentionedProject } from './MentionTextarea';
+import {
+  MentionTextarea,
+  type MentionedProject,
+  type MentionTextareaRef,
+} from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
+import {
+  PageDropOverlay,
+  usePageDrop,
+  type DropZoneConfig,
+} from '@/app/components/PageDropOverlay';
 
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
@@ -27,6 +36,10 @@ interface NewChatInterfaceProps {
   projectTitle?: string;
   accessToken?: string;
   organizationDefaultModel?: string;
+  /** If provided, a second drop zone for project knowledge is shown during drag */
+  onProjectFilesDrop?: (files: File[]) => void;
+  /** Hide the page-level drop overlay (e.g. when embedded) */
+  hidePageDrop?: boolean;
 }
 
 export const NewChatInterface = ({
@@ -40,12 +53,16 @@ export const NewChatInterface = ({
   projectPublicId,
   projectTitle,
   organizationDefaultModel,
+  onProjectFilesDrop,
+  hidePageDrop = false,
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
+  const tDrop = useTranslations('page-drop');
   const { organization } = useOrganization();
   const { user } = useUser();
-  const { orgId: sessionOrgId } = useAuth(); // Get orgId from session.activeOrganizationId
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { orgId: sessionOrgId } = useAuth();
+  const mentionTextareaRef = useRef<MentionTextareaRef>(null);
+  const { isDragging } = usePageDrop();
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
   const defaultModel =
@@ -79,11 +96,22 @@ export const NewChatInterface = ({
     onThreadDocumentsChange: setThreadDocuments,
   });
 
-  useEffect(() => {
-    if (!isEmbedded && inputRef.current) {
-      inputRef.current.focus();
+  const dropZones = useMemo(() => {
+    const zones: DropZoneConfig[] = [];
+    if (!isPublicAccess && !hidePageDrop && !isEmbedded) {
+      zones.push({
+        label: tDrop('drop-to-chat'),
+        onDrop: (files) => mentionTextareaRef.current?.dropFiles(files),
+      });
+      if (onProjectFilesDrop) {
+        zones.push({
+          label: tDrop('drop-to-project'),
+          onDrop: onProjectFilesDrop,
+        });
+      }
     }
-  }, [isEmbedded]);
+    return zones;
+  }, [isPublicAccess, hidePageDrop, isEmbedded, onProjectFilesDrop, tDrop]);
 
   useEffect(() => {
     const getOrganizationModel = async () => {
@@ -138,6 +166,8 @@ export const NewChatInterface = ({
 
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
+      <PageDropOverlay visible={isDragging} zones={dropZones} />
+
       {!projectTitle && (
         <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
           {userName && (
@@ -156,7 +186,7 @@ export const NewChatInterface = ({
 
       <div className="relative">
         <MentionTextarea
-          ref={inputRef}
+          ref={mentionTextareaRef}
           value={prompt}
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}

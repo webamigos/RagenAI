@@ -85,9 +85,15 @@ function closeIfNoListeners() {
   for (const set of listeners.values()) {
     total += set.size;
   }
-  if (total === 0 && eventSource) {
-    eventSource.close();
-    eventSource = null;
+  if (total === 0) {
+    if (reconnectTimer) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    if (eventSource) {
+      eventSource.close();
+      eventSource = null;
+    }
   }
 }
 

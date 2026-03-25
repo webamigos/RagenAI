@@ -618,6 +618,10 @@
     "cancel": "Anuluj",
     "add-selected": "Dodaj {count, plural, =0 {wybrane} =1 {1 plik} few {# pliki} other {# plików}}"
   },
+  "page-drop": {
+    "drop-to-chat": "Upuść pliki, aby dodać do czatu",
+    "drop-to-project": "Upuść pliki, aby dodać do bazy wiedzy projektu"
+  },
   "prompt-attachments": {
     "upload-file": "Wgraj plik",
     "from-knowledge-base": "Z Bazy Wiedzy",

@@ -56,6 +56,7 @@ type Props = {
 
 export type PromptFormRef = {
   reset: (prompt?: string) => void;
+  dropFiles: (files: File[]) => void;
 };
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
@@ -105,6 +106,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
 
     useImperativeHandle(ref, () => ({
       reset: (prompt) => reset({ prompt }),
+      dropFiles: (files: File[]) => handleFilesDrop(files),
     }));
 
     // File handling
@@ -260,7 +262,12 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       [hasDriveConnector],
     );
 
+    const isLoadingDriveFiles = loadingDriveLinks.length > 0;
+
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
+      if (isLoadingDriveFiles) {
+        return;
+      }
       reset({ prompt: '' });
       onSubmit({
         ...data,
@@ -275,6 +282,9 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     };
 
     const handleSend = () => {
+      if (isLoadingDriveFiles) {
+        return;
+      }
       handleSubmit(handleFormSubmit)();
     };
 

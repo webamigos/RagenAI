@@ -354,6 +354,28 @@ export function ProjectComponent({ projectId }: Props) {
     }
   };
 
+  const handleProjectFilesDrop = useCallback(
+    async (files: File[]) => {
+      if (!project || files.length === 0) {
+        return;
+      }
+
+      const { uploadProjectFiles } = await import('@/app/lib/services/api');
+      const formData = new FormData();
+      files.forEach((file) => formData.append('files', file));
+      formData.append('projectId', project.publicId);
+
+      try {
+        await uploadProjectFiles(project.publicId, formData);
+        successToast({ message: t('file-uploaded') });
+        loadFiles(project.publicId);
+      } catch {
+        errorToast({ message: t('file-upload-fail') });
+      }
+    },
+    [project, successToast, errorToast, t, loadFiles],
+  );
+
   if (isLoading || !project || !isReady) {
     return (
       <div className="animate-pulse">
@@ -413,6 +435,7 @@ export function ProjectComponent({ projectId }: Props) {
               projectPublicId={project.publicId}
               projectTitle={project.title}
               className="!max-w-none !mx-0 !px-0"
+              onProjectFilesDrop={handleProjectFilesDrop}
             />
           </div>
 

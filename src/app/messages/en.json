@@ -615,6 +615,10 @@
     "cancel": "Cancel",
     "add-selected": "Add {count, plural, =0 {selected} =1 {1 file} other {# files}}"
   },
+  "page-drop": {
+    "drop-to-chat": "Drop files here to add to chat",
+    "drop-to-project": "Drop files here to add to project knowledge"
+  },
   "prompt-attachments": {
     "upload-file": "Upload file",
     "from-knowledge-base": "From Knowledge Base",
