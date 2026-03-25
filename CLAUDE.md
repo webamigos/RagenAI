@@ -319,6 +319,31 @@ All LLM calls (chat completions and embeddings) are routed through a **LiteLLM p
 - Admin UI: `apps/admin/src/app/(dashboard)/models/` (follows same pattern as Limits page)
 - Key functions: `getAllowedModels()`, `saveAllowedModels()`, `getDefaultAllowedModels()`, `saveDefaultAllowedModels()` in `src/features/organizations/services/organization-settings.ts`
 
+## Testing Requirements
+
+All new code must include tests. Use Vitest + React Testing Library (`jsdom` environment). Test files live next to the code they test in `__tests__/` directories.
+
+**Required tests by file type:**
+
+| File type | Tests required | Example |
+|-----------|---------------|---------|
+| **Utility functions** (pure JS/TS) | Unit tests | `src/app/lib/utils/__tests__/fileValidation.test.ts` |
+| **Redux slices** | Unit tests for all reducers | `src/store/__tests__/threadsSlice.test.ts` |
+| **Zod schemas / validators** | Unit tests for valid/invalid inputs | `src/features/messages/contracts/__tests__/message.types.test.ts` |
+| **React components** | Integration tests (render, interaction, state) | `src/app/components/__tests__/KnowledgeBasePickerDialog.test.tsx` |
+| **Complex components** | Unit tests for logic + integration for UI | `src/app/components/Assistant/PromptForm/__tests__/PromptForm.test.tsx` |
+| **New screens / pages** | At minimum E2E smoke test (Playwright) | `npm run test:e2e` |
+
+**Conventions:**
+- Wrap components with `<NextIntlClientProvider messages={...} locale="en">` for i18n
+- Mock server actions (`vi.mock`) — never call real APIs in tests
+- Mock external modules (Stripe, Prisma, logger) that would fail in jsdom
+- Use `vi.hoisted()` for mock functions referenced inside `vi.mock()` factories
+- Add `ResizeObserver` polyfill when testing cmdk/Radix components
+- Use `@testing-library/user-event` for realistic user interactions
+- Use `waitFor` for async state changes
+- Follow existing patterns in `src/store/__tests__/`, `src/app/lib/utils/__tests__/`
+
 ## Post-Task Code Review
 
 After completing any coding task that modifies or creates files, always run `/coderabbit:review` to review the changes before reporting completion to the user.
