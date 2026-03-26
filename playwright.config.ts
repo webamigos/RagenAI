@@ -57,13 +57,12 @@ export default defineConfig({
     },
     {
       name: 'no-auth',
-      testMatch: /0[1-6]-.*\.spec\.ts/,
+      testMatch: /smoke-0[1-6]-.*\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     {
       name: 'authenticated',
-      testMatch: /\d{2}-.*\.spec\.ts/,
-      testIgnore: /0[1-6]-.*\.spec\.ts/,
+      testMatch: /(smoke-(?!0[1-6])|p\d+-)\d{2}-.*\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: AUTH_FILE,
