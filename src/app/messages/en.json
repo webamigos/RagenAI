@@ -584,6 +584,9 @@
     "recent": {
       "title": "Recent"
     },
+    "shared": {
+      "title": "Shared with me"
+    },
     "footer": {
       "my-profile": "My profile",
       "settings": "Settings",
@@ -676,12 +679,22 @@
     "unstar": "Unstar",
     "rename": "Rename",
     "delete": "Delete",
+    "share": "Share",
     "rename-placeholder": "Thread name",
     "rename-title": "Rename thread",
     "delete-title": "Delete thread",
     "delete-confirm": "Are you sure you want to delete this thread? This action cannot be undone.",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "share-title": "Share thread",
+    "share-description": "Share this thread with organization members",
+    "share-save": "Save",
+    "share-success": "Thread sharing updated",
+    "share-no-members": "No other members in this organization",
+    "share-error": "Failed to update sharing",
+    "share-load-error": "Failed to load sharing info",
+    "share-retry": "Retry",
+    "shared-by": "Shared by {name}"
   },
   "assistants-page": {
     "title": "Assistants",

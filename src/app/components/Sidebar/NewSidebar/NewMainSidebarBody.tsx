@@ -24,6 +24,7 @@ export const NewMainSidebarBody = () => {
   const {
     starredThreads,
     recentThreads,
+    sharedThreads,
     isLoading,
     hasMore,
     loadMore,
@@ -65,6 +66,25 @@ export const NewMainSidebarBody = () => {
               onToggleStar={toggleStar}
               onRenamed={renameThread}
               onDeleted={removeThread}
+            />
+          ))}
+        </SidebarSection>
+      )}
+
+      {/* Shared threads */}
+      {sharedThreads.length > 0 && (
+        <SidebarSection>
+          <SidebarHeading>{t('shared.title')}</SidebarHeading>
+          {sharedThreads.map((thread) => (
+            <SidebarThreadItem
+              key={thread.publicId}
+              thread={thread}
+              isActive={thread.publicId === activeThread}
+              onClose={closeSidebar}
+              onToggleStar={toggleStar}
+              onRenamed={renameThread}
+              onDeleted={removeThread}
+              isShared
             />
           ))}
         </SidebarSection>

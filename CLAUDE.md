@@ -344,6 +344,10 @@ All new code must include tests. Use Vitest + React Testing Library (`jsdom` env
 - Use `waitFor` for async state changes
 - Follow existing patterns in `src/store/__tests__/`, `src/app/lib/utils/__tests__/`
 
-## Post-Task Code Review
+## Post-Task Workflow
 
-After completing any coding task that modifies or creates files, always run `/coderabbit:review` to review the changes before reporting completion to the user.
+After completing any coding task that modifies or creates files:
+
+1. **Write tests first** — Add unit/integration tests for all new code before proceeding to review. Follow the testing conventions in the "Testing Requirements" section above.
+2. **Run tests** — Execute `npx vitest run` to verify all tests pass.
+3. **Run code review** — Run `/coderabbit:review` to review the changes before reporting completion to the user.

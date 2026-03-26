@@ -12,6 +12,7 @@ type Props = {
   onToggleStar: (threadPublicId: string, isStarred: boolean) => void;
   onRenamed?: (threadPublicId: string, newTitle: string) => void;
   onDeleted?: (threadPublicId: string) => void;
+  isShared?: boolean;
 };
 
 function getThreadDisplayTitle(thread: SidebarThreadItemType): string {
@@ -35,6 +36,7 @@ export const SidebarThreadItem = ({
   onToggleStar,
   onRenamed,
   onDeleted,
+  isShared = false,
 }: Props) => {
   const title = getThreadDisplayTitle(thread);
   const href = getThreadHref(thread);
@@ -58,6 +60,7 @@ export const SidebarThreadItem = ({
           onDeleted={onDeleted}
           side="right"
           align="start"
+          isOwner={!isShared}
         />
       </div>
     </div>

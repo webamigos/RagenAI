@@ -16,8 +16,9 @@ import {
   type DropZoneConfig,
 } from '@/app/components/PageDropOverlay';
 import { useTranslations } from 'next-intl';
-import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
+import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
@@ -75,6 +76,7 @@ export const Assistant = ({ threadId }: Props) => {
     string | null
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
   const tDrop = useTranslations('page-drop');
   const { isDragging } = usePageDrop();
 
@@ -200,6 +202,16 @@ export const Assistant = ({ threadId }: Props) => {
                 model={currentThreadModel || organizationDefaultModel}
               />
             )}
+            {!isPublicAccess && (
+              <button
+                type="button"
+                onClick={() => setIsShareOpen(true)}
+                className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                title="Share"
+              >
+                <ShareIcon className="size-4" />
+              </button>
+            )}
             {allAttachments.length > 0 && (
               <button
                 type="button"
@@ -216,6 +228,12 @@ export const Assistant = ({ threadId }: Props) => {
             )}
           </div>
         </div>
+
+        <ShareThreadDialog
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          threadPublicId={threadId}
+        />
 
         <div className="flex-1">
           <ChatOutput

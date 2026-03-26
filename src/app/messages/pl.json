@@ -587,6 +587,9 @@
     "recent": {
       "title": "Ostatnie"
     },
+    "shared": {
+      "title": "Udostępnione mi"
+    },
     "footer": {
       "my-profile": "Mój profil",
       "settings": "Ustawienia",
@@ -679,12 +682,22 @@
     "unstar": "Odepnij",
     "rename": "Zmień nazwę",
     "delete": "Usuń",
+    "share": "Udostępnij",
     "rename-placeholder": "Nazwa wątku",
     "rename-title": "Zmień nazwę wątku",
     "delete-title": "Usuń wątek",
     "delete-confirm": "Czy na pewno chcesz usunąć ten wątek? Tej operacji nie można cofnąć.",
     "cancel": "Anuluj",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "share-title": "Udostępnij wątek",
+    "share-description": "Udostępnij ten wątek członkom organizacji",
+    "share-save": "Zapisz",
+    "share-success": "Udostępnianie wątku zaktualizowane",
+    "share-no-members": "Brak innych członków w tej organizacji",
+    "share-error": "Nie udało się zaktualizować udostępniania",
+    "share-load-error": "Nie udało się załadować informacji o udostępnianiu",
+    "share-retry": "Ponów",
+    "shared-by": "Udostępnione przez {name}"
   },
   "assistants-page": {
     "title": "Asystenci",

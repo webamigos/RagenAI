@@ -7,6 +7,7 @@ import {
   StarIcon as StarIconOutline,
   PencilSquareIcon,
   TrashIcon,
+  ShareIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import {
@@ -36,6 +37,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
+import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 
 type ThreadInfo = {
   publicId: string;
@@ -52,6 +54,7 @@ type Props = {
   triggerClassName?: string;
   align?: 'start' | 'end';
   side?: 'top' | 'right' | 'bottom' | 'left';
+  isOwner?: boolean;
 };
 
 export const ThreadDropdownMenu = ({
@@ -62,11 +65,13 @@ export const ThreadDropdownMenu = ({
   triggerClassName,
   align = 'end',
   side = 'bottom',
+  isOwner = true,
 }: Props) => {
   const t = useTranslations('thread-actions');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const handleStar = async () => {
     const newStarred = !thread.isStarred;
@@ -122,18 +127,26 @@ export const ThreadDropdownMenu = ({
             )}
             {thread.isStarred ? t('unstar') : t('star')}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRenameStart}>
-            <PencilSquareIcon className="size-4" />
-            {t('rename')}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setIsDeleteOpen(true)}
-          >
-            <TrashIcon className="size-4" />
-            {t('delete')}
-          </DropdownMenuItem>
+          {isOwner && (
+            <>
+              <DropdownMenuItem onClick={() => setIsShareOpen(true)}>
+                <ShareIcon className="size-4" />
+                {t('share')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRenameStart}>
+                <PencilSquareIcon className="size-4" />
+                {t('rename')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <TrashIcon className="size-4" />
+                {t('delete')}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -184,6 +197,12 @@ export const ThreadDropdownMenu = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ShareThreadDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        threadPublicId={thread.publicId}
+      />
     </>
   );
 };
