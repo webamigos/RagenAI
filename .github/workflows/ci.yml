@@ -8,8 +8,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
   pull-requests: write
 
 env:
@@ -96,14 +94,6 @@ jobs:
         uses: MishaKav/jest-coverage-comment@v1.0.32
         with:
           coverage-summary-path: coverage/coverage-summary.json
-      - name: Upload coverage to GitHub Pages
-        if: github.ref == 'refs/heads/dev'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: coverage/
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/dev'
-        uses: actions/deploy-pages@v4
 
   build:
     name: Build
