@@ -90,14 +90,7 @@ type Props = {
 };
 
 function getThreadTitle(thread: ProjectThread): string {
-  if (thread.title) {
-    return thread.title;
-  }
-  if (thread.messages.length > 0) {
-    const content = thread.messages[0].content;
-    return content.length > 60 ? content.slice(0, 60) + '...' : content;
-  }
-  return 'New conversation';
+  return thread.title || 'New conversation';
 }
 
 export function ProjectComponent({ projectId }: Props) {
