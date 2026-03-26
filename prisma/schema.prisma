@@ -63,6 +63,7 @@ model Thread {
   isStarred                 Boolean                 @default(false) @map("is_starred")
   createdAt                 DateTime                @default(now()) @map("created_at") @db.Timestamptz
   threadDocuments           ThreadDocument[]
+  shares                    ThreadShare[]
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
@@ -324,6 +325,8 @@ model User {
   members        Member[]
   aiUsages       AiUsage[]
   teamMembers    TeamMember[]
+  sharedWithMe   ThreadShare[]  @relation("SharedWithMe")
+  sharedByMe     ThreadShare[]  @relation("SharedByMe")
   mcpConnectors   McpConnector[]
   mcpOAuthTokens  McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
@@ -706,4 +709,21 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model ThreadShare {
+  id             String   @id @default(uuid()) @db.Uuid
+  threadId       String   @map("thread_id")
+  userId         String   @map("user_id")
+  sharedByUserId String   @map("shared_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user     User   @relation("SharedWithMe", fields: [userId], references: [id], onDelete: Cascade)
+  sharedBy User   @relation("SharedByMe", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index([userId])
+  @@index([threadId])
+  @@map("thread_shares")
 }

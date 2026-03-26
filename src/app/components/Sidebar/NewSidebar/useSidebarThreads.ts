@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState, useRef } from 'react';
 import { useUser } from '@/app/hooks/use-auth';
 import { useActiveOrganization } from '@/app/hooks/use-better-auth';
 import { getSidebarThreads, toggleThreadStarred } from '@/app/actions';
+import { getSharedThreadsAction } from '@/features/threads/services/actions/thread-share-actions';
 import { logger } from '@/app/lib/utils/logger';
 import type { SidebarThreadItem } from '@/features/threads/contracts/thread.types';
 
@@ -32,6 +33,7 @@ export const useSidebarThreads = () => {
   const activeOrgId = activeOrg?.id;
   const [starredThreads, setStarredThreads] = useState<SidebarThreadItem[]>([]);
   const [recentThreads, setRecentThreads] = useState<SidebarThreadItem[]>([]);
+  const [sharedThreads, setSharedThreads] = useState<SidebarThreadItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [recentSkip, setRecentSkip] = useState(0);
@@ -45,7 +47,10 @@ export const useSidebarThreads = () => {
       }
       setIsLoading(true);
       try {
-        const result = await getSidebarThreads(user.id, RECENT_LIMIT, skip);
+        const [result, shared] = await Promise.all([
+          getSidebarThreads(user.id, RECENT_LIMIT, skip),
+          skip === 0 ? getSharedThreadsAction() : Promise.resolve(null),
+        ]);
         setStarredThreads(result.starred as SidebarThreadItem[]);
         if (append) {
           setRecentThreads((prev) => [
@@ -54,6 +59,9 @@ export const useSidebarThreads = () => {
           ]);
         } else {
           setRecentThreads(result.recent as SidebarThreadItem[]);
+        }
+        if (shared !== null) {
+          setSharedThreads(shared);
         }
         setHasMore(result.hasMore);
       } catch (error) {
@@ -72,6 +80,7 @@ export const useSidebarThreads = () => {
       if (prevOrgIdRef.current !== undefined) {
         setStarredThreads([]);
         setRecentThreads([]);
+        setSharedThreads([]);
         setRecentSkip(0);
         setHasMore(false);
       }
@@ -184,6 +193,7 @@ export const useSidebarThreads = () => {
   return {
     starredThreads,
     recentThreads,
+    sharedThreads,
     isLoading,
     hasMore,
     loadMore,

@@ -28,6 +28,20 @@ export type SidebarThreadItem = {
   project: { publicId: string; title: string } | null;
   team: { id: string; name: string } | null;
   messages: { content: string }[];
+  sharedByUser?: { name: string | null; email: string } | null;
+};
+
+export type ThreadShareRecipient = {
+  userId: string;
+  name: string | null;
+  email: string;
+  image: string | null;
+  isShared: boolean;
+};
+
+export type ThreadShareInfo = {
+  threadPublicId: string;
+  sharedWith: ThreadShareRecipient[];
 };
 
 export type AllThreadsItem = SidebarThreadItem & {
