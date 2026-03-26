@@ -59,7 +59,9 @@ test.describe('Authenticated pages smoke tests', () => {
     test('knowledge documents list loads', async ({ page }) => {
       await page.goto(ROUTES.knowledgeDocuments);
       await expect(page).toHaveURL(/documents-list/);
-      await expect(page.getByPlaceholder(/wyszukaj pliki/i)).toBeVisible({
+      await expect(
+        page.getByPlaceholder(/wyszukaj pliki/i).first(),
+      ).toBeVisible({
         timeout: 10_000,
       });
     });

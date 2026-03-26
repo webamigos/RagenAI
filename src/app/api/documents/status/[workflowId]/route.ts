@@ -7,9 +7,9 @@ import { logger } from '@/app/lib/utils/logger';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-type RouteParams = {
+interface RouteParams {
   params: Promise<{ workflowId: string }>;
-};
+}
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const session = await auth.api.getSession({
@@ -20,7 +20,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const orgId = await getOrgIdFromAuthOrThrow();
+  let orgId: string;
+  try {
+    orgId = await getOrgIdFromAuthOrThrow();
+  } catch {
+    return NextResponse.json(
+      { error: 'Organization not found' },
+      { status: 403 },
+    );
+  }
+
   const { workflowId } = await params;
 
   if (!workflowId || !workflowId.startsWith('docgen-')) {
@@ -56,20 +65,28 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       status === 'TERMINATED' ||
       status === 'CANCELLED'
     ) {
-      let errorMessage = 'Unknown error';
       try {
         await handle.result();
       } catch (err) {
-        errorMessage = err instanceof Error ? err.message : String(err);
+        logger.error(
+          { err, workflowId },
+          'Document generation workflow failed',
+        );
       }
       return NextResponse.json({
         status: 'FAILED',
-        error: errorMessage,
+        error: 'Document generation failed',
       });
     }
 
     return NextResponse.json({ status: 'RUNNING' });
   } catch (error) {
+    if (error instanceof Error && error.name === 'WorkflowNotFoundError') {
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 },
+      );
+    }
     logger.error({ err: error, workflowId }, 'Failed to query workflow status');
     return NextResponse.json(
       { error: 'Failed to query workflow status' },

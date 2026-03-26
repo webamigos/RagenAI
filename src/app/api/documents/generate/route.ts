@@ -32,7 +32,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const orgId = await getOrgIdFromAuthOrThrow();
+  let orgId: string;
+  try {
+    orgId = await getOrgIdFromAuthOrThrow();
+  } catch {
+    return NextResponse.json(
+      { error: 'Organization not found' },
+      { status: 403 },
+    );
+  }
+
   const userId = await getCurrentUserId();
 
   if (!userId) {
