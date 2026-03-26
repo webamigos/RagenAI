@@ -23,5 +23,17 @@ export default defineConfig({
     ],
     exclude: ['temporal/**'],
     clearMocks: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'html'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/generated/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/**/*.spec.{ts,tsx}',
+        'src/**/__tests__/**',
+      ],
+    },
   },
 });

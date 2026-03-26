@@ -54,6 +54,7 @@ export enum WebsiteLoaderMode {
 export enum Workflow {
   RUN_FILE_EMBEDDINGS = 'runFileEmbeddings',
   SCRAPE_WEBSITE = 'scrapeWebsite',
+  GENERATE_DOCUMENT = 'generateDocument',
 }
 
 export interface ScrapeWebsiteWorkflowPayload {

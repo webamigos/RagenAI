@@ -29,6 +29,8 @@ import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
+import { getSession } from '@/lib/auth-guards';
+import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 
 /**
  * Load thread documents from database for a specific thread
@@ -400,6 +402,30 @@ export async function streamEvents({
               logger.error(
                 { err: error },
                 'Failed to load MCP tools, continuing without them',
+              );
+            }
+          }
+
+          // Load built-in tools for authenticated internal users
+          if (userId && mode === AssistantMode.INTERNAL) {
+            try {
+              const session = await getSession();
+              const userEmail = session?.user?.email || '';
+              const builtInTools = createBuiltInTools({
+                orgId,
+                userId,
+                userEmail,
+              });
+              mcpTools = { ...mcpTools, ...builtInTools };
+
+              const builtInContext = getBuiltInToolsContext();
+              mcpContext = mcpContext
+                ? `${mcpContext}\n\n${builtInContext}`
+                : builtInContext;
+            } catch (error) {
+              logger.error(
+                { err: error },
+                'Failed to load built-in tools, continuing without them',
               );
             }
           }
