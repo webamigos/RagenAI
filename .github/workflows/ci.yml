@@ -85,12 +85,11 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npm run test:coverage
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Coverage report
+        if: always() && github.event_name == 'pull_request'
+        uses: MishaKav/jest-coverage-comment@main
         with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 14
+          coverage-summary-path: coverage/coverage-summary.json
 
   build:
     name: Build
