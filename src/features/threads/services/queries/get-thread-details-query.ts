@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 
 export const getThreadDetailsQuery = async (
   publicThreadId: string,
@@ -24,6 +25,7 @@ export const getThreadDetailsQuery = async (
         projectId: true,
         mentionedProjectId: true,
         teamId: true,
+        encryptedDek: true,
         project: {
           select: {
             publicId: true,
@@ -51,10 +53,23 @@ export const getThreadDetailsQuery = async (
       },
     });
 
+    // Decrypt messages if thread is encrypted and messages were included
+    const messages =
+      'messages' in thread && Array.isArray(thread.messages)
+        ? await decryptMessageContents(
+            thread.messages as { role: string; content: string }[],
+            thread.encryptedDek,
+          )
+        : undefined;
+
+    // Exclude encryptedDek from response
+    const { encryptedDek: _, ...threadData } = thread;
+
     // Convert Date object to ISO string for serialization
     return {
-      ...thread,
-      createdAt: thread.createdAt.toISOString(),
+      ...threadData,
+      ...(messages ? { messages } : {}),
+      createdAt: threadData.createdAt.toISOString(),
     };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
@@ -73,6 +88,7 @@ export const getThreadMessagesListQuery = async (
         organizationId: orgId,
       },
       select: {
+        encryptedDek: true,
         messages: {
           orderBy: {
             createdAt: 'asc',
@@ -83,13 +99,24 @@ export const getThreadMessagesListQuery = async (
 
     // Convert Date objects to ISO strings for serialization
     if (thread?.messages) {
+      const decryptedMessages = await decryptMessageContents(
+        thread.messages,
+        thread.encryptedDek,
+      );
+
+      const { encryptedDek: _, ...threadData } = thread;
       return {
-        ...thread,
-        messages: thread.messages.map((message) => ({
+        ...threadData,
+        messages: decryptedMessages.map((message) => ({
           ...message,
           createdAt: message.createdAt.toISOString(),
         })),
       };
+    }
+
+    if (thread) {
+      const { encryptedDek: _, ...threadData } = thread;
+      return threadData;
     }
 
     return thread;

@@ -224,18 +224,23 @@ export const useNewThread = () => {
 
         // Notify sidebar about the new thread
         if (user) {
+          const threadTitle = initialMessage
+            ? initialMessage.length > 100
+              ? `${initialMessage.substring(0, 100)}...`
+              : initialMessage
+            : null;
+
           sidebarThreadEvents.emit({
             type: 'thread-created',
             thread: {
               publicId: threadId,
               createdAt: new Date().toISOString(),
               isStarred: false,
-              title: null,
+              title: threadTitle,
               projectId: result.thread.projectId ?? null,
               teamId: null,
               project: null,
               team: null,
-              messages: initialMessage ? [{ content: initialMessage }] : [],
             },
           });
         }

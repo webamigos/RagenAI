@@ -4,6 +4,7 @@ import { type Thread } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import type { MessageAttachment } from '../../contracts/message.types';
+import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 
 export const getThreadMessagesQuery = async (
   threadPublicId: Thread['publicId'],
@@ -12,7 +13,10 @@ export const getThreadMessagesQuery = async (
   try {
     const thread = await db.thread.findFirst({
       where: { publicId: threadPublicId, visitorId: visitorId },
-      include: {
+      select: {
+        id: true,
+        encryptedDek: true,
+        mentionedProjectId: true,
         project: {
           select: {
             id: true,
@@ -27,8 +31,8 @@ export const getThreadMessagesQuery = async (
       return { messages: [], threadContext: null };
     }
 
-    const messages = await db.message.findMany({
-      where: { threadId: thread?.id },
+    const rawMessages = await db.message.findMany({
+      where: { threadId: thread.id },
       select: {
         publicId: true,
         createdAt: true,
@@ -47,6 +51,11 @@ export const getThreadMessagesQuery = async (
         },
       ],
     });
+
+    const messages = await decryptMessageContents(
+      rawMessages,
+      thread.encryptedDek,
+    );
 
     // Get mentioned project details if exists
     let mentionedProject = null;

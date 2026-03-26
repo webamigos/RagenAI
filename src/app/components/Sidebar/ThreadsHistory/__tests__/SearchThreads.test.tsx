@@ -184,13 +184,11 @@ describe('SearchThreads', () => {
       });
     });
 
-    it('shows first message content for untitled threads', async () => {
+    it('shows fallback text for untitled threads', async () => {
       renderSearchThreads();
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Another question about API integration/),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Untitled')).toBeInTheDocument();
       });
     });
 

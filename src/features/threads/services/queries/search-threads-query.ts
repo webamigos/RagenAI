@@ -1,6 +1,7 @@
 'use server';
 
-import { getUserThreadsQuery } from './get-user-threads-query';
+import db from '@ragenai/prisma-client';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export async function searchThreadsQuery(
   visitorId: string,
@@ -10,10 +11,25 @@ export async function searchThreadsQuery(
     return [];
   }
 
-  const threads = await getUserThreadsQuery(visitorId, 0, 5, query);
+  const orgId = await getOrgIdFromAuthOrThrow();
+
+  const threads = await db.thread.findMany({
+    where: {
+      organizationId: orgId,
+      visitorId,
+      messages: { some: {} },
+      title: { contains: query.trim(), mode: 'insensitive' },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+    select: {
+      publicId: true,
+      title: true,
+    },
+  });
 
   return threads.map((thread) => ({
     id: thread.publicId,
-    title: thread.messages[0]?.content.slice(0, 50) || 'No title',
+    title: thread.title || 'Untitled',
   }));
 }

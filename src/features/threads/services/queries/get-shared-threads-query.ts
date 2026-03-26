@@ -29,11 +29,6 @@ export async function getSharedThreadsQuery(
           teamId: true,
           project: { select: { publicId: true, title: true } },
           team: { select: { id: true, name: true } },
-          messages: {
-            select: { content: true },
-            take: 1,
-            orderBy: { createdAt: 'asc' as const },
-          },
         },
       },
       sharedBy: {
@@ -51,7 +46,7 @@ export async function getSharedThreadsQuery(
     teamId: s.thread.teamId,
     project: s.thread.project,
     team: s.thread.team,
-    messages: s.thread.messages,
+    messages: [],
     sharedByUser: { name: s.sharedBy.name, email: s.sharedBy.email },
   }));
 }

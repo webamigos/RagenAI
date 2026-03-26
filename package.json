@@ -124,6 +124,7 @@
     "@ai-sdk/openai": "^3.0.31",
     "@ai-sdk/react": "^3.0.101",
     "@aws-crypto/sha256-js": "^5.2.0",
+    "@aws-sdk/client-kms": "^3.1018.0",
     "@aws-sdk/client-s3": "^3.782.0",
     "@aws-sdk/credential-provider-node": "^3.749.0",
     "@aws-sdk/lib-storage": "^3.782.0",

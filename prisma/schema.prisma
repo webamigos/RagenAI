@@ -66,6 +66,7 @@ model Thread {
   shares                    ThreadShare[]
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  encryptedDek              String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
 
   @@index([organizationId])
   @@index([userId])
