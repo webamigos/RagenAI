@@ -18,13 +18,7 @@ import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 const PAGE_SIZE = 20;
 
 function getThreadTitle(thread: AllThreadsItem): string {
-  if (thread.title) {
-    return thread.title;
-  }
-  if (thread.messages[0]?.content) {
-    return thread.messages[0].content;
-  }
-  return 'New conversation';
+  return thread.title || 'New conversation';
 }
 
 function getThreadHref(thread: AllThreadsItem): string {

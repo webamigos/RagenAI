@@ -31,6 +31,7 @@ import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 import { getSession } from '@/lib/auth-guards';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
+import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
 
 /**
  * Load thread documents from database for a specific thread
@@ -458,9 +459,10 @@ export async function streamEvents({
             `provider:${trackedProvider}`,
             `model:${trackedModelId}`,
           ];
+          const skipLangfuseContent = isEncryptionEnabled();
           updateActiveTrace({
             name: `chat-${mode === AssistantMode.PUBLIC ? 'public' : filteredMode === ChatType.CONVERSATION ? 'conversation' : 'rag'}`,
-            input: userMessage.prompt,
+            ...(skipLangfuseContent ? {} : { input: userMessage.prompt }),
             userId: userId ?? undefined,
             sessionId: `${orgId}:${threadRecord.publicId}`,
             tags: traceTags,
@@ -545,7 +547,7 @@ export async function streamEvents({
           sendApiEvent(controller, 'start_lmm');
 
           const streamResult = await chainOutput.stream({
-            question: threadMessage.content,
+            question: userMessage.prompt,
             chat_history: conv_history,
           });
 
@@ -622,7 +624,7 @@ export async function streamEvents({
             }
           }
           updateActiveTrace({
-            output: fullMessage,
+            ...(skipLangfuseContent ? {} : { output: fullMessage }),
             tags: traceTags,
           });
 

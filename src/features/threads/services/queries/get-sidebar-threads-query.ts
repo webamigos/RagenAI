@@ -13,11 +13,6 @@ const THREAD_SELECT = {
   teamId: true,
   project: { select: { publicId: true, title: true } },
   team: { select: { id: true, name: true } },
-  messages: {
-    select: { content: true },
-    take: 1,
-    orderBy: { createdAt: 'asc' as const },
-  },
 } as const;
 
 export const getSidebarThreadsQuery = async (

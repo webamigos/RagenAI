@@ -14,6 +14,12 @@ import type {
   MessageAttachment,
   MessageDto,
 } from '../../contracts/message.types';
+import {
+  isEncryptionEnabled,
+  generateThreadKey,
+  encryptContent,
+  decryptThreadKey,
+} from '@/libs/crypto/thread-encryption';
 
 function sanitizeAttachments(
   raw: MessageAttachment[] | undefined,
@@ -54,6 +60,49 @@ function sanitizeAttachments(
   return sanitized.length > 0 ? sanitized : undefined;
 }
 
+async function maybeEncryptContent(
+  threadId: string,
+  content: string,
+): Promise<string> {
+  if (!isEncryptionEnabled()) {
+    return content;
+  }
+
+  const thread = await db.thread.findUniqueOrThrow({
+    where: { id: threadId },
+    select: { encryptedDek: true },
+  });
+
+  let dek: Buffer;
+
+  if (thread.encryptedDek) {
+    dek = await decryptThreadKey(thread.encryptedDek);
+  } else {
+    const key = await generateThreadKey();
+    dek = key.plaintextDek;
+
+    // Conditional update to avoid race condition: only set DEK if still null
+    const result = await db.thread.updateMany({
+      where: { id: threadId, encryptedDek: null },
+      data: { encryptedDek: key.encryptedDek },
+    });
+
+    // Another request won the race — use their key instead
+    if (result.count === 0) {
+      const updated = await db.thread.findUniqueOrThrow({
+        where: { id: threadId },
+        select: { encryptedDek: true },
+      });
+      if (!updated.encryptedDek) {
+        throw new Error('Failed to initialize thread encryption key');
+      }
+      dek = await decryptThreadKey(updated.encryptedDek);
+    }
+  }
+
+  return encryptContent(content, dek);
+}
+
 export const createMessageInDbCommand = async ({
   threadId,
   message,
@@ -76,10 +125,15 @@ export const createMessageInDbCommand = async ({
   const sanitizedAttachments = sanitizeAttachments(attachments);
 
   try {
+    const encryptedContent = await maybeEncryptContent(
+      threadId,
+      message.content,
+    );
+
     return await db.message.create({
       data: {
         threadId: threadId,
-        content: message.content,
+        content: encryptedContent,
         role,
         source: message.source ?? Source.UI,
         visitorId: visitorId,
@@ -111,11 +165,13 @@ export const createAndStoreMessageCommand = async ({
   attachments?: MessageAttachment[];
 }): Promise<MessageDto> => {
   try {
+    const trimmedPrompt = prompt.trim();
+
     const dbMessage = await createMessageInDbCommand({
       threadId: threadId,
       message: {
         id: `msg_${Date.now()}`,
-        content: prompt.trim(),
+        content: trimmedPrompt,
       },
       role: Role.USER,
       visitorId,
@@ -123,6 +179,21 @@ export const createAndStoreMessageCommand = async ({
       voiceDurationSeconds,
       attachments,
     });
+
+    // Auto-set thread title from first user message if not already set
+    try {
+      await db.thread.updateMany({
+        where: { id: threadId, title: null },
+        data: {
+          title:
+            trimmedPrompt.length > 100
+              ? `${trimmedPrompt.substring(0, 100)}...`
+              : trimmedPrompt,
+        },
+      });
+    } catch (titleError) {
+      logger.error({ err: titleError }, 'Failed to auto-set thread title');
+    }
 
     const savedAttachments = dbMessage.attachments as
       | MessageAttachment[]

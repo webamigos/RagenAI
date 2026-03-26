@@ -140,6 +140,35 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 
 Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Meilisearch. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
 
+### Thread Message Encryption
+
+Message content (`Message.content`) is encrypted at rest using **AWS KMS envelope encryption** (AES-256-GCM). Thread titles remain unencrypted to preserve search functionality.
+
+**How it works:**
+- Each thread gets a unique Data Encryption Key (DEK) generated via KMS `GenerateDataKey`
+- DEK is encrypted by KMS (Key Encryption Key) and stored as `Thread.encryptedDek` (base64)
+- `Message.content` is encrypted with the plaintext DEK before DB insert
+- On read, encrypted DEK is decrypted via KMS, then messages are decrypted locally
+- DEK cache (per-request) minimizes KMS calls when reading multiple messages from one thread
+
+**Environment gating:**
+- No `AWS_KMS_KEY_ID` env var → encryption disabled (local development stays plaintext)
+- Staging/production: set `AWS_KMS_KEY_ID=arn:aws:kms:region:account:key/key-id`
+- Uses same AWS credentials as S3 (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`)
+
+**Key files:**
+- `src/libs/crypto/thread-encryption.ts` — Core encrypt/decrypt functions, KMS key generation
+- `src/libs/crypto/decrypt-messages.ts` — Generic helper to decrypt message arrays
+- `src/features/messages/services/commands/create-message-command.ts` — Encrypts on write (race-safe via conditional update)
+- `src/features/threads/services/commands/encrypt-threads-command.ts` — Batch migration for existing threads
+- `src/app/actions/encrypt-threads.ts` — Admin server actions for migration
+
+**Langfuse:** When encryption is enabled, `input` and `output` are omitted from Langfuse traces (only tags, sessionId, model are sent).
+
+**Search trade-off:** Thread title search works normally. Message content search (`searchAllQuery`) skips content matching for encrypted threads — only title matches are returned.
+
+**Admin migration:** `encryptAllThreadsAction()` (app admin only) batch-encrypts all unencrypted threads across all organizations. Idempotent and resumable.
+
 ### Vector Store (Meilisearch)
 
 Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval. Key files:

@@ -58,7 +58,6 @@ type RecentData = {
     publicId: string;
     title: string | null;
     createdAt: string;
-    messages: { content: string }[];
   }[];
   projects: { publicId: string; title: string; createdAt: string }[];
 };
@@ -287,15 +286,13 @@ export const SearchThreads = React.forwardRef<
                 {recentData.threads.map((thread) => (
                   <CommandItem
                     key={`recent-${thread.publicId}`}
-                    value={`recent-thread-${thread.publicId}-${thread.title || thread.messages[0]?.content}`}
+                    value={`recent-thread-${thread.publicId}-${thread.title || ''}`}
                     onSelect={() => handleSelect('thread', thread.publicId)}
                     className="cursor-pointer"
                   >
                     <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
                     <span className="flex-1 truncate">
-                      {thread.title ||
-                        thread.messages[0]?.content?.slice(0, 60) ||
-                        t('untitled')}
+                      {thread.title || t('untitled')}
                     </span>
                     <span className="text-xs text-zinc-400 shrink-0">
                       {formatRelativeDate(thread.createdAt, t)}

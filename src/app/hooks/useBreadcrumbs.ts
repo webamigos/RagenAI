@@ -51,18 +51,14 @@ export const useBreadcrumbs = (threadId?: string) => {
         );
         if (project) {
           const thread = project.threads?.find((t) => t.publicId === threadId);
-          if (thread?.messages?.[0]?.content?.trim()) {
-            const content = thread.messages[0].content;
-            threadTitle =
-              content.length > 50 ? content.substring(0, 50) + '...' : content;
+          if (thread?.title) {
+            threadTitle = thread.title;
           }
         }
       } else {
         const thread = userThreads.find((t) => t.publicId === threadId);
-        if (thread?.messages?.[0]?.content?.trim()) {
-          const content = thread.messages[0].content;
-          threadTitle =
-            content.length > 50 ? content.substring(0, 50) + '...' : content;
+        if (thread?.title) {
+          threadTitle = thread.title;
         }
       }
 

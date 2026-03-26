@@ -34,11 +34,6 @@ export const getProjectByPublicIdOrThrowQuery = async (
           title: true,
           createdAt: true,
           isStarred: true,
-          messages: {
-            orderBy: { createdAt: 'asc' },
-            take: 1,
-            select: { content: true },
-          },
         },
       },
       organizationId: true,

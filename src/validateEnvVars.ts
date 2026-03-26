@@ -53,6 +53,9 @@ const envSchema = z
     AWS_ACCESS_KEY_ID: z.string(),
     AWS_SECRET_ACCESS_KEY: z.string(),
 
+    // Thread message encryption (KMS envelope encryption)
+    AWS_KMS_KEY_ID: z.string().optional(),
+
     // Google
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
@@ -118,6 +121,18 @@ const envSchema = z
           message:
             'LITELLM_MASTER_KEY is required when TARGET_ENV is "staging" or "production"',
           path: ['LITELLM_MASTER_KEY'],
+        });
+      }
+
+      if (
+        (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
+        !isSet(env.AWS_KMS_KEY_ID)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'AWS_KMS_KEY_ID is required when TARGET_ENV is "staging" or "production" (thread message encryption)',
+          path: ['AWS_KMS_KEY_ID'],
         });
       }
     },

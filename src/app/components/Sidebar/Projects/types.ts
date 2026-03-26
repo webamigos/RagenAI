@@ -9,7 +9,8 @@ export type ThreadType = {
   preferredCommunicationType: ThreadCommunicationType;
   projectId: number | null;
   preferredModel?: string | null;
-  messages: {
+  title?: string | null;
+  messages?: {
     content: string;
   }[];
 };

@@ -5,10 +5,8 @@ import type { ThreadType, ThreadsListProps } from '../Projects/types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 import { TUIThreadItem } from './TUIThreadItem';
 
-const hasMessages = (thread: ThreadType): boolean => {
-  return (
-    thread.messages?.length > 0 && thread.messages[0]?.content !== undefined
-  );
+const hasContent = (thread: ThreadType): boolean => {
+  return thread.title !== undefined || (thread.messages?.length ?? 0) > 0;
 };
 
 export const TUIThreadsList = ({
@@ -20,7 +18,7 @@ export const TUIThreadsList = ({
   const t = useTranslations('sidebar.threads-categories');
 
   const threadsWithMessages = useMemo(() => {
-    return threads.filter(hasMessages);
+    return threads.filter(hasContent);
   }, [threads]);
 
   const categories = useMemo(() => {

@@ -62,10 +62,7 @@ export const TUIThreadsSection = ({
                 aria-label={`${title} threads`}
               >
                 {threads.map((thread, index) => {
-                  const contentPreview =
-                    thread.messages[0]?.content.length > 30
-                      ? truncateFileName(thread.messages[0]?.content, 30)
-                      : thread.messages[0]?.content;
+                  const contentPreview = thread.title || 'New conversation';
                   const isActive = thread.publicId === activeThread;
                   const isLastThreadInAllCategories =
                     categoryIndex === nonEmptyCategories.length - 1 &&

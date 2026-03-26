@@ -12,6 +12,7 @@ export type CreateThreadDto = z.infer<typeof createThreadSchema>;
 export type ThreadHistoryResponse = {
   createdAt: string;
   publicId: string;
+  title?: string | null;
   messages: MessageDtoWithoutPublicId[];
   projectId?: number | null;
   preferredModel?: string | null;
@@ -27,7 +28,7 @@ export type SidebarThreadItem = {
   teamId: string | null;
   project: { publicId: string; title: string } | null;
   team: { id: string; name: string } | null;
-  messages: { content: string }[];
+  messages?: { content: string }[];
   sharedByUser?: { name: string | null; email: string } | null;
 };
 
