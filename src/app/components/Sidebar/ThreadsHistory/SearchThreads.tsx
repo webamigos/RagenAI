@@ -58,7 +58,6 @@ type RecentData = {
     publicId: string;
     title: string | null;
     createdAt: string;
-    messages: { content: string }[];
   }[];
   projects: { publicId: string; title: string; createdAt: string }[];
 };
