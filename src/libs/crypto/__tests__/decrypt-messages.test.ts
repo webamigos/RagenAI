@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { randomBytes } from 'node:crypto';
 
-const testDek = randomBytes(32);
+const { testDek } = vi.hoisted(() => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const crypto = require('node:crypto');
+  return { testDek: crypto.randomBytes(32) as Buffer };
+});
 
 vi.mock('@aws-sdk/client-kms', () => ({
   KMSClient: vi.fn().mockImplementation(() => ({

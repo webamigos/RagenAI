@@ -47,6 +47,7 @@ export async function encryptThreadsCommand(
         where: {
           organizationId: orgId,
           encryptedDek: null,
+          messages: { some: {} },
         },
         select: {
           id: true,

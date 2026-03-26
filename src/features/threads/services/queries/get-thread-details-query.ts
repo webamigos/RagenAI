@@ -54,13 +54,21 @@ export const getThreadDetailsQuery = async (
     });
 
     // Decrypt messages if thread is encrypted and messages were included
-    const messages =
-      'messages' in thread && Array.isArray(thread.messages)
-        ? await decryptMessageContents(
-            thread.messages as { role: string; content: string }[],
-            thread.encryptedDek,
-          )
-        : undefined;
+    let messages: { role: string; content: string }[] | undefined;
+    if ('messages' in thread && Array.isArray(thread.messages)) {
+      try {
+        messages = await decryptMessageContents(
+          thread.messages as { role: string; content: string }[],
+          thread.encryptedDek,
+        );
+      } catch (error) {
+        logger.error(
+          { err: error, threadId: thread.id },
+          'Failed to decrypt thread messages',
+        );
+        messages = thread.messages as { role: string; content: string }[];
+      }
+    }
 
     // Exclude encryptedDek from response
     const { encryptedDek: _, ...threadData } = thread;

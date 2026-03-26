@@ -6,7 +6,7 @@ import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 import { TUIThreadItem } from './TUIThreadItem';
 
 const hasContent = (thread: ThreadType): boolean => {
-  return !!thread.title || (thread.messages?.length ?? 0) > 0;
+  return thread.title !== undefined || (thread.messages?.length ?? 0) > 0;
 };
 
 export const TUIThreadsList = ({

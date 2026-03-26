@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock KMS before importing the module
-const mockGenerateDataKey = vi.fn();
-const mockDecrypt = vi.fn();
+const { mockGenerateDataKey, mockDecrypt } = vi.hoisted(() => ({
+  mockGenerateDataKey: vi.fn(),
+  mockDecrypt: vi.fn(),
+}));
 
 vi.mock('@aws-sdk/client-kms', () => ({
   KMSClient: vi.fn().mockImplementation(() => ({

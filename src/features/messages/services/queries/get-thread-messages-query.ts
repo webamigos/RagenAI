@@ -52,10 +52,16 @@ export const getThreadMessagesQuery = async (
       ],
     });
 
-    const messages = await decryptMessageContents(
-      rawMessages,
-      thread.encryptedDek,
-    );
+    let messages;
+    try {
+      messages = await decryptMessageContents(rawMessages, thread.encryptedDek);
+    } catch (error) {
+      logger.error(
+        { err: error, threadId: thread.id },
+        'Failed to decrypt thread messages',
+      );
+      messages = rawMessages;
+    }
 
     // Get mentioned project details if exists
     let mentionedProject = null;

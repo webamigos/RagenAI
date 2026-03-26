@@ -12,6 +12,7 @@ export type CreateThreadDto = z.infer<typeof createThreadSchema>;
 export type ThreadHistoryResponse = {
   createdAt: string;
   publicId: string;
+  title?: string | null;
   messages: MessageDtoWithoutPublicId[];
   projectId?: number | null;
   preferredModel?: string | null;

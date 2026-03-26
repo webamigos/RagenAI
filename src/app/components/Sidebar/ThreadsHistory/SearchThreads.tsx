@@ -287,7 +287,7 @@ export const SearchThreads = React.forwardRef<
                 {recentData.threads.map((thread) => (
                   <CommandItem
                     key={`recent-${thread.publicId}`}
-                    value={`recent-thread-${thread.publicId}-${thread.title}`}
+                    value={`recent-thread-${thread.publicId}-${thread.title || ''}`}
                     onSelect={() => handleSelect('thread', thread.publicId)}
                     className="cursor-pointer"
                   >

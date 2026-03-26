@@ -81,7 +81,10 @@ export const getUserThreadsQuery = async (
           { err: error, threadId: thread.publicId },
           'Failed to decrypt thread messages',
         );
-        decryptedMessages = thread.messages;
+        decryptedMessages = thread.messages.map((msg) => ({
+          ...msg,
+          content: '',
+        }));
       }
       const { encryptedDek: _, ...threadData } = thread;
       return {
