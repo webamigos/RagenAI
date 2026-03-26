@@ -18,7 +18,7 @@ const GOOGLE_DRIVE_PROVIDER = 'GOOGLE_DRIVE';
 
 const requestSchema = z.object({
   templateName: z.enum(['workshop-summary']),
-  rawInput: z.record(z.unknown()),
+  rawInput: z.record(z.string(), z.unknown()),
   clientName: z.string().min(1).max(200),
   driveFolderId: z.string().min(1),
 });
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: 'Invalid request body',
-        details: error instanceof z.ZodError ? error.errors : undefined,
+        details: error instanceof z.ZodError ? error.issues : undefined,
       },
       { status: 400 },
     );
