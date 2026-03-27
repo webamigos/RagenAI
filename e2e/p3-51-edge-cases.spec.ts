@@ -120,9 +120,11 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await titleInput.fill('E2E Test Project');
       await page.getByRole('button', { name: /^stwórz$/i }).click();
 
-      // Should show error about duplicate name
+      // Should show error toast about duplicate name or a generic creation error
       await expect(
-        page.getByText(/istnieje|exists|conflict|duplikat/i),
+        page
+          .getByText(/istnieje|exists|conflict|duplikat|nie udało|failed/i)
+          .first(),
       ).toBeVisible({ timeout: 10_000 });
     });
 

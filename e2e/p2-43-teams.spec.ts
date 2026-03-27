@@ -5,7 +5,7 @@ import { ROUTES } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
 
-/** Create a team with the given name via the UI dialog. */
+/** Create a team with the given name via the UI dialog and wait for dialog to close. */
 async function createTeamViaUI(
   page: import('@playwright/test').Page,
   teamName: string,
@@ -18,7 +18,13 @@ async function createTeamViaUI(
     '[role="dialog"] button[type="submit"], [data-headlessui-state="open"] button[type="submit"]',
   );
   await submitButton.click();
-  await expect(page.getByText(teamName)).toBeVisible({ timeout: 10_000 });
+
+  // Wait for the dialog to fully close before interacting with the list
+  await expect(nameInput).not.toBeVisible({ timeout: 10_000 });
+  // Wait for the team to appear in the list
+  await expect(page.getByText(teamName, { exact: true })).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 test.describe('Teams P2', () => {
@@ -26,7 +32,6 @@ test.describe('Teams P2', () => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Should show teams page heading
     await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible({
       timeout: 10_000,
     });
@@ -41,16 +46,12 @@ test.describe('Teams P2', () => {
     const nameInput = page.locator('#team-name');
     await expect(nameInput).toBeVisible({ timeout: 5_000 });
 
-    // Try to submit without a name — button should be disabled
     const submitButton = page.locator(
       '[role="dialog"] button[type="submit"], [data-headlessui-state="open"] button[type="submit"]',
     );
     await expect(submitButton).toBeDisabled();
 
-    // Fill in team name
     await nameInput.fill('Validation Test Team');
-
-    // Button should be enabled now
     await expect(submitButton).toBeEnabled();
   });
 
@@ -62,27 +63,25 @@ test.describe('Teams P2', () => {
 
     await createTeamViaUI(page, teamName);
 
-    // Select the team to see details
-    await page.getByText(teamName).click();
+    // Click the team — use exact match to avoid overlay issues
+    await page.getByText(teamName, { exact: true }).click();
 
+    // Team detail view should show — use role-based selector to avoid strict mode
     await expect(
-      page
-        .getByText(/dodaj użytkownika/i)
-        .or(page.getByText(/brak użytkowników/i)),
+      page.getByRole('button', { name: /dodaj użytkownika/i }),
     ).toBeVisible({ timeout: 10_000 });
   });
 
   test('delete a team', async ({ page }) => {
-    const teamName = `E2E Delete ${Date.now()}`;
+    const teamName = `E2E Del ${Date.now()}`;
 
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Create the team first
     await createTeamViaUI(page, teamName);
 
     // Select it
-    await page.getByText(teamName).click();
+    await page.getByText(teamName, { exact: true }).click();
 
     // Click delete team button
     const deleteButton = page.getByRole('button', { name: /usuń zespół/i });
@@ -98,8 +97,9 @@ test.describe('Teams P2', () => {
       .last()
       .click();
 
-    // Team should be removed
-    await expect(page.getByText(teamName)).not.toBeVisible({
+    // Wait for alert dialog to close, then verify team is removed
+    await expect(alertDialog).not.toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(teamName, { exact: true })).not.toBeVisible({
       timeout: 10_000,
     });
   });

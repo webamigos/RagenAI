@@ -111,7 +111,8 @@ test.describe('Public / Shared Access P1', () => {
   });
 
   test('share thread dialog opens from thread dropdown', async ({ page }) => {
-    // Create a thread first
+    // Create a thread first — clean up stale handlers
+    await page.unroute('**/api/threads/*');
     await page.route('**/api/threads/*', async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({

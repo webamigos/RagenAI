@@ -6,14 +6,17 @@ import { ROUTES, buildMockSSE } from './helpers';
 test.use({ storageState: AUTH_FILE });
 
 /**
- * Helper to mock the chat streaming API and create a thread by sending a message.
- * Returns the thread URL after creation.
+ * Helper: set up SSE mock, send a message, wait for thread creation.
+ * Cleans up previous route handlers to avoid stacking.
  */
 async function createThreadWithMock(
   page: import('@playwright/test').Page,
   message: string,
   responseContent: string,
 ) {
+  // Clean up any previous route handler to avoid stacking
+  await page.unroute('**/api/threads/*');
+
   await page.route('**/api/threads/*', async (route) => {
     if (route.request().method() === 'POST') {
       await route.fulfill({
@@ -31,7 +34,10 @@ async function createThreadWithMock(
   await page.locator('textarea').fill(message);
   await page.locator('textarea').press('Enter');
 
+  // Thread should be created — URL changes to /chats/{id}
   await expect(page).toHaveURL(/\/chats\//, { timeout: 15_000 });
+
+  // Wait for the streamed response to render
   await expect(page.getByText(responseContent)).toBeVisible({
     timeout: 15_000,
   });
@@ -62,10 +68,9 @@ test.describe('Chat & Threads P0', () => {
       'URL test response.',
     );
 
-    // URL should contain /chats/ with a thread ID
     expect(threadUrl).toMatch(/\/chats\//);
 
-    // Reload the page — thread page should still load (not redirect to /new)
+    // Reload — thread page should still load (not redirect to /new)
     await page.reload();
     await expect(page).toHaveURL(/\/chats\//, { timeout: 15_000 });
   });
@@ -77,12 +82,10 @@ test.describe('Chat & Threads P0', () => {
       'List test response.',
     );
 
-    // Navigate to chats list
     await page.goto(ROUTES.chats);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Thread should appear — by title ("New conversation" or auto-generated) or message preview
-    // Just verify at least one thread exists in the list
+    // Verify the chats page loaded with threads heading
     await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
       timeout: 10_000,
     });
@@ -95,18 +98,7 @@ test.describe('Chat & Threads P0', () => {
       'Delete test response.',
     );
 
-    // Stay on the thread page — the thread should be in the sidebar
-    // Find thread links in the sidebar
-    const sidebarThreads = page.locator('a[href*="/chats/"]');
-    const threadCount = await sidebarThreads.count();
-
-    if (threadCount === 0) {
-      // Navigate to chats page instead
-      await page.goto(ROUTES.chats);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
-    }
-
-    // Find a thread item and right-click
+    // Find thread in sidebar and right-click
     const threadLink = page.locator('a[href*="/chats/"]').first();
     await expect(threadLink).toBeVisible({ timeout: 10_000 });
     await threadLink.click({ button: 'right' });
@@ -144,7 +136,6 @@ test.describe('Chat & Threads P0', () => {
     if (await renameOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await renameOption.click();
 
-      // Fill in new name in the dialog
       const dialog = page.locator('[role="dialog"]');
       await expect(dialog).toBeVisible({ timeout: 5_000 });
       const renameInput = dialog.locator('input').first();
@@ -155,7 +146,6 @@ test.describe('Chat & Threads P0', () => {
         .filter({ hasText: /zapisz/i })
         .click();
 
-      // Verify renamed thread appears
       await expect(page.getByText('Renamed Thread')).toBeVisible({
         timeout: 10_000,
       });

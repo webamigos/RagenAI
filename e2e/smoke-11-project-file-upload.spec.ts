@@ -30,11 +30,11 @@ test('upload a file to a project', async ({ page }) => {
   // Navigate to projects list
   await page.goto(ROUTES.projects);
 
-  // Find and click the E2E Test Project
-  await page.getByText(TEST_PROJECT_TITLE).click();
+  // Find and click the E2E Test Project (use .first() to handle multiple matches)
+  await page.getByText(TEST_PROJECT_TITLE).first().click();
 
   // Verify project page loads
-  await expect(page.getByText(TEST_PROJECT_TITLE)).toBeVisible();
+  await expect(page.getByText(TEST_PROJECT_TITLE).first()).toBeVisible();
 
   // Set file on the hidden file input in the project sidebar
   const fileInput = page.locator(

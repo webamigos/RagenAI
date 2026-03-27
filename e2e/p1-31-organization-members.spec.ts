@@ -34,12 +34,9 @@ test.describe('Organization & Members P1', () => {
       page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
     ).toBeVisible({ timeout: 10_000 });
 
-    // Should show owner role badge
+    // Should show owner role badge ("Właściciel" in Polish)
     await expect(
-      page
-        .getByRole('main')
-        .getByText(/owner|właściciel/i)
-        .first(),
+      page.getByRole('main').getByText('Właściciel').first(),
     ).toBeVisible({ timeout: 5_000 });
   });
 
