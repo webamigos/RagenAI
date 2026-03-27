@@ -25,128 +25,134 @@ test.describe('Chat & Threads P0', () => {
     });
   });
 
-  test('create new thread by sending a message', async ({ page }) => {
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-
-    await page.locator('textarea').fill('Hello from e2e test');
-    await page.locator('textarea').press('Enter');
-
-    // Should navigate to /chats/{threadId}
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-
-    // The mock LLM response should appear
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
-    });
-  });
-
-  test('thread appears in sidebar after creation', async ({ page }) => {
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-
-    await page.locator('textarea').fill('Sidebar test message');
-    await page.locator('textarea').press('Enter');
-
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
-    });
-
-    // The thread should be in the sidebar
-    const threadLink = page.locator('a[href*="/chats/"]').first();
-    await expect(threadLink).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('rename thread via context menu', async ({ page }) => {
-    // Create a thread first so it appears in sidebar
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-    await page.locator('textarea').fill('Thread to rename');
-    await page.locator('textarea').press('Enter');
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
-    });
-
-    // Find the thread in sidebar and right-click
-    const threadLink = page.locator('a[href*="/chats/"]').first();
-    await expect(threadLink).toBeVisible({ timeout: 10_000 });
-    await threadLink.click({ button: 'right' });
-
-    const renameOption = page.getByRole('menuitem', { name: /zmień nazwę/i });
-    if (await renameOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await renameOption.click();
-
-      const dialog = page.locator('[role="dialog"]');
-      await expect(dialog).toBeVisible({ timeout: 5_000 });
-      const renameInput = dialog.locator('input').first();
-      await renameInput.clear();
-      await renameInput.fill('Renamed E2E Thread');
-      await dialog
-        .locator('button')
-        .filter({ hasText: /zapisz/i })
-        .click();
-
-      await expect(page.getByText('Renamed E2E Thread')).toBeVisible({
-        timeout: 10_000,
-      });
-    }
-  });
-
-  test('star thread via context menu', async ({ page }) => {
-    // Create a thread first
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-    await page.locator('textarea').fill('Thread to star');
-    await page.locator('textarea').press('Enter');
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
-    });
-
-    const threadLink = page.locator('a[href*="/chats/"]').first();
-    await expect(threadLink).toBeVisible({ timeout: 10_000 });
-    await threadLink.click({ button: 'right' });
-
-    const starOption = page.getByRole('menuitem', { name: /przypnij/i });
-    if (await starOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await starOption.click();
-
-      await threadLink.click({ button: 'right' });
-      await expect(
-        page.getByRole('menuitem', { name: /odepnij/i }),
-      ).toBeVisible({ timeout: 5_000 });
-      await page.keyboard.press('Escape');
-    }
-  });
-
-  test('delete thread via context menu', async ({ page }) => {
-    // Create a thread to delete
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-    await page.locator('textarea').fill('Thread to delete');
-    await page.locator('textarea').press('Enter');
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
-    });
-
-    const threadLink = page.locator('a[href*="/chats/"]').first();
-    await expect(threadLink).toBeVisible({ timeout: 10_000 });
-    await threadLink.click({ button: 'right' });
-
-    const deleteOption = page.getByRole('menuitem', { name: /usuń/i });
-    if (await deleteOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
-      await deleteOption.click();
-
-      const alertDialog = page.locator('[role="alertdialog"]');
-      if (await alertDialog.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        await alertDialog
-          .locator('button')
-          .filter({ hasText: /^usuń$/i })
-          .click();
+  // Tests below require the mock LLM server (started by global.setup.ts).
+  // They work locally and on CI when the mock is reachable.
+  // Skip if the mock LLM is not available.
+  test.describe('with mock LLM', () => {
+    test.beforeEach(async () => {
+      const isLlmAvailable = await fetch('http://localhost:4100/health')
+        .then((r) => r.ok)
+        .catch(() => false);
+      if (!isLlmAvailable) {
+        test.skip(true, 'Mock LLM server not reachable');
       }
-    }
+    });
+
+    test('create new thread by sending a message', async ({ page }) => {
+      await page.goto(ROUTES.newChat);
+      await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
+
+      await page.locator('textarea').fill('Hello from e2e test');
+      await page.locator('textarea').press('Enter');
+
+      await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
+      await expect(page.getByText(/mock AI response/i)).toBeVisible({
+        timeout: 30_000,
+      });
+    });
+
+    test('thread appears in sidebar after creation', async ({ page }) => {
+      await page.goto(ROUTES.newChat);
+      await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
+
+      await page.locator('textarea').fill('Sidebar test message');
+      await page.locator('textarea').press('Enter');
+
+      await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
+      await expect(page.getByText(/mock AI response/i)).toBeVisible({
+        timeout: 30_000,
+      });
+
+      const threadLink = page.locator('a[href*="/chats/"]').first();
+      await expect(threadLink).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('rename thread via context menu', async ({ page }) => {
+      await page.goto(ROUTES.newChat);
+      await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
+      await page.locator('textarea').fill('Thread to rename');
+      await page.locator('textarea').press('Enter');
+      await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
+      await expect(page.getByText(/mock AI response/i)).toBeVisible({
+        timeout: 30_000,
+      });
+
+      const threadLink = page.locator('a[href*="/chats/"]').first();
+      await expect(threadLink).toBeVisible({ timeout: 10_000 });
+      await threadLink.click({ button: 'right' });
+
+      const renameOption = page.getByRole('menuitem', {
+        name: /zmień nazwę/i,
+      });
+      if (await renameOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
+        await renameOption.click();
+        const dialog = page.locator('[role="dialog"]');
+        await expect(dialog).toBeVisible({ timeout: 5_000 });
+        const renameInput = dialog.locator('input').first();
+        await renameInput.clear();
+        await renameInput.fill('Renamed E2E Thread');
+        await dialog
+          .locator('button')
+          .filter({ hasText: /zapisz/i })
+          .click();
+        await expect(page.getByText('Renamed E2E Thread')).toBeVisible({
+          timeout: 10_000,
+        });
+      }
+    });
+
+    test('star thread via context menu', async ({ page }) => {
+      await page.goto(ROUTES.newChat);
+      await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
+      await page.locator('textarea').fill('Thread to star');
+      await page.locator('textarea').press('Enter');
+      await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
+      await expect(page.getByText(/mock AI response/i)).toBeVisible({
+        timeout: 30_000,
+      });
+
+      const threadLink = page.locator('a[href*="/chats/"]').first();
+      await expect(threadLink).toBeVisible({ timeout: 10_000 });
+      await threadLink.click({ button: 'right' });
+
+      const starOption = page.getByRole('menuitem', { name: /przypnij/i });
+      if (await starOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
+        await starOption.click();
+        await threadLink.click({ button: 'right' });
+        await expect(
+          page.getByRole('menuitem', { name: /odepnij/i }),
+        ).toBeVisible({ timeout: 5_000 });
+        await page.keyboard.press('Escape');
+      }
+    });
+
+    test('delete thread via context menu', async ({ page }) => {
+      await page.goto(ROUTES.newChat);
+      await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
+      await page.locator('textarea').fill('Thread to delete');
+      await page.locator('textarea').press('Enter');
+      await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
+      await expect(page.getByText(/mock AI response/i)).toBeVisible({
+        timeout: 30_000,
+      });
+
+      const threadLink = page.locator('a[href*="/chats/"]').first();
+      await expect(threadLink).toBeVisible({ timeout: 10_000 });
+      await threadLink.click({ button: 'right' });
+
+      const deleteOption = page.getByRole('menuitem', { name: /usuń/i });
+      if (await deleteOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
+        await deleteOption.click();
+        const alertDialog = page.locator('[role="alertdialog"]');
+        if (
+          await alertDialog.isVisible({ timeout: 3_000 }).catch(() => false)
+        ) {
+          await alertDialog
+            .locator('button')
+            .filter({ hasText: /^usuń$/i })
+            .click();
+        }
+      }
+    });
   });
 });
