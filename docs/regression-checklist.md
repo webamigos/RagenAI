@@ -130,8 +130,8 @@
 
 ### Document Operations
 
-- [ ] Create markdown document manually — saves and embeds
-- [ ] Edit existing markdown document — changes persist
+- [ ] Create Markdown document manually — saves and embeds
+- [ ] Edit existing Markdown document — changes persist
 - [ ] View document preview/details page
 - [ ] File thumbnail renders for supported formats
 

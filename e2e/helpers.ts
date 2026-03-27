@@ -107,15 +107,19 @@ export async function login(page: Page) {
   await page.waitForURL('**/pl/new', { timeout: 15_000 });
 }
 
-/**
- * Build a mock SSE response body for the chat streaming API.
- * Returns a string of SSE events that the UI can parse.
- */
-export function buildMockSSE(options: {
+export interface BuildMockSSEOptions {
   userMessageId?: string;
   assistantMessageId?: string;
   content: string;
-}): string {
+}
+
+/**
+ * Build a mock SSE response body matching the real streaming contract.
+ *
+ * Event sequence: user_message_created → delta(s) → final_response → close
+ * See src/features/threads/contracts/events.types.ts for payload shapes.
+ */
+export function buildMockSSE(options: BuildMockSSEOptions): string {
   const {
     userMessageId = 'mock-user-msg-001',
     assistantMessageId = 'mock-assistant-msg-001',
@@ -130,8 +134,8 @@ export function buildMockSSE(options: {
         (word, i) =>
           `event: delta\ndata: ${JSON.stringify({ content: (i > 0 ? ' ' : '') + word })}\n\n`,
       ),
-    `event: assistant_message_created\ndata: ${JSON.stringify({ id: assistantMessageId })}\n\n`,
-    `event: end\ndata: {}\n\n`,
+    `event: final_response\ndata: ${JSON.stringify({ id: assistantMessageId, role: 'ASSISTANT', runId: 'mock-run-001' })}\n\n`,
+    `event: close\ndata: {}\n\n`,
   ];
   return events.join('');
 }

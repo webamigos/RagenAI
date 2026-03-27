@@ -5,6 +5,22 @@ import { ROUTES } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
 
+/** Create a team with the given name via the UI dialog. */
+async function createTeamViaUI(
+  page: import('@playwright/test').Page,
+  teamName: string,
+) {
+  await page.getByRole('button', { name: /utwórz zespół/i }).click();
+  const nameInput = page.locator('#team-name');
+  await expect(nameInput).toBeVisible({ timeout: 5_000 });
+  await nameInput.fill(teamName);
+  const submitButton = page.locator(
+    '[role="dialog"] button[type="submit"], [data-headlessui-state="open"] button[type="submit"]',
+  );
+  await submitButton.click();
+  await expect(page.getByText(teamName)).toBeVisible({ timeout: 10_000 });
+}
+
 test.describe('Teams P2', () => {
   test('teams page loads', async ({ page }) => {
     await page.goto(ROUTES.settingsTeams);
@@ -20,10 +36,8 @@ test.describe('Teams P2', () => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Click create team button (use role to avoid matching empty state text)
     await page.getByRole('button', { name: /utwórz zespół/i }).click();
 
-    // Wait for dialog input to appear (Headless UI)
     const nameInput = page.locator('#team-name');
     await expect(nameInput).toBeVisible({ timeout: 5_000 });
 
@@ -34,49 +48,23 @@ test.describe('Teams P2', () => {
     await expect(submitButton).toBeDisabled();
 
     // Fill in team name
-    await nameInput.fill('E2E Test Team');
+    await nameInput.fill('Validation Test Team');
 
     // Button should be enabled now
     await expect(submitButton).toBeEnabled();
   });
 
-  test('create a new team', async ({ page }) => {
+  test('create a new team and view details', async ({ page }) => {
+    const teamName = `E2E Team ${Date.now()}`;
+
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    await page.getByRole('button', { name: /utwórz zespół/i }).click();
+    await createTeamViaUI(page, teamName);
 
-    // Wait for dialog input
-    const nameInput = page.locator('#team-name');
-    await expect(nameInput).toBeVisible({ timeout: 5_000 });
+    // Select the team to see details
+    await page.getByText(teamName).click();
 
-    await nameInput.fill('E2E Auto Team');
-
-    // Submit
-    const submitButton = page.locator(
-      '[role="dialog"] button[type="submit"], [data-headlessui-state="open"] button[type="submit"]',
-    );
-    await submitButton.click();
-
-    // Team should appear in the list
-    await expect(page.getByText('E2E Auto Team')).toBeVisible({
-      timeout: 10_000,
-    });
-  });
-
-  test('select a team to see team details', async ({ page }) => {
-    await page.goto(ROUTES.settingsTeams);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
-
-    const teamItem = page.getByText('E2E Auto Team');
-    if (!(await teamItem.isVisible({ timeout: 5_000 }).catch(() => false))) {
-      test.skip(true, 'No team available to select');
-      return;
-    }
-
-    await teamItem.click();
-
-    // Team detail view should show
     await expect(
       page
         .getByText(/dodaj użytkownika/i)
@@ -85,16 +73,16 @@ test.describe('Teams P2', () => {
   });
 
   test('delete a team', async ({ page }) => {
+    const teamName = `E2E Delete ${Date.now()}`;
+
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    const teamItem = page.getByText('E2E Auto Team');
-    if (!(await teamItem.isVisible({ timeout: 5_000 }).catch(() => false))) {
-      test.skip(true, 'No team available to delete');
-      return;
-    }
+    // Create the team first
+    await createTeamViaUI(page, teamName);
 
-    await teamItem.click();
+    // Select it
+    await page.getByText(teamName).click();
 
     // Click delete team button
     const deleteButton = page.getByRole('button', { name: /usuń zespół/i });
@@ -111,7 +99,7 @@ test.describe('Teams P2', () => {
       .click();
 
     // Team should be removed
-    await expect(page.getByText('E2E Auto Team')).not.toBeVisible({
+    await expect(page.getByText(teamName)).not.toBeVisible({
       timeout: 10_000,
     });
   });

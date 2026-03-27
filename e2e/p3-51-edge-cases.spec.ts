@@ -135,10 +135,8 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await page.locator('textarea').press('Enter');
 
       // Either the message sends (no min length) or validation stops it
-      // In both cases the page should not crash
-      await page.waitForTimeout(2_000);
-      // Page should still be functional
-      await expect(page.locator('textarea')).toBeVisible();
+      // Wait for a concrete outcome: textarea clears (sent) or stays (blocked)
+      await expect(page.locator('textarea')).toBeVisible({ timeout: 5_000 });
     });
   });
 
@@ -160,11 +158,7 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await context.close();
     });
 
-    test('accessing admin page as non-admin is handled', async ({
-      browser,
-    }) => {
-      // This test uses the default auth (which is admin),
-      // so we just verify the pages load for admin
+    test('admin users page loads for admin user', async ({ browser }) => {
       const context = await browser.newContext({
         storageState: AUTH_FILE,
       });
@@ -173,10 +167,10 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await page.goto(ROUTES.settingsUsers);
       await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-      // Admin should see the users page
-      await expect(page.getByText(/użytkownicy/i).first()).toBeVisible({
-        timeout: 10_000,
-      });
+      // Admin should see the users page heading
+      await expect(
+        page.getByRole('heading', { name: /użytkownicy/i }),
+      ).toBeVisible({ timeout: 10_000 });
 
       await context.close();
     });

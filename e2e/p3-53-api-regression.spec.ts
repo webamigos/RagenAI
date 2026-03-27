@@ -19,7 +19,6 @@ test.describe('API Regression P3', () => {
     request,
   }) => {
     const response = await request.get('/api/messages/fake-thread-id');
-    // Should return a non-200 status (actual: 500 — no valid thread)
     expect(response.ok()).toBe(false);
   });
 
@@ -27,22 +26,21 @@ test.describe('API Regression P3', () => {
     const response = await request.post('/api/upload', {
       data: {},
     });
-    // Should return a non-200 status
     expect(response.ok()).toBe(false);
   });
 
-  test('GET /api/projects/public/invalid-token returns error', async ({
+  test('GET /api/projects/public/invalid-token returns 404 or 403', async ({
     request,
   }) => {
     const response = await request.get(
       '/api/projects/public/nonexistent-token-12345',
     );
-    expect(response.ok()).toBe(false);
+    expect([404, 403]).toContain(response.status());
   });
 
   test('GET /api/ai-usage returns response', async ({ request }) => {
     const response = await request.get('/api/ai-usage');
-    // Accept any status — endpoint may use POST only (405) or require query params
+    // Endpoint may use POST only (405) or require query params
     expect(response.status()).toBeDefined();
   });
 
@@ -56,13 +54,13 @@ test.describe('API Regression P3', () => {
         },
       },
     );
-    // The endpoint returns streaming or error — either is valid
+    // Endpoint returns streaming or error — both are valid
     expect(response.status()).toBeDefined();
   });
 
-  test('GET /api/files/invalid-id returns error', async ({ request }) => {
+  test('GET /api/files/invalid-id returns 404', async ({ request }) => {
     const response = await request.get('/api/files/nonexistent-file-id');
-    expect(response.ok()).toBe(false);
+    expect(response.status()).toBe(404);
   });
 
   test('POST /api/tts without required fields returns error', async ({

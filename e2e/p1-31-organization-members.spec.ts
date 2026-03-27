@@ -80,9 +80,9 @@ test.describe('Organization & Members P1', () => {
 
     // Submit without filling email — should show validation error
     await dialog.getByText(/wyślij zaproszenie/i).click();
-    await expect(dialog.getByText(/email|wymagane|required/i)).toBeVisible({
-      timeout: 5_000,
-    });
+    await expect(
+      dialog.locator('#input-error, [class*="text-red"]').first(),
+    ).toBeVisible({ timeout: 5_000 });
   });
 
   test('invite member with valid email', async ({ page }) => {
@@ -111,8 +111,9 @@ test.describe('Organization & Members P1', () => {
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
 
-    // Fill in a valid email
-    await dialog.locator('#invite-email').fill('new-member@example.com');
+    // Fill in a unique email to avoid conflicts across retries
+    const uniqueEmail = `e2e-invite-${Date.now()}@example.com`;
+    await dialog.locator('#invite-email').fill(uniqueEmail);
 
     // Select admin role
     await dialog.locator('#invite-role').selectOption('admin');
@@ -120,13 +121,18 @@ test.describe('Organization & Members P1', () => {
     // Submit the invitation
     await dialog.getByText(/wyślij zaproszenie/i).click();
 
-    // Should either show success or the dialog closes
-    // (actual email sending may fail in test env, but form should submit)
-    await expect(dialog)
-      .not.toBeVisible({ timeout: 10_000 })
-      .catch(() => {
-        // If dialog stays open it may be showing a server error — that's acceptable in test env
-      });
+    // Should either close the dialog (success) or show a server error message
+    const dialogClosed = await dialog
+      .waitFor({ state: 'hidden', timeout: 10_000 })
+      .then(() => true)
+      .catch(() => false);
+
+    if (!dialogClosed) {
+      // Dialog stayed open — verify it shows an error (server error is acceptable in test env)
+      await expect(
+        dialog.getByText(/error|błąd|nie udało/i).first(),
+      ).toBeVisible({ timeout: 3_000 });
+    }
   });
 
   test('invitations tab shows pending invitations', async ({ page }) => {

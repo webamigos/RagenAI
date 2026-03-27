@@ -56,16 +56,18 @@ test.describe('Document Operations P2', () => {
     // Submit the document
     await page.getByText(/^wyślij$/i).click();
 
-    // Should either show success or redirect to documents list
-    await expect(
+    // Should either show success toast or redirect to documents list
+    const successOrRedirect = await Promise.any([
       page
         .getByText(/dokument.*utworzony|sukces|success/i)
-        .or(page.locator('text=documents-list')),
-    )
-      .toBeVisible({ timeout: 10_000 })
-      .catch(() => {
-        // May redirect directly
-      });
+        .waitFor({ state: 'visible', timeout: 10_000 })
+        .then(() => 'success' as const),
+      page
+        .waitForURL(/documents-list/, { timeout: 10_000 })
+        .then(() => 'redirect' as const),
+    ]).catch(() => null);
+
+    expect(successOrRedirect).not.toBeNull();
   });
 
   test('edit/preview tabs work in document creator', async ({ page }) => {

@@ -388,8 +388,8 @@ E2E tests live in `e2e/` and run against a seeded local database with a pre-auth
 - `smoke-0[1-6]-*` — Unauthenticated smoke tests (no-auth Playwright project)
 - `smoke-{07+}-*` — Authenticated smoke tests (page load checks)
 - `p0-*` — P0 Critical tests (core flows: auth, chat, KB, projects)
-- `p1-*` — P1 High priority tests (thread mgmt, org members, public access, connectors)
-- `p2-*` — P2 Medium priority tests (settings, subscription, documents, teams)
+- `p1-*` — P1 High-priority tests (thread mgmt, org members, public access, connectors)
+- `p2-*` — P2 Medium-priority tests (settings, subscription, documents, teams)
 
 **Conventions:**
 - All routes use `/pl` locale prefix (Polish UI text in assertions)

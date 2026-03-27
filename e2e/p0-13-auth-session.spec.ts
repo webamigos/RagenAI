@@ -37,17 +37,20 @@ test.describe('Auth P0 — session persistence', () => {
 });
 
 test.describe('Auth P0 — sign-up form validation', () => {
+  // Force anonymous session so sign-up page doesn't redirect to /new
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('sign-up page shows validation errors on empty submit', async ({
     page,
   }) => {
     await page.goto(ROUTES.signUp);
     await expect(page).toHaveURL(/sign-up/);
 
-    // Try to submit empty form — find and click submit button
+    // Try to submit empty form
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Should show validation error for email
+    // Should show validation error for email (target the error element, not the label)
     await expect(
       page.locator('#input-error', { hasText: /nieprawidłowy adres email/i }),
     ).toBeVisible({ timeout: 5_000 });

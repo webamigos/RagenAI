@@ -88,7 +88,7 @@ test.describe('Settings P2', () => {
       // Save button should be disabled since nothing changed
       const saveButton = page.getByText(/zapisz zmiany/i);
       await expect(saveButton).toBeVisible({ timeout: 10_000 });
-      await expect(saveButton).toBeDisabled();
+      await expect(saveButton).toBeDisabled({ timeout: 5_000 });
     });
 
     test('email field is read-only', async ({ page }) => {
@@ -169,11 +169,8 @@ test.describe('Settings P2', () => {
       // URL should change to /en/
       await expect(page).toHaveURL(/\/en\//, { timeout: 10_000 });
 
-      // Switch back to Polish
-      const langSwitcherEn = page.locator(
-        'button:has(.fi-pl), button:has(.fi-gb)',
-      );
-      await langSwitcherEn.click();
+      // Switch back to Polish (reuse same selector)
+      await langSwitcher.click();
 
       // URL should be back to /pl/
       await expect(page).toHaveURL(/\/pl\//, { timeout: 10_000 });

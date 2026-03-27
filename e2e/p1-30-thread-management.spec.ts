@@ -49,8 +49,9 @@ test.describe('Thread Management P1', () => {
     await page.goto(ROUTES.chats);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Open search with Cmd+K
-    await page.keyboard.press('Meta+k');
+    // Use platform-appropriate modifier key
+    const mod = process.platform === 'darwin' ? 'Meta' : 'Control';
+    await page.keyboard.press(`${mod}+k`);
 
     // The search dialog should open — look for the cmdk input
     const searchInput = page
@@ -65,19 +66,6 @@ test.describe('Thread Management P1', () => {
       await searchInput.fill('test');
       await page.waitForTimeout(500);
       await page.keyboard.press('Escape');
-    } else {
-      // Cmd+K might not work on this OS, try Ctrl+K
-      await page.keyboard.press('Control+k');
-      const searchInput2 = page
-        .locator('[cmdk-input]')
-        .or(
-          page.locator(
-            'input[placeholder*="Szukaj"], input[placeholder*="szukaj"]',
-          ),
-        );
-      if (await searchInput2.isVisible({ timeout: 3_000 }).catch(() => false)) {
-        await page.keyboard.press('Escape');
-      }
     }
   });
 
