@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 import { AUTH_FILE, TEST_PROJECT_PUBLIC_ID } from './constants';
-import { ROUTES, buildMockSSE } from './helpers';
+import { ROUTES } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
 
@@ -111,30 +111,17 @@ test.describe('Public / Shared Access P1', () => {
   });
 
   test('share thread dialog opens from thread dropdown', async ({ page }) => {
-    // Create a thread first
-    await page.route('**/api/threads/*', async (route) => {
-      if (route.request().method() === 'POST') {
-        await route.fulfill({
-          status: 200,
-          contentType: 'text/event-stream; charset=utf-8',
-          body: buildMockSSE({ content: 'Share dialog test.' }),
-        });
-      } else {
-        await route.fallback();
-      }
-    });
-
+    // Create a thread so it appears in sidebar
     await page.goto(ROUTES.newChat);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-    await page.locator('textarea').fill('Thread to share');
+    await page.locator('textarea').fill('Share dialog test');
     await page.locator('textarea').press('Enter');
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 15_000 });
-    await expect(page.getByText('Share dialog test.')).toBeVisible({
-      timeout: 15_000,
+    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
+    await expect(page.getByText(/mock AI response/i)).toBeVisible({
+      timeout: 30_000,
     });
 
-    // Find thread in sidebar and right-click
+    // Find the thread in sidebar and right-click
     const threadLink = page.locator('a[href*="/chats/"]').first();
     await expect(threadLink).toBeVisible({ timeout: 10_000 });
     await threadLink.click({ button: 'right' });

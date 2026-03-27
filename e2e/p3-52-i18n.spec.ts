@@ -1,8 +1,20 @@
 import { test, expect } from '@playwright/test';
 
+import fs from 'fs';
 import { AUTH_FILE } from './constants';
+import { reLogin } from './helpers';
 
-test.use({ storageState: AUTH_FILE });
+test.beforeAll(async ({ browser }) => {
+  test.setTimeout(60_000);
+  await reLogin(browser);
+});
+test.beforeEach(async ({ page, context }) => {
+  await context.clearCookies();
+  const state = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'));
+  await context.addCookies(state.cookies);
+  await page.goto('/pl/new');
+  await page.waitForLoadState('domcontentloaded');
+});
 
 /**
  * i18n tests verify key pages render correctly in both locales.

@@ -1,15 +1,28 @@
 import { test, expect } from '@playwright/test';
 
+import fs from 'fs';
 import { AUTH_FILE, TEST_USER_NAME, TEST_USER_EMAIL } from './constants';
-import { ROUTES } from './helpers';
+import { ROUTES, reLogin } from './helpers';
 
-test.use({ storageState: AUTH_FILE });
+// Re-login to get fresh session, then load cookies into each test's context
+test.beforeAll(async ({ browser }) => {
+  test.setTimeout(60_000);
+  await reLogin(browser);
+});
+test.beforeEach(async ({ page, context }) => {
+  await context.clearCookies();
+  const state = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'));
+  await context.addCookies(state.cookies);
+  // Navigate to a page to apply the new cookies before the test body runs
+  await page.goto('/pl/new');
+  await page.waitForLoadState('domcontentloaded');
+});
 
 test.describe('Admin Functions P3', () => {
   test.describe('Users management', () => {
     test('users page lists all users', async ({ page }) => {
       await page.goto(ROUTES.settingsUsers);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Page heading should be visible
       await expect(page.getByText(/użytkownicy/i).first()).toBeVisible({
@@ -24,7 +37,7 @@ test.describe('Admin Functions P3', () => {
 
     test('users page has search functionality', async ({ page }) => {
       await page.goto(ROUTES.settingsUsers);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       const searchInput = page.getByPlaceholder(/szukaj użytkowników/i);
       await expect(searchInput).toBeVisible({ timeout: 10_000 });
@@ -48,7 +61,7 @@ test.describe('Admin Functions P3', () => {
 
     test('user row shows role badge', async ({ page }) => {
       await page.goto(ROUTES.settingsUsers);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // The test user has admin role
       await expect(page.getByText(/admin/i).first()).toBeVisible({
@@ -58,7 +71,7 @@ test.describe('Admin Functions P3', () => {
 
     test('user actions dropdown opens', async ({ page }) => {
       await page.goto(ROUTES.settingsUsers);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Find ellipsis buttons in the main content area (user action menus)
       const ellipsisButtons = page
@@ -107,7 +120,7 @@ test.describe('Admin Functions P3', () => {
 
     test('AI usage page has period filter buttons', async ({ page }) => {
       await page.goto(ROUTES.settingsAiUsage);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Period filter buttons should be visible
       await expect(page.getByText(/today/i)).toBeVisible({ timeout: 10_000 });
@@ -134,7 +147,7 @@ test.describe('Admin Functions P3', () => {
 
     test('disk usage shows organization storage info', async ({ page }) => {
       await page.goto(ROUTES.settingsDiskUsage);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Should show some storage-related content
       await expect(

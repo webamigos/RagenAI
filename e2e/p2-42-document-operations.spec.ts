@@ -57,14 +57,11 @@ test.describe('Document Operations P2', () => {
     const submitButton = page.getByRole('button', { name: /^wyślij$/i });
     await submitButton.click();
 
-    // Verify the form was submitted — expect success toast, redirect, or error toast
-    // (S3/Temporal may not be available in test env, so accept error as valid outcome)
-    await expect(
-      page
-        .getByText(/dokument.*utworzony|sukces|success|błąd|error/i)
-        .first()
-        .or(page.locator('[data-sonner-toast]').first()),
-    ).toBeVisible({ timeout: 10_000 });
+    // Verify the form was submitted — expect a toast (success or error)
+    // S3/Temporal may not be available in test env, so accept error as valid outcome
+    await expect(page.locator('[data-sonner-toast]').first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('edit/preview tabs work in document creator', async ({ page }) => {
@@ -104,7 +101,7 @@ test.describe('Document Operations P2', () => {
     await expect(page).toHaveURL(/documents-list/);
 
     // Wait for the table/list to load
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Check if there are any files in the list
     const actionsButtons = page.locator('button[aria-label="Actions"]');

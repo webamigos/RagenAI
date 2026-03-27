@@ -75,7 +75,7 @@ test.describe('Knowledge Base P0', () => {
   test('delete a document from knowledge base', async ({ page }) => {
     await page.goto(ROUTES.knowledgeDocuments);
     await expect(page).toHaveURL(/documents-list/);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Check if there are any files with actions menu
     const actionsButton = page.locator('button[aria-label="Actions"]').first();

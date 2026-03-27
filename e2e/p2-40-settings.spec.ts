@@ -52,7 +52,7 @@ test.describe('Settings P2', () => {
     test('edit profile name', async ({ page }) => {
       await page.goto(ROUTES.settingsAccount);
       await expect(page).toHaveURL(/settings\/account/);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Find the name input
       const nameInput = page.locator('#name');
@@ -83,7 +83,7 @@ test.describe('Settings P2', () => {
       page,
     }) => {
       await page.goto(ROUTES.settingsAccount);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Save button should be disabled since nothing changed
       const saveButton = page.getByText(/zapisz zmiany/i);
@@ -93,7 +93,7 @@ test.describe('Settings P2', () => {
 
     test('email field is read-only', async ({ page }) => {
       await page.goto(ROUTES.settingsAccount);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       const emailInput = page.locator('#email');
       await expect(emailInput).toBeVisible({ timeout: 10_000 });
@@ -104,7 +104,7 @@ test.describe('Settings P2', () => {
   test.describe('Password', () => {
     test('password change form is visible', async ({ page }) => {
       await page.goto(ROUTES.settingsAccount);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       // Look for the security/password section
       const securityTab = page.getByText(/bezpieczeństwo/i);
@@ -122,7 +122,7 @@ test.describe('Settings P2', () => {
 
     test('password change validates matching passwords', async ({ page }) => {
       await page.goto(ROUTES.settingsAccount);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await page.waitForLoadState('domcontentloaded');
 
       const securityTab = page.getByText(/bezpieczeństwo/i);
       if (await securityTab.isVisible({ timeout: 3_000 }).catch(() => false)) {

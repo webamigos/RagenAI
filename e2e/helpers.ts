@@ -107,6 +107,51 @@ export async function login(page: Page) {
   await page.waitForURL('**/pl/new', { timeout: 15_000 });
 }
 
+/**
+ * Re-login and save fresh auth state.
+ * Call in beforeAll when session may have been invalidated by earlier tests
+ * (e.g., org switching rotates the session token).
+ */
+export async function reLogin(browser: import('@playwright/test').Browser) {
+  const { PrismaClient } = await import('../src/generated/prisma/client');
+  const { PrismaPg } = await import('@prisma/adapter-pg');
+  const { TEST_USER_ID, TEST_ORG_ID, AUTH_FILE } =
+    await import('./constants.js');
+
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  // Navigate to sign-in — if already logged in, it redirects to /new
+  await page.goto(ROUTES.signIn);
+  const isOnSignIn = await page
+    .locator('input[type="email"]')
+    .isVisible({ timeout: 3_000 })
+    .catch(() => false);
+
+  if (isOnSignIn) {
+    await login(page);
+  } else {
+    // Already logged in — just ensure we're on a valid page
+    await page.waitForURL('**/pl/**', { timeout: 10_000 });
+  }
+
+  // Ensure activeOrganizationId is set
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  const prisma = new PrismaClient({ adapter });
+  try {
+    await prisma.session.updateMany({
+      where: { userId: TEST_USER_ID },
+      data: { activeOrganizationId: TEST_ORG_ID },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+
+  // Save fresh cookies
+  await context.storageState({ path: AUTH_FILE });
+  await context.close();
+}
+
 export interface BuildMockSSEOptions {
   userMessageId?: string;
   assistantMessageId?: string;

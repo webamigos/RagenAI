@@ -8,7 +8,7 @@ test.use({ storageState: AUTH_FILE });
 test.describe('Subscription P2', () => {
   test('subscription page shows current plan details', async ({ page }) => {
     await page.goto(ROUTES.settingsSubscription);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // Should show a heading with plan name or subscription info
     await expect(
@@ -20,7 +20,7 @@ test.describe('Subscription P2', () => {
 
   test('subscription page displays plan name and status', async ({ page }) => {
     await page.goto(ROUTES.settingsSubscription);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     // The seeded user has a "Trial" subscription — check heading
     await expect(page.getByRole('heading', { name: /trial/i })).toBeVisible({
@@ -33,7 +33,7 @@ test.describe('Subscription P2', () => {
 
   test('show available plans link is visible', async ({ page }) => {
     await page.goto(ROUTES.settingsSubscription);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const showPlansLink = page.getByText(/pokaż dostępne plany/i);
     if (await showPlansLink.isVisible({ timeout: 5_000 }).catch(() => false)) {
@@ -45,7 +45,7 @@ test.describe('Subscription P2', () => {
 
   test('cancel subscription shows confirmation dialog', async ({ page }) => {
     await page.goto(ROUTES.settingsSubscription);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     const cancelButton = page.getByText(/anuluj subskrypcję/i);
     if (

@@ -12,11 +12,45 @@ npm run lint             # ESLint
 npm run test             # Vitest (unit tests, watch mode)
 npx vitest run           # Vitest (single run, no watch)
 npx vitest run path/to/file  # Run a single test file
-npm run test:e2e         # Playwright E2E tests
+npm run test:e2e         # Playwright E2E tests (requires separate DB, see below)
 npm run test:e2e:ui      # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types (run after schema changes)
 npm run db:seed          # Seed database (uses .env.local)
 ```
+
+### Running E2E Tests Locally
+
+E2E tests use a **separate database** to avoid corrupting your dev data.
+
+**One-time setup:**
+
+```bash
+# 1. Create the e2e database
+createdb ragen_e2e
+
+# 2. Run migrations on it
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e" npx prisma migrate deploy
+
+# 3. Create .env.e2e.local (overrides only what you need, .env.local provides the rest)
+cat > .env.e2e.local << 'EOF'
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e"
+DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e"
+EOF
+```
+
+**Running tests:**
+
+```bash
+# Build the app first (required — e2e runs against the production build)
+npm run build
+
+# Run e2e tests (picks up .env.e2e.local automatically via playwright.config.ts)
+npm run test:e2e
+```
+
+After schema changes, re-run step 2 to apply new migrations to the e2e database. The `.env.e2e.local` file is gitignored.
+
+**Mock LLM server:** If LiteLLM is not running on port 4000, the e2e global setup automatically starts a mock LLM server (`e2e/mock-llm-server.ts`) that returns canned responses. This allows chat thread tests to work without a real LLM. If you have LiteLLM running via `docker compose up`, the mock is skipped.
 
 ## Local Development
 
@@ -386,7 +420,7 @@ E2E tests live in `e2e/` and run against a seeded local database with a pre-auth
 
 **Naming:** Files use `{priority}-{##}-{name}.spec.ts` format with priority prefixes:
 - `smoke-0[1-6]-*` — Unauthenticated smoke tests (no-auth Playwright project)
-- `smoke-{07+}-*` — Authenticated smoke tests (page load checks)
+- `smoke-{07+}-*` — Authenticated smoke tests (smoke-auth project, runs before p0-p3)
 - `p0-*` — P0 Critical tests (core flows: auth, chat, KB, projects)
 - `p1-*` — P1 High-priority tests (thread mgmt, org members, public access, connectors)
 - `p2-*` — P2 Medium-priority tests (settings, subscription, documents, teams)

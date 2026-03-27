@@ -19,10 +19,10 @@ async function createTeamViaUI(
   );
   await submitButton.click();
 
-  // Wait for Headless UI dialog portal overlay to be fully removed
-  await expect(
-    page.locator('#headlessui-portal-root >> .fixed.inset-0'),
-  ).not.toBeVisible({ timeout: 10_000 });
+  // Wait for Headless UI dialog to close (animation + portal removal)
+  await page
+    .locator('#team-name')
+    .waitFor({ state: 'detached', timeout: 10_000 });
   // Wait for the team to appear in the list
   await expect(page.getByText(teamName, { exact: true })).toBeVisible({
     timeout: 10_000,
@@ -32,7 +32,7 @@ async function createTeamViaUI(
 test.describe('Teams P2', () => {
   test('teams page loads', async ({ page }) => {
     await page.goto(ROUTES.settingsTeams);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible({
       timeout: 10_000,
@@ -41,7 +41,7 @@ test.describe('Teams P2', () => {
 
   test('create team dialog opens and validates', async ({ page }) => {
     await page.goto(ROUTES.settingsTeams);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     await page.getByRole('button', { name: /utwórz zespół/i }).click();
 
@@ -61,7 +61,7 @@ test.describe('Teams P2', () => {
     const teamName = `E2E Team ${Date.now()}`;
 
     await page.goto(ROUTES.settingsTeams);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     await createTeamViaUI(page, teamName);
 
@@ -78,7 +78,7 @@ test.describe('Teams P2', () => {
     const teamName = `E2E Del ${Date.now()}`;
 
     await page.goto(ROUTES.settingsTeams);
-    await page.waitForLoadState('networkidle', { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
 
     await createTeamViaUI(page, teamName);
 
