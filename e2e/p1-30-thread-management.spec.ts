@@ -8,7 +8,7 @@ test.use({ storageState: AUTH_FILE });
 test.describe('Thread Management P1', () => {
   test('star / unstar a thread via sidebar', async ({ page }) => {
     // Mock SSE and create a thread
-    await page.route('**/api/threads/*/?(\\?*)?', async (route) => {
+    await page.route('**/api/threads/*', async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
           status: 200,
