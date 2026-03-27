@@ -29,15 +29,18 @@ test.describe('Organization & Members P1', () => {
       .first()
       .click();
 
-    // The current test user should be listed
-    await expect(page.getByText(TEST_USER_NAME)).toBeVisible({
-      timeout: 10_000,
-    });
+    // The current test user should be listed — use main content area to avoid sidebar matches
+    await expect(
+      page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
+    ).toBeVisible({ timeout: 10_000 });
 
     // Should show owner role badge
-    await expect(page.getByText(/owner|właściciel/i)).toBeVisible({
-      timeout: 5_000,
-    });
+    await expect(
+      page
+        .getByRole('main')
+        .getByText(/owner|właściciel/i)
+        .first(),
+    ).toBeVisible({ timeout: 5_000 });
   });
 
   test('invite member dialog opens and validates email', async ({ page }) => {

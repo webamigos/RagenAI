@@ -99,9 +99,9 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await page.getByText(/załaduj wiedzę/i).click();
 
       // Should show a validation error
-      await expect(
-        page.getByText(/url|adres|nieprawidłowy|invalid/i),
-      ).toBeVisible({ timeout: 5_000 });
+      await expect(page.locator('#input-error')).toBeVisible({
+        timeout: 5_000,
+      });
     });
 
     test('project creation rejects duplicate project name', async ({
@@ -111,13 +111,14 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await expect(page).toHaveURL(/projects/, { timeout: 10_000 });
 
       // Create project with the same name as the seeded one
-      await page.getByText(/nowy asystent/i).click();
+      await page.getByRole('button', { name: /nowy asystent/i }).click();
 
-      const dialog = page.locator('[role="dialog"]');
-      await expect(dialog).toBeVisible({ timeout: 5_000 });
+      // Wait for dialog input to appear (Headless UI)
+      const titleInput = page.locator('input#title');
+      await expect(titleInput).toBeVisible({ timeout: 5_000 });
 
-      await dialog.locator('input#title').fill('E2E Test Project');
-      await dialog.getByText(/^stwórz$/i).click();
+      await titleInput.fill('E2E Test Project');
+      await page.getByRole('button', { name: /^stwórz$/i }).click();
 
       // Should show error about duplicate name
       await expect(
@@ -145,8 +146,10 @@ test.describe('Edge Cases & Error Handling P3', () => {
     test('accessing protected page without session redirects to sign-in', async ({
       browser,
     }) => {
-      // Create a new context without the stored auth
-      const context = await browser.newContext();
+      // Create a new context with empty storage (no cookies/session)
+      const context = await browser.newContext({
+        storageState: { cookies: [], origins: [] },
+      });
       const page = await context.newPage();
 
       await page.goto(ROUTES.newChat);

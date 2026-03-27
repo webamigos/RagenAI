@@ -16,9 +16,9 @@ test.describe('Admin Functions P3', () => {
         timeout: 10_000,
       });
 
-      // The test user should appear in the list
+      // The test user should appear in the main content area
       await expect(
-        page.getByText(TEST_USER_NAME).or(page.getByText(TEST_USER_EMAIL)),
+        page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
       ).toBeVisible({ timeout: 10_000 });
     });
 
@@ -32,9 +32,9 @@ test.describe('Admin Functions P3', () => {
       // Search for the test user
       await searchInput.fill(TEST_USER_NAME);
 
-      // Test user should still be visible
+      // Test user should still be visible in main content
       await expect(
-        page.getByText(TEST_USER_NAME).or(page.getByText(TEST_USER_EMAIL)),
+        page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
       ).toBeVisible({ timeout: 10_000 });
 
       // Search for non-existent user
@@ -60,33 +60,29 @@ test.describe('Admin Functions P3', () => {
       await page.goto(ROUTES.settingsUsers);
       await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-      // Click the actions menu (ellipsis) on a user row
-      const actionsButton = page
+      // Find ellipsis buttons in the main content area (user action menus)
+      const ellipsisButtons = page
+        .getByRole('main')
         .locator('button')
-        .filter({ has: page.locator('svg') })
-        .filter({ hasNotText: /./i })
-        .first();
+        .filter({ has: page.locator('svg.size-5, svg.h-5') });
 
-      // Try to find an explicit actions button
-      const ellipsisButton = page
-        .locator('button[aria-label]')
-        .or(actionsButton);
-
-      if (
-        await ellipsisButton
-          .first()
-          .isVisible({ timeout: 5_000 })
-          .catch(() => false)
-      ) {
-        await ellipsisButton.first().click();
-
-        // Should show action items
-        await expect(
-          page.getByText(/zmień nazwę|zablokuj|podszyj się/i).first(),
-        ).toBeVisible({ timeout: 5_000 });
-
-        await page.keyboard.press('Escape');
+      const count = await ellipsisButtons.count();
+      if (count === 0) {
+        test.skip(true, 'No user action buttons found');
+        return;
       }
+
+      await ellipsisButtons.first().click();
+
+      // Should show action items in a dropdown/menu
+      await expect(
+        page
+          .getByRole('menuitem', { name: /zmień nazwę|zablokuj|podszyj się/i })
+          .first()
+          .or(page.getByText(/zmień nazwę|zablokuj|podszyj się/i).first()),
+      ).toBeVisible({ timeout: 5_000 });
+
+      await page.keyboard.press('Escape');
     });
   });
 

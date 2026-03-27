@@ -10,10 +10,10 @@ test.describe('Subscription P2', () => {
     await page.goto(ROUTES.settingsSubscription);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Should show subscription details or "no subscription" message
+    // Should show a heading with plan name or subscription info
     await expect(
       page
-        .getByText(/szczegóły subskrypcji/i)
+        .getByRole('heading', { name: /trial|subscription|subskrypcj/i })
         .or(page.getByText(/brak subskrypcji/i)),
     ).toBeVisible({ timeout: 10_000 });
   });
@@ -22,17 +22,13 @@ test.describe('Subscription P2', () => {
     await page.goto(ROUTES.settingsSubscription);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // The seeded user has a "Trial" subscription
-    await expect(
-      page.getByText(/trial/i).or(page.getByText(/brak subskrypcji/i)),
-    ).toBeVisible({ timeout: 10_000 });
+    // The seeded user has a "Trial" subscription — check heading
+    await expect(page.getByRole('heading', { name: /trial/i })).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Should show status
-    await expect(
-      page
-        .getByText(/trialing|active|aktywna|próbna/i)
-        .or(page.getByText(/brak subskrypcji/i)),
-    ).toBeVisible({ timeout: 10_000 });
+    // Should show status badge
+    await expect(page.getByText('trialing')).toBeVisible({ timeout: 10_000 });
   });
 
   test('show available plans link is visible', async ({ page }) => {

@@ -15,19 +15,17 @@ test.describe('Projects P0', () => {
     await expect(page).toHaveURL(/projects/, { timeout: 10_000 });
 
     // Click "Nowy asystent" (create project) button
-    await page.getByText(/nowy asystent/i).click();
+    await page.getByRole('button', { name: /nowy asystent/i }).click();
 
-    // Dialog should appear with the title input
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    // Wait for the dialog panel to appear (Headless UI renders DialogPanel inside Dialog)
+    const titleInput = page.locator('input#title');
+    await expect(titleInput).toBeVisible({ timeout: 5_000 });
 
     // Fill in project name
-    const titleInput = dialog.locator('input#title');
-    await expect(titleInput).toBeVisible();
     await titleInput.fill('E2E New Project');
 
     // Click "Stwórz" (create) submit button
-    await dialog.getByText(/^stwórz$/i).click();
+    await page.getByRole('button', { name: /^stwórz$/i }).click();
 
     // Should show success toast
     await expect(
@@ -54,26 +52,24 @@ test.describe('Projects P0', () => {
     });
 
     // Click the instructions section to open the dialog
-    // Look for "Dodaj instrukcje" or the instructions card
     const instructionsButton = page
       .getByText(/dodaj instrukcje|instrukcje/i)
       .first();
     await instructionsButton.click();
 
-    // Instructions dialog should open
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
-    await expect(dialog.getByText(/instrukcje asystenta/i)).toBeVisible();
+    // Instructions dialog should open — wait for textarea inside it
+    const textarea = page.locator('[role="dialog"] textarea');
+    await expect(textarea).toBeVisible({ timeout: 5_000 });
 
-    // Fill in the instructions textarea
-    const textarea = dialog.locator('textarea');
-    await expect(textarea).toBeVisible();
     await textarea.fill(
       'You are a helpful test assistant. Always respond in Polish.',
     );
 
     // Click save
-    await dialog.getByText(/^zapisz$/i).click();
+    await page
+      .locator('[role="dialog"]')
+      .getByRole('button', { name: /^zapisz$/i })
+      .click();
 
     // Should show success toast
     await expect(page.getByText(/instrukcja została zapisana/i)).toBeVisible({
@@ -86,18 +82,19 @@ test.describe('Projects P0', () => {
     await expect(page).toHaveURL(/projects/, { timeout: 10_000 });
 
     // Click create
-    await page.getByText(/nowy asystent/i).click();
+    await page.getByRole('button', { name: /nowy asystent/i }).click();
 
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    // Wait for the input to appear
+    const titleInput = page.locator('input#title');
+    await expect(titleInput).toBeVisible({ timeout: 5_000 });
 
     // Try to submit without filling in the title
-    await dialog.getByText(/^stwórz$/i).click();
+    await page.getByRole('button', { name: /^stwórz$/i }).click();
 
     // Should show validation error (title is required)
-    await expect(dialog.getByText(/wymagane|required|tytuł/i)).toBeVisible({
-      timeout: 5_000,
-    });
+    await expect(
+      page.locator('#input-error, [class*="text-red"]').first(),
+    ).toBeVisible({ timeout: 5_000 });
   });
 
   test('project appears in projects list after creation', async ({ page }) => {

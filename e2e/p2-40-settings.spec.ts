@@ -27,8 +27,8 @@ test.describe('Settings P2', () => {
       await page.goto(ROUTES.settingsGeneral);
       await expect(page).toHaveURL(/settings\/general/);
 
-      // Click light theme button
-      await page.getByText(/jasny/i).click();
+      // Click light theme button (exact match to avoid "Energiczny i jasny" voice option)
+      await page.getByRole('button', { name: 'Jasny', exact: true }).click();
 
       // The <html> element should NOT have class "dark"
       await expect(page.locator('html')).not.toHaveClass(/dark/, {

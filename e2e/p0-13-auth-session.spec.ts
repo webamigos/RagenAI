@@ -47,9 +47,9 @@ test.describe('Auth P0 — sign-up form validation', () => {
     const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
-    // Should show validation errors (email and password required)
+    // Should show validation error for email
     await expect(
-      page.getByText(/nieprawidłowy adres email|email/i),
+      page.locator('#input-error', { hasText: /nieprawidłowy adres email/i }),
     ).toBeVisible({ timeout: 5_000 });
   });
 

@@ -19,9 +19,9 @@ test.describe('i18n P3', () => {
 
     test('projects page renders in Polish', async ({ page }) => {
       await page.goto('/pl/projects');
-      await expect(page.getByText(/asystenci|nowy asystent/i)).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(
+        page.getByRole('heading', { name: /asystenci/i }),
+      ).toBeVisible({ timeout: 10_000 });
     });
 
     test('settings page renders in Polish', async ({ page }) => {
@@ -47,16 +47,17 @@ test.describe('i18n P3', () => {
 
     test('projects page renders in English', async ({ page }) => {
       await page.goto('/en/projects');
-      await expect(page.getByText(/assistants|new assistant/i)).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(
+        page.getByRole('heading', { name: /assistants/i }),
+      ).toBeVisible({ timeout: 10_000 });
     });
 
     test('settings page renders in English', async ({ page }) => {
       await page.goto('/en/settings/general');
-      await expect(page.getByText(/choose how the app looks/i)).toBeVisible({
-        timeout: 10_000,
-      });
+      // Wait for page content to load and verify English text
+      await expect(
+        page.getByText(/choose how the application looks/i),
+      ).toBeVisible({ timeout: 10_000 });
     });
 
     test('knowledge upload page renders in English', async ({ page }) => {
@@ -67,8 +68,10 @@ test.describe('i18n P3', () => {
     });
 
     test('sign-in page renders in English', async ({ browser }) => {
-      // Use fresh context without auth to test sign-in page
-      const context = await browser.newContext();
+      // Use fresh context with empty storage to avoid auto-redirect
+      const context = await browser.newContext({
+        storageState: { cookies: [], origins: [] },
+      });
       const page = await context.newPage();
 
       await page.goto('/en/sign-in');
@@ -83,29 +86,29 @@ test.describe('i18n P3', () => {
 
   test.describe('Locale switching', () => {
     test('navigating from /pl/ to /en/ changes UI text', async ({ page }) => {
-      // Start on Polish page
-      await page.goto('/pl/settings/general');
+      // Start on Polish projects page
+      await page.goto('/pl/projects');
       await expect(
-        page.getByText(/wybierz jak aplikacja wygląda/i),
+        page.getByRole('heading', { name: /asystenci/i }),
       ).toBeVisible({ timeout: 10_000 });
 
-      // Navigate to English version of same page
-      await page.goto('/en/settings/general');
-      await expect(page.getByText(/choose how the app looks/i)).toBeVisible({
-        timeout: 10_000,
-      });
+      // Navigate to English version
+      await page.goto('/en/projects');
+      await expect(
+        page.getByRole('heading', { name: /assistants/i }),
+      ).toBeVisible({ timeout: 10_000 });
     });
 
     test('navigating from /en/ to /pl/ changes UI text', async ({ page }) => {
       await page.goto('/en/projects');
-      await expect(page.getByText(/assistants|new assistant/i)).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(
+        page.getByRole('heading', { name: /assistants/i }),
+      ).toBeVisible({ timeout: 10_000 });
 
       await page.goto('/pl/projects');
-      await expect(page.getByText(/asystenci|nowy asystent/i)).toBeVisible({
-        timeout: 10_000,
-      });
+      await expect(
+        page.getByRole('heading', { name: /asystenci/i }),
+      ).toBeVisible({ timeout: 10_000 });
     });
   });
 });

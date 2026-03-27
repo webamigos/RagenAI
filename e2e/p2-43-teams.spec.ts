@@ -10,32 +10,27 @@ test.describe('Teams P2', () => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Should show teams page title or empty state
-    await expect(
-      page.getByText(/zespoły/i).or(page.getByText(/brak zespołów/i)),
-    ).toBeVisible({ timeout: 10_000 });
+    // Should show teams page heading
+    await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('create team dialog opens and validates', async ({ page }) => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Click create team button
-    const createButton = page.getByText(/utwórz zespół/i);
-    await expect(createButton).toBeVisible({ timeout: 10_000 });
-    await createButton.click();
+    // Click create team button (use role to avoid matching empty state text)
+    await page.getByRole('button', { name: /utwórz zespół/i }).click();
 
-    // Dialog should open
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
-    await expect(dialog.getByText(/utwórz zespół/i)).toBeVisible();
-
-    // Team name input should be present
-    const nameInput = dialog.locator('#team-name');
-    await expect(nameInput).toBeVisible();
+    // Wait for dialog input to appear (Headless UI)
+    const nameInput = page.locator('#team-name');
+    await expect(nameInput).toBeVisible({ timeout: 5_000 });
 
     // Try to submit without a name — button should be disabled
-    const submitButton = dialog.locator('button[type="submit"]');
+    const submitButton = page.locator(
+      '[role="dialog"] button[type="submit"], [data-headlessui-state="open"] button[type="submit"]',
+    );
     await expect(submitButton).toBeDisabled();
 
     // Fill in team name
@@ -49,19 +44,21 @@ test.describe('Teams P2', () => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    await page.getByText(/utwórz zespół/i).click();
+    await page.getByRole('button', { name: /utwórz zespół/i }).click();
 
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    // Wait for dialog input
+    const nameInput = page.locator('#team-name');
+    await expect(nameInput).toBeVisible({ timeout: 5_000 });
 
-    // Fill in team name
-    await dialog.locator('#team-name').fill('E2E Auto Team');
+    await nameInput.fill('E2E Auto Team');
 
     // Submit
-    await dialog.locator('button[type="submit"]').click();
+    const submitButton = page.locator(
+      '[role="dialog"] button[type="submit"], [data-headlessui-state="open"] button[type="submit"]',
+    );
+    await submitButton.click();
 
-    // Dialog should close and team should appear in the list
-    await expect(dialog).not.toBeVisible({ timeout: 10_000 });
+    // Team should appear in the list
     await expect(page.getByText('E2E Auto Team')).toBeVisible({
       timeout: 10_000,
     });
@@ -71,7 +68,6 @@ test.describe('Teams P2', () => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Look for a team in the list
     const teamItem = page.getByText('E2E Auto Team');
     if (!(await teamItem.isVisible({ timeout: 5_000 }).catch(() => false))) {
       test.skip(true, 'No team available to select');
@@ -92,7 +88,6 @@ test.describe('Teams P2', () => {
     await page.goto(ROUTES.settingsTeams);
     await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
-    // Select the team
     const teamItem = page.getByText('E2E Auto Team');
     if (!(await teamItem.isVisible({ timeout: 5_000 }).catch(() => false))) {
       test.skip(true, 'No team available to delete');
@@ -102,7 +97,7 @@ test.describe('Teams P2', () => {
     await teamItem.click();
 
     // Click delete team button
-    const deleteButton = page.getByText(/usuń zespół/i);
+    const deleteButton = page.getByRole('button', { name: /usuń zespół/i });
     await expect(deleteButton).toBeVisible({ timeout: 10_000 });
     await deleteButton.click();
 
@@ -110,7 +105,8 @@ test.describe('Teams P2', () => {
     const alertDialog = page.locator('[role="alertdialog"]');
     await expect(alertDialog).toBeVisible({ timeout: 5_000 });
     await alertDialog
-      .getByText(/usuń zespół/i)
+      .locator('button')
+      .filter({ hasText: /usuń/i })
       .last()
       .click();
 

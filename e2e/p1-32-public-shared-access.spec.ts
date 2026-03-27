@@ -133,14 +133,13 @@ test.describe('Public / Shared Access P1', () => {
       timeout: 15_000,
     });
 
-    // Go to chats list and right-click the thread
-    await page.goto(ROUTES.chats);
-    const threadItem = page.getByText(/thread to share/i);
-    await expect(threadItem).toBeVisible({ timeout: 10_000 });
-    await threadItem.click({ button: 'right' });
+    // Find thread in sidebar and right-click
+    const threadLink = page.locator('a[href*="/chats/"]').first();
+    await expect(threadLink).toBeVisible({ timeout: 10_000 });
+    await threadLink.click({ button: 'right' });
 
     // Click share option
-    const shareOption = page.getByText(/^udostępnij$/i);
+    const shareOption = page.getByRole('menuitem', { name: /udostępnij/i });
     if (await shareOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await shareOption.click();
 
