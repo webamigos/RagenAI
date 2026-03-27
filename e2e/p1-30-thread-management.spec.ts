@@ -21,6 +21,7 @@ test.describe('Thread Management P1', () => {
     });
 
     await page.goto(ROUTES.newChat);
+    await page.waitForLoadState('networkidle', { timeout: 15_000 });
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
     await page.locator('textarea').fill('Star test message');
     await page.locator('textarea').press('Enter');

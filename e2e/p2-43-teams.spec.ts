@@ -19,8 +19,10 @@ async function createTeamViaUI(
   );
   await submitButton.click();
 
-  // Wait for the dialog to fully close before interacting with the list
-  await expect(nameInput).not.toBeVisible({ timeout: 10_000 });
+  // Wait for Headless UI dialog portal overlay to be fully removed
+  await expect(
+    page.locator('#headlessui-portal-root >> .fixed.inset-0'),
+  ).not.toBeVisible({ timeout: 10_000 });
   // Wait for the team to appear in the list
   await expect(page.getByText(teamName, { exact: true })).toBeVisible({
     timeout: 10_000,

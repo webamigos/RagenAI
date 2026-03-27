@@ -111,8 +111,7 @@ test.describe('Public / Shared Access P1', () => {
   });
 
   test('share thread dialog opens from thread dropdown', async ({ page }) => {
-    // Create a thread first — clean up stale handlers
-    await page.unroute('**/api/threads/*');
+    // Create a thread first
     await page.route('**/api/threads/*', async (route) => {
       if (route.request().method() === 'POST') {
         await route.fulfill({
@@ -126,6 +125,7 @@ test.describe('Public / Shared Access P1', () => {
     });
 
     await page.goto(ROUTES.newChat);
+    await page.waitForLoadState('networkidle', { timeout: 15_000 });
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
     await page.locator('textarea').fill('Thread to share');
     await page.locator('textarea').press('Enter');

@@ -14,9 +14,7 @@ async function createThreadWithMock(
   message: string,
   responseContent: string,
 ) {
-  // Clean up any previous route handler to avoid stacking
-  await page.unroute('**/api/threads/*');
-
+  // Intercept POST to the chat streaming endpoint
   await page.route('**/api/threads/*', async (route) => {
     if (route.request().method() === 'POST') {
       await route.fulfill({
@@ -30,6 +28,8 @@ async function createThreadWithMock(
   });
 
   await page.goto(ROUTES.newChat);
+  // Wait for full page load to ensure route handlers are active
+  await page.waitForLoadState('networkidle', { timeout: 15_000 });
   await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
   await page.locator('textarea').fill(message);
   await page.locator('textarea').press('Enter');
