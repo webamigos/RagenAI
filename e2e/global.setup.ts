@@ -30,9 +30,6 @@ export default async function globalSetup() {
     `[global-setup] Starting mock LLM server on port ${MOCK_LLM_PORT}...`,
   );
 
-  // Set LITELLM_PROXY_URL so the Next.js app routes LLM calls to the mock
-  process.env.LITELLM_PROXY_URL = `http://localhost:${MOCK_LLM_PORT}`;
-
   const proc = spawn(
     'npx',
     ['tsx', path.join(__dirname, 'mock-llm-server.ts')],

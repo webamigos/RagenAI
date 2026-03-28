@@ -14,6 +14,11 @@ dotenv.config({
   quiet: true,
 } as dotenv.DotenvConfigOptions);
 
+// Always point LLM calls to the mock server (port 4100).
+// The mock is started by global.setup.ts before tests run.
+// This must be set here (not in global.setup) so the webServer process inherits it.
+process.env.LITELLM_PROXY_URL = 'http://localhost:4100';
+
 // Use process.env.PORT by default and fallback to port 3000
 const PORT = process.env.PORT ?? 3000;
 
