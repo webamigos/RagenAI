@@ -5,6 +5,11 @@ on:
     branches: [main, dev]
   pull_request:
     branches: [main, dev]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.vscode/**'
+      - '.husky/**'
 
 permissions:
   contents: read
@@ -42,8 +47,10 @@ env:
   FIRECRAWL_API_KEY: 'dummy'
   FEATURE_FLAG_SHOW_MODEL_API_KEY: 1
   FEATURE_FLAG_MODEL_SELECT: 1
-  DEFAULT_MODEL_PROVIDER: 'google'
-  DEFAULT_MODEL: 'gemini-3-flash-preview'
+  DEFAULT_MODEL_PROVIDER: 'litellm'
+  DEFAULT_MODEL: 'mock-model'
+  LITELLM_PROXY_URL: 'http://localhost:4100'
+  LITELLM_MASTER_KEY: 'sk-mock-e2e'
   GOOGLE_API_KEY: 'dummy'
   OPENAI_API_KEY: 'dummy'
   PUSHER_APP_ID: 'dummy'
@@ -109,7 +116,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+
       - name: Install dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Generate Prisma client
