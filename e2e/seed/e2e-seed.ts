@@ -17,6 +17,10 @@ import {
   TEST_ACCOUNT_ID,
   TEST_PROJECT_TITLE,
   TEST_PROJECT_PUBLIC_ID,
+  TEST_THREAD_PUBLIC_ID,
+  TEST_THREAD_TITLE,
+  TEST_MESSAGE_USER_ID,
+  TEST_MESSAGE_ASSISTANT_ID,
   TEST_ORG2_ID,
   TEST_ORG2_SLUG,
   TEST_ORG2_NAME,
@@ -35,8 +39,19 @@ async function cleanup() {
   console.log('Cleaning up existing E2E test data...');
 
   // Delete in order respecting foreign key constraints
+  // Clean up data created by test runs (threads, messages, audit logs, etc.)
+  const orgIds = [TEST_ORG_ID, TEST_ORG2_ID];
+  await prisma.message.deleteMany({
+    where: { thread: { organizationId: { in: orgIds } } },
+  });
+  await prisma.thread.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.auditLog.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
   await prisma.project.deleteMany({
-    where: { publicId: TEST_PROJECT_PUBLIC_ID },
+    where: { organizationId: { in: orgIds } },
   });
   await prisma.subscription.deleteMany({
     where: { referenceId: TEST_ORG_ID },
@@ -164,7 +179,38 @@ async function seed() {
   });
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
 
-  // 9. Create second organization for org-switcher tests
+  // 9. Create a thread with messages (so thread management tests don't need LLM)
+  const project = await prisma.project.findFirst({
+    where: { publicId: TEST_PROJECT_PUBLIC_ID },
+  });
+  await prisma.thread.create({
+    data: {
+      publicId: TEST_THREAD_PUBLIC_ID,
+      title: TEST_THREAD_TITLE,
+      organizationId: TEST_ORG_ID,
+      userId: TEST_USER_ID,
+      projectId: project?.id,
+    },
+  });
+  await prisma.message.create({
+    data: {
+      publicId: TEST_MESSAGE_USER_ID,
+      content: 'Hello, this is a seeded test message.',
+      role: 'USER',
+      thread: { connect: { publicId: TEST_THREAD_PUBLIC_ID } },
+    },
+  });
+  await prisma.message.create({
+    data: {
+      publicId: TEST_MESSAGE_ASSISTANT_ID,
+      content: 'This is the assistant response to the seeded message.',
+      role: 'ASSISTANT',
+      thread: { connect: { publicId: TEST_THREAD_PUBLIC_ID } },
+    },
+  });
+  console.log(`Created thread: ${TEST_THREAD_TITLE} with 2 messages`);
+
+  // 10. Create second organization for org-switcher tests
   await prisma.organization.create({
     data: {
       id: TEST_ORG2_ID,

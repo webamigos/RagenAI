@@ -12,11 +12,45 @@ npm run lint             # ESLint
 npm run test             # Vitest (unit tests, watch mode)
 npx vitest run           # Vitest (single run, no watch)
 npx vitest run path/to/file  # Run a single test file
-npm run test:e2e         # Playwright E2E tests
+npm run test:e2e         # Playwright E2E tests (requires separate DB, see below)
 npm run test:e2e:ui      # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types (run after schema changes)
 npm run db:seed          # Seed database (uses .env.local)
 ```
+
+### Running E2E Tests Locally
+
+E2E tests use a **separate database** to avoid corrupting your dev data.
+
+**One-time setup:**
+
+```bash
+# 1. Create the e2e database
+createdb ragen_e2e
+
+# 2. Run migrations on it
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e" npx prisma migrate deploy
+
+# 3. Create .env.e2e.local (overrides only what you need, .env.local provides the rest)
+cat > .env.e2e.local << 'EOF'
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e"
+DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e"
+EOF
+```
+
+**Running tests:**
+
+```bash
+# Build the app first (required — e2e runs against the production build)
+npm run build
+
+# Run e2e tests (picks up .env.e2e.local automatically via playwright.config.ts)
+npm run test:e2e
+```
+
+After schema changes, re-run step 2 to apply new migrations to the e2e database. The `.env.e2e.local` file is gitignored.
+
+**Mock LLM server:** If LiteLLM is not running on port 4000, the e2e global setup automatically starts a mock LLM server (`e2e/mock-llm-server.ts`) that returns canned responses. This allows chat thread tests to work without a real LLM. If you have LiteLLM running via `docker compose up`, the mock is skipped.
 
 ## Local Development
 
@@ -363,7 +397,7 @@ All new code must include tests. Use Vitest + React Testing Library (`jsdom` env
 | **Complex components** | Unit tests for logic + integration for UI | `src/app/components/Assistant/PromptForm/__tests__/PromptForm.test.tsx` |
 | **New screens / pages** | At minimum E2E smoke test (Playwright) | `npm run test:e2e` |
 
-**Conventions:**
+**Unit test conventions (Vitest):**
 - Wrap components with `<NextIntlClientProvider messages={...} locale="en">` for i18n
 - Mock server actions (`vi.mock`) — never call real APIs in tests
 - Mock external modules (Stripe, Prisma, logger) that would fail in jsdom
@@ -372,6 +406,58 @@ All new code must include tests. Use Vitest + React Testing Library (`jsdom` env
 - Use `@testing-library/user-event` for realistic user interactions
 - Use `waitFor` for async state changes
 - Follow existing patterns in `src/store/__tests__/`, `src/app/lib/utils/__tests__/`
+
+### E2E Tests (Playwright)
+
+E2E tests live in `e2e/` and run against a seeded local database with a pre-authenticated test user.
+
+**Structure:**
+- `e2e/constants.ts` — Test user/org IDs, credentials
+- `e2e/helpers.ts` — `ROUTES`, `LABELS`, `login()`, `buildMockSSE()` helpers
+- `e2e/seed/e2e-seed.ts` — Database seeding (runs in `global.setup.ts`)
+- `e2e/fixtures/` — Test files for upload tests
+- `e2e/auth.setup.ts` — Stores authenticated session to `.auth/user.json`
+
+**Naming:** Files use `{priority}-{##}-{name}.spec.ts` format with priority prefixes:
+- `smoke-0[1-6]-*` — Unauthenticated smoke tests (no-auth Playwright project)
+- `smoke-{07+}-*` — Authenticated smoke tests (smoke-auth project, runs before p0-p3)
+- `p0-*` — P0 Critical tests (core flows: auth, chat, KB, projects)
+- `p1-*` — P1 High-priority tests (thread mgmt, org members, public access, connectors)
+- `p2-*` — P2 Medium-priority tests (settings, subscription, documents, teams)
+
+**Conventions:**
+- All routes use `/pl` locale prefix (Polish UI text in assertions)
+- Import `ROUTES` and `LABELS` from `e2e/helpers.ts`
+- Mock external APIs (S3, Temporal, LLM) via `page.route()` — never depend on real backends
+- Use `buildMockSSE()` to mock streaming chat responses
+- Tests run sequentially with a single worker (shared DB state)
+- Use `getByTestId()` for interactive elements, regex patterns for Polish text
+- Timeouts: 10s for visibility checks, 15s for navigation/login
+
+**Key test files:**
+- `smoke-01..06` — Auth smoke tests (sign-in, sign-up, sign-out, validation, redirects)
+- `smoke-07` — Authenticated page smoke tests (all pages load)
+- `smoke-10..12` — Feature smoke tests (file upload, project upload, org switcher)
+- `p0-13` — Auth session persistence
+- `p0-20` — Chat & threads (create, send message, history, rename, delete)
+- `p0-21` — Knowledge base (multi-upload, delete, add from URL)
+- `p0-22` — Projects (create, instructions, navigation)
+- `p1-30` — Thread management (star, search)
+- `p1-31` — Organization members (invite, roles)
+- `p1-32` — Public/shared access (share dialog, public chat, thread sharing)
+- `p1-33` — Connectors (list, connect, OAuth, API key)
+- `p2-40` — Settings (theme, profile, password, language)
+- `p2-41` — Subscription (plan details, cancel dialog)
+- `p2-42` — Document operations (create, edit/preview, list actions)
+- `p2-43` — Teams (create, select, delete)
+- `p3-50` — Admin functions (users CRUD, AI usage, disk usage)
+- `p3-51` — Edge cases (upload validation, form errors, auth guards)
+- `p3-52` — i18n (PL/EN rendering, locale switching)
+- `p3-53` — API regression (healthcheck, auth enforcement, error responses)
+
+### Manual Regression Checklist
+
+A prioritized manual regression checklist is maintained at `docs/regression-checklist.md`. It covers P0 (critical), P1 (high), P2 (medium), and P3 (low/admin) scenarios across auth, chat, knowledge base, projects, connectors, settings, and API. Use it before releases to verify core functionality that isn't fully covered by automated tests.
 
 ## Post-Task Workflow
 

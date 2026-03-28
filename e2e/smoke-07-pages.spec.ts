@@ -135,31 +135,45 @@ test.describe('Authenticated pages smoke tests', () => {
     test('settings organization page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsOrganization);
       await expect(page).toHaveURL(/settings\/organization-profile/);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await expect(page.getByText(/ogólne/i).first()).toBeVisible({
+        timeout: 10_000,
+      });
     });
 
     test('settings prompt management page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsPromptManagement);
       await expect(page).toHaveURL(/settings\/prompt-management/);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await expect(
+        page.getByRole('main').locator('h1, h2, form').first(),
+      ).toBeVisible({
+        timeout: 10_000,
+      });
     });
 
     test('settings subscription page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsSubscription);
       await expect(page).toHaveURL(/settings\/subscription/);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await expect(
+        page.getByRole('main').locator('h1, h2').first(),
+      ).toBeVisible({
+        timeout: 10_000,
+      });
     });
 
     test('settings teams page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsTeams);
       await expect(page).toHaveURL(/settings\/teams/);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible(
+        { timeout: 10_000 },
+      );
     });
 
     test('settings users page loads (admin)', async ({ page }) => {
       await page.goto(ROUTES.settingsUsers);
       await expect(page).toHaveURL(/settings\/users/);
-      await page.waitForLoadState('networkidle', { timeout: 15_000 });
+      await expect(
+        page.getByRole('heading', { name: /użytkownicy/i }),
+      ).toBeVisible({ timeout: 10_000 });
     });
 
     test('settings AI usage page loads (admin)', async ({ page }) => {
