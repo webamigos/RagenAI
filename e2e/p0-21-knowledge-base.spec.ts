@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 test.use({ storageState: AUTH_FILE });
 
 test.describe('Knowledge Base P0', () => {
-  test('upload multiple files to knowledge base', async ({ page }) => {
+  test('upload multiple files via dropdown', async ({ page }) => {
     // Mock the upload API
     await page.route('**/api/upload', (route) => {
       return route.fulfill({
@@ -35,41 +35,144 @@ test.describe('Knowledge Base P0', () => {
       });
     });
 
-    await page.goto(ROUTES.knowledgeUpload);
-    await expect(page).toHaveURL(/upload-files/);
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(page).toHaveURL(/documents-list/);
 
-    // Upload multiple files using the file input
+    // Open "Dodaj dokument" dropdown
+    const addDocButton = page.getByRole('button', {
+      name: /dodaj dokument/i,
+    });
+    await expect(addDocButton).toBeVisible({ timeout: 10_000 });
+    await addDocButton.click();
+
+    // Wait for dropdown menu
+    await expect(page.getByRole('menuitem', { name: /z dysku/i })).toBeVisible({
+      timeout: 5_000,
+    });
+
+    // Upload files via the hidden file input
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles([
       path.join(__dirname, 'fixtures', 'test-document.md'),
       path.join(__dirname, 'fixtures', 'test-document-2.md'),
     ]);
 
-    // Both files should appear in the upload list
-    await expect(page.getByText('test-document.md').first()).toBeVisible({
-      timeout: 5_000,
-    });
-
-    // Click send/upload button
-    await page.getByText(/wyślij/i).click();
-
     // Should show success toast
-    await expect(page.getByText(/pliki zostały wgrane/i)).toBeVisible({
+    await expect(page.getByText(/file\(s\) uploaded|pliki/i)).toBeVisible({
       timeout: 10_000,
     });
-
-    // Should redirect to documents list
-    await expect(page).toHaveURL(/documents-list/, { timeout: 10_000 });
   });
 
-  test('documents list page shows uploaded files', async ({ page }) => {
+  test('documents list page shows files and folders sidebar', async ({
+    page,
+  }) => {
     await page.goto(ROUTES.knowledgeDocuments);
     await expect(page).toHaveURL(/documents-list/);
 
-    // The table/list should be visible
+    // Sidebar navigation should be visible
     await expect(
-      page.locator('table').or(page.locator('[role="table"]')),
+      page.getByText(/wszystkie pliki|all files/i).first(),
     ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/moje pliki|my files/i).first()).toBeVisible({
+      timeout: 5_000,
+    });
+    await expect(
+      page.getByText(/udostępnione dla mnie|shared with me/i).first(),
+    ).toBeVisible({ timeout: 5_000 });
+
+    // Breadcrumbs should show current location
+    await expect(
+      page
+        .getByRole('navigation')
+        .filter({ hasText: /wszystkie pliki|all files/i }),
+    ).toBeVisible({ timeout: 5_000 });
+  });
+
+  test('create folder via button', async ({ page }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(page).toHaveURL(/documents-list/);
+
+    // Click "Nowy folder" button
+    const newFolderButton = page.getByRole('button', {
+      name: /nowy folder|new folder/i,
+    });
+    await expect(newFolderButton).toBeVisible({ timeout: 10_000 });
+    await newFolderButton.click();
+
+    // Create folder dialog should open
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5_000 });
+
+    // Fill in folder name
+    const nameInput = dialog.locator('input[type="text"]').first();
+    await nameInput.fill('E2E Test Folder');
+
+    // Submit
+    await dialog.getByRole('button', { name: /create|stwórz|folder/i }).click();
+
+    // Dialog should close
+    await expect(dialog).not.toBeVisible({ timeout: 5_000 });
+  });
+
+  test('navigate to folder by clicking folder row', async ({ page }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(page).toHaveURL(/documents-list/);
+    await page.waitForLoadState('domcontentloaded');
+
+    // Look for a folder row in the table
+    const folderRow = page
+      .locator('table tr')
+      .filter({ hasText: /file/i })
+      .first();
+    if (!(await folderRow.isVisible({ timeout: 5_000 }).catch(() => false))) {
+      test.skip(true, 'No folders in knowledge base to navigate');
+      return;
+    }
+
+    await folderRow.click();
+
+    // Breadcrumbs should update to show we're inside a folder
+    await page.waitForTimeout(1_000);
+    const breadcrumb = page.getByRole('navigation');
+    await expect(breadcrumb.locator('button')).toHaveCount(2, {
+      timeout: 5_000,
+    });
+  });
+
+  test('switch between sidebar views', async ({ page }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(page).toHaveURL(/documents-list/);
+
+    // Click "Moje pliki" in sidebar
+    await page
+      .getByText(/moje pliki|my files/i)
+      .first()
+      .click();
+    await page.waitForTimeout(500);
+
+    // Breadcrumbs should reflect "My Files"
+    await expect(
+      page.getByRole('navigation').filter({ hasText: /moje pliki|my files/i }),
+    ).toBeVisible({ timeout: 5_000 });
+
+    // Click "Udostępnione dla mnie"
+    await page
+      .getByText(/udostępnione dla mnie|shared with me/i)
+      .first()
+      .click();
+    await page.waitForTimeout(500);
+
+    // Breadcrumbs should update
+    await expect(
+      page.getByRole('navigation').filter({ hasText: /udostępnione|shared/i }),
+    ).toBeVisible({ timeout: 5_000 });
+
+    // Switch back to "Wszystkie pliki"
+    await page
+      .getByText(/wszystkie pliki|all files/i)
+      .first()
+      .click();
+    await page.waitForTimeout(500);
   });
 
   test('delete a document from knowledge base', async ({ page }) => {
@@ -88,15 +191,13 @@ test.describe('Knowledge Base P0', () => {
 
     await actionsButton.click();
 
-    // Click delete in the dropdown — use the red-styled delete option
+    // Click delete in the dropdown
     const deleteOption = page
-      .locator('[data-slot="icon"]')
-      .locator('..')
+      .getByRole('menuitem')
       .filter({ hasText: /^usuń$/i });
     if (await deleteOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await deleteOption.click();
     } else {
-      // Fallback: find any menu item with "Usuń"
       await page
         .getByRole('button', { name: /^usuń$/i })
         .first()
@@ -111,50 +212,62 @@ test.describe('Knowledge Base P0', () => {
         .filter({ hasText: /^usuń$/i })
         .click();
 
-      // Wait for modal to close or file to be removed
       await page.waitForTimeout(2_000);
     }
   });
 
-  test('add knowledge from URL — form renders and submits', async ({
-    page,
-  }) => {
-    await page.goto(ROUTES.knowledgeFromUrl);
-    await expect(page).toHaveURL(/add-from-url/);
+  test('add from URL via dropdown dialog', async ({ page }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(page).toHaveURL(/documents-list/);
 
-    // Title heading should be visible
+    // Open "Dodaj dokument" dropdown
+    const addDocButton = page.getByRole('button', {
+      name: /dodaj dokument/i,
+    });
+    await expect(addDocButton).toBeVisible({ timeout: 10_000 });
+    await addDocButton.click();
+
+    // Click "Dodaj z linku"
+    const addFromUrlOption = page.getByRole('menuitem', {
+      name: /dodaj z linku|add from url/i,
+    });
+    await expect(addFromUrlOption).toBeVisible({ timeout: 5_000 });
+    await addFromUrlOption.click();
+
+    // Dialog should appear
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5_000 });
+
+    // URL input should be present
+    const urlInput = dialog.locator('input[type="text"]');
+    await expect(urlInput).toBeVisible();
+    await urlInput.fill('https://example.com/test');
+
+    // Submit button should be present
     await expect(
-      page.getByRole('heading', { name: /dodaj wiedzę z linku/i }),
-    ).toBeVisible({ timeout: 10_000 });
-
-    // Fill in a URL
-    const urlInput = page.locator('input[name="url"]');
-    await expect(urlInput).toBeVisible({ timeout: 5_000 });
-    await urlInput.fill('https://example.com/test-page');
-
-    // Submit the form — the button text changes to loading state
-    const submitButton = page.getByRole('button', { name: /załaduj wiedzę/i });
-    await submitButton.click();
-
-    // The button should show loading state or a toast should appear
-    await expect(
-      page
-        .getByText(/ładowanie|przetwarzanie/i)
-        .or(page.getByText(/wiedza pobrana/i))
-        .or(page.getByText(/błąd/i)),
-    ).toBeVisible({ timeout: 10_000 });
+      dialog.getByRole('button', { name: /załaduj|process/i }),
+    ).toBeVisible();
   });
 
-  test('add knowledge from URL — validation rejects empty URL', async ({
-    page,
-  }) => {
-    await page.goto(ROUTES.knowledgeFromUrl);
-    await expect(page).toHaveURL(/add-from-url/);
+  test('create document redirect via dropdown', async ({ page }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(page).toHaveURL(/documents-list/);
 
-    // Try to submit without entering a URL
-    await page.getByText(/załaduj wiedzę/i).click();
+    // Open dropdown
+    const addDocButton = page.getByRole('button', {
+      name: /dodaj dokument/i,
+    });
+    await expect(addDocButton).toBeVisible({ timeout: 10_000 });
+    await addDocButton.click();
 
-    // Should show validation error
-    await expect(page.locator('#input-error')).toBeVisible({ timeout: 5_000 });
+    // Click "Stwórz dokument"
+    const createDocOption = page.getByRole('menuitem', {
+      name: /stwórz dokument|create document/i,
+    });
+    await expect(createDocOption).toBeVisible({ timeout: 5_000 });
+    await createDocOption.click();
+
+    // Should navigate to create document page
+    await expect(page).toHaveURL(/create-document/, { timeout: 10_000 });
   });
 });

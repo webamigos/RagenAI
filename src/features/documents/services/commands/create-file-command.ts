@@ -10,6 +10,7 @@ export const createFileCommand = async (
   organizationId: string,
   fileType: FileType,
   projectId: number | null,
+  options?: { folderId?: number | null; ownerId?: string | null },
 ) => {
   const file = await db.userFile.create({
     data: {
@@ -18,6 +19,8 @@ export const createFileCommand = async (
       fileSize,
       fileType,
       projectId,
+      folderId: options?.folderId ?? null,
+      ownerId: options?.ownerId ?? null,
     },
   });
 

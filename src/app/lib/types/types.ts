@@ -23,6 +23,7 @@ export type VectorStoreDocumentMetadata = {
   status: 'active' | 'archived';
   embedding_model: string;
   total_chunks: number;
+  accessible_by?: string[];
 };
 
 export type VectorStoreMetadataFilter = Partial<VectorStoreDocumentMetadata>;

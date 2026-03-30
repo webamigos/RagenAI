@@ -588,7 +588,7 @@
       "title": "Ostatnie"
     },
     "shared": {
-      "title": "Udostępnione mi"
+      "title": "Udostępnione dla mnie"
     },
     "footer": {
       "my-profile": "Mój profil",
@@ -739,11 +739,33 @@
     "preview": "Podgląd",
     "no-files": "Brak plików",
     "download": "Pobierz",
+    "move": "Przenieś",
+    "share": "Udostępnij",
     "search-placeholder": "Wyszukaj pliki",
     "status-ready": "Gotowy",
     "status-processing": "Przetwarzanie",
     "status-failed": "Błąd",
     "status-uploading": "Wysyłanie"
+  },
+  "folders": {
+    "title": "Foldery",
+    "new": "Nowy folder",
+    "all-files": "Wszystkie pliki",
+    "my-files": "Moje pliki",
+    "shared-with-me": "Udostępnione dla mnie",
+    "delete": "Usuń",
+    "delete-confirm": "Usunąć ten folder? Pliki zostaną przeniesione poza folder.",
+    "folder-deleted": "Folder usunięty",
+    "folder-created": "Folder utworzony",
+    "failed-to-delete": "Nie udało się usunąć folderu",
+    "failed-to-create": "Nie udało się utworzyć folderu",
+    "upload": "Dodaj pliki",
+    "add-document": "Dodaj dokument",
+    "from-disk": "Z dysku",
+    "create-document": "Stwórz dokument",
+    "add-from-url": "Dodaj z linku",
+    "drag-drop": "Przeciągnij i upuść pliki tutaj",
+    "or-browse": "lub kliknij, aby wybrać"
   },
   "file-delete-modal": {
     "title": "Usuń plik",

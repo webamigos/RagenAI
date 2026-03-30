@@ -20,6 +20,8 @@ type InitializeRagChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
   orgId: string;
   userId?: string | null;
+  userTeamIds?: string[];
+  isOrgAdmin?: boolean;
   projectInstruction?: string | null;
   projectId?: number | null;
   projectPublicId?: string | null;
@@ -39,6 +41,8 @@ export const initializeRagChain = async ({
   settings,
   orgId,
   userId,
+  userTeamIds = [],
+  isOrgAdmin = false,
   projectInstruction,
   projectId,
   projectPublicId,
@@ -92,7 +96,13 @@ export const initializeRagChain = async ({
     }
 
     const filterOptions = isMeilisearch
-      ? await buildMeilisearchFilter(orgId, projectId ?? null)
+      ? await buildMeilisearchFilter(
+          orgId,
+          projectId ?? null,
+          userId ?? null,
+          userTeamIds,
+          isOrgAdmin,
+        )
       : undefined;
 
     return await basicRagChain({
@@ -123,20 +133,41 @@ export const initializeRagChain = async ({
 };
 
 /**
- * Build Meilisearch filter based on project context:
+ * Build Meilisearch filter based on project context and user access:
+ * - Always filters by organization_id
+ * - Non-admin users get accessible_by filter for document-level access control
  * - Thread with project: org_id AND (projectId = X OR fileId IN [imported_kb_source_ids])
  * - Thread without project (global KB): org_id AND projectId IS NULL
  */
-async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
+async function buildMeilisearchFilter(
+  orgId: string,
+  projectId: number | null,
+  userId: string | null,
+  userTeamIds: string[],
+  isOrgAdmin: boolean,
+) {
   const orgCondition = {
     key: 'metadata.organization_id',
     match: { value: orgId },
   };
 
+  // Build access control condition (org admins see everything)
+  const mustConditions = [orgCondition];
+  if (!isOrgAdmin && userId) {
+    const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
+    for (const teamId of userTeamIds) {
+      accessiblePrincipals.push(`team:${teamId}`);
+    }
+    mustConditions.push({
+      key: 'metadata.accessible_by',
+      match_any: { values: accessiblePrincipals },
+    } as unknown as typeof orgCondition);
+  }
+
   if (!projectId) {
     // Global KB: search files without a project
     return {
-      must: [orgCondition, { key: 'metadata.project_id', is_null: true }],
+      must: [...mustConditions, { key: 'metadata.project_id', is_null: true }],
     };
   }
 
@@ -150,7 +181,7 @@ async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
     // No KB imports — simple project filter
     return {
       must: [
-        orgCondition,
+        ...mustConditions,
         { key: 'metadata.project_id', match: { value: projectId } },
       ],
     };
@@ -158,7 +189,7 @@ async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
 
   // Project files OR imported KB source file embeddings
   return {
-    must: [orgCondition],
+    must: mustConditions,
     should: [
       { key: 'metadata.project_id', match: { value: projectId } },
       {

@@ -41,6 +41,8 @@ import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
+import { getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
@@ -89,10 +91,24 @@ export const getUserMessages = async (
 };
 
 //get user documents
-export const getUserFiles = async () => {
+export const getUserFiles = async (options?: {
+  folderId?: number | null;
+  viewMode?: 'all' | 'my-files' | 'shared-with-me';
+}) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    const files = await fetchFilesDetails(orgId);
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const [teamIds, member] = await Promise.all([
+      userId ? getUserTeamIds(orgId, userId) : [],
+      userId ? getActiveMember(orgId) : null,
+    ]);
+    const files = await fetchFilesDetails(orgId, teamIds, {
+      userId: userId ?? undefined,
+      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+      folderId: options?.folderId,
+      viewMode: options?.viewMode,
+    });
     return { files };
   } catch (error) {
     return {
@@ -106,7 +122,16 @@ export const getUserFiles = async () => {
 export const getAllOrgFiles = async () => {
   try {
     const orgId = await getOrgIdOrThrow();
-    const files = await fetchAllOrgFiles(orgId);
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const [teamIds, member] = await Promise.all([
+      userId ? getUserTeamIds(orgId, userId) : [],
+      userId ? getActiveMember(orgId) : null,
+    ]);
+    const files = await fetchAllOrgFiles(orgId, teamIds, {
+      userId: userId ?? undefined,
+      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    });
     return { files };
   } catch {
     return { files: [] };

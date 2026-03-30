@@ -119,14 +119,18 @@ model UserFile {
   sourceFile         UserFile?       @relation("FileImport", fields: [sourceFileId], references: [id])
   importedCopies     UserFile[]      @relation("FileImport")
   threadDocuments    ThreadDocument[]
-  folderId           String?         @map("folder_id") @db.Uuid
+  folderId           Int?            @map("folder_id")
   folder             DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  ownerId            String?         @map("owner_id")
+  owner              User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  permissions        DocumentPermission[]
 
   @@unique([id, organizationId])
   @@index([organizationId])
   @@index([projectId])
   @@index([sourceFileId])
   @@index([folderId])
+  @@index([ownerId])
 
   @@map("user_files")
 }
@@ -328,10 +332,12 @@ model User {
   teamMembers    TeamMember[]
   sharedWithMe   ThreadShare[]  @relation("SharedWithMe")
   sharedByMe     ThreadShare[]  @relation("SharedByMe")
-  mcpConnectors   McpConnector[]
-  mcpOAuthTokens  McpOAuthToken[]
+  mcpConnectors    McpConnector[]
+  mcpOAuthTokens   McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
   auditLogs        AuditLog[]
+  ownedFiles       UserFile[]
+  ownedFolders     DocumentFolder[]
 
   @@map("users")
 }
@@ -490,20 +496,53 @@ model TeamMember {
 }
 
 model DocumentFolder {
-  id             String   @id @default(uuid()) @db.Uuid
+  id             Int      @id @default(autoincrement())
+  publicId       String   @unique @default(uuid()) @map("public_id") @db.Uuid
   name           String
   organizationId String   @map("organization_id")
   teamId         String?  @map("team_id")
+  parentId       Int?     @map("parent_id")
+  path           String   @default("/")
+  ownerId        String?  @map("owner_id")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  team         Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  team         Team?            @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  parent       DocumentFolder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children     DocumentFolder[] @relation("FolderTree")
+  owner        User?            @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   files        UserFile[]
+  permissions  DocumentPermission[]
 
   @@index([organizationId])
   @@index([teamId])
+  @@index([parentId])
+  @@index([ownerId])
+  @@index([path])
   @@map("document_folders")
+}
+
+model DocumentPermission {
+  id           Int      @id @default(autoincrement())
+  resourceType String   @map("resource_type") // 'file' | 'folder'
+  filePublicId String?  @map("file_public_id") @db.Uuid
+  folderId     Int?     @map("folder_id")
+  granteeType  String   @map("grantee_type") // 'user' | 'team'
+  granteeId    String   @map("grantee_id")   // User.id or Team.id
+  permission   String   @default("view")     // 'view' | 'full'
+  grantedBy    String?  @map("granted_by")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  file   UserFile?       @relation(fields: [filePublicId], references: [publicId], onDelete: Cascade)
+  folder DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceType, filePublicId, granteeType, granteeId])
+  @@unique([resourceType, folderId, granteeType, granteeId])
+  @@index([filePublicId])
+  @@index([folderId])
+  @@index([granteeType, granteeId])
+  @@map("document_permissions")
 }
 
 model McpConnector {

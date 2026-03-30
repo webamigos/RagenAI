@@ -29,8 +29,8 @@ npm run dev                # Start Next.js dev server (Turbopack)
 Set `.env.local` with at minimum:
 
 ```bash
-DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
-DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen"
+DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/ragen"
 ```
 
 ## Commands
@@ -147,6 +147,17 @@ Settings pages live under `src/app/[locale]/(panel)/settings/` with a dedicated 
 
 App admins can access all settings pages. Theme switching (Light/Dark/System) is available in Settings > General via `next-themes`.
 
+### Knowledge Base
+
+The Knowledge Base supports nested folders, per-user file ownership, and sharing with users/teams.
+
+- **Nested folders**: `DocumentFolder` model with self-referential tree (materialized path pattern)
+- **File ownership**: `UserFile.ownerId` — legacy files (null owner) are visible to all org members
+- **Sharing**: `DocumentPermission` model grants file/folder access to specific users or teams (`view`/`full` levels)
+- **Three views**: "All Files" (org-wide), "My Files" (personal), "Shared with me" (explicitly shared)
+- **RAG access control**: Meilisearch documents have `metadata.accessible_by` array for query-time filtering
+- **Inline upload**: Documents-list page supports drag & drop + upload button with folder context
+
 ### Document Processing
 
 Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use Cohere `cohere.embed-multilingual-v3` via AWS Bedrock (1024 dimensions).
@@ -158,6 +169,169 @@ Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in
 - **Redux Toolkit** (`src/store/`): Client UI state (sidebar, assistant, threads, voice)
 - **React Context**: Assistant settings, files, onboarding, thread search
 - **Server state**: Prisma queries in server components and server actions
+
+## Companion Services
+
+ragen-app is part of a multi-service ecosystem. All repos live under the same parent directory.
+
+### Architecture Overview
+
+```
+┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  ragen-app  │────▸│ ragen-worker │────▸│   Meilisearch    │
+│  (Next.js)  │     │  (Temporal)  │     │  (vector store)  │
+└──────┬──────┘     └──────────────┘     └──────────────────┘
+       │
+       ├───────────▸┌──────────────────┐
+       │            │ ragen-token-vault│
+       │            │   (Fastify)      │
+       │            └──────────────────┘
+       │                    ▲
+       └───────────▸┌───────┴──────────┐
+                    │    ragen-mcp     │
+                    │ (FastMCP + Hono) │
+                    └──────────────────┘
+```
+
+### ragen-worker
+
+Temporal worker that processes document parsing, embedding generation, thumbnail creation, and website scraping.
+
+```bash
+cd ../ragen-worker
+npm install
+npm run dev          # Start worker in watch mode
+```
+
+**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL, Meilisearch, S3 credentials.
+
+**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `MEILISEARCH_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
+
+**Workflows**:
+- `runFileEmbeddings` — S3 download → parse → chunk → embed → store in Meilisearch
+- `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
+
+### ragen-token-vault
+
+Centralized token vault — stores OAuth tokens and API keys with AES-256-GCM encryption. All external connector tokens (Google, ClickUp, HubSpot, etc.) are stored here, not in ragen-app.
+
+```bash
+cd ../ragen-token-vault
+npm install
+docker compose up -d                  # Start local Postgres for vault
+cp .env.example .env.local            # Fill in env vars
+npx prisma generate && npx prisma migrate dev
+npm run dev                           # Runs on http://localhost:3100
+```
+
+**Key env vars**:
+- `DATABASE_URL` — PostgreSQL for token storage
+- `ENCRYPTION_KEY` — 64-char hex (generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
+- `RAGEN_TOKEN_VAULT_SERVICE_SECRET` — shared HMAC secret (must match ragen-app and ragen-mcp)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — for Google OAuth flows
+
+### ragen-mcp
+
+TypeScript monorepo for multi-tenant MCP (Model Context Protocol) servers. Exposes third-party APIs (Google Calendar/Drive/Analytics/Ads, ClickUp, HubSpot) as MCP tools.
+
+```bash
+cd ../ragen-mcp
+npm install
+npm run build
+cp services/google/.env.example services/google/.env.local   # Fill in env vars
+npm run dev:google               # Google MCP on HTTP :8001, MCP :9001
+```
+
+**Services & ports**:
+
+| Service | HTTP Port | MCP Port | Tools |
+|---------|-----------|----------|-------|
+| Google | 8001 | 9001 | Calendar, Drive, Analytics, Ads, Gmail |
+| ClickUp | 8002 | 9002 | Tasks, Lists, Folders, Docs, Time tracking |
+| HubSpot | 8003 | 9003 | CRM objects, Properties, Owners |
+
+**Key env vars** (per service): `RAGEN_TOKEN_VAULT_URL`, `RAGEN_TOKEN_VAULT_SERVICE_SECRET`, service-specific OAuth credentials.
+
+### Ragen Admin
+
+Internal admin dashboard for platform management. Lives inside ragen-app as a separate Next.js app at `apps/admin/`.
+
+```bash
+cd apps/admin
+npm run dev              # http://localhost:3200
+```
+
+**Pages**: Organizations, Users, Subscriptions, Invitations, AI Usage, Disk Usage, Activity Log, Models (per-org model allowlists), Limits (default org limits).
+
+**Auth**: Uses the same Better Auth instance as ragen-app — only app-level admins (`User.role = 'admin'`) can access.
+
+### LiteLLM (Unified LLM Gateway)
+
+All LLM calls (chat completions + embeddings) are routed through a LiteLLM proxy that provides a single OpenAI-compatible API across providers (Azure OpenAI, AWS Bedrock, Google Vertex AI).
+
+LiteLLM is started automatically via `docker compose up` on port **4000**.
+
+```bash
+# UI for model management
+open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
+```
+
+**Config**: `litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
+
+**Key env vars** (set on the LiteLLM container, not ragen-app):
+- `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` — Azure OpenAI
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION_NAME` — AWS Bedrock
+- `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
+- `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
+
+**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gpt-4o`.
+
+### Ragen API
+
+Standalone public API service built with NestJS. Currently a boilerplate — will be developed to replace the API routes in ragen-app (`/api/v1/`).
+
+```bash
+cd ../ragen-api
+npm install
+npm run start:dev        # http://localhost:3300 (watch mode)
+```
+
+**Stack**: NestJS + TypeScript. Will share the same PostgreSQL database as ragen-app.
+
+### Running Everything Locally
+
+```bash
+# 1. Start infrastructure (from ragen-app)
+docker compose up -d             # Postgres, Meilisearch, Temporal, LiteLLM, Redis
+
+# 2. Start ragen-app
+npm run dev                      # http://localhost:3000
+
+# 3. Start worker (separate terminal)
+cd ../ragen-worker && npm run dev
+
+# 4. Start token vault (separate terminal, needed for connectors)
+cd ../ragen-token-vault && npm run dev    # http://localhost:3100
+
+# 5. Start MCP servers (separate terminal, needed for connectors)
+cd ../ragen-mcp && npm run dev:google     # http://localhost:8001
+
+# 6. Start admin (separate terminal, needed for platform admin)
+cd apps/admin && npm run dev              # http://localhost:3200
+```
+
+**Minimum for basic usage**: Steps 1-3 (infrastructure + app + worker).
+
+| Service | Port | When needed |
+|---------|------|-------------|
+| ragen-app | 3000 | Always |
+| ragen-worker | — | Always (processes document uploads) |
+| LiteLLM | 4000 | Always (auto-started via docker compose) |
+| Temporal UI | 8080 | Debugging workflows |
+| ragen-token-vault | 3100 | External connectors (Google, ClickUp, etc.) |
+| ragen-mcp | 8001-8003 | External connectors |
+| Ragen Admin | 3200 | Platform administration |
+| Ragen API | 3300 | Not yet (boilerplate) |
 
 ## Path Aliases
 

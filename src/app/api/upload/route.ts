@@ -50,6 +50,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const formProjectId = formData.get('projectId')?.toString();
+    const formFolderId = formData.get('folderId')?.toString();
+    const folderId = formFolderId ? parseInt(formFolderId, 10) : null;
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -125,6 +127,10 @@ export async function POST(request: NextRequest) {
           orgId,
           fileType,
           projectRecord?.id ?? null,
+          {
+            folderId: folderId && !isNaN(folderId) ? folderId : null,
+            ownerId: user?.id ?? null,
+          },
         );
 
         // Step 2: upload to S3
