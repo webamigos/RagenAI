@@ -1,6 +1,18 @@
 import type { ChainStreamPart } from '../types/common';
 
 /**
+ * Strip LiteLLM's `__thought__<base64>` suffix from tool call IDs.
+ * LiteLLM embeds Claude's extended thinking content into tool call IDs when
+ * proxying through the OpenAI-compatible API (which has no native thinking field).
+ * We strip it here for clean logging/SSE — the AI SDK's internal tool matching
+ * uses the original IDs and is unaffected.
+ */
+function cleanToolCallId(id: string): string {
+  const idx = id.indexOf('__thought__');
+  return idx !== -1 ? id.slice(0, idx) : id;
+}
+
+/**
  * Maps the Vercel AI SDK's fullStream to our simplified ChainStreamPart type.
  * Passes through text-delta, reasoning, and tool events.
  *
@@ -27,7 +39,7 @@ export async function* mapFullStream(
       case 'tool-call':
         yield {
           type: 'tool-call',
-          toolCallId: part.toolCallId,
+          toolCallId: cleanToolCallId(part.toolCallId),
           toolName: part.toolName,
           args: part.input ?? part.args,
         };
@@ -35,7 +47,7 @@ export async function* mapFullStream(
       case 'tool-result':
         yield {
           type: 'tool-result',
-          toolCallId: part.toolCallId,
+          toolCallId: cleanToolCallId(part.toolCallId),
           toolName: part.toolName,
           result: part.output !== undefined ? part.output : part.result,
         };
