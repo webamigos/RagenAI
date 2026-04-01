@@ -7,6 +7,8 @@ import {
   EyeIcon,
   ArrowDownTrayIcon,
   TrashIcon,
+  ArrowRightIcon,
+  ShareIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 import {
@@ -21,7 +23,10 @@ type ToolbarActionsProps = {
   filePublicId: string;
   documentPublicId?: string;
   fileName: string;
+  folderId?: number | null;
   toggleModal: (fileId: string | null) => void;
+  onMove?: (filePublicId: string) => void;
+  onShare?: (filePublicId: string) => void;
   isLoading: boolean;
 };
 
@@ -30,6 +35,8 @@ export const ToolbarActions = ({
   documentPublicId,
   fileName,
   toggleModal,
+  onMove,
+  onShare,
   isLoading,
 }: ToolbarActionsProps) => {
   const t = useTranslations('files-table');
@@ -79,6 +86,20 @@ export const ToolbarActions = ({
           >
             <ArrowDownTrayIcon className="size-4" data-slot="icon" />
             {t('download')}
+          </DropdownItem>
+        )}
+
+        {filePublicId && onMove && (
+          <DropdownItem onClick={() => onMove(filePublicId)}>
+            <ArrowRightIcon className="size-4" data-slot="icon" />
+            {t('move') || 'Move'}
+          </DropdownItem>
+        )}
+
+        {filePublicId && onShare && (
+          <DropdownItem onClick={() => onShare(filePublicId)}>
+            <ShareIcon className="size-4" data-slot="icon" />
+            {t('share') || 'Share'}
           </DropdownItem>
         )}
 

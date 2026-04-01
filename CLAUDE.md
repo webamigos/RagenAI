@@ -170,6 +170,50 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `tui/` — Tailwind UI component library (aliased as `@ragenai/tui`)
 - `common-ui/` — Shared UI utilities (aliased as `@ragenai/common-ui`)
 
+### Knowledge Base (Folders, Sharing & Access Control)
+
+The Knowledge Base supports **nested folders**, **per-user file ownership**, and **sharing with users/teams**.
+
+**Data model:**
+- `DocumentFolder`: `Int` autoincrement `id` + `publicId` UUID (like Project/ApiKey pattern). Self-referential tree via `parentId` + materialized `path` column (e.g., `/1/5/12/`). Optional `teamId` and `ownerId`.
+- `UserFile`: Has `ownerId` (nullable for legacy org-wide files) and `folderId` (Int FK to DocumentFolder).
+- `DocumentPermission`: Grants access to files or folders for specific users or teams. Uses optional FK columns (`filePublicId` → UserFile, `folderId` → DocumentFolder) instead of polymorphic resourceId. Permission levels: `'view'` or `'full'`.
+
+**Access model:**
+| Scenario | Visible to |
+|----------|-----------|
+| File with `ownerId = null` | All org members (legacy/org-wide) |
+| File with `ownerId = userA` | Owner + org admins + explicit shares |
+| File in folder with `teamId` | Team members + org admins |
+| `DocumentPermission` for user/team | That user/team members |
+| Folder permission | Cascades to children via `path LIKE` |
+
+**UI views:**
+- "All Files" — org-wide + owned + team-accessible files, with folder tree navigation
+- "My Files" — files/folders owned by current user
+- "Shared with me" — only files with explicit `DocumentPermission` for user/teams
+
+**Meilisearch access filtering:**
+- Each document chunk has `metadata.accessible_by: string[]` with principals like `"org:<orgId>"`, `"user:<userId>"`, `"team:<teamId>"`
+- RAG queries add `metadata.accessible_by` filter for non-admin users
+- Org admins bypass access filtering (see all org documents)
+- Filter built in `src/app/api/threads/services/initializeBasicRag.ts`
+
+**Key files:**
+- Schema: `prisma/schema.prisma` (DocumentFolder, DocumentPermission, UserFile.ownerId)
+- Types: `src/features/documents/contracts/document.types.ts`, `permission.types.ts`
+- Folder commands: `src/features/documents/services/commands/` (create/delete/update/move-folder, move-file-to-folder)
+- Permission commands: `share-resource-command.ts`, `revoke-share-command.ts`
+- Access queries: `get-user-files-query.ts` (supports viewMode: all/my-files/shared-with-me), `get-all-org-files-query.ts`
+- Folder tree: `src/features/documents/utils/folder-tree.ts` (`buildFolderTree()` utility)
+- Server actions: `src/app/actions/folders.ts`, `src/app/actions/permissions.ts`
+- Vector permissions: `src/features/documents/services/commands/sync-vector-permissions-command.ts`
+- Backfill script: `src/scripts/backfill-accessible-by.ts`
+- UI: `src/app/components/ManageKnowledge/Folders/FoldersList.tsx`, `Breadcrumbs.tsx`, `MoveDialog.tsx`, `ShareDialog.tsx`
+- Page: `src/app/[locale]/(panel)/knowledge/documents-list/DocumentsListContent.tsx`
+
+**Upload with folder context:** The `/api/upload` route accepts an optional `folderId` in FormData. Files are created with `folderId` and `ownerId` set. The documents-list page has inline upload (button + drag & drop) that passes the current folder context.
+
 ### Document Processing Pipeline
 
 Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Meilisearch. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
@@ -211,6 +255,8 @@ Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval
 - Organization index: each org gets its own Meilisearch index (named by org ID)
 - Embeddings: `userProvided` embedder with Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions)
 - Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
+- Filterable attributes: `metadata.project_id`, `metadata.project_public_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by`
+- Access control: `metadata.accessible_by` array contains principals (`org:<id>`, `user:<id>`, `team:<id>`) — filtered at query time for non-admin users
 - Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
 - Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
 

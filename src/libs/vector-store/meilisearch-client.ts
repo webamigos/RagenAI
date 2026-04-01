@@ -164,6 +164,7 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
       'metadata.project_public_id',
       'metadata.file_id',
       'metadata.organization_id',
+      'metadata.accessible_by',
     ]);
     await this.client.waitForTask(filterableTask.taskUid);
 

@@ -3,7 +3,7 @@
 import db from '@ragenai/prisma-client';
 
 export async function updateFolderCommand(
-  folderId: string,
+  folderId: number,
   organizationId: string,
   data: { name?: string; teamId?: string | null },
 ) {

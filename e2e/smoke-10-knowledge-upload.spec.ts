@@ -2,11 +2,11 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { ROUTES, LABELS } from './helpers';
+import { ROUTES } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-test('upload a file to knowledge base', async ({ page }) => {
+test('upload a file to knowledge base via inline upload', async ({ page }) => {
   // Mock the upload API to avoid needing S3/Temporal
   await page.route('**/api/upload', (route) => {
     return route.fulfill({
@@ -26,27 +26,28 @@ test('upload a file to knowledge base', async ({ page }) => {
     });
   });
 
-  await page.goto(ROUTES.knowledgeUpload);
+  await page.goto(ROUTES.knowledgeDocuments);
+  await expect(page).toHaveURL(/documents-list/);
 
-  // Set file on the hidden file input
+  // Click "Dodaj dokument" dropdown button
+  const addDocButton = page.getByRole('button', {
+    name: /dodaj dokument/i,
+  });
+  await expect(addDocButton).toBeVisible({ timeout: 10_000 });
+  await addDocButton.click();
+
+  // Click "Z dysku" option
+  const fromDiskOption = page.getByRole('menuitem', { name: /z dysku/i });
+  await expect(fromDiskOption).toBeVisible({ timeout: 5_000 });
+
+  // Set file on the hidden file input (triggered by the menu item click)
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(
     path.join(__dirname, 'fixtures', 'test-document.md'),
   );
 
-  // Verify file name appears in the upload list
-  await expect(page.getByText('test-document.md')).toBeVisible();
-
-  // Click send/upload button
-  await page.getByRole('button', { name: LABELS.send }).click();
-
   // Assert success toast appears
-  await expect(page.getByText(LABELS.uploadSuccess)).toBeVisible({
-    timeout: 10_000,
-  });
-
-  // Assert URL changed to documents list
-  await expect(page).toHaveURL(/knowledge\/documents-list/, {
+  await expect(page.getByText(/file\(s\) uploaded|pliki/i)).toBeVisible({
     timeout: 10_000,
   });
 });

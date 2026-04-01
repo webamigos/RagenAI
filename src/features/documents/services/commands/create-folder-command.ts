@@ -6,6 +6,8 @@ export async function createFolderCommand(input: {
   name: string;
   organizationId: string;
   teamId?: string | null;
+  parentId?: number | null;
+  ownerId?: string | null;
 }) {
   const trimmedName = input.name.trim();
   if (!trimmedName || trimmedName.length > 255) {
@@ -21,11 +23,25 @@ export async function createFolderCommand(input: {
     }
   }
 
+  let path = '/';
+  if (input.parentId) {
+    const parent = await db.documentFolder.findFirst({
+      where: { id: input.parentId, organizationId: input.organizationId },
+    });
+    if (!parent) {
+      throw new Error('Parent folder not found');
+    }
+    path = `${parent.path}${parent.id}/`;
+  }
+
   return db.documentFolder.create({
     data: {
       name: trimmedName,
       organizationId: input.organizationId,
       teamId: input.teamId ?? null,
+      parentId: input.parentId ?? null,
+      path,
+      ownerId: input.ownerId ?? null,
     },
   });
 }

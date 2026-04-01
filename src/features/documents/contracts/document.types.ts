@@ -75,11 +75,17 @@ export type ParsedFile = {
 };
 
 export type DocumentFolderItem = {
-  id: string;
+  id: number;
+  publicId: string;
   name: string;
   teamId: string | null;
   teamName: string | null;
+  parentId: number | null;
+  path: string;
+  ownerId: string | null;
+  ownerName: string | null;
   fileCount: number;
+  children?: DocumentFolderItem[];
 };
 
 export type CreateMarkdownDocumentInput = {

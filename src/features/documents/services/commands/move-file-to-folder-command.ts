@@ -6,7 +6,7 @@ type OperationResult = { success: true } | { success: false; error: string };
 
 export async function moveFileToFolderCommand(
   filePublicId: string,
-  folderId: string | null,
+  folderId: number | null,
   organizationId: string,
 ): Promise<OperationResult> {
   const file = await db.userFile.findFirst({

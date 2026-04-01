@@ -76,10 +76,11 @@ export const FileSearch = ({
       </div>
 
       {/* --- DESKTOP section (md and above) --- */}
-      <div className="hidden md:block">
+      <div className="hidden md:block [&>div>div]:!mt-0">
         <Input
           value={value}
           onChange={onChange}
+          containerClassName="!pt-0"
           className="pl-3 w-72 outline-none"
           iconRight={
             value ? (

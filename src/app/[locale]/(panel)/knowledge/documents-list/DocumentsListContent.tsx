@@ -1,0 +1,69 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { FileListWrapper } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
+import {
+  FoldersList,
+  type ViewMode,
+} from '@/app/components/ManageKnowledge/Folders/FoldersList';
+import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
+import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
+import { getFolders } from '@/app/actions/folders';
+import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
+
+export function DocumentsListContent() {
+  const { currentFolderId, viewMode, setFolder, setViewMode } =
+    useUserFilesContext();
+  const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
+
+  const loadFolders = useCallback(async () => {
+    try {
+      const result = await getFolders();
+      setFolders(result);
+    } catch {
+      // Folders are optional, don't block the page
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFolders();
+  }, [loadFolders]);
+
+  const handleSelectFolder = (folderId: number | null, mode?: ViewMode) => {
+    setFolder(folderId);
+    if (mode) {
+      setViewMode(mode);
+    }
+  };
+
+  const handleBreadcrumbNavigate = (folderId: number | null) => {
+    setFolder(folderId);
+  };
+
+  return (
+    <div className="flex h-screen-minus-10 gap-3 pb-5">
+      {/* Folder sidebar */}
+      <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-gray-200 dark:border-gray-700 pr-2">
+        <FoldersList
+          initialFolders={folders}
+          onSelectFolder={handleSelectFolder}
+          selectedFolderId={currentFolderId}
+          selectedViewMode={viewMode}
+        />
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <FileListWrapper
+          topBarLeft={
+            <Breadcrumbs
+              folderId={currentFolderId}
+              viewMode={viewMode}
+              onNavigate={handleBreadcrumbNavigate}
+            />
+          }
+        />
+      </div>
+    </div>
+  );
+}

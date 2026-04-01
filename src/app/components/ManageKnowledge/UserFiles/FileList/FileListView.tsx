@@ -4,11 +4,16 @@ import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { type ModalStateProps, UserFilesTable } from './UserFilesTable';
 
-import { type UserFileType } from '@/features/documents/contracts/document.types';
+import {
+  type UserFileType,
+  type DocumentFolderItem,
+} from '@/features/documents/contracts/document.types';
 import { type UserFile } from '@/generated/prisma/browser';
 
 type FileListViewProps = {
   files: UserFileType[];
+  subfolders?: DocumentFolderItem[];
+  onNavigateFolder?: (folderId: number) => void;
   isLoading: boolean;
   deleteLoading: boolean;
   isError: boolean;
@@ -24,6 +29,8 @@ type FileListViewProps = {
 
 export const FileListView = ({
   files,
+  subfolders,
+  onNavigateFolder,
   isLoading,
   deleteLoading,
   isError,
@@ -49,6 +56,8 @@ export const FileListView = ({
       deleteLoading={deleteLoading}
       className="font-sans"
       files={files}
+      subfolders={subfolders}
+      onNavigateFolder={onNavigateFolder}
       toggleModal={toggleModal}
       onAddFile={addFile}
       onRemoveFile={removeFile}

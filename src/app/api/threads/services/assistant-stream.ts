@@ -29,7 +29,8 @@ import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
-import { getSession } from '@/lib/auth-guards';
+import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
 
@@ -503,6 +504,18 @@ export async function streamEvents({
                 inlineThreadDocuments,
               );
 
+              // Resolve user access context for RAG filtering
+              let userTeamIds: string[] = [];
+              let userIsOrgAdmin = false;
+              if (userId) {
+                const [teamIds, member] = await Promise.all([
+                  getUserTeamIds(orgId, userId),
+                  getActiveMember(orgId).catch(() => null),
+                ]);
+                userTeamIds = teamIds;
+                userIsOrgAdmin = member ? checkOrgAdmin(member.role) : false;
+              }
+
               chainOutput = await initializeRagChain({
                 settings: {
                   ...effectiveSettings,
@@ -510,6 +523,8 @@ export async function streamEvents({
                 },
                 orgId,
                 userId,
+                userTeamIds,
+                isOrgAdmin: userIsOrgAdmin,
                 projectInstruction,
                 projectId: projectIdToUse ?? null,
                 projectPublicId: projectPublicIdToUse ?? null,
