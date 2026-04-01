@@ -34,9 +34,13 @@ const envSchema = z
     // TEMPORAL_CERT: z.string(),
     // TEMPORAL_KEY: z.string(),
 
-    // Meilisearch
-    MEILISEARCH_URL: z.string().url(),
-    // MEILISEARCH_MASTER_KEY: z.string(), // for staging and production
+    // Qdrant
+    QDRANT_URL: z.string().url(),
+    QDRANT_API_KEY: z.string().optional(),
+
+    // Meilisearch (optional — only needed when using Meilisearch as vector store)
+    MEILISEARCH_URL: z.string().url().optional(),
+    MEILISEARCH_MASTER_KEY: z.string().optional(),
 
     // Resend
     RESEND_API_KEY: z.string(),

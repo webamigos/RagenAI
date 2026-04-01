@@ -4,10 +4,10 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 
 ## Tech Stack
 
-- **Framework**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7
+- **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
 - **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
-- **Search**: Meilisearch (vector/hybrid search)
+- **Vector Search**: Qdrant (default) + Cohere Rerank v3.5 via Bedrock (post-retrieval)
 - **LLM Providers**: OpenAI, Anthropic, Google, AWS Bedrock, Ollama, OpenRouter (with provider routing & ZDR), Fireworks, Azure OpenAI
 - **Auth**: Better Auth with Prisma adapter
 - **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
@@ -20,7 +20,7 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 **Prerequisites**: Node.js 22.x, Docker
 
 ```bash
-docker compose up          # Start Postgres (5432), Redis (6379), Meilisearch (7700)
+docker compose up          # Start Postgres (5432), Redis (6379), Qdrant (6333), Temporal, LiteLLM
 npm install                # Install dependencies
 npm run generate:types     # Generate Prisma client
 npm run dev                # Start Next.js dev server (Turbopack)
@@ -79,7 +79,8 @@ src/
 ├── libs/                         # Shared libraries
 │   ├── llm/                      # Multi-provider chat completion & embeddings
 │   ├── chains/                   # RAG chains (basic-rag, conversation, PDF processing)
-│   ├── vector-store/             # Meilisearch & Supabase vector store clients
+│   ├── vector-store/             # Qdrant, Meilisearch & Supabase vector store clients
+│   ├── reranker/                 # Cohere Rerank via Bedrock (post-retrieval reranking)
 │   ├── document-loaders/         # PDF, EPUB, Markdown, SRT, URL parsing
 │   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
 │   ├── temporal/                 # Temporal.io client
@@ -155,12 +156,12 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 - **File ownership**: `UserFile.ownerId` — legacy files (null owner) are visible to all org members
 - **Sharing**: `DocumentPermission` model grants file/folder access to specific users or teams (`view`/`full` levels)
 - **Three views**: "All Files" (org-wide), "My Files" (personal), "Shared with me" (explicitly shared)
-- **RAG access control**: Meilisearch documents have `metadata.accessible_by` array for query-time filtering
+- **RAG access control**: Vector store documents have `metadata.accessible_by` array for query-time filtering
 - **Inline upload**: Documents-list page supports drag & drop + upload button with folder context
 
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Meilisearch. Each organization gets its own Meilisearch index. Embeddings use Cohere `cohere.embed-multilingual-v3` via AWS Bedrock (1024 dimensions).
+Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Qdrant. Each organization gets its own Qdrant collection. Embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions). Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock improves quality (especially for Polish content).
 
 **Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
 
@@ -178,7 +179,7 @@ ragen-app is part of a multi-service ecosystem. All repos live under the same pa
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
-│  ragen-app  │────▸│ ragen-worker │────▸│   Meilisearch    │
+│  ragen-app  │────▸│ ragen-worker │────▸│     Qdrant       │
 │  (Next.js)  │     │  (Temporal)  │     │  (vector store)  │
 └──────┬──────┘     └──────────────┘     └──────────────────┘
        │
@@ -203,12 +204,12 @@ npm install
 npm run dev          # Start worker in watch mode
 ```
 
-**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL, Meilisearch, S3 credentials.
+**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL, Qdrant, S3 credentials.
 
-**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `MEILISEARCH_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
+**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
 
 **Workflows**:
-- `runFileEmbeddings` — S3 download → parse → chunk → embed → store in Meilisearch
+- `runFileEmbeddings` — S3 download → parse → chunk → embed → store in Qdrant
 - `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
 
 ### ragen-token-vault
@@ -302,7 +303,7 @@ npm run start:dev        # http://localhost:3300 (watch mode)
 
 ```bash
 # 1. Start infrastructure (from ragen-app)
-docker compose up -d             # Postgres, Meilisearch, Temporal, LiteLLM, Redis
+docker compose up -d             # Postgres, Qdrant, Temporal, LiteLLM, Redis
 
 # 2. Start ragen-app
 npm run dev                      # http://localhost:3000

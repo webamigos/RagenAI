@@ -12,11 +12,15 @@ import {
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
 
 type Message = {
   type: 'user' | 'assistant';
   content: string;
 };
+
+/** Multiplier for initial retrieval count when reranking is enabled. */
+const RERANK_RETRIEVAL_MULTIPLIER = 3;
 
 function formatChatHistory(chatHistory: string): Message[] {
   const lines = chatHistory.split('\n').filter((line) => line.trim());
@@ -78,6 +82,17 @@ export async function rephraseQuestion(
   return result.text;
 }
 
+/**
+ * Retrieve relevant documents from the vector store with optional reranking.
+ *
+ * When reranking is enabled (AWS credentials available):
+ * 1. Retrieve 3x the desired count from the vector store
+ * 2. Rerank candidates using Cohere Rerank v3.5 via Bedrock
+ * 3. Return the top-k most relevant documents
+ *
+ * When reranking is disabled (local dev without Bedrock):
+ * Falls back to returning the vector store results directly.
+ */
 export async function retrieveRelevantDocuments(
   vectorStore: VectorStoreClient,
   standaloneQuestion: string,
@@ -93,11 +108,25 @@ export async function retrieveRelevantDocuments(
       ? metadataFilter
       : undefined;
 
+  const useReranking = isRerankingEnabled();
+  const retrievalCount = useReranking
+    ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
+    : maxDocuments;
+
   const docs = await vectorStore.similaritySearch(
     standaloneQuestion,
-    maxDocuments,
+    retrievalCount,
     filter,
   );
+
+  if (useReranking && docs.length > maxDocuments) {
+    const reranked = await rerankDocuments(
+      standaloneQuestion,
+      docs,
+      maxDocuments,
+    );
+    return combineDocuments(reranked);
+  }
 
   return combineDocuments(docs);
 }

@@ -116,7 +116,7 @@ async function seed() {
       id: TEST_ORG_ID,
       name: `${TEST_USER_NAME}'s Organization`,
       slug: TEST_ORG_SLUG,
-      vectorStore: 'meilisearch',
+      vectorStore: 'qdrant',
     },
   });
   console.log(`Created organization: ${TEST_ORG_SLUG}`);
@@ -216,7 +216,7 @@ async function seed() {
       id: TEST_ORG2_ID,
       name: TEST_ORG2_NAME,
       slug: TEST_ORG2_SLUG,
-      vectorStore: 'meilisearch',
+      vectorStore: 'qdrant',
     },
   });
   console.log(`Created second organization: ${TEST_ORG2_NAME}`);

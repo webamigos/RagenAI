@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { QdrantClient } from '@qdrant/js-client-rest';
 
 /**
  * Compute the accessible_by array for a file based on its ownership,
@@ -164,15 +165,41 @@ export async function syncFolderVectorPermissions(
     'Syncing vector permissions for folder',
   );
 
-  // TODO: Update Meilisearch documents with new accessible_by values
-  // This requires accessing the Meilisearch client and updating metadata
-  // For now, log the files that need updating — the actual Meilisearch
-  // update will be handled by a Temporal workflow or batch job
-  for (const file of files) {
-    const accessibleBy = await computeAccessibleBy(file.id, organizationId);
-    logger.debug(
-      { fileId: file.id, accessibleBy },
-      'Computed accessible_by for file',
-    );
+  const org = await db.organization.findUnique({
+    where: { id: organizationId },
+    select: { vectorStore: true },
+  });
+
+  const vectorStoreType = org?.vectorStore;
+
+  if (!vectorStoreType || vectorStoreType === 'qdrant') {
+    const qdrant = new QdrantClient({
+      url: process.env.QDRANT_URL || 'http://localhost:6333',
+      apiKey: process.env.QDRANT_API_KEY,
+    });
+
+    for (const file of files) {
+      const accessibleBy = await computeAccessibleBy(file.id, organizationId);
+      await qdrant.setPayload(organizationId, {
+        payload: { 'metadata.accessible_by': accessibleBy },
+        filter: {
+          must: [{ key: 'metadata.file_id', match: { value: file.id } }],
+        },
+        wait: true,
+      });
+      logger.debug(
+        { fileId: file.id, accessibleBy },
+        'Updated accessible_by in Qdrant',
+      );
+    }
+  } else {
+    // Meilisearch or other — log for now
+    for (const file of files) {
+      const accessibleBy = await computeAccessibleBy(file.id, organizationId);
+      logger.debug(
+        { fileId: file.id, accessibleBy },
+        'Computed accessible_by for file (vector store update pending)',
+      );
+    }
   }
 }

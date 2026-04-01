@@ -12,6 +12,7 @@ import {
 } from '../../../lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
@@ -81,7 +82,6 @@ export const initializeRagChain = async ({
 
     const orgMetadata = await getOrganizationMetadata(orgId);
     let vectorStore: VectorStoreClient;
-    let isMeilisearch = false;
 
     if (orgMetadata.vectorStore === 'supabase') {
       vectorStore = createSupabaseVectorStore(
@@ -90,20 +90,20 @@ export const initializeRagChain = async ({
         orgId,
         projectPublicId ?? undefined,
       );
-    } else {
+    } else if (orgMetadata.vectorStore === 'meilisearch') {
       vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
-      isMeilisearch = true;
+    } else {
+      // Default: Qdrant
+      vectorStore = createQdrantVectorStore(embeddingModel, orgId);
     }
 
-    const filterOptions = isMeilisearch
-      ? await buildMeilisearchFilter(
-          orgId,
-          projectId ?? null,
-          userId ?? null,
-          userTeamIds,
-          isOrgAdmin,
-        )
-      : undefined;
+    const metadataFilter = await buildMetadataFilter(
+      orgId,
+      projectId ?? null,
+      userId ?? null,
+      userTeamIds,
+      isOrgAdmin,
+    );
 
     return await basicRagChain({
       models: {
@@ -113,9 +113,7 @@ export const initializeRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
-        // MeilisearchVectorStore needs filter passed to similaritySearch()
-        metadataFilter: filterOptions,
+        metadataFilter,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
@@ -133,13 +131,15 @@ export const initializeRagChain = async ({
 };
 
 /**
- * Build Meilisearch filter based on project context and user access:
+ * Build metadata filter based on project context and user access.
+ * Uses an intermediate filter format that both Qdrant and Meilisearch clients understand.
+ *
  * - Always filters by organization_id
  * - Non-admin users get accessible_by filter for document-level access control
  * - Thread with project: org_id AND (projectId = X OR fileId IN [imported_kb_source_ids])
  * - Thread without project (global KB): org_id AND projectId IS NULL
  */
-async function buildMeilisearchFilter(
+async function buildMetadataFilter(
   orgId: string,
   projectId: number | null,
   userId: string | null,
@@ -199,6 +199,22 @@ async function buildMeilisearchFilter(
     ],
   };
 }
+
+const createQdrantVectorStore = (
+  embeddingModel: EmbeddingsProvider,
+  collectionName: string,
+): VectorStoreClient => {
+  logger.debug('creating qdrant vector store', {
+    url: process.env.QDRANT_URL,
+    collectionName,
+  });
+
+  return new QdrantVectorStoreClient(embeddingModel, {
+    url: process.env.QDRANT_URL || 'http://localhost:6333',
+    apiKey: process.env.QDRANT_API_KEY,
+    collectionName,
+  });
+};
 
 const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
