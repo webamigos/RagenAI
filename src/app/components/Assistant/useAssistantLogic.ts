@@ -134,7 +134,7 @@ export const useAssistantLogic = (threadId: string) => {
 
       onSubmit({
         prompt: initialMessage,
-        mode: ChatType.CONVERSATION,
+        mode: ChatType.RAG,
         messageType: initialMessageType || MessageContentType.TEXT,
         voiceDurationSeconds: 0,
         threadDocuments,
@@ -231,7 +231,7 @@ export const useAssistantLogic = (threadId: string) => {
 
         onSubmit({
           prompt: initialMessage,
-          mode: ChatType.CONVERSATION,
+          mode: ChatType.RAG,
           messageType: MessageContentType.TEXT,
           voiceDurationSeconds: 0,
           threadDocuments,
