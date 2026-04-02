@@ -71,7 +71,7 @@ export async function rerankDocuments(
           query,
           documents: texts,
           top_n: topN,
-          return_documents: false,
+          api_version: 2,
         }),
         contentType: 'application/json',
         accept: 'application/json',

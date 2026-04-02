@@ -21,7 +21,7 @@ services:
       - ragen-network
 
   qdrant:
-    image: qdrant/qdrant:v1.14.0
+    image: qdrant/qdrant:v1.17.1
     container_name: ragen-qdrant
     restart: unless-stopped
     environment:
@@ -63,7 +63,7 @@ services:
   #     - ragen-network
 
   temporal:
-    image: temporalio/auto-setup:latest
+    image: temporalio/auto-setup:1.26.2
     container_name: ragen-temporal
     restart: unless-stopped
     depends_on:
@@ -84,7 +84,7 @@ services:
       - ragen-network
 
   temporal-ui:
-    image: temporalio/ui:latest
+    image: temporalio/ui:2.36.0
     container_name: ragen-temporal-ui
     restart: unless-stopped
     depends_on:

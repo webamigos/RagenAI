@@ -118,7 +118,7 @@ describe('bedrock-cohere-reranker', () => {
         query: 'my query',
         documents: docs.map((d) => d.pageContent),
         top_n: 2,
-        return_documents: false,
+        api_version: 2,
       });
     });
 
