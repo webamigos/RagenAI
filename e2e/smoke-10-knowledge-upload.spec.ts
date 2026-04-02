@@ -47,7 +47,7 @@ test('upload a file to knowledge base via inline upload', async ({ page }) => {
   );
 
   // Assert success toast appears
-  await expect(page.getByText(/file\(s\) uploaded|pliki/i)).toBeVisible({
+  await expect(page.getByText(/file\(s\) uploaded/i)).toBeVisible({
     timeout: 10_000,
   });
 });

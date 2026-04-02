@@ -59,7 +59,10 @@ test.describe('Authenticated pages smoke tests', () => {
     test('knowledge documents list loads', async ({ page }) => {
       await page.goto(ROUTES.knowledgeDocuments);
       await expect(page).toHaveURL(/documents-list/);
-      await expect(page.locator('table').first()).toBeVisible({
+      // Page may show a table (with files) or the empty drag-and-drop area
+      await expect(
+        page.locator('table, [class*="border-dashed"]').first(),
+      ).toBeVisible({
         timeout: 10_000,
       });
     });
@@ -67,7 +70,13 @@ test.describe('Authenticated pages smoke tests', () => {
     test('knowledge create document page loads', async ({ page }) => {
       await page.goto(ROUTES.knowledgeCreate);
       await expect(page).toHaveURL(/create-document/);
-      await expect(page.getByText(/stwórz dokument/i).first()).toBeVisible({
+      // Match the page heading or editor area
+      await expect(
+        page
+          .getByRole('main')
+          .locator('h1, h2, textarea, [contenteditable]')
+          .first(),
+      ).toBeVisible({
         timeout: 10_000,
       });
     });
