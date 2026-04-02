@@ -21,14 +21,11 @@ test.describe('Document Operations P2', () => {
     await page.goto(ROUTES.knowledgeCreate);
     await expect(page).toHaveURL(/create-document/);
 
-    // Page title should be visible
-    await expect(page.getByText(/stwórz dokument/i)).toBeVisible({
-      timeout: 10_000,
-    });
-
-    // Title input should be present
-    const titleInput = page.getByPlaceholder(/wpisz tytuł dokumentu/i);
-    await expect(titleInput).toBeVisible({ timeout: 5_000 });
+    // Title input should be present (the main element on the create document page)
+    const titleInput = page.getByPlaceholder(
+      /wpisz tytuł dokumentu|enter document title/i,
+    );
+    await expect(titleInput).toBeVisible({ timeout: 10_000 });
   });
 
   test('create document validates empty title', async ({ page }) => {

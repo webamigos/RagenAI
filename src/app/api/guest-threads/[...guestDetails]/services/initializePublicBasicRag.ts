@@ -14,6 +14,7 @@ import {
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadata } from '@/app/actions';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 
 type InitializePublicRagChainParams = {
@@ -66,20 +67,21 @@ export const initializePublicRagChain = async ({
 
     const orgMetadata = await getOrganizationMetadata(organizationId);
     let vectorStore: VectorStoreClient;
-    let isMeilisearch = false;
 
-    if (orgMetadata.vectorStore === 'meilisearch') {
-      vectorStore = createMeilisearchVectorStore(
-        embeddingModel,
-        organizationId,
-      );
-      isMeilisearch = true;
-    } else {
+    if (orgMetadata.vectorStore === 'supabase') {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
         organizationId,
       );
+    } else if (orgMetadata.vectorStore === 'meilisearch') {
+      vectorStore = createMeilisearchVectorStore(
+        embeddingModel,
+        organizationId,
+      );
+    } else {
+      // Default: Qdrant
+      vectorStore = createQdrantVectorStore(embeddingModel, organizationId);
     }
 
     // Combine org prompt with project instruction if available
@@ -88,9 +90,11 @@ export const initializePublicRagChain = async ({
       finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
     }
 
-    // Configure metadata filter for project-level access control
-    const metadataFilter = isMeilisearch
-      ? {
+    // Supabase applies its own filter via constructor — don't pass metadataFilter
+    const isSupabase = orgMetadata.vectorStore === 'supabase';
+    const metadataFilter = isSupabase
+      ? undefined
+      : {
           must: [
             {
               key: 'metadata.organization_id',
@@ -105,8 +109,7 @@ export const initializePublicRagChain = async ({
               },
             },
           ],
-        }
-      : {};
+        };
 
     return await basicRagChain({
       models: {
@@ -116,7 +119,7 @@ export const initializePublicRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        metadataFilter: isMeilisearch ? metadataFilter : undefined,
+        metadataFilter,
         maxDocumentsToRetrieve,
         answerInstructions: finalInstructions,
         tracking: { organizationId },
@@ -127,6 +130,22 @@ export const initializePublicRagChain = async ({
     logger.error({ err: error }, 'Error initializing basic RAG chain');
     throw error;
   }
+};
+
+const createQdrantVectorStore = (
+  embeddingModel: EmbeddingsProvider,
+  collectionName: string,
+): VectorStoreClient => {
+  logger.debug('creating qdrant vector store', {
+    url: process.env.QDRANT_URL,
+    collectionName,
+  });
+
+  return new QdrantVectorStoreClient(embeddingModel, {
+    url: process.env.QDRANT_URL || 'http://localhost:6333',
+    apiKey: process.env.QDRANT_API_KEY,
+    collectionName,
+  });
 };
 
 const createMeilisearchVectorStore = (

@@ -58,7 +58,7 @@ test.describe('Knowledge Base P0', () => {
     ]);
 
     // Should show success toast
-    await expect(page.getByText(/file\(s\) uploaded|pliki/i)).toBeVisible({
+    await expect(page.getByText(/file\(s\) uploaded/i)).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -99,19 +99,28 @@ test.describe('Knowledge Base P0', () => {
     await expect(newFolderButton).toBeVisible({ timeout: 10_000 });
     await newFolderButton.click();
 
-    // Create folder dialog should open
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    // Create folder dialog should open — wait for the inner panel to be visible
+    const dialogPanel = page
+      .locator(
+        '[role="dialog"] [data-slot="panel"], [role="dialog"] form, [role="dialog"] input[type="text"]',
+      )
+      .first();
+    await expect(dialogPanel).toBeVisible({ timeout: 5_000 });
 
     // Fill in folder name
-    const nameInput = dialog.locator('input[type="text"]').first();
+    const nameInput = page
+      .locator('[role="dialog"] input[type="text"]')
+      .first();
     await nameInput.fill('E2E Test Folder');
 
     // Submit
-    await dialog.getByRole('button', { name: /create|stwórz|folder/i }).click();
+    await page
+      .locator('[role="dialog"]')
+      .getByRole('button', { name: /create|stwórz|folder/i })
+      .click();
 
-    // Dialog should close
-    await expect(dialog).not.toBeVisible({ timeout: 5_000 });
+    // Dialog should close — input should disappear
+    await expect(nameInput).not.toBeVisible({ timeout: 5_000 });
   });
 
   test('navigate to folder by clicking folder row', async ({ page }) => {
@@ -234,18 +243,16 @@ test.describe('Knowledge Base P0', () => {
     await expect(addFromUrlOption).toBeVisible({ timeout: 5_000 });
     await addFromUrlOption.click();
 
-    // Dialog should appear
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
-
-    // URL input should be present
-    const urlInput = dialog.locator('input[type="text"]');
-    await expect(urlInput).toBeVisible();
+    // Dialog should appear — wait for the input inside it
+    const urlInput = page.locator('[role="dialog"] input[type="text"]');
+    await expect(urlInput).toBeVisible({ timeout: 5_000 });
     await urlInput.fill('https://example.com/test');
 
     // Submit button should be present
     await expect(
-      dialog.getByRole('button', { name: /załaduj|process/i }),
+      page
+        .locator('[role="dialog"]')
+        .getByRole('button', { name: /załaduj|process/i }),
     ).toBeVisible();
   });
 

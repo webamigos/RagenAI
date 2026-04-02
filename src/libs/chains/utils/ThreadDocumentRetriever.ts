@@ -150,8 +150,8 @@ export class ThreadDocumentRetriever {
 
       const internalUserFileIds = userFiles.map((file) => file.id);
 
-      // Search vectorstore with fileId filter (Meilisearch format)
-      const meilisearchFilter = {
+      // Search vectorstore with fileId filter (intermediate format — works with all backends)
+      const fileIdFilter = {
         should: internalUserFileIds.map((fileId) => ({
           key: 'metadata.file_id',
           match: {
@@ -163,13 +163,14 @@ export class ThreadDocumentRetriever {
       const searchResults = await this.vectorStore.similaritySearch(
         query,
         maxChunks * 2, // Get more results for better filtering
-        meilisearchFilter,
+        fileIdFilter,
       );
 
       // Additional filtering to ensure results match our files
+      // Metadata uses snake_case (file_id) — check both for safety
       const filteredResults = searchResults
         .filter((doc) => {
-          const fileId = doc.metadata?.fileId;
+          const fileId = doc.metadata?.file_id ?? doc.metadata?.fileId;
           return fileId && internalUserFileIds.includes(fileId);
         })
         .slice(0, maxChunks);

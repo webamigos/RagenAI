@@ -1,4 +1,4 @@
-export type OrganizationVectorStore = 'meilisearch' | 'supabase';
+export type OrganizationVectorStore = 'qdrant' | 'meilisearch' | 'supabase';
 
 export type OrganizationPublicMetadata = {
   hasKnowledge: boolean;

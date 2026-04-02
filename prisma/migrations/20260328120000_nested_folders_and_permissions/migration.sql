@@ -14,7 +14,7 @@ CREATE TABLE "document_folders_new" (
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
 
-    CONSTRAINT "document_folders_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "document_folders_new_pkey" PRIMARY KEY ("id")
 );
 
 -- Step 2: Migrate existing data (old UUID id becomes publicId)
@@ -45,6 +45,7 @@ ALTER TABLE "user_files" RENAME COLUMN "folder_id_new" TO "folder_id";
 -- Step 5: Drop old document_folders table and rename new one
 DROP TABLE "document_folders";
 ALTER TABLE "document_folders_new" RENAME TO "document_folders";
+ALTER TABLE "document_folders" RENAME CONSTRAINT "document_folders_new_pkey" TO "document_folders_pkey";
 
 -- Step 6: Add constraints and indexes for document_folders
 CREATE UNIQUE INDEX "document_folders_public_id_key" ON "document_folders"("public_id");

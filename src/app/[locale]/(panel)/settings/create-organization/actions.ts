@@ -32,7 +32,7 @@ export async function createOrganizationAction(name: string, slug: string) {
   }
 
   // Set default vector store (merge with existing metadata)
-  const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
+  const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'qdrant';
   const existingOrg = await db.organization.findUnique({
     where: { id: org.id },
     select: { metadata: true },

@@ -13,6 +13,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
@@ -169,7 +170,7 @@ export const convertAndStoreDocument = async ({
 
     logger.info({ mimeType }, 'Detected MIME type');
 
-    // Resolve project publicId for Meilisearch metadata
+    // Resolve project publicId for metadata
     let resolvedProjectPublicId = projectPublicId ?? null;
     if (!resolvedProjectPublicId && projectId) {
       const project = await db.project.findUnique({
@@ -358,11 +359,25 @@ export const convertAndStoreDocument = async ({
           metadata: doc.metadata,
         })),
       );
-    } else {
+    } else if (vectorStoreType === 'meilisearch') {
       const vectorStore = new MeilisearchVectorStoreClient(embeddingModel, {
         url: process.env.MEILISEARCH_URL!,
         apiKey: process.env.MEILISEARCH_MASTER_KEY,
         indexName: orgId,
+      });
+
+      await vectorStore.addDocuments(
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        })),
+      );
+    } else {
+      // Default: Qdrant
+      const vectorStore = new QdrantVectorStoreClient(embeddingModel, {
+        url: process.env.QDRANT_URL || 'http://localhost:6333',
+        apiKey: process.env.QDRANT_API_KEY,
+        collectionName: orgId,
       });
 
       await vectorStore.addDocuments(

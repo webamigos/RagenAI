@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-docker compose up        # Start local Postgres, Redis, Meilisearch, Temporal, LiteLLM
+docker compose up        # Start local Postgres, Redis, Qdrant, Temporal, LiteLLM
 npm run dev              # Start Next.js dev server
 npm run build            # Production build (runs prisma generate first)
 npm run lint             # ESLint
@@ -54,11 +54,12 @@ After schema changes, re-run step 2 to apply new migrations to the e2e database.
 
 ## Local Development
 
-Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, Temporal on 7233, Temporal UI on 8080, LiteLLM on 4000, optional Redis on 6379). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Qdrant on 6333, Temporal on 7233, Temporal UI on 8080, LiteLLM on 4000, optional Redis on 6379, optional Meilisearch via `docker compose --profile meilisearch up`). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
 DEFAULT_MODEL_PROVIDER=litellm
@@ -67,7 +68,7 @@ DEFAULT_MODEL=gpt-4o
 
 ## Architecture
 
-**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search) + Temporal.io (async workflow orchestration) + LiteLLM (unified LLM proxy)
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Qdrant (vector search, default) + Temporal.io (async workflow orchestration) + LiteLLM (unified LLM proxy) + Cohere Rerank via Bedrock (post-retrieval reranking)
 
 **What it does**: RAG (Retrieval Augmented Generation) AI chat application with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
@@ -159,7 +160,8 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `llm/` — Chat completion & embeddings factories, all routed through LiteLLM proxy via `@ai-sdk/openai` with `.chat()` (OpenAI-compatible `/chat/completions` endpoint)
 - `litellm/` — LiteLLM proxy client: dynamic model fetching from `/v1/models`, health checks, caching
 - `chains/` — RAG chains
-- `vector-store/` — Vector store clients (Meilisearch, Supabase) implementing `VectorStoreClient` interface
+- `vector-store/` — Vector store clients (Qdrant, Meilisearch, Supabase) implementing `VectorStoreClient` interface
+- `reranker/` — Cohere Rerank v3.5 via AWS Bedrock for post-retrieval document reranking
 - `document-loaders/` — PDF, EPUB, Markdown, SRT, URL parsing
 - `db/` — Prisma client singleton (aliased as `@ragenai/prisma-client`)
 - `temporal/` — Temporal.io client for async document processing workflows
@@ -193,7 +195,7 @@ The Knowledge Base supports **nested folders**, **per-user file ownership**, and
 - "My Files" — files/folders owned by current user
 - "Shared with me" — only files with explicit `DocumentPermission` for user/teams
 
-**Meilisearch access filtering:**
+**Vector store access filtering:**
 - Each document chunk has `metadata.accessible_by: string[]` with principals like `"org:<orgId>"`, `"user:<userId>"`, `"team:<teamId>"`
 - RAG queries add `metadata.accessible_by` filter for non-admin users
 - Org admins bypass access filtering (see all org documents)
@@ -247,18 +249,38 @@ Message content (`Message.content`) is encrypted at rest using **AWS KMS envelop
 
 **Admin migration:** `encryptAllThreadsAction()` (app admin only) batch-encrypts all unencrypted threads across all organizations. Idempotent and resumable.
 
-### Vector Store (Meilisearch)
+### Vector Store (Qdrant)
 
-Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval. Key files:
-- Client: `src/libs/vector-store/meilisearch-client.ts` — implements `VectorStoreClient` interface
-- Interface: `src/libs/vector-store/types.ts` — `similaritySearch()`, `addDocuments()`
-- Organization index: each org gets its own Meilisearch index (named by org ID)
-- Embeddings: `userProvided` embedder with Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions)
-- Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
-- Filterable attributes: `metadata.project_id`, `metadata.project_public_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by`
+Qdrant is the default vector database for RAG document retrieval. Meilisearch and Supabase are supported as legacy backends via the `Organization.vectorStore` column.
+
+**Key files:**
+- Interface: `src/libs/vector-store/types.ts` — `VectorStoreClient` with `similaritySearch()`, `addDocuments()`, optional `deleteDocuments()`
+- Qdrant client: `src/libs/vector-store/qdrant-client.ts` — default implementation, auto-creates collections with payload indexes
+- Meilisearch client: `src/libs/vector-store/meilisearch-client.ts` — legacy, converts intermediate filter format to Meilisearch strings
+- Supabase client: `src/libs/vector-store/supabase-client.ts` — legacy pgvector backend
+
+**Configuration:**
+- Organization collection: each org gets its own Qdrant collection (named by org ID)
+- Embeddings: Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions, Cosine distance)
+- Payload indexes: `metadata.project_id`, `metadata.project_public_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by`
 - Access control: `metadata.accessible_by` array contains principals (`org:<id>`, `user:<id>`, `team:<id>`) — filtered at query time for non-admin users
-- Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
-- Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
+- Filter format: intermediate format (`{ must: [...], should: [...] }`) used across the codebase — each client converts internally
+- Env vars: `QDRANT_URL` (default `http://localhost:6333`), `QDRANT_API_KEY` (optional for local dev)
+
+**Multi-backend selection** (`Organization.vectorStore` column):
+- `null` or `'qdrant'` → Qdrant (default for new orgs)
+- `'meilisearch'` → Meilisearch (legacy)
+- `'supabase'` → Supabase pgvector (legacy)
+
+### Post-Retrieval Reranking
+
+Cohere Rerank v3.5 via AWS Bedrock improves retrieval quality as a post-retrieval step:
+- Over-retrieves 3x candidates from vector store, then reranks to top-k using Cohere cross-encoder
+- Particularly effective for Polish and multilingual content
+- Gracefully disabled when AWS credentials are not set (local dev without Bedrock)
+- Falls back to original vector search results on Bedrock errors
+- Key files: `src/libs/reranker/bedrock-cohere-reranker.ts`, integrated in `src/libs/chains/basic-rag/operations.ts`
+- Env vars: `RERANK_MODEL` (default `cohere.rerank-v3-5:0`), uses existing `AWS_*` credentials
 
 ### MCP Integrations (External Tools)
 
