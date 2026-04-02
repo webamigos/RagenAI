@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
@@ -12,6 +12,7 @@ import { authClient } from '@/app/hooks/use-better-auth';
 import { type ForgotPasswordData, ForgotPasswordSchema } from './schema';
 
 export const ForgotPasswordForm = () => {
+  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,11 +33,9 @@ export const ForgotPasswordForm = () => {
     setError(null);
 
     try {
-      // Better Auth forget password endpoint
-      // @ts-ignore - forgetPassword exists but is not properly typed in Better Auth client
-      const { error: apiError } = await authClient.forgetPassword({
+      const { error: apiError } = await authClient.requestPasswordReset({
         email,
-        redirectTo: '/reset-password',
+        redirectTo: `/${locale}/reset-password`,
       });
 
       if (apiError) {
@@ -55,9 +54,7 @@ export const ForgotPasswordForm = () => {
   if (success) {
     return (
       <div className="text-center">
-        <p className="text-green-600 dark:text-green-500">
-          Password reset email sent! Check your inbox.
-        </p>
+        <p className="text-green-600 dark:text-green-500">{t('email-sent')}</p>
       </div>
     );
   }

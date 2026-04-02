@@ -11,6 +11,7 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
       api_key: os.environ/AZURE_API_KEY
       api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.4-pro
 
   - model_name: gpt-5.4
     litellm_params:
@@ -18,6 +19,7 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
       api_key: os.environ/AZURE_API_KEY
       api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.4
 
   - model_name: gpt-5.4-mini
     litellm_params:
@@ -25,6 +27,7 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
       api_key: os.environ/AZURE_API_KEY
       api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.4-mini
 
   - model_name: gpt-5.4-nano
     litellm_params:
@@ -32,6 +35,7 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
       api_key: os.environ/AZURE_API_KEY
       api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.4-nano
 
   - model_name: gpt-5.3-chat
     litellm_params:
@@ -39,6 +43,7 @@ model_list:
       api_base: os.environ/AZURE_API_BASE
       api_key: os.environ/AZURE_API_KEY
       api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.3-chat
 
   # ---------------------------------------------------------------------------
   # AWS Bedrock — Anthropic Claude models
@@ -108,6 +113,16 @@ model_list:
       vertex_project: os.environ/VERTEX_PROJECT
       vertex_location: global
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  # ---------------------------------------------------------------------------
+  # Reranking
+  # ---------------------------------------------------------------------------
+  - model_name: cohere-rerank-v3-5
+    litellm_params:
+      model: bedrock/arn:aws:bedrock:eu-central-1::foundation-model/cohere.rerank-v3-5:0
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
 
   # ---------------------------------------------------------------------------
   # Embeddings

@@ -90,6 +90,7 @@
     "Forgot-password": "Forgot your password?",
     "Provide-email": "Your email",
     "Send-reset-code": "Send password reset code",
+    "email-sent": "Password reset email sent! Check your inbox.",
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Reset password"

@@ -1,4 +1,5 @@
-import { z } from 'zod';
+import { z, toJSONSchema } from 'zod';
+import { jsonSchema } from 'ai';
 import { nanoid } from 'nanoid';
 import { ragenAuthClient } from '@/libs/ragen-vault/client';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
@@ -42,87 +43,98 @@ const generateDocumentSchema = z.object({
     ),
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createGenerateDocumentTool(
-  ctx: GenerateDocumentToolContext,
-): any {
-  const execute = async ({
-    templateName,
-    rawInput,
-    clientName,
-    driveFolderId,
-  }: z.infer<
-    typeof generateDocumentSchema
-  >): Promise<GenerateDocumentToolResult> => {
-    const customerId = `${ctx.orgId}:${ctx.userId}:${GOOGLE_DRIVE_PROVIDER.toLowerCase()}`;
+type GenerateDocumentInput = z.infer<typeof generateDocumentSchema>;
 
-    let driveAccessToken: string;
-    try {
-      const tokenData = await ragenAuthClient.getToken(
-        customerId,
-        GOOGLE_DRIVE_PROVIDER,
-      );
-      driveAccessToken = tokenData.accessToken;
-    } catch (error) {
-      logger.error(
-        { err: error },
-        'Failed to fetch Google Drive token for document generation',
-      );
-      return {
-        success: false,
-        workflowId: null,
-        message:
-          'Google Drive is not connected. Please ask the user to connect Google Drive in Settings > Connectors before generating documents.',
-      };
-    }
+/**
+ * Convert Zod v4 schema to AI SDK jsonSchema format.
+ * Uses zod/v4/core toJSONSchema which produces proper JSON Schema
+ * with type: "object" that Azure OpenAI requires.
+ */
+const generateDocumentInputSchema = jsonSchema<GenerateDocumentInput>(
+  toJSONSchema(generateDocumentSchema, { target: 'draft-7' }) as Record<
+    string,
+    unknown
+  >,
+);
 
-    const workflowId = `docgen-${ctx.orgId}-${nanoid()}`;
-
-    try {
-      const client = getTemporalClient();
-      await client.workflow.start(Workflow.GENERATE_DOCUMENT, {
-        workflowId,
-        taskQueue: TASK_QUEUE_NAME,
-        args: [
-          {
-            templateName,
-            rawInput: { content: rawInput },
-            clientName,
-            driveFolderId,
-            driveAccessToken,
-            orgId: ctx.orgId,
-            userId: ctx.userId,
-            userEmail: ctx.userEmail,
-          },
-        ],
-      });
-    } catch (error) {
-      logger.error(
-        { err: error },
-        'Failed to start document generation workflow',
-      );
-      return {
-        success: false,
-        workflowId: null,
-        message: 'Failed to start document generation. Please try again later.',
-      };
-    }
-
-    return {
-      success: true,
-      workflowId,
-      message:
-        'Document generation has been started. The DOCX file will be uploaded to the specified Google Drive folder once ready. ' +
-        `Workflow ID: ${workflowId}`,
-    };
-  };
-
+export function createGenerateDocumentTool(ctx: GenerateDocumentToolContext) {
   return {
     description:
       'Generate a professional DOCX document from workshop notes or transcript. ' +
       'The document is created asynchronously and uploaded to a specified Google Drive folder. ' +
       'Returns a workflow ID that can be used to check generation status.',
-    parameters: generateDocumentSchema,
-    execute,
+    // inputSchema is what @ai-sdk/openai reads for tool parameters
+    inputSchema: generateDocumentInputSchema,
+    // parameters kept for backwards compatibility
+    parameters: generateDocumentInputSchema,
+    execute: async ({
+      templateName,
+      rawInput,
+      clientName,
+      driveFolderId,
+    }: GenerateDocumentInput): Promise<GenerateDocumentToolResult> => {
+      const customerId = `${ctx.orgId}:${ctx.userId}:${GOOGLE_DRIVE_PROVIDER.toLowerCase()}`;
+
+      let driveAccessToken: string;
+      try {
+        const tokenData = await ragenAuthClient.getToken(
+          customerId,
+          GOOGLE_DRIVE_PROVIDER,
+        );
+        driveAccessToken = tokenData.accessToken;
+      } catch (error) {
+        logger.error(
+          { err: error },
+          'Failed to fetch Google Drive token for document generation',
+        );
+        return {
+          success: false,
+          workflowId: null,
+          message:
+            'Google Drive is not connected. Please ask the user to connect Google Drive in Settings > Connectors before generating documents.',
+        };
+      }
+
+      const workflowId = `docgen-${ctx.orgId}-${nanoid()}`;
+
+      try {
+        const client = getTemporalClient();
+        await client.workflow.start(Workflow.GENERATE_DOCUMENT, {
+          workflowId,
+          taskQueue: TASK_QUEUE_NAME,
+          args: [
+            {
+              templateName,
+              rawInput: { content: rawInput },
+              clientName,
+              driveFolderId,
+              driveAccessToken,
+              orgId: ctx.orgId,
+              userId: ctx.userId,
+              userEmail: ctx.userEmail,
+            },
+          ],
+        });
+      } catch (error) {
+        logger.error(
+          { err: error },
+          'Failed to start document generation workflow',
+        );
+        return {
+          success: false,
+          workflowId: null,
+          message:
+            'Failed to start document generation. Please try again later.',
+        };
+      }
+
+      return {
+        success: true,
+        workflowId,
+        message:
+          'Document generation has been started. The DOCX file will be uploaded to the specified Google Drive folder once ready. ' +
+          `Workflow ID: ${workflowId}`,
+      };
+    },
   };
 }
