@@ -33,8 +33,7 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
         .from(VECTOR_STORE_TABLE_NAME)
         .delete()
         .eq('metadata->>file_id', fileId);
-    } else {
-      // Default: Qdrant
+    } else if (!vectorStoreType || vectorStoreType === 'qdrant') {
       const client = new QdrantClient({
         url: process.env.QDRANT_URL || 'http://localhost:6333',
         apiKey: process.env.QDRANT_API_KEY,
@@ -51,6 +50,11 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
         },
         wait: true,
       });
+    } else {
+      logger.error(
+        { vectorStoreType, orgId },
+        'Unrecognized vector store type, cannot delete documents',
+      );
     }
   } catch (error) {
     logger.error({ err: error }, 'Error in deleteDocument function');

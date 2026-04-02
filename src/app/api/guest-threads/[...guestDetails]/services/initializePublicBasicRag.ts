@@ -90,23 +90,26 @@ export const initializePublicRagChain = async ({
       finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
     }
 
-    // Configure metadata filter for project-level access control
-    const metadataFilter = {
-      must: [
-        {
-          key: 'metadata.organization_id',
-          match: {
-            value: organizationId,
-          },
-        },
-        {
-          key: 'metadata.project_public_id',
-          match: {
-            value: projectPublicId,
-          },
-        },
-      ],
-    };
+    // Supabase applies its own filter via constructor — don't pass metadataFilter
+    const isSupabase = orgMetadata.vectorStore === 'supabase';
+    const metadataFilter = isSupabase
+      ? undefined
+      : {
+          must: [
+            {
+              key: 'metadata.organization_id',
+              match: {
+                value: organizationId,
+              },
+            },
+            {
+              key: 'metadata.project_public_id',
+              match: {
+                value: projectPublicId,
+              },
+            },
+          ],
+        };
 
     return await basicRagChain({
       models: {

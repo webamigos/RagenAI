@@ -8,6 +8,8 @@ const VECTOR_SIZE = 1024; // Cohere embed-multilingual-v3
 
 /** Tracks collections already verified in this process to avoid redundant API calls. */
 const verifiedCollections = new Set<string>();
+/** In-flight verification promises to prevent concurrent duplicate creation. */
+const inFlightVerifications = new Map<string, Promise<void>>();
 
 interface QdrantConfig {
   url?: string;
@@ -202,42 +204,62 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
       return;
     }
 
-    const exists = await this.client.collectionExists(this.collectionName);
-    if (!exists.exists) {
-      await this.client.createCollection(this.collectionName, {
-        vectors: {
-          size: VECTOR_SIZE,
-          distance: 'Cosine',
-        },
-        optimizers_config: {
-          indexing_threshold: 20000,
-        },
-      });
-
-      // Create payload indexes for filterable metadata fields
-      const indexFields = [
-        'metadata.project_id',
-        'metadata.project_public_id',
-        'metadata.file_id',
-        'metadata.organization_id',
-        'metadata.accessible_by',
-      ];
-
-      for (const field of indexFields) {
-        await this.client.createPayloadIndex(this.collectionName, {
-          field_name: field,
-          field_schema: 'keyword',
-        });
-      }
-
-      logger.info(
-        { collection: this.collectionName },
-        'Qdrant collection created with payload indexes',
-      );
+    // Deduplicate concurrent calls for the same collection
+    const existing = inFlightVerifications.get(this.collectionName);
+    if (existing) {
+      await existing;
+      this.collectionVerified = true;
+      return;
     }
 
-    verifiedCollections.add(this.collectionName);
-    this.collectionVerified = true;
+    const promise = this.createCollectionIfNeeded();
+    inFlightVerifications.set(this.collectionName, promise);
+
+    try {
+      await promise;
+      verifiedCollections.add(this.collectionName);
+      this.collectionVerified = true;
+    } finally {
+      inFlightVerifications.delete(this.collectionName);
+    }
+  }
+
+  private async createCollectionIfNeeded(): Promise<void> {
+    const exists = await this.client.collectionExists(this.collectionName);
+    if (exists.exists) {
+      return;
+    }
+
+    await this.client.createCollection(this.collectionName, {
+      vectors: {
+        size: VECTOR_SIZE,
+        distance: 'Cosine',
+      },
+      optimizers_config: {
+        indexing_threshold: 20000,
+      },
+    });
+
+    // Create payload indexes for filterable metadata fields
+    const indexFields = [
+      'metadata.project_id',
+      'metadata.project_public_id',
+      'metadata.file_id',
+      'metadata.organization_id',
+      'metadata.accessible_by',
+    ];
+
+    for (const field of indexFields) {
+      await this.client.createPayloadIndex(this.collectionName, {
+        field_name: field,
+        field_schema: 'keyword',
+      });
+    }
+
+    logger.info(
+      { collection: this.collectionName },
+      'Qdrant collection created with payload indexes',
+    );
   }
 }
 

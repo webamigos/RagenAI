@@ -167,9 +167,10 @@ export class ThreadDocumentRetriever {
       );
 
       // Additional filtering to ensure results match our files
+      // Metadata uses snake_case (file_id) — check both for safety
       const filteredResults = searchResults
         .filter((doc) => {
-          const fileId = doc.metadata?.fileId;
+          const fileId = doc.metadata?.file_id ?? doc.metadata?.fileId;
           return fileId && internalUserFileIds.includes(fileId);
         })
         .slice(0, maxChunks);

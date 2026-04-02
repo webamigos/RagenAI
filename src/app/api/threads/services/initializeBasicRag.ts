@@ -97,13 +97,17 @@ export const initializeRagChain = async ({
       vectorStore = createQdrantVectorStore(embeddingModel, orgId);
     }
 
-    const metadataFilter = await buildMetadataFilter(
-      orgId,
-      projectId ?? null,
-      userId ?? null,
-      userTeamIds,
-      isOrgAdmin,
-    );
+    // Supabase applies its own filter via constructor — don't pass metadataFilter
+    const isSupabase = orgMetadata.vectorStore === 'supabase';
+    const metadataFilter = isSupabase
+      ? undefined
+      : await buildMetadataFilter(
+          orgId,
+          projectId ?? null,
+          userId ?? null,
+          userTeamIds,
+          isOrgAdmin,
+        );
 
     return await basicRagChain({
       models: {

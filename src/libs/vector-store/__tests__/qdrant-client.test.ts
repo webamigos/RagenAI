@@ -1,14 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the QdrantClient before importing
-const mockQuery = vi.fn();
-const mockUpsert = vi.fn();
-const mockDelete = vi.fn();
-const mockSetPayload = vi.fn();
-const mockScroll = vi.fn();
-const mockCollectionExists = vi.fn();
-const mockCreateCollection = vi.fn();
-const mockCreatePayloadIndex = vi.fn();
+const {
+  mockQuery,
+  mockUpsert,
+  mockDelete,
+  mockSetPayload,
+  mockScroll,
+  mockCollectionExists,
+  mockCreateCollection,
+  mockCreatePayloadIndex,
+} = vi.hoisted(() => ({
+  mockQuery: vi.fn(),
+  mockUpsert: vi.fn(),
+  mockDelete: vi.fn(),
+  mockSetPayload: vi.fn(),
+  mockScroll: vi.fn(),
+  mockCollectionExists: vi.fn(),
+  mockCreateCollection: vi.fn(),
+  mockCreatePayloadIndex: vi.fn(),
+}));
 
 vi.mock('@qdrant/js-client-rest', () => ({
   QdrantClient: vi.fn().mockImplementation(() => ({
