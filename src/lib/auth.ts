@@ -30,8 +30,15 @@ async function sendPasswordResetEmail({
   try {
     const { sendPasswordResetEmailViaMailer } =
       await import('@/app/emails/services/mailer');
-    await sendPasswordResetEmailViaMailer({ to, resetUrl });
-    console.log('[AUTH] Password reset email sent', { to });
+    const result = await sendPasswordResetEmailViaMailer({ to, resetUrl });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to send password reset email', {
+        to,
+        error: result.error,
+      });
+    } else {
+      console.log('[AUTH] Password reset email sent', { to });
+    }
   } catch (error) {
     console.error('[AUTH] Failed to send password reset email', { to, error });
   }

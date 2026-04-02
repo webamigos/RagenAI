@@ -90,6 +90,7 @@
     "Forgot-password": "Zapomniałeś hasła?",
     "Provide-email": "Twój email",
     "Send-reset-code": "Wyślij kod do resetowania hasła",
+    "email-sent": "E-mail z resetem hasła został wysłany! Sprawdź swoją skrzynkę.",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
     "Reset-password": "Zresetuj hasło",

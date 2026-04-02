@@ -409,7 +409,12 @@ export async function streamEvents({
           }
 
           // Load built-in tools for authenticated internal users
-          if (userId && mode === AssistantMode.INTERNAL) {
+          // Gated behind FEATURE_FLAG_BUILT_IN_TOOLS (disabled by default — document generation tool needs more work)
+          if (
+            process.env.FEATURE_FLAG_BUILT_IN_TOOLS === '1' &&
+            userId &&
+            mode === AssistantMode.INTERNAL
+          ) {
             try {
               const session = await getSession();
               const userEmail = session?.user?.email || '';

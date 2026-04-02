@@ -1,11 +1,7 @@
-import {
-  BedrockRuntimeClient,
-  InvokeModelCommand,
-} from '@aws-sdk/client-bedrock-runtime';
 import { logger } from '@/app/lib/utils/logger';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 
-const RERANK_MODEL_ID = process.env.RERANK_MODEL || 'cohere.rerank-v3-5:0';
+const RERANK_MODEL = process.env.RERANK_MODEL || 'cohere-rerank-v3-5';
 
 const DEFAULT_RERANK_TOP_N = 5;
 
@@ -15,31 +11,21 @@ export interface RerankResult {
   document: VectorStoreDocument;
 }
 
-let clientInstance: BedrockRuntimeClient | null = null;
-
-function getClient(): BedrockRuntimeClient {
-  if (!clientInstance) {
-    clientInstance = new BedrockRuntimeClient({
-      region: process.env.AWS_DEFAULT_REGION || 'eu-central-1',
-    });
-  }
-  return clientInstance;
-}
-
 /**
- * Check if reranking is available (Bedrock credentials configured).
- * When AWS credentials are not set (e.g., local dev without Bedrock),
- * reranking is silently skipped.
+ * Check if reranking is available (LiteLLM proxy configured).
  */
 export function isRerankingEnabled(): boolean {
-  return !!process.env.AWS_ACCESS_KEY_ID && !!process.env.AWS_SECRET_ACCESS_KEY;
+  return (
+    process.env.FEATURE_FLAG_RERANKING === '1' &&
+    !!process.env.LITELLM_PROXY_URL
+  );
 }
 
 /**
- * Rerank documents using Cohere Rerank v3.5 via AWS Bedrock.
+ * Rerank documents using Cohere Rerank v3.5 via LiteLLM proxy.
  *
- * Takes a query and a list of documents retrieved from the vector store,
- * and returns the top-N most relevant documents sorted by relevance score.
+ * Routes through LiteLLM's /rerank endpoint so costs, tokens, and Langfuse
+ * traces are tracked automatically — same as chat completions and embeddings.
  *
  * @param query - The user's search query (or rephrased standalone question)
  * @param documents - Documents from vector store similarity search
@@ -60,25 +46,36 @@ export async function rerankDocuments(
     return documents;
   }
 
-  const client = getClient();
+  const baseUrl = (
+    process.env.LITELLM_PROXY_URL || 'http://localhost:4000'
+  ).replace(/\/$/, '');
+  const apiKey = process.env.LITELLM_MASTER_KEY || 'sk-litellm';
+
   const texts = documents.map((doc) => doc.pageContent);
 
   try {
-    const response = await client.send(
-      new InvokeModelCommand({
-        modelId: RERANK_MODEL_ID,
-        body: JSON.stringify({
-          query,
-          documents: texts,
-          top_n: topN,
-          api_version: 2,
-        }),
-        contentType: 'application/json',
-        accept: 'application/json',
+    const response = await fetch(`${baseUrl}/rerank`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: RERANK_MODEL,
+        query,
+        documents: texts,
+        top_n: topN,
       }),
-    );
+    });
 
-    const parsed = JSON.parse(new TextDecoder().decode(response.body)) as {
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(
+        `LiteLLM rerank failed (${response.status}): ${errorBody}`,
+      );
+    }
+
+    const parsed = (await response.json()) as {
       results: Array<{ index: number; relevance_score: number }>;
     };
 
@@ -91,14 +88,15 @@ export async function rerankDocuments(
         inputCount: documents.length,
         outputCount: reranked.length,
         topScore: parsed.results[0]?.relevance_score,
+        model: RERANK_MODEL,
       },
-      'Documents reranked via Cohere Bedrock',
+      'Documents reranked via LiteLLM',
     );
 
     return reranked;
   } catch (error) {
     logger.error(
-      { err: error, model: RERANK_MODEL_ID },
+      { err: error, model: RERANK_MODEL },
       'Reranking failed, returning original documents',
     );
     // Graceful degradation: return original top-N without reranking
