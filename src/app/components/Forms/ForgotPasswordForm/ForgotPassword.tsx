@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 
@@ -12,6 +12,7 @@ import { authClient } from '@/app/hooks/use-better-auth';
 import { type ForgotPasswordData, ForgotPasswordSchema } from './schema';
 
 export const ForgotPasswordForm = () => {
+  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +35,7 @@ export const ForgotPasswordForm = () => {
     try {
       const { error: apiError } = await authClient.requestPasswordReset({
         email,
-        redirectTo: '/reset-password',
+        redirectTo: `/${locale}/reset-password`,
       });
 
       if (apiError) {

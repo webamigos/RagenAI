@@ -1,7 +1,6 @@
-import { z } from 'zod';
+import { z, toJSONSchema } from 'zod';
 import { jsonSchema } from 'ai';
 import { nanoid } from 'nanoid';
-import { toJSONSchema } from 'zod/v4/core';
 import { ragenAuthClient } from '@/libs/ragen-vault/client';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';

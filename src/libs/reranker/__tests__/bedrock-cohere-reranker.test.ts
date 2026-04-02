@@ -41,6 +41,7 @@ describe('bedrock-cohere-reranker', () => {
     process.env = { ...originalEnv };
     process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
     process.env.LITELLM_MASTER_KEY = 'sk-test';
+    process.env.FEATURE_FLAG_RERANKING = '1';
   });
 
   afterEach(() => {
@@ -49,13 +50,27 @@ describe('bedrock-cohere-reranker', () => {
   });
 
   describe('isRerankingEnabled', () => {
-    it('should return true when LITELLM_PROXY_URL is set', () => {
+    it('should return true when feature flag and LITELLM_PROXY_URL are set', () => {
+      process.env.FEATURE_FLAG_RERANKING = '1';
       process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
       expect(isRerankingEnabled()).toBe(true);
     });
 
     it('should return false when LITELLM_PROXY_URL is missing', () => {
+      process.env.FEATURE_FLAG_RERANKING = '1';
       delete process.env.LITELLM_PROXY_URL;
+      expect(isRerankingEnabled()).toBe(false);
+    });
+
+    it('should return false when feature flag is missing', () => {
+      delete process.env.FEATURE_FLAG_RERANKING;
+      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
+      expect(isRerankingEnabled()).toBe(false);
+    });
+
+    it('should return false when feature flag is not "1"', () => {
+      process.env.FEATURE_FLAG_RERANKING = '0';
+      process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
       expect(isRerankingEnabled()).toBe(false);
     });
   });
@@ -112,7 +127,7 @@ describe('bedrock-cohere-reranker', () => {
       const call = vi.mocked(globalThis.fetch).mock.calls[0];
       const body = JSON.parse(call[1]?.body as string);
       expect(body).toEqual({
-        model: 'bedrock/cohere.rerank-v3-5:0',
+        model: 'cohere-rerank-v3-5',
         query: 'my query',
         documents: docs.map((d) => d.pageContent),
         top_n: 2,
