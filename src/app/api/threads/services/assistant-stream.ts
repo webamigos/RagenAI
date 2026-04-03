@@ -467,7 +467,15 @@ export async function streamEvents({
           ];
           const skipLangfuseContent = isEncryptionEnabled();
           updateActiveTrace({
-            name: `chat-${mode === AssistantMode.PUBLIC ? 'public' : filteredMode === ChatType.CONVERSATION ? 'conversation' : 'rag'}`,
+            name: `chat-${(() => {
+              if (mode === AssistantMode.PUBLIC) {
+                return 'public';
+              }
+              if (filteredMode === ChatType.CONVERSATION) {
+                return 'conversation';
+              }
+              return 'rag';
+            })()}`,
             ...(skipLangfuseContent ? {} : { input: userMessage.prompt }),
             userId: userId ?? undefined,
             sessionId: `${orgId}:${threadRecord.publicId}`,

@@ -289,50 +289,61 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
       >
-        {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="size-6 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
-          </div>
-        ) : !hasContent && !isError ? (
-          <div
-            className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600 mb-3" />
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {tFolders('drag-drop')}
-            </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              {tFolders('or-browse')}
-            </p>
-          </div>
-        ) : viewMode === 'list' ? (
-          <FileListView
-            isError={isError}
-            deleteLoading={deleteLoading}
-            isLoading={false}
-            addFile={addFile}
-            removeFile={removeFile}
-            files={defaultProjectFiles}
-            subfolders={subfolders}
-            onNavigateFolder={setFolder}
-            showModal={showModal}
-            toggleModal={toggleModal}
-            handleDelete={handleDelete}
-          />
-        ) : (
-          <GridView
-            deleteLoading={deleteLoading}
-            isError={isError}
-            isLoading={false}
-            addFile={addFile}
-            showModal={showModal}
-            removeFile={removeFile}
-            files={defaultProjectFiles}
-            toggleModal={toggleModal}
-            handleDelete={handleDelete}
-          />
-        )}
+        {(() => {
+          if (isLoading) {
+            return (
+              <div className="flex items-center justify-center py-16">
+                <div className="size-6 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
+              </div>
+            );
+          }
+          if (!hasContent && !isError) {
+            return (
+              <div
+                className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600 mb-3" />
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  {tFolders('drag-drop')}
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  {tFolders('or-browse')}
+                </p>
+              </div>
+            );
+          }
+          if (viewMode === 'list') {
+            return (
+              <FileListView
+                isError={isError}
+                deleteLoading={deleteLoading}
+                isLoading={false}
+                addFile={addFile}
+                removeFile={removeFile}
+                files={defaultProjectFiles}
+                subfolders={subfolders}
+                onNavigateFolder={setFolder}
+                showModal={showModal}
+                toggleModal={toggleModal}
+                handleDelete={handleDelete}
+              />
+            );
+          }
+          return (
+            <GridView
+              deleteLoading={deleteLoading}
+              isError={isError}
+              isLoading={false}
+              addFile={addFile}
+              showModal={showModal}
+              removeFile={removeFile}
+              files={defaultProjectFiles}
+              toggleModal={toggleModal}
+              handleDelete={handleDelete}
+            />
+          );
+        })()}
       </div>
 
       <CreateFolderDialog

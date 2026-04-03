@@ -1,5 +1,6 @@
 import { logger } from '@/app/lib/utils/logger';
 import type { AvailableModel, ModelOrigin } from '@/app/components/config';
+import { MODEL_REGISTRY } from '@/libs/llm/model-registry';
 import type {
   LiteLLMTeamCreateParams,
   LiteLLMTeamUpdateParams,
@@ -101,13 +102,22 @@ export async function fetchLiteLLMModels(): Promise<AvailableModel[]> {
 
     const data = (await response.json()) as LiteLLMModelsResponse;
 
-    const models: AvailableModel[] = data.data.map((m) => ({
-      value: m.id,
-      label: inferLabel(m.id),
-      provider: 'litellm' as const,
-      origin: inferOrigin(m.id),
-      reasoning: inferReasoning(m.id),
-    }));
+    const models: AvailableModel[] = data.data
+      .filter((m) => {
+        const entry = MODEL_REGISTRY[m.id];
+        // If model is in registry, respect its visibility; otherwise show it
+        return !entry || entry.visible;
+      })
+      .map((m) => {
+        const entry = MODEL_REGISTRY[m.id];
+        return {
+          value: m.id,
+          label: entry?.displayName ?? inferLabel(m.id),
+          provider: 'litellm' as const,
+          origin: entry?.origin ?? inferOrigin(m.id),
+          reasoning: entry?.reasoning ?? inferReasoning(m.id),
+        };
+      });
 
     modelsCache = { data: models, timestamp: Date.now() };
     return models;

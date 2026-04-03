@@ -38,8 +38,13 @@ export const ChatbotWidget = ({ organizationId, searchParams }: Props) => {
     window.parent.postMessage(
       {
         type: 'resize',
-        width: newIsOpen ? (newIsMinimized ? 400 : 400) : 80,
-        height: newIsOpen ? (newIsMinimized ? 64 : 600) : 80,
+        width: newIsOpen ? 400 : 80,
+        height: (() => {
+          if (!newIsOpen) {
+            return 80;
+          }
+          return newIsMinimized ? 64 : 600;
+        })(),
       },
       '*',
     );

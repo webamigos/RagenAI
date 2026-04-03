@@ -370,7 +370,7 @@ export function DocumentComponent({ publicId }: Props) {
           )}
         </div>
       </div>
-      {isEditing ? (
+      {isEditing && (
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col w-full flex-1"
@@ -415,7 +415,8 @@ export function DocumentComponent({ publicId }: Props) {
             </Button>
           </div>
         </form>
-      ) : showPdfPanel && pdfFilePublicId ? (
+      )}
+      {!isEditing && showPdfPanel && pdfFilePublicId && (
         <div className="flex flex-1 overflow-hidden">
           <div
             className="w-1/2 overflow-auto px-6 py-8 lg:px-10 border-r border-zinc-200 dark:border-zinc-700"
@@ -432,7 +433,8 @@ export function DocumentComponent({ publicId }: Props) {
             <PdfViewer filePublicId={pdfFilePublicId} />
           </div>
         </div>
-      ) : (
+      )}
+      {!isEditing && !(showPdfPanel && pdfFilePublicId) && (
         <div
           className="flex-1 w-full overflow-auto px-6 py-8 lg:px-12"
           onDoubleClick={handleDoubleClick}

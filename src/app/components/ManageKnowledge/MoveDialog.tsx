@@ -118,13 +118,15 @@ export function MoveDialog({
         <button
           type="button"
           disabled={disabled}
-          className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm ${
-            disabled
-              ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-              : isSelected
-                ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-          }`}
+          className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm ${(() => {
+            if (disabled) {
+              return 'text-gray-300 dark:text-gray-600 cursor-not-allowed';
+            }
+            if (isSelected) {
+              return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300';
+            }
+            return 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800';
+          })()}`}
           style={{ paddingLeft: `${12 + depth * 20}px` }}
           onClick={() => {
             if (!disabled) {

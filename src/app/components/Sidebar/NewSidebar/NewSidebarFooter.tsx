@@ -39,11 +39,12 @@ export const NewSidebarFooter = () => {
   const userName = user?.name;
   const initials = getInitials(userName);
 
-  const roleLabel = isAppAdmin
-    ? t('role-app-admin')
-    : isOrgAdmin
-      ? t('role-org-admin')
-      : t('role-user');
+  let roleLabel = t('role-user');
+  if (isAppAdmin) {
+    roleLabel = t('role-app-admin');
+  } else if (isOrgAdmin) {
+    roleLabel = t('role-org-admin');
+  }
 
   return (
     <SidebarFooter>

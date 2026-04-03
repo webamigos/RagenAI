@@ -243,11 +243,15 @@ export const Textarea = forwardRef(
         <ArrowRightCircleIcon
           className={classMerge(
             'size-7',
-            hasText
-              ? disabled
-                ? 'text-gray-300 dark:text-gray-600'
-                : 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
-              : 'text-gray-300 dark:text-gray-600',
+            (() => {
+              if (hasText && disabled) {
+                return 'text-gray-300 dark:text-gray-600';
+              }
+              if (hasText) {
+                return 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300';
+              }
+              return 'text-gray-300 dark:text-gray-600';
+            })(),
           )}
           aria-hidden="true"
         />
@@ -311,13 +315,18 @@ export const Textarea = forwardRef(
           <div
             className={classMerge(
               'relative rounded-xl border transition-colors dark:bg-secondary-dark',
-              isDragOver
-                ? 'border-2 border-blue-400 dark:border-blue-500'
-                : error
-                  ? 'border-red-300'
-                  : disabled
-                    ? 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50'
-                    : 'border-gray-300 dark:border-gray-800',
+              (() => {
+                if (isDragOver) {
+                  return 'border-2 border-blue-400 dark:border-blue-500';
+                }
+                if (error) {
+                  return 'border-red-300';
+                }
+                if (disabled) {
+                  return 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50';
+                }
+                return 'border-gray-300 dark:border-gray-800';
+              })(),
               !error && 'shadow-xs',
             )}
             onDragEnter={handleDragEnter}

@@ -60,18 +60,22 @@ export const FileSearch = ({
           ${isOpenMobile ? 'w-64' : 'w-0 p-0 border-0'}
         `}
           placeholder={t('search-placeholder')}
-          iconRight={
-            value ? (
-              <button
-                onClick={handleClear}
-                className="flex items-center justify-center h-full w-6"
-              >
-                <XCircle className="h-5 w-5" />
-              </button>
-            ) : !isOpenMobile ? null : (
-              <SearchIcon className="absolute top-2.5 right-1 h-4 w-4" />
-            )
-          }
+          iconRight={(() => {
+            if (value) {
+              return (
+                <button
+                  onClick={handleClear}
+                  className="flex items-center justify-center h-full w-6"
+                >
+                  <XCircle className="h-5 w-5" />
+                </button>
+              );
+            }
+            if (!isOpenMobile) {
+              return null;
+            }
+            return <SearchIcon className="absolute top-2.5 right-1 h-4 w-4" />;
+          })()}
         />
       </div>
 

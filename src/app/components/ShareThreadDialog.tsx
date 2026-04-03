@@ -89,62 +89,73 @@ export function ShareThreadDialog({ isOpen, onClose, threadPublicId }: Props) {
         </DialogHeader>
 
         <div className="max-h-64 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex justify-center py-6">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
-            </div>
-          ) : fetchError ? (
-            <div className="flex flex-col items-center gap-2 py-4">
-              <p className="text-sm text-muted-foreground">
-                {t('share-load-error')}
-              </p>
-              <Button variant="outline" size="sm" onClick={fetchShares}>
-                {t('share-retry')}
-              </Button>
-            </div>
-          ) : members.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              {t('share-no-members')}
-            </p>
-          ) : (
-            <div className="space-y-1">
-              {members.map((member) => (
-                <label
-                  key={member.userId}
-                  className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50 cursor-pointer"
-                >
-                  <div className="flex-shrink-0">
-                    {member.image ? (
-                      <img
-                        src={member.image}
-                        alt=""
-                        className="size-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <UserCircleIcon className="size-8 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {member.name || member.email}
-                    </p>
-                    {member.name && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {member.email}
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="flex justify-center py-6">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                </div>
+              );
+            }
+            if (fetchError) {
+              return (
+                <div className="flex flex-col items-center gap-2 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t('share-load-error')}
+                  </p>
+                  <Button variant="outline" size="sm" onClick={fetchShares}>
+                    {t('share-retry')}
+                  </Button>
+                </div>
+              );
+            }
+            if (members.length === 0) {
+              return (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  {t('share-no-members')}
+                </p>
+              );
+            }
+            return (
+              <div className="space-y-1">
+                {members.map((member) => (
+                  <label
+                    key={member.userId}
+                    className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted/50 cursor-pointer"
+                  >
+                    <div className="flex-shrink-0">
+                      {member.image ? (
+                        <img
+                          src={member.image}
+                          alt=""
+                          className="size-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <UserCircleIcon className="size-8 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {member.name || member.email}
                       </p>
-                    )}
-                  </div>
-                  <Switch
-                    checked={member.isShared}
-                    onCheckedChange={(checked) =>
-                      handleToggle(member.userId, checked)
-                    }
-                    size="sm"
-                  />
-                </label>
-              ))}
-            </div>
-          )}
+                      {member.name && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {member.email}
+                        </p>
+                      )}
+                    </div>
+                    <Switch
+                      checked={member.isShared}
+                      onCheckedChange={(checked) =>
+                        handleToggle(member.userId, checked)
+                      }
+                      size="sm"
+                    />
+                  </label>
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         <DialogFooter>

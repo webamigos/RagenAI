@@ -444,57 +444,67 @@ export const GoogleDriveFolderPickerDialog = ({
               ref={folderScrollRef}
               className="max-h-72 overflow-y-auto -mx-1"
             >
-              {isFoldersLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
-                </div>
-              ) : folders.length === 0 ? (
-                <div className="text-center py-8 text-sm text-muted-foreground">
-                  {folderSearch ? t('no-results') : t('no-folders')}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-0.5">
-                  {folders.map((folder) => (
-                    <button
-                      key={folder.id}
-                      type="button"
-                      onClick={() => handleFolderClick(folder)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    >
-                      <img
-                        src="/assets/connectors/google-drive.svg"
-                        alt="Folder"
-                        className="size-5 shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm truncate">{folder.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDate(folder.modified_time)}
-                          {folder.owner && (
-                            <span className="ml-2">{folder.owner}</span>
+              {(() => {
+                if (isFoldersLoading) {
+                  return (
+                    <div className="flex justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                    </div>
+                  );
+                }
+                if (folders.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-sm text-muted-foreground">
+                      {folderSearch ? t('no-results') : t('no-folders')}
+                    </div>
+                  );
+                }
+                return (
+                  <div className="flex flex-col gap-0.5">
+                    {folders.map((folder) => (
+                      <button
+                        key={folder.id}
+                        type="button"
+                        onClick={() => handleFolderClick(folder)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      >
+                        <img
+                          src="/assets/connectors/google-drive.svg"
+                          alt="Folder"
+                          className="size-5 shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm truncate">{folder.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatDate(folder.modified_time)}
+                            {folder.owner && (
+                              <span className="ml-2">{folder.owner}</span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+
+                    {!!folderNextPageToken &&
+                      folderBatchCount < MAX_BATCHES && (
+                        <div ref={folderSentinelRef} className="py-2">
+                          {isFolderLoadingMore && (
+                            <div className="flex justify-center">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                            </div>
                           )}
                         </div>
-                      </div>
-                    </button>
-                  ))}
+                      )}
 
-                  {!!folderNextPageToken && folderBatchCount < MAX_BATCHES && (
-                    <div ref={folderSentinelRef} className="py-2">
-                      {isFolderLoadingMore && (
-                        <div className="flex justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                    {folderBatchCount >= MAX_BATCHES &&
+                      !!folderNextPageToken && (
+                        <div className="text-center py-3 text-xs text-muted-foreground">
+                          {t('use-search-hint')}
                         </div>
                       )}
-                    </div>
-                  )}
-
-                  {folderBatchCount >= MAX_BATCHES && !!folderNextPageToken && (
-                    <div className="text-center py-3 text-xs text-muted-foreground">
-                      {t('use-search-hint')}
-                    </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                );
+              })()}
             </div>
           </>
         )}
@@ -504,66 +514,74 @@ export const GoogleDriveFolderPickerDialog = ({
             {error && <div className="text-sm text-red-500 px-1">{error}</div>}
 
             <div ref={fileScrollRef} className="max-h-72 overflow-y-auto -mx-1">
-              {isFilesLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
-                </div>
-              ) : files.length === 0 ? (
-                <div className="text-center py-8 text-sm text-muted-foreground">
-                  {t('no-files')}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-0.5">
-                  <button
-                    type="button"
-                    onClick={toggleSelectAll}
-                    className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <Checkbox checked={allSelected} />
-                    <span>
-                      {allSelected ? t('deselect-all') : t('select-all')}
-                    </span>
-                    <span className="ml-auto">
-                      {selectedFileIds.size}/{files.length}
-                    </span>
-                  </button>
-
-                  {files.map((file) => (
-                    <button
-                      key={file.id}
-                      type="button"
-                      onClick={() => toggleFileSelection(file.id)}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    >
-                      <Checkbox checked={selectedFileIds.has(file.id)} />
-                      <img
-                        src="/assets/connectors/google-docs.svg"
-                        alt="File"
-                        className="size-5 shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm truncate">{file.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatDate(file.modified_time)}
-                          {file.owner && (
-                            <span className="ml-2">{file.owner}</span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-
-                  {!!fileNextPageToken && fileBatchCount < MAX_BATCHES && (
-                    <div ref={fileSentinelRef} className="py-2">
-                      {isFileLoadingMore && (
-                        <div className="flex justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
-                        </div>
-                      )}
+              {(() => {
+                if (isFilesLoading) {
+                  return (
+                    <div className="flex justify-center py-8">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
                     </div>
-                  )}
-                </div>
-              )}
+                  );
+                }
+                if (files.length === 0) {
+                  return (
+                    <div className="text-center py-8 text-sm text-muted-foreground">
+                      {t('no-files')}
+                    </div>
+                  );
+                }
+                return (
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      onClick={toggleSelectAll}
+                      className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Checkbox checked={allSelected} />
+                      <span>
+                        {allSelected ? t('deselect-all') : t('select-all')}
+                      </span>
+                      <span className="ml-auto">
+                        {selectedFileIds.size}/{files.length}
+                      </span>
+                    </button>
+
+                    {files.map((file) => (
+                      <button
+                        key={file.id}
+                        type="button"
+                        onClick={() => toggleFileSelection(file.id)}
+                        className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      >
+                        <Checkbox checked={selectedFileIds.has(file.id)} />
+                        <img
+                          src="/assets/connectors/google-docs.svg"
+                          alt="File"
+                          className="size-5 shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm truncate">{file.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatDate(file.modified_time)}
+                            {file.owner && (
+                              <span className="ml-2">{file.owner}</span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+
+                    {!!fileNextPageToken && fileBatchCount < MAX_BATCHES && (
+                      <div ref={fileSentinelRef} className="py-2">
+                        {isFileLoadingMore && (
+                          <div className="flex justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex justify-end pt-2">
@@ -577,14 +595,18 @@ export const GoogleDriveFolderPickerDialog = ({
                 }
                 size="sm"
               >
-                {isAttaching
-                  ? t('progress', {
+                {(() => {
+                  if (isAttaching) {
+                    return t('progress', {
                       current: attachProgress.current,
                       total: attachProgress.total,
-                    })
-                  : mode === 'import'
-                    ? t('import-selected')
-                    : t('attach-selected')}
+                    });
+                  }
+                  if (mode === 'import') {
+                    return t('import-selected');
+                  }
+                  return t('attach-selected');
+                })()}
               </Button>
             </div>
           </>

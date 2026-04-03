@@ -15,11 +15,12 @@ function useStorageProgress(usedBytes: number, limitBytes: number) {
     limitBytes > 0 ? Math.min(100, (usedBytes / limitBytes) * 100) : 0;
   const isNearLimit = percentage > 80;
   const isOverLimit = percentage >= 100;
-  const progressClassName = isOverLimit
-    ? '[&>[data-slot=progress-indicator]]:bg-red-500'
-    : isNearLimit
-      ? '[&>[data-slot=progress-indicator]]:bg-amber-500'
-      : '[&>[data-slot=progress-indicator]]:bg-blue-500';
+  let progressClassName = '[&>[data-slot=progress-indicator]]:bg-blue-500';
+  if (isOverLimit) {
+    progressClassName = '[&>[data-slot=progress-indicator]]:bg-red-500';
+  } else if (isNearLimit) {
+    progressClassName = '[&>[data-slot=progress-indicator]]:bg-amber-500';
+  }
   return { percentage, progressClassName };
 }
 

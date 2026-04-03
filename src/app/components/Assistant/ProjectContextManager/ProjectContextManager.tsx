@@ -191,11 +191,15 @@ export const ProjectContextManager = ({
                     {project.title}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {isSelected
-                      ? 'Wymieniony projekt (@)'
-                      : isCurrentThreadProject
-                        ? 'Projekt wątku (domyślny)'
-                        : `ID: ${project.publicId}`}
+                    {(() => {
+                      if (isSelected) {
+                        return 'Wymieniony projekt (@)';
+                      }
+                      if (isCurrentThreadProject) {
+                        return 'Projekt wątku (domyślny)';
+                      }
+                      return `ID: ${project.publicId}`;
+                    })()}
                   </div>
                 </div>
                 {(isSelected || isCurrentThreadProject) && (
