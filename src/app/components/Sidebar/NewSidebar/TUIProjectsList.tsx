@@ -53,22 +53,30 @@ export const TUIProjectsList = ({
           </div>
 
           <div className="space-y-1 mt-2">
-            {projects.length > 0 ? (
-              projects.map((project) => (
-                <TUIProjectItem
-                  key={project.publicId}
-                  project={project}
-                  activeThread={activeThread}
-                  onSidebarClose={closeSidebar}
-                />
-              ))
-            ) : !isLoading ? (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                <FolderPlusIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{t('no-projects')}</p>
-                <p className="text-xs mt-1">{t('no-projects-description')}</p>
-              </div>
-            ) : null}
+            {(() => {
+              if (projects.length > 0) {
+                return projects.map((project) => (
+                  <TUIProjectItem
+                    key={project.publicId}
+                    project={project}
+                    activeThread={activeThread}
+                    onSidebarClose={closeSidebar}
+                  />
+                ));
+              }
+              if (!isLoading) {
+                return (
+                  <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <FolderPlusIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">{t('no-projects')}</p>
+                    <p className="text-xs mt-1">
+                      {t('no-projects-description')}
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </div>
         </div>
       </SidebarSection>

@@ -365,13 +365,15 @@ export function DiskUsageSettings({
                       <td className="p-3 text-right">{prettyBytes(limit)}</td>
                       <td className="p-3 text-right">
                         <span
-                          className={
-                            pct > 90
-                              ? 'text-red-500 font-semibold'
-                              : pct > 70
-                                ? 'text-amber-500'
-                                : ''
-                          }
+                          className={(() => {
+                            if (pct > 90) {
+                              return 'text-red-500 font-semibold';
+                            }
+                            if (pct > 70) {
+                              return 'text-amber-500';
+                            }
+                            return '';
+                          })()}
                         >
                           {pct.toFixed(1)}%
                         </span>

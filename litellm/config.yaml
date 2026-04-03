@@ -5,14 +5,6 @@ model_list:
   # ---------------------------------------------------------------------------
   # Azure OpenAI — GPT models (chat only, no codex/image/audio)
   # ---------------------------------------------------------------------------
-  - model_name: gpt-5.4-pro
-    litellm_params:
-      model: azure/gpt-5.4-pro
-      api_base: os.environ/AZURE_API_BASE
-      api_key: os.environ/AZURE_API_KEY
-      api_version: os.environ/AZURE_API_VERSION
-      base_model: gpt-5.4-pro
-
   - model_name: gpt-5.4
     litellm_params:
       model: azure/gpt-5.4
@@ -21,13 +13,13 @@ model_list:
       api_version: os.environ/AZURE_API_VERSION
       base_model: gpt-5.4
 
-  - model_name: gpt-5.4-mini
-    litellm_params:
-      model: azure/gpt-5.4-mini
-      api_base: os.environ/AZURE_API_BASE
-      api_key: os.environ/AZURE_API_KEY
-      api_version: os.environ/AZURE_API_VERSION
-      base_model: gpt-5.4-mini
+  # - model_name: gpt-5.4-mini
+  #   litellm_params:
+  #     model: azure/gpt-5.4-mini
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_key: os.environ/AZURE_API_KEY
+  #     api_version: os.environ/AZURE_API_VERSION
+  #     base_model: gpt-5.4-mini
 
   - model_name: gpt-5.4-nano
     litellm_params:
@@ -86,12 +78,12 @@ model_list:
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # --- Stable models (VERTEX_LOCATION env var — typically europe-west1 for EU) ---
-  - model_name: gemini-2.5-pro
-    litellm_params:
-      model: vertex_ai/gemini-2.5-pro
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+  # - model_name: gemini-2.5-pro
+  #   litellm_params:
+  #     model: vertex_ai/gemini-2.5-pro
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: os.environ/VERTEX_LOCATION
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   - model_name: gemini-2.5-flash
     litellm_params:
@@ -100,19 +92,12 @@ model_list:
       vertex_location: os.environ/VERTEX_LOCATION
       vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
-  - model_name: gemini-2.5-flash-lite
-    litellm_params:
-      model: vertex_ai/gemini-2.5-flash-lite
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
-
-  - model_name: gemini-2.0-flash
-    litellm_params:
-      model: vertex_ai/gemini-2.0-flash-001
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: global
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+  # - model_name: gemini-2.5-flash-lite
+  #   litellm_params:
+  #     model: vertex_ai/gemini-2.5-flash-lite
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: os.environ/VERTEX_LOCATION
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # ---------------------------------------------------------------------------
   # Reranking

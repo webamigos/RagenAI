@@ -25,12 +25,12 @@ export function Breadcrumbs({ folderId, viewMode, onNavigate }: Props) {
     }
   }, [folderId]);
 
-  const rootLabel =
-    viewMode === 'my-files'
-      ? t('my-files')
-      : viewMode === 'shared-with-me'
-        ? t('shared-with-me')
-        : t('all-files');
+  let rootLabel = t('all-files');
+  if (viewMode === 'my-files') {
+    rootLabel = t('my-files');
+  } else if (viewMode === 'shared-with-me') {
+    rootLabel = t('shared-with-me');
+  }
 
   return (
     <nav className="flex items-center gap-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">

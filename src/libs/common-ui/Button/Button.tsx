@@ -49,11 +49,14 @@ const ButtonComponent = forwardRef(
     const isDisabled = disabled || isLoading || isError;
 
     // Build variant props — TuiButton uses a discriminated union
-    const variantProps = outline
-      ? { outline: true as const }
-      : plain
-        ? { plain: true as const }
-        : { color: 'indigo' as const };
+    let variantProps: { outline: true } | { plain: true } | { color: 'indigo' };
+    if (outline) {
+      variantProps = { outline: true as const };
+    } else if (plain) {
+      variantProps = { plain: true as const };
+    } else {
+      variantProps = { color: 'indigo' as const };
+    }
 
     return (
       <TuiButton

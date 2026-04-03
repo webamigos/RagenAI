@@ -224,11 +224,13 @@ export const useNewThread = () => {
 
         // Notify sidebar about the new thread
         if (user) {
-          const threadTitle = initialMessage
-            ? initialMessage.length > 100
-              ? `${initialMessage.substring(0, 100)}...`
-              : initialMessage
-            : null;
+          let threadTitle: string | null = null;
+          if (initialMessage) {
+            threadTitle =
+              initialMessage.length > 100
+                ? `${initialMessage.substring(0, 100)}...`
+                : initialMessage;
+          }
 
           sidebarThreadEvents.emit({
             type: 'thread-created',

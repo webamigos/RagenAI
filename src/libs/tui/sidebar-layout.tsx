@@ -162,7 +162,12 @@ export function SidebarLayout({
 
         {/* Content */}
         <main
-          className={`flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 transition-all duration-200 ${isCollapsed ? (collapsedSidebar ? 'lg:pl-12' : 'lg:pl-0') : 'lg:pl-64'}`}
+          className={`flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 transition-all duration-200 ${(() => {
+            if (!isCollapsed) {
+              return 'lg:pl-64';
+            }
+            return collapsedSidebar ? 'lg:pl-12' : 'lg:pl-0';
+          })()}`}
         >
           {/* Desktop sidebar toggle (only when no collapsed rail) */}
           {isCollapsed && !collapsedSidebar && (
