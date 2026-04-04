@@ -43,6 +43,7 @@ export interface ThreadDocumentUI {
   sourceUrl?: string;
   driveFileId?: string;
   driveModifiedTime?: string;
+  imageData?: string; // base64 data URL for image attachments
 }
 
 export enum WebsiteLoaderMode {

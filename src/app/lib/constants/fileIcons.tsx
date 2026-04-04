@@ -16,6 +16,7 @@ export const FILE_ICONS: Record<FileType, JSX.Element> = {
   MARKDOWN: <MarkdownIcon />,
   SRT: <SrtIcon />,
   URL: <WebsiteIcon />,
+  IMAGE: <UnknownFileIcon />,
   UNKNOWN: <UnknownFileIcon />,
 };
 

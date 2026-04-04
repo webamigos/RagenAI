@@ -5,6 +5,7 @@ import {
   humanTemplates,
   systemTemplates,
 } from './config';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Message = {
   type: 'user' | 'assistant';
@@ -37,7 +38,8 @@ export function buildConversationMessages(
   question: string,
   chatHistory: string | undefined,
   answerInstructions?: string | null,
-  projectInstruction?: string
+  projectInstruction?: string,
+  imageDocuments?: ThreadDocumentUI[],
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
@@ -61,9 +63,22 @@ export function buildConversationMessages(
 
   const humanMessage = humanTemplates.answerChain.replace(
     '{question}',
-    question
+    question,
   );
-  messages.push({ role: 'user', content: humanMessage });
+
+  if (imageDocuments && imageDocuments.length > 0) {
+    const userContent: Array<
+      { type: 'text'; text: string } | { type: 'image'; image: string }
+    > = [{ type: 'text', text: humanMessage }];
+    for (const imgDoc of imageDocuments) {
+      if (imgDoc.imageData) {
+        userContent.push({ type: 'image', image: imgDoc.imageData });
+      }
+    }
+    messages.push({ role: 'user', content: userContent });
+  } else {
+    messages.push({ role: 'user', content: humanMessage });
+  }
 
   return { system: systemMessage, messages };
 }

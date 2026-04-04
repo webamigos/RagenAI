@@ -14,5 +14,16 @@ export const getFileType = (fileName: string): FileType => {
     return 'TEXT';
   }
 
+  const lower = fileName.toLowerCase();
+  if (
+    lower.endsWith('.jpg') ||
+    lower.endsWith('.jpeg') ||
+    lower.endsWith('.png') ||
+    lower.endsWith('.webp') ||
+    lower.endsWith('.gif')
+  ) {
+    return 'IMAGE';
+  }
+
   throw new Error(`Unknown file type: ${fileName}`);
 };

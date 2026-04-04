@@ -13,6 +13,22 @@ import {
 } from '../utils/common-operations';
 import { mapFullStream } from '../utils/stream-mapper';
 
+function partitionThreadDocuments(docs: ThreadDocumentUI[]): {
+  textDocs: ThreadDocumentUI[];
+  imageDocs: ThreadDocumentUI[];
+} {
+  const textDocs: ThreadDocumentUI[] = [];
+  const imageDocs: ThreadDocumentUI[] = [];
+  for (const doc of docs) {
+    if (doc.imageData) {
+      imageDocs.push(doc);
+    } else {
+      textDocs.push(doc);
+    }
+  }
+  return { textDocs, imageDocs };
+}
+
 function formatThreadDocuments(docs: ThreadDocumentUI[]): string {
   const withContent = docs.filter((d) => d.content?.trim());
   if (withContent.length === 0) {
@@ -46,11 +62,16 @@ export const conversationChain = async ({
       );
 
       // Step 3: Build messages and stream the answer
+      const { textDocs, imageDocs } = config?.threadDocuments?.length
+        ? partitionThreadDocuments(config.threadDocuments)
+        : { textDocs: [], imageDocs: [] };
+
       const { system, messages } = buildConversationMessages(
         sanitizedInput.question,
         sanitizedInput.chat_history,
         config?.answerInstructions,
         config?.projectInstruction,
+        imageDocs.length > 0 ? imageDocs : undefined,
       );
 
       const hasTools =
@@ -58,8 +79,8 @@ export const conversationChain = async ({
 
       let effectiveSystem = system;
 
-      if (config?.threadDocuments && config.threadDocuments.length > 0) {
-        effectiveSystem += formatThreadDocuments(config.threadDocuments);
+      if (textDocs.length > 0) {
+        effectiveSystem += formatThreadDocuments(textDocs);
       }
 
       if (config?.mcpContext) {

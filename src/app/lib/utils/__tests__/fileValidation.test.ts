@@ -24,7 +24,14 @@ describe('isSupportedFile', () => {
   });
 
   it.each([
+    ['photo.jpg', 'image/jpeg'],
     ['image.png', 'image/png'],
+    ['pic.webp', 'image/webp'],
+  ])('returns true for supported image file %s (%s)', (name, type) => {
+    expect(isSupportedFile(createFile(name, type))).toBe(true);
+  });
+
+  it.each([
     ['data.json', 'application/json'],
     ['style.css', 'text/css'],
     ['script.js', 'application/javascript'],

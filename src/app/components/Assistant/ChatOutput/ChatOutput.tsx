@@ -7,13 +7,53 @@ import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
 import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
-import { DocumentTextIcon } from '@heroicons/react/20/solid';
+import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/20/solid';
 import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 import type {
+  MessageAttachment,
   MessageDto,
   StreamedMessageDto,
 } from '@/features/messages/contracts/message.types';
 import './chat-response.css';
+
+function isImageAttachment(att: MessageAttachment): boolean {
+  return att.type.startsWith('image/') || att.imageData !== undefined;
+}
+
+function getImageSrc(att: MessageAttachment): string | undefined {
+  return att.imageData || att.sourceUrl;
+}
+
+function ImageLightbox({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 rounded-full bg-black/50 p-2 text-white hover:bg-black/70 transition-colors"
+      >
+        <XMarkIcon className="size-6" />
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
 
 /**
  * Strips [REDACTED] placeholders from reasoning content.
@@ -135,6 +175,10 @@ export const ChatOutput = ({
   voiceId,
 }: Props) => {
   const { renderedStreamedMessage } = useChatViewLogic(streamedMessage);
+  const [lightboxImage, setLightboxImage] = useState<{
+    src: string;
+    alt: string;
+  } | null>(null);
 
   return (
     <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
@@ -146,6 +190,38 @@ export const ChatOutput = ({
               message.attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2 justify-end">
                   {message.attachments.map((att, i) => {
+                    const imgSrc = isImageAttachment(att)
+                      ? getImageSrc(att)
+                      : undefined;
+
+                    if (imgSrc) {
+                      return (
+                        <button
+                          key={`${att.name}-${i}`}
+                          type="button"
+                          onClick={() =>
+                            setLightboxImage({ src: imgSrc, alt: att.name })
+                          }
+                          className="group relative w-40 overflow-hidden rounded-xl border border-border bg-background transition-colors hover:border-primary/50"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={imgSrc}
+                            alt={att.name}
+                            className="h-24 w-full object-cover"
+                          />
+                          <div className="px-2 py-1.5">
+                            <span
+                              className="block text-xs leading-snug line-clamp-1 text-foreground"
+                              title={att.name}
+                            >
+                              {att.name}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    }
+
                     const cardContent = (
                       <>
                         <span
@@ -250,6 +326,13 @@ export const ChatOutput = ({
           </div>
         )}
       </div>
+      {lightboxImage && (
+        <ImageLightbox
+          src={lightboxImage.src}
+          alt={lightboxImage.alt}
+          onClose={() => setLightboxImage(null)}
+        />
+      )}
     </div>
   );
 };

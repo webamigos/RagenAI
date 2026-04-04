@@ -190,9 +190,10 @@ describe('Textarea', () => {
 
       renderTextarea({ threadDocuments, onThreadDocumentRemove });
 
-      // Find the remove button within the file badge
-      const fileBadgeArea = screen.getByText('file.txt').closest('div');
-      const removeBtn = fileBadgeArea?.querySelector('button');
+      // Find the remove button within the file badge (aria-label set by FileBadge)
+      const removeBtn = screen.getByRole('button', {
+        name: /remove file\.txt/i,
+      });
       expect(removeBtn).toBeInTheDocument();
 
       await user.click(removeBtn!);

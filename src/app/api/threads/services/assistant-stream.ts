@@ -346,6 +346,7 @@ export async function streamEvents({
                 size: doc.size,
                 type: doc.type,
                 sourceUrl: doc.sourceUrl,
+                imageData: doc.imageData,
               })),
             }),
             resolveProjectInstruction(

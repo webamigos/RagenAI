@@ -9,7 +9,11 @@ import {
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { type SubmitHandler, useForm } from 'react-hook-form';
-import { validateTextFile } from '@/app/lib/utils/fileValidation';
+import {
+  validateTextFile,
+  validateImageFile,
+  isImageFile,
+} from '@/app/lib/utils/fileValidation';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -126,26 +130,60 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       });
     };
 
+    const readFileAsDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            resolve(event.target.result as string);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        reader.onerror = () =>
+          reject(new Error(`Failed to read file: ${file.name}`));
+        reader.readAsDataURL(file);
+      });
+    };
+
     const handleFilesDrop = useCallback(async (files: File[]) => {
       const validFiles: File[] = [];
 
       for (const file of files) {
-        const validation = validateTextFile(file);
-        if (validation.valid) {
-          validFiles.push(file);
+        if (isImageFile(file)) {
+          const validation = validateImageFile(file);
+          if (validation.valid) {
+            validFiles.push(file);
+          }
+        } else {
+          const validation = validateTextFile(file);
+          if (validation.valid) {
+            validFiles.push(file);
+          }
         }
       }
 
       const newDocuments: ThreadDocumentUI[] = [];
       for (const file of validFiles) {
         try {
-          const content = await readFileAsText(file);
-          newDocuments.push({
-            name: file.name,
-            content: content.trim(),
-            size: file.size,
-            type: file.type || 'text/plain',
-          });
+          if (isImageFile(file)) {
+            const imageData = await readFileAsDataURL(file);
+            newDocuments.push({
+              name: file.name,
+              content: '',
+              size: file.size,
+              type: file.type || 'image/png',
+              imageData,
+            });
+          } else {
+            const content = await readFileAsText(file);
+            newDocuments.push({
+              name: file.name,
+              content: content.trim(),
+              size: file.size,
+              type: file.type || 'text/plain',
+            });
+          }
         } catch {
           // TODO: Show error toast for file read error
         }
@@ -393,7 +431,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <input
           ref={fileInputRef}
           type="file"
-          accept=".md,.srt,.txt,.pdf,.epub"
+          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif"
           multiple
           className="hidden"
           onChange={handleFileInputChange}

@@ -41,6 +41,7 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           type: z.string(),
           userFileId: z.string().optional(),
           sourceUrl: z.string().optional(),
+          imageData: z.string().optional(),
         }),
       )
       .optional(),
@@ -53,6 +54,7 @@ export type MessageAttachment = {
   size: number;
   type: string;
   sourceUrl?: string;
+  imageData?: string; // base64 data URL for image attachments
 };
 
 export type MessageDto = {

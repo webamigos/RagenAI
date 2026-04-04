@@ -19,6 +19,7 @@ const fileParsers: Record<FileType, FileParser> = {
   MARKDOWN: async (file) => file.text(),
   URL: async (file) => file.text(),
   UNKNOWN: async (file) => file.text(),
+  IMAGE: async (file) => Buffer.from(await file.arrayBuffer()),
 };
 
 export async function parseFile(

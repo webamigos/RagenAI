@@ -4,6 +4,7 @@ import { generateText } from 'ai';
 import type { VectorStoreClient } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { BaseChatChainInput } from '../types/common';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { combineDocuments } from '../utils/chain-utils';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
@@ -11,7 +12,6 @@ import {
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
-import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
 
 type Message = {
@@ -159,6 +159,7 @@ export function buildRagMessages(
   threadContext: string,
   answerInstructions?: string | null,
   projectInstructions?: string,
+  imageDocuments?: ThreadDocumentUI[],
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
@@ -186,7 +187,20 @@ export function buildRagMessages(
     '{standalone_question}',
     standaloneQuestion,
   );
-  messages.push({ role: 'user', content: humanMessage });
+
+  if (imageDocuments && imageDocuments.length > 0) {
+    const userContent: Array<
+      { type: 'text'; text: string } | { type: 'image'; image: string }
+    > = [{ type: 'text', text: humanMessage }];
+    for (const imgDoc of imageDocuments) {
+      if (imgDoc.imageData) {
+        userContent.push({ type: 'image', image: imgDoc.imageData });
+      }
+    }
+    messages.push({ role: 'user', content: userContent });
+  } else {
+    messages.push({ role: 'user', content: humanMessage });
+  }
 
   return { system: systemMessage, messages };
 }

@@ -2,6 +2,18 @@
  * Utility functions for file validation
  */
 
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+
+/**
+ * Checks if a file is an image
+ */
+export const isImageFile = (file: File): boolean => {
+  return (
+    file.type.startsWith('image/') ||
+    IMAGE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext))
+  );
+};
+
 /**
  * Checks if a file is of a supported type
  */
@@ -12,7 +24,8 @@ export const isSupportedFile = (file: File): boolean => {
     file.name.endsWith('.md') ||
     file.name.endsWith('.epub') ||
     file.name.endsWith('.pdf') ||
-    file.name.endsWith('.srt')
+    file.name.endsWith('.srt') ||
+    isImageFile(file)
   );
 };
 
@@ -41,7 +54,7 @@ export const isValidFileSize = (file: File, maxSizeMB: number = 1): boolean => {
  * Comprehensive validation for textarea file attachments
  */
 export const validateTextFile = (
-  file: File
+  file: File,
 ): { valid: boolean; error?: string } => {
   if (!isTextFile(file)) {
     return {
@@ -54,6 +67,29 @@ export const validateTextFile = (
     return {
       valid: false,
       error: `File too large. Maximum size is 1MB.`,
+    };
+  }
+
+  return { valid: true };
+};
+
+/**
+ * Validates an image file for chat attachment (max 5MB)
+ */
+export const validateImageFile = (
+  file: File,
+): { valid: boolean; error?: string } => {
+  if (!isImageFile(file)) {
+    return {
+      valid: false,
+      error: `File type not supported. Only .jpg, .png, .webp, and .gif images are allowed.`,
+    };
+  }
+
+  if (!isValidFileSize(file, 5)) {
+    return {
+      valid: false,
+      error: `Image too large. Maximum size is 5MB.`,
     };
   }
 
