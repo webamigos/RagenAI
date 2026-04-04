@@ -25,5 +25,12 @@ export const getFileType = (fileName: string): FileType => {
     return 'IMAGE';
   }
 
+  if (lower.endsWith('.csv')) {
+    return 'CSV';
+  }
+  if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+    return 'XLSX';
+  }
+
   throw new Error(`Unknown file type: ${fileName}`);
 };

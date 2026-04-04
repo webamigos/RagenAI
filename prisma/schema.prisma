@@ -644,6 +644,8 @@ enum FileType {
   SRT
   URL
   IMAGE
+  CSV
+  XLSX
 }
 
 enum EmbeddingStatus {

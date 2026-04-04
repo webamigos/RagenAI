@@ -2,6 +2,7 @@ import {
   PdfIcon,
   EpubIcon,
   MarkdownIcon,
+  CsvIcon,
   SrtIcon,
   WebsiteIcon,
   UnknownFileIcon,
@@ -12,7 +13,8 @@ import { type FileType } from '@/generated/prisma/browser';
 export const FILE_ICONS: Record<FileType, JSX.Element> = {
   PDF: <PdfIcon />,
   EPUB: <EpubIcon />,
-  // csv: <CsvIcon />,
+  CSV: <CsvIcon />,
+  XLSX: <CsvIcon />,
   TEXT: <MarkdownIcon />,
   MARKDOWN: <MarkdownIcon />,
   SRT: <SrtIcon />,

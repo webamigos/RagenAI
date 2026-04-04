@@ -13,7 +13,11 @@ import {
   validateTextFile,
   validateImageFile,
   isImageFile,
+  isXlsxFile,
+  isSupportedFile,
+  isValidFileSize,
 } from '@/app/lib/utils/fileValidation';
+import * as XLSX from 'xlsx';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -155,6 +159,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           if (validation.valid) {
             validFiles.push(file);
           }
+        } else if (isXlsxFile(file)) {
+          if (isSupportedFile(file) && isValidFileSize(file, 5)) {
+            validFiles.push(file);
+          }
         } else {
           const validation = validateTextFile(file);
           if (validation.valid) {
@@ -174,6 +182,21 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               size: file.size,
               type: file.type || 'image/png',
               imageData,
+            });
+          } else if (isXlsxFile(file)) {
+            const buffer = await file.arrayBuffer();
+            const workbook = XLSX.read(buffer, { type: 'array' });
+            const csvSheets = workbook.SheetNames.map((name) => {
+              const csv = XLSX.utils.sheet_to_csv(workbook.Sheets[name]!);
+              return `[Sheet: ${name}]\n${csv}`;
+            });
+            newDocuments.push({
+              name: file.name,
+              content: csvSheets.join('\n\n'),
+              size: file.size,
+              type:
+                file.type ||
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             });
           } else {
             const content = await readFileAsText(file);
@@ -431,7 +454,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <input
           ref={fileInputRef}
           type="file"
-          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif"
+          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls"
           multiple
           className="hidden"
           onChange={handleFileInputChange}

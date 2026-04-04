@@ -20,6 +20,8 @@ const fileParsers: Record<FileType, FileParser> = {
   URL: async (file) => file.text(),
   UNKNOWN: async (file) => file.text(),
   IMAGE: async (file) => Buffer.from(await file.arrayBuffer()),
+  CSV: async (file) => file.text(),
+  XLSX: async (file) => Buffer.from(await file.arrayBuffer()),
 };
 
 export async function parseFile(
