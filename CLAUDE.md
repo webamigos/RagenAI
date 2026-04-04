@@ -162,7 +162,7 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `chains/` — RAG chains
 - `vector-store/` — Vector store clients (Qdrant, Meilisearch, Supabase) implementing `VectorStoreClient` interface
 - `reranker/` — Cohere Rerank v3.5 via AWS Bedrock for post-retrieval document reranking
-- `document-loaders/` — PDF, EPUB, Markdown, SRT, CSV, XLSX, Image, URL parsing
+- `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 - `db/` — Prisma client singleton (aliased as `@ragenai/prisma-client`)
 - `temporal/` — Temporal.io client for async document processing workflows
 - `payments/` — Stripe integration
@@ -220,7 +220,7 @@ The Knowledge Base supports **nested folders**, **per-user file ownership**, and
 
 Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Qdrant. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
 
-**Supported file types** (`FileType` enum): `PDF`, `EPUB`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`
+**Supported file types** (`FileType` enum): `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`
 
 **File type handling:**
 - **PDF**: Worker processes via Claude native PDF (sends entire PDF as base64 to Claude in single API call). Configurable via `PDF_PROCESSOR` env var (`claude` default, `vision` for legacy PDFium + page-by-page vision pipeline). `PDF_MODEL` defaults to `claude-haiku-4-5`.
