@@ -223,10 +223,14 @@ Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → G
 **Supported file types** (`FileType` enum): `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`
 
 **File type handling:**
-- **PDF**: Worker processes via Claude native PDF (sends entire PDF as base64 to Claude in single API call). Configurable via `PDF_PROCESSOR` env var (`claude` default, `vision` for legacy PDFium + page-by-page vision pipeline). `PDF_MODEL` defaults to `claude-haiku-4-5`.
-- **Image**: In chat, images are attached as base64 data URLs and sent as multimodal content to vision LLMs. In KB, images are described via a vision LLM (`describeImageWithLLM`) and the description is embedded for RAG retrieval.
-- **CSV**: Read as plain text for both chat attachment and KB embedding.
-- **XLSX**: Converted to CSV via SheetJS (`xlsx` package) client-side for chat; worker uses SheetJS for KB processing.
+- **PDF**: Worker processes via Claude native PDF (sends entire PDF as base64 to Claude in single API call). Configurable via `PDF_PROCESSOR` env var (`claude` default, `vision` for legacy PDFium + page-by-page vision pipeline). `PDF_MODEL` defaults to `claude-haiku-4-5`. In chat, attached as binary data URL.
+- **EPUB**: Binary file, uploaded to KB for worker text extraction. In chat, attached as binary data URL.
+- **DOCX**: Text extracted via `mammoth` package. In chat, extracted client-side; in KB, extracted by worker. 
+- **Image** (jpg, png, webp, gif): In chat, attached as base64 data URLs and sent as multimodal content to vision LLMs with thumbnail preview + lightbox. In KB, described via vision LLM and embedded for RAG retrieval.
+- **CSV**: Read as plain text for both chat attachment and KB embedding. 5MB limit in chat.
+- **XLSX/XLS**: Converted to CSV via SheetJS (`xlsx` package) client-side for chat; worker uses SheetJS for KB processing.
+- **SRT**: Subtitle files read as text. Worker uses LLM to process into meaningful segments for embedding.
+- **Markdown/TXT**: Read as plain text directly.
 
 ### Thread Message Encryption
 
