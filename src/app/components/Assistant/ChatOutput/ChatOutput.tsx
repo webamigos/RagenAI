@@ -7,7 +7,11 @@ import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
 import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
-import { DocumentTextIcon, XMarkIcon } from '@heroicons/react/20/solid';
+import {
+  DocumentTextIcon,
+  PhotoIcon,
+  XMarkIcon,
+} from '@heroicons/react/20/solid';
 import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 import type {
   MessageAttachment,
@@ -194,31 +198,52 @@ export const ChatOutput = ({
                       ? getImageSrc(att)
                       : undefined;
 
-                    if (imgSrc) {
+                    if (isImageAttachment(att)) {
+                      if (imgSrc) {
+                        return (
+                          <button
+                            key={`${att.name}-${i}`}
+                            type="button"
+                            onClick={() =>
+                              setLightboxImage({ src: imgSrc, alt: att.name })
+                            }
+                            className="group relative w-40 overflow-hidden rounded-xl border border-border bg-background transition-colors hover:border-primary/50"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imgSrc}
+                              alt={att.name}
+                              className="h-24 w-full object-cover"
+                            />
+                            <div className="px-2 py-1.5">
+                              <span
+                                className="block text-xs leading-snug line-clamp-1 text-foreground"
+                                title={att.name}
+                              >
+                                {att.name}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      }
+
+                      // Image attachment without stored data (legacy messages)
                       return (
-                        <button
+                        <div
                           key={`${att.name}-${i}`}
-                          type="button"
-                          onClick={() =>
-                            setLightboxImage({ src: imgSrc, alt: att.name })
-                          }
-                          className="group relative w-40 overflow-hidden rounded-xl border border-border bg-background transition-colors hover:border-primary/50"
+                          className="flex flex-col gap-2 w-40 rounded-xl border border-border bg-background p-3 text-foreground"
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={imgSrc}
-                            alt={att.name}
-                            className="h-24 w-full object-cover"
-                          />
-                          <div className="px-2 py-1.5">
-                            <span
-                              className="block text-xs leading-snug line-clamp-1 text-foreground"
-                              title={att.name}
-                            >
-                              {att.name}
-                            </span>
-                          </div>
-                        </button>
+                          <span
+                            className="text-sm leading-snug line-clamp-3"
+                            title={att.name}
+                          >
+                            {att.name}
+                          </span>
+                          <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
+                            <PhotoIcon className="size-3 text-emerald-500" />
+                            {getFileLabel(att.name)}
+                          </span>
+                        </div>
                       );
                     }
 
