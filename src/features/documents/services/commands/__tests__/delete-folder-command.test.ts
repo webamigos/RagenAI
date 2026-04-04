@@ -37,10 +37,9 @@ vi.mock('@/app/api/upload/services/TableService', () => ({
     mockDeleteFileFromVectorStore(...args),
 }));
 
-const mockGetDocumentByPublicId = vi.fn();
+const mockGetDocumentById = vi.fn();
 vi.mock('@/features/documents/services/queries/get-document-query', () => ({
-  getDocumentByPublicIdQuery: (...args: unknown[]) =>
-    mockGetDocumentByPublicId(...args),
+  getDocumentByIdQuery: (...args: unknown[]) => mockGetDocumentById(...args),
 }));
 
 const mockDeleteDocumentFromDb = vi.fn();
@@ -141,11 +140,11 @@ describe('deleteFolderCommand', () => {
         id: 100,
         publicId: 'file-abc',
         fileName: 'report.pdf',
-        documentId: 'doc-1',
+        documentId: 1,
         thumbnailS3Key: 'thumb/file-abc.jpg',
       },
     ]);
-    mockGetDocumentByPublicId.mockResolvedValue({ id: 200 });
+    mockGetDocumentById.mockResolvedValue({ id: 200 });
 
     const result = await deleteFolderCommand(1, ORG_ID);
 
@@ -153,7 +152,7 @@ describe('deleteFolderCommand', () => {
     expect(mockDeleteFromS3).toHaveBeenCalledWith('file-abc.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('thumb/file-abc.jpg');
     expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith(100);
-    expect(mockGetDocumentByPublicId).toHaveBeenCalledWith('doc-1');
+    expect(mockGetDocumentById).toHaveBeenCalledWith(1);
     expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith(200);
     expect(mockFileDeleteMany).toHaveBeenCalled();
     expect(mockFolderDelete).toHaveBeenCalledWith({ where: { id: 1 } });

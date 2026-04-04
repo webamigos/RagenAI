@@ -38,7 +38,7 @@ import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
  * Load thread documents from database for a specific thread
  */
 async function loadThreadDocuments(
-  threadId: string,
+  threadId: number,
 ): Promise<ThreadDocumentUI[]> {
   try {
     const threadDocuments = await db.threadDocument.findMany({
@@ -673,7 +673,6 @@ export async function streamEvents({
             const dbMessage = await createMessageInDB({
               threadId: threadRecord.id,
               message: {
-                id: threadMessage.publicId,
                 content: fullMessage,
                 source: Source.UI,
               },

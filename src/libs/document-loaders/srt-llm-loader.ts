@@ -5,7 +5,7 @@ import * as fs from 'node:fs';
 type SRTLLMDocumentLoaderProps = {
   filePath: string;
   fileName: string;
-  fileId: string;
+  fileId: number;
   organizationId: string;
 };
 
@@ -16,7 +16,7 @@ type SRTLLMDocumentLoaderProps = {
 export class SRTLLMDocumentLoader {
   private filePath: string;
   private fileName: string;
-  private fileId: string;
+  private fileId: number;
   private organizationId: string;
 
   constructor({
@@ -38,7 +38,7 @@ export class SRTLLMDocumentLoader {
         this.organizationId,
         fileContent,
         200,
-        300
+        300,
       );
 
       return segments.map((segment, index) => ({

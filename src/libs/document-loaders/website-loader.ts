@@ -1,4 +1,5 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
+import { randomUUID } from 'node:crypto';
 import { logger } from '@/app/lib/utils/logger';
 import { createMarkdownDocument } from '@/app/lib/services/document';
 import { createFileDetailsInDB } from '@/app/lib/services/file';
@@ -10,7 +11,7 @@ export interface WebsiteDocumentLoaderParams {
   url: string;
   mode: WebsiteLoaderMode;
   fileName: string;
-  fileId: string;
+  fileId: number;
   organizationId: string;
   projectId: number;
 }
@@ -19,7 +20,7 @@ export class WebsiteDocumentLoader {
   private readonly url: string;
   private readonly mode: WebsiteLoaderMode;
   private readonly fileName: string;
-  private readonly fileId: string;
+  private readonly fileId: number;
   private readonly organizationId: string;
   private readonly projectId: number;
 
@@ -98,7 +99,7 @@ export class WebsiteDocumentLoader {
       );
 
       await createMarkdownDocument({
-        publicId: this.fileId,
+        publicId: randomUUID(),
         title: `${this.url} | ${this.mode}`,
         organizationId: this.organizationId,
         content: enhancedMarkdown,

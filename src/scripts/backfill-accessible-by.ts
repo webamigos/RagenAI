@@ -26,14 +26,14 @@ const BATCH_SIZE = 100;
 
 function buildFileAccessMap(
   files: Array<{
-    id: string;
+    id: number;
     ownerId: string | null;
     folder: { teamId: string | null } | null;
     permissions: Array<{ granteeType: string; granteeId: string }>;
   }>,
   orgId: string,
-): Map<string, string[]> {
-  const fileAccessMap = new Map<string, string[]>();
+): Map<number, string[]> {
+  const fileAccessMap = new Map<number, string[]>();
   for (const file of files) {
     if (!file.ownerId) {
       fileAccessMap.set(file.id, [`org:${orgId}`]);
@@ -54,7 +54,7 @@ function buildFileAccessMap(
 
 async function backfillQdrant(
   orgId: string,
-  fileAccessMap: Map<string, string[]>,
+  fileAccessMap: Map<number, string[]>,
 ): Promise<number> {
   const qdrant = new QdrantClient({ url: QDRANT_URL, apiKey: QDRANT_API_KEY });
 
@@ -93,8 +93,8 @@ async function backfillQdrant(
         string,
         unknown
       >;
-      const fileId = metadata.file_id as string | undefined;
-      if (!fileId) {
+      const fileId = metadata.file_id as number | undefined;
+      if (fileId === undefined || fileId === null) {
         continue;
       }
 
@@ -121,7 +121,7 @@ async function backfillQdrant(
 
 async function backfillMeilisearch(
   orgId: string,
-  fileAccessMap: Map<string, string[]>,
+  fileAccessMap: Map<number, string[]>,
 ): Promise<number> {
   const client = new MeiliSearch({
     host: MEILISEARCH_URL,
@@ -161,7 +161,7 @@ async function backfillMeilisearch(
         )
         .map((doc: Record<string, unknown>) => {
           const metadata = doc.metadata as Record<string, unknown>;
-          const fileId = metadata.file_id as string;
+          const fileId = metadata.file_id as number;
           const accessibleBy = fileAccessMap.get(fileId) || [`org:${orgId}`];
           return {
             ...doc,

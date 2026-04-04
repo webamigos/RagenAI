@@ -61,7 +61,7 @@ function sanitizeAttachments(
 }
 
 async function maybeEncryptContent(
-  threadId: string,
+  threadId: number,
   content: string,
 ): Promise<string> {
   if (!isEncryptionEnabled()) {
@@ -114,7 +114,7 @@ export const createMessageInDbCommand = async ({
   attachments,
 }: {
   threadId: Thread['id'];
-  message: Omit<DbMessageDto, 'role'>;
+  message: Omit<DbMessageDto, 'id' | 'role'>;
   role: Role;
   visitorId?: string;
   runId?: string;
@@ -170,7 +170,6 @@ export const createAndStoreMessageCommand = async ({
     const dbMessage = await createMessageInDbCommand({
       threadId: threadId,
       message: {
-        id: `msg_${Date.now()}`,
         content: trimmedPrompt,
       },
       role: Role.USER,

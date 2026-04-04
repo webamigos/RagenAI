@@ -93,6 +93,6 @@ export type CreateMarkdownDocumentInput = {
   title: string;
   content: string;
   organizationId: string;
-  fileId?: string;
+  fileId?: number;
   projectId?: number;
 };

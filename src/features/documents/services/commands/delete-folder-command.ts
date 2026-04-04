@@ -3,7 +3,7 @@
 import db from '@ragenai/prisma-client';
 import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/aws';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
-import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
+import { getDocumentByIdQuery as getDocumentById } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
@@ -79,7 +79,7 @@ export async function deleteFolderCommand(
 
       if (file.documentId) {
         try {
-          const doc = await getDocumentByPublicId(file.documentId);
+          const doc = await getDocumentById(file.documentId);
           if (doc) {
             await deleteDocumentFromDb(doc.id);
           }

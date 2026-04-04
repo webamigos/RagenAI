@@ -11,7 +11,7 @@ import db from '@ragenai/prisma-client';
 export const getImportedKbFileIdsQuery = async (
   projectId: number,
   organizationId: string,
-): Promise<string[]> => {
+): Promise<number[]> => {
   const imported = await db.userFile.findMany({
     where: {
       projectId: projectId,
@@ -25,5 +25,5 @@ export const getImportedKbFileIdsQuery = async (
 
   return imported
     .map((f) => f.sourceFileId)
-    .filter((id): id is string => id !== null);
+    .filter((id): id is number => id !== null);
 };

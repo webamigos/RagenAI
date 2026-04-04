@@ -38,7 +38,7 @@ type ConvertAndStoreDocumentParams = {
   fileContent: string | Buffer;
   fileName: string;
   organizationId: string;
-  fileId: string;
+  fileId: number;
   projectId: number;
   projectPublicId?: string;
   mimeType: string;
