@@ -9,7 +9,17 @@ import {
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { type SubmitHandler, useForm } from 'react-hook-form';
-import { validateTextFile } from '@/app/lib/utils/fileValidation';
+import {
+  validateTextFile,
+  validateImageFile,
+  isImageFile,
+  isXlsxFile,
+  isBinaryDocFile,
+  isSupportedFile,
+  isValidFileSize,
+} from '@/app/lib/utils/fileValidation';
+import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -126,28 +136,107 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       });
     };
 
+    const readFileAsDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            resolve(event.target.result as string);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        reader.onerror = () =>
+          reject(new Error(`Failed to read file: ${file.name}`));
+        reader.readAsDataURL(file);
+      });
+    };
+
     const handleFilesDrop = useCallback(async (files: File[]) => {
       const validFiles: File[] = [];
 
       for (const file of files) {
-        const validation = validateTextFile(file);
-        if (validation.valid) {
-          validFiles.push(file);
+        if (isImageFile(file)) {
+          const validation = validateImageFile(file);
+          if (validation.valid) {
+            validFiles.push(file);
+          }
+        } else if (isXlsxFile(file)) {
+          if (isSupportedFile(file) && isValidFileSize(file, 5)) {
+            validFiles.push(file);
+          }
+        } else if (isBinaryDocFile(file)) {
+          if (isSupportedFile(file) && isValidFileSize(file, 10)) {
+            validFiles.push(file);
+          }
+        } else {
+          const validation = validateTextFile(file);
+          if (validation.valid) {
+            validFiles.push(file);
+          }
         }
       }
 
       const newDocuments: ThreadDocumentUI[] = [];
       for (const file of validFiles) {
         try {
-          const content = await readFileAsText(file);
-          newDocuments.push({
-            name: file.name,
-            content: content.trim(),
-            size: file.size,
-            type: file.type || 'text/plain',
-          });
+          if (isImageFile(file)) {
+            const imageData = await readFileAsDataURL(file);
+            newDocuments.push({
+              name: file.name,
+              content: '',
+              size: file.size,
+              type: file.type || 'image/png',
+              imageData,
+            });
+          } else if (file.name.toLowerCase().endsWith('.docx')) {
+            const buffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({
+              arrayBuffer: buffer,
+            });
+            newDocuments.push({
+              name: file.name,
+              content: result.value.trim(),
+              size: file.size,
+              type:
+                file.type ||
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            });
+          } else if (isBinaryDocFile(file)) {
+            const documentData = await readFileAsDataURL(file);
+            newDocuments.push({
+              name: file.name,
+              content: '',
+              size: file.size,
+              type: file.type || 'application/pdf',
+              documentData,
+            });
+          } else if (isXlsxFile(file)) {
+            const buffer = await file.arrayBuffer();
+            const workbook = XLSX.read(buffer, { type: 'array' });
+            const csvSheets = workbook.SheetNames.map((name) => {
+              const csv = XLSX.utils.sheet_to_csv(workbook.Sheets[name]!);
+              return `[Sheet: ${name}]\n${csv}`;
+            });
+            newDocuments.push({
+              name: file.name,
+              content: csvSheets.join('\n\n'),
+              size: file.size,
+              type:
+                file.type ||
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+          } else {
+            const content = await readFileAsText(file);
+            newDocuments.push({
+              name: file.name,
+              content: content.trim(),
+              size: file.size,
+              type: file.type || 'text/plain',
+            });
+          }
         } catch {
-          // TODO: Show error toast for file read error
+          // File read errors are non-critical — the file is simply skipped
         }
       }
 
@@ -393,7 +482,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <input
           ref={fileInputRef}
           type="file"
-          accept=".md,.srt,.txt,.pdf,.epub"
+          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx"
           multiple
           className="hidden"
           onChange={handleFileInputChange}

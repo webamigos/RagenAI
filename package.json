@@ -213,6 +213,7 @@
     "js-cookie": "^3.0.5",
     "katex": "^0.16.19",
     "lucide-react": "^0.575.0",
+    "mammoth": "^1.12.0",
     "markdown-it": "^14.1.1",
     "markdown-it-texmath": "^1.0.0",
     "media-chrome": "^4.18.0",
@@ -261,6 +262,7 @@
     "use-debounce": "^10.0.0",
     "use-stick-to-bottom": "^1.1.3",
     "web-vitals": "^5.1.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "optionalDependencies": {

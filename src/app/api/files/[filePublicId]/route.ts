@@ -51,12 +51,19 @@ export async function GET(
 
     const s3Key = `${file.publicId}.${file.fileExtension}`;
     const buffer = await getFileFromS3(s3Key);
-    const safeName = sanitizeFilename(file.fileName);
+    const disposition = SAFE_INLINE_TYPES.has(file.fileMimeType ?? '')
+      ? 'inline'
+      : 'attachment';
+    const asciiName = sanitizeFilename(file.fileName).replace(
+      /[^\x20-\x7E]/g,
+      '_',
+    );
+    const utf8Name = encodeURIComponent(file.fileName);
 
     return new NextResponse(buffer, {
       headers: {
         'Content-Type': file.fileMimeType || 'application/octet-stream',
-        'Content-Disposition': `${SAFE_INLINE_TYPES.has(file.fileMimeType ?? '') ? 'inline' : 'attachment'}; filename="${safeName}"`,
+        'Content-Disposition': `${disposition}; filename="${asciiName}"; filename*=UTF-8''${utf8Name}`,
         'Cache-Control': 'private, max-age=3600',
       },
     });

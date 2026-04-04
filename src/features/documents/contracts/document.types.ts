@@ -43,6 +43,8 @@ export interface ThreadDocumentUI {
   sourceUrl?: string;
   driveFileId?: string;
   driveModifiedTime?: string;
+  imageData?: string; // base64 data URL for image attachments
+  documentData?: string; // base64 data URL for binary documents (PDF, EPUB)
 }
 
 export enum WebsiteLoaderMode {
@@ -93,6 +95,6 @@ export type CreateMarkdownDocumentInput = {
   title: string;
   content: string;
   organizationId: string;
-  fileId?: string;
+  fileId?: number;
   projectId?: number;
 };

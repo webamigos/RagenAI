@@ -246,7 +246,7 @@ async function getDailyChartData(
        COUNT(*)::bigint AS calls,
        COALESCE(SUM(total_tokens), 0)::bigint AS tokens,
        COALESCE(SUM(estimated_cost), 0)::float8 AS cost
-     FROM ai_usages
+     FROM ai_usage
      WHERE ${conditions.join(' AND ')}
      GROUP BY DATE(created_at AT TIME ZONE 'UTC')
      ORDER BY date ASC`,

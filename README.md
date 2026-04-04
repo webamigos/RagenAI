@@ -81,7 +81,7 @@ src/
 │   ├── chains/                   # RAG chains (basic-rag, conversation, PDF processing)
 │   ├── vector-store/             # Qdrant, Meilisearch & Supabase vector store clients
 │   ├── reranker/                 # Cohere Rerank via Bedrock (post-retrieval reranking)
-│   ├── document-loaders/         # PDF, EPUB, Markdown, SRT, URL parsing
+│   ├── document-loaders/         # PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 │   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
 │   ├── temporal/                 # Temporal.io client
 │   ├── payments/                 # Stripe integration

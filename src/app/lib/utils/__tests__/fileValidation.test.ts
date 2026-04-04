@@ -24,10 +24,33 @@ describe('isSupportedFile', () => {
   });
 
   it.each([
+    ['photo.jpg', 'image/jpeg'],
     ['image.png', 'image/png'],
+    ['pic.webp', 'image/webp'],
+    ['anim.gif', 'image/gif'],
+  ])('returns true for supported image file %s (%s)', (name, type) => {
+    expect(isSupportedFile(createFile(name, type))).toBe(true);
+  });
+
+  it.each([
+    ['data.csv', 'text/csv'],
+    [
+      'sheet.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ],
+    [
+      'doc.docx',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ],
+  ])('returns true for supported document file %s (%s)', (name, type) => {
+    expect(isSupportedFile(createFile(name, type))).toBe(true);
+  });
+
+  it.each([
     ['data.json', 'application/json'],
     ['style.css', 'text/css'],
     ['script.js', 'application/javascript'],
+    ['archive.zip', 'application/zip'],
   ])('returns false for unsupported file %s (%s)', (name, type) => {
     expect(isSupportedFile(createFile(name, type))).toBe(false);
   });

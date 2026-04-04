@@ -13,7 +13,10 @@ import {
 } from '@/features/messages/contracts/message.types';
 import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { deleteFromS3, deleteFromS3ByKey } from '../lib/services/aws';
-import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
+import {
+  getDocumentByIdQuery as getDocumentById,
+  getDocumentByPublicIdQuery as getDocumentByPublicId,
+} from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
@@ -264,7 +267,7 @@ export const deleteProjectFileAction = async (
       // Delete from UserDocument
       const documentId = fileRecord.documentId;
       if (documentId) {
-        const userDocument = await getDocumentByPublicId(documentId);
+        const userDocument = await getDocumentById(documentId);
         if (userDocument) {
           await deleteDocumentFromDb(userDocument.id);
         }

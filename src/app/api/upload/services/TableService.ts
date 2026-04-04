@@ -25,14 +25,14 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
 
       const index = client.index(orgId);
       const task = await index.deleteDocuments({
-        filter: `metadata.file_id = '${fileId}'`,
+        filter: `metadata.file_id = ${fileId}`,
       });
       await client.waitForTask(task.taskUid);
     } else if (vectorStoreType === 'supabase') {
       await supabaseVectorStoreClient
         .from(VECTOR_STORE_TABLE_NAME)
         .delete()
-        .eq('metadata->>file_id', fileId);
+        .eq('metadata->>file_id', String(fileId));
     } else if (!vectorStoreType || vectorStoreType === 'qdrant') {
       const client = new QdrantClient({
         url: process.env.QDRANT_URL || 'http://localhost:6333',

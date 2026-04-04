@@ -1,11 +1,11 @@
 export type OnEmbeddingProcessCompletedInput = {
-  documentId: string;
+  documentId: number;
 };
 
 export type CancelEmbeddingProcessInput = {
-  documentId: string;
+  documentId: number;
 };
 
 export type StartEmbeddingProcessInput = {
-  documentId: string;
+  documentId: number;
 };

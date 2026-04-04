@@ -10,7 +10,7 @@ export type VectorStoreDocumentMetadata = {
   created_at: string;
   id: number;
   organization_id: string;
-  file_id: string;
+  file_id: number;
   file_public_id?: string;
   project_id: number | null;
   project_public_id: string | null;

@@ -4,14 +4,17 @@ import { generateText } from 'ai';
 import type { VectorStoreClient } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { BaseChatChainInput } from '../types/common';
-import { combineDocuments } from '../utils/chain-utils';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import {
+  combineDocuments,
+  buildUserMessageWithImages,
+} from '../utils/chain-utils';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
   humanTemplates,
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
-import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
 
 type Message = {
@@ -159,6 +162,7 @@ export function buildRagMessages(
   threadContext: string,
   answerInstructions?: string | null,
   projectInstructions?: string,
+  imageDocuments?: ThreadDocumentUI[],
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
@@ -186,7 +190,11 @@ export function buildRagMessages(
     '{standalone_question}',
     standaloneQuestion,
   );
-  messages.push({ role: 'user', content: humanMessage });
+
+  messages.push({
+    role: 'user',
+    content: buildUserMessageWithImages(humanMessage, imageDocuments),
+  });
 
   return { system: systemMessage, messages };
 }

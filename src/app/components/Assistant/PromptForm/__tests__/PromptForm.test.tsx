@@ -121,7 +121,10 @@ describe('PromptForm', () => {
       const { container } = renderPromptForm();
       const fileInput = container.querySelector('input[type="file"]');
       expect(fileInput).toBeInTheDocument();
-      expect(fileInput).toHaveAttribute('accept', '.md,.srt,.txt,.pdf,.epub');
+      expect(fileInput).toHaveAttribute(
+        'accept',
+        '.md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx',
+      );
       expect(fileInput).toHaveAttribute('multiple');
     });
   });
@@ -277,16 +280,16 @@ describe('PromptForm', () => {
       const ref = createRef<PromptFormRef>();
       renderPromptForm({}, ref);
 
-      const file = new File(['image data'], 'photo.png', {
-        type: 'image/png',
+      const file = new File(['binary data'], 'archive.zip', {
+        type: 'application/zip',
       });
 
       await act(async () => {
         ref.current?.dropFiles([file]);
       });
 
-      // Should not appear since it's unsupported
-      expect(screen.queryByText('photo.png')).not.toBeInTheDocument();
+      // Should not appear since .zip is unsupported
+      expect(screen.queryByText('archive.zip')).not.toBeInTheDocument();
     });
   });
 
@@ -308,11 +311,10 @@ describe('PromptForm', () => {
         expect(screen.getByText('removable.txt')).toBeInTheDocument();
       });
 
-      // Find the remove button on the file badge
-      const fileBadgeContainer = screen
-        .getByText('removable.txt')
-        .closest('div');
-      const removeBtn = fileBadgeContainer?.querySelector('button');
+      // Find the remove button on the file badge (aria-label set by FileBadge)
+      const removeBtn = screen.getByRole('button', {
+        name: /remove removable\.txt/i,
+      });
       expect(removeBtn).toBeInTheDocument();
 
       await user.click(removeBtn!);

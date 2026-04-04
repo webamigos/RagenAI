@@ -32,7 +32,7 @@ CREATE TYPE "AiUsageStep" AS ENUM ('MODERATION', 'CHAT_COMPLETION', 'REPHRASING'
 CREATE TYPE "McpConnectorStatus" AS ENUM ('PENDING', 'CONNECTED', 'ERROR');
 
 -- CreateEnum
-CREATE TYPE "McpConnectorProvider" AS ENUM ('GOOGLE_CALENDAR', 'GOOGLE_ANALYTICS', 'GOOGLE_ADS', 'GOOGLE_DRIVE', 'CLICKUP', 'HUBSPOT', 'FIREFLIES');
+CREATE TYPE "McpConnectorProvider" AS ENUM ('GOOGLE_CALENDAR', 'GOOGLE_ANALYTICS', 'GOOGLE_ADS', 'GOOGLE_DRIVE', 'GMAIL', 'CLICKUP', 'HUBSPOT', 'FIREFLIES', 'SLACK');
 
 -- CreateTable
 CREATE TABLE "settings" (
@@ -44,12 +44,12 @@ CREATE TABLE "settings" (
 
 -- CreateTable
 CREATE TABLE "messages" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "content" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
-    "thread_id" TEXT,
+    "thread_id" INTEGER,
     "visitor_id" TEXT,
     "rate" SMALLINT,
     "run_id" TEXT,
@@ -64,18 +64,18 @@ CREATE TABLE "messages" (
 
 -- CreateTable
 CREATE TABLE "flagged_messages" (
+    "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "content" TEXT NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'USER',
-    "id" TEXT NOT NULL,
 
     CONSTRAINT "flagged_messages_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "threads" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "title" TEXT,
     "visitor_id" TEXT,
@@ -89,6 +89,7 @@ CREATE TABLE "threads" (
     "is_starred" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "team_id" TEXT,
+    "encrypted_dek" TEXT,
 
     CONSTRAINT "threads_pkey" PRIMARY KEY ("id")
 );
@@ -105,7 +106,7 @@ CREATE TABLE "visitor_messages" (
 
 -- CreateTable
 CREATE TABLE "user_files" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "organization_id" TEXT NOT NULL,
     "file_name" TEXT NOT NULL,
@@ -114,7 +115,7 @@ CREATE TABLE "user_files" (
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ,
     "metadata" JSONB,
-    "document_id" TEXT,
+    "document_id" INTEGER,
     "project_id" INTEGER,
     "is_uploaded" BOOLEAN NOT NULL DEFAULT false,
     "uploaded_at" TIMESTAMPTZ,
@@ -130,20 +131,21 @@ CREATE TABLE "user_files" (
     "file_extension" TEXT,
     "file_mime_type" TEXT,
     "thumbnail_s3_key" TEXT,
-    "source_file_id" TEXT,
-    "folder_id" UUID,
+    "source_file_id" INTEGER,
+    "folder_id" INTEGER,
+    "owner_id" TEXT,
 
     CONSTRAINT "user_files_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "user_documents" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "organization_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "file_id" TEXT,
+    "file_id" INTEGER,
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ,
     "project_id" INTEGER,
@@ -153,8 +155,8 @@ CREATE TABLE "user_documents" (
 
 -- CreateTable
 CREATE TABLE "thread_documents" (
-    "id" TEXT NOT NULL,
-    "thread_id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
+    "thread_id" INTEGER NOT NULL,
     "user_file_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -163,7 +165,7 @@ CREATE TABLE "thread_documents" (
 
 -- CreateTable
 CREATE TABLE "organization_settings" (
-    "id" UUID NOT NULL,
+    "id" SERIAL NOT NULL,
     "organization_id" TEXT NOT NULL,
     "openai_api_key" TEXT,
     "anthropic_api_key" TEXT,
@@ -185,6 +187,8 @@ CREATE TABLE "organization_settings" (
     "monthly_cost_limit_cents" INTEGER,
     "monthly_message_limit" INTEGER,
     "max_members" INTEGER,
+    "allowed_models" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "litellm_api_key" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
 
@@ -211,7 +215,7 @@ CREATE TABLE "subscriptions" (
 
 -- CreateTable
 CREATE TABLE "subscription_plans" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "price_id" TEXT NOT NULL,
@@ -248,7 +252,7 @@ CREATE TABLE "projects" (
 
 -- CreateTable
 CREATE TABLE "project_settings" (
-    "id" UUID NOT NULL,
+    "id" SERIAL NOT NULL,
     "project_id" INTEGER NOT NULL,
     "instructions" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -411,14 +415,33 @@ CREATE TABLE "team_members" (
 
 -- CreateTable
 CREATE TABLE "document_folders" (
-    "id" UUID NOT NULL,
+    "id" SERIAL NOT NULL,
+    "public_id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "organization_id" TEXT NOT NULL,
     "team_id" TEXT,
+    "parent_id" INTEGER,
+    "path" TEXT NOT NULL DEFAULT '/',
+    "owner_id" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "document_folders_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "document_permissions" (
+    "id" SERIAL NOT NULL,
+    "resource_type" TEXT NOT NULL,
+    "file_public_id" UUID,
+    "folder_id" INTEGER,
+    "grantee_type" TEXT NOT NULL,
+    "grantee_id" TEXT NOT NULL,
+    "permission" TEXT NOT NULL DEFAULT 'view',
+    "granted_by" TEXT,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "document_permissions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -458,7 +481,7 @@ CREATE TABLE "mcp_oauth_tokens" (
 );
 
 -- CreateTable
-CREATE TABLE "ai_usages" (
+CREATE TABLE "ai_usage" (
     "id" SERIAL NOT NULL,
     "public_id" UUID NOT NULL,
     "organization_id" TEXT NOT NULL,
@@ -476,17 +499,54 @@ CREATE TABLE "ai_usages" (
     "metadata" JSONB,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ai_usages_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ai_usage_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "google_drive_syncs" (
+    "id" SERIAL NOT NULL,
+    "public_id" UUID NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "project_id" INTEGER NOT NULL,
+    "drive_folder_id" TEXT NOT NULL,
+    "folder_name" TEXT NOT NULL,
+    "enabled" BOOLEAN NOT NULL DEFAULT true,
+    "last_synced_at" TIMESTAMPTZ,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "google_drive_syncs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "audit_logs" (
+    "id" SERIAL NOT NULL,
+    "organization_id" TEXT NOT NULL,
+    "user_id" TEXT,
+    "action" TEXT NOT NULL,
+    "entity_type" TEXT NOT NULL,
+    "entity_id" TEXT,
+    "old_data" JSONB,
+    "new_data" JSONB,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "thread_shares" (
+    "id" SERIAL NOT NULL,
+    "thread_id" INTEGER NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "shared_by_user_id" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "thread_shares_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "settings_key_key" ON "settings"("key");
-
--- CreateIndex
 CREATE UNIQUE INDEX "messages_public_id_key" ON "messages"("public_id");
-
--- CreateIndex
-CREATE INDEX "messages_public_id_idx" ON "messages"("public_id");
 
 -- CreateIndex
 CREATE INDEX "messages_thread_id_idx" ON "messages"("thread_id");
@@ -498,13 +558,7 @@ CREATE INDEX "messages_visitor_id_idx" ON "messages"("visitor_id");
 CREATE UNIQUE INDEX "flagged_messages_public_id_key" ON "flagged_messages"("public_id");
 
 -- CreateIndex
-CREATE INDEX "flagged_messages_public_id_idx" ON "flagged_messages"("public_id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "threads_public_id_key" ON "threads"("public_id");
-
--- CreateIndex
-CREATE INDEX "threads_public_id_idx" ON "threads"("public_id");
 
 -- CreateIndex
 CREATE INDEX "threads_organization_id_idx" ON "threads"("organization_id");
@@ -531,9 +585,6 @@ CREATE UNIQUE INDEX "user_files_public_id_key" ON "user_files"("public_id");
 CREATE INDEX "user_files_organization_id_idx" ON "user_files"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "user_files_public_id_idx" ON "user_files"("public_id");
-
--- CreateIndex
 CREATE INDEX "user_files_project_id_idx" ON "user_files"("project_id");
 
 -- CreateIndex
@@ -541,6 +592,9 @@ CREATE INDEX "user_files_source_file_id_idx" ON "user_files"("source_file_id");
 
 -- CreateIndex
 CREATE INDEX "user_files_folder_id_idx" ON "user_files"("folder_id");
+
+-- CreateIndex
+CREATE INDEX "user_files_owner_id_idx" ON "user_files"("owner_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_files_id_organization_id_key" ON "user_files"("id", "organization_id");
@@ -603,16 +657,10 @@ CREATE UNIQUE INDEX "projects_public_id_key" ON "projects"("public_id");
 CREATE UNIQUE INDEX "projects_access_token_key" ON "projects"("access_token");
 
 -- CreateIndex
-CREATE INDEX "projects_public_id_idx" ON "projects"("public_id");
-
--- CreateIndex
 CREATE INDEX "projects_organization_id_idx" ON "projects"("organization_id");
 
 -- CreateIndex
 CREATE INDEX "projects_owner_id_idx" ON "projects"("owner_id");
-
--- CreateIndex
-CREATE INDEX "projects_access_token_idx" ON "projects"("access_token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "project_settings_project_id_key" ON "project_settings"("project_id");
@@ -651,9 +699,6 @@ CREATE UNIQUE INDEX "organizations_public_id_key" ON "organizations"("public_id"
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
 
 -- CreateIndex
-CREATE INDEX "organizations_public_id_idx" ON "organizations"("public_id");
-
--- CreateIndex
 CREATE INDEX "members_user_id_idx" ON "members"("user_id");
 
 -- CreateIndex
@@ -681,19 +726,43 @@ CREATE INDEX "team_members_user_id_idx" ON "team_members"("user_id");
 CREATE UNIQUE INDEX "team_members_team_id_user_id_key" ON "team_members"("team_id", "user_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "document_folders_public_id_key" ON "document_folders"("public_id");
+
+-- CreateIndex
 CREATE INDEX "document_folders_organization_id_idx" ON "document_folders"("organization_id");
 
 -- CreateIndex
 CREATE INDEX "document_folders_team_id_idx" ON "document_folders"("team_id");
 
 -- CreateIndex
+CREATE INDEX "document_folders_parent_id_idx" ON "document_folders"("parent_id");
+
+-- CreateIndex
+CREATE INDEX "document_folders_owner_id_idx" ON "document_folders"("owner_id");
+
+-- CreateIndex
+CREATE INDEX "document_folders_path_idx" ON "document_folders"("path");
+
+-- CreateIndex
+CREATE INDEX "document_permissions_file_public_id_idx" ON "document_permissions"("file_public_id");
+
+-- CreateIndex
+CREATE INDEX "document_permissions_folder_id_idx" ON "document_permissions"("folder_id");
+
+-- CreateIndex
+CREATE INDEX "document_permissions_grantee_type_grantee_id_idx" ON "document_permissions"("grantee_type", "grantee_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "document_permissions_resource_type_file_public_id_grantee_t_key" ON "document_permissions"("resource_type", "file_public_id", "grantee_type", "grantee_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "document_permissions_resource_type_folder_id_grantee_type_g_key" ON "document_permissions"("resource_type", "folder_id", "grantee_type", "grantee_id");
+
+-- CreateIndex
 CREATE INDEX "mcp_connectors_organization_id_idx" ON "mcp_connectors"("organization_id");
 
 -- CreateIndex
 CREATE INDEX "mcp_connectors_user_id_idx" ON "mcp_connectors"("user_id");
-
--- CreateIndex
-CREATE INDEX "mcp_connectors_organization_id_user_id_idx" ON "mcp_connectors"("organization_id", "user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "mcp_connectors_organization_id_user_id_provider_key" ON "mcp_connectors"("organization_id", "user_id", "provider");
@@ -705,22 +774,64 @@ CREATE INDEX "mcp_oauth_tokens_organization_id_user_id_idx" ON "mcp_oauth_tokens
 CREATE UNIQUE INDEX "mcp_oauth_tokens_organization_id_user_id_provider_key" ON "mcp_oauth_tokens"("organization_id", "user_id", "provider");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ai_usages_public_id_key" ON "ai_usages"("public_id");
+CREATE UNIQUE INDEX "ai_usage_public_id_key" ON "ai_usage"("public_id");
 
 -- CreateIndex
-CREATE INDEX "ai_usages_organization_id_idx" ON "ai_usages"("organization_id");
+CREATE INDEX "ai_usage_organization_id_idx" ON "ai_usage"("organization_id");
 
 -- CreateIndex
-CREATE INDEX "ai_usages_project_id_idx" ON "ai_usages"("project_id");
+CREATE INDEX "ai_usage_project_id_idx" ON "ai_usage"("project_id");
 
 -- CreateIndex
-CREATE INDEX "ai_usages_user_id_idx" ON "ai_usages"("user_id");
+CREATE INDEX "ai_usage_user_id_idx" ON "ai_usage"("user_id");
 
 -- CreateIndex
-CREATE INDEX "ai_usages_created_at_idx" ON "ai_usages"("created_at");
+CREATE INDEX "ai_usage_created_at_idx" ON "ai_usage"("created_at");
 
 -- CreateIndex
-CREATE INDEX "ai_usages_step_idx" ON "ai_usages"("step");
+CREATE INDEX "ai_usage_step_idx" ON "ai_usage"("step");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "google_drive_syncs_public_id_key" ON "google_drive_syncs"("public_id");
+
+-- CreateIndex
+CREATE INDEX "google_drive_syncs_organization_id_idx" ON "google_drive_syncs"("organization_id");
+
+-- CreateIndex
+CREATE INDEX "google_drive_syncs_user_id_idx" ON "google_drive_syncs"("user_id");
+
+-- CreateIndex
+CREATE INDEX "google_drive_syncs_project_id_idx" ON "google_drive_syncs"("project_id");
+
+-- CreateIndex
+CREATE INDEX "google_drive_syncs_enabled_idx" ON "google_drive_syncs"("enabled");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "google_drive_syncs_organization_id_project_id_drive_folder__key" ON "google_drive_syncs"("organization_id", "project_id", "drive_folder_id");
+
+-- CreateIndex
+CREATE INDEX "audit_logs_organization_id_idx" ON "audit_logs"("organization_id");
+
+-- CreateIndex
+CREATE INDEX "audit_logs_user_id_idx" ON "audit_logs"("user_id");
+
+-- CreateIndex
+CREATE INDEX "audit_logs_entity_type_idx" ON "audit_logs"("entity_type");
+
+-- CreateIndex
+CREATE INDEX "audit_logs_action_idx" ON "audit_logs"("action");
+
+-- CreateIndex
+CREATE INDEX "audit_logs_created_at_idx" ON "audit_logs"("created_at");
+
+-- CreateIndex
+CREATE INDEX "thread_shares_user_id_idx" ON "thread_shares"("user_id");
+
+-- CreateIndex
+CREATE INDEX "thread_shares_thread_id_idx" ON "thread_shares"("thread_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "thread_shares_thread_id_user_id_key" ON "thread_shares"("thread_id", "user_id");
 
 -- AddForeignKey
 ALTER TABLE "messages" ADD CONSTRAINT "messages_thread_id_fkey" FOREIGN KEY ("thread_id") REFERENCES "threads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -739,6 +850,9 @@ ALTER TABLE "user_files" ADD CONSTRAINT "user_files_source_file_id_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "user_files" ADD CONSTRAINT "user_files_folder_id_fkey" FOREIGN KEY ("folder_id") REFERENCES "document_folders"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_files" ADD CONSTRAINT "user_files_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "user_documents" ADD CONSTRAINT "user_documents_file_id_fkey" FOREIGN KEY ("file_id") REFERENCES "user_files"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -798,6 +912,18 @@ ALTER TABLE "document_folders" ADD CONSTRAINT "document_folders_organization_id_
 ALTER TABLE "document_folders" ADD CONSTRAINT "document_folders_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "document_folders" ADD CONSTRAINT "document_folders_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "document_folders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "document_folders" ADD CONSTRAINT "document_folders_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "document_permissions" ADD CONSTRAINT "document_permissions_file_public_id_fkey" FOREIGN KEY ("file_public_id") REFERENCES "user_files"("public_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "document_permissions" ADD CONSTRAINT "document_permissions_folder_id_fkey" FOREIGN KEY ("folder_id") REFERENCES "document_folders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "mcp_connectors" ADD CONSTRAINT "mcp_connectors_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -810,10 +936,34 @@ ALTER TABLE "mcp_oauth_tokens" ADD CONSTRAINT "mcp_oauth_tokens_organization_id_
 ALTER TABLE "mcp_oauth_tokens" ADD CONSTRAINT "mcp_oauth_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ai_usages" ADD CONSTRAINT "ai_usages_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ai_usage" ADD CONSTRAINT "ai_usage_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ai_usages" ADD CONSTRAINT "ai_usages_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ai_usage" ADD CONSTRAINT "ai_usage_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ai_usages" ADD CONSTRAINT "ai_usages_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ai_usage" ADD CONSTRAINT "ai_usage_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "google_drive_syncs" ADD CONSTRAINT "google_drive_syncs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "google_drive_syncs" ADD CONSTRAINT "google_drive_syncs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "google_drive_syncs" ADD CONSTRAINT "google_drive_syncs_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "thread_shares" ADD CONSTRAINT "thread_shares_thread_id_fkey" FOREIGN KEY ("thread_id") REFERENCES "threads"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "thread_shares" ADD CONSTRAINT "thread_shares_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "thread_shares" ADD CONSTRAINT "thread_shares_shared_by_user_id_fkey" FOREIGN KEY ("shared_by_user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

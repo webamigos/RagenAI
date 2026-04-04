@@ -162,7 +162,7 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `chains/` — RAG chains
 - `vector-store/` — Vector store clients (Qdrant, Meilisearch, Supabase) implementing `VectorStoreClient` interface
 - `reranker/` — Cohere Rerank v3.5 via AWS Bedrock for post-retrieval document reranking
-- `document-loaders/` — PDF, EPUB, Markdown, SRT, URL parsing
+- `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 - `db/` — Prisma client singleton (aliased as `@ragenai/prisma-client`)
 - `temporal/` — Temporal.io client for async document processing workflows
 - `payments/` — Stripe integration
@@ -218,7 +218,19 @@ The Knowledge Base supports **nested folders**, **per-user file ownership**, and
 
 ### Document Processing Pipeline
 
-Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Meilisearch. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
+Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Qdrant. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
+
+**Supported file types** (`FileType` enum): `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`
+
+**File type handling:**
+- **PDF**: Worker processes via Claude native PDF (sends entire PDF as base64 to Claude in single API call). Configurable via `PDF_PROCESSOR` env var (`claude` default, `vision` for legacy PDFium + page-by-page vision pipeline). `PDF_MODEL` defaults to `claude-haiku-4-5`. In chat, attached as binary data URL.
+- **EPUB**: Binary file, uploaded to KB for worker text extraction. In chat, attached as binary data URL.
+- **DOCX**: Text extracted via `mammoth` package. In chat, extracted client-side; in KB, extracted by worker. 
+- **Image** (jpg, png, webp, gif): In chat, attached as base64 data URLs and sent as multimodal content to vision LLMs with thumbnail preview + lightbox. In KB, described via vision LLM and embedded for RAG retrieval.
+- **CSV**: Read as plain text for both chat attachment and KB embedding. 5MB limit in chat.
+- **XLSX/XLS**: Converted to CSV via SheetJS (`xlsx` package) client-side for chat; worker uses SheetJS for KB processing.
+- **SRT**: Subtitle files read as text. Worker uses LLM to process into meaningful segments for embedding.
+- **Markdown/TXT**: Read as plain text directly.
 
 ### Thread Message Encryption
 
@@ -389,7 +401,7 @@ App admins can access all pages regardless of permission level.
 - **ESM**: `"type": "module"` in package.json — all `.js` files are ESM. CommonJS scripts use `.cjs` extension. `moduleResolution: "bundler"` — no deep internal imports (e.g., `langchain/dist/...`)
 - Server components by default; client components marked with `'use client'`
 - All API routes use `export const dynamic = 'force-dynamic'`
-- Prisma schema uses `uuid` for IDs, `cuid` for `public_id` fields
+- Prisma schema uses `Int` autoincrement for most model IDs + `publicId` (UUID) for external/URL exposure. Better Auth tables (User, Organization, Member, etc.) keep String IDs. Pattern: `id` (Int, internal) + `publicId` (UUID, external/URLs).
 - Database timestamps use `Timestamptz` (timezone-aware), default timezone is Europe/Warsaw
 - i18n: English (`en`) and Polish (`pl`) via `next-intl`. Use `Link`, `redirect`, `usePathname`, `useRouter` from `@/i18n/routing` (not from `next/link` or `next/navigation`)
 - Styling: Tailwind CSS v4 with custom theme in `src/app/[locale]/global.css` using `@theme` directive; custom colors (Ragen red `#cb1d3d`, Ragen blue `#252d53`)

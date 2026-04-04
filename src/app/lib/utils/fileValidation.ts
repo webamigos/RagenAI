@@ -2,6 +2,30 @@
  * Utility functions for file validation
  */
 
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+const XLSX_EXTENSIONS = ['.xlsx', '.xls'];
+const BINARY_DOC_EXTENSIONS = ['.pdf', '.epub', '.docx'];
+
+/**
+ * Checks if a file is an Excel spreadsheet (.xlsx, .xls)
+ */
+export const isXlsxFile = (file: File): boolean => {
+  return XLSX_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
+};
+
+export const isBinaryDocFile = (file: File): boolean => {
+  return BINARY_DOC_EXTENSIONS.some((ext) =>
+    file.name.toLowerCase().endsWith(ext),
+  );
+};
+
+export const isImageFile = (file: File): boolean => {
+  return (
+    file.type.startsWith('image/') ||
+    IMAGE_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext))
+  );
+};
+
 /**
  * Checks if a file is of a supported type
  */
@@ -12,7 +36,12 @@ export const isSupportedFile = (file: File): boolean => {
     file.name.endsWith('.md') ||
     file.name.endsWith('.epub') ||
     file.name.endsWith('.pdf') ||
-    file.name.endsWith('.srt')
+    file.name.endsWith('.srt') ||
+    isImageFile(file) ||
+    file.name.endsWith('.csv') ||
+    file.name.endsWith('.xlsx') ||
+    file.name.endsWith('.xls') ||
+    file.name.endsWith('.docx')
   );
 };
 
@@ -23,9 +52,11 @@ export const isTextFile = (file: File): boolean => {
   return (
     file.type === 'text/markdown' ||
     file.type === 'text/plain' ||
+    file.type === 'text/csv' ||
     file.name.endsWith('.md') ||
     file.name.endsWith('.srt') ||
-    file.name.endsWith('.txt')
+    file.name.endsWith('.txt') ||
+    file.name.endsWith('.csv')
   );
 };
 
@@ -41,19 +72,43 @@ export const isValidFileSize = (file: File, maxSizeMB: number = 1): boolean => {
  * Comprehensive validation for textarea file attachments
  */
 export const validateTextFile = (
-  file: File
+  file: File,
 ): { valid: boolean; error?: string } => {
   if (!isTextFile(file)) {
     return {
       valid: false,
-      error: `File type not supported. Only .md, .srt, and .txt files are allowed.`,
+      error: `File type not supported. Only .md, .srt, .txt, and .csv files are allowed.`,
     };
   }
 
-  if (!isValidFileSize(file)) {
+  const maxSizeMB = file.name.endsWith('.csv') ? 5 : 1;
+  if (!isValidFileSize(file, maxSizeMB)) {
     return {
       valid: false,
-      error: `File too large. Maximum size is 1MB.`,
+      error: `File too large. Maximum size is ${maxSizeMB}MB.`,
+    };
+  }
+
+  return { valid: true };
+};
+
+/**
+ * Validates an image file for chat attachment (max 5MB)
+ */
+export const validateImageFile = (
+  file: File,
+): { valid: boolean; error?: string } => {
+  if (!isImageFile(file)) {
+    return {
+      valid: false,
+      error: `File type not supported. Only ${IMAGE_EXTENSIONS.join(', ')} images are allowed.`,
+    };
+  }
+
+  if (!isValidFileSize(file, 5)) {
+    return {
+      valid: false,
+      error: `Image too large. Maximum size is 5MB.`,
     };
   }
 

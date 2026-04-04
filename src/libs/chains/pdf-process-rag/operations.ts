@@ -107,8 +107,13 @@ export const processPDFInBatches = async (
   return pageDescriptions;
 };
 
-export const convertPDFToImages = async (filePath: string, fileId: string) => {
-  const directory = path.join(process.cwd(), 'public', 'pdf_images', fileId);
+export const convertPDFToImages = async (filePath: string, fileId: number) => {
+  const directory = path.join(
+    process.cwd(),
+    'public',
+    'pdf_images',
+    String(fileId),
+  );
   await fs.promises.mkdir(directory, { recursive: true });
 
   try {

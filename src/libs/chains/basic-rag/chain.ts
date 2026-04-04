@@ -13,6 +13,7 @@ import {
 import type { BasicRagChainParams } from '../types/basic-rag';
 import { MAX_TOOL_STEPS } from '../types/common';
 import type { BaseChatChainOutput } from '../types/common';
+import { partitionThreadDocuments } from '../utils/chain-utils';
 import { mapFullStream } from '../utils/stream-mapper';
 
 export const basicRagChain = async ({
@@ -39,7 +40,11 @@ export const basicRagChain = async ({
         sanitizedInput,
       );
 
-      // Step 3: Retrieve KB documents and thread documents in parallel
+      // Step 3: Partition thread documents — images go to multimodal message, text to retrieval
+      const { textDocs: textThreadDocs, imageDocs: imageThreadDocs } =
+        partitionThreadDocuments(config?.threadDocuments || []);
+
+      // Step 4: Retrieve KB documents and thread documents in parallel
       const [context, threadContext] = await Promise.all([
         retrieveRelevantDocuments(
           vectorStore,
@@ -48,7 +53,7 @@ export const basicRagChain = async ({
           config?.metadataFilter,
         ),
         retrieveThreadDocuments(
-          config?.threadDocuments || [],
+          textThreadDocs,
           vectorStore,
           models.embeddings,
           standaloneQuestion,
@@ -56,7 +61,7 @@ export const basicRagChain = async ({
         ),
       ]);
 
-      // Step 4: Build messages and stream the answer
+      // Step 5: Build messages and stream the answer
       const { system, messages } = buildRagMessages(
         standaloneQuestion,
         sanitizedInput.chat_history,
@@ -64,6 +69,7 @@ export const basicRagChain = async ({
         threadContext,
         config?.answerInstructions,
         config?.projectInstruction,
+        imageThreadDocs.length > 0 ? imageThreadDocs : undefined,
       );
 
       const hasTools =

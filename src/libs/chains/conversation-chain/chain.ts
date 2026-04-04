@@ -11,6 +11,7 @@ import {
   sanitizeAndValidateInput,
   moderateContent,
 } from '../utils/common-operations';
+import { partitionThreadDocuments } from '../utils/chain-utils';
 import { mapFullStream } from '../utils/stream-mapper';
 
 function formatThreadDocuments(docs: ThreadDocumentUI[]): string {
@@ -46,11 +47,16 @@ export const conversationChain = async ({
       );
 
       // Step 3: Build messages and stream the answer
+      const { textDocs, imageDocs } = config?.threadDocuments?.length
+        ? partitionThreadDocuments(config.threadDocuments)
+        : { textDocs: [], imageDocs: [] };
+
       const { system, messages } = buildConversationMessages(
         sanitizedInput.question,
         sanitizedInput.chat_history,
         config?.answerInstructions,
         config?.projectInstruction,
+        imageDocs.length > 0 ? imageDocs : undefined,
       );
 
       const hasTools =
@@ -58,8 +64,8 @@ export const conversationChain = async ({
 
       let effectiveSystem = system;
 
-      if (config?.threadDocuments && config.threadDocuments.length > 0) {
-        effectiveSystem += formatThreadDocuments(config.threadDocuments);
+      if (textDocs.length > 0) {
+        effectiveSystem += formatThreadDocuments(textDocs);
       }
 
       if (config?.mcpContext) {

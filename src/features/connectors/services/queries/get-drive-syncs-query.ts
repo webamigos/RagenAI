@@ -2,7 +2,7 @@ import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 
 export interface DriveSyncDto {
-  id: string;
+  id: number;
   publicId: string;
   driveFolderId: string;
   folderName: string;

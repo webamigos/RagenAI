@@ -14,7 +14,7 @@ import { QdrantClient } from '@qdrant/js-client-rest';
  * - "team:<teamId>" — visible to team members
  */
 export async function computeAccessibleBy(
-  fileId: string,
+  fileId: number,
   organizationId: string,
 ): Promise<string[]> {
   const file = await db.userFile.findFirst({

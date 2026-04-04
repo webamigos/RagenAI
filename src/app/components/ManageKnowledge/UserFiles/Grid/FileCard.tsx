@@ -36,7 +36,20 @@ export const FileCard = ({
     ? `/document/${document.publicId}`
     : undefined;
 
+  const isImage = fileType === 'IMAGE';
+
   const renderPreview = () => {
+    if (isImage) {
+      return (
+        <img
+          src={`/api/files/${publicId}`}
+          alt={`Preview of ${fileName}`}
+          className="w-full h-full object-contain p-2"
+          loading="lazy"
+        />
+      );
+    }
+
     if (hasThumbnail) {
       return (
         <img
