@@ -56,6 +56,7 @@ export type MessageAttachment = {
   type: string;
   sourceUrl?: string;
   imageData?: string; // base64 data URL for image attachments
+  documentData?: string; // base64 data URL for binary documents (PDF, EPUB)
 };
 
 export type MessageDto = {

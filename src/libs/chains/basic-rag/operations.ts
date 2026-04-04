@@ -5,7 +5,10 @@ import type { VectorStoreClient } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { BaseChatChainInput } from '../types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
-import { combineDocuments } from '../utils/chain-utils';
+import {
+  combineDocuments,
+  buildUserMessageWithImages,
+} from '../utils/chain-utils';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
   humanTemplates,
@@ -188,19 +191,10 @@ export function buildRagMessages(
     standaloneQuestion,
   );
 
-  if (imageDocuments && imageDocuments.length > 0) {
-    const userContent: Array<
-      { type: 'text'; text: string } | { type: 'image'; image: string }
-    > = [{ type: 'text', text: humanMessage }];
-    for (const imgDoc of imageDocuments) {
-      if (imgDoc.imageData) {
-        userContent.push({ type: 'image', image: imgDoc.imageData });
-      }
-    }
-    messages.push({ role: 'user', content: userContent });
-  } else {
-    messages.push({ role: 'user', content: humanMessage });
-  }
+  messages.push({
+    role: 'user',
+    content: buildUserMessageWithImages(humanMessage, imageDocuments),
+  });
 
   return { system: systemMessage, messages };
 }

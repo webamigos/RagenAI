@@ -11,7 +11,6 @@ export interface WebsiteDocumentLoaderParams {
   url: string;
   mode: WebsiteLoaderMode;
   fileName: string;
-  fileId: number;
   organizationId: string;
   projectId: number;
 }
@@ -20,7 +19,6 @@ export class WebsiteDocumentLoader {
   private readonly url: string;
   private readonly mode: WebsiteLoaderMode;
   private readonly fileName: string;
-  private readonly fileId: number;
   private readonly organizationId: string;
   private readonly projectId: number;
 
@@ -28,14 +26,12 @@ export class WebsiteDocumentLoader {
     url,
     mode,
     fileName,
-    fileId,
     organizationId,
     projectId,
   }: WebsiteDocumentLoaderParams) {
     this.url = url;
     this.fileName = fileName;
     this.mode = mode;
-    this.fileId = fileId;
     this.organizationId = organizationId;
     this.projectId = projectId;
   }

@@ -25,7 +25,7 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
 
       const index = client.index(orgId);
       const task = await index.deleteDocuments({
-        filter: `metadata.file_id = '${fileId}'`,
+        filter: `metadata.file_id = ${fileId}`,
       });
       await client.waitForTask(task.taskUid);
     } else if (vectorStoreType === 'supabase') {

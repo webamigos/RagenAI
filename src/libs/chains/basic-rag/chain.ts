@@ -13,7 +13,7 @@ import {
 import type { BasicRagChainParams } from '../types/basic-rag';
 import { MAX_TOOL_STEPS } from '../types/common';
 import type { BaseChatChainOutput } from '../types/common';
-import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { partitionThreadDocuments } from '../utils/chain-utils';
 import { mapFullStream } from '../utils/stream-mapper';
 
 export const basicRagChain = async ({
@@ -41,16 +41,8 @@ export const basicRagChain = async ({
       );
 
       // Step 3: Partition thread documents — images go to multimodal message, text to retrieval
-      const allThreadDocs = config?.threadDocuments || [];
-      const textThreadDocs: ThreadDocumentUI[] = [];
-      const imageThreadDocs: ThreadDocumentUI[] = [];
-      for (const doc of allThreadDocs) {
-        if (doc.imageData) {
-          imageThreadDocs.push(doc);
-        } else {
-          textThreadDocs.push(doc);
-        }
-      }
+      const { textDocs: textThreadDocs, imageDocs: imageThreadDocs } =
+        partitionThreadDocuments(config?.threadDocuments || []);
 
       // Step 4: Retrieve KB documents and thread documents in parallel
       const [context, threadContext] = await Promise.all([

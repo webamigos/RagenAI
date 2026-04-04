@@ -1,20 +1,20 @@
 import { type FileType } from '@/generated/prisma/browser';
 
 export const getFileType = (fileName: string): FileType => {
-  if (fileName.endsWith('.srt')) {
+  const lower = fileName.toLowerCase();
+
+  if (lower.endsWith('.srt')) {
     return 'SRT';
   }
-  if (fileName.endsWith('.epub')) {
+  if (lower.endsWith('.epub')) {
     return 'EPUB';
   }
-  if (fileName.endsWith('.pdf')) {
+  if (lower.endsWith('.pdf')) {
     return 'PDF';
   }
-  if (fileName.endsWith('.md') || fileName.endsWith('.txt')) {
+  if (lower.endsWith('.md') || lower.endsWith('.txt')) {
     return 'TEXT';
   }
-
-  const lower = fileName.toLowerCase();
   if (
     lower.endsWith('.jpg') ||
     lower.endsWith('.jpeg') ||
@@ -24,7 +24,6 @@ export const getFileType = (fileName: string): FileType => {
   ) {
     return 'IMAGE';
   }
-
   if (lower.endsWith('.csv')) {
     return 'CSV';
   }

@@ -11,23 +11,8 @@ import {
   sanitizeAndValidateInput,
   moderateContent,
 } from '../utils/common-operations';
+import { partitionThreadDocuments } from '../utils/chain-utils';
 import { mapFullStream } from '../utils/stream-mapper';
-
-function partitionThreadDocuments(docs: ThreadDocumentUI[]): {
-  textDocs: ThreadDocumentUI[];
-  imageDocs: ThreadDocumentUI[];
-} {
-  const textDocs: ThreadDocumentUI[] = [];
-  const imageDocs: ThreadDocumentUI[] = [];
-  for (const doc of docs) {
-    if (doc.imageData) {
-      imageDocs.push(doc);
-    } else {
-      textDocs.push(doc);
-    }
-  }
-  return { textDocs, imageDocs };
-}
 
 function formatThreadDocuments(docs: ThreadDocumentUI[]): string {
   const withContent = docs.filter((d) => d.content?.trim());

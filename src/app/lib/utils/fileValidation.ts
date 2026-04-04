@@ -7,7 +7,7 @@ const XLSX_EXTENSIONS = ['.xlsx', '.xls'];
 const BINARY_DOC_EXTENSIONS = ['.pdf', '.epub', '.docx'];
 
 /**
- * Checks if a file is an image
+ * Checks if a file is an Excel spreadsheet (.xlsx, .xls)
  */
 export const isXlsxFile = (file: File): boolean => {
   return XLSX_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
@@ -101,7 +101,7 @@ export const validateImageFile = (
   if (!isImageFile(file)) {
     return {
       valid: false,
-      error: `File type not supported. Only .jpg, .png, .webp, and .gif images are allowed.`,
+      error: `File type not supported. Only ${IMAGE_EXTENSIONS.join(', ')} images are allowed.`,
     };
   }
 

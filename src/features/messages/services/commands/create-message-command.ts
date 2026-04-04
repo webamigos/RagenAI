@@ -58,6 +58,13 @@ function sanitizeAttachments(
         attachment.imageData = item.imageData;
       }
 
+      if (
+        typeof item.documentData === 'string' &&
+        item.documentData.length > 0
+      ) {
+        attachment.documentData = item.documentData;
+      }
+
       return attachment;
     });
 

@@ -280,16 +280,16 @@ describe('PromptForm', () => {
       const ref = createRef<PromptFormRef>();
       renderPromptForm({}, ref);
 
-      const file = new File(['image data'], 'photo.png', {
-        type: 'image/png',
+      const file = new File(['binary data'], 'archive.zip', {
+        type: 'application/zip',
       });
 
       await act(async () => {
         ref.current?.dropFiles([file]);
       });
 
-      // Should not appear since it's unsupported
-      expect(screen.queryByText('photo.png')).not.toBeInTheDocument();
+      // Should not appear since .zip is unsupported
+      expect(screen.queryByText('archive.zip')).not.toBeInTheDocument();
     });
   });
 

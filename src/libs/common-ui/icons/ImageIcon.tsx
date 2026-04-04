@@ -2,12 +2,13 @@ import { type ComponentProps } from 'react';
 
 import { classMerge } from '../utils/cn';
 
-export const ImageIcon = ({ className }: ComponentProps<'svg'>) => (
+export const ImageIcon = ({ className, ...props }: ComponentProps<'svg'>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
     className={classMerge('h-5 w-5 text-emerald-500', className)}
+    {...props}
   >
     <path
       fillRule="evenodd"

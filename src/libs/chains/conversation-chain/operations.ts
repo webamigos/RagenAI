@@ -6,6 +6,7 @@ import {
   systemTemplates,
 } from './config';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { buildUserMessageWithImages } from '../utils/chain-utils';
 
 type Message = {
   type: 'user' | 'assistant';
@@ -66,19 +67,10 @@ export function buildConversationMessages(
     question,
   );
 
-  if (imageDocuments && imageDocuments.length > 0) {
-    const userContent: Array<
-      { type: 'text'; text: string } | { type: 'image'; image: string }
-    > = [{ type: 'text', text: humanMessage }];
-    for (const imgDoc of imageDocuments) {
-      if (imgDoc.imageData) {
-        userContent.push({ type: 'image', image: imgDoc.imageData });
-      }
-    }
-    messages.push({ role: 'user', content: userContent });
-  } else {
-    messages.push({ role: 'user', content: humanMessage });
-  }
+  messages.push({
+    role: 'user',
+    content: buildUserMessageWithImages(humanMessage, imageDocuments),
+  });
 
   return { system: systemMessage, messages };
 }

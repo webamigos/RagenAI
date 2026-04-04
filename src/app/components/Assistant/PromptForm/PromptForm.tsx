@@ -236,7 +236,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             });
           }
         } catch {
-          // TODO: Show error toast for file read error
+          // File read errors are non-critical — the file is simply skipped
         }
       }
 

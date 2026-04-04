@@ -254,7 +254,6 @@ export const convertAndStoreDocument = async ({
             url,
             mode,
             fileName,
-            fileId,
             organizationId,
             projectId,
           });
