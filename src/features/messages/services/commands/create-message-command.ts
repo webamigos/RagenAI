@@ -54,6 +54,10 @@ function sanitizeAttachments(
         }
       }
 
+      if (typeof item.imageData === 'string' && item.imageData.length > 0) {
+        attachment.imageData = item.imageData;
+      }
+
       return attachment;
     });
 

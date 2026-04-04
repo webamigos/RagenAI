@@ -5,6 +5,7 @@ import {
   SrtIcon,
   WebsiteIcon,
   UnknownFileIcon,
+  ImageIcon,
 } from '@ragenai/common-ui/icons';
 import { type FileType } from '@/generated/prisma/browser';
 
@@ -16,7 +17,7 @@ export const FILE_ICONS: Record<FileType, JSX.Element> = {
   MARKDOWN: <MarkdownIcon />,
   SRT: <SrtIcon />,
   URL: <WebsiteIcon />,
-  IMAGE: <UnknownFileIcon />,
+  IMAGE: <ImageIcon />,
   UNKNOWN: <UnknownFileIcon />,
 };
 
