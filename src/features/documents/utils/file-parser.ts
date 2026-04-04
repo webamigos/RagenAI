@@ -22,6 +22,7 @@ const fileParsers: Record<FileType, FileParser> = {
   IMAGE: async (file) => Buffer.from(await file.arrayBuffer()),
   CSV: async (file) => file.text(),
   XLSX: async (file) => Buffer.from(await file.arrayBuffer()),
+  DOCX: async (file) => Buffer.from(await file.arrayBuffer()),
 };
 
 export async function parseFile(

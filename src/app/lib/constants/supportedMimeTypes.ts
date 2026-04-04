@@ -11,4 +11,6 @@ export const SUPPORTED_MIME_TYPES: Record<string, string> = {
   'text/csv': 'csv',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
   'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+    'docx',
 };

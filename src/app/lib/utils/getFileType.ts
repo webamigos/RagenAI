@@ -28,6 +28,9 @@ export const getFileType = (fileName: string): FileType => {
   if (lower.endsWith('.csv')) {
     return 'CSV';
   }
+  if (lower.endsWith('.docx')) {
+    return 'DOCX';
+  }
   if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
     return 'XLSX';
   }

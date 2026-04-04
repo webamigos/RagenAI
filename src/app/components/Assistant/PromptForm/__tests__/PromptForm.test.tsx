@@ -123,7 +123,7 @@ describe('PromptForm', () => {
       expect(fileInput).toBeInTheDocument();
       expect(fileInput).toHaveAttribute(
         'accept',
-        '.md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls',
+        '.md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx',
       );
       expect(fileInput).toHaveAttribute('multiple');
     });

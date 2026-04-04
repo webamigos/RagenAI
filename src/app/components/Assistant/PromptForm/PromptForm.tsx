@@ -14,10 +14,12 @@ import {
   validateImageFile,
   isImageFile,
   isXlsxFile,
+  isBinaryDocFile,
   isSupportedFile,
   isValidFileSize,
 } from '@/app/lib/utils/fileValidation';
 import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -163,6 +165,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           if (isSupportedFile(file) && isValidFileSize(file, 5)) {
             validFiles.push(file);
           }
+        } else if (isBinaryDocFile(file)) {
+          if (isSupportedFile(file) && isValidFileSize(file, 10)) {
+            validFiles.push(file);
+          }
         } else {
           const validation = validateTextFile(file);
           if (validation.valid) {
@@ -182,6 +188,28 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               size: file.size,
               type: file.type || 'image/png',
               imageData,
+            });
+          } else if (file.name.toLowerCase().endsWith('.docx')) {
+            const buffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({
+              arrayBuffer: buffer,
+            });
+            newDocuments.push({
+              name: file.name,
+              content: result.value.trim(),
+              size: file.size,
+              type:
+                file.type ||
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            });
+          } else if (isBinaryDocFile(file)) {
+            const documentData = await readFileAsDataURL(file);
+            newDocuments.push({
+              name: file.name,
+              content: '',
+              size: file.size,
+              type: file.type || 'application/pdf',
+              documentData,
             });
           } else if (isXlsxFile(file)) {
             const buffer = await file.arrayBuffer();
@@ -454,7 +482,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <input
           ref={fileInputRef}
           type="file"
-          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls"
+          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx"
           multiple
           className="hidden"
           onChange={handleFileInputChange}

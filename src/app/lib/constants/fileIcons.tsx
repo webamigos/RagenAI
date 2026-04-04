@@ -15,6 +15,7 @@ export const FILE_ICONS: Record<FileType, JSX.Element> = {
   EPUB: <EpubIcon />,
   CSV: <CsvIcon />,
   XLSX: <CsvIcon />,
+  DOCX: <MarkdownIcon />,
   TEXT: <MarkdownIcon />,
   MARKDOWN: <MarkdownIcon />,
   SRT: <SrtIcon />,

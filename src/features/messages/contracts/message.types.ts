@@ -42,6 +42,7 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           userFileId: z.string().optional(),
           sourceUrl: z.string().optional(),
           imageData: z.string().optional(),
+          documentData: z.string().optional(),
         }),
       )
       .optional(),

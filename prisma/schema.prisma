@@ -646,6 +646,7 @@ enum FileType {
   IMAGE
   CSV
   XLSX
+  DOCX
 }
 
 enum EmbeddingStatus {

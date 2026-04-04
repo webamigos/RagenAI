@@ -4,12 +4,19 @@
 
 const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 const XLSX_EXTENSIONS = ['.xlsx', '.xls'];
+const BINARY_DOC_EXTENSIONS = ['.pdf', '.epub', '.docx'];
 
 /**
  * Checks if a file is an image
  */
 export const isXlsxFile = (file: File): boolean => {
   return XLSX_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
+};
+
+export const isBinaryDocFile = (file: File): boolean => {
+  return BINARY_DOC_EXTENSIONS.some((ext) =>
+    file.name.toLowerCase().endsWith(ext),
+  );
 };
 
 export const isImageFile = (file: File): boolean => {
@@ -33,7 +40,8 @@ export const isSupportedFile = (file: File): boolean => {
     isImageFile(file) ||
     file.name.endsWith('.csv') ||
     file.name.endsWith('.xlsx') ||
-    file.name.endsWith('.xls')
+    file.name.endsWith('.xls') ||
+    file.name.endsWith('.docx')
   );
 };
 
