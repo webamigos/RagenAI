@@ -53,7 +53,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const tFolders = useTranslations('folders');
   const { user } = useUser();
   const { isOrgAdmin } = useOrganization();
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
   const [searchValue, setSearchValue] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
@@ -76,7 +76,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   useEffect(() => {
     const saved = getSavedViewMode();
     if (saved !== 'list') {
-      setViewMode(saved);
+      setLayoutMode(saved);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -234,8 +234,8 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         <FileSearch value={searchValue} onChange={handleSearchChange} />
         <LayoutToggle
           className="hidden md:flex"
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          viewMode={layoutMode}
+          onViewModeChange={setLayoutMode}
         />
         <div className="flex-1" />
         {/* Action buttons — right side (hidden in shared-with-me view) */}
@@ -331,7 +331,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
               </div>
             );
           }
-          if (viewMode === 'list') {
+          if (layoutMode === 'list') {
             return (
               <FileListView
                 isError={isError}
