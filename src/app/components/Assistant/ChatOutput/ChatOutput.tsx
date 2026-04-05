@@ -195,7 +195,7 @@ const MessageActions = ({
 
   return (
     <div
-      className={`flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+      className={`flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
         role === 'USER' ? 'justify-end' : 'justify-start'
       }`}
     >
@@ -231,7 +231,7 @@ export const ChatOutput = ({
   } | null>(null);
 
   return (
-    <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-4">
+    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4">
       <div className="flex flex-col gap-2">
         {messages.map((message, messageIndex) => (
           <div key={`message-${message.publicId}-${messageIndex}`}>
@@ -337,8 +337,8 @@ export const ChatOutput = ({
               <div
                 className={`group ${
                   message.role === 'USER'
-                    ? 'ml-auto max-w-[80%]'
-                    : 'mr-auto max-w-[85%]'
+                    ? 'ml-auto max-w-[85%]'
+                    : 'mr-auto max-w-[90%]'
                 }`}
               >
                 <div
@@ -369,7 +369,7 @@ export const ChatOutput = ({
           (streamedMessage.content ||
             (streamedMessage.reasoningContent &&
               cleanReasoningContent(streamedMessage.reasoningContent))) && (
-            <div className="group relative mr-auto max-w-[85%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
+            <div className="group relative mr-auto max-w-[90%] rounded-2xl rounded-bl-md bg-gray-100 dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
               {streamedMessage.reasoningContent && (
                 <ReasoningBlock
                   content={streamedMessage.reasoningContent}
