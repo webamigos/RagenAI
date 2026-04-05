@@ -772,7 +772,8 @@
     "create-document": "Stwórz dokument",
     "add-from-url": "Dodaj z linku",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
-    "or-browse": "lub kliknij, aby wybrać"
+    "or-browse": "lub kliknij, aby wybrać",
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików"
   },
   "file-delete-modal": {
     "title": "Usuń plik",

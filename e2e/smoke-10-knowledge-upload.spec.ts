@@ -46,8 +46,8 @@ test('upload a file to knowledge base via inline upload', async ({ page }) => {
     path.join(__dirname, 'fixtures', 'test-document.md'),
   );
 
-  // Assert success toast appears
-  await expect(page.getByText(/file\(s\) uploaded/i)).toBeVisible({
+  // Assert success toast appears (PL: "Przesłano X plik(ów)", EN: "X file(s) uploaded")
+  await expect(page.getByText(/file\(s\) uploaded|plik\(ów\)/i)).toBeVisible({
     timeout: 10_000,
   });
 });
