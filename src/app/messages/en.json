@@ -638,6 +638,7 @@
     "no-folders": "No folders found",
     "no-results": "No folders match your search",
     "no-files": "This folder is empty",
+    "no-shared-files": "No files have been shared with you yet",
     "select-files-title": "Select files",
     "back": "Back",
     "attach-selected": "Attach selected",

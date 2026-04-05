@@ -641,6 +641,7 @@
     "no-folders": "Nie znaleziono folderów",
     "no-results": "Brak folderów pasujących do wyszukiwania",
     "no-files": "Ten folder jest pusty",
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "select-files-title": "Wybierz pliki",
     "back": "Wstecz",
     "attach-selected": "Dołącz wybrane",

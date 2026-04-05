@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { format } from 'date-fns';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
@@ -135,6 +136,17 @@ type Props = {
   voiceId?: string;
 };
 
+function MessageTimestamp({ date }: { date?: Date | string | null }) {
+  if (!date) {
+    return null;
+  }
+  return (
+    <span className="text-[0.65rem] text-muted-foreground/60">
+      {format(new Date(date), 'HH:mm')}
+    </span>
+  );
+}
+
 const MessageContent = ({
   content,
   role,
@@ -152,31 +164,55 @@ const MessageContent = ({
   const renderedHtml = renderAndSanitize(content);
 
   return (
-    <div
-      className={`chat-response relative ${
-        role === 'USER' ? 'user-message' : 'assistant-message'
-      }`}
-    >
+    <>
       <div
-        dangerouslySetInnerHTML={{
-          __html: renderedHtml,
-        }}
-      />
-      {role === 'ASSISTANT' && message && (
-        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <RateAnswer initialRated={message.rate} publicId={message.publicId} />
-          <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
-          {!isPublicAccess && (
-            <ReadAnswer content={content} voiceId={voiceId!} />
+        className={`chat-response relative ${
+          role === 'USER' ? 'user-message' : 'assistant-message'
+        }`}
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: renderedHtml,
+          }}
+        />
+        {role === 'USER' &&
+          message?.messageType === 'VOICE' &&
+          message.voiceDurationSeconds && (
+            <DurationTime messageDurationTime={message.voiceDurationSeconds} />
+          )}
+      </div>
+      {/* Action buttons + timestamp — outside bubble, visible on hover */}
+      {message && (
+        <div
+          className={`flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+            role === 'USER' ? 'justify-end' : 'justify-start'
+          }`}
+        >
+          <MessageTimestamp date={message.createdAt} />
+          {role === 'ASSISTANT' && (
+            <>
+              <RateAnswer
+                initialRated={message.rate}
+                publicId={message.publicId}
+              />
+              <CopyToClipboardButton
+                message={message}
+                htmlContent={renderedHtml}
+              />
+              {!isPublicAccess && (
+                <ReadAnswer content={content} voiceId={voiceId!} />
+              )}
+            </>
+          )}
+          {role === 'USER' && (
+            <CopyToClipboardButton
+              message={message}
+              htmlContent={renderedHtml}
+            />
           )}
         </div>
       )}
-      {role === 'USER' &&
-        message?.messageType === 'VOICE' &&
-        message.voiceDurationSeconds && (
-          <DurationTime messageDurationTime={message.voiceDurationSeconds} />
-        )}
-    </div>
+    </>
   );
 };
 
@@ -299,19 +335,27 @@ export const ChatOutput = ({
               )}
             {message.content.trim() && (
               <div
-                className={`group relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
+                className={`group ${
                   message.role === 'USER'
-                    ? 'ml-auto max-w-[80%] bg-foreground text-background rounded-br-md'
-                    : 'mr-auto max-w-[85%] bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
+                    ? 'ml-auto max-w-[80%]'
+                    : 'mr-auto max-w-[85%]'
                 }`}
               >
-                <MessageContent
-                  content={message.content}
-                  role={message.role}
-                  message={message}
-                  isPublicAccess={isPublicAccess}
-                  voiceId={!isPublicAccess ? voiceId : undefined}
-                />
+                <div
+                  className={`relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
+                    message.role === 'USER'
+                      ? 'bg-primary-gray-200 dark:bg-muted/70 text-foreground rounded-br-md'
+                      : 'bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
+                  }`}
+                >
+                  <MessageContent
+                    content={message.content}
+                    role={message.role}
+                    message={message}
+                    isPublicAccess={isPublicAccess}
+                    voiceId={!isPublicAccess ? voiceId : undefined}
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -337,29 +381,25 @@ export const ChatOutput = ({
             </div>
           )}
         {isLoading &&
-          streamedMessage &&
-          !streamedMessage.content &&
-          !(
-            streamedMessage.reasoningContent &&
-            cleanReasoningContent(streamedMessage.reasoningContent)
-          ) && (
-            <div className="mr-auto flex items-center rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
+          (!streamedMessage ||
+            (!streamedMessage.content &&
+              !(
+                streamedMessage.reasoningContent &&
+                cleanReasoningContent(streamedMessage.reasoningContent)
+              ))) && (
+            <div className="mr-auto flex items-center gap-2.5 rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
               <div className="flex gap-1">
                 <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
                 <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
                 <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
               </div>
+              {loadingMessage && (
+                <span className="text-xs text-muted-foreground/70">
+                  {loadingMessage}
+                </span>
+              )}
             </div>
           )}
-        {isLoading && !streamedMessage && loadingMessage && (
-          <div className="mr-auto flex items-center rounded-2xl rounded-bl-md bg-muted/60 dark:bg-muted/30 px-4 py-3">
-            <div className="flex gap-1">
-              <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:0ms]" />
-              <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:150ms]" />
-              <span className="size-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:300ms]" />
-            </div>
-          </div>
-        )}
       </div>
       {lightboxImage && (
         <ImageLightbox
