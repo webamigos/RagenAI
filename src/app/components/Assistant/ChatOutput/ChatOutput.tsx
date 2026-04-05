@@ -147,7 +147,37 @@ function MessageTimestamp({ date }: { date?: Date | string | null }) {
   );
 }
 
-const MessageContent = ({
+/** Bubble content only — rendered inside the colored bubble div. */
+const MessageBubbleContent = ({
+  content,
+  role,
+  message,
+}: {
+  content: string;
+  role: string;
+  message?: MessageDto;
+}) => {
+  const { renderAndSanitize } = useChatViewLogic(null);
+  const renderedHtml = renderAndSanitize(content);
+
+  return (
+    <div
+      className={`chat-response relative ${
+        role === 'USER' ? 'user-message' : 'assistant-message'
+      }`}
+    >
+      <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
+      {role === 'USER' &&
+        message?.messageType === 'VOICE' &&
+        message.voiceDurationSeconds && (
+          <DurationTime messageDurationTime={message.voiceDurationSeconds} />
+        )}
+    </div>
+  );
+};
+
+/** Action buttons + timestamp — rendered outside the bubble, visible on hover. */
+const MessageActions = ({
   content,
   role,
   message,
@@ -156,7 +186,7 @@ const MessageContent = ({
 }: {
   content: string;
   role: string;
-  message?: MessageDto;
+  message: MessageDto;
   voiceId?: string;
   isPublicAccess: boolean;
 }) => {
@@ -164,55 +194,25 @@ const MessageContent = ({
   const renderedHtml = renderAndSanitize(content);
 
   return (
-    <>
-      <div
-        className={`chat-response relative ${
-          role === 'USER' ? 'user-message' : 'assistant-message'
-        }`}
-      >
-        <div
-          dangerouslySetInnerHTML={{
-            __html: renderedHtml,
-          }}
-        />
-        {role === 'USER' &&
-          message?.messageType === 'VOICE' &&
-          message.voiceDurationSeconds && (
-            <DurationTime messageDurationTime={message.voiceDurationSeconds} />
+    <div
+      className={`flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
+        role === 'USER' ? 'justify-end' : 'justify-start'
+      }`}
+    >
+      <MessageTimestamp date={message.createdAt} />
+      {role === 'ASSISTANT' && (
+        <>
+          <RateAnswer initialRated={message.rate} publicId={message.publicId} />
+          <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
+          {!isPublicAccess && (
+            <ReadAnswer content={content} voiceId={voiceId!} />
           )}
-      </div>
-      {/* Action buttons + timestamp — outside bubble, visible on hover */}
-      {message && (
-        <div
-          className={`flex items-center gap-2 mt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-            role === 'USER' ? 'justify-end' : 'justify-start'
-          }`}
-        >
-          <MessageTimestamp date={message.createdAt} />
-          {role === 'ASSISTANT' && (
-            <>
-              <RateAnswer
-                initialRated={message.rate}
-                publicId={message.publicId}
-              />
-              <CopyToClipboardButton
-                message={message}
-                htmlContent={renderedHtml}
-              />
-              {!isPublicAccess && (
-                <ReadAnswer content={content} voiceId={voiceId!} />
-              )}
-            </>
-          )}
-          {role === 'USER' && (
-            <CopyToClipboardButton
-              message={message}
-              htmlContent={renderedHtml}
-            />
-          )}
-        </div>
+        </>
       )}
-    </>
+      {role === 'USER' && (
+        <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
+      )}
+    </div>
   );
 };
 
@@ -344,18 +344,23 @@ export const ChatOutput = ({
                 <div
                   className={`relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
                     message.role === 'USER'
-                      ? 'bg-primary-gray-200 dark:bg-muted/70 text-foreground rounded-br-md'
-                      : 'bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
+                      ? 'bg-stone-100 dark:bg-stone-800/50 text-foreground rounded-br-md'
+                      : 'bg-gray-100 dark:bg-muted/50 text-foreground rounded-bl-md'
                   }`}
                 >
-                  <MessageContent
+                  <MessageBubbleContent
                     content={message.content}
                     role={message.role}
                     message={message}
-                    isPublicAccess={isPublicAccess}
-                    voiceId={!isPublicAccess ? voiceId : undefined}
                   />
                 </div>
+                <MessageActions
+                  content={message.content}
+                  role={message.role}
+                  message={message}
+                  isPublicAccess={isPublicAccess}
+                  voiceId={!isPublicAccess ? voiceId : undefined}
+                />
               </div>
             )}
           </div>
