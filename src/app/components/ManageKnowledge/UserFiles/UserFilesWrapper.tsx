@@ -169,7 +169,9 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         const response = await uploadFilesApi(formData);
         if (response.status === 200) {
           successToast({
-            message: `${response.files?.length ?? filesArray.length} file(s) uploaded`,
+            message: tSuccess('files-uploaded', {
+              count: response.files?.length ?? filesArray.length,
+            }),
           });
           refreshFiles();
           refreshSettings();
