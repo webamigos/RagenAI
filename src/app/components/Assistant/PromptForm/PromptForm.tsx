@@ -392,7 +392,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       .map((d) => d.userFileId!);
 
     return (
-      <div className="w-full px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
+      <div className="w-full px-4 pb-2 pt-2 bg-gradient-to-t from-background via-background to-transparent">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
           className="flex flex-col max-w-3xl mx-auto"
