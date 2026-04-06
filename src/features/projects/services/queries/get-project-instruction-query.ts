@@ -11,10 +11,9 @@ async function getProjectInfo(projectId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
 
   const project = await db.project.findUnique({
-    where: { publicId: projectId },
+    where: { id: projectId },
     select: {
       id: true,
-      publicId: true,
       organizationId: true,
     },
   });

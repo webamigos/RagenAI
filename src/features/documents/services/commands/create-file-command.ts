@@ -9,9 +9,9 @@ export const createFileCommand = async (
   fileSize: number,
   organizationId: string,
   fileType: FileType,
-  projectId: number | null,
+  projectId: string | null,
   options?: {
-    folderId?: number | null;
+    folderId?: string | null;
     ownerId?: string | null;
     fileExtension?: string | null;
     fileMimeType?: string | null;
@@ -34,7 +34,7 @@ export const createFileCommand = async (
   trackAudit({
     action: 'document.uploaded',
     entityType: 'document',
-    entityId: file.publicId,
+    entityId: file.id,
     newData: { fileName, fileSize, fileType },
   });
 

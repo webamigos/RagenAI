@@ -10,11 +10,10 @@ export const removeThreadProjectContextCommand = async (
 ) => {
   try {
     const updatedThread = await db.thread.update({
-      where: { publicId: publicThreadId },
+      where: { id: publicThreadId },
       data: { mentionedProjectId: null },
       select: {
         id: true,
-        publicId: true,
         mentionedProjectId: true,
       },
     });
@@ -51,7 +50,7 @@ export const removeThreadContextCommand = async (
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
       where: {
-        publicId: threadId,
+        id: threadId,
         organizationId: orgId,
       },
     });

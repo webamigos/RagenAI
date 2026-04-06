@@ -22,10 +22,10 @@ const initialState: SidebarState = {
 
 const mockThread = {
   createdAt: '2026-03-25T10:00:00Z',
-  publicId: 'thread-1',
+  id: 'thread-1',
   visitorId: 'user-1',
   preferredCommunicationType: 'TEXT' as const,
-  projectId: 1,
+  projectId: 'proj-1',
   preferredModel: null,
   messages: [{ content: 'Hello' }],
 };
@@ -33,13 +33,13 @@ const mockThread = {
 const mockProjects = [
   {
     createdAt: '2026-03-20T10:00:00Z',
-    publicId: 'proj-1',
+    id: 'proj-1',
     title: 'Project A',
     threads: [mockThread],
   },
   {
     createdAt: '2026-03-21T10:00:00Z',
-    publicId: 'proj-2',
+    id: 'proj-2',
     title: 'Project B',
     threads: [],
   },
@@ -103,7 +103,7 @@ describe('sidebarSlice', () => {
       const newProjects = [
         {
           createdAt: '2026-03-25T10:00:00Z',
-          publicId: 'proj-3',
+          id: 'proj-3',
           title: 'Project C',
           threads: [],
         },
@@ -137,36 +137,31 @@ describe('sidebarSlice', () => {
   describe('addThreadToProject', () => {
     it('adds thread to matching project', () => {
       const withProjects = { ...initialState, projects: mockProjects } as any;
-      // Need to add `id` since the reducer uses `(p as any).id`
-      withProjects.projects = mockProjects.map((p, i) => ({
-        ...p,
-        id: i + 1,
-      }));
 
       const newThread = {
         ...mockThread,
-        publicId: 'thread-new',
+        id: 'thread-new',
         messages: [{ content: 'New message' }],
       };
 
       const state = sidebarReducer(
         withProjects,
-        addThreadToProject({ projectId: 1, thread: newThread }),
+        addThreadToProject({ projectId: 'proj-1', thread: newThread }),
       );
 
       expect(state.projects[0].threads).toHaveLength(2);
-      expect(state.projects[0].threads[0].publicId).toBe('thread-new');
+      expect(state.projects[0].threads[0].id).toBe('thread-new');
     });
 
     it('does not add duplicate thread', () => {
       const withProjects = {
         ...initialState,
-        projects: mockProjects.map((p, i) => ({ ...p, id: i + 1 })),
+        projects: mockProjects,
       } as any;
 
       const state = sidebarReducer(
         withProjects,
-        addThreadToProject({ projectId: 1, thread: mockThread }),
+        addThreadToProject({ projectId: 'proj-1', thread: mockThread }),
       );
 
       // Should still have just 1 thread (duplicate skipped)
@@ -176,12 +171,12 @@ describe('sidebarSlice', () => {
     it('does nothing when project is not found', () => {
       const withProjects = {
         ...initialState,
-        projects: mockProjects.map((p, i) => ({ ...p, id: i + 1 })),
+        projects: mockProjects,
       } as any;
 
       const state = sidebarReducer(
         withProjects,
-        addThreadToProject({ projectId: 999, thread: mockThread }),
+        addThreadToProject({ projectId: 'proj-999', thread: mockThread }),
       );
 
       expect(state.projects).toEqual(withProjects.projects);

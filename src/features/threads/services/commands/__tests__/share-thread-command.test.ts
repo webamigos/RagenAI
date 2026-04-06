@@ -45,7 +45,7 @@ describe('shareThreadCommand', () => {
     mockFindFirst.mockResolvedValue(null);
 
     const result = await shareThreadCommand({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       recipientUserIds: ['user-2'],
       organizationId: ORG_ID,
       currentUserId: USER_ID,
@@ -61,7 +61,7 @@ describe('shareThreadCommand', () => {
     });
 
     const result = await shareThreadCommand({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       recipientUserIds: ['user-2'],
       organizationId: ORG_ID,
       currentUserId: USER_ID,
@@ -78,7 +78,7 @@ describe('shareThreadCommand', () => {
     mockCount.mockResolvedValue(0); // No matching members
 
     const result = await shareThreadCommand({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       recipientUserIds: ['user-2', 'user-3'],
       organizationId: ORG_ID,
       currentUserId: USER_ID,
@@ -97,7 +97,7 @@ describe('shareThreadCommand', () => {
     mockFindMany.mockResolvedValue([]);
 
     const result = await shareThreadCommand({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       recipientUserIds: [USER_ID, 'user-2'],
       organizationId: ORG_ID,
       currentUserId: USER_ID,
@@ -119,7 +119,7 @@ describe('shareThreadCommand', () => {
     mockFindMany.mockResolvedValue([{ userId: 'user-2' }]); // user-2 already shared
 
     const result = await shareThreadCommand({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       recipientUserIds: ['user-2', 'user-3'],
       organizationId: ORG_ID,
       currentUserId: USER_ID,
@@ -148,7 +148,7 @@ describe('shareThreadCommand', () => {
     mockFindFirst.mockResolvedValue({ id: THREAD_ID, visitorId: USER_ID });
 
     const result = await shareThreadCommand({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       recipientUserIds: [],
       organizationId: ORG_ID,
       currentUserId: USER_ID,

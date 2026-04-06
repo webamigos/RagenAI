@@ -30,7 +30,7 @@ import { ArrowPath } from '@ragenai/common-ui/icons';
 type ShareDialogProps = {
   open: boolean;
   onClose: () => void;
-  projectPublicId: string;
+  projectId: string;
   isPublicProject: boolean;
   linkToPublicProject: string;
   publishedAt: string;
@@ -43,7 +43,7 @@ function getOrigin() {
 export const ShareDialog = ({
   open,
   onClose,
-  projectPublicId,
+  projectId,
   isPublicProject,
   linkToPublicProject,
   publishedAt,
@@ -63,9 +63,9 @@ export const ShareDialog = ({
   const locale = useLocale();
   const getBaseUrl = () => `${getOrigin()}/${locale}/public/assistants`;
   const { generateKey, isGenerating: isGeneratingKey } =
-    useProjectKeyGenerator(projectPublicId);
+    useProjectKeyGenerator(projectId);
   const { disablePublicAccess, isDisabling } =
-    useDisablePublicAccess(projectPublicId);
+    useDisablePublicAccess(projectId);
   const { errorToast, successToast } = statusToast();
 
   const generateTokenAndSetUrl = async () => {

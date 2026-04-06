@@ -62,10 +62,7 @@ export const MessageItem = ({
         </div>
         {message.role === 'ASSISTANT' && (
           <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <RateAnswer
-              initialRated={message.rate}
-              publicId={message.publicId}
-            />
+            <RateAnswer initialRated={message.rate} messageId={message.id} />
             <CopyToClipboardButton message={message} />
           </div>
         )}

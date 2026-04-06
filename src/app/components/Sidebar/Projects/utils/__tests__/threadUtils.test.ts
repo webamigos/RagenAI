@@ -4,7 +4,7 @@ import { getThreadTitle } from '../threadUtils';
 describe('getThreadTitle', () => {
   const baseThread = {
     createdAt: '2026-03-26T00:00:00Z',
-    publicId: 'abc12345-6789-0000-0000-000000000000',
+    id: 'abc12345-6789-0000-0000-000000000000',
     visitorId: null,
     preferredCommunicationType: 'TEXT' as const,
     projectId: null,

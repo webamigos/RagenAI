@@ -18,7 +18,7 @@ import {
 } from '../actions';
 
 interface Plan {
-  id: number;
+  id: string;
   name: string;
   priceId: string;
 }

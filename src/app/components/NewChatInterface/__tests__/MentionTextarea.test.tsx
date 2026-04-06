@@ -76,9 +76,7 @@ vi.mock('../ProjectMentionDropdown', () => ({
       <span data-testid="mention-query">{query}</span>
       <button
         data-testid="select-project"
-        onClick={() =>
-          onSelect({ publicId: 'proj-1', title: 'Test Project', id: 1 })
-        }
+        onClick={() => onSelect({ id: 'proj-1', title: 'Test Project' })}
       >
         Select
       </button>
@@ -261,7 +259,7 @@ describe('MentionTextarea', () => {
 
       expect(onProjectMention).toHaveBeenCalledWith(
         expect.objectContaining({
-          publicId: 'proj-1',
+          id: 'proj-1',
           title: 'Test Project',
         }),
       );
@@ -270,7 +268,7 @@ describe('MentionTextarea', () => {
     it('clears mention when project name is removed from text', async () => {
       const onProjectMention = vi.fn();
       const mentionedProject: MentionedProject = {
-        publicId: 'proj-1',
+        id: 'proj-1',
         title: 'My Project',
       };
 

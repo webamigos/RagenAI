@@ -16,8 +16,8 @@ import {
   TEST_MEMBER_ID,
   TEST_ACCOUNT_ID,
   TEST_PROJECT_TITLE,
-  TEST_PROJECT_PUBLIC_ID,
-  TEST_THREAD_PUBLIC_ID,
+  TEST_PROJECT_ID,
+  TEST_THREAD_ID,
   TEST_THREAD_TITLE,
   TEST_MESSAGE_USER_ID,
   TEST_MESSAGE_ASSISTANT_ID,
@@ -171,7 +171,7 @@ async function seed() {
   // 8. Create project
   await prisma.project.create({
     data: {
-      publicId: TEST_PROJECT_PUBLIC_ID,
+      id: TEST_PROJECT_ID,
       title: TEST_PROJECT_TITLE,
       organizationId: TEST_ORG_ID,
       ownerId: TEST_USER_ID,
@@ -180,32 +180,29 @@ async function seed() {
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
 
   // 9. Create a thread with messages (so thread management tests don't need LLM)
-  const project = await prisma.project.findFirst({
-    where: { publicId: TEST_PROJECT_PUBLIC_ID },
-  });
   await prisma.thread.create({
     data: {
-      publicId: TEST_THREAD_PUBLIC_ID,
+      id: TEST_THREAD_ID,
       title: TEST_THREAD_TITLE,
       organizationId: TEST_ORG_ID,
       userId: TEST_USER_ID,
-      projectId: project?.id,
+      projectId: TEST_PROJECT_ID,
     },
   });
   await prisma.message.create({
     data: {
-      publicId: TEST_MESSAGE_USER_ID,
+      id: TEST_MESSAGE_USER_ID,
       content: 'Hello, this is a seeded test message.',
       role: 'USER',
-      thread: { connect: { publicId: TEST_THREAD_PUBLIC_ID } },
+      thread: { connect: { id: TEST_THREAD_ID } },
     },
   });
   await prisma.message.create({
     data: {
-      publicId: TEST_MESSAGE_ASSISTANT_ID,
+      id: TEST_MESSAGE_ASSISTANT_ID,
       content: 'This is the assistant response to the seeded message.',
       role: 'ASSISTANT',
-      thread: { connect: { publicId: TEST_THREAD_PUBLIC_ID } },
+      thread: { connect: { id: TEST_THREAD_ID } },
     },
   });
   console.log(`Created thread: ${TEST_THREAD_TITLE} with 2 messages`);

@@ -32,7 +32,7 @@ export async function searchAllQuery(
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
-        publicId: true,
+        id: true,
         title: true,
         createdAt: true,
       },
@@ -45,7 +45,7 @@ export async function searchAllQuery(
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
-        publicId: true,
+        id: true,
         title: true,
         createdAt: true,
       },
@@ -54,13 +54,13 @@ export async function searchAllQuery(
 
   return [
     ...projects.map((p) => ({
-      id: p.publicId,
+      id: p.id,
       title: p.title,
       type: 'project' as const,
       createdAt: p.createdAt.toISOString(),
     })),
     ...threads.map((t) => ({
-      id: t.publicId,
+      id: t.id,
       title: t.title || 'Untitled',
       type: 'thread' as const,
       createdAt: t.createdAt.toISOString(),

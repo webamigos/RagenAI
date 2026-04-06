@@ -52,19 +52,12 @@ describe('createGenerateDocumentTool', () => {
   it('starts Temporal workflow with correct args on execute', async () => {
     const tool = createGenerateDocumentTool(ctx);
 
-    const result = await tool.execute(
-      {
-        templateName: 'workshop-summary' as const,
-        rawInput: 'Some workshop notes',
-        clientName: 'Acme Corp',
-        driveFolderId: 'folder-123',
-      },
-      {
-        toolCallId: 'tc-1',
-        messages: [],
-        abortSignal: new AbortController().signal,
-      },
-    );
+    const result = await tool.execute({
+      templateName: 'workshop-summary' as const,
+      rawInput: 'Some workshop notes',
+      clientName: 'Acme Corp',
+      driveFolderId: 'folder-123',
+    });
 
     expect(mockGetToken).toHaveBeenCalledWith(
       'org-1:user-1:google_drive',
@@ -99,19 +92,12 @@ describe('createGenerateDocumentTool', () => {
     mockGetToken.mockRejectedValueOnce(new Error('Token not found'));
 
     const tool = createGenerateDocumentTool(ctx);
-    const result = await tool.execute(
-      {
-        templateName: 'workshop-summary' as const,
-        rawInput: 'Notes',
-        clientName: 'Test',
-        driveFolderId: 'folder-1',
-      },
-      {
-        toolCallId: 'tc-2',
-        messages: [],
-        abortSignal: new AbortController().signal,
-      },
-    );
+    const result = await tool.execute({
+      templateName: 'workshop-summary' as const,
+      rawInput: 'Notes',
+      clientName: 'Test',
+      driveFolderId: 'folder-1',
+    });
 
     expect(result).toEqual({
       success: false,
@@ -125,19 +111,12 @@ describe('createGenerateDocumentTool', () => {
     mockWorkflowStart.mockRejectedValueOnce(new Error('Temporal down'));
 
     const tool = createGenerateDocumentTool(ctx);
-    const result = await tool.execute(
-      {
-        templateName: 'workshop-summary' as const,
-        rawInput: 'Notes',
-        clientName: 'Test',
-        driveFolderId: 'folder-1',
-      },
-      {
-        toolCallId: 'tc-3',
-        messages: [],
-        abortSignal: new AbortController().signal,
-      },
-    );
+    const result = await tool.execute({
+      templateName: 'workshop-summary' as const,
+      rawInput: 'Notes',
+      clientName: 'Test',
+      driveFolderId: 'folder-1',
+    });
 
     expect(result).toEqual({
       success: false,

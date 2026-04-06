@@ -70,7 +70,7 @@ export const UploadKnowledge = () => {
           const uploaded = response.files[i];
           const originalFile = files[i];
           addFile({
-            publicId: uploaded.uniqueFileId,
+            id: uploaded.uniqueFileId,
             organizationId: '',
             fileName: uploaded.fileName,
             fileSize: uploaded.fileSize,

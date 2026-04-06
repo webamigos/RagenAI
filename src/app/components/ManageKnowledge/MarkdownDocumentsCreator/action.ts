@@ -20,7 +20,7 @@ export async function saveMarkdownWithMeta(
   const turndownService = new TurndownService();
   const markdownContent = turndownService.turndown(data.content);
   const markdownData = {
-    publicId: uniqueFileId,
+    id: uniqueFileId,
     title: data.title,
     content: markdownContent,
     organizationId: organizationId,
@@ -49,7 +49,7 @@ export async function saveMarkdownWithMeta(
 }
 
 type DocumentFile = {
-  publicId: string;
+  id: string;
   fileType: string;
   fileExtension: string | null;
 } | null;
@@ -69,12 +69,12 @@ type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
 
 export async function fetchDocumentByOrganization(
   organizationId: string,
-  documentPublicId: string,
+  documentId: string,
 ): Promise<DocumentResponse> {
   try {
     const response = await getDocumentPreview({
       orgId: organizationId,
-      documentPublicId,
+      documentId,
     });
 
     return {

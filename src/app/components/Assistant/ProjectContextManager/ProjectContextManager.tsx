@@ -14,8 +14,7 @@ import { updateThreadContextCommand as updateThreadContextAction } from '@/featu
 import { statusToast } from '@/app/lib/utils/toast';
 
 type ProjectForContext = {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
 };
 
@@ -57,7 +56,6 @@ export const ProjectContextManager = ({
           mentionedProject: project
             ? {
                 id: project.id,
-                publicId: project.publicId,
                 title: project.title,
               }
             : null,
@@ -198,7 +196,7 @@ export const ProjectContextManager = ({
                       if (isCurrentThreadProject) {
                         return 'Projekt wątku (domyślny)';
                       }
-                      return `ID: ${project.publicId}`;
+                      return `ID: ${project.id}`;
                     })()}
                   </div>
                 </div>

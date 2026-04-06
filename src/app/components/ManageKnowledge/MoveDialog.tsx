@@ -16,9 +16,9 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   resourceType: 'file' | 'folder';
-  resourceId: string | number; // file publicId or folder id
+  resourceId: string; // file id or folder id
   resourceName: string;
-  currentFolderId?: number | null;
+  currentFolderId?: string | null;
   onMoved: () => void;
 };
 
@@ -33,8 +33,8 @@ export function MoveDialog({
 }: Props) {
   const { successToast, errorToast } = statusToast();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
-  const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
-  const [expandedFolders, setExpandedFolders] = useState<Set<number>>(
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set(),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,7 +48,7 @@ export function MoveDialog({
     }
   }, [isOpen]);
 
-  const toggleExpand = useCallback((id: number) => {
+  const toggleExpand = useCallback((id: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -64,16 +64,13 @@ export function MoveDialog({
     setIsSubmitting(true);
     try {
       if (resourceType === 'file') {
-        const result = await moveFileToFolder(
-          resourceId as string,
-          selectedFolderId,
-        );
+        const result = await moveFileToFolder(resourceId, selectedFolderId);
         if (!result.success) {
           errorToast({ message: result.error || 'Failed to move file' });
           return;
         }
       } else {
-        const result = await moveFolder(resourceId as number, selectedFolderId);
+        const result = await moveFolder(resourceId, selectedFolderId);
         if (!result.success) {
           errorToast({ message: result.error || 'Failed to move folder' });
           return;
@@ -91,7 +88,7 @@ export function MoveDialog({
 
   const folderTree = buildFolderTree(folders);
 
-  const isDisabled = (folderId: number): boolean => {
+  const isDisabled = (folderId: string): boolean => {
     // Can't move a folder into itself or its descendants
     if (resourceType === 'folder' && folderId === resourceId) {
       return true;

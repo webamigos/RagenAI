@@ -23,13 +23,13 @@ export async function searchThreadsQuery(
     orderBy: { createdAt: 'desc' },
     take: 5,
     select: {
-      publicId: true,
+      id: true,
       title: true,
     },
   });
 
   return threads.map((thread) => ({
-    id: thread.publicId,
+    id: thread.id,
     title: thread.title || 'Untitled',
   }));
 }

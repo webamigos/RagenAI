@@ -11,7 +11,7 @@ import threadsReducer, {
   incrementSkip,
   resetThreads,
   setCurrentThreadId,
-  setDefaultProjectPublicId,
+  setDefaultProjectId,
   updateThreadModel,
   type ThreadState,
 } from '../threads/threadsSlice';
@@ -25,21 +25,21 @@ const initialState: ThreadState = {
   skip: 0,
   hasMore: true,
   currentThreadId: '',
-  defaultProjectPublicId: null,
+  defaultProjectId: null,
 };
 
 const mockThread = {
-  publicId: 'thread-1',
+  id: 'thread-1',
   messages: [{ content: 'Hello', role: 'user' as const }],
-  projectId: 1,
+  projectId: 'proj-1',
   createdAt: '2026-03-25T10:00:00Z',
   preferredModel: null,
 };
 
 const mockThread2 = {
-  publicId: 'thread-2',
+  id: 'thread-2',
   messages: [{ content: 'World', role: 'user' as const }],
-  projectId: 2,
+  projectId: 'proj-2',
   createdAt: '2026-03-24T10:00:00Z',
   preferredModel: null,
 };
@@ -172,7 +172,7 @@ describe('threadsSlice', () => {
       };
       const state = threadsReducer(withThreads, addThread(mockThread2 as any));
       expect(state.userThreads).toHaveLength(2);
-      expect(state.userThreads[0].publicId).toBe('thread-2');
+      expect(state.userThreads[0].id).toBe('thread-2');
     });
 
     it('updates existing thread instead of duplicating', () => {
@@ -183,7 +183,7 @@ describe('threadsSlice', () => {
       const updatedThread = {
         ...mockThread,
         messages: [{ content: 'Updated', role: 'user' as const }],
-        projectId: 5,
+        projectId: 'proj-5',
       };
       const state = threadsReducer(
         withThreads,
@@ -191,7 +191,7 @@ describe('threadsSlice', () => {
       );
       expect(state.userThreads).toHaveLength(1);
       expect(state.userThreads[0].messages[0].content).toBe('Updated');
-      expect(state.userThreads[0].projectId).toBe(5);
+      expect(state.userThreads[0].projectId).toBe('proj-5');
     });
   });
 
@@ -245,25 +245,22 @@ describe('threadsSlice', () => {
     });
   });
 
-  describe('setDefaultProjectPublicId', () => {
-    it('sets default project public ID', () => {
+  describe('setDefaultProjectId', () => {
+    it('sets default project ID', () => {
       const state = threadsReducer(
         initialState,
-        setDefaultProjectPublicId('proj-default'),
+        setDefaultProjectId('proj-default'),
       );
-      expect(state.defaultProjectPublicId).toBe('proj-default');
+      expect(state.defaultProjectId).toBe('proj-default');
     });
 
     it('clears default project with null', () => {
       const withDefault = {
         ...initialState,
-        defaultProjectPublicId: 'proj-default',
+        defaultProjectId: 'proj-default',
       };
-      const state = threadsReducer(
-        withDefault,
-        setDefaultProjectPublicId(null),
-      );
-      expect(state.defaultProjectPublicId).toBeNull();
+      const state = threadsReducer(withDefault, setDefaultProjectId(null));
+      expect(state.defaultProjectId).toBeNull();
     });
   });
 

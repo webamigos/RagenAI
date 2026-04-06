@@ -13,9 +13,9 @@ export const createGuestThreadCommand = async ({
   preferredModel,
 }: {
   organizationId?: string;
-  projectId?: number;
+  projectId?: string;
   initialMessage?: string;
-  mentionedProjectId?: number;
+  mentionedProjectId?: string;
   preferredModel?: string;
 }): Promise<ThreadAction> => {
   try {
@@ -38,7 +38,7 @@ export const createGuestThreadCommand = async ({
     return {
       success: true,
       thread: {
-        publicId: threadRecord.publicId,
+        id: threadRecord.id,
         projectId: projectId ?? null,
       },
     };

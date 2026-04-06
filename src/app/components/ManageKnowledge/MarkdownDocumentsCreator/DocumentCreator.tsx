@@ -89,7 +89,7 @@ export const DocumentCreator = () => {
 
         for (const uploaded of response.files) {
           addFile({
-            publicId: uploaded.uniqueFileId,
+            id: uploaded.uniqueFileId,
             organizationId: '',
             fileName: uploaded.fileName,
             fileSize: uploaded.fileSize,

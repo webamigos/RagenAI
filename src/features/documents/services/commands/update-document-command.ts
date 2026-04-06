@@ -16,7 +16,7 @@ export const updateDocumentTitleCommand = async ({
   await db.userDocument.updateMany({
     where: {
       organizationId: orgId,
-      publicId: documentId,
+      id: documentId,
     },
     data: {
       title,
@@ -37,7 +37,7 @@ export const updateDocumentContentCommand = async ({
   await db.userDocument.updateMany({
     where: {
       organizationId: orgId,
-      publicId: documentId,
+      id: documentId,
     },
     data: {
       content,

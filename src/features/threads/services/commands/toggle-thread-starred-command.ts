@@ -6,7 +6,7 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import type { ToggleStarredResult } from '../../contracts/thread.types';
 
 export const toggleThreadStarredCommand = async (
-  threadPublicId: string,
+  threadId: string,
   isStarred: boolean,
 ): Promise<ToggleStarredResult> => {
   try {
@@ -17,7 +17,7 @@ export const toggleThreadStarredCommand = async (
 
     const thread = await db.thread.findFirst({
       where: {
-        publicId: threadPublicId,
+        id: threadId,
         organizationId: orgId,
       },
     });
@@ -27,24 +27,24 @@ export const toggleThreadStarredCommand = async (
     }
 
     const updated = await db.thread.update({
-      where: { publicId: threadPublicId },
+      where: { id: threadId },
       data: { isStarred: isStarred },
-      select: { publicId: true, isStarred: true },
+      select: { id: true, isStarred: true },
     });
 
     logger.info(
-      { threadId: threadPublicId, isStarred },
+      { threadId: threadId, isStarred },
       'Thread starred status updated',
     );
 
     return {
       success: true,
-      publicId: updated.publicId,
+      id: updated.id,
       isStarred: updated.isStarred,
     };
   } catch (error) {
     logger.error(
-      { err: error, threadPublicId, isStarred },
+      { err: error, threadId, isStarred },
       'Error toggling thread starred status',
     );
     return { success: false, errorMessage: 'Failed to update starred status' };

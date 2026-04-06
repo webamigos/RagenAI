@@ -3,7 +3,7 @@ export type ResourceType = 'file' | 'folder';
 export type GranteeType = 'user' | 'team';
 
 export type DocumentPermissionItem = {
-  id: number;
+  id: string;
   resourceType: ResourceType;
   granteeType: GranteeType;
   granteeId: string;
@@ -13,14 +13,14 @@ export type DocumentPermissionItem = {
 };
 
 export type ShareFileInput = {
-  filePublicId: string;
+  fileId: string;
   granteeType: GranteeType;
   granteeId: string;
   permission: PermissionLevel;
 };
 
 export type ShareFolderInput = {
-  folderId: number;
+  folderId: string;
   granteeType: GranteeType;
   granteeId: string;
   permission: PermissionLevel;

@@ -20,19 +20,19 @@ import {
 } from '@ragenai/tui/dropdown';
 
 type ToolbarActionsProps = {
-  filePublicId: string;
-  documentPublicId?: string;
+  fileId: string;
+  documentId?: string;
   fileName: string;
   folderId?: number | null;
   toggleModal: (fileId: string | null) => void;
-  onMove?: (filePublicId: string) => void;
-  onShare?: (filePublicId: string) => void;
+  onMove?: (fileId: string) => void;
+  onShare?: (fileId: string) => void;
   isLoading: boolean;
 };
 
 export const ToolbarActions = ({
-  filePublicId,
-  documentPublicId,
+  fileId,
+  documentId,
   fileName,
   toggleModal,
   onMove,
@@ -53,31 +53,27 @@ export const ToolbarActions = ({
       </DropdownButton>
 
       <DropdownMenu anchor="bottom end" className="[&_[data-slot=icon]]:mr-2">
-        {documentPublicId && (
-          <DropdownItem
-            onClick={() => router.push(`/document/${documentPublicId}`)}
-          >
+        {documentId && (
+          <DropdownItem onClick={() => router.push(`/document/${documentId}`)}>
             <EyeIcon className="size-4" data-slot="icon" />
             {t('view')}
           </DropdownItem>
         )}
 
-        {documentPublicId && (
+        {documentId && (
           <DropdownItem
-            onClick={() =>
-              router.push(`/document/${documentPublicId}?edit=true`)
-            }
+            onClick={() => router.push(`/document/${documentId}?edit=true`)}
           >
             <PencilSquareIcon className="size-4" data-slot="icon" />
             {t('edit')}
           </DropdownItem>
         )}
 
-        {filePublicId && (
+        {fileId && (
           <DropdownItem
             onClick={() => {
               const link = document.createElement('a');
-              link.href = `/api/files/${filePublicId}`;
+              link.href = `/api/files/${fileId}`;
               link.download = fileName;
               document.body.appendChild(link);
               link.click();
@@ -89,25 +85,25 @@ export const ToolbarActions = ({
           </DropdownItem>
         )}
 
-        {filePublicId && onMove && (
-          <DropdownItem onClick={() => onMove(filePublicId)}>
+        {fileId && onMove && (
+          <DropdownItem onClick={() => onMove(fileId)}>
             <ArrowRightIcon className="size-4" data-slot="icon" />
             {t('move') || 'Move'}
           </DropdownItem>
         )}
 
-        {filePublicId && onShare && (
-          <DropdownItem onClick={() => onShare(filePublicId)}>
+        {fileId && onShare && (
+          <DropdownItem onClick={() => onShare(fileId)}>
             <ShareIcon className="size-4" data-slot="icon" />
             {t('share') || 'Share'}
           </DropdownItem>
         )}
 
-        {filePublicId && <DropdownDivider />}
+        {fileId && <DropdownDivider />}
 
-        {filePublicId && (
+        {fileId && (
           <DropdownItem
-            onClick={() => toggleModal(filePublicId)}
+            onClick={() => toggleModal(fileId)}
             disabled={isLoading}
           >
             <TrashIcon

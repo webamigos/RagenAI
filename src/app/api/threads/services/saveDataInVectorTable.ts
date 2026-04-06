@@ -38,9 +38,8 @@ type ConvertAndStoreDocumentParams = {
   fileContent: string | Buffer;
   fileName: string;
   organizationId: string;
-  fileId: number;
-  projectId: number;
-  projectPublicId?: string;
+  fileId: string;
+  projectId: string;
   mimeType: string;
 };
 
@@ -151,7 +150,6 @@ export const convertAndStoreDocument = async ({
   organizationId,
   fileId,
   projectId,
-  projectPublicId,
   mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
@@ -169,16 +167,6 @@ export const convertAndStoreDocument = async ({
     }
 
     logger.info({ mimeType }, 'Detected MIME type');
-
-    // Resolve project publicId for metadata
-    let resolvedProjectPublicId = projectPublicId ?? null;
-    if (!resolvedProjectPublicId && projectId) {
-      const project = await db.project.findUnique({
-        where: { id: projectId },
-        select: { publicId: true },
-      });
-      resolvedProjectPublicId = project?.publicId ?? null;
-    }
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId,
@@ -311,11 +299,10 @@ export const convertAndStoreDocument = async ({
           file_name: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
-          id: index,
+          id: String(index),
           organization_id: organizationId,
           file_id: fileId,
-          project_id: null,
-          project_public_id: resolvedProjectPublicId,
+          project_id: projectId || null,
           source_type: fileExtension,
           chunk_size: splitterSettings.chunkSize,
           chunk_overlap: splitterSettings.chunkOverlap,

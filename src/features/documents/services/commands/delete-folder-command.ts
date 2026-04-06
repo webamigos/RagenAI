@@ -14,7 +14,7 @@ import { logger } from '@/app/lib/utils/logger';
 type OperationResult = { success: true } | { success: false; error: string };
 
 export async function deleteFolderCommand(
-  folderId: number,
+  folderId: string,
   organizationId: string,
 ): Promise<OperationResult> {
   const folder = await db.documentFolder.findFirst({
@@ -41,7 +41,6 @@ export async function deleteFolderCommand(
       where: { folderId: { in: allFolderIds } },
       select: {
         id: true,
-        publicId: true,
         fileName: true,
         documentId: true,
         thumbnailS3Key: true,
@@ -51,11 +50,11 @@ export async function deleteFolderCommand(
     // Delete files from S3 and vector store (best-effort, outside transaction)
     for (const file of files) {
       try {
-        const s3Path = `${file.publicId}.${getFileExtension(file.fileName)}`;
+        const s3Path = `${file.id}.${getFileExtension(file.fileName)}`;
         await deleteFromS3(s3Path);
       } catch (err) {
         logger.error(
-          { err, fileId: file.publicId },
+          { err, fileId: file.id },
           'Failed to delete file from S3 during folder deletion',
         );
       }
@@ -72,7 +71,7 @@ export async function deleteFolderCommand(
         await deleteFileFromVectorStore(file.id);
       } catch (err) {
         logger.error(
-          { err, fileId: file.publicId },
+          { err, fileId: file.id },
           'Failed to delete file from vector store during folder deletion',
         );
       }
@@ -85,7 +84,7 @@ export async function deleteFolderCommand(
           }
         } catch (err) {
           logger.error(
-            { err, fileId: file.publicId },
+            { err, fileId: file.id },
             'Failed to delete UserDocument during folder deletion',
           );
         }
@@ -94,7 +93,7 @@ export async function deleteFolderCommand(
       await trackAudit({
         action: 'document.deleted',
         entityType: 'document',
-        entityId: file.publicId,
+        entityId: file.id,
       });
     }
 

@@ -117,13 +117,13 @@ describe('SearchThreads', () => {
       starred: [],
       recent: [
         {
-          publicId: 'thread-1',
+          id: 'thread-1',
           title: 'How to use AI',
           createdAt: new Date().toISOString(),
           messages: [{ content: 'First message' }],
         },
         {
-          publicId: 'thread-2',
+          id: 'thread-2',
           title: null,
           createdAt: new Date(Date.now() - 86400000).toISOString(),
           messages: [{ content: 'Another question about API integration' }],
@@ -133,7 +133,7 @@ describe('SearchThreads', () => {
 
     mockGetRecentProjects.mockResolvedValue([
       {
-        publicId: 'proj-1',
+        id: 'proj-1',
         title: 'My Project',
         createdAt: new Date().toISOString(),
       },

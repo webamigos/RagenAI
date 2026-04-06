@@ -9,13 +9,13 @@ import type {
 } from '../../contracts/permission.types';
 
 export async function getFilePermissionsQuery(
-  filePublicId: string,
+  fileId: string,
   organizationId: string,
 ): Promise<DocumentPermissionItem[]> {
   // Verify file belongs to org
   const file = await db.userFile.findFirst({
-    where: { publicId: filePublicId, organizationId },
-    select: { publicId: true },
+    where: { id: fileId, organizationId },
+    select: { id: true },
   });
   if (!file) {
     return [];
@@ -24,7 +24,7 @@ export async function getFilePermissionsQuery(
   const permissions = await db.documentPermission.findMany({
     where: {
       resourceType: 'file',
-      filePublicId,
+      fileId,
     },
     orderBy: { createdAt: 'asc' },
   });
@@ -33,7 +33,7 @@ export async function getFilePermissionsQuery(
 }
 
 export async function getFolderPermissionsQuery(
-  folderId: number,
+  folderId: string,
   organizationId: string,
 ): Promise<DocumentPermissionItem[]> {
   // Verify folder belongs to org
@@ -100,7 +100,7 @@ async function resolveGranteeNames(
     const team = !isUser ? teamMap.get(p.granteeId) : undefined;
 
     return {
-      id: p.id,
+      id: String(p.id),
       resourceType: p.resourceType as ResourceType,
       granteeType: p.granteeType as GranteeType,
       granteeId: p.granteeId,

@@ -100,7 +100,7 @@ export async function listDriveFolderFiles(
 export async function importDriveFolder(
   folderId: string,
   folderName: string,
-  projectPublicId: string,
+  projectId: string,
 ) {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
@@ -115,16 +115,16 @@ export async function importDriveFolder(
     userId,
     folderId,
     folderName,
-    projectPublicId,
+    projectId,
   );
 }
 
-export async function getDriveSyncs(projectPublicId?: string) {
+export async function getDriveSyncs(projectId?: string) {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
     return { success: false as const, error: 'Unauthorized', syncs: [] };
   }
-  return getDriveSyncsQuery(orgId, projectPublicId);
+  return getDriveSyncsQuery(orgId, projectId);
 }
 
 export async function removeDriveSync(syncId: string) {
@@ -161,7 +161,7 @@ export async function syncDriveFolder(syncId: string) {
   return syncDriveFolderCommand(orgId, userId, syncId);
 }
 
-export async function syncDriveProject(projectPublicId: string) {
+export async function syncDriveProject(projectId: string) {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
     return {
@@ -182,14 +182,14 @@ export async function syncDriveProject(projectPublicId: string) {
       failedCount: 0,
     };
   }
-  return syncDriveProjectCommand(orgId, userId, projectPublicId);
+  return syncDriveProjectCommand(orgId, userId, projectId);
 }
 
 export async function importDriveFileToProject(
   driveFileId: string,
   driveFileName: string,
   driveModifiedTime: string,
-  projectPublicId: string,
+  projectId: string,
 ) {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
@@ -205,6 +205,6 @@ export async function importDriveFileToProject(
     driveFileId,
     driveFileName,
     driveModifiedTime,
-    projectPublicId,
+    projectId,
   );
 }

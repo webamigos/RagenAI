@@ -21,7 +21,7 @@ type InitializePublicRagChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
   organizationId: string;
   projectInstruction?: string | null;
-  projectPublicId?: string;
+  projectId?: string;
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
@@ -34,7 +34,7 @@ export const initializePublicRagChain = async ({
   settings,
   organizationId,
   projectInstruction,
-  projectPublicId,
+  projectId,
 }: InitializePublicRagChainParams) => {
   try {
     const {
@@ -103,9 +103,9 @@ export const initializePublicRagChain = async ({
               },
             },
             {
-              key: 'metadata.project_public_id',
+              key: 'metadata.project_id',
               match: {
-                value: projectPublicId,
+                value: projectId,
               },
             },
           ],

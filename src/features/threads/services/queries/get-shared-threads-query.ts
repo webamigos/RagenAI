@@ -21,13 +21,13 @@ export async function getSharedThreadsQuery(
     include: {
       thread: {
         select: {
-          publicId: true,
+          id: true,
           createdAt: true,
           isStarred: true,
           title: true,
           projectId: true,
           teamId: true,
-          project: { select: { publicId: true, title: true } },
+          project: { select: { id: true, title: true } },
           team: { select: { id: true, name: true } },
         },
       },
@@ -38,7 +38,7 @@ export async function getSharedThreadsQuery(
   });
 
   return shares.map((s) => ({
-    publicId: s.thread.publicId,
+    id: s.thread.id,
     createdAt: s.thread.createdAt.toISOString(),
     isStarred: s.thread.isStarred,
     title: s.thread.title,

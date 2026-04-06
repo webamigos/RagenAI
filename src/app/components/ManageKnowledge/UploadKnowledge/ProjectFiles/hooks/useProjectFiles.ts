@@ -14,7 +14,7 @@ export enum FileListState {
 }
 
 type ProjectFile = {
-  publicId: string;
+  id: string;
   fileName: string;
   fileSize: number;
   fileType: FileType;
@@ -24,7 +24,7 @@ type ProjectFile = {
 };
 
 export const useProjectFiles = (
-  projectPublicId: string,
+  projectId: string,
   onFilesLoaded?: (hasFiles: boolean) => void,
 ) => {
   const [files, setFiles] = useState<ProjectFile[]>([]);
@@ -46,8 +46,8 @@ export const useProjectFiles = (
         setListState(FileListState.LOADING);
       }
 
-      if (projectPublicId) {
-        const result = await getProjectFiles(projectPublicId);
+      if (projectId) {
+        const result = await getProjectFiles(projectId);
 
         if (result.error) {
           throw new Error(result.error);
@@ -73,20 +73,17 @@ export const useProjectFiles = (
         onFilesLoaded(false);
       }
     }
-  }, [projectPublicId, onFilesLoaded]);
+  }, [projectId, onFilesLoaded]);
 
   const handleDeleteFile = useCallback(
-    async (publicFileId: UserFile['publicId']) => {
+    async (publicFileId: UserFile['id']) => {
       if (deletingFileId) {
         return;
       }
 
       try {
         setDeletingFileId(publicFileId);
-        const result = await deleteProjectFileAction(
-          publicFileId,
-          projectPublicId,
-        );
+        const result = await deleteProjectFileAction(publicFileId, projectId);
 
         if (result.error) {
           throw new Error(result.error);
@@ -106,7 +103,7 @@ export const useProjectFiles = (
 
   const handleUploadFiles = useCallback(
     async (filesToUpload: File[]) => {
-      if (!projectPublicId || isUploading) {
+      if (!projectId || isUploading) {
         return;
       }
 
@@ -114,10 +111,10 @@ export const useProjectFiles = (
 
       const formData = new FormData();
       filesToUpload.forEach((file) => formData.append('files', file));
-      formData.append('projectId', projectPublicId);
+      formData.append('projectId', projectId);
 
       try {
-        await uploadProjectFiles(projectPublicId, formData);
+        await uploadProjectFiles(projectId, formData);
         infoToast({ message: t('file-uploaded') });
         loadFiles();
         router.refresh();
@@ -127,7 +124,7 @@ export const useProjectFiles = (
         setIsUploading(false);
       }
     },
-    [projectPublicId, isUploading, infoToast, loadFiles, router, errorToast],
+    [projectId, isUploading, infoToast, loadFiles, router, errorToast],
   );
 
   return {

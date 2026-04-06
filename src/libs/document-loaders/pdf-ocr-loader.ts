@@ -4,9 +4,9 @@ import { processPDFDocument } from '@/libs/chains/pdf-process-rag/chain';
 type PDFOCRDocumentLoaderProps = {
   filePath: string;
   fileName: string;
-  fileId: number;
+  fileId: string;
   organizationId: string;
-  projectId?: number;
+  projectId?: string;
 };
 
 /**
@@ -16,9 +16,9 @@ type PDFOCRDocumentLoaderProps = {
 export class PDFOCRDocumentLoader {
   private filePath: string;
   private fileName: string;
-  private fileId: number;
+  private fileId: string;
   private organizationId: string;
-  private projectId?: number;
+  private projectId?: string;
 
   constructor({
     filePath,

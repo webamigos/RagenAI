@@ -25,7 +25,7 @@ type State = {
   subfolders: DocumentFolderItem[];
   isLoading: boolean;
   isError: boolean;
-  currentFolderId: number | null;
+  currentFolderId: string | null;
   viewMode: KbViewMode;
 };
 
@@ -38,7 +38,7 @@ type Action =
   | { type: 'LOAD_ERROR' }
   | { type: 'ADD_FILE'; payload: UserFileType }
   | { type: 'REMOVE_FILE'; payload: string }
-  | { type: 'SET_FOLDER'; payload: number | null }
+  | { type: 'SET_FOLDER'; payload: string | null }
   | { type: 'SET_VIEW_MODE'; payload: KbViewMode };
 
 const initialState: State = {
@@ -69,7 +69,7 @@ function filesReducer(state: State, action: Action): State {
     case 'REMOVE_FILE':
       return {
         ...state,
-        files: state.files.filter((file) => file.publicId !== action.payload),
+        files: state.files.filter((file) => file.id !== action.payload),
       };
     case 'SET_FOLDER':
       return { ...state, currentFolderId: action.payload };
@@ -85,12 +85,12 @@ type FilesContextType = {
   subfolders: DocumentFolderItem[];
   refreshFiles: () => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (filePublicId: UserFile['publicId']) => void;
+  removeFile: (fileId: UserFile['id']) => void;
   isLoading: boolean;
   isError: boolean;
-  currentFolderId: number | null;
+  currentFolderId: string | null;
   viewMode: KbViewMode;
-  setFolder: (folderId: number | null) => void;
+  setFolder: (folderId: string | null) => void;
   setViewMode: (mode: KbViewMode) => void;
 };
 
@@ -170,11 +170,11 @@ export const FilesProvider = ({ children }: Props) => {
     dispatch({ type: 'ADD_FILE', payload: newFile });
   };
 
-  const removeFile = (publicFileId: UserFile['publicId']) => {
-    dispatch({ type: 'REMOVE_FILE', payload: publicFileId });
+  const removeFile = (fileId: UserFile['id']) => {
+    dispatch({ type: 'REMOVE_FILE', payload: fileId });
   };
 
-  const setFolder = useCallback((folderId: number | null) => {
+  const setFolder = useCallback((folderId: string | null) => {
     dispatch({ type: 'SET_FOLDER', payload: folderId });
   }, []);
 

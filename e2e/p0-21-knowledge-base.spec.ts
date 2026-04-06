@@ -57,8 +57,8 @@ test.describe('Knowledge Base P0', () => {
       path.join(__dirname, 'fixtures', 'test-document-2.md'),
     ]);
 
-    // Should show success toast
-    await expect(page.getByText(/file\(s\) uploaded/i)).toBeVisible({
+    // Should show success toast (Polish: "Przesłano 2 plik(ów)")
+    await expect(page.getByText(/plik\(ów\)|file\(s\) uploaded/i)).toBeVisible({
       timeout: 10_000,
     });
   });

@@ -3,20 +3,16 @@
 import db from '@ragenai/prisma-client';
 import type { Project } from '@/generated/prisma/client';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
-import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
-
-export const getProjectFilesQuery = async (
-  projectPublicId: Project['publicId'],
-) => {
+export const getProjectFilesQuery = async (projectId: Project['id']) => {
   const orgId = await getOrgIdOrThrow();
-  const project = await getProjectByPublicIdOrThrow(projectPublicId);
 
   return await db.userFile.findMany({
     where: {
       organizationId: orgId,
-      projectId: project.id,
+      projectId: projectId,
     },
     select: {
+      id: true,
       createdAt: true,
       fileName: true,
       fileSize: true,
@@ -24,7 +20,6 @@ export const getProjectFilesQuery = async (
       updatedAt: true,
       metadata: true,
       organizationId: true,
-      publicId: true,
     },
     orderBy: {
       createdAt: 'desc',

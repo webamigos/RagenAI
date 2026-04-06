@@ -14,9 +14,9 @@ import type { VectorStoreDocument } from '@/libs/vector-store/types';
 export async function processPDFDocument(
   filePath: string,
   fileName: string,
-  fileId: number,
+  fileId: string,
   organizationId: string,
-  projectId?: number,
+  projectId?: string,
 ): Promise<{
   rawDocs: VectorStoreDocument[];
   success: boolean;
@@ -56,7 +56,7 @@ export async function processPDFDocument(
     });
 
     await createMarkdownDocument({
-      publicId: randomUUID(),
+      id: randomUUID(),
       title: fileName,
       organizationId: organizationId,
       content: finalDocument,

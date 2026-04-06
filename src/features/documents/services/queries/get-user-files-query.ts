@@ -10,7 +10,7 @@ export const getUserFilesQuery = async (
   options?: {
     userId?: string;
     isOrgAdmin?: boolean;
-    folderId?: number | null;
+    folderId?: string | null;
     viewMode?: FileViewMode;
   },
 ) => {
@@ -134,7 +134,7 @@ export const getUserFilesQuery = async (
       updatedAt: true,
       metadata: true,
       organizationId: true,
-      publicId: true,
+      id: true,
       projectId: true,
       folderId: true,
       ownerId: true,
@@ -146,7 +146,7 @@ export const getUserFilesQuery = async (
       thumbnailS3Key: true,
       document: {
         select: {
-          publicId: true,
+          id: true,
         },
       },
       project: {
@@ -158,7 +158,6 @@ export const getUserFilesQuery = async (
       folder: {
         select: {
           id: true,
-          publicId: true,
           name: true,
           teamId: true,
         },

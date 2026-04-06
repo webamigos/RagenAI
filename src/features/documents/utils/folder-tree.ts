@@ -7,7 +7,7 @@ import type { DocumentFolderItem } from '../contracts/document.types';
 export function buildFolderTree(
   folders: DocumentFolderItem[],
 ): DocumentFolderItem[] {
-  const map = new Map<number, DocumentFolderItem>();
+  const map = new Map<string, DocumentFolderItem>();
   const roots: DocumentFolderItem[] = [];
 
   for (const folder of folders) {

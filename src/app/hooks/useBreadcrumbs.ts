@@ -32,7 +32,7 @@ export const useBreadcrumbs = (threadId?: string) => {
         });
         items.push({
           label: threadContext.project.title,
-          href: `/projects/${threadContext.project.publicId}`,
+          href: `/projects/${threadContext.project.id}`,
         });
       } else {
         items.push({
@@ -47,16 +47,16 @@ export const useBreadcrumbs = (threadId?: string) => {
       // Try to find title from sidebar projects or userThreads
       if (threadContext?.project) {
         const project = projects.find(
-          (p) => p.publicId === threadContext.project!.publicId,
+          (p) => p.id === threadContext.project!.id,
         );
         if (project) {
-          const thread = project.threads?.find((t) => t.publicId === threadId);
+          const thread = project.threads?.find((t) => t.id === threadId);
           if (thread?.title) {
             threadTitle = thread.title;
           }
         }
       } else {
-        const thread = userThreads.find((t) => t.publicId === threadId);
+        const thread = userThreads.find((t) => t.id === threadId);
         if (thread?.title) {
           threadTitle = thread.title;
         }
@@ -77,7 +77,7 @@ export const useBreadcrumbs = (threadId?: string) => {
       });
 
       if (projectId) {
-        const project = projects.find((p) => p.publicId === projectId);
+        const project = projects.find((p) => p.id === projectId);
         const projectTitle = project?.title || t('unknownProject');
         items.push({
           label: projectTitle,

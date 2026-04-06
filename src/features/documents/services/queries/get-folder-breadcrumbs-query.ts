@@ -3,8 +3,7 @@
 import db from '@ragenai/prisma-client';
 
 export type BreadcrumbItem = {
-  id: number;
-  publicId: string;
+  id: string;
   name: string;
 };
 
@@ -13,32 +12,28 @@ export type BreadcrumbItem = {
  * Uses the materialized path to find all ancestor IDs efficiently.
  */
 export async function getFolderBreadcrumbsQuery(
-  folderId: number,
+  folderId: string,
   organizationId: string,
 ): Promise<BreadcrumbItem[]> {
   const folder = await db.documentFolder.findFirst({
     where: { id: folderId, organizationId },
-    select: { id: true, publicId: true, name: true, path: true },
+    select: { id: true, name: true, path: true },
   });
 
   if (!folder) {
     return [];
   }
 
-  // Parse ancestor IDs from materialized path (e.g., "/1/5/" → [1, 5])
-  const ancestorIds = folder.path
-    .split('/')
-    .filter(Boolean)
-    .map(Number)
-    .filter((n) => !isNaN(n));
+  // Parse ancestor IDs from materialized path (e.g., "/abc-123/def-456/" → ["abc-123", "def-456"])
+  const ancestorIds = folder.path.split('/').filter(Boolean);
 
   if (ancestorIds.length === 0) {
-    return [{ id: folder.id, publicId: folder.publicId, name: folder.name }];
+    return [{ id: folder.id, name: folder.name }];
   }
 
   const ancestors = await db.documentFolder.findMany({
     where: { id: { in: ancestorIds }, organizationId },
-    select: { id: true, publicId: true, name: true },
+    select: { id: true, name: true },
   });
 
   // Sort ancestors in path order
@@ -50,7 +45,6 @@ export async function getFolderBreadcrumbsQuery(
   // Add the current folder at the end
   sortedAncestors.push({
     id: folder.id,
-    publicId: folder.publicId,
     name: folder.name,
   });
 

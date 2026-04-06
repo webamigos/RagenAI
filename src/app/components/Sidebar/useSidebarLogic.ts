@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { useCloseThread } from '../../hooks/useCloseThreads';
 import { useSearchThreads } from '../../hooks/useSearchThreadsContext';
-import { getDefaultProjectPublicId, getUserMessages } from '@/app/actions';
+import { getDefaultProjectId, getUserMessages } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 
 import {
@@ -24,14 +24,14 @@ import {
   setHasMore,
   setError,
   resetThreads,
-  setDefaultProjectPublicId,
+  setDefaultProjectId,
 } from '@/store/threads/threadsSlice';
 import type { ErrorState } from '@/store/threads/threadsSlice';
 import { logger } from '@/app/lib/utils/logger';
 export const useSidebarLogic = () => {
   const dispatch = useAppDispatch();
   const { activeThread, projects, isCreateModalOpen } = useAppSelector(
-    (state) => state.sidebar
+    (state) => state.sidebar,
   );
   const { errorToast } = statusToast();
   const router = useRouter();
@@ -66,7 +66,7 @@ export const useSidebarLogic = () => {
         return errorToast({ message: 'Error prefetching threads' });
       }
     },
-    []
+    [],
   );
 
   const loadMoreThreads = useCallback(async () => {
@@ -90,7 +90,7 @@ export const useSidebarLogic = () => {
       const { status, error, threads } = await getUserMessages(
         user.id,
         skip,
-        limit
+        limit,
       );
 
       if (status === 200) {
@@ -116,7 +116,7 @@ export const useSidebarLogic = () => {
           setError({
             status: 500,
             message: err?.toString() || 'Unknown error',
-          })
+          }),
         );
       }
       await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
@@ -233,18 +233,18 @@ export const useSidebarLogic = () => {
   }, [organization?.id, user?.id, userThreads.length, pathname]);
 
   useEffect(() => {
-    const fetchDefaultProjectPublicId = async () => {
+    const fetchDefaultProjectId = async () => {
       if (!organization?.id) {
         return;
       }
 
-      const projectPublicId = await getDefaultProjectPublicId();
-      if (projectPublicId) {
-        dispatch(setDefaultProjectPublicId(projectPublicId));
+      const projectId = await getDefaultProjectId();
+      if (projectId) {
+        dispatch(setDefaultProjectId(projectId));
       }
     };
 
-    fetchDefaultProjectPublicId();
+    fetchDefaultProjectId();
   }, [organization?.id, dispatch]);
 
   return {

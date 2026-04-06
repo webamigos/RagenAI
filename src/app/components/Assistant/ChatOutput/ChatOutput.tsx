@@ -202,7 +202,7 @@ const MessageActions = ({
       <MessageTimestamp date={message.createdAt} />
       {role === 'ASSISTANT' && (
         <>
-          <RateAnswer initialRated={message.rate} publicId={message.publicId} />
+          <RateAnswer initialRated={message.rate} messageId={message.id} />
           <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
           {!isPublicAccess && (
             <ReadAnswer content={content} voiceId={voiceId!} />
@@ -234,7 +234,7 @@ export const ChatOutput = ({
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4">
       <div className="flex flex-col gap-2">
         {messages.map((message, messageIndex) => (
-          <div key={`message-${message.publicId}-${messageIndex}`}>
+          <div key={`message-${message.id}-${messageIndex}`}>
             {message.role === 'USER' &&
               message.attachments &&
               message.attachments.length > 0 && (

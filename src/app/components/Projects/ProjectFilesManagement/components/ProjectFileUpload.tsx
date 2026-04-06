@@ -14,14 +14,11 @@ const ProjectFilesList = lazy(() =>
 );
 
 interface Props {
-  projectPublicId: string;
+  projectId: string;
   initialFileCount?: number;
 }
 
-export const ProjectFileUpload = ({
-  projectPublicId,
-  initialFileCount,
-}: Props) => {
+export const ProjectFileUpload = ({ projectId, initialFileCount }: Props) => {
   const { organization } = useOrganization();
   const [resetKey, setResetKey] = useState(0);
 
@@ -33,7 +30,7 @@ export const ProjectFileUpload = ({
     <ErrorBoundary key={resetKey} onReset={() => setResetKey((k) => k + 1)}>
       <Suspense fallback={<LoadingSkeleton />}>
         <ProjectFilesList
-          projectPublicId={projectPublicId}
+          projectId={projectId}
           initialFileCount={initialFileCount}
         />
       </Suspense>

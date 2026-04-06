@@ -24,7 +24,7 @@ describe('createFolderCommand', () => {
 
   it('creates a root folder with path "/"', async () => {
     mockCreate.mockResolvedValue({
-      id: 1,
+      id: 'folder-1',
       name: 'Test Folder',
       path: '/',
     });
@@ -49,54 +49,54 @@ describe('createFolderCommand', () => {
   it('creates a subfolder with computed path', async () => {
     // Mock parent folder lookup
     mockFindFirst.mockResolvedValue({
-      id: 5,
+      id: 'folder-5',
       path: '/',
       organizationId: ORG_ID,
     });
     mockCreate.mockResolvedValue({
-      id: 10,
+      id: 'folder-10',
       name: 'Subfolder',
-      path: '/5/',
+      path: '/folder-5/',
     });
 
     await createFolderCommand({
       name: 'Subfolder',
       organizationId: ORG_ID,
-      parentId: 5,
+      parentId: 'folder-5',
     });
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         name: 'Subfolder',
-        path: '/5/',
-        parentId: 5,
+        path: '/folder-5/',
+        parentId: 'folder-5',
       }),
     });
   });
 
   it('creates a deeply nested folder with correct path', async () => {
-    // Parent is at path /1/5/
+    // Parent is at path /folder-1/folder-5/
     mockFindFirst.mockResolvedValue({
-      id: 12,
-      path: '/1/5/',
+      id: 'folder-12',
+      path: '/folder-1/folder-5/',
       organizationId: ORG_ID,
     });
     mockCreate.mockResolvedValue({
-      id: 20,
+      id: 'folder-20',
       name: 'Deep Folder',
-      path: '/1/5/12/',
+      path: '/folder-1/folder-5/folder-12/',
     });
 
     await createFolderCommand({
       name: 'Deep Folder',
       organizationId: ORG_ID,
-      parentId: 12,
+      parentId: 'folder-12',
     });
 
     expect(mockCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        path: '/1/5/12/',
-        parentId: 12,
+        path: '/folder-1/folder-5/folder-12/',
+        parentId: 'folder-12',
       }),
     });
   });
@@ -118,13 +118,13 @@ describe('createFolderCommand', () => {
       createFolderCommand({
         name: 'Test',
         organizationId: ORG_ID,
-        parentId: 999,
+        parentId: 'folder-999',
       }),
     ).rejects.toThrow('Parent folder not found');
   });
 
   it('sets ownerId when provided', async () => {
-    mockCreate.mockResolvedValue({ id: 1 });
+    mockCreate.mockResolvedValue({ id: 'folder-1' });
 
     await createFolderCommand({
       name: 'My Folder',

@@ -4,7 +4,7 @@ import { getThreadTitle } from '../Projects/utils/threadUtils';
 
 export const TUIThreadItem = ({
   thread,
-  projectPublicId: _projectPublicId,
+  projectId: _projectId,
   isActive,
   onClose,
 }: ThreadItemProps) => {
@@ -14,7 +14,7 @@ export const TUIThreadItem = ({
 
   return (
     <SidebarItem
-      href={`/chats/${thread.publicId}`}
+      href={`/chats/${thread.id}`}
       current={isActive}
       onClick={onClose}
       aria-label={`Thread: ${getThreadTitle(thread)}`}

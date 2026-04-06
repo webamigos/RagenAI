@@ -63,7 +63,7 @@ export type MessageDto = {
   role: Role;
   content: MessageModel['content'];
   createdAt: string;
-  publicId: MessageModel['publicId'];
+  id: MessageModel['id'];
   runId?: MessageModel['runId'];
   rate?: MessageModel['rate'];
   messageType?: MessageModel['messageType'];
@@ -73,14 +73,14 @@ export type MessageDto = {
 };
 
 export type ApiMessageDto = {
-  id: MessageModel['publicId'];
+  id: MessageModel['id'];
   content: MessageModel['content'];
   role: Role;
   createdAt: string;
   runId: string; // TODO: to remove
 };
 
-export type MessageDtoWithoutPublicId = Omit<MessageDto, 'publicId'>;
+export type MessageDtoWithoutId = Omit<MessageDto, 'id'>;
 
 export type StreamedMessageDto = {
   content: string;

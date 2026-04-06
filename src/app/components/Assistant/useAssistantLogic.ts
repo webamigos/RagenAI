@@ -152,7 +152,7 @@ export const useAssistantLogic = (threadId: string) => {
     }
     scrollToBottom();
     const userMessage = {
-      publicId: `user-${Date.now()}`,
+      id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
       createdAt: new Date().toISOString(),

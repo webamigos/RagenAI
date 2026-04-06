@@ -34,14 +34,14 @@ import { FolderIcon } from '@heroicons/react/24/outline';
 type Props = {
   files: UserFileType[];
   subfolders?: DocumentFolderItem[];
-  onNavigateFolder?: (folderId: number) => void;
+  onNavigateFolder?: (folderId: string) => void;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  toggleModal: (filePublicId: UserFile['publicId'] | null) => void;
+  toggleModal: (fileId: UserFile['id'] | null) => void;
   onAddFile: (newFile: UserFileType) => void;
-  onRemoveFile: (filePublicId: UserFile['publicId']) => void;
+  onRemoveFile: (fileId: UserFile['id']) => void;
   handleDelete: (
-    filePublicId: UserFile['publicId'],
+    fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
 };
@@ -58,14 +58,14 @@ type FileRowProps = {
   file: UserFileTypeSafe;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  handleDelete: (filePublicId: UserFile['publicId'], fileName: string) => void;
-  toggleModal: (filePublicId: UserFile['publicId'] | null) => void;
-  onRemoveFile: (filePublicId: UserFile['publicId']) => void;
+  handleDelete: (fileId: UserFile['id'], fileName: string) => void;
+  toggleModal: (fileId: UserFile['id'] | null) => void;
+  onRemoveFile: (fileId: UserFile['id']) => void;
 };
 
 export type ModalStateProps = {
   isOpen: boolean;
-  filePublicId: UserFile['publicId'] | null;
+  fileId: UserFile['id'] | null;
 };
 
 function FileStatusBadge({
@@ -131,7 +131,7 @@ const FileRow = ({
     updatedAt,
     fileName,
     fileSize,
-    publicId,
+    id: fileIdVal,
     embeddingStatus,
     embeddingCompletedAt,
   } = file;
@@ -154,22 +154,22 @@ const FileRow = ({
   return (
     <>
       <DeleteFileModal
-        isOpen={showModal.isOpen && showModal.filePublicId === file.publicId}
+        isOpen={showModal.isOpen && showModal.fileId === file.id}
         onClose={() => toggleModal(null)}
         onConfirm={handleDelete}
-        filePublicId={file.publicId}
+        fileId={file.id}
         fileName={file.fileName}
         isLoading={deleteLoading}
       />
       <TableRow className="text-sm">
-        <TableCell className={file.document?.publicId ? 'z-10' : ''}>
+        <TableCell className={file.document?.id ? 'z-10' : ''}>
           <span className="flex items-center">
             <span className="mr-1 inline-flex size-6 shrink-0 items-center">
               {fileIcon}
             </span>
-            {file.document?.publicId ? (
+            {file.document?.id ? (
               <Link
-                href={`/document/${file.document.publicId}`}
+                href={`/document/${file.document.id}`}
                 title={fileName}
                 className="cursor-pointer"
               >
@@ -190,8 +190,8 @@ const FileRow = ({
         </TableCell>
         <TableCell className="text-right w-12">
           <ToolbarActions
-            filePublicId={publicId!}
-            documentPublicId={file.document?.publicId}
+            fileId={fileIdVal!}
+            documentId={file.document?.id}
             fileName={fileName}
             toggleModal={toggleModal}
             isLoading={isLoading}
@@ -278,7 +278,7 @@ export const UserFilesTable = ({
           {filteredDocuments.map((file) => (
             <FileRow
               deleteLoading={deleteLoading}
-              key={file.publicId}
+              key={file.id}
               file={file}
               showModal={showModal}
               toggleModal={toggleModal}

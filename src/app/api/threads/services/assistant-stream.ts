@@ -20,6 +20,7 @@ import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
+import { getTemplateInstructionForProject } from '@/features/assistant-templates/services/queries/get-template-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
@@ -38,7 +39,7 @@ import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
  * Load thread documents from database for a specific thread
  */
 async function loadThreadDocuments(
-  threadId: number,
+  threadId: string,
 ): Promise<ThreadDocumentUI[]> {
   try {
     const threadDocuments = await db.threadDocument.findMany({
@@ -46,7 +47,7 @@ async function loadThreadDocuments(
       include: {
         userFile: {
           select: {
-            publicId: true,
+            id: true,
             fileName: true,
             fileSize: true,
             fileMimeType: true,
@@ -64,7 +65,7 @@ async function loadThreadDocuments(
       {
         threadId,
         threadDocumentsFound: threadDocuments.length,
-        userFileIds: threadDocuments.map((td) => td.userFile.publicId),
+        userFileIds: threadDocuments.map((td) => td.userFile.id),
         fileNames: threadDocuments.map((td) => td.userFile.fileName),
       },
       'loadThreadDocuments: Retrieved thread documents from database',
@@ -75,7 +76,7 @@ async function loadThreadDocuments(
       content: td.userFile.document?.content || '',
       size: td.userFile.fileSize,
       type: td.userFile.fileMimeType || 'application/octet-stream',
-      userFileId: td.userFile.publicId,
+      userFileId: td.userFile.id,
     }));
 
     return threadDocumentsUI;
@@ -146,7 +147,7 @@ type Config = {
   mode: AssistantMode;
   filteredMode?: ChatType;
   visitorId?: string;
-  projectId?: number;
+  projectId?: string;
 };
 
 type ThreadRecord = Awaited<ReturnType<typeof getThreadDetails>>;
@@ -156,9 +157,9 @@ async function resolveProjectInstruction(
   orgId: string,
   rawSettings: { model: string },
   effectiveSettings: { prompt: string; model: string },
-): Promise<{ instruction: string | null; projectPublicId: string | null }> {
+): Promise<{ instruction: string | null; projectId: string | null }> {
   let projectInstruction: string | null = null;
-  let effectiveProjectPublicId: string | null = null;
+  let effectiveProjectId: string | null = null;
 
   try {
     // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
@@ -168,20 +169,17 @@ async function resolveProjectInstruction(
           id: threadRecord.mentionedProjectId,
           organizationId: orgId,
         },
-        select: { id: true, publicId: true, title: true },
+        select: { id: true, title: true },
       });
 
       if (mentionedProject) {
         try {
-          projectInstruction = await getProjectInstruction(
-            mentionedProject.publicId,
-          );
-          effectiveProjectPublicId = mentionedProject.publicId;
+          projectInstruction = await getProjectInstruction(mentionedProject.id);
+          effectiveProjectId = mentionedProject.id;
 
           logger.info(
             {
               mentionedProjectId: threadRecord.mentionedProjectId,
-              mentionedProjectPublicId: mentionedProject.publicId,
               hasInstruction: Boolean(projectInstruction),
             },
             'Using instructions from mentioned project (highest priority)',
@@ -191,7 +189,6 @@ async function resolveProjectInstruction(
             {
               err: error,
               mentionedProjectId: threadRecord.mentionedProjectId,
-              mentionedProjectPublicId: mentionedProject.publicId,
             },
             'Error getting instructions from mentioned project, falling back to thread project',
           );
@@ -208,18 +205,31 @@ async function resolveProjectInstruction(
     if (
       !projectInstruction &&
       threadRecord.projectId &&
-      threadRecord.project?.publicId
+      threadRecord.project?.id
     ) {
       try {
         projectInstruction = await getProjectInstruction(
-          threadRecord.project.publicId,
+          threadRecord.project.id,
         );
-        effectiveProjectPublicId = threadRecord.project.publicId;
+        effectiveProjectId = threadRecord.project.id;
+
+        // Fallback: check linked assistant template instructions
+        if (!projectInstruction && threadRecord.projectId) {
+          const templateInstruction = await getTemplateInstructionForProject(
+            threadRecord.projectId,
+          );
+          if (templateInstruction) {
+            projectInstruction = templateInstruction;
+            logger.info(
+              { projectId: threadRecord.projectId },
+              'Using instructions from linked assistant template',
+            );
+          }
+        }
 
         logger.info(
           {
-            internalProjectId: threadRecord.projectId,
-            publicProjectId: threadRecord.project.publicId,
+            projectId: threadRecord.projectId,
             hasInstruction: Boolean(projectInstruction),
           },
           'Using instructions from thread project (medium priority)',
@@ -229,16 +239,10 @@ async function resolveProjectInstruction(
           {
             err: error,
             projectId: threadRecord.projectId,
-            publicProjectId: threadRecord.project?.publicId,
           },
           'Error getting instructions from thread project, will use organization instructions',
         );
       }
-    } else if (!projectInstruction && threadRecord.projectId) {
-      logger.warn(
-        { projectId: threadRecord.projectId },
-        'Project associated with thread, but missing publicId',
-      );
     }
 
     // 3. LOWEST PRIORITY: Organization instructions (handled by chain initialization)
@@ -263,7 +267,7 @@ async function resolveProjectInstruction(
 
   return {
     instruction: projectInstruction,
-    projectPublicId: effectiveProjectPublicId,
+    projectId: effectiveProjectId,
   };
 }
 
@@ -302,7 +306,7 @@ export async function streamEvents({
           }
 
           sendApiEvent(controller, 'thread_found', {
-            id: threadRecord.publicId,
+            id: threadRecord.id,
           });
 
           const effectiveSettings = {
@@ -331,7 +335,7 @@ export async function streamEvents({
             Promise<Awaited<ReturnType<typeof createAndStoreMessage>>>,
             Promise<{
               instruction: string | null;
-              projectPublicId: string | null;
+              projectId: string | null;
             }>,
             Promise<ThreadDocumentUI[]>,
           ] = [
@@ -439,16 +443,16 @@ export async function streamEvents({
           }
 
           sendApiEvent(controller, 'user_message_saved', {
-            id: threadMessage.publicId,
+            id: threadMessage.id,
           });
 
           sendApiEvent(controller, 'user_message_created', {
-            id: threadMessage.publicId,
+            id: threadMessage.id,
           });
 
           const {
             instruction: projectInstruction,
-            projectPublicId: effectiveProjectPublicId,
+            projectId: effectiveProjectId,
           } = projectResult;
 
           // Phase 3: Usage limits are now enforced by LiteLLM budget on the team's virtual key.
@@ -479,7 +483,7 @@ export async function streamEvents({
             })()}`,
             ...(skipLangfuseContent ? {} : { input: userMessage.prompt }),
             userId: userId ?? undefined,
-            sessionId: `${orgId}:${threadRecord.publicId}`,
+            sessionId: `${orgId}:${threadRecord.id}`,
             tags: traceTags,
           });
 
@@ -509,8 +513,6 @@ export async function streamEvents({
             } else {
               const projectIdToUse =
                 threadRecord.mentionedProjectId || threadRecord.projectId;
-              const projectPublicIdToUse =
-                effectiveProjectPublicId || threadRecord.project?.publicId;
 
               const inlineThreadDocuments = userMessage.threadDocuments || [];
               const threadDocuments = mergeThreadDocuments(
@@ -541,15 +543,14 @@ export async function streamEvents({
                 isOrgAdmin: userIsOrgAdmin,
                 projectInstruction,
                 projectId: projectIdToUse ?? null,
-                projectPublicId: projectPublicIdToUse ?? null,
                 threadDocuments,
                 mcpTools,
                 mcpContext,
               });
             }
           } else if (mode === AssistantMode.PUBLIC) {
-            const projectPublicIdToUse =
-              effectiveProjectPublicId || threadRecord.project?.publicId;
+            const projectIdToUsePublic =
+              effectiveProjectId || threadRecord.project?.id;
             chainOutput = await initializePublicRagChain({
               settings: {
                 ...effectiveSettings,
@@ -557,7 +558,7 @@ export async function streamEvents({
               },
               organizationId: orgId,
               projectInstruction,
-              projectPublicId: projectPublicIdToUse,
+              projectId: projectIdToUsePublic,
             });
           }
 
@@ -687,7 +688,7 @@ export async function streamEvents({
             try {
               // We create an object without the full content because it has already been sent in the delta events
               const messageToSend: ApiSseMessageEvent = {
-                id: dbMessage.publicId,
+                id: dbMessage.id,
                 role: dbMessage.role,
                 createdAt: dbMessage.createdAt.toISOString(),
                 content: '', // We clear the content - the client already has the full message from the delta events

@@ -42,9 +42,8 @@ import {
 
 import type { ComponentPropsWithRef } from 'react';
 export interface MentionedProject {
-  publicId: string;
+  id: string;
   title: string;
-  id?: number;
 }
 
 export interface MentionTextareaRef {
@@ -279,7 +278,7 @@ export const MentionTextarea = forwardRef<
     const handleKbFilesSelected = useCallback(
       (
         files: {
-          publicId: string;
+          id: string;
           name: string;
           size: number;
           type: string;
@@ -290,7 +289,7 @@ export const MentionTextarea = forwardRef<
           content: '',
           size: f.size,
           type: f.type,
-          userFileId: f.publicId,
+          userFileId: f.id,
         }));
         const updated = [...threadDocumentsRef.current, ...newDocs];
         threadDocumentsRef.current = updated;

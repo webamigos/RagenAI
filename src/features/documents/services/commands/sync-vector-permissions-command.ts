@@ -14,7 +14,7 @@ import { QdrantClient } from '@qdrant/js-client-rest';
  * - "team:<teamId>" — visible to team members
  */
 export async function computeAccessibleBy(
-  fileId: number,
+  fileId: string,
   organizationId: string,
 ): Promise<string[]> {
   const file = await db.userFile.findFirst({
@@ -90,11 +90,7 @@ export async function computeAccessibleBy(
 
     // Also check ancestor folder permissions via path
     if (file.folder?.path && file.folder.path !== '/') {
-      const ancestorIds = file.folder.path
-        .split('/')
-        .filter(Boolean)
-        .map(Number)
-        .filter((n) => !isNaN(n));
+      const ancestorIds = file.folder.path.split('/').filter(Boolean);
 
       if (ancestorIds.length > 0) {
         const ancestorPermissions = await db.documentPermission.findMany({
@@ -127,7 +123,7 @@ export async function computeAccessibleBy(
  * Call this after folder permission changes.
  */
 export async function syncFolderVectorPermissions(
-  folderId: number,
+  folderId: string,
   organizationId: string,
 ): Promise<void> {
   const folder = await db.documentFolder.findFirst({

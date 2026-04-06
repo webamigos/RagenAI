@@ -8,7 +8,7 @@ import type {
 
 type ShareFileParams = {
   resourceType: 'file';
-  filePublicId: string;
+  fileId: string;
   organizationId: string;
   granteeType: GranteeType;
   granteeId: string;
@@ -18,7 +18,7 @@ type ShareFileParams = {
 
 type ShareFolderParams = {
   resourceType: 'folder';
-  folderId: number;
+  folderId: string;
   organizationId: string;
   granteeType: GranteeType;
   granteeId: string;
@@ -65,7 +65,7 @@ export async function shareResourceCommand(
   // Validate resource exists
   if (resourceType === 'file') {
     const file = await db.userFile.findFirst({
-      where: { publicId: params.filePublicId, organizationId },
+      where: { id: params.fileId, organizationId },
     });
     if (!file) {
       return { success: false, error: 'File not found' };
@@ -82,7 +82,7 @@ export async function shareResourceCommand(
   // Upsert permission
   const data = {
     resourceType,
-    filePublicId: resourceType === 'file' ? params.filePublicId : null,
+    fileId: resourceType === 'file' ? params.fileId : null,
     folderId: resourceType === 'folder' ? params.folderId : null,
     granteeType,
     granteeId,
@@ -93,9 +93,9 @@ export async function shareResourceCommand(
   if (resourceType === 'file') {
     await db.documentPermission.upsert({
       where: {
-        resourceType_filePublicId_granteeType_granteeId: {
+        resourceType_fileId_granteeType_granteeId: {
           resourceType,
-          filePublicId: params.filePublicId,
+          fileId: params.fileId,
           granteeType,
           granteeId,
         },

@@ -14,14 +14,14 @@ export const getDocumentByIdQuery = async (documentId: UserDocument['id']) => {
   });
 };
 
-export const getDocumentByPublicIdQuery = async (
-  documentPublicId: UserDocument['publicId'],
+export const getDocumentByIdWithFileQuery = async (
+  documentId: UserDocument['id'],
 ) => {
   const orgId = await getOrgIdOrThrow();
   return await db.userDocument.findFirst({
     where: {
       organizationId: orgId,
-      publicId: documentPublicId,
+      id: documentId,
     },
     include: {
       file: true,

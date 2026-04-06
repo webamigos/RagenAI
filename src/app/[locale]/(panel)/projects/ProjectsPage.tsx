@@ -1,72 +1,83 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useTransition } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   MagnifyingGlassIcon,
   FolderIcon,
   PlusIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
+import {
+  getActiveTemplatesAction,
+  activateTemplateAction,
+} from '@/app/actions/assistant-templates';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@/components/ui/input';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
 import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
+import type { AssistantTemplateUserView } from '@/features/assistant-templates/contracts/assistant-template.types';
 
 type ProjectItem = {
-  publicId: string;
+  id: string;
   title: string;
   createdAt: Date;
-  threads: { publicId: string }[];
+  threads: { id: string }[];
 };
 
 export const AssistantsPage = () => {
   const t = useTranslations('assistants-page');
   const locale = useLocale();
+  const router = useRouter();
   const { organization } = useOrganization();
   const { user } = useUser();
-  const { defaultProjectPublicId } = useAppSelector((state) => state.threads);
+  const { defaultProjectId } = useAppSelector((state) => state.threads);
   const [projects, setProjects] = useState<ProjectItem[]>([]);
+  const [templates, setTemplates] = useState<AssistantTemplateUserView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isActivating, startActivating] = useTransition();
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       if (!organization?.id || !user?.id) {
         return;
       }
       setIsLoading(true);
       try {
-        const result = await getProjects(organization.id, user.id);
-        if (result.projects) {
-          setProjects(result.projects as unknown as ProjectItem[]);
+        const [projectsResult, templatesResult] = await Promise.all([
+          getProjects(organization.id, user.id),
+          getActiveTemplatesAction(),
+        ]);
+        if (projectsResult.projects) {
+          setProjects(projectsResult.projects as unknown as ProjectItem[]);
         }
+        setTemplates(templatesResult);
       } catch (error) {
         logger.error({ error }, 'Failed to fetch projects');
       } finally {
         setIsLoading(false);
       }
     };
-    fetchProjects();
+    fetchData();
   }, [organization?.id, user?.id]);
 
   const filteredProjects = useMemo(() => {
-    const nonDefault = projects.filter(
-      (p) => p.publicId !== defaultProjectPublicId,
-    );
+    const nonDefault = projects.filter((p) => p.id !== defaultProjectId);
     if (!searchQuery.trim()) {
       return nonDefault;
     }
     return nonDefault.filter((p) =>
       p.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [projects, searchQuery, defaultProjectPublicId]);
+  }, [projects, searchQuery, defaultProjectId]);
 
   const handleCreateSuccess = async () => {
     setIsCreateModalOpen(false);
@@ -76,6 +87,17 @@ export const AssistantsPage = () => {
         setProjects(result.projects as unknown as ProjectItem[]);
       }
     }
+  };
+
+  const handleActivateTemplate = (templatePublicId: string) => {
+    startActivating(async () => {
+      try {
+        const result = await activateTemplateAction(templatePublicId);
+        router.push(`/projects/${result.projectId}`);
+      } catch (error) {
+        logger.error({ error }, 'Failed to activate template');
+      }
+    });
   };
 
   return (
@@ -90,6 +112,46 @@ export const AssistantsPage = () => {
           {t('create')}
         </Button>
       </div>
+
+      {/* Global Assistants */}
+      {!isLoading && templates.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3 uppercase tracking-wide">
+            {t('global-assistants')}
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {templates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => handleActivateTemplate(template.id)}
+                disabled={isActivating}
+                className="group flex flex-col justify-between rounded-xl border border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-br from-white to-indigo-50/50 dark:from-zinc-800 dark:to-indigo-950/20 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all min-h-[120px] text-left disabled:opacity-60"
+              >
+                <div className="flex items-center gap-3">
+                  {template.iconUrl ? (
+                    <img
+                      src={template.iconUrl}
+                      alt=""
+                      className="size-6 rounded object-cover shrink-0"
+                    />
+                  ) : (
+                    <SparklesIcon className="size-5 text-indigo-500 dark:text-indigo-400 shrink-0" />
+                  )}
+                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {template.name}
+                  </p>
+                </div>
+                {template.description && (
+                  <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                    {template.description}
+                  </p>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative mb-6">
@@ -115,8 +177,8 @@ export const AssistantsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredProjects.map((project) => (
             <Link
-              key={project.publicId}
-              href={`/projects/${project.publicId}`}
+              key={project.id}
+              href={`/projects/${project.id}`}
               className="group flex flex-col justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
             >
               <div className="flex items-center gap-3">

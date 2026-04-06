@@ -23,12 +23,12 @@ import {
 } from '@/app/actions/google-drive';
 type Props = {
   onFilesLoaded?: (hasFiles: boolean) => void;
-  projectPublicId: Project['publicId'];
+  projectId: Project['id'];
   initialFileCount?: number;
 };
 
 export const ProjectFilesList = memo(
-  ({ onFilesLoaded, projectPublicId, initialFileCount = 0 }: Props) => {
+  ({ onFilesLoaded, projectId, initialFileCount = 0 }: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const t = useTranslations('projects');
     const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
@@ -49,7 +49,7 @@ export const ProjectFilesList = memo(
       loadFiles,
       handleDeleteFile,
       handleUploadFiles,
-    } = useProjectFiles(projectPublicId, onFilesLoaded);
+    } = useProjectFiles(projectId, onFilesLoaded);
 
     useEffect(() => {
       isDriveConnected()
@@ -64,11 +64,7 @@ export const ProjectFilesList = memo(
       setIsDriveImporting(true);
       setDriveImportError(null);
       try {
-        const result = await importDriveFolder(
-          folderId,
-          folderName,
-          projectPublicId,
-        );
+        const result = await importDriveFolder(folderId, folderName, projectId);
         if (!result.success) {
           setDriveImportError(result.error || 'Import failed');
         }
@@ -82,14 +78,14 @@ export const ProjectFilesList = memo(
 
     const handleKbFilesSelected = async (
       selected: {
-        publicId: string;
+        id: string;
         name: string;
         size: number;
         type: string;
       }[],
     ) => {
-      const fileIds = selected.map((f) => f.publicId);
-      await importFilesToProject(fileIds, projectPublicId);
+      const fileIds = selected.map((f) => f.id);
+      await importFilesToProject(fileIds, projectId);
       loadFiles();
     };
 
@@ -213,10 +209,10 @@ export const ProjectFilesList = memo(
           <div className="space-y-2">
             {files.map((file) => (
               <FileItem
-                key={file.publicId}
+                key={file.id}
                 file={file}
-                onDelete={() => handleDeleteFile(file.publicId)}
-                isDeleting={deletingFileId === file.publicId}
+                onDelete={() => handleDeleteFile(file.id)}
+                isDeleting={deletingFileId === file.id}
                 t={t}
               />
             ))}

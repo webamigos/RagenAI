@@ -11,7 +11,7 @@ const hasContent = (thread: ThreadType): boolean => {
 
 export const TUIThreadsList = ({
   threads,
-  projectPublicId,
+  projectId,
   activeThread,
   onClose,
 }: ThreadsListProps) => {
@@ -44,11 +44,11 @@ export const TUIThreadsList = ({
                 aria-label={`${title} project threads`}
               >
                 {threads.map((thread) => (
-                  <div key={thread.publicId} role="listitem">
+                  <div key={thread.id} role="listitem">
                     <TUIThreadItem
                       thread={thread}
-                      projectPublicId={projectPublicId}
-                      isActive={activeThread === thread.publicId}
+                      projectId={projectId}
+                      isActive={activeThread === thread.id}
                       onClose={onClose}
                     />
                   </div>

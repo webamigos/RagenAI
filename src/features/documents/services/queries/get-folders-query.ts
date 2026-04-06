@@ -32,7 +32,6 @@ export async function getFoldersQuery(
 
   return folders.map((folder) => ({
     id: folder.id,
-    publicId: folder.publicId,
     name: folder.name,
     teamId: folder.teamId,
     teamName: folder.team?.name ?? null,

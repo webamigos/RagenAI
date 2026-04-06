@@ -36,7 +36,7 @@ describe('getThreadSharesQuery', () => {
     );
 
     expect(result).toEqual({
-      threadPublicId: THREAD_PUBLIC_ID,
+      threadId: THREAD_PUBLIC_ID,
       sharedWith: [],
     });
   });

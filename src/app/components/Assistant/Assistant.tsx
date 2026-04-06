@@ -29,8 +29,7 @@ import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettin
 import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
 
 type ProjectForContext = {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
 };
 
@@ -121,7 +120,6 @@ export const Assistant = ({ threadId }: Props) => {
           const mappedProjects: ProjectForContext[] = response.projects.map(
             (project) => ({
               id: project.id,
-              publicId: project.publicId,
               title: project.title,
             }),
           );
@@ -232,7 +230,7 @@ export const Assistant = ({ threadId }: Props) => {
         <ShareThreadDialog
           isOpen={isShareOpen}
           onClose={() => setIsShareOpen(false)}
-          threadPublicId={threadId}
+          threadId={threadId}
         />
 
         <div className="flex-1">

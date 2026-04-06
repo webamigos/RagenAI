@@ -106,104 +106,107 @@ describe('deleteFolderCommand', () => {
   it('returns error if folder not found', async () => {
     mockFolderFindFirst.mockResolvedValue(null);
 
-    const result = await deleteFolderCommand(1, ORG_ID);
+    const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: false, error: 'Folder not found' });
   });
 
   it('deletes an empty folder without file cleanup', async () => {
     mockFolderFindFirst.mockResolvedValue({
-      id: 1,
+      id: 'folder-1',
       path: '/',
       organizationId: ORG_ID,
     });
     mockFolderFindMany.mockResolvedValue([]);
     mockFileFindMany.mockResolvedValue([]);
 
-    const result = await deleteFolderCommand(1, ORG_ID);
+    const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
     expect(mockDeleteFromS3).not.toHaveBeenCalled();
     expect(mockDeleteFileFromVectorStore).not.toHaveBeenCalled();
-    expect(mockFolderDelete).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(mockFolderDelete).toHaveBeenCalledWith({
+      where: { id: 'folder-1' },
+    });
   });
 
   it('deletes files from S3 and vector store when folder has files', async () => {
     mockFolderFindFirst.mockResolvedValue({
-      id: 1,
+      id: 'folder-1',
       path: '/',
       organizationId: ORG_ID,
     });
     mockFolderFindMany.mockResolvedValue([]);
     mockFileFindMany.mockResolvedValue([
       {
-        id: 100,
-        publicId: 'file-abc',
+        id: 'file-abc',
         fileName: 'report.pdf',
-        documentId: 1,
+        documentId: 'doc-1',
         thumbnailS3Key: 'thumb/file-abc.jpg',
       },
     ]);
-    mockGetDocumentById.mockResolvedValue({ id: 200 });
+    mockGetDocumentById.mockResolvedValue({ id: 'doc-200' });
 
-    const result = await deleteFolderCommand(1, ORG_ID);
+    const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
     expect(mockDeleteFromS3).toHaveBeenCalledWith('file-abc.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('thumb/file-abc.jpg');
-    expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith(100);
-    expect(mockGetDocumentById).toHaveBeenCalledWith(1);
-    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith(200);
+    expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith('file-abc');
+    expect(mockGetDocumentById).toHaveBeenCalledWith('doc-1');
+    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-200');
     expect(mockFileDeleteMany).toHaveBeenCalled();
-    expect(mockFolderDelete).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(mockFolderDelete).toHaveBeenCalledWith({
+      where: { id: 'folder-1' },
+    });
   });
 
   it('deletes files from descendant folders', async () => {
     mockFolderFindFirst.mockResolvedValue({
-      id: 1,
+      id: 'folder-1',
       path: '/',
       organizationId: ORG_ID,
     });
-    mockFolderFindMany.mockResolvedValue([{ id: 2 }, { id: 3 }]);
+    mockFolderFindMany.mockResolvedValue([
+      { id: 'folder-2' },
+      { id: 'folder-3' },
+    ]);
     mockFileFindMany.mockResolvedValue([
       {
-        id: 101,
-        publicId: 'file-1',
+        id: 'file-1',
         fileName: 'a.txt',
         documentId: null,
         thumbnailS3Key: null,
       },
       {
-        id: 102,
-        publicId: 'file-2',
+        id: 'file-2',
         fileName: 'b.md',
         documentId: null,
         thumbnailS3Key: null,
       },
     ]);
 
-    const result = await deleteFolderCommand(1, ORG_ID);
+    const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
     expect(mockDeleteFromS3).toHaveBeenCalledTimes(2);
     expect(mockDeleteFileFromVectorStore).toHaveBeenCalledTimes(2);
     // Descendant folders should be deleted
     expect(mockFolderDeleteMany).toHaveBeenCalledWith({
-      where: { id: { in: [2, 3] } },
+      where: { id: { in: ['folder-2', 'folder-3'] } },
     });
   });
 
   it('updates org metadata when no files remain', async () => {
     mockFolderFindFirst.mockResolvedValue({
-      id: 1,
+      id: 'folder-1',
       path: '/',
       organizationId: ORG_ID,
     });
     mockFolderFindMany.mockResolvedValue([]);
     mockFileFindMany.mockResolvedValue([
       {
-        id: 100,
-        publicId: 'file-last',
+        id: 'file-last',
         fileName: 'last.pdf',
         documentId: null,
         thumbnailS3Key: null,
@@ -211,7 +214,7 @@ describe('deleteFolderCommand', () => {
     ]);
     mockGetOrganizationFilesCount.mockResolvedValue(0);
 
-    await deleteFolderCommand(1, ORG_ID);
+    await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(mockSaveOrgMetadata).toHaveBeenCalledWith(ORG_ID, {
       hasKnowledge: false,
@@ -220,22 +223,20 @@ describe('deleteFolderCommand', () => {
 
   it('continues deleting other files if one S3 deletion fails', async () => {
     mockFolderFindFirst.mockResolvedValue({
-      id: 1,
+      id: 'folder-1',
       path: '/',
       organizationId: ORG_ID,
     });
     mockFolderFindMany.mockResolvedValue([]);
     mockFileFindMany.mockResolvedValue([
       {
-        id: 101,
-        publicId: 'file-fail',
+        id: 'file-fail',
         fileName: 'a.txt',
         documentId: null,
         thumbnailS3Key: null,
       },
       {
-        id: 102,
-        publicId: 'file-ok',
+        id: 'file-ok',
         fileName: 'b.txt',
         documentId: null,
         thumbnailS3Key: null,
@@ -245,7 +246,7 @@ describe('deleteFolderCommand', () => {
       .mockRejectedValueOnce(new Error('S3 error'))
       .mockResolvedValueOnce(undefined);
 
-    const result = await deleteFolderCommand(1, ORG_ID);
+    const result = await deleteFolderCommand('folder-1', ORG_ID);
 
     expect(result).toEqual({ success: true });
     expect(mockDeleteFromS3).toHaveBeenCalledTimes(2);

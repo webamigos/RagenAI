@@ -5,8 +5,8 @@ import db from '@ragenai/prisma-client';
 type OperationResult = { success: true } | { success: false; error: string };
 
 export async function moveFolderCommand(
-  folderId: number,
-  newParentId: number | null,
+  folderId: string,
+  newParentId: string | null,
   organizationId: string,
 ): Promise<OperationResult> {
   const folder = await db.documentFolder.findFirst({

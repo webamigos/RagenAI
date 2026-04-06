@@ -20,14 +20,14 @@ export const TUIProjectItem = ({
   useEffect(() => {
     if (
       activeThread &&
-      project.threads.some((thread) => thread.publicId === activeThread)
+      project.threads.some((thread) => thread.id === activeThread)
     ) {
       setIsExpanded(true);
     }
   }, [activeThread, project.threads]);
 
   const handleProjectClick = () => {
-    router.push(`/projects/${project.publicId}`);
+    router.push(`/projects/${project.id}`);
   };
 
   const handleExpandClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -50,7 +50,7 @@ export const TUIProjectItem = ({
           onClick={handleProjectClick}
           className="flex-1"
           aria-describedby={
-            hasThreads ? `threads-count-${project.publicId}` : undefined
+            hasThreads ? `threads-count-${project.id}` : undefined
           }
         >
           <FolderIcon data-slot="icon" className="w-6 h-6" />
@@ -58,7 +58,7 @@ export const TUIProjectItem = ({
         </SidebarItem>
         {hasThreads && (
           <>
-            <span id={`threads-count-${project.publicId}`} className="sr-only">
+            <span id={`threads-count-${project.id}`} className="sr-only">
               {project.threads.length} threads available
             </span>
             <Button
@@ -69,7 +69,7 @@ export const TUIProjectItem = ({
               className="p-1 hover:bg-zinc-950/5 dark:hover:bg-white/5 rounded-md transition-colors ml-1 shrink-0"
               aria-label={isExpanded ? 'Collapse threads' : 'Expand threads'}
               aria-expanded={isExpanded}
-              aria-controls={`threads-${project.publicId}`}
+              aria-controls={`threads-${project.id}`}
               tabIndex={0}
             >
               <ChevronDownIcon
@@ -83,14 +83,14 @@ export const TUIProjectItem = ({
       </div>
       {hasThreads && isExpanded && (
         <div
-          id={`threads-${project.publicId}`}
+          id={`threads-${project.id}`}
           className="ml-6 space-y-1 animate-in slide-in-from-top-2 duration-200"
           role="region"
           aria-label={`Threads for project ${project.title}`}
         >
           <TUIThreadsList
             threads={project.threads}
-            projectPublicId={project.publicId}
+            projectId={project.id}
             activeThread={activeThread}
             onClose={onSidebarClose}
           />

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { TEST_PROJECT_PUBLIC_ID } from './constants';
+import { TEST_PROJECT_ID } from './constants';
 import { ROUTES } from './helpers';
 
 /**
@@ -44,10 +44,8 @@ test.describe('Authenticated pages smoke tests', () => {
     });
 
     test('project detail page loads', async ({ page }) => {
-      await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
-      await expect(page).toHaveURL(
-        new RegExp(`projects/${TEST_PROJECT_PUBLIC_ID}`),
-      );
+      await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
+      await expect(page).toHaveURL(new RegExp(`projects/${TEST_PROJECT_ID}`));
       // Project page should show the project title or content area
       await expect(page.getByText(/E2E Test Project/i)).toBeVisible({
         timeout: 10_000,

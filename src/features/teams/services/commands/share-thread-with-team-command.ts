@@ -5,14 +5,14 @@ import db from '@ragenai/prisma-client';
 type OperationResult = { success: true } | { success: false; error: string };
 
 export async function shareThreadWithTeamCommand(
-  threadPublicId: string,
+  threadId: string,
   teamId: string | null,
   organizationId: string,
   userId: string,
 ): Promise<OperationResult> {
   const thread = await db.thread.findFirst({
     where: {
-      publicId: threadPublicId,
+      id: threadId,
       organizationId: organizationId,
     },
     select: { id: true, visitorId: true },

@@ -57,7 +57,7 @@ export const TUIProjectsList = ({
               if (projects.length > 0) {
                 return projects.map((project) => (
                   <TUIProjectItem
-                    key={project.publicId}
+                    key={project.id}
                     project={project}
                     activeThread={activeThread}
                     onSidebarClose={closeSidebar}

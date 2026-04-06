@@ -8,12 +8,10 @@ export type VectorStoreDocumentMetadata = {
   file_name: string;
   page_number: number;
   created_at: string;
-  id: number;
+  id: string;
   organization_id: string;
-  file_id: number;
-  file_public_id?: string;
-  project_id: number | null;
-  project_public_id: string | null;
+  file_id: string;
+  project_id: string | null;
   source_type: string;
   chunk_size: number;
   chunk_overlap: number;

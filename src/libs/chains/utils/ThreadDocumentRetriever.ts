@@ -124,31 +124,19 @@ export class ThreadDocumentRetriever {
     maxChunks: number,
   ): Promise<VectorStoreDocument[]> {
     try {
-      // Lookup internal UserFile.id from UserFile.publicId
-      const userFilePublicIds = threadDocuments
+      // Get UserFile IDs from thread documents
+      const userFileIds = threadDocuments
         .map((doc) => doc.userFileId)
         .filter(Boolean) as string[];
-      const userFiles = await db.userFile.findMany({
-        where: {
-          publicId: {
-            in: userFilePublicIds,
-          },
-        },
-        select: {
-          id: true,
-          publicId: true,
-        },
-      });
 
-      if (userFiles.length === 0) {
+      if (userFileIds.length === 0) {
         logger.warn(
-          { userFilePublicIds },
-          'ThreadDocumentRetriever: No UserFiles found for vectorstore search',
+          'ThreadDocumentRetriever: No UserFile IDs found for vectorstore search',
         );
         return [];
       }
 
-      const internalUserFileIds = userFiles.map((file) => file.id);
+      const internalUserFileIds = userFileIds;
 
       // Search vectorstore with fileId filter (intermediate format — works with all backends)
       const fileIdFilter = {

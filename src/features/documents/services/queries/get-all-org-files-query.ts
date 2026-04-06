@@ -60,7 +60,7 @@ export const getAllOrgFilesQuery = async (
       ...accessFilter,
     },
     select: {
-      publicId: true,
+      id: true,
       fileName: true,
       fileSize: true,
       fileType: true,
@@ -76,7 +76,6 @@ export const getAllOrgFilesQuery = async (
       folder: {
         select: {
           id: true,
-          publicId: true,
           name: true,
           teamId: true,
         },

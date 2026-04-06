@@ -107,7 +107,7 @@ export const processPDFInBatches = async (
   return pageDescriptions;
 };
 
-export const convertPDFToImages = async (filePath: string, fileId: number) => {
+export const convertPDFToImages = async (filePath: string, fileId: string) => {
   const directory = path.join(
     process.cwd(),
     'public',

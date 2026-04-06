@@ -88,7 +88,7 @@ export const usePublicAssistantLogic = (
         );
         if (tempMessage) {
           const userMessage = {
-            publicId: `user-${Date.now()}`,
+            id: `user-${Date.now()}`,
             role: Role.USER,
             content: tempMessage,
             createdAt: new Date().toISOString(),
@@ -100,7 +100,7 @@ export const usePublicAssistantLogic = (
             mode: AssistantMode.PUBLIC,
             organizationId,
             messages: response.data.messages,
-            userMessageId: userMessage.publicId,
+            userMessageId: userMessage.id,
             userMessage,
             t,
             tChainErrors,
@@ -158,7 +158,7 @@ export const usePublicAssistantLogic = (
   const onSubmit = async (data: CreateMessageDto) => {
     scrollToBottom();
     const userMessage = {
-      publicId: `user-${Date.now()}`,
+      id: `user-${Date.now()}`,
       role: Role.USER,
       content: data.prompt,
       createdAt: new Date().toISOString(),
