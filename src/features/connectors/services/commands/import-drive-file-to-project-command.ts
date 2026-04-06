@@ -21,10 +21,10 @@ export const importDriveFileToProjectCommand = async (
   driveFileId: string,
   driveFileName: string,
   driveModifiedTime: string,
-  projectPublicId: string,
+  projectId: string,
 ): Promise<ImportFileResult> => {
   const project = await db.project.findFirst({
-    where: { id: projectPublicId, organizationId: orgId },
+    where: { id: projectId, organizationId: orgId },
     select: { id: true },
   });
 

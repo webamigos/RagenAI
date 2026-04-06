@@ -6,7 +6,7 @@ import { trackAudit } from '@/features/audit-logs/services/commands/create-audit
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const renameThreadCommand = async (
-  threadPublicId: string,
+  threadId: string,
   title: string,
 ): Promise<
   { success: true; title: string } | { success: false; errorMessage: string }
@@ -18,7 +18,7 @@ export const renameThreadCommand = async (
     }
 
     const thread = await db.thread.findFirst({
-      where: { id: threadPublicId, organizationId: orgId },
+      where: { id: threadId, organizationId: orgId },
     });
 
     if (!thread) {
@@ -26,23 +26,23 @@ export const renameThreadCommand = async (
     }
 
     await db.thread.update({
-      where: { id: threadPublicId },
+      where: { id: threadId },
       data: { title: title.trim() },
     });
 
     trackAudit({
       action: 'thread.renamed',
       entityType: 'thread',
-      entityId: threadPublicId,
+      entityId: threadId,
       oldData: { title: thread.title },
       newData: { title: title.trim() },
     });
 
-    logger.info({ threadId: threadPublicId, title }, 'Thread renamed');
+    logger.info({ threadId: threadId, title }, 'Thread renamed');
 
     return { success: true, title: title.trim() };
   } catch (error) {
-    logger.error({ err: error, threadPublicId }, 'Error renaming thread');
+    logger.error({ err: error, threadId }, 'Error renaming thread');
     return { success: false, errorMessage: 'Failed to rename thread' };
   }
 };

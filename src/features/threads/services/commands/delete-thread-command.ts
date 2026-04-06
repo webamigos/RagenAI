@@ -6,7 +6,7 @@ import { trackAudit } from '@/features/audit-logs/services/commands/create-audit
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const deleteThreadCommand = async (
-  threadPublicId: string,
+  threadId: string,
 ): Promise<{ success: true } | { success: false; errorMessage: string }> => {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
@@ -15,7 +15,7 @@ export const deleteThreadCommand = async (
     }
 
     const thread = await db.thread.findFirst({
-      where: { id: threadPublicId, organizationId: orgId },
+      where: { id: threadId, organizationId: orgId },
     });
 
     if (!thread) {
@@ -30,15 +30,15 @@ export const deleteThreadCommand = async (
     trackAudit({
       action: 'thread.deleted',
       entityType: 'thread',
-      entityId: threadPublicId,
+      entityId: threadId,
       oldData: { title: thread.title },
     });
 
-    logger.info({ threadId: threadPublicId }, 'Thread deleted');
+    logger.info({ threadId: threadId }, 'Thread deleted');
 
     return { success: true };
   } catch (error) {
-    logger.error({ err: error, threadPublicId }, 'Error deleting thread');
+    logger.error({ err: error, threadId }, 'Error deleting thread');
     return { success: false, errorMessage: 'Failed to delete thread' };
   }
 };

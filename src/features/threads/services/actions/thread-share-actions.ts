@@ -13,7 +13,7 @@ import type {
 } from '@/features/threads/contracts/thread.types';
 
 export async function shareThreadAction(
-  threadPublicId: string,
+  threadId: string,
   recipientUserIds: string[],
 ): Promise<{ success: true } | { success: false; error: string }> {
   const userId = await getCurrentUserId();
@@ -25,7 +25,7 @@ export async function shareThreadAction(
   const orgId = await getOrgIdFromAuthOrThrow();
 
   return shareThreadCommand({
-    threadPublicId,
+    threadId,
     recipientUserIds,
     organizationId: orgId,
     currentUserId: userId,
@@ -33,17 +33,17 @@ export async function shareThreadAction(
 }
 
 export async function getThreadSharesAction(
-  threadPublicId: string,
+  threadId: string,
 ): Promise<ThreadShareInfo> {
   const userId = await getCurrentUserId();
 
   if (!userId) {
-    return { threadId: threadPublicId, sharedWith: [] };
+    return { threadId: threadId, sharedWith: [] };
   }
 
   const orgId = await getOrgIdFromAuthOrThrow();
 
-  return getThreadSharesQuery(threadPublicId, orgId, userId);
+  return getThreadSharesQuery(threadId, orgId, userId);
 }
 
 export async function getSharedThreadsAction(): Promise<SidebarThreadItem[]> {

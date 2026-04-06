@@ -5,13 +5,13 @@ import { logger } from '@/app/lib/utils/logger';
 import type { CreateThreadDto } from '../../contracts/thread.types';
 
 export const findOrCreateThreadCommand = async (
-  threadPublicId: CreateThreadDto['id'],
+  threadId: CreateThreadDto['id'],
   visitorId: string,
   organizationId?: string,
 ) => {
   try {
     const whereClause: { id: string; organizationId?: string } = {
-      id: threadPublicId,
+      id: threadId,
     };
 
     // Scope to organization when provided to prevent cross-tenant access
@@ -24,7 +24,7 @@ export const findOrCreateThreadCommand = async (
     });
 
     if (!threadRecord) {
-      throw new Error(`Thread ${threadPublicId} not found`);
+      throw new Error(`Thread ${threadId} not found`);
     }
 
     if (!threadRecord.visitorId || threadRecord.visitorId === visitorId) {
@@ -37,7 +37,7 @@ export const findOrCreateThreadCommand = async (
     } else {
       logger.warn(
         {
-          threadPublicId,
+          threadId,
           visitorId,
           existingVisitorId: threadRecord.visitorId,
         },
@@ -48,7 +48,7 @@ export const findOrCreateThreadCommand = async (
 
     return { threadRecord };
   } catch (error) {
-    logger.error({ err: error }, `Failed to fetch thread ${threadPublicId}`);
-    throw new Error(`Cannot fetch thread ${threadPublicId}`);
+    logger.error({ err: error }, `Failed to fetch thread ${threadId}`);
+    throw new Error(`Cannot fetch thread ${threadId}`);
   }
 };

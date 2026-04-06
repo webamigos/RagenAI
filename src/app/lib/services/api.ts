@@ -56,7 +56,7 @@ type UploadResponse = {
 };
 
 export const uploadProjectFiles = async (
-  projectPublicId: string,
+  projectId: string,
   data: FormData,
 ): Promise<UploadResponse> => {
   const response = await api.post<UploadResponse>(`/upload`, data, {

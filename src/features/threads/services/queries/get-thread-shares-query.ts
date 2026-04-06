@@ -4,20 +4,20 @@ import db from '@ragenai/prisma-client';
 import type { ThreadShareInfo } from '@/features/threads/contracts/thread.types';
 
 export async function getThreadSharesQuery(
-  threadPublicId: string,
+  threadId: string,
   organizationId: string,
   currentUserId: string,
 ): Promise<ThreadShareInfo> {
   const thread = await db.thread.findFirst({
     where: {
-      id: threadPublicId,
+      id: threadId,
       organizationId,
     },
     select: { id: true },
   });
 
   if (!thread) {
-    return { threadId: threadPublicId, sharedWith: [] };
+    return { threadId: threadId, sharedWith: [] };
   }
 
   // Get all org members (excluding current user)
@@ -54,5 +54,5 @@ export async function getThreadSharesQuery(
     isShared: sharedUserIds.has(m.userId),
   }));
 
-  return { threadId: threadPublicId, sharedWith };
+  return { threadId: threadId, sharedWith };
 }

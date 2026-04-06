@@ -7,12 +7,12 @@ import type { MessageAttachment } from '../../contracts/message.types';
 import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 
 export const getThreadMessagesQuery = async (
-  threadPublicId: Thread['id'],
+  threadId: Thread['id'],
   visitorId: Thread['visitorId'],
 ) => {
   try {
     const thread = await db.thread.findFirst({
-      where: { id: threadPublicId, visitorId: visitorId },
+      where: { id: threadId, visitorId: visitorId },
       select: {
         id: true,
         encryptedDek: true,

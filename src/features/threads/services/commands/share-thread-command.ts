@@ -3,7 +3,7 @@
 import db from '@ragenai/prisma-client';
 
 type ShareThreadInput = {
-  threadPublicId: string;
+  threadId: string;
   recipientUserIds: string[];
   organizationId: string;
   currentUserId: string;
@@ -14,12 +14,11 @@ type OperationResult = { success: true } | { success: false; error: string };
 export async function shareThreadCommand(
   input: ShareThreadInput,
 ): Promise<OperationResult> {
-  const { threadPublicId, recipientUserIds, organizationId, currentUserId } =
-    input;
+  const { threadId, recipientUserIds, organizationId, currentUserId } = input;
 
   const thread = await db.thread.findFirst({
     where: {
-      id: threadPublicId,
+      id: threadId,
       organizationId,
     },
     select: { id: true, visitorId: true },

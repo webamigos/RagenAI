@@ -39,7 +39,7 @@ export async function getCurrentUserTeamIds() {
 }
 
 export async function shareThreadWithTeam(
-  threadPublicId: string,
+  threadId: string,
   teamId: string | null,
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -47,5 +47,5 @@ export async function shareThreadWithTeam(
   if (!userId) {
     return { success: false as const, error: 'Not authenticated' };
   }
-  return shareThreadWithTeamCommand(threadPublicId, teamId, orgId, userId);
+  return shareThreadWithTeamCommand(threadId, teamId, orgId, userId);
 }

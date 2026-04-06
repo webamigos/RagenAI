@@ -398,10 +398,10 @@ export const getDefaultProjectPublicId = async () => {
 };
 
 export const toggleThreadStarred = async (
-  threadPublicId: string,
+  threadId: string,
   isStarred: boolean,
 ) => {
-  return toggleThreadStarredCommand(threadPublicId, isStarred);
+  return toggleThreadStarredCommand(threadId, isStarred);
 };
 
 export const getSidebarThreads = async (
@@ -421,12 +421,12 @@ export const getAllThreads = async (
   return getAllThreadsQuery(visitorId, skip, take, query);
 };
 
-export const renameThread = async (threadPublicId: string, title: string) => {
-  return renameThreadCommand(threadPublicId, title);
+export const renameThread = async (threadId: string, title: string) => {
+  return renameThreadCommand(threadId, title);
 };
 
-export const deleteThread = async (threadPublicId: string) => {
-  return deleteThreadCommand(threadPublicId);
+export const deleteThread = async (threadId: string) => {
+  return deleteThreadCommand(threadId);
 };
 
 export const getUserOrganizationsAction = async () => {

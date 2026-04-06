@@ -26,10 +26,10 @@ type SyncResult = {
 export const syncDriveProjectCommand = async (
   orgId: string,
   userId: string,
-  projectPublicId: string,
+  projectId: string,
 ): Promise<SyncResult> => {
   const project = await db.project.findFirst({
-    where: { id: projectPublicId, organizationId: orgId },
+    where: { id: projectId, organizationId: orgId },
     select: { id: true },
   });
 

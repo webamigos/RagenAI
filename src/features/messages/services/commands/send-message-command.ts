@@ -19,7 +19,7 @@ type SendMessageResponse = {
 export const sendMessageCommand = async (
   threadId: string,
   data: CreateMessageDto,
-  visitorId: string
+  visitorId: string,
 ): Promise<SendMessageResponse> => {
   const requestData = await createMessageSchema().safeParseAsync(data);
 
@@ -30,14 +30,10 @@ export const sendMessageCommand = async (
     };
   }
 
-  const threadPublicId = threadId;
   const prompt = requestData.data.prompt;
 
   try {
-    const { threadRecord } = await findOrCreateThread(
-      threadPublicId,
-      visitorId
-    );
+    const { threadRecord } = await findOrCreateThread(threadId, visitorId);
 
     const messageResponse = await createAndStoreMessageCommand({
       prompt,
