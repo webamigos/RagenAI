@@ -14,7 +14,7 @@ export const getDocumentByIdQuery = async (documentId: UserDocument['id']) => {
   });
 };
 
-export const getDocumentByPublicIdQuery = async (
+export const getDocumentByIdWithFileQuery = async (
   documentId: UserDocument['id'],
 ) => {
   const orgId = await getOrgIdOrThrow();
