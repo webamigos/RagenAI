@@ -58,7 +58,7 @@ import { importFilesToProject } from '@/app/actions';
 import type { FileType } from '@/generated/prisma/browser';
 
 type ProjectThread = {
-  publicId: string;
+  id: string;
   title: string | null;
   createdAt: string;
   isStarred: boolean;
@@ -66,18 +66,19 @@ type ProjectThread = {
 };
 
 type Project = {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
   isPublic: boolean;
   accessToken: string | null;
   publishedAt: string | null;
   chatbotEnabled: boolean;
+  templateId: string | null;
+  template: { name: string; iconUrl: string | null } | null;
   threads: ProjectThread[];
 };
 
 type ProjectFile = {
-  publicId: string;
+  id: string;
   fileName: string;
   fileSize: number;
   fileType: FileType;
@@ -161,8 +162,8 @@ export function ProjectComponent({ projectId }: Props) {
       try {
         const projectData = await fetchProject(projectId);
         setProject(projectData);
-        loadFiles(projectData.publicId);
-        getProjectInstructionAction(projectData.publicId).then((result) => {
+        loadFiles(projectData.id);
+        getProjectInstructionAction(projectData.id).then((result) => {
           if (result.success && result.instruction) {
             setInstructionText(result.instruction);
           }
@@ -185,7 +186,7 @@ export function ProjectComponent({ projectId }: Props) {
     }
     setIsSyncing(true);
     try {
-      const result = await syncDriveProject(project.publicId);
+      const result = await syncDriveProject(project.id);
       if (result.success) {
         if (result.updatedCount > 0) {
           successToast({
@@ -200,7 +201,7 @@ export function ProjectComponent({ projectId }: Props) {
       } else {
         errorToast({ message: t('upload.sync-failed') });
       }
-      loadFiles(project.publicId);
+      loadFiles(project.id);
     } catch {
       errorToast({ message: t('upload.sync-failed') });
     } finally {
@@ -210,7 +211,7 @@ export function ProjectComponent({ projectId }: Props) {
 
   const handleKbFilesSelected = async (
     selected: {
-      publicId: string;
+      id: string;
       name: string;
       size: number;
       type: string;
@@ -219,9 +220,9 @@ export function ProjectComponent({ projectId }: Props) {
     if (!project) {
       return;
     }
-    const fileIds = selected.map((f) => f.publicId);
-    await importFilesToProject(fileIds, project.publicId);
-    loadFiles(project.publicId);
+    const fileIds = selected.map((f) => f.id);
+    await importFilesToProject(fileIds, project.id);
+    loadFiles(project.id);
   };
 
   const handleExternalFileSelected = async (doc: {
@@ -241,14 +242,14 @@ export function ProjectComponent({ projectId }: Props) {
           doc.driveFileId,
           doc.name,
           doc.driveModifiedTime || '',
-          project.publicId,
+          project.id,
         );
         if (!result.success) {
           errorToast({ message: result.error || t('file-upload-fail') });
           return;
         }
         successToast({ message: t('file-uploaded') });
-        loadFiles(project.publicId);
+        loadFiles(project.id);
         return;
       }
 
@@ -260,23 +261,23 @@ export function ProjectComponent({ projectId }: Props) {
       const { uploadProjectFiles } = await import('@/app/lib/services/api');
       const formData = new FormData();
       formData.append('files', file);
-      formData.append('projectId', project.publicId);
+      formData.append('projectId', project.id);
 
-      await uploadProjectFiles(project.publicId, formData);
+      await uploadProjectFiles(project.id, formData);
       successToast({ message: t('file-uploaded') });
-      loadFiles(project.publicId);
+      loadFiles(project.id);
     } catch {
       errorToast({ message: t('file-upload-fail') });
     }
   };
 
-  const toggleFileSelect = (publicId: string) => {
+  const toggleFileSelect = (fileId: string) => {
     setSelectedFileIds((prev) => {
       const next = new Set(prev);
-      if (next.has(publicId)) {
-        next.delete(publicId);
+      if (next.has(fileId)) {
+        next.delete(fileId);
       } else {
-        next.add(publicId);
+        next.add(fileId);
       }
       return next;
     });
@@ -286,7 +287,7 @@ export function ProjectComponent({ projectId }: Props) {
     if (selectedFileIds.size === files.length) {
       setSelectedFileIds(new Set());
     } else {
-      setSelectedFileIds(new Set(files.map((f) => f.publicId)));
+      setSelectedFileIds(new Set(files.map((f) => f.id)));
     }
   };
 
@@ -302,7 +303,7 @@ export function ProjectComponent({ projectId }: Props) {
     try {
       const results = await Promise.allSettled(
         Array.from(selectedFileIds).map((fileId) =>
-          deleteProjectFileAction(fileId, project.publicId),
+          deleteProjectFileAction(fileId, project.id),
         ),
       );
       const failed = results.filter((r) => r.status === 'rejected');
@@ -312,7 +313,7 @@ export function ProjectComponent({ projectId }: Props) {
         infoToast({ message: t('file-deleted') });
       }
       setSelectedFileIds(new Set());
-      loadFiles(project.publicId);
+      loadFiles(project.id);
     } finally {
       setIsDeletingSelected(false);
     }
@@ -332,12 +333,12 @@ export function ProjectComponent({ projectId }: Props) {
     const { uploadProjectFiles } = await import('@/app/lib/services/api');
     const formData = new FormData();
     selectedFiles.forEach((file) => formData.append('files', file));
-    formData.append('projectId', project.publicId);
+    formData.append('projectId', project.id);
 
     try {
-      await uploadProjectFiles(project.publicId, formData);
+      await uploadProjectFiles(project.id, formData);
       successToast({ message: t('file-uploaded') });
-      loadFiles(project.publicId);
+      loadFiles(project.id);
     } catch {
       errorToast({ message: t('file-upload-fail') });
     }
@@ -356,12 +357,12 @@ export function ProjectComponent({ projectId }: Props) {
       const { uploadProjectFiles } = await import('@/app/lib/services/api');
       const formData = new FormData();
       files.forEach((file) => formData.append('files', file));
-      formData.append('projectId', project.publicId);
+      formData.append('projectId', project.id);
 
       try {
-        await uploadProjectFiles(project.publicId, formData);
+        await uploadProjectFiles(project.id, formData);
         successToast({ message: t('file-uploaded') });
-        loadFiles(project.publicId);
+        loadFiles(project.id);
       } catch {
         errorToast({ message: t('file-upload-fail') });
       }
@@ -413,7 +414,7 @@ export function ProjectComponent({ projectId }: Props) {
         <ShareDialogTrigger
           publishedAt={project.publishedAt ?? ''}
           accessToken={project.accessToken ?? ''}
-          projectPublicId={project.publicId}
+          projectId={project.id}
           isPublicProject={project.isPublic}
         />
       </div>
@@ -425,7 +426,6 @@ export function ProjectComponent({ projectId }: Props) {
           <div className="mb-6">
             <NewChatInterface
               projectId={project.id}
-              projectPublicId={project.publicId}
               projectTitle={project.title}
               className="!max-w-none !mx-0 !px-0"
               onProjectFilesDrop={handleProjectFilesDrop}
@@ -447,8 +447,8 @@ export function ProjectComponent({ projectId }: Props) {
             <div className="space-y-0.5">
               {project.threads.map((thread) => (
                 <Link
-                  key={thread.publicId}
-                  href={`/chats/${thread.publicId}`}
+                  key={thread.id}
+                  href={`/chats/${thread.id}`}
                   className="flex items-center gap-3 px-3 py-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors group border-b border-border/30 last:border-b-0"
                 >
                   <div className="flex-1 min-w-0">
@@ -469,27 +469,48 @@ export function ProjectComponent({ projectId }: Props) {
 
         {/* Right column: instructions + files */}
         <div className="w-80 lg:w-96 shrink-0 hidden md:block space-y-4 mt-2">
-          {/* Instructions section */}
-          <div
-            className="rounded-xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/40 transition-colors cursor-pointer"
-            onClick={() => setShowInstructions(true)}
-          >
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="text-sm font-semibold">
-                {t('project-view.instructions')}
-              </h3>
-              <PlusIcon className="size-4 text-muted-foreground" />
+          {/* Instructions section — hidden for template-based projects */}
+          {project.templateId ? (
+            <div className="rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 bg-indigo-50/30 dark:bg-indigo-950/10 p-4">
+              <div className="flex items-center gap-2">
+                {project.template?.iconUrl ? (
+                  <img
+                    src={project.template.iconUrl}
+                    alt=""
+                    className="size-5 rounded object-cover"
+                  />
+                ) : (
+                  <BookOpenIcon className="size-4 text-indigo-500" />
+                )}
+                <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                  {t('project-view.powered-by', {
+                    name: project.template?.name ?? '',
+                  })}
+                </span>
+              </div>
             </div>
-            {instructionText ? (
-              <p className="text-sm text-muted-foreground/70 line-clamp-2 whitespace-pre-line">
-                {instructionText}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {t('project-instructions.description')}
-              </p>
-            )}
-          </div>
+          ) : (
+            <div
+              className="rounded-xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/40 transition-colors cursor-pointer"
+              onClick={() => setShowInstructions(true)}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold">
+                  {t('project-view.instructions')}
+                </h3>
+                <PlusIcon className="size-4 text-muted-foreground" />
+              </div>
+              {instructionText ? (
+                <p className="text-sm text-muted-foreground/70 line-clamp-2 whitespace-pre-line">
+                  {instructionText}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t('project-instructions.description')}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Files section - inline */}
           <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
@@ -632,9 +653,9 @@ export function ProjectComponent({ projectId }: Props) {
               <div className="grid grid-cols-2 gap-3 max-h-72 overflow-y-auto">
                 {files.map((file) => (
                   <InlineFileCard
-                    key={file.publicId}
+                    key={file.id}
                     file={file}
-                    selected={selectedFileIds.has(file.publicId)}
+                    selected={selectedFileIds.has(file.id)}
                     selectionMode={selectedFileIds.size > 0}
                     onToggleSelect={toggleFileSelect}
                   />
@@ -672,10 +693,10 @@ export function ProjectComponent({ projectId }: Props) {
             <DialogTitle>{t('project-instructions.title')}</DialogTitle>
           </DialogHeader>
           <ProjectInstructionForm
-            projectId={project.publicId}
+            projectId={project.id}
             onSuccess={() => {
               setShowInstructions(false);
-              getProjectInstructionAction(project.publicId).then((result) => {
+              getProjectInstructionAction(project.id).then((result) => {
                 setInstructionText(result.success ? result.instruction : null);
               });
             }}

@@ -1,7 +1,7 @@
 import type { AiUsageStep } from '@/generated/prisma/client';
 
 export type AiUsageListItem = {
-  publicId: string;
+  id: string;
   step: AiUsageStep;
   provider: string;
   model: string;
@@ -13,7 +13,7 @@ export type AiUsageListItem = {
   createdAt: Date;
   organizationName: string;
   organizationId: string;
-  project: { publicId: string; title: string } | null;
+  project: { id: string; title: string } | null;
   user: { id: string; name: string | null; email: string } | null;
 };
 
@@ -22,7 +22,7 @@ export type AiUsageFilters = {
   dateFrom?: string;
   dateTo?: string;
   organizationId?: string;
-  projectPublicId?: string;
+  projectId?: string;
   userId?: string;
   step?: AiUsageStep;
 };
@@ -78,7 +78,7 @@ export type AiUsageDashboardData = {
 
 export type CreateAiUsageInput = {
   organizationId: string;
-  projectId?: number | null;
+  projectId?: string | null;
   threadId?: string | null;
   userId?: string | null;
   step: AiUsageStep;

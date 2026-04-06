@@ -243,7 +243,6 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
     // Create payload indexes for filterable metadata fields
     const indexFields = [
       'metadata.project_id',
-      'metadata.project_public_id',
       'metadata.file_id',
       'metadata.organization_id',
       'metadata.accessible_by',

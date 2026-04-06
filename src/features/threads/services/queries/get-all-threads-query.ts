@@ -5,14 +5,14 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 
 const THREAD_SELECT = {
-  publicId: true,
+  id: true,
   createdAt: true,
   isStarred: true,
   title: true,
   projectId: true,
   organizationId: true,
   teamId: true,
-  project: { select: { publicId: true, title: true } },
+  project: { select: { id: true, title: true } },
   team: { select: { id: true, name: true } },
 } as const;
 

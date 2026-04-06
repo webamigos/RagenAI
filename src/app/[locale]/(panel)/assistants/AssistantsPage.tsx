@@ -18,10 +18,10 @@ import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
 
 type ProjectItem = {
-  publicId: string;
+  id: string;
   title: string;
   createdAt: Date;
-  threads: { publicId: string }[];
+  threads: { id: string }[];
 };
 
 export const AssistantsPage = () => {
@@ -29,7 +29,7 @@ export const AssistantsPage = () => {
   const locale = useLocale();
   const { organization } = useOrganization();
   const { user } = useUser();
-  const { defaultProjectPublicId } = useAppSelector((state) => state.threads);
+  const { defaultProjectId } = useAppSelector((state) => state.threads);
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,16 +56,14 @@ export const AssistantsPage = () => {
   }, [organization?.id, user?.id]);
 
   const filteredProjects = useMemo(() => {
-    const nonDefault = projects.filter(
-      (p) => p.publicId !== defaultProjectPublicId,
-    );
+    const nonDefault = projects.filter((p) => p.id !== defaultProjectId);
     if (!searchQuery.trim()) {
       return nonDefault;
     }
     return nonDefault.filter((p) =>
       p.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [projects, searchQuery, defaultProjectPublicId]);
+  }, [projects, searchQuery, defaultProjectId]);
 
   const handleCreateSuccess = async () => {
     setIsCreateModalOpen(false);
@@ -118,8 +116,8 @@ export const AssistantsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredProjects.map((project) => (
             <Link
-              key={project.publicId}
-              href={`/assistants/${project.publicId}`}
+              key={project.id}
+              href={`/assistants/${project.id}`}
               className="group flex flex-col justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
             >
               <div className="flex items-center gap-3">

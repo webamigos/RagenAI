@@ -16,6 +16,7 @@ import {
   CreditCard,
   Gauge,
   Bot,
+  Sparkles,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -36,6 +37,11 @@ const navItems = [
   { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/limits', label: 'Limits', icon: Gauge },
   { href: '/models', label: 'Models', icon: Bot },
+  {
+    href: '/assistant-templates',
+    label: 'Assistant Templates',
+    icon: Sparkles,
+  },
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },
   { href: '/activity-log', label: 'Activity Log', icon: ScrollText },

@@ -19,7 +19,7 @@ export const createProjectCommand = async (
         source: Source.UI,
       },
       select: {
-        publicId: true,
+        id: true,
         title: true,
         createdAt: true,
         updatedAt: true,
@@ -31,13 +31,14 @@ export const createProjectCommand = async (
         publishedAt: true,
         chatbotEnabled: true,
         source: true,
+        templateId: true,
       },
     });
 
     trackAudit({
       action: 'project.created',
       entityType: 'project',
-      entityId: project.publicId,
+      entityId: project.id,
       newData: { title },
     });
 

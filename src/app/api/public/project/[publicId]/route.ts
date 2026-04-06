@@ -18,7 +18,7 @@ export async function GET(
         accessToken: publicId,
       },
       select: {
-        publicId: true,
+        id: true,
         title: true,
         isPublic: true,
       },

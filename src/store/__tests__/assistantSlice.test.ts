@@ -31,21 +31,18 @@ const mockMessage = {
   role: 'user' as const,
   content: 'Hello',
   createdAt: '2026-03-25T10:00:00Z',
-  publicId: 'msg-1',
+  id: 'msg-1',
 };
 
 const mockMessage2 = {
   role: 'assistant' as const,
   content: 'Hi there!',
   createdAt: '2026-03-25T10:00:01Z',
-  publicId: 'msg-2',
+  id: 'msg-2',
 };
 
 const mockThreadContext = {
-  threadId: 'thread-1',
-  projectId: 1,
-  projectPublicId: 'proj-1',
-  projectTitle: 'Test Project',
+  project: { id: 'proj-1', title: 'Test Project' },
   mentionedProject: null,
   mentionedProjectId: null,
 };
@@ -71,7 +68,7 @@ describe('assistantSlice', () => {
       const messages = [mockMessage, mockMessage2] as any;
       const state = assistantReducer(initialState, setMessages(messages));
       expect(state.messages).toHaveLength(2);
-      expect(state.messages[0].publicId).toBe('msg-1');
+      expect(state.messages[0].id).toBe('msg-1');
     });
 
     it('replaces existing messages', () => {
@@ -84,7 +81,7 @@ describe('assistantSlice', () => {
         setMessages([mockMessage2] as any),
       );
       expect(state.messages).toHaveLength(1);
-      expect(state.messages[0].publicId).toBe('msg-2');
+      expect(state.messages[0].id).toBe('msg-2');
     });
   });
 
@@ -277,13 +274,13 @@ describe('assistantSlice', () => {
         ...initialState,
         threadContext: { ...mockThreadContext } as any,
       };
-      const project = { id: 5, publicId: 'proj-5', title: 'New Project' };
+      const project = { id: 'proj-5', title: 'New Project' };
       const state = assistantReducer(
         withContext,
         updateMentionedProject(project),
       );
       expect(state.threadContext?.mentionedProject).toEqual(project);
-      expect(state.threadContext?.mentionedProjectId).toBe(5);
+      expect(state.threadContext?.mentionedProjectId).toBe('proj-5');
     });
 
     it('clears mentioned project with null', () => {
@@ -291,8 +288,8 @@ describe('assistantSlice', () => {
         ...initialState,
         threadContext: {
           ...mockThreadContext,
-          mentionedProject: { id: 5, publicId: 'p', title: 'P' },
-          mentionedProjectId: 5,
+          mentionedProject: { id: 'p', title: 'P' },
+          mentionedProjectId: 'p',
         } as any,
       };
       const state = assistantReducer(withMention, updateMentionedProject(null));
@@ -303,7 +300,7 @@ describe('assistantSlice', () => {
     it('does nothing when threadContext is null', () => {
       const state = assistantReducer(
         initialState,
-        updateMentionedProject({ id: 1, publicId: 'p', title: 'P' }),
+        updateMentionedProject({ id: 'p', title: 'P' }),
       );
       expect(state.threadContext).toBeNull();
     });
@@ -315,8 +312,8 @@ describe('assistantSlice', () => {
         ...initialState,
         threadContext: {
           ...mockThreadContext,
-          mentionedProject: { id: 5, publicId: 'p', title: 'P' },
-          mentionedProjectId: 5,
+          mentionedProject: { id: 'p', title: 'P' },
+          mentionedProjectId: 'p',
         } as any,
       };
       const state = assistantReducer(withMention, removeMentionedProject());

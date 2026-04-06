@@ -105,8 +105,7 @@ export type OrgStorageSummary = {
 };
 
 export type ProjectStorageSummary = {
-  projectId: number;
-  projectPublicId: string;
+  projectId: string;
   projectTitle: string;
   totalBytes: number;
   fileCount: number;

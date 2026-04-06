@@ -5,13 +5,13 @@ import { logger } from '@/app/lib/utils/logger';
 import type { CreateThreadDto } from '../../contracts/thread.types';
 
 export const findOrCreateThreadCommand = async (
-  threadPublicId: CreateThreadDto['publicId'],
+  threadPublicId: CreateThreadDto['id'],
   visitorId: string,
   organizationId?: string,
 ) => {
   try {
-    const whereClause: { publicId: string; organizationId?: string } = {
-      publicId: threadPublicId,
+    const whereClause: { id: string; organizationId?: string } = {
+      id: threadPublicId,
     };
 
     // Scope to organization when provided to prevent cross-tenant access

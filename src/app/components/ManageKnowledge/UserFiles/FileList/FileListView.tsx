@@ -13,16 +13,16 @@ import { type UserFile } from '@/generated/prisma/browser';
 type FileListViewProps = {
   files: UserFileType[];
   subfolders?: DocumentFolderItem[];
-  onNavigateFolder?: (folderId: number) => void;
+  onNavigateFolder?: (folderId: string) => void;
   isLoading: boolean;
   deleteLoading: boolean;
   isError: boolean;
   showModal: ModalStateProps;
-  toggleModal: (filePublicId: UserFile['publicId'] | null) => void;
+  toggleModal: (fileId: UserFile['id'] | null) => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (filePublicId: UserFile['publicId']) => void;
+  removeFile: (fileId: UserFile['id']) => void;
   handleDelete: (
-    filePublicId: UserFile['publicId'],
+    fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
 };

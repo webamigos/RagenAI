@@ -51,7 +51,7 @@ export const getUserThreadsQuery = async (
     skip: skip,
     take: take,
     select: {
-      publicId: true,
+      id: true,
       createdAt: true,
       visitorId: true,
       projectId: true,
@@ -78,7 +78,7 @@ export const getUserThreadsQuery = async (
         );
       } catch (error) {
         logger.error(
-          { err: error, threadId: thread.publicId },
+          { err: error, threadId: thread.id },
           'Failed to decrypt thread messages',
         );
         decryptedMessages = thread.messages.map((msg) => ({

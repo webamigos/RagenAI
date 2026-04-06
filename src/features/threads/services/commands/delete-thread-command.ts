@@ -15,7 +15,7 @@ export const deleteThreadCommand = async (
     }
 
     const thread = await db.thread.findFirst({
-      where: { publicId: threadPublicId, organizationId: orgId },
+      where: { id: threadPublicId, organizationId: orgId },
     });
 
     if (!thread) {

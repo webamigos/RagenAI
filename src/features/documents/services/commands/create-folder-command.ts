@@ -6,7 +6,7 @@ export async function createFolderCommand(input: {
   name: string;
   organizationId: string;
   teamId?: string | null;
-  parentId?: number | null;
+  parentId?: string | null;
   ownerId?: string | null;
 }) {
   const trimmedName = input.name.trim();

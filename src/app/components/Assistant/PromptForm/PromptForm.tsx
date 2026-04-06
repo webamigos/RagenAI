@@ -263,7 +263,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     const handleKbFilesSelected = useCallback(
       (
         files: {
-          publicId: string;
+          id: string;
           name: string;
           size: number;
           type: string;
@@ -274,7 +274,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           content: '',
           size: f.size,
           type: f.type,
-          userFileId: f.publicId,
+          userFileId: f.id,
         }));
         setThreadDocuments((prev) => [...prev, ...newDocs]);
       },

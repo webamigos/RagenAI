@@ -36,10 +36,10 @@ import { isFirefliesConnected } from '@/app/actions/fireflies';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
 type Props = {
-  projectPublicId: string;
+  projectId: string;
 };
 
-export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
+export const ProjectFileUploadTrigger = ({ projectId }: Props) => {
   const [showUploader, setShowUploader] = useState(false);
   const [isKbPickerOpen, setIsKbPickerOpen] = useState(false);
   const [isDrivePickerOpen, setIsDrivePickerOpen] = useState(false);
@@ -62,7 +62,7 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
       }
 
       try {
-        const result = await getProjectFiles(projectPublicId);
+        const result = await getProjectFiles(projectId);
 
         if (!result.error && result.files) {
           setFileStatus({
@@ -87,7 +87,7 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
     };
 
     checkProjectFiles();
-  }, [projectPublicId, organization, showUploader]);
+  }, [projectId, organization, showUploader]);
 
   useEffect(() => {
     isDriveConnected()
@@ -100,15 +100,15 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
 
   const handleKbFilesSelected = async (
     selected: {
-      publicId: string;
+      id: string;
       name: string;
       size: number;
       type: string;
     }[],
   ) => {
     try {
-      const fileIds = selected.map((f) => f.publicId);
-      await importFilesToProject(fileIds, projectPublicId);
+      const fileIds = selected.map((f) => f.id);
+      await importFilesToProject(fileIds, projectId);
     } catch {
       // Import error is non-critical
     }
@@ -124,7 +124,7 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
           doc.driveFileId,
           doc.name,
           doc.driveModifiedTime || '',
-          projectPublicId,
+          projectId,
         );
       } else {
         // Non-Drive files (e.g. Fireflies): upload via FormData
@@ -134,8 +134,8 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
         const { uploadProjectFiles } = await import('@/app/lib/services/api');
         const formData = new FormData();
         formData.append('files', file);
-        formData.append('projectId', projectPublicId);
-        await uploadProjectFiles(projectPublicId, formData);
+        formData.append('projectId', projectId);
+        await uploadProjectFiles(projectId, formData);
       }
     } catch {
       // Import error handled silently — file list will refresh
@@ -221,7 +221,7 @@ export const ProjectFileUploadTrigger = ({ projectPublicId }: Props) => {
         onClose={() => setShowUploader(false)}
       >
         <ProjectFileUpload
-          projectPublicId={projectPublicId}
+          projectId={projectId}
           initialFileCount={fileStatus.fileCount}
         />
       </Dialog>

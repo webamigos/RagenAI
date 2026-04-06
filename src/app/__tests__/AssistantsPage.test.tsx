@@ -36,19 +36,19 @@ vi.mock('@/app/components/Sidebar/Projects/actions', () => ({
   getProjects: vi.fn().mockResolvedValue({
     projects: [
       {
-        publicId: 'proj-1',
+        id: 'proj-1',
         title: 'Marketing Bot',
         createdAt: new Date(),
-        threads: [{ publicId: 't-1' }, { publicId: 't-2' }],
+        threads: [{ id: 't-1' }, { id: 't-2' }],
       },
       {
-        publicId: 'proj-2',
+        id: 'proj-2',
         title: 'Sales Assistant',
         createdAt: new Date(),
-        threads: [{ publicId: 't-3' }],
+        threads: [{ id: 't-3' }],
       },
       {
-        publicId: 'default-proj',
+        id: 'default-proj',
         title: 'Default',
         createdAt: new Date(),
         threads: [],
@@ -96,10 +96,10 @@ const messages = {
 };
 
 // Create a minimal Redux store
-const createTestStore = (defaultProjectPublicId = 'default-proj') =>
+const createTestStore = (defaultProjectId = 'default-proj') =>
   configureStore({
     reducer: {
-      threads: () => ({ defaultProjectPublicId }),
+      threads: () => ({ defaultProjectId }),
     },
   });
 
@@ -171,7 +171,7 @@ describe('AssistantsPage', () => {
       });
     });
 
-    it('renders project links to /assistants/{publicId}', async () => {
+    it('renders project links to /assistants/{id}', async () => {
       renderAssistantsPage();
       await waitFor(() => {
         expect(screen.getByText('Marketing Bot')).toBeInTheDocument();
@@ -236,7 +236,10 @@ describe('AssistantsPage', () => {
     it('shows empty state when no projects exist', async () => {
       const { getProjects } =
         await import('@/app/components/Sidebar/Projects/actions');
-      vi.mocked(getProjects).mockResolvedValueOnce({ projects: [] });
+      vi.mocked(getProjects).mockResolvedValueOnce({
+        projects: [],
+        status: 200 as any,
+      });
 
       renderAssistantsPage();
 

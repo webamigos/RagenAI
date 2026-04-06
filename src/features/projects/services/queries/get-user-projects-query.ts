@@ -18,7 +18,6 @@ export const getUserProjectsQuery = async (
       },
       select: {
         id: true,
-        publicId: true,
         title: true,
         createdAt: true,
         organizationId: true,
@@ -27,7 +26,7 @@ export const getUserProjectsQuery = async (
             createdAt: 'desc',
           },
           select: {
-            publicId: true,
+            id: true,
             createdAt: true,
             visitorId: true,
             preferredCommunicationType: true,

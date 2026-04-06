@@ -19,7 +19,7 @@ export async function shareThreadCommand(
 
   const thread = await db.thread.findFirst({
     where: {
-      publicId: threadPublicId,
+      id: threadPublicId,
       organizationId,
     },
     select: { id: true, visitorId: true },

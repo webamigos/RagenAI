@@ -19,19 +19,19 @@ import { Input } from '@/components/ui/input';
 import { getAllOrgFiles } from '@/app/actions';
 
 type KnowledgeFile = {
-  publicId: string;
+  id: string;
   fileName: string;
   fileSize: number;
   fileType: string;
   createdAt: Date;
-  project: { id: number; title: string } | null;
+  project: { id: string; title: string } | null;
 };
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onFilesSelected: (
-    files: { publicId: string; name: string; size: number; type: string }[],
+    files: { id: string; name: string; size: number; type: string }[],
   ) => void;
   excludeFileIds?: string[];
 };
@@ -77,7 +77,7 @@ export const KnowledgeBasePickerDialog = ({
   }, [open, loadFiles]);
 
   const filteredFiles = files.filter((file) => {
-    if (excludeFileIds.includes(file.publicId)) {
+    if (excludeFileIds.includes(file.id)) {
       return false;
     }
     if (!search) {
@@ -100,9 +100,9 @@ export const KnowledgeBasePickerDialog = ({
 
   const handleConfirm = () => {
     const selected = files
-      .filter((f) => selectedIds.has(f.publicId))
+      .filter((f) => selectedIds.has(f.id))
       .map((f) => ({
-        publicId: f.publicId,
+        id: f.id,
         name: f.fileName,
         size: f.fileSize,
         type: f.fileType,
@@ -148,12 +148,12 @@ export const KnowledgeBasePickerDialog = ({
             return (
               <div className="flex flex-col gap-0.5">
                 {filteredFiles.map((file) => {
-                  const isSelected = selectedIds.has(file.publicId);
+                  const isSelected = selectedIds.has(file.id);
                   return (
                     <button
-                      key={file.publicId}
+                      key={file.id}
                       type="button"
-                      onClick={() => toggleFile(file.publicId)}
+                      onClick={() => toggleFile(file.id)}
                       className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${
                         isSelected
                           ? 'bg-blue-50 dark:bg-blue-900/20'

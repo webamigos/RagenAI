@@ -8,11 +8,10 @@ import { ProjectInstructionForm } from './ProjectInstructionForm';
 
 type ProjectInstructionTriggerProps = {
   projectId: string;
-  projectPublicId: string;
 };
 
 export const ProjectInstructionTrigger = ({
-  projectPublicId,
+  projectId,
 }: ProjectInstructionTriggerProps) => {
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const t = useTranslations('projects');
@@ -42,7 +41,7 @@ export const ProjectInstructionTrigger = ({
       >
         <div className="flex flex-col gap-2">
           <ProjectInstructionForm
-            projectId={projectPublicId}
+            projectId={projectId}
             onSuccess={handleInstructionSuccess}
             onCancel={handleDialogClose}
           />

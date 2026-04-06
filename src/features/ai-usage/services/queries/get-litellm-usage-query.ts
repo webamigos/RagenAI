@@ -70,7 +70,7 @@ function mapSpendLogToItem(
   orgId: string,
 ): AiUsageListItem {
   return {
-    publicId: log.request_id,
+    id: log.request_id,
     step: mapCallTypeToStep(log.call_type),
     provider: inferProvider(log.model),
     model: log.model,

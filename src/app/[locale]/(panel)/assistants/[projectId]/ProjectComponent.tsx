@@ -16,8 +16,7 @@ import { ProjectInstructionTrigger } from '@/app/components/Projects/ProjectInst
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
 
 type Project = {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
   isPublic: boolean;
   accessToken: string;
@@ -60,26 +59,19 @@ export function ProjectComponent({ projectId }: Props) {
 
   return (
     <div className="flex flex-col h-screen justify-center items-center gap-4">
-      <NewChatInterface
-        projectId={project.id}
-        projectPublicId={project.publicId}
-        projectTitle={project.title}
-      />
+      <NewChatInterface projectId={project.id} projectTitle={project.title} />
 
       <div className="w-full flex flex-col md:flex-row md:max-w-[740px] gap-4">
         <div className="flex-1 mx-4 md:mx-0">
-          <ProjectFileUploadTrigger projectPublicId={project.publicId} />
+          <ProjectFileUploadTrigger projectId={project.id} />
         </div>
         <div className="relative flex-1 mx-4 md:mx-0">
-          <ProjectInstructionTrigger
-            projectId={String(project.id)}
-            projectPublicId={project.publicId}
-          />
+          <ProjectInstructionTrigger projectId={project.id} />
           <div className="absolute cursor-pointer bg-white dark:bg-secondary-dark rounded-md -top-72 md:-top-40 right-0">
             <ShareDialogTrigger
               publishedAt={project.publishedAt}
               accessToken={project.accessToken}
-              projectPublicId={project.publicId}
+              projectId={project.id}
               isPublicProject={project.isPublic}
             />
           </div>

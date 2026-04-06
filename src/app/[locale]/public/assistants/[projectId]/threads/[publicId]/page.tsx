@@ -18,13 +18,12 @@ export async function generateMetadata() {
 }
 
 export default async function ThreadPage({ params }: Props) {
-  const { publicId, locale, projectId } = await params;
-  const threadPublicId = publicId;
-  if (!threadPublicId) {
+  const { publicId: threadId, locale, projectId } = await params;
+  if (!threadId) {
     notFound();
   }
 
   setRequestLocale(locale);
 
-  return <PublicAssistant threadId={threadPublicId} accessToken={projectId} />;
+  return <PublicAssistant threadId={threadId} accessToken={projectId} />;
 }

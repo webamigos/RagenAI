@@ -33,7 +33,7 @@ describe('shareResourceCommand', () => {
 
     const result = await shareResourceCommand({
       resourceType: 'file',
-      filePublicId: 'file-pub-1',
+      fileId: 'file-1',
       organizationId: ORG_ID,
       granteeType: 'user',
       granteeId: USER_ID,
@@ -52,7 +52,7 @@ describe('shareResourceCommand', () => {
 
     const result = await shareResourceCommand({
       resourceType: 'file',
-      filePublicId: 'file-pub-1',
+      fileId: 'file-1',
       organizationId: ORG_ID,
       granteeType: 'team',
       granteeId: 'team-1',
@@ -74,7 +74,7 @@ describe('shareResourceCommand', () => {
 
     const result = await shareResourceCommand({
       resourceType: 'file',
-      filePublicId: 'nonexistent',
+      fileId: 'nonexistent',
       organizationId: ORG_ID,
       granteeType: 'user',
       granteeId: USER_ID,
@@ -96,7 +96,7 @@ describe('shareResourceCommand', () => {
 
     const result = await shareResourceCommand({
       resourceType: 'folder',
-      folderId: 999,
+      folderId: 'folder-999',
       organizationId: ORG_ID,
       granteeType: 'team',
       granteeId: 'team-1',
@@ -116,13 +116,12 @@ describe('shareResourceCommand', () => {
     // file check
     mockFindFirst.mockResolvedValueOnce({
       id: 'file-1',
-      publicId: 'file-pub-1',
     });
     mockUpsert.mockResolvedValue({ id: 1 });
 
     const result = await shareResourceCommand({
       resourceType: 'file',
-      filePublicId: 'file-pub-1',
+      fileId: 'file-1',
       organizationId: ORG_ID,
       granteeType: 'user',
       granteeId: USER_ID,
@@ -135,7 +134,7 @@ describe('shareResourceCommand', () => {
       expect.objectContaining({
         create: expect.objectContaining({
           resourceType: 'file',
-          filePublicId: 'file-pub-1',
+          fileId: 'file-1',
           granteeType: 'user',
           granteeId: USER_ID,
           permission: 'full',

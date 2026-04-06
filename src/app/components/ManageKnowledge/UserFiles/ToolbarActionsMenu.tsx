@@ -7,41 +7,41 @@ import {
 } from '@ragenai/common-ui/icons';
 
 type ToolbarIconsProps = {
-  filePublicId: string;
-  documentPublicId?: string;
+  fileId: string;
+  documentId?: string;
   toggleModal: (fileId: string | null) => void;
   isLoading: boolean;
 };
 
 export const ToolbarActionsMenu = ({
-  filePublicId,
-  documentPublicId,
+  fileId,
+  documentId,
   toggleModal,
   isLoading,
 }: ToolbarIconsProps) => {
   return (
     <>
-      {documentPublicId && (
+      {documentId && (
         <Link
           className="text-black dark:text-white"
-          href={`/document/${documentPublicId}?edit=true`}
+          href={`/document/${documentId}?edit=true`}
         >
           <PencilIcon className="mt-0.5 cursor-pointer" />
         </Link>
       )}
 
-      {documentPublicId && (
+      {documentId && (
         <Link
           className="text-black dark:text-white"
-          href={`/document/${documentPublicId}`}
+          href={`/document/${documentId}`}
         >
           <OpenEyeIcon className="cursor-pointer" />
         </Link>
       )}
 
-      {filePublicId && (
+      {fileId && (
         <div
-          onClick={() => toggleModal && toggleModal(filePublicId)}
+          onClick={() => toggleModal && toggleModal(fileId)}
           className="cursor-pointer"
         >
           {isLoading ? (

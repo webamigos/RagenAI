@@ -68,7 +68,7 @@ export const useNewThread = ({
   widgetMode = false,
 }: {
   accessToken: string;
-  projectId: number;
+  projectId: string;
   organizationId?: string;
   widgetMode?: boolean;
 }) => {
@@ -82,9 +82,9 @@ export const useNewThread = ({
   const handleNewThread = useCallback(
     async (
       initialMessage?: string,
-      passedProjectId?: number,
-      projectPublicId?: string,
-      mentionedProjectId?: number,
+      passedProjectId?: string,
+      _projectId?: string,
+      mentionedProjectId?: string,
       preferredModel?: string,
     ) => {
       try {
@@ -104,7 +104,7 @@ export const useNewThread = ({
           throw new Error('Invalid response from server');
         }
 
-        const newThreadId = result.thread.publicId;
+        const newThreadId = result.thread.id;
         setStoredThreadId(accessToken, newThreadId);
 
         if (initialMessage) {

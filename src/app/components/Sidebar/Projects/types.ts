@@ -4,10 +4,10 @@ import { type ThreadCommunicationType } from '@/generated/prisma/browser';
 
 export type ThreadType = {
   createdAt: string;
-  publicId: string;
+  id: string;
   visitorId: string | null;
   preferredCommunicationType: ThreadCommunicationType;
-  projectId: number | null;
+  projectId: string | null;
   preferredModel?: string | null;
   title?: string | null;
   messages?: {
@@ -17,7 +17,7 @@ export type ThreadType = {
 
 export type ProjectType = {
   createdAt: string;
-  publicId: string;
+  id: string;
   title: string;
   threads: ThreadType[];
 };
@@ -33,14 +33,14 @@ export type ProjectsListProps = {
 
 export type ThreadsListProps = {
   threads: ThreadType[];
-  projectPublicId: string;
+  projectId: string;
   activeThread?: string;
   onClose: () => void;
 };
 
 export type ThreadItemProps = {
   thread: ThreadType;
-  projectPublicId: string;
+  projectId: string;
   isActive: boolean;
   onClose: () => void;
 };

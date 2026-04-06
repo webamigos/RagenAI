@@ -24,8 +24,7 @@ type InitializeRagChainParams = {
   userTeamIds?: string[];
   isOrgAdmin?: boolean;
   projectInstruction?: string | null;
-  projectId?: number | null;
-  projectPublicId?: string | null;
+  projectId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
@@ -46,7 +45,6 @@ export const initializeRagChain = async ({
   isOrgAdmin = false,
   projectInstruction,
   projectId,
-  projectPublicId,
   threadDocuments,
   mcpTools,
   mcpContext,
@@ -88,7 +86,7 @@ export const initializeRagChain = async ({
         supabaseVectorStoreClient,
         embeddingModel,
         orgId,
-        projectPublicId ?? undefined,
+        projectId ?? undefined,
       );
     } else if (orgMetadata.vectorStore === 'meilisearch') {
       vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
@@ -145,7 +143,7 @@ export const initializeRagChain = async ({
  */
 async function buildMetadataFilter(
   orgId: string,
-  projectId: number | null,
+  projectId: string | null,
   userId: string | null,
   userTeamIds: string[],
   isOrgAdmin: boolean,
@@ -240,7 +238,7 @@ const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: EmbeddingsProvider,
   organizationId: string,
-  projectPublicId?: string,
+  projectId?: string,
 ): VectorStoreClient => {
   try {
     // SECURITY CRITICAL: This organizationId filter is the primary security boundary
@@ -251,8 +249,8 @@ const createSupabaseVectorStore = (
       organization_id: organizationId,
     };
 
-    if (projectPublicId) {
-      metadataFilter.project_public_id = projectPublicId;
+    if (projectId) {
+      metadataFilter.project_id = projectId;
     }
 
     return new SupabaseVectorStoreClient(embeddingModel, {

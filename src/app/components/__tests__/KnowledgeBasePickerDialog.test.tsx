@@ -8,7 +8,7 @@ import { KnowledgeBasePickerDialog } from '../KnowledgeBasePickerDialog';
 const mockGetAllOrgFiles = vi.fn().mockResolvedValue({
   files: [
     {
-      publicId: 'file-1',
+      id: 'file-1',
       fileName: 'report.pdf',
       fileSize: 1024 * 500,
       fileType: 'PDF',
@@ -16,7 +16,7 @@ const mockGetAllOrgFiles = vi.fn().mockResolvedValue({
       project: { id: 1, title: 'Marketing' },
     },
     {
-      publicId: 'file-2',
+      id: 'file-2',
       fileName: 'notes.md',
       fileSize: 256,
       fileType: 'MARKDOWN',
@@ -24,7 +24,7 @@ const mockGetAllOrgFiles = vi.fn().mockResolvedValue({
       project: null,
     },
     {
-      publicId: 'file-3',
+      id: 'file-3',
       fileName: 'data.txt',
       fileSize: 1024 * 1024 * 2.5,
       fileType: 'TEXT',
@@ -257,13 +257,13 @@ describe('KnowledgeBasePickerDialog', () => {
 
       expect(onFilesSelected).toHaveBeenCalledWith([
         {
-          publicId: 'file-1',
+          id: 'file-1',
           name: 'report.pdf',
           size: 1024 * 500,
           type: 'PDF',
         },
         {
-          publicId: 'file-2',
+          id: 'file-2',
           name: 'notes.md',
           size: 256,
           type: 'MARKDOWN',

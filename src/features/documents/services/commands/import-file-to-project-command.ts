@@ -1,9 +1,8 @@
 'use server';
 
-import { randomUUID } from 'node:crypto';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { getProjectByPublicIdOrThrowQuery } from '@/features/projects/services/queries/get-project-query';
+import { getProjectByIdOrThrowQuery } from '@/features/projects/services/queries/get-project-query';
 import { logger } from '@/app/lib/utils/logger';
 
 /**
@@ -13,13 +12,11 @@ import { logger } from '@/app/lib/utils/logger';
  * filter to include the source file's existing Meilisearch embeddings.
  */
 export const importFileToProjectCommand = async (
-  sourceFilePublicId: string,
-  targetProjectPublicId: string,
+  sourceFileId: string,
+  targetProjectId: string,
 ) => {
   const orgId = await getOrgIdFromAuthOrThrow();
-  const targetProject = await getProjectByPublicIdOrThrowQuery(
-    targetProjectPublicId,
-  );
+  const targetProject = await getProjectByIdOrThrowQuery(targetProjectId);
 
   if (targetProject.organizationId !== orgId) {
     throw new Error('Cannot import file to a project in another organization');
@@ -27,7 +24,7 @@ export const importFileToProjectCommand = async (
 
   const sourceFile = await db.userFile.findFirst({
     where: {
-      publicId: sourceFilePublicId,
+      id: sourceFileId,
       organizationId: orgId,
     },
   });
@@ -49,11 +46,8 @@ export const importFileToProjectCommand = async (
     return { alreadyExists: true, file: existingFile };
   }
 
-  const newPublicId = randomUUID();
-
   const newFile = await db.userFile.create({
     data: {
-      publicId: newPublicId,
       organizationId: orgId,
       fileName: sourceFile.fileName,
       fileSize: sourceFile.fileSize,
@@ -77,8 +71,7 @@ export const importFileToProjectCommand = async (
   logger.info(
     {
       sourceFileId: sourceFile.id,
-      sourceFilePublicId: sourceFile.publicId,
-      newFileId: newPublicId,
+      newFileId: newFile.id,
       targetProjectId: targetProject.id,
     },
     'File imported to project from knowledge base',

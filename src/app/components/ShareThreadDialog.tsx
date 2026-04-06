@@ -23,10 +23,10 @@ import type { ThreadShareRecipient } from '@/features/threads/contracts/thread.t
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  threadPublicId: string;
+  threadId: string;
 };
 
-export function ShareThreadDialog({ isOpen, onClose, threadPublicId }: Props) {
+export function ShareThreadDialog({ isOpen, onClose, threadId }: Props) {
   const t = useTranslations('thread-actions');
   const { successToast, errorToast } = statusToast();
   const [members, setMembers] = useState<ThreadShareRecipient[]>([]);
@@ -38,14 +38,14 @@ export function ShareThreadDialog({ isOpen, onClose, threadPublicId }: Props) {
     setIsLoading(true);
     setFetchError(false);
     try {
-      const result = await getThreadSharesAction(threadPublicId);
+      const result = await getThreadSharesAction(threadId);
       setMembers(result.sharedWith);
     } catch {
       setFetchError(true);
     } finally {
       setIsLoading(false);
     }
-  }, [threadPublicId]);
+  }, [threadId]);
 
   useEffect(() => {
     if (isOpen) {
@@ -65,7 +65,7 @@ export function ShareThreadDialog({ isOpen, onClose, threadPublicId }: Props) {
       const recipientUserIds = members
         .filter((m) => m.isShared)
         .map((m) => m.userId);
-      const result = await shareThreadAction(threadPublicId, recipientUserIds);
+      const result = await shareThreadAction(threadId, recipientUserIds);
 
       if (result.success) {
         successToast({ message: t('share-success') });

@@ -18,7 +18,7 @@ export const renameThreadCommand = async (
     }
 
     const thread = await db.thread.findFirst({
-      where: { publicId: threadPublicId, organizationId: orgId },
+      where: { id: threadPublicId, organizationId: orgId },
     });
 
     if (!thread) {
@@ -26,7 +26,7 @@ export const renameThreadCommand = async (
     }
 
     await db.thread.update({
-      where: { publicId: threadPublicId },
+      where: { id: threadPublicId },
       data: { title: title.trim() },
     });
 

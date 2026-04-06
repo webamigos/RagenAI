@@ -39,7 +39,7 @@ export function AiUsageFiltersBar({
 }: Props) {
   const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
   const [projects, setProjects] = useState<
-    { publicId: string; title: string; orgName: string }[]
+    { id: string; title: string; orgName: string }[]
   >([]);
   const [users, setUsers] = useState<
     { id: string; name: string | null; email: string }[]
@@ -147,7 +147,7 @@ export function AiUsageFiltersBar({
               onChange({
                 ...filters,
                 organizationId: e.target.value || undefined,
-                projectPublicId: undefined,
+                projectId: undefined,
                 userId: undefined,
               })
             }
@@ -164,18 +164,18 @@ export function AiUsageFiltersBar({
 
         {/* Project filter */}
         <select
-          value={filters.projectPublicId ?? ''}
+          value={filters.projectId ?? ''}
           onChange={(e) =>
             onChange({
               ...filters,
-              projectPublicId: e.target.value || undefined,
+              projectId: e.target.value || undefined,
             })
           }
           className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
         >
           <option value="">All projects</option>
           {projects.map((p) => (
-            <option key={p.publicId} value={p.publicId}>
+            <option key={p.id} value={p.id}>
               {p.title} ({p.orgName})
             </option>
           ))}

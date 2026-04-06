@@ -22,7 +22,7 @@ function getThreadTitle(thread: AllThreadsItem): string {
 }
 
 function getThreadHref(thread: AllThreadsItem): string {
-  return `/chats/${thread.publicId}`;
+  return `/chats/${thread.id}`;
 }
 
 export const ChatsPage = () => {
@@ -93,24 +93,20 @@ export const ChatsPage = () => {
     await fetchThreads(nextSkip, searchQuery, true);
   };
 
-  const handleToggleStar = (threadPublicId: string, isStarred: boolean) => {
+  const handleToggleStar = (threadId: string, isStarred: boolean) => {
     setThreads((prev) =>
-      prev.map((t) =>
-        t.publicId === threadPublicId ? { ...t, isStarred: isStarred } : t,
-      ),
+      prev.map((t) => (t.id === threadId ? { ...t, isStarred: isStarred } : t)),
     );
   };
 
-  const handleRenamed = (threadPublicId: string, newTitle: string) => {
+  const handleRenamed = (threadId: string, newTitle: string) => {
     setThreads((prev) =>
-      prev.map((t) =>
-        t.publicId === threadPublicId ? { ...t, title: newTitle } : t,
-      ),
+      prev.map((t) => (t.id === threadId ? { ...t, title: newTitle } : t)),
     );
   };
 
-  const handleDeleted = (threadPublicId: string) => {
-    setThreads((prev) => prev.filter((t) => t.publicId !== threadPublicId));
+  const handleDeleted = (threadId: string) => {
+    setThreads((prev) => prev.filter((t) => t.id !== threadId));
     setTotal((prev) => prev - 1);
   };
 
@@ -150,7 +146,7 @@ export const ChatsPage = () => {
       <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
         {threads.map((thread) => (
           <div
-            key={thread.publicId}
+            key={thread.id}
             className="group flex items-center gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">

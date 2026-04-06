@@ -6,8 +6,7 @@ import { FolderIcon } from '@heroicons/react/20/solid';
 import { ProjectContextManager } from '../ProjectContextManager';
 // Simplified Project type for context management
 type ProjectForContext = {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
 };
 

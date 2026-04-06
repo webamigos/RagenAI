@@ -23,8 +23,7 @@ type Props = {
   organizationId?: string;
   isPublicAccess?: boolean;
   widgetMode?: boolean;
-  projectId?: number;
-  projectPublicId?: string;
+  projectId?: string;
   accessToken?: string;
   preferredModel?: string;
   threadDocuments?: ThreadDocumentUI[];
@@ -36,7 +35,6 @@ export const useNewThreadInput = ({
   isPublicAccess,
   widgetMode,
   projectId,
-  projectPublicId,
   accessToken,
   preferredModel,
   threadDocuments = [],
@@ -82,22 +80,15 @@ export const useNewThreadInput = ({
 
     // Use mentioned project if available, otherwise use passed project
     const targetProjectId = mentionedProject?.id || projectId;
-    const targetProjectPublicId = mentionedProject?.publicId || projectPublicId;
     const mentionedProjectIdForThread = mentionedProject?.id;
     await threadHandler.handleNewThread(
       undefined,
       targetProjectId,
-      targetProjectPublicId,
+      targetProjectId,
       mentionedProjectIdForThread,
       preferredModel,
     );
-  }, [
-    threadHandler,
-    projectId,
-    projectPublicId,
-    mentionedProject,
-    preferredModel,
-  ]);
+  }, [threadHandler, projectId, mentionedProject, preferredModel]);
 
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
@@ -107,13 +98,11 @@ export const useNewThreadInput = ({
 
       // Use mentioned project if available, otherwise use passed project
       const targetProjectId = mentionedProject?.id || projectId;
-      const targetProjectPublicId =
-        mentionedProject?.publicId || projectPublicId;
       const mentionedProjectIdForThread = mentionedProject?.id;
       await threadHandler.handleNewThread(
         data.prompt.trim(),
         targetProjectId,
-        targetProjectPublicId,
+        targetProjectId,
         mentionedProjectIdForThread,
         preferredModel,
         threadDocuments,
@@ -124,7 +113,6 @@ export const useNewThreadInput = ({
       threadHandler,
       reset,
       projectId,
-      projectPublicId,
       mentionedProject,
       preferredModel,
       threadDocuments,

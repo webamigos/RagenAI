@@ -18,7 +18,7 @@ export async function searchAll(
 }
 
 export async function getRecentProjects(): Promise<
-  { publicId: string; title: string; createdAt: string }[]
+  { id: string; title: string; createdAt: string }[]
 > {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
@@ -31,7 +31,7 @@ export async function getRecentProjects(): Promise<
     where: { organizationId: orgId, ownerId: userId },
     orderBy: { createdAt: 'desc' },
     take: 5,
-    select: { publicId: true, title: true, createdAt: true },
+    select: { id: true, title: true, createdAt: true },
   });
 
   return projects.map((p) => ({

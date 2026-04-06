@@ -1,6 +1,6 @@
 // @deprecated — Import from @/features/documents/ instead
 
-export { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
+export { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 
 export { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 

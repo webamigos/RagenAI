@@ -107,7 +107,7 @@ export function AiUsageTable({ items, isAppAdmin = false }: Props) {
           </thead>
           <tbody>
             {pageItems.map((item) => (
-              <tr key={item.publicId} className="border-t hover:bg-muted/30">
+              <tr key={item.id} className="border-t hover:bg-muted/30">
                 <td className="p-3 whitespace-nowrap">
                   {formatDate(item.createdAt)}
                 </td>

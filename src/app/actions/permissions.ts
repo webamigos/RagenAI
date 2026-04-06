@@ -23,7 +23,7 @@ async function requireOwnerOrAdmin(
   orgId: string,
   userId: string,
   resourceType: 'file' | 'folder',
-  resourceId: string | number,
+  resourceId: string,
 ): Promise<{ authorized: boolean; error?: string }> {
   const member = await getActiveMember(orgId).catch(() => null);
   if (member && isOrgAdmin(member.role)) {
@@ -32,7 +32,7 @@ async function requireOwnerOrAdmin(
 
   if (resourceType === 'file') {
     const file = await db.userFile.findFirst({
-      where: { publicId: resourceId as string, organizationId: orgId },
+      where: { id: resourceId, organizationId: orgId },
       select: { ownerId: true },
     });
     if (!file) {
@@ -46,7 +46,7 @@ async function requireOwnerOrAdmin(
     }
   } else {
     const folder = await db.documentFolder.findFirst({
-      where: { id: resourceId as number, organizationId: orgId },
+      where: { id: resourceId, organizationId: orgId },
       select: { ownerId: true },
     });
     if (!folder) {
@@ -64,7 +64,7 @@ async function requireOwnerOrAdmin(
 }
 
 export async function shareFile(
-  filePublicId: string,
+  fileId: string,
   granteeType: GranteeType,
   granteeId: string,
   permission: PermissionLevel,
@@ -75,14 +75,14 @@ export async function shareFile(
     return { success: false, error: 'Not authenticated' };
   }
 
-  const auth = await requireOwnerOrAdmin(orgId, userId, 'file', filePublicId);
+  const auth = await requireOwnerOrAdmin(orgId, userId, 'file', fileId);
   if (!auth.authorized) {
     return { success: false, error: auth.error! };
   }
 
   return shareResourceCommand({
     resourceType: 'file',
-    filePublicId,
+    fileId,
     organizationId: orgId,
     granteeType,
     granteeId,
@@ -92,7 +92,7 @@ export async function shareFile(
 }
 
 export async function shareFolder(
-  folderId: number,
+  folderId: string,
   granteeType: GranteeType,
   granteeId: string,
   permission: PermissionLevel,
@@ -129,15 +129,14 @@ export async function revokeShare(permissionId: number) {
   // Check the permission to find the resource, then verify ownership
   const perm = await db.documentPermission.findUnique({
     where: { id: permissionId },
-    select: { resourceType: true, filePublicId: true, folderId: true },
+    select: { resourceType: true, fileId: true, folderId: true },
   });
   if (!perm) {
     return { success: false, error: 'Permission not found' };
   }
 
   const resourceType = perm.resourceType as 'file' | 'folder';
-  const resourceId =
-    resourceType === 'file' ? perm.filePublicId! : perm.folderId!;
+  const resourceId = resourceType === 'file' ? perm.fileId! : perm.folderId!;
   const auth = await requireOwnerOrAdmin(
     orgId,
     userId,
@@ -151,12 +150,12 @@ export async function revokeShare(permissionId: number) {
   return revokeShareCommand(permissionId, orgId);
 }
 
-export async function getFilePermissions(filePublicId: string) {
+export async function getFilePermissions(fileId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
-  return getFilePermissionsQuery(filePublicId, orgId);
+  return getFilePermissionsQuery(fileId, orgId);
 }
 
-export async function getFolderPermissions(folderId: number) {
+export async function getFolderPermissions(folderId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   return getFolderPermissionsQuery(folderId, orgId);
 }

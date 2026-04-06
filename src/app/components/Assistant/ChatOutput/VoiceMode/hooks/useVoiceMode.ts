@@ -129,15 +129,15 @@ export const useVoiceMode = ({
         dispatch({ type: 'SET_PLAYING_AUDIO', payload: true });
         audioRef.current.play();
 
-        if (message.publicId) {
-          await updateMessagePlayedStatus(message.publicId);
+        if (message.id) {
+          await updateMessagePlayedStatus(message.id);
           dispatch({
             type: 'UPDATE_MESSAGE_PLAYED_STATUS',
-            payload: message.publicId,
+            payload: message.id,
           });
 
           if (onMessagePlayed) {
-            onMessagePlayed(message.publicId);
+            onMessagePlayed(message.id);
           }
         }
       }

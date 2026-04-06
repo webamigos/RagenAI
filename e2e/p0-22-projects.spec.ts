@@ -1,10 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import {
-  AUTH_FILE,
-  TEST_PROJECT_TITLE,
-  TEST_PROJECT_PUBLIC_ID,
-} from './constants';
+import { AUTH_FILE, TEST_PROJECT_TITLE, TEST_PROJECT_ID } from './constants';
 import { ROUTES } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
@@ -37,7 +33,7 @@ test.describe('Projects P0', () => {
   });
 
   test('project detail page loads with correct title', async ({ page }) => {
-    await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
+    await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
 
     // The project title should be visible
     await expect(page.getByText(TEST_PROJECT_TITLE)).toBeVisible({
@@ -46,7 +42,7 @@ test.describe('Projects P0', () => {
   });
 
   test('set project system prompt / instructions', async ({ page }) => {
-    await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
+    await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
     await expect(page.getByText(TEST_PROJECT_TITLE)).toBeVisible({
       timeout: 10_000,
     });
@@ -115,10 +111,9 @@ test.describe('Projects P0', () => {
     await page.getByText(TEST_PROJECT_TITLE).click();
 
     // Should navigate to project detail
-    await expect(page).toHaveURL(
-      new RegExp(`/projects/${TEST_PROJECT_PUBLIC_ID}`),
-      { timeout: 10_000 },
-    );
+    await expect(page).toHaveURL(new RegExp(`/projects/${TEST_PROJECT_ID}`), {
+      timeout: 10_000,
+    });
 
     // Project title should be visible on the detail page
     await expect(page.getByText(TEST_PROJECT_TITLE)).toBeVisible({

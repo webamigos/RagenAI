@@ -51,7 +51,6 @@ export async function encryptThreadsCommand(
         },
         select: {
           id: true,
-          publicId: true,
           messages: {
             select: {
               id: true,
@@ -101,7 +100,7 @@ export async function encryptThreadsCommand(
 
           logger.info(
             {
-              threadPublicId: thread.publicId,
+              threadId: thread.id,
               messageCount: thread.messages.length,
             },
             'Encrypted thread messages',

@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-import { AUTH_FILE, TEST_PROJECT_PUBLIC_ID } from './constants';
+import { AUTH_FILE, TEST_PROJECT_ID } from './constants';
 import { ROUTES } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
 
 test.describe('Public / Shared Access P1', () => {
   test('share dialog opens on project detail page', async ({ page }) => {
-    await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
-    await expect(page).toHaveURL(new RegExp(TEST_PROJECT_PUBLIC_ID), {
+    await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
+    await expect(page).toHaveURL(new RegExp(TEST_PROJECT_ID), {
       timeout: 10_000,
     });
 
@@ -28,8 +28,8 @@ test.describe('Public / Shared Access P1', () => {
   });
 
   test('enable public access generates a sharing link', async ({ page }) => {
-    await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
-    await expect(page).toHaveURL(new RegExp(TEST_PROJECT_PUBLIC_ID), {
+    await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
+    await expect(page).toHaveURL(new RegExp(TEST_PROJECT_ID), {
       timeout: 10_000,
     });
 
@@ -74,7 +74,7 @@ test.describe('Public / Shared Access P1', () => {
     page,
   }) => {
     // First, get the access token from the share dialog
-    await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
+    await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
     await page
       .getByText(/udostępnij/i)
       .first()
@@ -140,7 +140,7 @@ test.describe('Public / Shared Access P1', () => {
   });
 
   test('disable public access shows confirmation dialog', async ({ page }) => {
-    await page.goto(`/pl/projects/${TEST_PROJECT_PUBLIC_ID}`);
+    await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
     await page
       .getByText(/udostępnij/i)
       .first()

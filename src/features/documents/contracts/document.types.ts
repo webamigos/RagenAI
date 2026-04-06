@@ -13,7 +13,7 @@ export type ProjectType = {
 };
 
 export type UserFileType = {
-  publicId: UserFile['publicId'];
+  id: UserFile['id'];
   organizationId: UserFile['organizationId'];
   fileName: UserFile['fileName'];
   fileSize: UserFile['fileSize'];
@@ -30,7 +30,7 @@ export type UserFileType = {
   parsingStatus?: ParsingStatus;
   project: ProjectType | null;
   document?: {
-    publicId: UserDocument['publicId'];
+    id: UserDocument['id'];
   } | null;
 };
 
@@ -77,12 +77,11 @@ export type ParsedFile = {
 };
 
 export type DocumentFolderItem = {
-  id: number;
-  publicId: string;
+  id: string;
   name: string;
   teamId: string | null;
   teamName: string | null;
-  parentId: number | null;
+  parentId: string | null;
   path: string;
   ownerId: string | null;
   ownerName: string | null;
@@ -91,10 +90,10 @@ export type DocumentFolderItem = {
 };
 
 export type CreateMarkdownDocumentInput = {
-  publicId: string;
+  id: string;
   title: string;
   content: string;
   organizationId: string;
-  fileId?: number;
-  projectId?: number;
+  fileId?: string;
+  projectId?: string;
 };

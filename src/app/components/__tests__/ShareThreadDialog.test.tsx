@@ -36,7 +36,7 @@ const messages = {
 const defaultProps = {
   isOpen: true,
   onClose: vi.fn(),
-  threadPublicId: 'thread-123',
+  threadId: 'thread-123',
 };
 
 const renderDialog = (props = {}) =>
@@ -65,7 +65,7 @@ describe('ShareThreadDialog', () => {
     const user = userEvent.setup();
     mockGetThreadShares.mockRejectedValueOnce(new Error('Network error'));
     mockGetThreadShares.mockResolvedValueOnce({
-      threadPublicId: 'thread-123',
+      threadId: 'thread-123',
       sharedWith: [],
     });
 
@@ -85,7 +85,7 @@ describe('ShareThreadDialog', () => {
 
   it('shows no members message when org has no other members', async () => {
     mockGetThreadShares.mockResolvedValue({
-      threadPublicId: 'thread-123',
+      threadId: 'thread-123',
       sharedWith: [],
     });
 
@@ -99,7 +99,7 @@ describe('ShareThreadDialog', () => {
 
   it('renders member list with toggle switches', async () => {
     mockGetThreadShares.mockResolvedValue({
-      threadPublicId: 'thread-123',
+      threadId: 'thread-123',
       sharedWith: [
         {
           userId: 'user-2',
@@ -132,7 +132,7 @@ describe('ShareThreadDialog', () => {
   it('calls shareThread with selected user IDs on save', async () => {
     const user = userEvent.setup();
     mockGetThreadShares.mockResolvedValue({
-      threadPublicId: 'thread-123',
+      threadId: 'thread-123',
       sharedWith: [
         {
           userId: 'user-2',
@@ -166,7 +166,7 @@ describe('ShareThreadDialog', () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     mockGetThreadShares.mockResolvedValue({
-      threadPublicId: 'thread-123',
+      threadId: 'thread-123',
       sharedWith: [],
     });
 

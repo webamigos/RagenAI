@@ -301,7 +301,7 @@ describe('QdrantVectorStoreClient', () => {
           indexing_threshold: 20000,
         },
       });
-      expect(mockCreatePayloadIndex).toHaveBeenCalledTimes(5);
+      expect(mockCreatePayloadIndex).toHaveBeenCalledTimes(4);
     });
 
     it('should not create collection if it already exists', async () => {

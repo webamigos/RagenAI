@@ -29,8 +29,8 @@ export const syncDriveProjectCommand = async (
   projectPublicId: string,
 ): Promise<SyncResult> => {
   const project = await db.project.findFirst({
-    where: { publicId: projectPublicId, organizationId: orgId },
-    select: { id: true, publicId: true },
+    where: { id: projectPublicId, organizationId: orgId },
+    select: { id: true },
   });
 
   if (!project) {
@@ -67,7 +67,7 @@ export const syncDriveProjectCommand = async (
 
   const org = await db.organization.findUnique({
     where: { id: orgId },
-    select: { slug: true, publicId: true },
+    select: { slug: true, id: true },
   });
 
   if (!org) {
@@ -126,11 +126,7 @@ export const syncDriveProjectCommand = async (
       // But since we already fetched the content, just re-upload and re-embed
       // This is a simple approach — a more optimized version would check modifiedTime first
 
-      await uploadToS3WithOrg(
-        org.publicId,
-        `${userFile.publicId}.md`,
-        newContent,
-      );
+      await uploadToS3WithOrg(org.id, `${userFile.id}.md`, newContent);
 
       // Delete existing document + reset embedding status so workflow can re-create
       if (userFile.documentId) {
@@ -170,9 +166,9 @@ export const syncDriveProjectCommand = async (
           {
             ...userFile,
             fileSize: newContent.byteLength,
-            projectPublicId: project.publicId,
+            projectId: project.id,
             organizationSlug: org.slug,
-            organizationPublicId: org.publicId,
+            organizationId: org.id,
             userEmail: user?.email ?? undefined,
             userId,
           },

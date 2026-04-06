@@ -12,10 +12,10 @@ import '@/app/components/Assistant/ChatOutput/chat-response.css';
 const md = new MarkdownIt();
 
 type Props = {
-  documentPublicId: string;
+  documentId: string;
 };
 
-export function MarkdownPreview({ documentPublicId }: Props) {
+export function MarkdownPreview({ documentId }: Props) {
   const [html, setHtml] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const { organization } = useOrganization();
@@ -27,7 +27,7 @@ export function MarkdownPreview({ documentPublicId }: Props) {
 
     setError(false);
     setHtml(null);
-    fetchDocumentByOrganization(organization.id, documentPublicId)
+    fetchDocumentByOrganization(organization.id, documentId)
       .then((result) => {
         if (result.success) {
           const content = result.documents.map((doc) => doc.content).join('\n');
@@ -39,7 +39,7 @@ export function MarkdownPreview({ documentPublicId }: Props) {
       .catch(() => {
         setError(true);
       });
-  }, [organization?.id, documentPublicId]);
+  }, [organization?.id, documentId]);
 
   if (error) {
     return null;

@@ -709,7 +709,8 @@
     "no-assistants": "Brak asystentów",
     "no-assistants-description": "Stwórz pierwszego asystenta, aby rozpocząć",
     "thread-count": "{count} wątków",
-    "updated": "Zaktualizowany {time}"
+    "updated": "Zaktualizowany {time}",
+    "global-assistants": "Globalni asystenci"
   },
   "search-threads": {
     "title": "Szukaj czatów i asystentów",
@@ -1001,7 +1002,8 @@
       "share": "Udostępnij",
       "storage-used": "{percentage}% użycia pamięci",
       "selected": "zaznaczonych",
-      "last-message": "Ostatnia wiadomość {time}"
+      "last-message": "Ostatnia wiadomość {time}",
+      "powered-by": "Obsługiwany przez {name}"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

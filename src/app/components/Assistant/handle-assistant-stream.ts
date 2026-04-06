@@ -57,7 +57,7 @@ type CommonConfig = {
   t: TranslationFn;
   tChainErrors: TranslationFn;
   tApiEvents: TranslationFn;
-  threadId: Thread['publicId'];
+  threadId: Thread['id'];
   responseType: ChatResponseType;
   data: CreateMessageDto;
   scrollFn: () => void;
@@ -101,8 +101,7 @@ const handleStreamError = async ({
     }
 
     const updatedMessages = messages.filter(
-      (message) =>
-        message.publicId !== (lastUserMessageId || userMessage.publicId),
+      (message) => message.id !== (lastUserMessageId || userMessage.id),
     );
     reduxDispatch(setMessages(updatedMessages));
     promptFormRef.current?.reset(userMessage.content || '');
@@ -236,7 +235,7 @@ export const handleAssistantStream = async ({
               const { id } = messageData as { id: string };
               lastUserMessageId = id;
               reduxDispatch(
-                setMessages([...messages, { ...userMessage, publicId: id }]),
+                setMessages([...messages, { ...userMessage, id: id }]),
               );
             }
             break;
@@ -313,7 +312,7 @@ export const handleAssistantStream = async ({
               } = messageData as ApiSseMessageEvent;
               runId = messageRunId;
               const finalMessage = {
-                publicId: id,
+                id: id,
                 role,
                 content: accumulatingMessage,
                 createdAt: new Date().toISOString(),
@@ -322,7 +321,7 @@ export const handleAssistantStream = async ({
               };
 
               const effectiveUserMessage = lastUserMessageId
-                ? { ...userMessage, publicId: lastUserMessageId }
+                ? { ...userMessage, id: lastUserMessageId }
                 : userMessage;
 
               const uniqueMessages = [
@@ -331,8 +330,7 @@ export const handleAssistantStream = async ({
                 finalMessage,
               ].filter(
                 (message, index, self) =>
-                  index ===
-                  self.findIndex((m) => m.publicId === message.publicId),
+                  index === self.findIndex((m) => m.id === message.id),
               );
 
               reduxDispatch(setMessages(uniqueMessages));

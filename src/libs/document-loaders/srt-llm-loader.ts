@@ -10,7 +10,7 @@ const SEGMENT_MAX_WORDS = 300;
 type SRTLLMDocumentLoaderProps = {
   filePath: string;
   fileName: string;
-  fileId: number;
+  fileId: string;
   organizationId: string;
 };
 
@@ -21,7 +21,7 @@ type SRTLLMDocumentLoaderProps = {
 export class SRTLLMDocumentLoader {
   private filePath: string;
   private fileName: string;
-  private fileId: number;
+  private fileId: string;
   private organizationId: string;
 
   constructor({

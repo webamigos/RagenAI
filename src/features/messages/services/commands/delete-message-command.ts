@@ -6,14 +6,14 @@ import { handleCommandError } from '@/shared/utils/error-handling';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export async function deleteMessageCommand(
-  publicId: string,
+  messageId: string,
 ): Promise<OperationResult> {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
 
     const message = await db.message.findFirst({
       where: {
-        publicId: publicId,
+        id: messageId,
         thread: { project: { organizationId: orgId } },
       },
       select: { id: true },

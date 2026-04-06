@@ -5,7 +5,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const toggleChatbotCommand = async (
-  projectId: number,
+  projectId: string,
   enabled: boolean,
 ) => {
   try {

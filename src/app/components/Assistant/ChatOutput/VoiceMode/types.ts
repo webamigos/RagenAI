@@ -9,7 +9,7 @@ export type VoiceModeProps = {
     content: string;
     messageType?: MessageContentType;
     voicePlayed?: boolean;
-    publicId?: string;
+    id?: string;
   }>;
   onMessagePlayed?: (messageId: string) => void;
   voiceId: string;

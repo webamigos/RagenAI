@@ -59,9 +59,9 @@ export const NewMainSidebarBody = () => {
           <SidebarHeading>{t('starred.title')}</SidebarHeading>
           {starredThreads.map((thread) => (
             <SidebarThreadItem
-              key={thread.publicId}
+              key={thread.id}
               thread={thread}
-              isActive={thread.publicId === activeThread}
+              isActive={thread.id === activeThread}
               onClose={closeSidebar}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
@@ -77,9 +77,9 @@ export const NewMainSidebarBody = () => {
           <SidebarHeading>{t('shared.title')}</SidebarHeading>
           {sharedThreads.map((thread) => (
             <SidebarThreadItem
-              key={thread.publicId}
+              key={thread.id}
               thread={thread}
-              isActive={thread.publicId === activeThread}
+              isActive={thread.id === activeThread}
               onClose={closeSidebar}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
@@ -112,9 +112,9 @@ export const NewMainSidebarBody = () => {
             <>
               {recentThreads.map((thread) => (
                 <SidebarThreadItem
-                  key={thread.publicId}
+                  key={thread.id}
                   thread={thread}
-                  isActive={thread.publicId === activeThread}
+                  isActive={thread.id === activeThread}
                   onClose={closeSidebar}
                   onToggleStar={toggleStar}
                   onRenamed={renameThread}

@@ -40,7 +40,7 @@ import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 
 type ThreadInfo = {
-  publicId: string;
+  id: string;
   isStarred: boolean;
   title?: string | null;
   messages?: { content: string }[];
@@ -48,9 +48,9 @@ type ThreadInfo = {
 
 type Props = {
   thread: ThreadInfo;
-  onStarred?: (threadPublicId: string, isStarred: boolean) => void;
-  onRenamed?: (threadPublicId: string, newTitle: string) => void;
-  onDeleted?: (threadPublicId: string) => void;
+  onStarred?: (threadId: string, isStarred: boolean) => void;
+  onRenamed?: (threadId: string, newTitle: string) => void;
+  onDeleted?: (threadId: string) => void;
   triggerClassName?: string;
   align?: 'start' | 'end';
   side?: 'top' | 'right' | 'bottom' | 'left';
@@ -75,10 +75,10 @@ export const ThreadDropdownMenu = ({
 
   const handleStar = async () => {
     const newStarred = !thread.isStarred;
-    onStarred?.(thread.publicId, newStarred);
-    const result = await toggleThreadStarred(thread.publicId, newStarred);
+    onStarred?.(thread.id, newStarred);
+    const result = await toggleThreadStarred(thread.id, newStarred);
     if (!result.success) {
-      onStarred?.(thread.publicId, thread.isStarred);
+      onStarred?.(thread.id, thread.isStarred);
     }
   };
 
@@ -93,14 +93,14 @@ export const ThreadDropdownMenu = ({
       return;
     }
     setIsRenameOpen(false);
-    onRenamed?.(thread.publicId, renameValue.trim());
-    await renameThread(thread.publicId, renameValue.trim());
+    onRenamed?.(thread.id, renameValue.trim());
+    await renameThread(thread.id, renameValue.trim());
   };
 
   const handleDelete = async () => {
     setIsDeleteOpen(false);
-    onDeleted?.(thread.publicId);
-    await deleteThread(thread.publicId);
+    onDeleted?.(thread.id);
+    await deleteThread(thread.id);
   };
 
   return (
@@ -201,7 +201,7 @@ export const ThreadDropdownMenu = ({
       <ShareThreadDialog
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
-        threadPublicId={thread.publicId}
+        threadId={thread.id}
       />
     </>
   );

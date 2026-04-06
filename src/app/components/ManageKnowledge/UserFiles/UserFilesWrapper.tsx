@@ -39,7 +39,7 @@ import type { TeamListItem } from '@/features/teams/contracts/team.types';
 
 export type ModalStateProps = {
   isOpen: boolean;
-  filePublicId: UserFile['publicId'] | null;
+  fileId: UserFile['id'] | null;
 };
 
 type FileListWrapperProps = {
@@ -58,7 +58,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
     isOpen: false,
-    filePublicId: null,
+    fileId: null,
   });
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
@@ -94,11 +94,11 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
 
   const { refreshSettings } = useSettings();
 
-  const toggleModal = (filePublicId: UserFile['publicId'] | null = null) => {
+  const toggleModal = (fileId: UserFile['id'] | null = null) => {
     setShowModal((prevState) => ({
       ...prevState,
       isOpen: !prevState.isOpen,
-      filePublicId: prevState.isOpen ? null : filePublicId,
+      fileId: prevState.isOpen ? null : fileId,
     }));
   };
 
@@ -128,15 +128,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   }, [files, searchValue]);
 
   const handleDelete = async (
-    filePublicId: UserFile['publicId'],
+    fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => {
     try {
       setDeleteLoading(true);
-      const { status } = await deleteFileAction(filePublicId);
+      const { status } = await deleteFileAction(fileId);
 
       if (status === 200) {
-        removeFile(filePublicId);
+        removeFile(fileId);
         refreshSettings();
         successToast({ message: `${tSuccess('deleted')}: ${fileName}` });
       }

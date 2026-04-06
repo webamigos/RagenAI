@@ -37,8 +37,8 @@ export type ViewMode = 'all' | 'my-files' | 'shared-with-me';
 
 type Props = {
   initialFolders: DocumentFolderItem[];
-  onSelectFolder?: (folderId: number | null, viewMode?: ViewMode) => void;
-  selectedFolderId?: number | null;
+  onSelectFolder?: (folderId: string | null, viewMode?: ViewMode) => void;
+  selectedFolderId?: string | null;
   selectedViewMode?: ViewMode;
 };
 
@@ -68,11 +68,11 @@ export function FoldersList({
   const t = useTranslations('folders');
   const { successToast, errorToast } = statusToast();
   const [folders, setFolders] = useState(initialFolders);
-  const [expandedFolders, setExpandedFolders] = useState<Set<number>>(
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set(),
   );
   const [deletingFolder, setDeletingFolder] = useState<{
-    id: number;
+    id: string;
     name: string;
     totalFiles: number;
   } | null>(null);
@@ -121,7 +121,7 @@ export function FoldersList({
     onSelectFolder,
   ]);
 
-  const toggleExpand = useCallback((folderId: number) => {
+  const toggleExpand = useCallback((folderId: string) => {
     setExpandedFolders((prev) => {
       const next = new Set(prev);
       if (next.has(folderId)) {
@@ -136,7 +136,7 @@ export function FoldersList({
   const folderTree = buildFolderTree(folders);
 
   const findFolderInTree = useCallback(
-    (id: number, tree: DocumentFolderItem[]): DocumentFolderItem | null => {
+    (id: string, tree: DocumentFolderItem[]): DocumentFolderItem | null => {
       for (const folder of tree) {
         if (folder.id === id) {
           return folder;
@@ -154,7 +154,7 @@ export function FoldersList({
   );
 
   const openDeleteDialog = useCallback(
-    (folderId: number, folderName: string) => {
+    (folderId: string, folderName: string) => {
       const folder = findFolderInTree(folderId, folderTree);
       const totalFiles = folder ? countTotalFiles(folder) : 0;
       setDeletingFolder({ id: folderId, name: folderName, totalFiles });

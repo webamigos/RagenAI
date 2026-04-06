@@ -7,8 +7,7 @@ import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/project
 import type { MentionedProject } from './MentionTextarea';
 
 interface Project {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
   createdAt: string;
   organizationId: string | null;
@@ -83,7 +82,6 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
           if (filteredProjects[selectedIndex]) {
             onSelect({
               id: filteredProjects[selectedIndex].id,
-              publicId: filteredProjects[selectedIndex].publicId,
               title: filteredProjects[selectedIndex].title,
             });
           }
@@ -148,7 +146,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     >
       {filteredProjects.map((project, index) => (
         <button
-          key={project.publicId}
+          key={project.id}
           type="button"
           className={`w-full flex items-center px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none ${
             index === selectedIndex ? 'bg-gray-50 dark:bg-gray-700' : ''
@@ -160,7 +158,6 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
             e.stopPropagation();
             onSelect({
               id: project.id,
-              publicId: project.publicId,
               title: project.title,
             });
           }}

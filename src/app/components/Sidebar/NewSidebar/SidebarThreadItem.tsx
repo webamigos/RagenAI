@@ -9,9 +9,9 @@ type Props = {
   thread: SidebarThreadItemType;
   isActive: boolean;
   onClose?: () => void;
-  onToggleStar: (threadPublicId: string, isStarred: boolean) => void;
-  onRenamed?: (threadPublicId: string, newTitle: string) => void;
-  onDeleted?: (threadPublicId: string) => void;
+  onToggleStar: (threadId: string, isStarred: boolean) => void;
+  onRenamed?: (threadId: string, newTitle: string) => void;
+  onDeleted?: (threadId: string) => void;
   isShared?: boolean;
 };
 
@@ -20,7 +20,7 @@ function getThreadDisplayTitle(thread: SidebarThreadItemType): string {
 }
 
 function getThreadHref(thread: SidebarThreadItemType): string {
-  return `/chats/${thread.publicId}`;
+  return `/chats/${thread.id}`;
 }
 
 export const SidebarThreadItem = ({

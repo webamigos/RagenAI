@@ -24,60 +24,57 @@ describe('getFolderBreadcrumbsQuery', () => {
   it('returns empty array when folder not found', async () => {
     mockFindFirst.mockResolvedValue(null);
 
-    const result = await getFolderBreadcrumbsQuery(999, ORG_ID);
+    const result = await getFolderBreadcrumbsQuery('folder-999', ORG_ID);
     expect(result).toEqual([]);
   });
 
   it('returns single item for root folder', async () => {
     mockFindFirst.mockResolvedValue({
-      id: 1,
-      publicId: 'pub-1',
+      id: 'folder-1',
       name: 'Root Folder',
       path: '/',
     });
 
-    const result = await getFolderBreadcrumbsQuery(1, ORG_ID);
-    expect(result).toEqual([{ id: 1, publicId: 'pub-1', name: 'Root Folder' }]);
+    const result = await getFolderBreadcrumbsQuery('folder-1', ORG_ID);
+    expect(result).toEqual([{ id: 'folder-1', name: 'Root Folder' }]);
   });
 
   it('returns ancestor chain for nested folder', async () => {
-    // Folder 3 is at path /1/2/ — ancestors are 1 and 2
+    // Folder 3 is at path /folder-1/folder-2/ — ancestors are folder-1 and folder-2
     mockFindFirst.mockResolvedValue({
-      id: 3,
-      publicId: 'pub-3',
+      id: 'folder-3',
       name: 'Deep Folder',
-      path: '/1/2/',
+      path: '/folder-1/folder-2/',
     });
     mockFindMany.mockResolvedValue([
-      { id: 1, publicId: 'pub-1', name: 'Root' },
-      { id: 2, publicId: 'pub-2', name: 'Middle' },
+      { id: 'folder-1', name: 'Root' },
+      { id: 'folder-2', name: 'Middle' },
     ]);
 
-    const result = await getFolderBreadcrumbsQuery(3, ORG_ID);
+    const result = await getFolderBreadcrumbsQuery('folder-3', ORG_ID);
     expect(result).toEqual([
-      { id: 1, publicId: 'pub-1', name: 'Root' },
-      { id: 2, publicId: 'pub-2', name: 'Middle' },
-      { id: 3, publicId: 'pub-3', name: 'Deep Folder' },
+      { id: 'folder-1', name: 'Root' },
+      { id: 'folder-2', name: 'Middle' },
+      { id: 'folder-3', name: 'Deep Folder' },
     ]);
   });
 
   it('maintains correct order from path', async () => {
-    // Path /5/1/ means folder 5 is the root ancestor, then 1
+    // Path /folder-5/folder-1/ means folder-5 is the root ancestor, then folder-1
     mockFindFirst.mockResolvedValue({
-      id: 10,
-      publicId: 'pub-10',
+      id: 'folder-10',
       name: 'Leaf',
-      path: '/5/1/',
+      path: '/folder-5/folder-1/',
     });
     mockFindMany.mockResolvedValue([
-      { id: 1, publicId: 'pub-1', name: 'Second' },
-      { id: 5, publicId: 'pub-5', name: 'First' },
+      { id: 'folder-1', name: 'Second' },
+      { id: 'folder-5', name: 'First' },
     ]);
 
-    const result = await getFolderBreadcrumbsQuery(10, ORG_ID);
-    // Should be sorted by path order: 5, 1, then current (10)
-    expect(result[0].id).toBe(5);
-    expect(result[1].id).toBe(1);
-    expect(result[2].id).toBe(10);
+    const result = await getFolderBreadcrumbsQuery('folder-10', ORG_ID);
+    // Should be sorted by path order: folder-5, folder-1, then current (folder-10)
+    expect(result[0].id).toBe('folder-5');
+    expect(result[1].id).toBe('folder-1');
+    expect(result[2].id).toBe('folder-10');
   });
 });

@@ -56,7 +56,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
       );
     }
 
-    const threadPublicId = threadId[0];
+    const threadIdParam = threadId[0];
     const visitorId = threadId[1];
 
     // Verify the thread belongs to the authenticated user's org (if logged in)
@@ -74,7 +74,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
         );
       }
       const thread = await db.thread.findFirst({
-        where: { publicId: threadPublicId, organizationId: orgId },
+        where: { id: threadIdParam, organizationId: orgId },
         select: { id: true },
       });
       if (!thread) {
@@ -86,7 +86,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
     }
 
     // The query itself validates visitorId ownership
-    const result = await fetchMessagesFromDb(threadPublicId, visitorId);
+    const result = await fetchMessagesFromDb(threadIdParam, visitorId);
     return NextResponse.json(result);
   } catch (e) {
     logger.error(

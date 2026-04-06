@@ -29,14 +29,14 @@ export function DocumentsListContent() {
     loadFolders();
   }, [loadFolders]);
 
-  const handleSelectFolder = (folderId: number | null, mode?: ViewMode) => {
+  const handleSelectFolder = (folderId: string | null, mode?: ViewMode) => {
     setFolder(folderId);
     if (mode) {
       setViewMode(mode);
     }
   };
 
-  const handleBreadcrumbNavigate = (folderId: number | null) => {
+  const handleBreadcrumbNavigate = (folderId: string | null) => {
     setFolder(folderId);
   };
 

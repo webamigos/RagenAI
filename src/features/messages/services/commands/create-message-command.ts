@@ -72,7 +72,7 @@ function sanitizeAttachments(
 }
 
 async function maybeEncryptContent(
-  threadId: number,
+  threadId: string,
   content: string,
 ): Promise<string> {
   if (!isEncryptionEnabled()) {
@@ -218,7 +218,7 @@ export const createAndStoreMessageCommand = async ({
     }
 
     return {
-      publicId: dbMessage.publicId,
+      id: dbMessage.id,
       role: dbMessage.role,
       createdAt: dbMessage.createdAt.toISOString(),
       content: dbMessage.content,

@@ -10,14 +10,14 @@ export async function getThreadSharesQuery(
 ): Promise<ThreadShareInfo> {
   const thread = await db.thread.findFirst({
     where: {
-      publicId: threadPublicId,
+      id: threadPublicId,
       organizationId,
     },
     select: { id: true },
   });
 
   if (!thread) {
-    return { threadPublicId, sharedWith: [] };
+    return { threadId: threadPublicId, sharedWith: [] };
   }
 
   // Get all org members (excluding current user)
@@ -54,5 +54,5 @@ export async function getThreadSharesQuery(
     isShared: sharedUserIds.has(m.userId),
   }));
 
-  return { threadPublicId, sharedWith };
+  return { threadId: threadPublicId, sharedWith };
 }

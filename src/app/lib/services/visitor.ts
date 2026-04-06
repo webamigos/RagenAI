@@ -16,7 +16,7 @@ export const createVisitorEntry = async (
 ) => {
   return await db.visitorMessages.create({
     data: {
-      messageId: message.publicId,
+      messageId: message.id,
       visitorId: visitorId,
     },
   });

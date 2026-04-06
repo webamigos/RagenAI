@@ -12,7 +12,7 @@ export interface WebsiteDocumentLoaderParams {
   mode: WebsiteLoaderMode;
   fileName: string;
   organizationId: string;
-  projectId: number;
+  projectId: string;
 }
 
 export class WebsiteDocumentLoader {
@@ -20,7 +20,7 @@ export class WebsiteDocumentLoader {
   private readonly mode: WebsiteLoaderMode;
   private readonly fileName: string;
   private readonly organizationId: string;
-  private readonly projectId: number;
+  private readonly projectId: string;
 
   constructor({
     url,
@@ -95,7 +95,7 @@ export class WebsiteDocumentLoader {
       );
 
       await createMarkdownDocument({
-        publicId: randomUUID(),
+        id: randomUUID(),
         title: `${this.url} | ${this.mode}`,
         organizationId: this.organizationId,
         content: enhancedMarkdown,

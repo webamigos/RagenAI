@@ -706,7 +706,8 @@
     "no-assistants": "No assistants yet",
     "no-assistants-description": "Create your first assistant to get started",
     "thread-count": "{count} threads",
-    "updated": "Updated {time}"
+    "updated": "Updated {time}",
+    "global-assistants": "Global Assistants"
   },
   "search-threads": {
     "title": "Search chats and assistants",
@@ -1043,7 +1044,8 @@
       "share": "Share",
       "storage-used": "{percentage}% memory used",
       "selected": "selected",
-      "last-message": "Last message {time}"
+      "last-message": "Last message {time}",
+      "powered-by": "Powered by {name}"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

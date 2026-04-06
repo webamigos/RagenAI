@@ -7,15 +7,14 @@ import type { ThreadContextAction } from '../../contracts/thread.types';
 
 export const updateThreadProjectContextCommand = async (
   publicThreadId: string,
-  mentionedProjectId: number | null,
+  mentionedProjectId: string | null,
 ) => {
   try {
     const updatedThread = await db.thread.update({
-      where: { publicId: publicThreadId },
+      where: { id: publicThreadId },
       data: { mentionedProjectId: mentionedProjectId },
       select: {
         id: true,
-        publicId: true,
         mentionedProjectId: true,
       },
     });
@@ -40,7 +39,7 @@ export const updateThreadProjectContextCommand = async (
 
 export const updateThreadContextCommand = async (
   threadId: string,
-  mentionedProjectId: number | null,
+  mentionedProjectId: string | null,
 ): Promise<ThreadContextAction> => {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
@@ -54,7 +53,7 @@ export const updateThreadContextCommand = async (
     // Verify thread belongs to user's organization
     const thread = await db.thread.findFirst({
       where: {
-        publicId: threadId,
+        id: threadId,
         organizationId: orgId,
       },
     });

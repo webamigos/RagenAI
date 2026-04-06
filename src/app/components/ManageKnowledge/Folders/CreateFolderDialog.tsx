@@ -17,7 +17,7 @@ type Props = {
   onClose: () => void;
   teams: TeamOption[];
   onCreated: () => void;
-  parentId?: number | null;
+  parentId?: string | null;
   parentName?: string;
 };
 

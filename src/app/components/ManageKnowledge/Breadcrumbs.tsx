@@ -6,9 +6,9 @@ import { getFolderBreadcrumbs } from '@/app/actions/folders';
 import type { BreadcrumbItem } from '@/features/documents/services/queries/get-folder-breadcrumbs-query';
 
 type Props = {
-  folderId: number | null;
+  folderId: string | null;
   viewMode?: 'all' | 'my-files' | 'shared-with-me';
-  onNavigate: (folderId: number | null) => void;
+  onNavigate: (folderId: string | null) => void;
 };
 
 export function Breadcrumbs({ folderId, viewMode, onNavigate }: Props) {

@@ -26,11 +26,11 @@ export const importDriveFolderCommand = async (
   userId: string,
   folderId: string,
   folderName: string,
-  projectPublicId: string,
+  projectId: string,
 ): Promise<ImportResult> => {
   const project = await db.project.findFirst({
-    where: { publicId: projectPublicId, organizationId: orgId },
-    select: { id: true, publicId: true },
+    where: { id: projectId, organizationId: orgId },
+    select: { id: true },
   });
 
   if (!project) {
@@ -45,7 +45,7 @@ export const importDriveFolderCommand = async (
 
   const org = await db.organization.findUnique({
     where: { id: orgId },
-    select: { slug: true, publicId: true },
+    select: { slug: true, id: true },
   });
 
   if (!org) {
@@ -160,11 +160,7 @@ export const importDriveFolderCommand = async (
 
     // Upload to S3
     const fileContent = Buffer.from(contentResult.content, 'utf-8');
-    await uploadToS3WithOrg(
-      org.publicId,
-      `${fileRecord.publicId}.md`,
-      fileContent,
-    );
+    await uploadToS3WithOrg(org.id, `${fileRecord.id}.md`, fileContent);
 
     await db.userFile.update({
       where: { id: fileRecord.id, organizationId: orgId },
@@ -179,9 +175,9 @@ export const importDriveFolderCommand = async (
       args: [
         {
           ...fileRecord,
-          projectPublicId: project.publicId,
+          projectId: project.id,
           organizationSlug: org.slug,
-          organizationPublicId: org.publicId,
+          organizationId: org.id,
           userEmail: user?.email ?? undefined,
           userId,
         },

@@ -16,7 +16,7 @@ const PublicStart = memo(
     widgetMode = false,
   }: {
     organizationId: string;
-    projectId: number;
+    projectId: string;
     accessToken: string;
     widgetMode?: boolean;
   }) => {

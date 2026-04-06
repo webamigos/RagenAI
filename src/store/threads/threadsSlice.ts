@@ -15,7 +15,7 @@ export interface ThreadState {
   skip: number;
   hasMore: boolean;
   currentThreadId: string;
-  defaultProjectPublicId: string | null;
+  defaultProjectId: string | null;
 }
 
 const initialState: ThreadState = {
@@ -27,7 +27,7 @@ const initialState: ThreadState = {
   skip: 0,
   hasMore: true,
   currentThreadId: '',
-  defaultProjectPublicId: null,
+  defaultProjectId: null,
 };
 
 export const threadsSlice = createSlice({
@@ -60,7 +60,7 @@ export const threadsSlice = createSlice({
       const newThreads = action.payload.filter(
         (newThread) =>
           !state.userThreads.some(
-            (existingThread) => existingThread.publicId === newThread.publicId,
+            (existingThread) => existingThread.id === newThread.id,
           ),
       );
       state.isLoading = false;
@@ -69,7 +69,7 @@ export const threadsSlice = createSlice({
     },
     addThread: (state, action: PayloadAction<ThreadHistoryResponse>) => {
       const existingThreadIndex = state.userThreads.findIndex(
-        (thread) => thread.publicId === action.payload.publicId,
+        (thread) => thread.id === action.payload.id,
       );
 
       if (existingThreadIndex !== -1) {
@@ -102,18 +102,15 @@ export const threadsSlice = createSlice({
     setCurrentThreadId: (state, action: PayloadAction<string>) => {
       state.currentThreadId = action.payload;
     },
-    setDefaultProjectPublicId: (
-      state,
-      action: PayloadAction<string | null>,
-    ) => {
-      state.defaultProjectPublicId = action.payload;
+    setDefaultProjectId: (state, action: PayloadAction<string | null>) => {
+      state.defaultProjectId = action.payload;
     },
     updateThreadModel: (
       state,
       action: PayloadAction<{ threadId: string; model: string | null }>,
     ) => {
       const { threadId, model } = action.payload;
-      const thread = state.userThreads.find((t) => t.publicId === threadId);
+      const thread = state.userThreads.find((t) => t.id === threadId);
       if (thread) {
         thread.preferredModel = model;
       }
@@ -133,7 +130,7 @@ export const {
   incrementSkip,
   resetThreads,
   setCurrentThreadId,
-  setDefaultProjectPublicId,
+  setDefaultProjectId,
   updateThreadModel,
 } = threadsSlice.actions;
 

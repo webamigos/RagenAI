@@ -4,11 +4,11 @@ import { trackAudit } from '@/features/audit-logs/services/commands/create-audit
 
 export const removeApiKeyCommand = async (
   organizationId: string,
-  publicApiKeyId: ApiKey['publicId'],
+  apiKeyId: ApiKey['id'],
 ) => {
   const apiKey = await db.apiKey.findUniqueOrThrow({
     where: {
-      publicId: publicApiKeyId,
+      id: apiKeyId,
       organizationId: organizationId,
     },
   });
@@ -22,7 +22,7 @@ export const removeApiKeyCommand = async (
   trackAudit({
     action: 'api-key.deleted',
     entityType: 'api-key',
-    entityId: publicApiKeyId,
+    entityId: apiKeyId,
     oldData: { name: apiKey.name },
   });
 

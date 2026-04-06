@@ -36,7 +36,7 @@ export async function getFolders() {
   );
 }
 
-export async function getFolderBreadcrumbs(folderId: number) {
+export async function getFolderBreadcrumbs(folderId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   return getFolderBreadcrumbsQuery(folderId, orgId);
 }
@@ -44,7 +44,7 @@ export async function getFolderBreadcrumbs(folderId: number) {
 export async function createFolder(
   name: string,
   teamId?: string | null,
-  parentId?: number | null,
+  parentId?: string | null,
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
@@ -61,7 +61,7 @@ export async function createFolder(
 }
 
 export async function updateFolder(
-  folderId: number,
+  folderId: string,
   data: { name?: string; teamId?: string | null },
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -69,21 +69,21 @@ export async function updateFolder(
   return updateFolderCommand(folderId, orgId, data);
 }
 
-export async function deleteFolder(folderId: number) {
+export async function deleteFolder(folderId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return deleteFolderCommand(folderId, orgId);
 }
 
 export async function moveFileToFolder(
-  filePublicId: string,
-  folderId: number | null,
+  fileId: string,
+  folderId: string | null,
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
-  return moveFileToFolderCommand(filePublicId, folderId, orgId);
+  return moveFileToFolderCommand(fileId, folderId, orgId);
 }
 
-export async function moveFolder(folderId: number, newParentId: number | null) {
+export async function moveFolder(folderId: string, newParentId: string | null) {
   const orgId = await getOrgIdFromAuthOrThrow();
   return moveFolderCommand(folderId, newParentId, orgId);
 }

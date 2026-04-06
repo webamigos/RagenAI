@@ -16,13 +16,13 @@ export const getApiKeysQuery = async (organizationId: string) => {
       organizationId: organizationId,
     },
     select: {
-      publicId: true,
+      id: true,
       name: true,
       maskedValue: true,
       createdAt: true,
       project: {
         select: {
-          publicId: true,
+          id: true,
           title: true,
         },
       },

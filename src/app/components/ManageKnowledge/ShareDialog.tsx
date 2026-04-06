@@ -21,7 +21,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   resourceType: 'file' | 'folder';
-  resourceId: string | number; // file publicId or folder id (number)
+  resourceId: string; // file id or folder id
   resourceName: string;
   orgMembers: { id: string; name: string | null; email: string }[];
   orgTeams: { id: string; name: string }[];
@@ -50,7 +50,7 @@ export function ShareDialog({
       const perms = await getFilePermissions(resourceId as string);
       setPermissions(perms);
     } else {
-      const perms = await getFolderPermissions(resourceId as number);
+      const perms = await getFolderPermissions(resourceId);
       setPermissions(perms);
     }
   }, [resourceType, resourceId]);
@@ -83,13 +83,13 @@ export function ShareDialog({
       const result =
         resourceType === 'file'
           ? await shareFile(
-              resourceId as string,
+              resourceId,
               granteeType,
               granteeId,
               selectedPermission,
             )
           : await shareFolder(
-              resourceId as number,
+              resourceId,
               granteeType,
               granteeId,
               selectedPermission,
@@ -111,9 +111,9 @@ export function ShareDialog({
     }
   };
 
-  const handleRevoke = async (permissionId: number) => {
+  const handleRevoke = async (permissionId: string) => {
     try {
-      const result = await revokeShare(permissionId);
+      const result = await revokeShare(parseInt(permissionId, 10));
       if (result.success) {
         successToast({ message: 'Access revoked' });
         loadPermissions();

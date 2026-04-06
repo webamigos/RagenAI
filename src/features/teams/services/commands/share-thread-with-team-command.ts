@@ -12,7 +12,7 @@ export async function shareThreadWithTeamCommand(
 ): Promise<OperationResult> {
   const thread = await db.thread.findFirst({
     where: {
-      publicId: threadPublicId,
+      id: threadPublicId,
       organizationId: organizationId,
     },
     select: { id: true, visitorId: true },

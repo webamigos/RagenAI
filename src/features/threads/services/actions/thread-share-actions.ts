@@ -38,7 +38,7 @@ export async function getThreadSharesAction(
   const userId = await getCurrentUserId();
 
   if (!userId) {
-    return { threadPublicId, sharedWith: [] };
+    return { threadId: threadPublicId, sharedWith: [] };
   }
 
   const orgId = await getOrgIdFromAuthOrThrow();

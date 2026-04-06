@@ -31,8 +31,7 @@ interface NewChatInterfaceProps {
   isPublicAccess?: boolean;
   widgetMode?: boolean;
   voiceId?: string;
-  projectId?: number;
-  projectPublicId?: string;
+  projectId?: string;
   projectTitle?: string;
   accessToken?: string;
   organizationDefaultModel?: string;
@@ -50,7 +49,6 @@ export const NewChatInterface = ({
   isPublicAccess = false,
   widgetMode = false,
   projectId,
-  projectPublicId,
   projectTitle,
   organizationDefaultModel,
   onProjectFilesDrop,
@@ -89,7 +87,6 @@ export const NewChatInterface = ({
     isPublicAccess,
     widgetMode,
     projectId,
-    projectPublicId,
     accessToken,
     preferredModel: selectedModel,
     threadDocuments,
