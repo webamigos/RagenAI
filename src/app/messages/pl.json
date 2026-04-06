@@ -259,7 +259,8 @@
   "success-toast": {
     "copied": "Skopiowano ",
     "deleted": "Usunięto ",
-    "saved": "Zapisano "
+    "saved": "Zapisano ",
+    "files-uploaded": "Przesłano {count} plik(ów)"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
@@ -640,6 +641,7 @@
     "no-folders": "Nie znaleziono folderów",
     "no-results": "Brak folderów pasujących do wyszukiwania",
     "no-files": "Ten folder jest pusty",
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "select-files-title": "Wybierz pliki",
     "back": "Wstecz",
     "attach-selected": "Dołącz wybrane",
@@ -770,7 +772,8 @@
     "create-document": "Stwórz dokument",
     "add-from-url": "Dodaj z linku",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
-    "or-browse": "lub kliknij, aby wybrać"
+    "or-browse": "lub kliknij, aby wybrać",
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików"
   },
   "file-delete-modal": {
     "title": "Usuń plik",

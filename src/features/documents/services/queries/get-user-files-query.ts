@@ -26,9 +26,7 @@ export const getUserFilesQuery = async (
     baseWhere.folderId = folderId;
   }
 
-  if (isOrgAdmin) {
-    // Org admins see all files
-  } else if (viewMode === 'my-files') {
+  if (viewMode === 'my-files') {
     baseWhere.ownerId = userId;
   } else if (viewMode === 'shared-with-me') {
     // Only files explicitly shared with this user via DocumentPermission
@@ -88,8 +86,8 @@ export const getUserFilesQuery = async (
     ];
 
     baseWhere.OR = permissionConditions;
-  } else {
-    // "all" view: show files the user can access
+  } else if (!isOrgAdmin) {
+    // "all" view: show files the user can access (org admins see everything)
     baseWhere.OR = [
       // Legacy files: no owner, accessible to all org members
       { ownerId: null },

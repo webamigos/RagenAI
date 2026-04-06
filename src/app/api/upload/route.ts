@@ -130,6 +130,8 @@ export async function POST(request: NextRequest) {
           {
             folderId: folderId && !isNaN(folderId) ? folderId : null,
             ownerId: user?.id ?? null,
+            fileExtension: fileExtension ?? null,
+            fileMimeType: file.type || null,
           },
         );
 

@@ -53,7 +53,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const tFolders = useTranslations('folders');
   const { user } = useUser();
   const { isOrgAdmin } = useOrganization();
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
   const [searchValue, setSearchValue] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [showModal, setShowModal] = useState<ModalStateProps>({
@@ -76,7 +76,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   useEffect(() => {
     const saved = getSavedViewMode();
     if (saved !== 'list') {
-      setViewMode(saved);
+      setLayoutMode(saved);
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -112,7 +112,10 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     setFolder,
     currentFolderId,
     refreshFiles,
+    viewMode,
   } = useUserFilesContext();
+
+  const isSharedView = viewMode === 'shared-with-me';
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value.trim());
@@ -169,7 +172,9 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         const response = await uploadFilesApi(formData);
         if (response.status === 200) {
           successToast({
-            message: `${response.files?.length ?? filesArray.length} file(s) uploaded`,
+            message: tSuccess('files-uploaded', {
+              count: response.files?.length ?? filesArray.length,
+            }),
           });
           refreshFiles();
           refreshSettings();
@@ -229,65 +234,69 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         <FileSearch value={searchValue} onChange={handleSearchChange} />
         <LayoutToggle
           className="hidden md:flex"
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          viewMode={layoutMode}
+          onViewModeChange={setLayoutMode}
         />
         <div className="flex-1" />
-        {/* Action buttons — right side */}
-        <button
-          onClick={() => setIsCreateFolderOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-        >
-          <FolderPlusIcon className="size-4" />
-          {tFolders('new')}
-        </button>
-        <Dropdown>
-          <DropdownButton
-            color="violet"
-            className="inline-flex items-center gap-2"
-          >
-            {tFolders('add-document')}
-            <ChevronDownIcon className="size-3.5 ml-0.5 opacity-70" />
-          </DropdownButton>
-          <DropdownMenu
-            anchor="bottom end"
-            className="[&_[data-slot=icon]]:mr-2"
-          >
-            <DropdownItem onClick={() => fileInputRef.current?.click()}>
-              <ComputerDesktopIcon className="size-4" data-slot="icon" />
-              {tFolders('from-disk')}
-            </DropdownItem>
-            <DropdownItem
-              onClick={() => router.push('/knowledge/create-document')}
+        {/* Action buttons — right side (hidden in shared-with-me view) */}
+        {!isSharedView && (
+          <>
+            <button
+              onClick={() => setIsCreateFolderOpen(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
-              <DocumentPlusIcon className="size-4" data-slot="icon" />
-              {tFolders('create-document')}
-            </DropdownItem>
-            <DropdownItem onClick={() => setIsAddFromUrlOpen(true)}>
-              <GlobeAltIcon className="size-4" data-slot="icon" />
-              {tFolders('add-from-url')}
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          onChange={handleFileInputChange}
-        />
+              <FolderPlusIcon className="size-4" />
+              {tFolders('new')}
+            </button>
+            <Dropdown>
+              <DropdownButton
+                color="violet"
+                className="inline-flex items-center gap-2"
+              >
+                {tFolders('add-document')}
+                <ChevronDownIcon className="size-3.5 ml-0.5 opacity-70" />
+              </DropdownButton>
+              <DropdownMenu
+                anchor="bottom end"
+                className="[&_[data-slot=icon]]:mr-2"
+              >
+                <DropdownItem onClick={() => fileInputRef.current?.click()}>
+                  <ComputerDesktopIcon className="size-4" data-slot="icon" />
+                  {tFolders('from-disk')}
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => router.push('/knowledge/create-document')}
+                >
+                  <DocumentPlusIcon className="size-4" data-slot="icon" />
+                  {tFolders('create-document')}
+                </DropdownItem>
+                <DropdownItem onClick={() => setIsAddFromUrlOpen(true)}>
+                  <GlobeAltIcon className="size-4" data-slot="icon" />
+                  {tFolders('add-from-url')}
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileInputChange}
+            />
+          </>
+        )}
       </div>
 
-      {/* Content area with drag & drop */}
+      {/* Content area with drag & drop (disabled in shared-with-me view) */}
       <div
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border-2 border-dashed transition-colors ${
-          isDragOver
+          isDragOver && !isSharedView
             ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/20 dark:border-indigo-600'
             : 'border-transparent'
         }`}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDrop={isSharedView ? undefined : handleDrop}
+        onDragOver={isSharedView ? undefined : handleDragOver}
+        onDragLeave={isSharedView ? undefined : handleDragLeave}
       >
         {(() => {
           if (isLoading) {
@@ -298,6 +307,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
             );
           }
           if (!hasContent && !isError) {
+            if (isSharedView) {
+              return (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {tFolders('no-shared-files')}
+                  </p>
+                </div>
+              );
+            }
             return (
               <div
                 className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
@@ -313,7 +331,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
               </div>
             );
           }
-          if (viewMode === 'list') {
+          if (layoutMode === 'list') {
             return (
               <FileListView
                 isError={isError}

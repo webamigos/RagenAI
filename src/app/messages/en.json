@@ -258,7 +258,8 @@
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
-    "saved": "Saved"
+    "saved": "Saved",
+    "files-uploaded": "{count} file(s) uploaded"
   },
   "error-toast": {
     "no-user-id": "user id missing",
@@ -637,6 +638,7 @@
     "no-folders": "No folders found",
     "no-results": "No folders match your search",
     "no-files": "This folder is empty",
+    "no-shared-files": "No files have been shared with you yet",
     "select-files-title": "Select files",
     "back": "Back",
     "attach-selected": "Attach selected",
@@ -767,7 +769,8 @@
     "create-document": "Create document",
     "add-from-url": "Add from URL",
     "drag-drop": "Drag & drop files here",
-    "or-browse": "or click to browse"
+    "or-browse": "or click to browse",
+    "no-shared-files": "No files have been shared with you yet"
   },
   "file-delete-modal": {
     "title": "Delete file",
