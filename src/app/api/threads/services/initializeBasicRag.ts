@@ -117,6 +117,7 @@ export const initializeRagChain = async ({
       config: {
         metadataFilter,
         maxDocumentsToRetrieve,
+        litellmApiKey,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
         threadDocuments: threadDocuments || [],

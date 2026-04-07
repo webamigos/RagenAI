@@ -39,6 +39,8 @@ export interface ChainConfig {
 export interface RagChainConfig extends ChainConfig {
   maxDocumentsToRetrieve?: number;
   metadataFilter?: object;
+  /** Org's virtual LiteLLM key — used to attribute rerank usage to the org. */
+  litellmApiKey?: string;
 }
 
 export interface ChainUsage {

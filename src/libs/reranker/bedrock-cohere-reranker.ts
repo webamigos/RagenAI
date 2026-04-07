@@ -36,6 +36,7 @@ export async function rerankDocuments(
   query: string,
   documents: VectorStoreDocument[],
   topN: number = DEFAULT_RERANK_TOP_N,
+  litellmApiKey?: string,
 ): Promise<VectorStoreDocument[]> {
   if (documents.length === 0) {
     return [];
@@ -49,7 +50,10 @@ export async function rerankDocuments(
   const baseUrl = (
     process.env.LITELLM_PROXY_URL || 'http://localhost:4000'
   ).replace(/\/$/, '');
-  const apiKey = process.env.LITELLM_MASTER_KEY || 'sk-litellm';
+  // Prefer the org's virtual LiteLLM key so usage is attributed to the org
+  // in LiteLLM (Team / Key Name). Fall back to master key only if missing.
+  const apiKey =
+    litellmApiKey || process.env.LITELLM_MASTER_KEY || 'sk-litellm';
 
   const texts = documents.map((doc) => doc.pageContent);
 
