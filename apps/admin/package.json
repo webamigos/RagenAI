@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --port 3200",
-    "build": "next build",
+    "build": "cd ../.. && npx prisma generate && cd apps/admin && next build",
     "start": "next start --port 3200",
     "lint": "next lint"
   },
