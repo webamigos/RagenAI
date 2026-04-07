@@ -121,6 +121,7 @@ export const initializePublicRagChain = async ({
       config: {
         metadataFilter,
         maxDocumentsToRetrieve,
+        litellmApiKey,
         answerInstructions: finalInstructions,
         tracking: { organizationId },
       },

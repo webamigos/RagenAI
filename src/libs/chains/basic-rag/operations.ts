@@ -101,6 +101,7 @@ export async function retrieveRelevantDocuments(
   standaloneQuestion: string,
   maxDocuments = 4,
   metadataFilter?: object,
+  litellmApiKey?: string,
 ): Promise<string> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -127,6 +128,7 @@ export async function retrieveRelevantDocuments(
       standaloneQuestion,
       docs,
       maxDocuments,
+      litellmApiKey,
     );
     return combineDocuments(reranked);
   }
