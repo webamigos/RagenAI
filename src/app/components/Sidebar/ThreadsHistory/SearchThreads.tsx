@@ -55,12 +55,11 @@ function formatRelativeDate(dateStr: string, t: TranslateFn): string {
 
 type RecentData = {
   threads: {
-    publicId: string;
+    id: string;
     title: string | null;
     createdAt: string;
-    messages: { content: string }[];
   }[];
-  projects: { publicId: string; title: string; createdAt: string }[];
+  projects: { id: string; title: string; createdAt: string }[];
 };
 
 export const SearchThreads = React.forwardRef<
@@ -99,10 +98,10 @@ export const SearchThreads = React.forwardRef<
             ...threadsResult.recent,
           ]
             .filter((thread) => {
-              if (seen.has(thread.publicId)) {
+              if (seen.has(thread.id)) {
                 return false;
               }
-              seen.add(thread.publicId);
+              seen.add(thread.id);
               return true;
             })
             .slice(0, 10);
@@ -271,9 +270,9 @@ export const SearchThreads = React.forwardRef<
               <CommandGroup heading={t('projects')}>
                 {recentData.projects.map((project) => (
                   <CommandItem
-                    key={`recent-project-${project.publicId}`}
-                    value={`recent-project-${project.publicId}-${project.title}`}
-                    onSelect={() => handleSelect('project', project.publicId)}
+                    key={`recent-project-${project.id}`}
+                    value={`recent-project-${project.id}-${project.title}`}
+                    onSelect={() => handleSelect('project', project.id)}
                     className="cursor-pointer"
                   >
                     <FolderIcon className="size-4 shrink-0 text-zinc-500" />
@@ -286,16 +285,14 @@ export const SearchThreads = React.forwardRef<
               <CommandGroup heading={t('recent')}>
                 {recentData.threads.map((thread) => (
                   <CommandItem
-                    key={`recent-${thread.publicId}`}
-                    value={`recent-thread-${thread.publicId}-${thread.title || thread.messages[0]?.content}`}
-                    onSelect={() => handleSelect('thread', thread.publicId)}
+                    key={`recent-${thread.id}`}
+                    value={`recent-thread-${thread.id}-${thread.title || ''}`}
+                    onSelect={() => handleSelect('thread', thread.id)}
                     className="cursor-pointer"
                   >
                     <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
                     <span className="flex-1 truncate">
-                      {thread.title ||
-                        thread.messages[0]?.content?.slice(0, 60) ||
-                        t('untitled')}
+                      {thread.title || t('untitled')}
                     </span>
                     <span className="text-xs text-zinc-400 shrink-0">
                       {formatRelativeDate(thread.createdAt, t)}

@@ -62,11 +62,8 @@ export const TUIThreadsSection = ({
                 aria-label={`${title} threads`}
               >
                 {threads.map((thread, index) => {
-                  const contentPreview =
-                    thread.messages[0]?.content.length > 30
-                      ? truncateFileName(thread.messages[0]?.content, 30)
-                      : thread.messages[0]?.content;
-                  const isActive = thread.publicId === activeThread;
+                  const contentPreview = thread.title || 'New conversation';
+                  const isActive = thread.id === activeThread;
                   const isLastThreadInAllCategories =
                     categoryIndex === nonEmptyCategories.length - 1 &&
                     index === threads.length - 1;
@@ -79,11 +76,11 @@ export const TUIThreadsSection = ({
                           ? lastThreadElementRef
                           : null
                       }
-                      key={thread.publicId}
+                      key={thread.id}
                       role="listitem"
                     >
                       <SidebarItem
-                        href={`/chats/${thread.publicId}`}
+                        href={`/chats/${thread.id}`}
                         current={isActive}
                         onClick={() => closeSidebar()}
                         aria-label={`Thread: ${contentPreview}`}

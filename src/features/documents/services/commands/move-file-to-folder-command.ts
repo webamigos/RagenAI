@@ -5,12 +5,12 @@ import db from '@ragenai/prisma-client';
 type OperationResult = { success: true } | { success: false; error: string };
 
 export async function moveFileToFolderCommand(
-  filePublicId: string,
+  fileId: string,
   folderId: string | null,
   organizationId: string,
 ): Promise<OperationResult> {
   const file = await db.userFile.findFirst({
-    where: { publicId: filePublicId, organizationId: organizationId },
+    where: { id: fileId, organizationId: organizationId },
     select: { id: true },
   });
 

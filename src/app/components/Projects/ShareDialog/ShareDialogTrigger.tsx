@@ -6,14 +6,14 @@ import { Button } from '@ragenai/common-ui/Button';
 import { ShareDialog } from './ShareDialog';
 
 type ShareDialogTriggerProps = {
-  projectPublicId: string;
+  projectId: string;
   isPublicProject: boolean;
   accessToken: string;
   publishedAt: string;
 };
 
 export const ShareDialogTrigger = ({
-  projectPublicId,
+  projectId,
   isPublicProject,
   accessToken,
   publishedAt,
@@ -32,7 +32,7 @@ export const ShareDialogTrigger = ({
         <ShareDialog
           open={showShareDialog}
           onClose={() => setShowShareDialog(false)}
-          projectPublicId={projectPublicId}
+          projectId={projectId}
           isPublicProject={isPublicProject}
           linkToPublicProject={accessToken}
           publishedAt={publishedAt}

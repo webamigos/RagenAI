@@ -11,13 +11,13 @@ import { logger } from '@/app/lib/utils/logger';
 
 type FileItemProps = {
   file: {
-    publicId: string;
+    id: string;
     fileName: string;
     fileSize: number;
     fileType: FileType;
     createdAt: Date | null;
   };
-  onDelete: (publicFileId: UserFile['publicId']) => void | Promise<void>;
+  onDelete: (fileId: UserFile['id']) => void | Promise<void>;
   isDeleting: boolean;
   t: any;
 };
@@ -30,9 +30,9 @@ export const FileItem = memo(
       ? new Date(file.createdAt).toLocaleDateString()
       : '-';
 
-    const handleConfirmDelete = async (filePublicId: UserFile['publicId']) => {
+    const handleConfirmDelete = async (fileId: UserFile['id']) => {
       try {
-        await onDelete(filePublicId);
+        await onDelete(fileId);
         setShowDeleteModal(false);
       } catch (error) {
         // Modal stays open on error to allow retry
@@ -46,7 +46,7 @@ export const FileItem = memo(
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleConfirmDelete}
-          filePublicId={file.publicId}
+          fileId={file.id}
           fileName={file.fileName}
           isLoading={isDeleting}
         />

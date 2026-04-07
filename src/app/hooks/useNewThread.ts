@@ -64,8 +64,8 @@ export const useNewThread = () => {
   const [isPending, startTransition] = useTransition();
 
   const reduxDispatch = useAppDispatch();
-  const defaultProjectPublicId = useAppSelector(
-    (state) => state.threads.defaultProjectPublicId,
+  const defaultProjectId = useAppSelector(
+    (state) => state.threads.defaultProjectId,
   );
   const { organization } = useOrganization();
   const { user } = useUser();
@@ -134,9 +134,9 @@ export const useNewThread = () => {
 
   const handleNewThread = async (
     initialMessage?: string,
-    projectId?: number,
-    projectPublicId?: string,
-    mentionedProjectId?: number,
+    projectId?: string,
+    _projectId2?: string,
+    mentionedProjectId?: string,
     preferredModel?: string,
     threadDocuments?: ThreadDocumentUI[],
   ) => {
@@ -166,13 +166,13 @@ export const useNewThread = () => {
 
       if (result.success) {
         await trackThreadCreated();
-        const threadId = result.thread.publicId;
+        const threadId = result.thread.id;
         localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
 
         if (user) {
           // Add thread to store immediately for logged in users
           const newThread: ThreadHistoryResponse = {
-            publicId: threadId,
+            id: threadId,
             projectId: result.thread.projectId,
             messages: initialMessage
               ? [
@@ -190,8 +190,7 @@ export const useNewThread = () => {
           //this hook logic is reused for global and project-scoped threads
           //for threads connected to the default project id redux threads.userThreads state must be updated
           //for the other projects there is a separate state cell sidebar.projects
-          const isDefaultProject =
-            !projectPublicId || projectPublicId === defaultProjectPublicId;
+          const isDefaultProject = !projectId || projectId === defaultProjectId;
           if (isDefaultProject) {
             reduxDispatch(addThread(newThread));
 
@@ -207,7 +206,7 @@ export const useNewThread = () => {
           } else if (result.thread.projectId != null) {
             const threadForProject = {
               createdAt: new Date().toISOString(),
-              publicId: threadId,
+              id: threadId,
               visitorId: user.id,
               preferredCommunicationType: 'TEXT' as const,
               projectId: result.thread.projectId,
@@ -224,18 +223,25 @@ export const useNewThread = () => {
 
         // Notify sidebar about the new thread
         if (user) {
+          let threadTitle: string | null = null;
+          if (initialMessage) {
+            threadTitle =
+              initialMessage.length > 100
+                ? `${initialMessage.substring(0, 100)}...`
+                : initialMessage;
+          }
+
           sidebarThreadEvents.emit({
             type: 'thread-created',
             thread: {
-              publicId: threadId,
+              id: threadId,
               createdAt: new Date().toISOString(),
               isStarred: false,
-              title: null,
+              title: threadTitle,
               projectId: result.thread.projectId ?? null,
               teamId: null,
               project: null,
               team: null,
-              messages: initialMessage ? [{ content: initialMessage }] : [],
             },
           });
         }

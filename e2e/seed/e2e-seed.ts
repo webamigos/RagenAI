@@ -16,7 +16,11 @@ import {
   TEST_MEMBER_ID,
   TEST_ACCOUNT_ID,
   TEST_PROJECT_TITLE,
-  TEST_PROJECT_PUBLIC_ID,
+  TEST_PROJECT_ID,
+  TEST_THREAD_ID,
+  TEST_THREAD_TITLE,
+  TEST_MESSAGE_USER_ID,
+  TEST_MESSAGE_ASSISTANT_ID,
   TEST_ORG2_ID,
   TEST_ORG2_SLUG,
   TEST_ORG2_NAME,
@@ -35,8 +39,19 @@ async function cleanup() {
   console.log('Cleaning up existing E2E test data...');
 
   // Delete in order respecting foreign key constraints
+  // Clean up data created by test runs (threads, messages, audit logs, etc.)
+  const orgIds = [TEST_ORG_ID, TEST_ORG2_ID];
+  await prisma.message.deleteMany({
+    where: { thread: { organizationId: { in: orgIds } } },
+  });
+  await prisma.thread.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.auditLog.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
   await prisma.project.deleteMany({
-    where: { publicId: TEST_PROJECT_PUBLIC_ID },
+    where: { organizationId: { in: orgIds } },
   });
   await prisma.subscription.deleteMany({
     where: { referenceId: TEST_ORG_ID },
@@ -101,7 +116,7 @@ async function seed() {
       id: TEST_ORG_ID,
       name: `${TEST_USER_NAME}'s Organization`,
       slug: TEST_ORG_SLUG,
-      vectorStore: 'meilisearch',
+      vectorStore: 'qdrant',
     },
   });
   console.log(`Created organization: ${TEST_ORG_SLUG}`);
@@ -156,7 +171,7 @@ async function seed() {
   // 8. Create project
   await prisma.project.create({
     data: {
-      publicId: TEST_PROJECT_PUBLIC_ID,
+      id: TEST_PROJECT_ID,
       title: TEST_PROJECT_TITLE,
       organizationId: TEST_ORG_ID,
       ownerId: TEST_USER_ID,
@@ -164,13 +179,41 @@ async function seed() {
   });
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
 
-  // 9. Create second organization for org-switcher tests
+  // 9. Create a thread with messages (so thread management tests don't need LLM)
+  await prisma.thread.create({
+    data: {
+      id: TEST_THREAD_ID,
+      title: TEST_THREAD_TITLE,
+      organizationId: TEST_ORG_ID,
+      userId: TEST_USER_ID,
+      projectId: TEST_PROJECT_ID,
+    },
+  });
+  await prisma.message.create({
+    data: {
+      id: TEST_MESSAGE_USER_ID,
+      content: 'Hello, this is a seeded test message.',
+      role: 'USER',
+      thread: { connect: { id: TEST_THREAD_ID } },
+    },
+  });
+  await prisma.message.create({
+    data: {
+      id: TEST_MESSAGE_ASSISTANT_ID,
+      content: 'This is the assistant response to the seeded message.',
+      role: 'ASSISTANT',
+      thread: { connect: { id: TEST_THREAD_ID } },
+    },
+  });
+  console.log(`Created thread: ${TEST_THREAD_TITLE} with 2 messages`);
+
+  // 10. Create second organization for org-switcher tests
   await prisma.organization.create({
     data: {
       id: TEST_ORG2_ID,
       name: TEST_ORG2_NAME,
       slug: TEST_ORG2_SLUG,
-      vectorStore: 'meilisearch',
+      vectorStore: 'qdrant',
     },
   });
   console.log(`Created second organization: ${TEST_ORG2_NAME}`);

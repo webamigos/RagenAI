@@ -1,0 +1,139 @@
+# LiteLLM Proxy Configuration
+# Docs: https://docs.litellm.ai/docs/proxy/configs
+
+model_list:
+  # ---------------------------------------------------------------------------
+  # Azure OpenAI — GPT models (chat only, no codex/image/audio)
+  # ---------------------------------------------------------------------------
+  - model_name: gpt-5.4
+    litellm_params:
+      model: azure/gpt-5.4
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.4
+
+  # - model_name: gpt-5.4-mini
+  #   litellm_params:
+  #     model: azure/gpt-5.4-mini
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_key: os.environ/AZURE_API_KEY
+  #     api_version: os.environ/AZURE_API_VERSION
+  #     base_model: gpt-5.4-mini
+
+  - model_name: gpt-5.4-nano
+    litellm_params:
+      model: azure/gpt-5.4-nano
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.4-nano
+
+  - model_name: gpt-5.3-chat
+    litellm_params:
+      model: azure/gpt-5.3-chat
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.3-chat
+
+  # ---------------------------------------------------------------------------
+  # AWS Bedrock — Anthropic Claude models
+  # ---------------------------------------------------------------------------
+  # Cross-region inference profiles (eu. prefix required for newer models)
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-sonnet-4-6
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+  - model_name: claude-opus-4-6
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-opus-4-6-v1
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-haiku-4-5-20251001-v1:0
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+  # ---------------------------------------------------------------------------
+  # Google Vertex AI — Gemini models
+  # Vertex credentials: set VERTEX_CREDENTIALS env var to the full JSON content
+  # of your GCP service account key (for Railway/cloud deployments where file
+  # mounts are not available).
+  # ---------------------------------------------------------------------------
+
+  # --- Gemini 3.x models (global — preview models require this region) ---
+  - model_name: gemini-3-flash-preview
+    litellm_params:
+      model: vertex_ai/gemini-3-flash-preview
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: global
+      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  # --- Stable models (VERTEX_LOCATION env var — typically europe-west1 for EU) ---
+  # - model_name: gemini-2.5-pro
+  #   litellm_params:
+  #     model: vertex_ai/gemini-2.5-pro
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: os.environ/VERTEX_LOCATION
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  # - model_name: gemini-2.5-flash-lite
+  #   litellm_params:
+  #     model: vertex_ai/gemini-2.5-flash-lite
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: os.environ/VERTEX_LOCATION
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
+
+  # ---------------------------------------------------------------------------
+  # Reranking
+  # ---------------------------------------------------------------------------
+  - model_name: cohere-rerank-v3-5
+    litellm_params:
+      model: bedrock/arn:aws:bedrock:eu-central-1::foundation-model/cohere.rerank-v3-5:0
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+  # ---------------------------------------------------------------------------
+  # Embeddings
+  # ---------------------------------------------------------------------------
+  - model_name: cohere-embed-multilingual-v3
+    litellm_params:
+      model: bedrock/cohere.embed-multilingual-v3
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+litellm_settings:
+  # Drop unmapped params instead of failing
+  drop_params: true
+  # Enable detailed request/response logging in debug mode
+  set_verbose: false
+  # Cache settings (in-memory for local dev)
+  cache: false
+  # Langfuse tracing — logs all LLM calls (chat + embeddings) to Langfuse
+  # Requires LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST env vars
+  success_callback: ['langfuse']
+  failure_callback: ['langfuse']
+
+general_settings:
+  # Master key — set LITELLM_MASTER_KEY env var for staging/production
+  # When unset, the proxy runs without auth (local dev)
+  master_key: os.environ/LITELLM_MASTER_KEY
+  # Store usage, keys, and teams in Postgres
+  database_url: os.environ/LITELLM_DATABASE_URL

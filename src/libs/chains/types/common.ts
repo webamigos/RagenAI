@@ -22,7 +22,7 @@ export interface RagChainModels extends BaseChatChainModels {
 
 export interface ChainTrackingContext {
   organizationId: string;
-  projectId?: number | null;
+  projectId?: string | null;
   userId?: string | null;
 }
 

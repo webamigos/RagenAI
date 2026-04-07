@@ -28,7 +28,7 @@ export const syncDriveFolderCommand = async (
   syncPublicId: string,
 ): Promise<SyncResult> => {
   const syncRecord = await db.googleDriveSync.findFirst({
-    where: { publicId: syncPublicId, organizationId: orgId },
+    where: { id: syncPublicId, organizationId: orgId },
   });
 
   if (!syncRecord) {
@@ -44,7 +44,7 @@ export const syncDriveFolderCommand = async (
 
   const org = await db.organization.findUnique({
     where: { id: orgId },
-    select: { slug: true, publicId: true },
+    select: { slug: true, id: true },
   });
 
   if (!org) {
@@ -60,7 +60,7 @@ export const syncDriveFolderCommand = async (
 
   const project = await db.project.findUnique({
     where: { id: syncRecord.projectId },
-    select: { id: true, publicId: true },
+    select: { id: true },
   });
 
   if (!project) {
@@ -165,11 +165,7 @@ export const syncDriveFolderCommand = async (
         }
 
         const fileContent = Buffer.from(contentResult.content, 'utf-8');
-        await uploadToS3WithOrg(
-          org.publicId,
-          `${existingFile.publicId}.md`,
-          fileContent,
-        );
+        await uploadToS3WithOrg(org.id, `${existingFile.id}.md`, fileContent);
 
         // Delete existing document so workflow can re-create it
         if (existingFile.documentId) {
@@ -225,9 +221,9 @@ export const syncDriveFolderCommand = async (
                 driveFolderId: syncRecord.driveFolderId,
                 driveModifiedTime: driveFile.modified_time,
               },
-              projectPublicId: project.publicId,
+              projectId: project.id,
               organizationSlug: org.slug,
-              organizationPublicId: org.publicId,
+              organizationId: org.id,
               userEmail: user?.email ?? undefined,
               userId,
             },
@@ -279,11 +275,7 @@ export const syncDriveFolderCommand = async (
       });
 
       const fileContent = Buffer.from(contentResult.content, 'utf-8');
-      await uploadToS3WithOrg(
-        org.publicId,
-        `${fileRecord.publicId}.md`,
-        fileContent,
-      );
+      await uploadToS3WithOrg(org.id, `${fileRecord.id}.md`, fileContent);
 
       await db.userFile.update({
         where: { id: fileRecord.id, organizationId: orgId },
@@ -297,9 +289,9 @@ export const syncDriveFolderCommand = async (
         args: [
           {
             ...fileRecord,
-            projectPublicId: project.publicId,
+            projectId: project.id,
             organizationSlug: org.slug,
-            organizationPublicId: org.publicId,
+            organizationId: org.id,
             userEmail: user?.email ?? undefined,
             userId,
           },

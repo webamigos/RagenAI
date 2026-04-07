@@ -7,6 +7,7 @@ import {
   StarIcon as StarIconOutline,
   PencilSquareIcon,
   TrashIcon,
+  ShareIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import {
@@ -36,9 +37,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
+import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 
 type ThreadInfo = {
-  publicId: string;
+  id: string;
   isStarred: boolean;
   title?: string | null;
   messages?: { content: string }[];
@@ -46,12 +48,13 @@ type ThreadInfo = {
 
 type Props = {
   thread: ThreadInfo;
-  onStarred?: (threadPublicId: string, isStarred: boolean) => void;
-  onRenamed?: (threadPublicId: string, newTitle: string) => void;
-  onDeleted?: (threadPublicId: string) => void;
+  onStarred?: (threadId: string, isStarred: boolean) => void;
+  onRenamed?: (threadId: string, newTitle: string) => void;
+  onDeleted?: (threadId: string) => void;
   triggerClassName?: string;
   align?: 'start' | 'end';
   side?: 'top' | 'right' | 'bottom' | 'left';
+  isOwner?: boolean;
 };
 
 export const ThreadDropdownMenu = ({
@@ -62,18 +65,20 @@ export const ThreadDropdownMenu = ({
   triggerClassName,
   align = 'end',
   side = 'bottom',
+  isOwner = true,
 }: Props) => {
   const t = useTranslations('thread-actions');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const handleStar = async () => {
     const newStarred = !thread.isStarred;
-    onStarred?.(thread.publicId, newStarred);
-    const result = await toggleThreadStarred(thread.publicId, newStarred);
+    onStarred?.(thread.id, newStarred);
+    const result = await toggleThreadStarred(thread.id, newStarred);
     if (!result.success) {
-      onStarred?.(thread.publicId, thread.isStarred);
+      onStarred?.(thread.id, thread.isStarred);
     }
   };
 
@@ -88,14 +93,14 @@ export const ThreadDropdownMenu = ({
       return;
     }
     setIsRenameOpen(false);
-    onRenamed?.(thread.publicId, renameValue.trim());
-    await renameThread(thread.publicId, renameValue.trim());
+    onRenamed?.(thread.id, renameValue.trim());
+    await renameThread(thread.id, renameValue.trim());
   };
 
   const handleDelete = async () => {
     setIsDeleteOpen(false);
-    onDeleted?.(thread.publicId);
-    await deleteThread(thread.publicId);
+    onDeleted?.(thread.id);
+    await deleteThread(thread.id);
   };
 
   return (
@@ -122,18 +127,26 @@ export const ThreadDropdownMenu = ({
             )}
             {thread.isStarred ? t('unstar') : t('star')}
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRenameStart}>
-            <PencilSquareIcon className="size-4" />
-            {t('rename')}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setIsDeleteOpen(true)}
-          >
-            <TrashIcon className="size-4" />
-            {t('delete')}
-          </DropdownMenuItem>
+          {isOwner && (
+            <>
+              <DropdownMenuItem onClick={() => setIsShareOpen(true)}>
+                <ShareIcon className="size-4" />
+                {t('share')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleRenameStart}>
+                <PencilSquareIcon className="size-4" />
+                {t('rename')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setIsDeleteOpen(true)}
+              >
+                <TrashIcon className="size-4" />
+                {t('delete')}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -184,6 +197,12 @@ export const ThreadDropdownMenu = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ShareThreadDialog
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        threadId={thread.id}
+      />
     </>
   );
 };

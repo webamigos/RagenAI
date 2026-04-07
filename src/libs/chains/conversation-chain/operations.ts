@@ -5,6 +5,8 @@ import {
   humanTemplates,
   systemTemplates,
 } from './config';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { buildUserMessageWithImages } from '../utils/chain-utils';
 
 type Message = {
   type: 'user' | 'assistant';
@@ -37,7 +39,8 @@ export function buildConversationMessages(
   question: string,
   chatHistory: string | undefined,
   answerInstructions?: string | null,
-  projectInstruction?: string
+  projectInstruction?: string,
+  imageDocuments?: ThreadDocumentUI[],
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
@@ -61,9 +64,13 @@ export function buildConversationMessages(
 
   const humanMessage = humanTemplates.answerChain.replace(
     '{question}',
-    question
+    question,
   );
-  messages.push({ role: 'user', content: humanMessage });
+
+  messages.push({
+    role: 'user',
+    content: buildUserMessageWithImages(humanMessage, imageDocuments),
+  });
 
   return { system: systemMessage, messages };
 }

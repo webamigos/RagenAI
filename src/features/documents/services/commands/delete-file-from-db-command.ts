@@ -4,11 +4,11 @@ import db from '@ragenai/prisma-client';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
-export const deleteFileFromDbCommand = async (filePublicId: string) => {
+export const deleteFileFromDbCommand = async (fileId: string) => {
   const orgId = await getOrgIdOrThrow();
   const result = await db.userFile.deleteMany({
     where: {
-      publicId: filePublicId,
+      id: fileId,
       organizationId: orgId,
     },
   });
@@ -16,7 +16,7 @@ export const deleteFileFromDbCommand = async (filePublicId: string) => {
   trackAudit({
     action: 'document.deleted',
     entityType: 'document',
-    entityId: filePublicId,
+    entityId: fileId,
   });
 
   return result;

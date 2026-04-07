@@ -6,12 +6,12 @@ import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 
-export const generateProjectKeyCommand = async (publicId: string) => {
+export const generateProjectKeyCommand = async (projectId: string) => {
   try {
     const orgId = await getOrgIdOrThrow();
 
     const existing = await db.project.findFirst({
-      where: { publicId: publicId, organizationId: orgId },
+      where: { id: projectId, organizationId: orgId },
     });
 
     if (!existing) {
@@ -35,7 +35,7 @@ export const generateProjectKeyCommand = async (publicId: string) => {
     trackAudit({
       action: 'project.key_generated',
       entityType: 'project',
-      entityId: publicId,
+      entityId: projectId,
     });
 
     return {

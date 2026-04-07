@@ -9,7 +9,17 @@ import {
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
 import { type SubmitHandler, useForm } from 'react-hook-form';
-import { validateTextFile } from '@/app/lib/utils/fileValidation';
+import {
+  validateTextFile,
+  validateImageFile,
+  isImageFile,
+  isXlsxFile,
+  isBinaryDocFile,
+  isSupportedFile,
+  isValidFileSize,
+} from '@/app/lib/utils/fileValidation';
+import * as XLSX from 'xlsx';
+import mammoth from 'mammoth';
 import {
   PlusIcon,
   ArrowUpTrayIcon,
@@ -35,8 +45,16 @@ import type { ThreadDocumentUI } from '@/features/documents/contracts/document.t
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
 import { GoogleDrivePickerDialog } from '@/app/components/GoogleDrivePickerDialog';
 import { FirefliesPickerDialog } from '@/app/components/FirefliesPickerDialog';
-import { isDriveConnected } from '@/app/actions/google-drive';
+import {
+  isDriveConnected,
+  getDriveFileContent,
+} from '@/app/actions/google-drive';
 import { isFirefliesConnected } from '@/app/actions/fireflies';
+import { toast } from 'sonner';
+import {
+  extractDriveLinksFromText,
+  getDriveFileTypeFromUrl,
+} from '@/app/lib/utils/google-drive-url';
 
 type Props = {
   isLoading: boolean;
@@ -48,6 +66,7 @@ type Props = {
 
 export type PromptFormRef = {
   reset: (prompt?: string) => void;
+  dropFiles: (files: File[]) => void;
 };
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
@@ -66,6 +85,10 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     const [isFirefliesPickerOpen, setIsFirefliesPickerOpen] = useState(false);
     const [hasDriveConnector, setHasDriveConnector] = useState(false);
     const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
+    const [loadingDriveLinks, setLoadingDriveLinks] = useState<
+      { id: string; typeLabel: string }[]
+    >([]);
+    const attachedDriveFileIds = useRef<Set<string>>(new Set());
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
@@ -93,6 +116,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
 
     useImperativeHandle(ref, () => ({
       reset: (prompt) => reset({ prompt }),
+      dropFiles: (files: File[]) => handleFilesDrop(files),
     }));
 
     // File handling
@@ -112,28 +136,107 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       });
     };
 
+    const readFileAsDataURL = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            resolve(event.target.result as string);
+          } else {
+            reject(new Error('Failed to read file'));
+          }
+        };
+        reader.onerror = () =>
+          reject(new Error(`Failed to read file: ${file.name}`));
+        reader.readAsDataURL(file);
+      });
+    };
+
     const handleFilesDrop = useCallback(async (files: File[]) => {
       const validFiles: File[] = [];
 
       for (const file of files) {
-        const validation = validateTextFile(file);
-        if (validation.valid) {
-          validFiles.push(file);
+        if (isImageFile(file)) {
+          const validation = validateImageFile(file);
+          if (validation.valid) {
+            validFiles.push(file);
+          }
+        } else if (isXlsxFile(file)) {
+          if (isSupportedFile(file) && isValidFileSize(file, 5)) {
+            validFiles.push(file);
+          }
+        } else if (isBinaryDocFile(file)) {
+          if (isSupportedFile(file) && isValidFileSize(file, 10)) {
+            validFiles.push(file);
+          }
+        } else {
+          const validation = validateTextFile(file);
+          if (validation.valid) {
+            validFiles.push(file);
+          }
         }
       }
 
       const newDocuments: ThreadDocumentUI[] = [];
       for (const file of validFiles) {
         try {
-          const content = await readFileAsText(file);
-          newDocuments.push({
-            name: file.name,
-            content: content.trim(),
-            size: file.size,
-            type: file.type || 'text/plain',
-          });
+          if (isImageFile(file)) {
+            const imageData = await readFileAsDataURL(file);
+            newDocuments.push({
+              name: file.name,
+              content: '',
+              size: file.size,
+              type: file.type || 'image/png',
+              imageData,
+            });
+          } else if (file.name.toLowerCase().endsWith('.docx')) {
+            const buffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({
+              arrayBuffer: buffer,
+            });
+            newDocuments.push({
+              name: file.name,
+              content: result.value.trim(),
+              size: file.size,
+              type:
+                file.type ||
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            });
+          } else if (isBinaryDocFile(file)) {
+            const documentData = await readFileAsDataURL(file);
+            newDocuments.push({
+              name: file.name,
+              content: '',
+              size: file.size,
+              type: file.type || 'application/pdf',
+              documentData,
+            });
+          } else if (isXlsxFile(file)) {
+            const buffer = await file.arrayBuffer();
+            const workbook = XLSX.read(buffer, { type: 'array' });
+            const csvSheets = workbook.SheetNames.map((name) => {
+              const csv = XLSX.utils.sheet_to_csv(workbook.Sheets[name]!);
+              return `[Sheet: ${name}]\n${csv}`;
+            });
+            newDocuments.push({
+              name: file.name,
+              content: csvSheets.join('\n\n'),
+              size: file.size,
+              type:
+                file.type ||
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+          } else {
+            const content = await readFileAsText(file);
+            newDocuments.push({
+              name: file.name,
+              content: content.trim(),
+              size: file.size,
+              type: file.type || 'text/plain',
+            });
+          }
         } catch {
-          // TODO: Show error toast for file read error
+          // File read errors are non-critical — the file is simply skipped
         }
       }
 
@@ -141,7 +244,13 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     }, []);
 
     const handleThreadDocumentRemove = useCallback((index: number) => {
-      setThreadDocuments((prev) => prev.filter((_, i) => i !== index));
+      setThreadDocuments((prev) => {
+        const removed = prev[index];
+        if (removed?.driveFileId) {
+          attachedDriveFileIds.current.delete(removed.driveFileId);
+        }
+        return prev.filter((_, i) => i !== index);
+      });
     }, []);
 
     const handleExternalDocumentSelected = useCallback(
@@ -154,7 +263,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
     const handleKbFilesSelected = useCallback(
       (
         files: {
-          publicId: string;
+          id: string;
           name: string;
           size: number;
           type: string;
@@ -165,14 +274,89 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           content: '',
           size: f.size,
           type: f.type,
-          userFileId: f.publicId,
+          userFileId: f.id,
         }));
         setThreadDocuments((prev) => [...prev, ...newDocs]);
       },
       [],
     );
 
+    const handlePaste = useCallback(
+      (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+        if (!hasDriveConnector) {
+          return;
+        }
+
+        const pastedText = e.clipboardData.getData('text/plain');
+        const driveLinks = extractDriveLinksFromText(pastedText);
+
+        if (driveLinks.length === 0) {
+          return;
+        }
+
+        // Filter out already-attached files
+        const newLinks = driveLinks.filter(
+          (link) => !attachedDriveFileIds.current.has(link.fileId),
+        );
+
+        if (newLinks.length === 0) {
+          return;
+        }
+
+        // Prevent the paste from inserting the URL into the textarea
+        e.preventDefault();
+
+        // Add loading placeholders
+        const loadingItems = newLinks.map((link) => ({
+          id: link.fileId,
+          typeLabel: getDriveFileTypeFromUrl(link.url),
+        }));
+        setLoadingDriveLinks((prev) => [...prev, ...loadingItems]);
+
+        // Mark as in-flight to prevent duplicates
+        for (const link of newLinks) {
+          attachedDriveFileIds.current.add(link.fileId);
+        }
+
+        // Fetch content for each file
+        for (const link of newLinks) {
+          getDriveFileContent(link.fileId)
+            .then((result) => {
+              if (result.success && result.content) {
+                const doc: ThreadDocumentUI = {
+                  name: result.name || 'Google Drive Document',
+                  content: result.content,
+                  size: result.content.length,
+                  type: result.mime_type || 'text/plain',
+                  sourceUrl: link.url,
+                  driveFileId: link.fileId,
+                };
+                setThreadDocuments((prev) => [...prev, doc]);
+              } else {
+                attachedDriveFileIds.current.delete(link.fileId);
+                toast.error('Failed to fetch Google Drive file');
+              }
+            })
+            .catch(() => {
+              attachedDriveFileIds.current.delete(link.fileId);
+              toast.error('Failed to fetch Google Drive file');
+            })
+            .finally(() => {
+              setLoadingDriveLinks((prev) =>
+                prev.filter((item) => item.id !== link.fileId),
+              );
+            });
+        }
+      },
+      [hasDriveConnector],
+    );
+
+    const isLoadingDriveFiles = loadingDriveLinks.length > 0;
+
     const handleFormSubmit: SubmitHandler<CreateMessageDto> = async (data) => {
+      if (isLoadingDriveFiles) {
+        return;
+      }
       reset({ prompt: '' });
       onSubmit({
         ...data,
@@ -183,9 +367,13 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
           threadDocuments.length > 0 ? threadDocuments : undefined,
       });
       setThreadDocuments([]);
+      attachedDriveFileIds.current.clear();
     };
 
     const handleSend = () => {
+      if (isLoadingDriveFiles) {
+        return;
+      }
       handleSubmit(handleFormSubmit)();
     };
 
@@ -204,7 +392,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       .map((d) => d.userFileId!);
 
     return (
-      <div className="w-full px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
+      <div className="w-full px-4 pb-2 pt-2 bg-gradient-to-t from-background via-background to-transparent">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
           className="flex flex-col max-w-3xl mx-auto"
@@ -224,6 +412,8 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             onThreadDocumentRemove={
               isPublicAccess ? undefined : handleThreadDocumentRemove
             }
+            loadingDocuments={isPublicAccess ? undefined : loadingDriveLinks}
+            onPasteIntercept={isPublicAccess ? undefined : handlePaste}
             textareaClassName=""
             leftAddon={
               !isPublicAccess ? (
@@ -292,7 +482,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <input
           ref={fileInputRef}
           type="file"
-          accept=".md,.srt,.txt,.pdf,.epub"
+          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx"
           multiple
           className="hidden"
           onChange={handleFileInputChange}

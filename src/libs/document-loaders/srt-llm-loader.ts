@@ -2,6 +2,11 @@ import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import { parseSrtToSegmentsUsingLLM } from '@/app/api/threads/services/parseSrtWithLLM';
 import * as fs from 'node:fs';
 
+/** Minimum number of words per SRT segment */
+const SEGMENT_MIN_WORDS = 200;
+/** Maximum number of words per SRT segment */
+const SEGMENT_MAX_WORDS = 300;
+
 type SRTLLMDocumentLoaderProps = {
   filePath: string;
   fileName: string;
@@ -37,8 +42,8 @@ export class SRTLLMDocumentLoader {
       const segments = await parseSrtToSegmentsUsingLLM(
         this.organizationId,
         fileContent,
-        200,
-        300
+        SEGMENT_MIN_WORDS,
+        SEGMENT_MAX_WORDS,
       );
 
       return segments.map((segment, index) => ({

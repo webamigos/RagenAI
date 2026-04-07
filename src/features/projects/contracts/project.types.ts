@@ -2,7 +2,7 @@ import type { Project } from '@/generated/prisma/client';
 
 export type ProjectPublicFields = Pick<
   Project,
-  | 'publicId'
+  | 'id'
   | 'title'
   | 'createdAt'
   | 'updatedAt'
@@ -19,6 +19,6 @@ export type ProjectPublicFields = Pick<
 
 export type PublicProjectDto = {
   organizationId: string;
-  projectId: number;
+  projectId: string;
   title: string;
 };

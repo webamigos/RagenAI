@@ -8,12 +8,10 @@ export type VectorStoreDocumentMetadata = {
   file_name: string;
   page_number: number;
   created_at: string;
-  id: number;
+  id: string;
   organization_id: string;
   file_id: string;
-  file_public_id?: string;
-  project_id: number | null;
-  project_public_id: string | null;
+  project_id: string | null;
   source_type: string;
   chunk_size: number;
   chunk_overlap: number;
@@ -23,6 +21,7 @@ export type VectorStoreDocumentMetadata = {
   status: 'active' | 'archived';
   embedding_model: string;
   total_chunks: number;
+  accessible_by?: string[];
 };
 
 export type VectorStoreMetadataFilter = Partial<VectorStoreDocumentMetadata>;

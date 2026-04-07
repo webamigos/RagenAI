@@ -13,16 +13,15 @@ import {
 } from '@/features/messages/contracts/message.types';
 import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { deleteFromS3, deleteFromS3ByKey } from '../lib/services/aws';
-import { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
+import { getDocumentByIdQuery as getDocumentById } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
-import { getFileDetailsByPublicIdQuery as getFileDetailsByPublicId } from '@/features/documents/services/queries/get-file-details-query';
+import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileFromDbCommand as deleteFileFromDb } from '@/features/documents/services/commands/delete-file-from-db-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { deleteProjectFileFromDbCommand as deleteProjectFileFromService } from '@/features/documents/services/commands/delete-project-file-from-db-command';
-import { getDefaultProjectPublicIdQuery as fetchOrganizationDefaultProjectPublicId } from '@/features/projects/services/queries/get-default-project-query';
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
 import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
@@ -41,13 +40,15 @@ import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
+import { getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
-import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
+import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import type { Project, UserFile } from '@/generated/prisma/client';
 
 type ResponseMessage = {
@@ -89,10 +90,24 @@ export const getUserMessages = async (
 };
 
 //get user documents
-export const getUserFiles = async () => {
+export const getUserFiles = async (options?: {
+  folderId?: string | null;
+  viewMode?: 'all' | 'my-files' | 'shared-with-me';
+}) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    const files = await fetchFilesDetails(orgId);
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const [teamIds, member] = await Promise.all([
+      userId ? getUserTeamIds(orgId, userId) : [],
+      userId ? getActiveMember(orgId) : null,
+    ]);
+    const files = await fetchFilesDetails(orgId, teamIds, {
+      userId: userId ?? undefined,
+      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+      folderId: options?.folderId,
+      viewMode: options?.viewMode,
+    });
     return { files };
   } catch (error) {
     return {
@@ -106,7 +121,16 @@ export const getUserFiles = async () => {
 export const getAllOrgFiles = async () => {
   try {
     const orgId = await getOrgIdOrThrow();
-    const files = await fetchAllOrgFiles(orgId);
+    const user = await getCurrentUser();
+    const userId = user?.id;
+    const [teamIds, member] = await Promise.all([
+      userId ? getUserTeamIds(orgId, userId) : [],
+      userId ? getActiveMember(orgId) : null,
+    ]);
+    const files = await fetchAllOrgFiles(orgId, teamIds, {
+      userId: userId ?? undefined,
+      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    });
     return { files };
   } catch {
     return { files: [] };
@@ -114,9 +138,9 @@ export const getAllOrgFiles = async () => {
 };
 
 // Get project files
-export const getProjectFiles = async (projectPublicId: Project['publicId']) => {
+export const getProjectFiles = async (projectId: Project['id']) => {
   try {
-    const files = await fetchProjectFiles(projectPublicId);
+    const files = await fetchProjectFiles(projectId);
 
     return { files };
   } catch (error) {
@@ -128,12 +152,10 @@ export const getProjectFiles = async (projectPublicId: Project['publicId']) => {
 };
 
 // Get project storage info (usage + limits)
-export const getProjectStorageInfo = async (
-  projectPublicId: Project['publicId'],
-) => {
+export const getProjectStorageInfo = async (projectId: Project['id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    const project = await getProjectByPublicIdOrThrow(projectPublicId);
+    const project = await getProjectByIdOrThrow(projectId);
     const [usage, limits] = await Promise.all([
       getProjectStorageUsageQuery(orgId, project.id),
       getStorageLimits(orgId),
@@ -154,19 +176,16 @@ export const getProjectStorageInfo = async (
 
 // Import files from knowledge base to a project
 export const importFilesToProject = async (
-  filePublicIds: string[],
-  targetProjectPublicId: string,
+  fileIds: string[],
+  targetProjectId: string,
 ) => {
   const { importFileToProjectCommand } =
     await import('@/features/documents/services/commands/import-file-to-project-command');
 
   const results = [];
-  for (const fileId of filePublicIds) {
+  for (const fileId of fileIds) {
     try {
-      const result = await importFileToProjectCommand(
-        fileId,
-        targetProjectPublicId,
-      );
+      const result = await importFileToProjectCommand(fileId, targetProjectId);
       results.push({
         fileId,
         success: true,
@@ -182,7 +201,7 @@ export const importFilesToProject = async (
 // Get file details for download
 export const getFileDetailsForDownload = async (fileId: string) => {
   try {
-    const fileRecord = await getFileDetailsByPublicId(fileId);
+    const fileRecord = await getFileDetailsById(fileId);
     if (!fileRecord) {
       return {
         error: 'File not found',
@@ -204,11 +223,11 @@ export const getFileDetailsForDownload = async (fileId: string) => {
 
 // Delete project file
 export const deleteProjectFileAction = async (
-  filePublicId: UserFile['publicId'],
-  projectPublicId: Project['publicId'],
+  fileId: UserFile['id'],
+  projectId: Project['id'],
 ) => {
   try {
-    const fileRecord = await getFileDetailsByPublicId(filePublicId);
+    const fileRecord = await getFileDetailsById(fileId);
     if (!fileRecord) {
       return {
         error: 'File not found',
@@ -216,16 +235,11 @@ export const deleteProjectFileAction = async (
       };
     }
 
-    const fileId = fileRecord.id;
-
-    const result = await deleteProjectFileFromService(
-      filePublicId,
-      projectPublicId,
-    );
+    const result = await deleteProjectFileFromService(fileId, projectId);
 
     // If the file has a stored S3 object, delete it too
     if (fileRecord) {
-      const documentS3Path = `${fileRecord.publicId}.${getFileExtension(
+      const documentS3Path = `${fileRecord.id}.${getFileExtension(
         fileRecord.fileName,
       )}`;
 
@@ -239,14 +253,14 @@ export const deleteProjectFileAction = async (
       // Delete from UserDocument
       const documentId = fileRecord.documentId;
       if (documentId) {
-        const userDocument = await getDocumentByPublicId(documentId);
+        const userDocument = await getDocumentById(documentId);
         if (userDocument) {
           await deleteDocumentFromDb(userDocument.id);
         }
       }
 
       // Delete vectors
-      await deleteFileFromVectorStore(fileId);
+      await deleteFileFromVectorStore(fileRecord.id);
     }
 
     return {
@@ -262,16 +276,16 @@ export const deleteProjectFileAction = async (
 };
 
 //remove user file
-export const deleteFileAction = async (filePublicId: UserFile['publicId']) => {
+export const deleteFileAction = async (fileId: UserFile['id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
     //  Removal document from `UserFile`
     // TODO: UserFile should be in relation to UserDocument
-    const fileRecord = await getFileDetailsByPublicId(filePublicId);
-    const { count } = await deleteFileFromDb(filePublicId);
+    const fileRecord = await getFileDetailsById(fileId);
+    const { count } = await deleteFileFromDb(fileId);
 
     if (fileRecord) {
-      const documentS3Path = `${filePublicId}.${getFileExtension(
+      const documentS3Path = `${fileId}.${getFileExtension(
         fileRecord.fileName,
       )}`;
 
@@ -378,27 +392,16 @@ export const getDefaultProjectId = async () => {
   }
 };
 
+/** @deprecated Use getDefaultProjectId instead - publicId no longer exists */
 export const getDefaultProjectPublicId = async () => {
-  const orgId = await getOrgIdFromAuthOrThrow();
-
-  logger.info(
-    { orgId },
-    'Organization ID retrieved in getDefaultProjectPublicId',
-  );
-
-  try {
-    return await fetchOrganizationDefaultProjectPublicId(orgId);
-  } catch (error) {
-    logger.error({ err: error }, 'Error fetching default project ID');
-    throw error;
-  }
+  return getDefaultProjectId();
 };
 
 export const toggleThreadStarred = async (
-  threadPublicId: string,
+  threadId: string,
   isStarred: boolean,
 ) => {
-  return toggleThreadStarredCommand(threadPublicId, isStarred);
+  return toggleThreadStarredCommand(threadId, isStarred);
 };
 
 export const getSidebarThreads = async (
@@ -418,12 +421,12 @@ export const getAllThreads = async (
   return getAllThreadsQuery(visitorId, skip, take, query);
 };
 
-export const renameThread = async (threadPublicId: string, title: string) => {
-  return renameThreadCommand(threadPublicId, title);
+export const renameThread = async (threadId: string, title: string) => {
+  return renameThreadCommand(threadId, title);
 };
 
-export const deleteThread = async (threadPublicId: string) => {
-  return deleteThreadCommand(threadPublicId);
+export const deleteThread = async (threadId: string) => {
+  return deleteThreadCommand(threadId);
 };
 
 export const getUserOrganizationsAction = async () => {

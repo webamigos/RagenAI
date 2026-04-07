@@ -14,7 +14,12 @@ export const TEST_ORG_SLUG = 'e2e-test-org';
 export const TEST_MEMBER_ID = 'e2e-test-member-000-0000-0001';
 export const TEST_ACCOUNT_ID = 'e2e-test-account-00-0000-0001';
 export const TEST_PROJECT_TITLE = 'E2E Test Project';
-export const TEST_PROJECT_PUBLIC_ID = 'e2e00000-0000-0000-0000-00e2e0000001';
+export const TEST_PROJECT_ID = 'e2e00000-0000-0000-0000-00e2e0000001';
+
+export const TEST_THREAD_ID = 'e2e00000-0000-0000-0000-00e2e0000010';
+export const TEST_THREAD_TITLE = 'E2E Seeded Thread';
+export const TEST_MESSAGE_USER_ID = 'e2e00000-0000-0000-0000-00e2e0000011';
+export const TEST_MESSAGE_ASSISTANT_ID = 'e2e00000-0000-0000-0000-00e2e0000012';
 
 export const TEST_ORG2_ID = 'e2e-test-org-00000-0000-0002';
 export const TEST_ORG2_SLUG = 'e2e-test-org-2';

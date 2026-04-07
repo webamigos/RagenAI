@@ -1,20 +1,13 @@
 import type { ModerationInstance } from '@/app/lib/services/llm';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
+import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 
-const API_KEY_ENV_MAP: Record<string, string> = {
-  openrouter: 'OPENROUTER_API_KEY',
-  openai: 'OPENAI_API_KEY',
-  anthropic: 'ANTHROPIC_API_KEY',
-  google: 'GOOGLE_API_KEY',
-  fireworks: 'FIREWORKS_API_KEY',
-};
-
-export function resolveApiKey(provider: string): string | undefined {
-  const envVar = API_KEY_ENV_MAP[provider];
-  if (!envVar) {
-    return undefined;
-  }
-  return process.env[envVar];
+export function getLiteLLMCredentials(): LiteLLMCredentials {
+  return {
+    provider: 'litellm',
+    baseUrl: process.env.LITELLM_PROXY_URL || 'http://localhost:4000',
+    apiKey: process.env.LITELLM_MASTER_KEY,
+  };
 }
 
 /**

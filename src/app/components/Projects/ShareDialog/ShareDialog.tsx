@@ -30,7 +30,7 @@ import { ArrowPath } from '@ragenai/common-ui/icons';
 type ShareDialogProps = {
   open: boolean;
   onClose: () => void;
-  projectPublicId: string;
+  projectId: string;
   isPublicProject: boolean;
   linkToPublicProject: string;
   publishedAt: string;
@@ -43,7 +43,7 @@ function getOrigin() {
 export const ShareDialog = ({
   open,
   onClose,
-  projectPublicId,
+  projectId,
   isPublicProject,
   linkToPublicProject,
   publishedAt,
@@ -63,9 +63,9 @@ export const ShareDialog = ({
   const locale = useLocale();
   const getBaseUrl = () => `${getOrigin()}/${locale}/public/assistants`;
   const { generateKey, isGenerating: isGeneratingKey } =
-    useProjectKeyGenerator(projectPublicId);
+    useProjectKeyGenerator(projectId);
   const { disablePublicAccess, isDisabling } =
-    useDisablePublicAccess(projectPublicId);
+    useDisablePublicAccess(projectId);
   const { errorToast, successToast } = statusToast();
 
   const generateTokenAndSetUrl = async () => {
@@ -158,11 +158,12 @@ export const ShareDialog = ({
     }
   };
 
-  const displayLink = wasPublicLinkKeyGenerated.current
-    ? shareUrl
-    : currentLinkToPublicProject
-      ? `${getBaseUrl()}/${currentLinkToPublicProject}`
-      : '';
+  let displayLink = '';
+  if (wasPublicLinkKeyGenerated.current) {
+    displayLink = shareUrl;
+  } else if (currentLinkToPublicProject) {
+    displayLink = `${getBaseUrl()}/${currentLinkToPublicProject}`;
+  }
 
   const formattedDate = currentPublishedAt
     ? new Date(currentPublishedAt).toLocaleDateString(locale)
@@ -204,41 +205,55 @@ export const ShareDialog = ({
             {/* Content when shared */}
             {isSharedLinkPublicly && (
               <div className="space-y-3">
-                {isGeneratingKey ? (
-                  <p className="text-sm text-muted-foreground">
-                    {t('share-knowledge.generating-link')}
-                  </p>
-                ) : displayLink ? (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      {t('share-knowledge.link-to-knowledge')}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Input readOnly value={displayLink} className="text-sm" />
-                      <CopyButton
-                        textToCopy={displayLink}
-                        showToast
-                        aria-label={t('share-knowledge.copy-link-aria-label')}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setIsRefreshModalOpen(true)}
-                        className="shrink-0 p-2 rounded-md hover:bg-muted transition-colors"
-                        aria-label={t(
-                          'share-knowledge.refresh-link-aria-label',
-                        )}
-                      >
-                        <ArrowPath className="size-4" />
-                      </button>
-                    </div>
-                    {formattedDate && (
-                      <p className="text-xs text-muted-foreground">
-                        {t('share-knowledge.project-table.publishedAt')}:{' '}
-                        {formattedDate}
+                {(() => {
+                  if (isGeneratingKey) {
+                    return (
+                      <p className="text-sm text-muted-foreground">
+                        {t('share-knowledge.generating-link')}
                       </p>
-                    )}
-                  </>
-                ) : null}
+                    );
+                  }
+                  if (displayLink) {
+                    return (
+                      <>
+                        <p className="text-sm text-muted-foreground">
+                          {t('share-knowledge.link-to-knowledge')}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            readOnly
+                            value={displayLink}
+                            className="text-sm"
+                          />
+                          <CopyButton
+                            textToCopy={displayLink}
+                            showToast
+                            aria-label={t(
+                              'share-knowledge.copy-link-aria-label',
+                            )}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setIsRefreshModalOpen(true)}
+                            className="shrink-0 p-2 rounded-md hover:bg-muted transition-colors"
+                            aria-label={t(
+                              'share-knowledge.refresh-link-aria-label',
+                            )}
+                          >
+                            <ArrowPath className="size-4" />
+                          </button>
+                        </div>
+                        {formattedDate && (
+                          <p className="text-xs text-muted-foreground">
+                            {t('share-knowledge.project-table.publishedAt')}:{' '}
+                            {formattedDate}
+                          </p>
+                        )}
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             )}
           </div>

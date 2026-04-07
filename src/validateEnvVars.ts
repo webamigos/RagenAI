@@ -8,6 +8,10 @@ const envSchema = z
     DEFAULT_MODEL_PROVIDER: z.string(),
     DEFAULT_MODEL: z.string(),
 
+    // LiteLLM Proxy
+    LITELLM_PROXY_URL: z.string().url(),
+    LITELLM_MASTER_KEY: z.string().optional(),
+
     // Supabase for the App
     DATABASE_URL: z.string().url(),
 
@@ -30,9 +34,13 @@ const envSchema = z
     // TEMPORAL_CERT: z.string(),
     // TEMPORAL_KEY: z.string(),
 
-    // Meilisearch
-    MEILISEARCH_URL: z.string().url(),
-    // MEILISEARCH_MASTER_KEY: z.string(), // for staging and production
+    // Qdrant
+    QDRANT_URL: z.string().url(),
+    QDRANT_API_KEY: z.string().optional(),
+
+    // Meilisearch (optional — only needed when using Meilisearch as vector store)
+    MEILISEARCH_URL: z.string().url().optional(),
+    MEILISEARCH_MASTER_KEY: z.string().optional(),
 
     // Resend
     RESEND_API_KEY: z.string(),
@@ -48,6 +56,9 @@ const envSchema = z
     AWS_DEFAULT_REGION: z.string(),
     AWS_ACCESS_KEY_ID: z.string(),
     AWS_SECRET_ACCESS_KEY: z.string(),
+
+    // Thread message encryption (KMS envelope encryption)
+    AWS_KMS_KEY_ID: z.string().optional(),
 
     // Google
     GOOGLE_CLIENT_ID: z.string(),
@@ -102,6 +113,30 @@ const envSchema = z
           message:
             'WORKER_SECRET_KEY is required when Pusher is not configured (SSE mode)',
           path: ['WORKER_SECRET_KEY'],
+        });
+      }
+
+      if (
+        (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
+        !isSet(env.LITELLM_MASTER_KEY)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'LITELLM_MASTER_KEY is required when TARGET_ENV is "staging" or "production"',
+          path: ['LITELLM_MASTER_KEY'],
+        });
+      }
+
+      if (
+        (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
+        !isSet(env.AWS_KMS_KEY_ID)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'AWS_KMS_KEY_ID is required when TARGET_ENV is "staging" or "production" (thread message encryption)',
+          path: ['AWS_KMS_KEY_ID'],
         });
       }
     },

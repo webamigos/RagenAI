@@ -27,26 +27,14 @@ export async function searchAllQuery(
         organizationId: orgId,
         visitorId: visitorId,
         messages: { some: {} },
-        OR: [
-          { title: { contains: trimmed, mode: 'insensitive' } },
-          {
-            messages: {
-              some: { content: { contains: trimmed, mode: 'insensitive' } },
-            },
-          },
-        ],
+        title: { contains: trimmed, mode: 'insensitive' },
       },
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
-        publicId: true,
+        id: true,
         title: true,
         createdAt: true,
-        messages: {
-          select: { content: true },
-          take: 1,
-          orderBy: { createdAt: 'asc' as const },
-        },
       },
     }),
     db.project.findMany({
@@ -57,27 +45,25 @@ export async function searchAllQuery(
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: {
-        publicId: true,
+        id: true,
         title: true,
         createdAt: true,
       },
     }),
   ]);
 
-  const results: SearchResultItem[] = [
+  return [
     ...projects.map((p) => ({
-      id: p.publicId,
+      id: p.id,
       title: p.title,
       type: 'project' as const,
       createdAt: p.createdAt.toISOString(),
     })),
     ...threads.map((t) => ({
-      id: t.publicId,
-      title: t.title || t.messages[0]?.content.slice(0, 60) || 'Untitled',
+      id: t.id,
+      title: t.title || 'Untitled',
       type: 'thread' as const,
       createdAt: t.createdAt.toISOString(),
     })),
   ];
-
-  return results;
 }

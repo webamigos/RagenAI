@@ -1,4 +1,4 @@
-import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
+import { Role, Source } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
@@ -20,15 +20,20 @@ import { sendApiEvent } from '@/libs/sse/prepare-sse-message';
 import { initializePublicRagChain } from '../../guest-threads/[...guestDetails]/services/initializePublicBasicRag';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
+import { getTemplateInstructionForProject } from '@/features/assistant-templates/services/queries/get-template-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
-import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
+import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
+import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
+import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
+import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
 
 /**
  * Load thread documents from database for a specific thread
@@ -42,7 +47,7 @@ async function loadThreadDocuments(
       include: {
         userFile: {
           select: {
-            publicId: true,
+            id: true,
             fileName: true,
             fileSize: true,
             fileMimeType: true,
@@ -60,7 +65,7 @@ async function loadThreadDocuments(
       {
         threadId,
         threadDocumentsFound: threadDocuments.length,
-        userFileIds: threadDocuments.map((td) => td.userFile.publicId),
+        userFileIds: threadDocuments.map((td) => td.userFile.id),
         fileNames: threadDocuments.map((td) => td.userFile.fileName),
       },
       'loadThreadDocuments: Retrieved thread documents from database',
@@ -71,7 +76,7 @@ async function loadThreadDocuments(
       content: td.userFile.document?.content || '',
       size: td.userFile.fileSize,
       type: td.userFile.fileMimeType || 'application/octet-stream',
-      userFileId: td.userFile.publicId,
+      userFileId: td.userFile.id,
     }));
 
     return threadDocumentsUI;
@@ -142,7 +147,7 @@ type Config = {
   mode: AssistantMode;
   filteredMode?: ChatType;
   visitorId?: string;
-  projectId?: number;
+  projectId?: string;
 };
 
 type ThreadRecord = Awaited<ReturnType<typeof getThreadDetails>>;
@@ -152,9 +157,9 @@ async function resolveProjectInstruction(
   orgId: string,
   rawSettings: { model: string },
   effectiveSettings: { prompt: string; model: string },
-): Promise<{ instruction: string | null; projectPublicId: string | null }> {
+): Promise<{ instruction: string | null; projectId: string | null }> {
   let projectInstruction: string | null = null;
-  let effectiveProjectPublicId: string | null = null;
+  let effectiveProjectId: string | null = null;
 
   try {
     // 1. HIGHEST PRIORITY: Mentioned project (via @ mention)
@@ -164,20 +169,17 @@ async function resolveProjectInstruction(
           id: threadRecord.mentionedProjectId,
           organizationId: orgId,
         },
-        select: { id: true, publicId: true, title: true },
+        select: { id: true, title: true },
       });
 
       if (mentionedProject) {
         try {
-          projectInstruction = await getProjectInstruction(
-            mentionedProject.publicId,
-          );
-          effectiveProjectPublicId = mentionedProject.publicId;
+          projectInstruction = await getProjectInstruction(mentionedProject.id);
+          effectiveProjectId = mentionedProject.id;
 
           logger.info(
             {
               mentionedProjectId: threadRecord.mentionedProjectId,
-              mentionedProjectPublicId: mentionedProject.publicId,
               hasInstruction: Boolean(projectInstruction),
             },
             'Using instructions from mentioned project (highest priority)',
@@ -187,7 +189,6 @@ async function resolveProjectInstruction(
             {
               err: error,
               mentionedProjectId: threadRecord.mentionedProjectId,
-              mentionedProjectPublicId: mentionedProject.publicId,
             },
             'Error getting instructions from mentioned project, falling back to thread project',
           );
@@ -204,18 +205,31 @@ async function resolveProjectInstruction(
     if (
       !projectInstruction &&
       threadRecord.projectId &&
-      threadRecord.project?.publicId
+      threadRecord.project?.id
     ) {
       try {
         projectInstruction = await getProjectInstruction(
-          threadRecord.project.publicId,
+          threadRecord.project.id,
         );
-        effectiveProjectPublicId = threadRecord.project.publicId;
+        effectiveProjectId = threadRecord.project.id;
+
+        // Fallback: check linked assistant template instructions
+        if (!projectInstruction && threadRecord.projectId) {
+          const templateInstruction = await getTemplateInstructionForProject(
+            threadRecord.projectId,
+          );
+          if (templateInstruction) {
+            projectInstruction = templateInstruction;
+            logger.info(
+              { projectId: threadRecord.projectId },
+              'Using instructions from linked assistant template',
+            );
+          }
+        }
 
         logger.info(
           {
-            internalProjectId: threadRecord.projectId,
-            publicProjectId: threadRecord.project.publicId,
+            projectId: threadRecord.projectId,
             hasInstruction: Boolean(projectInstruction),
           },
           'Using instructions from thread project (medium priority)',
@@ -225,16 +239,10 @@ async function resolveProjectInstruction(
           {
             err: error,
             projectId: threadRecord.projectId,
-            publicProjectId: threadRecord.project?.publicId,
           },
           'Error getting instructions from thread project, will use organization instructions',
         );
       }
-    } else if (!projectInstruction && threadRecord.projectId) {
-      logger.warn(
-        { projectId: threadRecord.projectId },
-        'Project associated with thread, but missing publicId',
-      );
     }
 
     // 3. LOWEST PRIORITY: Organization instructions (handled by chain initialization)
@@ -259,7 +267,7 @@ async function resolveProjectInstruction(
 
   return {
     instruction: projectInstruction,
-    projectPublicId: effectiveProjectPublicId,
+    projectId: effectiveProjectId,
   };
 }
 
@@ -285,11 +293,12 @@ export async function streamEvents({
           // Phase 1: Fetch settings and thread details (with messages) in parallel
           sendApiEvent(controller, 'find_thread');
 
-          const [rawSettings, threadRecord] = await Promise.all([
+          const [rawSettings, threadRecord, litellmApiKey] = await Promise.all([
             getAllSettings(orgId),
             getThreadDetails(publicThreadId, orgId, {
               includeMessages: true,
             }),
+            getLiteLLMOrgApiKey(orgId),
           ]);
 
           if (!rawSettings.apiKey) {
@@ -297,7 +306,7 @@ export async function streamEvents({
           }
 
           sendApiEvent(controller, 'thread_found', {
-            id: threadRecord.publicId,
+            id: threadRecord.id,
           });
 
           const effectiveSettings = {
@@ -307,6 +316,7 @@ export async function streamEvents({
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
             voiceId: rawSettings.voiceId,
+            litellmApiKey: litellmApiKey ?? undefined,
           };
 
           // Build conversation history from thread record (no separate DB query needed)
@@ -325,7 +335,7 @@ export async function streamEvents({
             Promise<Awaited<ReturnType<typeof createAndStoreMessage>>>,
             Promise<{
               instruction: string | null;
-              projectPublicId: string | null;
+              projectId: string | null;
             }>,
             Promise<ThreadDocumentUI[]>,
           ] = [
@@ -340,6 +350,7 @@ export async function streamEvents({
                 size: doc.size,
                 type: doc.type,
                 sourceUrl: doc.sourceUrl,
+                imageData: doc.imageData,
               })),
             }),
             resolveProjectInstruction(
@@ -402,38 +413,51 @@ export async function streamEvents({
             }
           }
 
+          // Load built-in tools for authenticated internal users
+          // Gated behind FEATURE_FLAG_BUILT_IN_TOOLS (disabled by default — document generation tool needs more work)
+          if (
+            process.env.FEATURE_FLAG_BUILT_IN_TOOLS === '1' &&
+            userId &&
+            mode === AssistantMode.INTERNAL
+          ) {
+            try {
+              const session = await getSession();
+              const userEmail = session?.user?.email || '';
+              const builtInTools = createBuiltInTools({
+                orgId,
+                userId,
+                userEmail,
+              });
+              mcpTools = { ...mcpTools, ...builtInTools };
+
+              const builtInContext = getBuiltInToolsContext();
+              mcpContext = mcpContext
+                ? `${mcpContext}\n\n${builtInContext}`
+                : builtInContext;
+            } catch (error) {
+              logger.error(
+                { err: error },
+                'Failed to load built-in tools, continuing without them',
+              );
+            }
+          }
+
           sendApiEvent(controller, 'user_message_saved', {
-            id: threadMessage.publicId,
+            id: threadMessage.id,
           });
 
           sendApiEvent(controller, 'user_message_created', {
-            id: threadMessage.publicId,
+            id: threadMessage.id,
           });
 
           const {
             instruction: projectInstruction,
-            projectPublicId: effectiveProjectPublicId,
+            projectId: effectiveProjectId,
           } = projectResult;
 
-          // Phase 3: Check usage limits before proceeding
-          const { checkUsageLimitsQuery } =
-            await import('@/features/ai-usage/services/queries/check-usage-limits-query');
-          const usageLimitStatus = await checkUsageLimitsQuery(orgId);
-          if (usageLimitStatus.isAnyLimitExceeded) {
-            const reasons: string[] = [];
-            if (usageLimitStatus.exceeded.tokens) {
-              reasons.push('token limit');
-            }
-            if (usageLimitStatus.exceeded.cost) {
-              reasons.push('cost limit');
-            }
-            if (usageLimitStatus.exceeded.messages) {
-              reasons.push('message limit');
-            }
-            throw new Error(
-              `Monthly usage limit exceeded: ${reasons.join(', ')}. Please contact your organization administrator.`,
-            );
-          }
+          // Phase 3: Usage limits are now enforced by LiteLLM budget on the team's virtual key.
+          // LiteLLM returns a 400 error when budget is exceeded, which is caught in the
+          // error handler below and translated to a user-friendly message.
 
           // Phase 4: Initialize the appropriate chain
           let chainOutput: BaseChatChainOutput | undefined = undefined;
@@ -446,11 +470,20 @@ export async function streamEvents({
             `provider:${trackedProvider}`,
             `model:${trackedModelId}`,
           ];
+          const skipLangfuseContent = isEncryptionEnabled();
           updateActiveTrace({
-            name: `chat-${mode === AssistantMode.PUBLIC ? 'public' : filteredMode === ChatType.CONVERSATION ? 'conversation' : 'rag'}`,
-            input: userMessage.prompt,
+            name: `chat-${(() => {
+              if (mode === AssistantMode.PUBLIC) {
+                return 'public';
+              }
+              if (filteredMode === ChatType.CONVERSATION) {
+                return 'conversation';
+              }
+              return 'rag';
+            })()}`,
+            ...(skipLangfuseContent ? {} : { input: userMessage.prompt }),
             userId: userId ?? undefined,
-            sessionId: `${orgId}:${threadRecord.publicId}`,
+            sessionId: `${orgId}:${threadRecord.id}`,
             tags: traceTags,
           });
 
@@ -480,14 +513,24 @@ export async function streamEvents({
             } else {
               const projectIdToUse =
                 threadRecord.mentionedProjectId || threadRecord.projectId;
-              const projectPublicIdToUse =
-                effectiveProjectPublicId || threadRecord.project?.publicId;
 
               const inlineThreadDocuments = userMessage.threadDocuments || [];
               const threadDocuments = mergeThreadDocuments(
                 dbThreadDocuments,
                 inlineThreadDocuments,
               );
+
+              // Resolve user access context for RAG filtering
+              let userTeamIds: string[] = [];
+              let userIsOrgAdmin = false;
+              if (userId) {
+                const [teamIds, member] = await Promise.all([
+                  getUserTeamIds(orgId, userId),
+                  getActiveMember(orgId).catch(() => null),
+                ]);
+                userTeamIds = teamIds;
+                userIsOrgAdmin = member ? checkOrgAdmin(member.role) : false;
+              }
 
               chainOutput = await initializeRagChain({
                 settings: {
@@ -496,17 +539,18 @@ export async function streamEvents({
                 },
                 orgId,
                 userId,
+                userTeamIds,
+                isOrgAdmin: userIsOrgAdmin,
                 projectInstruction,
                 projectId: projectIdToUse ?? null,
-                projectPublicId: projectPublicIdToUse ?? null,
                 threadDocuments,
                 mcpTools,
                 mcpContext,
               });
             }
           } else if (mode === AssistantMode.PUBLIC) {
-            const projectPublicIdToUse =
-              effectiveProjectPublicId || threadRecord.project?.publicId;
+            const projectIdToUsePublic =
+              effectiveProjectId || threadRecord.project?.id;
             chainOutput = await initializePublicRagChain({
               settings: {
                 ...effectiveSettings,
@@ -514,7 +558,7 @@ export async function streamEvents({
               },
               organizationId: orgId,
               projectInstruction,
-              projectPublicId: projectPublicIdToUse,
+              projectId: projectIdToUsePublic,
             });
           }
 
@@ -533,7 +577,7 @@ export async function streamEvents({
           sendApiEvent(controller, 'start_lmm');
 
           const streamResult = await chainOutput.stream({
-            question: threadMessage.content,
+            question: userMessage.prompt,
             chat_history: conv_history,
           });
 
@@ -610,7 +654,7 @@ export async function streamEvents({
             }
           }
           updateActiveTrace({
-            output: fullMessage,
+            ...(skipLangfuseContent ? {} : { output: fullMessage }),
             tags: traceTags,
           });
 
@@ -623,28 +667,7 @@ export async function streamEvents({
 
           sendApiEvent(controller, 'llm_completed');
 
-          // Track AI usage (fire-and-forget)
-          try {
-            const usage = await streamResult.usage;
-            const modelId = effectiveSettings.model || '';
-            const provider =
-              getModelProvider(normalizeModelId(modelId)) || 'openrouter';
-
-            trackAiUsage({
-              organizationId: orgId,
-              projectId: threadRecord.projectId ?? null,
-              threadId: threadRecord.publicId,
-              userId,
-              step: AiUsageStep.CHAT_COMPLETION,
-              provider,
-              model: modelId,
-              inputTokens: usage.inputTokens ?? 0,
-              outputTokens: usage.outputTokens ?? 0,
-              totalTokens: usage.totalTokens ?? 0,
-            });
-          } catch (usageError) {
-            logger.error({ err: usageError }, 'Failed to track AI usage');
-          }
+          // AI usage is now tracked automatically by LiteLLM via the org's virtual key
 
           sendApiEvent(controller, 'save_assistant_response');
 
@@ -652,7 +675,6 @@ export async function streamEvents({
             const dbMessage = await createMessageInDB({
               threadId: threadRecord.id,
               message: {
-                id: threadMessage.publicId,
                 content: fullMessage,
                 source: Source.UI,
               },
@@ -666,7 +688,7 @@ export async function streamEvents({
             try {
               // We create an object without the full content because it has already been sent in the delta events
               const messageToSend: ApiSseMessageEvent = {
-                id: dbMessage.publicId,
+                id: dbMessage.id,
                 role: dbMessage.role,
                 createdAt: dbMessage.createdAt.toISOString(),
                 content: '', // We clear the content - the client already has the full message from the delta events
@@ -702,10 +724,27 @@ export async function streamEvents({
             );
           }
         } catch (error) {
-          const exceptionFilter = new SseExceptionFilter();
-          logger.error({ err: error }, 'Error processing SSE');
-          // this also sends error event which can be handled in UI
-          exceptionFilter.handleError(error, controller);
+          // Translate LiteLLM budget exceeded errors to user-friendly message
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          if (
+            errorMessage.includes('Budget has been exceeded') ||
+            errorMessage.includes('ExceededBudget')
+          ) {
+            logger.warn(
+              { err: error, orgId },
+              'LiteLLM budget exceeded for organization',
+            );
+            const budgetError = new Error(
+              'Monthly usage limit exceeded. Please contact your organization administrator.',
+            );
+            const exceptionFilter = new SseExceptionFilter();
+            exceptionFilter.handleError(budgetError, controller);
+          } else {
+            const exceptionFilter = new SseExceptionFilter();
+            logger.error({ err: error }, 'Error processing SSE');
+            exceptionFilter.handleError(error, controller);
+          }
 
           // Ensure MCP clients are closed on error
           if (closeMcpClients) {

@@ -5,33 +5,72 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-docker compose up        # Start local Postgres, Redis, Meilisearch, Temporal
+docker compose up        # Start local Postgres, Redis, Qdrant, Temporal, LiteLLM
 npm run dev              # Start Next.js dev server
 npm run build            # Production build (runs prisma generate first)
 npm run lint             # ESLint
 npm run test             # Vitest (unit tests, watch mode)
 npx vitest run           # Vitest (single run, no watch)
 npx vitest run path/to/file  # Run a single test file
-npm run test:e2e         # Playwright E2E tests
+npm run test:e2e         # Playwright E2E tests (requires separate DB, see below)
 npm run test:e2e:ui      # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types (run after schema changes)
 npm run db:seed          # Seed database (uses .env.local)
 ```
 
+### Running E2E Tests Locally
+
+E2E tests use a **separate database** to avoid corrupting your dev data.
+
+**One-time setup:**
+
+```bash
+# 1. Create the e2e database
+createdb ragen_e2e
+
+# 2. Run migrations on it
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e" npx prisma migrate deploy
+
+# 3. Create .env.e2e.local (overrides only what you need, .env.local provides the rest)
+cat > .env.e2e.local << 'EOF'
+DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e"
+DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e"
+EOF
+```
+
+**Running tests:**
+
+```bash
+# Build the app first (required — e2e runs against the production build)
+npm run build
+
+# Run e2e tests (picks up .env.e2e.local automatically via playwright.config.ts)
+npm run test:e2e
+```
+
+After schema changes, re-run step 2 to apply new migrations to the e2e database. The `.env.e2e.local` file is gitignored.
+
+**Mock LLM server:** If LiteLLM is not running on port 4000, the e2e global setup automatically starts a mock LLM server (`e2e/mock-llm-server.ts`) that returns canned responses. This allows chat thread tests to work without a real LLM. If you have LiteLLM running via `docker compose up`, the mock is skipped.
+
 ## Local Development
 
-Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Meilisearch on 7700, Temporal on 7233, Temporal UI on 8080, optional Redis on 6379). Set `.env.local` with at minimum:
+Requires Node.js 22.x. Start services with `docker compose up` (Postgres on 5432, Qdrant on 6333, Temporal on 7233, Temporal UI on 8080, LiteLLM on 4000, optional Redis on 6379, optional Meilisearch via `docker compose --profile meilisearch up`). Set `.env.local` with at minimum:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+QDRANT_URL=http://localhost:6333
+LITELLM_PROXY_URL=http://localhost:4000
+LITELLM_MASTER_KEY=sk-litellm-dev-key
+DEFAULT_MODEL_PROVIDER=litellm
+DEFAULT_MODEL=gpt-4o
 ```
 
 ## Architecture
 
-**Stack**: Next.js 15 (App Router) + React 18 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Meilisearch (vector/hybrid search) + Temporal.io (async workflow orchestration)
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Qdrant (vector search, default) + Temporal.io (async workflow orchestration) + LiteLLM (unified LLM proxy) + Cohere Rerank via Bedrock (post-retrieval reranking)
 
-**What it does**: RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
+**What it does**: RAG (Retrieval Augmented Generation) AI chat application with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
 ### Routing & Layouts
 
@@ -118,10 +157,12 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 
 ### Libraries (`src/libs/`)
 
-- `llm/` — Chat completion & embeddings factories supporting OpenAI, Anthropic, Google, Bedrock, Ollama, OpenRouter, Fireworks, Azure
+- `llm/` — Chat completion & embeddings factories, all routed through LiteLLM proxy via `@ai-sdk/openai` with `.chat()` (OpenAI-compatible `/chat/completions` endpoint)
+- `litellm/` — LiteLLM proxy client: dynamic model fetching from `/v1/models`, health checks, caching
 - `chains/` — RAG chains
-- `vector-store/` — Vector store clients (Meilisearch, Supabase) implementing `VectorStoreClient` interface
-- `document-loaders/` — PDF, EPUB, Markdown, SRT, URL parsing
+- `vector-store/` — Vector store clients (Qdrant, Meilisearch, Supabase) implementing `VectorStoreClient` interface
+- `reranker/` — Cohere Rerank v3.5 via AWS Bedrock for post-retrieval document reranking
+- `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 - `db/` — Prisma client singleton (aliased as `@ragenai/prisma-client`)
 - `temporal/` — Temporal.io client for async document processing workflows
 - `payments/` — Stripe integration
@@ -131,20 +172,127 @@ Import `PrismaClient` from `@/generated/prisma/client`. Enums and types also com
 - `tui/` — Tailwind UI component library (aliased as `@ragenai/tui`)
 - `common-ui/` — Shared UI utilities (aliased as `@ragenai/common-ui`)
 
+### Knowledge Base (Folders, Sharing & Access Control)
+
+The Knowledge Base supports **nested folders**, **per-user file ownership**, and **sharing with users/teams**.
+
+**Data model:**
+- `DocumentFolder`: `Int` autoincrement `id` + `publicId` UUID (like Project/ApiKey pattern). Self-referential tree via `parentId` + materialized `path` column (e.g., `/1/5/12/`). Optional `teamId` and `ownerId`.
+- `UserFile`: Has `ownerId` (nullable for legacy org-wide files) and `folderId` (Int FK to DocumentFolder).
+- `DocumentPermission`: Grants access to files or folders for specific users or teams. Uses optional FK columns (`filePublicId` → UserFile, `folderId` → DocumentFolder) instead of polymorphic resourceId. Permission levels: `'view'` or `'full'`.
+
+**Access model:**
+| Scenario | Visible to |
+|----------|-----------|
+| File with `ownerId = null` | All org members (legacy/org-wide) |
+| File with `ownerId = userA` | Owner + org admins + explicit shares |
+| File in folder with `teamId` | Team members + org admins |
+| `DocumentPermission` for user/team | That user/team members |
+| Folder permission | Cascades to children via `path LIKE` |
+
+**UI views:**
+- "All Files" — org-wide + owned + team-accessible files, with folder tree navigation
+- "My Files" — files/folders owned by current user
+- "Shared with me" — only files with explicit `DocumentPermission` for user/teams
+
+**Vector store access filtering:**
+- Each document chunk has `metadata.accessible_by: string[]` with principals like `"org:<orgId>"`, `"user:<userId>"`, `"team:<teamId>"`
+- RAG queries add `metadata.accessible_by` filter for non-admin users
+- Org admins bypass access filtering (see all org documents)
+- Filter built in `src/app/api/threads/services/initializeBasicRag.ts`
+
+**Key files:**
+- Schema: `prisma/schema.prisma` (DocumentFolder, DocumentPermission, UserFile.ownerId)
+- Types: `src/features/documents/contracts/document.types.ts`, `permission.types.ts`
+- Folder commands: `src/features/documents/services/commands/` (create/delete/update/move-folder, move-file-to-folder)
+- Permission commands: `share-resource-command.ts`, `revoke-share-command.ts`
+- Access queries: `get-user-files-query.ts` (supports viewMode: all/my-files/shared-with-me), `get-all-org-files-query.ts`
+- Folder tree: `src/features/documents/utils/folder-tree.ts` (`buildFolderTree()` utility)
+- Server actions: `src/app/actions/folders.ts`, `src/app/actions/permissions.ts`
+- Vector permissions: `src/features/documents/services/commands/sync-vector-permissions-command.ts`
+- Backfill script: `src/scripts/backfill-accessible-by.ts`
+- UI: `src/app/components/ManageKnowledge/Folders/FoldersList.tsx`, `Breadcrumbs.tsx`, `MoveDialog.tsx`, `ShareDialog.tsx`
+- Page: `src/app/[locale]/(panel)/knowledge/documents-list/DocumentsListContent.tsx`
+
+**Upload with folder context:** The `/api/upload` route accepts an optional `folderId` in FormData. Files are created with `folderId` and `ownerId` set. The documents-list page has inline upload (button + drag & drop) that passes the current folder context.
+
 ### Document Processing Pipeline
 
-Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Meilisearch. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
+Upload → S3 → Temporal worker (separate `ragen-worker` repo) → Parse → Generate embeddings → Store in Qdrant. Status tracked via `ParsingStatus`/`EmbeddingStatus` enums in Prisma.
 
-### Vector Store (Meilisearch)
+**Supported file types** (`FileType` enum): `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`
 
-Meilisearch provides hybrid search (keyword + vector) for RAG document retrieval. Key files:
-- Client: `src/libs/vector-store/meilisearch-client.ts` — implements `VectorStoreClient` interface
-- Interface: `src/libs/vector-store/types.ts` — `similaritySearch()`, `addDocuments()`
-- Organization index: each org gets its own Meilisearch index (named by org ID)
-- Embeddings: `userProvided` embedder with Cohere `cohere.embed-multilingual-v3` via AWS Bedrock (1024 dimensions)
-- Filtering: Qdrant-style filter objects are converted to Meilisearch filter strings internally
-- Meilisearch requires the `vectorStore` experimental feature enabled via API (`PATCH /experimental-features`)
-- Env vars: `MEILISEARCH_URL` (default `http://localhost:7700`), `MEILISEARCH_MASTER_KEY`
+**File type handling:**
+- **PDF**: Worker processes via Claude native PDF (sends entire PDF as base64 to Claude in single API call). Configurable via `PDF_PROCESSOR` env var (`claude` default, `vision` for legacy PDFium + page-by-page vision pipeline). `PDF_MODEL` defaults to `claude-haiku-4-5`. In chat, attached as binary data URL.
+- **EPUB**: Binary file, uploaded to KB for worker text extraction. In chat, attached as binary data URL.
+- **DOCX**: Text extracted via `mammoth` package. In chat, extracted client-side; in KB, extracted by worker. 
+- **Image** (jpg, png, webp, gif): In chat, attached as base64 data URLs and sent as multimodal content to vision LLMs with thumbnail preview + lightbox. In KB, described via vision LLM and embedded for RAG retrieval.
+- **CSV**: Read as plain text for both chat attachment and KB embedding. 5MB limit in chat.
+- **XLSX/XLS**: Converted to CSV via SheetJS (`xlsx` package) client-side for chat; worker uses SheetJS for KB processing.
+- **SRT**: Subtitle files read as text. Worker uses LLM to process into meaningful segments for embedding.
+- **Markdown/TXT**: Read as plain text directly.
+
+### Thread Message Encryption
+
+Message content (`Message.content`) is encrypted at rest using **AWS KMS envelope encryption** (AES-256-GCM). Thread titles remain unencrypted to preserve search functionality.
+
+**How it works:**
+- Each thread gets a unique Data Encryption Key (DEK) generated via KMS `GenerateDataKey`
+- DEK is encrypted by KMS (Key Encryption Key) and stored as `Thread.encryptedDek` (base64)
+- `Message.content` is encrypted with the plaintext DEK before DB insert
+- On read, encrypted DEK is decrypted via KMS, then messages are decrypted locally
+- DEK cache (per-request) minimizes KMS calls when reading multiple messages from one thread
+
+**Environment gating:**
+- No `AWS_KMS_KEY_ID` env var → encryption disabled (local development stays plaintext)
+- Staging/production: set `AWS_KMS_KEY_ID=arn:aws:kms:region:account:key/key-id`
+- Uses same AWS credentials as S3 (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`)
+
+**Key files:**
+- `src/libs/crypto/thread-encryption.ts` — Core encrypt/decrypt functions, KMS key generation
+- `src/libs/crypto/decrypt-messages.ts` — Generic helper to decrypt message arrays
+- `src/features/messages/services/commands/create-message-command.ts` — Encrypts on write (race-safe via conditional update)
+- `src/features/threads/services/commands/encrypt-threads-command.ts` — Batch migration for existing threads
+- `src/app/actions/encrypt-threads.ts` — Admin server actions for migration
+
+**Langfuse:** When encryption is enabled, `input` and `output` are omitted from Langfuse traces (only tags, sessionId, model are sent).
+
+**Search trade-off:** Thread title search works normally. Message content search (`searchAllQuery`) skips content matching for encrypted threads — only title matches are returned.
+
+**Admin migration:** `encryptAllThreadsAction()` (app admin only) batch-encrypts all unencrypted threads across all organizations. Idempotent and resumable.
+
+### Vector Store (Qdrant)
+
+Qdrant is the default vector database for RAG document retrieval. Meilisearch and Supabase are supported as legacy backends via the `Organization.vectorStore` column.
+
+**Key files:**
+- Interface: `src/libs/vector-store/types.ts` — `VectorStoreClient` with `similaritySearch()`, `addDocuments()`, optional `deleteDocuments()`
+- Qdrant client: `src/libs/vector-store/qdrant-client.ts` — default implementation, auto-creates collections with payload indexes
+- Meilisearch client: `src/libs/vector-store/meilisearch-client.ts` — legacy, converts intermediate filter format to Meilisearch strings
+- Supabase client: `src/libs/vector-store/supabase-client.ts` — legacy pgvector backend
+
+**Configuration:**
+- Organization collection: each org gets its own Qdrant collection (named by org ID)
+- Embeddings: Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions, Cosine distance)
+- Payload indexes: `metadata.project_id`, `metadata.project_public_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by`
+- Access control: `metadata.accessible_by` array contains principals (`org:<id>`, `user:<id>`, `team:<id>`) — filtered at query time for non-admin users
+- Filter format: intermediate format (`{ must: [...], should: [...] }`) used across the codebase — each client converts internally
+- Env vars: `QDRANT_URL` (default `http://localhost:6333`), `QDRANT_API_KEY` (optional for local dev)
+
+**Multi-backend selection** (`Organization.vectorStore` column):
+- `null` or `'qdrant'` → Qdrant (default for new orgs)
+- `'meilisearch'` → Meilisearch (legacy)
+- `'supabase'` → Supabase pgvector (legacy)
+
+### Post-Retrieval Reranking
+
+Cohere Rerank v3.5 via AWS Bedrock improves retrieval quality as a post-retrieval step:
+- Over-retrieves 3x candidates from vector store, then reranks to top-k using Cohere cross-encoder
+- Particularly effective for Polish and multilingual content
+- Gracefully disabled when AWS credentials are not set (local dev without Bedrock)
+- Falls back to original vector search results on Bedrock errors
+- Key files: `src/libs/reranker/bedrock-cohere-reranker.ts`, integrated in `src/libs/chains/basic-rag/operations.ts`
+- Env vars: `RERANK_MODEL` (default `cohere.rerank-v3-5:0`), uses existing `AWS_*` credentials
 
 ### MCP Integrations (External Tools)
 
@@ -253,7 +401,7 @@ App admins can access all pages regardless of permission level.
 - **ESM**: `"type": "module"` in package.json — all `.js` files are ESM. CommonJS scripts use `.cjs` extension. `moduleResolution: "bundler"` — no deep internal imports (e.g., `langchain/dist/...`)
 - Server components by default; client components marked with `'use client'`
 - All API routes use `export const dynamic = 'force-dynamic'`
-- Prisma schema uses `uuid` for IDs, `cuid` for `public_id` fields
+- Prisma schema uses `Int` autoincrement for most model IDs + `publicId` (UUID) for external/URL exposure. Better Auth tables (User, Organization, Member, etc.) keep String IDs. Pattern: `id` (Int, internal) + `publicId` (UUID, external/URLs).
 - Database timestamps use `Timestamptz` (timezone-aware), default timezone is Europe/Warsaw
 - i18n: English (`en`) and Polish (`pl`) via `next-intl`. Use `Link`, `redirect`, `usePathname`, `useRouter` from `@/i18n/routing` (not from `next/link` or `next/navigation`)
 - Styling: Tailwind CSS v4 with custom theme in `src/app/[locale]/global.css` using `@theme` directive; custom colors (Ragen red `#cb1d3d`, Ragen blue `#252d53`)
@@ -261,27 +409,49 @@ App admins can access all pages regardless of permission level.
 - Custom error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`
 - Temporal workflows: use string names, not function imports (workflow definition limitation)
 - Logging: Pino (server & client) with OpenTelemetry integration; webpack replaces server logger with client logger on client builds
-- Observability: OpenTelemetry for traces, metrics, and logs — server (`ragen-app`) and client (`ragen-app-client`). Configured in `src/instrumentation.ts` and `src/instrumentation-client.ts`
+- Observability: OpenTelemetry for traces, metrics, and logs — server (`ragen-app`) and client (`ragen-app-client`). Configured in `src/instrumentation.ts` and `src/instrumentation-client.ts`. LLM call tracing handled by LiteLLM → Langfuse (not by ragen-app OTel pipeline). App-level Langfuse tracing (`@langfuse/tracing`) remains in `assistant-stream.ts` for thread context.
 - Pre-commit hooks: lint-staged runs `eslint --fix` + `prettier --write` on staged files
 - Commit messages follow conventional commits (commitlint enforced via Husky)
 
+## LiteLLM Proxy (Unified LLM Gateway)
+
+All LLM calls (chat completions and embeddings) are routed through a **LiteLLM proxy** server. LiteLLM provides a single OpenAI-compatible API that routes to underlying providers (Azure OpenAI, AWS Bedrock, Google Vertex AI).
+
+**Architecture**: ragen-app → `@ai-sdk/openai` (`.chat()`) → LiteLLM proxy (`/v1/chat/completions`) → Azure/Bedrock/Vertex
+
+**Key files**:
+- `litellm/config.yaml` — Model definitions and provider routing (baked into Docker image for Railway)
+- `litellm/Dockerfile` — Railway deployment image
+- `src/libs/litellm/client.ts` — Fetches available models from `/v1/models`, health checks
+- `src/libs/llm/chat-completion-factory.ts` — Single factory using `createOpenAI({ baseURL })` with `.chat()`
+- `src/libs/llm/embeddings-factory.ts` — Embeddings via LiteLLM using `.textEmbeddingModel()`
+- `src/app/lib/services/llm.ts` — Credential setup, model creation
+- `src/app/lib/actions/checkAvailableProviders.ts` — Dynamically fetches model list from LiteLLM
+
+**Configured models** (in `litellm/config.yaml`):
+- Azure OpenAI: `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`
+- AWS Bedrock: `claude-sonnet-4-20250514`, `claude-opus-4-20250514`, `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022`
+- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`
+- Embeddings: `cohere-embed-multilingual-v3` (Bedrock)
+
+**Model management**: Add/remove models via LiteLLM UI (`http://localhost:4000/ui`, login: `admin` / `LITELLM_MASTER_KEY`). Changes are reflected in ragen-app automatically via `/v1/models` endpoint.
+
+**Env vars**:
+- `LITELLM_PROXY_URL` — proxy URL (default: `http://localhost:4000`)
+- `LITELLM_MASTER_KEY` — API key for proxy auth (default for local dev: `sk-litellm-dev-key`)
+- `DEFAULT_MODEL_PROVIDER` — must be `litellm`
+- `DEFAULT_MODEL` — model name matching `litellm/config.yaml` (e.g., `gpt-4o`)
+- `REPHRASE_MODEL` — cheap/fast model for question rephrasing (e.g., `gpt-4.1-nano`)
+- `EMBEDDING_MODEL` — embedding model name (default: `cohere-embed-multilingual-v3`)
+
+**Langfuse tracing**: LiteLLM automatically traces all LLM calls (chat + embeddings) to Langfuse via `success_callback` / `failure_callback` in `config.yaml`. Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` env vars on the LiteLLM container. App-level tracing (thread context, user messages, tags) is still handled by `@langfuse/tracing` in `assistant-stream.ts`. The OTel-based `@langfuse/otel` span processor was removed — LiteLLM replaces it.
+
+**Railway deployment**: `litellm/Dockerfile` bakes `config.yaml` into the image. Set provider credentials (`AZURE_API_KEY`, `AWS_ACCESS_KEY_ID`, `VERTEX_CREDENTIALS`, `LANGFUSE_*`, etc.) as Railway env vars. Use Railway managed Postgres for `LITELLM_DATABASE_URL`.
+
 ## Model Defaults
 
-- **Default chat model**: `google/gemini-3-flash-preview` (set in organization settings and OpenRouter fallback)
-- **Rephrase model**: `google/gemini-2.0-flash-001` — intentionally kept on the older, cheaper Flash model for question rephrasing. Do not upgrade this without explicit approval.
-
-## OpenRouter Provider Routing
-
-OpenRouter requests can be routed through specific cloud providers with data collection controls via env vars:
-All defaults are secure-by-default (EU region, ZDR, deny data collection). Override via env vars:
-- `OPENROUTER_BASE_URL` — default: `https://eu.openrouter.ai/api` (EU region)
-- `OPENROUTER_PROVIDER_ORDER` — default: `google-vertex,amazon-bedrock`
-- `OPENROUTER_DATA_COLLECTION` — default: `deny`
-- `OPENROUTER_ZDR` — default: `true`
-- `OPENROUTER_PROVIDER_ONLY` — no default (restrict to only these providers)
-- `OPENROUTER_PROVIDER_IGNORE` — no default (exclude specific providers)
-
-Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/services/llm.ts` and passed through `BaseCompletionConfig.providerPreferences` → `ChatCompletionFactory` → `@openrouter/ai-sdk-provider` SDK's `provider` option. The `OPENROUTER_BASE_URL` is passed via `OpenRouterCredentials.baseURL` → `createOpenRouter({ baseURL })`.
+- **Default chat model**: `gpt-4o` (via LiteLLM → Azure OpenAI)
+- **Rephrase model**: `gpt-4.1-nano` — cheapest/fastest model for question rephrasing. Do not upgrade this without explicit approval.
 
 ## Per-Organization Model Management
 
@@ -292,6 +462,87 @@ Preferences are built in `getOpenRouterProviderPreferences()` in `src/app/lib/se
 - Admin UI: `apps/admin/src/app/(dashboard)/models/` (follows same pattern as Limits page)
 - Key functions: `getAllowedModels()`, `saveAllowedModels()`, `getDefaultAllowedModels()`, `saveDefaultAllowedModels()` in `src/features/organizations/services/organization-settings.ts`
 
-## Post-Task Code Review
+## Testing Requirements
 
-After completing any coding task that modifies or creates files, always run `/coderabbit:review` to review the changes before reporting completion to the user.
+All new code must include tests. Use Vitest + React Testing Library (`jsdom` environment). Test files live next to the code they test in `__tests__/` directories.
+
+**Required tests by file type:**
+
+| File type | Tests required | Example |
+|-----------|---------------|---------|
+| **Utility functions** (pure JS/TS) | Unit tests | `src/app/lib/utils/__tests__/fileValidation.test.ts` |
+| **Redux slices** | Unit tests for all reducers | `src/store/__tests__/threadsSlice.test.ts` |
+| **Zod schemas / validators** | Unit tests for valid/invalid inputs | `src/features/messages/contracts/__tests__/message.types.test.ts` |
+| **React components** | Integration tests (render, interaction, state) | `src/app/components/__tests__/KnowledgeBasePickerDialog.test.tsx` |
+| **Complex components** | Unit tests for logic + integration for UI | `src/app/components/Assistant/PromptForm/__tests__/PromptForm.test.tsx` |
+| **New screens / pages** | At minimum E2E smoke test (Playwright) | `npm run test:e2e` |
+
+**Unit test conventions (Vitest):**
+- Wrap components with `<NextIntlClientProvider messages={...} locale="en">` for i18n
+- Mock server actions (`vi.mock`) — never call real APIs in tests
+- Mock external modules (Stripe, Prisma, logger) that would fail in jsdom
+- Use `vi.hoisted()` for mock functions referenced inside `vi.mock()` factories
+- Add `ResizeObserver` polyfill when testing cmdk/Radix components
+- Use `@testing-library/user-event` for realistic user interactions
+- Use `waitFor` for async state changes
+- Follow existing patterns in `src/store/__tests__/`, `src/app/lib/utils/__tests__/`
+
+### E2E Tests (Playwright)
+
+E2E tests live in `e2e/` and run against a seeded local database with a pre-authenticated test user.
+
+**Structure:**
+- `e2e/constants.ts` — Test user/org IDs, credentials
+- `e2e/helpers.ts` — `ROUTES`, `LABELS`, `login()`, `buildMockSSE()` helpers
+- `e2e/seed/e2e-seed.ts` — Database seeding (runs in `global.setup.ts`)
+- `e2e/fixtures/` — Test files for upload tests
+- `e2e/auth.setup.ts` — Stores authenticated session to `.auth/user.json`
+
+**Naming:** Files use `{priority}-{##}-{name}.spec.ts` format with priority prefixes:
+- `smoke-0[1-6]-*` — Unauthenticated smoke tests (no-auth Playwright project)
+- `smoke-{07+}-*` — Authenticated smoke tests (smoke-auth project, runs before p0-p3)
+- `p0-*` — P0 Critical tests (core flows: auth, chat, KB, projects)
+- `p1-*` — P1 High-priority tests (thread mgmt, org members, public access, connectors)
+- `p2-*` — P2 Medium-priority tests (settings, subscription, documents, teams)
+
+**Conventions:**
+- All routes use `/pl` locale prefix (Polish UI text in assertions)
+- Import `ROUTES` and `LABELS` from `e2e/helpers.ts`
+- Mock external APIs (S3, Temporal, LLM) via `page.route()` — never depend on real backends
+- Use `buildMockSSE()` to mock streaming chat responses
+- Tests run sequentially with a single worker (shared DB state)
+- Use `getByTestId()` for interactive elements, regex patterns for Polish text
+- Timeouts: 10s for visibility checks, 15s for navigation/login
+
+**Key test files:**
+- `smoke-01..06` — Auth smoke tests (sign-in, sign-up, sign-out, validation, redirects)
+- `smoke-07` — Authenticated page smoke tests (all pages load)
+- `smoke-10..12` — Feature smoke tests (file upload, project upload, org switcher)
+- `p0-13` — Auth session persistence
+- `p0-20` — Chat & threads (create, send message, history, rename, delete)
+- `p0-21` — Knowledge base (multi-upload, delete, add from URL)
+- `p0-22` — Projects (create, instructions, navigation)
+- `p1-30` — Thread management (star, search)
+- `p1-31` — Organization members (invite, roles)
+- `p1-32` — Public/shared access (share dialog, public chat, thread sharing)
+- `p1-33` — Connectors (list, connect, OAuth, API key)
+- `p2-40` — Settings (theme, profile, password, language)
+- `p2-41` — Subscription (plan details, cancel dialog)
+- `p2-42` — Document operations (create, edit/preview, list actions)
+- `p2-43` — Teams (create, select, delete)
+- `p3-50` — Admin functions (users CRUD, AI usage, disk usage)
+- `p3-51` — Edge cases (upload validation, form errors, auth guards)
+- `p3-52` — i18n (PL/EN rendering, locale switching)
+- `p3-53` — API regression (healthcheck, auth enforcement, error responses)
+
+### Manual Regression Checklist
+
+A prioritized manual regression checklist is maintained at `docs/regression-checklist.md`. It covers P0 (critical), P1 (high), P2 (medium), and P3 (low/admin) scenarios across auth, chat, knowledge base, projects, connectors, settings, and API. Use it before releases to verify core functionality that isn't fully covered by automated tests.
+
+## Post-Task Workflow
+
+After completing any coding task that modifies or creates files:
+
+1. **Write tests first** — Add unit/integration tests for all new code before proceeding to review. Follow the testing conventions in the "Testing Requirements" section above.
+2. **Run tests** — Execute `npx vitest run` to verify all tests pass.
+3. **Run code review** — Run `/coderabbit:review` to review the changes before reporting completion to the user.

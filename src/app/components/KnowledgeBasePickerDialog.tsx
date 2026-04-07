@@ -19,19 +19,19 @@ import { Input } from '@/components/ui/input';
 import { getAllOrgFiles } from '@/app/actions';
 
 type KnowledgeFile = {
-  publicId: string;
+  id: string;
   fileName: string;
   fileSize: number;
   fileType: string;
   createdAt: Date;
-  project: { id: number; title: string } | null;
+  project: { id: string; title: string } | null;
 };
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onFilesSelected: (
-    files: { publicId: string; name: string; size: number; type: string }[],
+    files: { id: string; name: string; size: number; type: string }[],
   ) => void;
   excludeFileIds?: string[];
 };
@@ -77,7 +77,7 @@ export const KnowledgeBasePickerDialog = ({
   }, [open, loadFiles]);
 
   const filteredFiles = files.filter((file) => {
-    if (excludeFileIds.includes(file.publicId)) {
+    if (excludeFileIds.includes(file.id)) {
       return false;
     }
     if (!search) {
@@ -100,9 +100,9 @@ export const KnowledgeBasePickerDialog = ({
 
   const handleConfirm = () => {
     const selected = files
-      .filter((f) => selectedIds.has(f.publicId))
+      .filter((f) => selectedIds.has(f.id))
       .map((f) => ({
-        publicId: f.publicId,
+        id: f.id,
         name: f.fileName,
         size: f.fileSize,
         type: f.fileType,
@@ -130,47 +130,55 @@ export const KnowledgeBasePickerDialog = ({
         </div>
 
         <div className="h-96 overflow-y-auto -mx-1">
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
-            </div>
-          ) : filteredFiles.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              {search ? t('no-results') : t('no-files')}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-0.5">
-              {filteredFiles.map((file) => {
-                const isSelected = selectedIds.has(file.publicId);
-                return (
-                  <button
-                    key={file.publicId}
-                    type="button"
-                    onClick={() => toggleFile(file.publicId)}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${
-                      isSelected
-                        ? 'bg-blue-50 dark:bg-blue-900/20'
-                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                    }`}
-                  >
-                    <DocumentIcon className="size-5 shrink-0 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm truncate">{file.fileName}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatFileSize(file.fileSize)}
-                        {file.project && (
-                          <span className="ml-2">{file.project.title}</span>
-                        )}
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                </div>
+              );
+            }
+            if (filteredFiles.length === 0) {
+              return (
+                <div className="text-center py-8 text-sm text-muted-foreground">
+                  {search ? t('no-results') : t('no-files')}
+                </div>
+              );
+            }
+            return (
+              <div className="flex flex-col gap-0.5">
+                {filteredFiles.map((file) => {
+                  const isSelected = selectedIds.has(file.id);
+                  return (
+                    <button
+                      key={file.id}
+                      type="button"
+                      onClick={() => toggleFile(file.id)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${
+                        isSelected
+                          ? 'bg-blue-50 dark:bg-blue-900/20'
+                          : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      <DocumentIcon className="size-5 shrink-0 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm truncate">{file.fileName}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatFileSize(file.fileSize)}
+                          {file.project && (
+                            <span className="ml-2">{file.project.title}</span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    {isSelected && (
-                      <CheckIcon className="size-4 shrink-0 text-blue-500" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                      {isSelected && (
+                        <CheckIcon className="size-4 shrink-0 text-blue-500" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
 
         <DialogFooter>

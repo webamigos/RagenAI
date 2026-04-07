@@ -6,7 +6,11 @@ import {
   useRef,
 } from 'react';
 import { getUserFiles } from '@/app/actions';
-import { type UserFileType } from '@/features/documents/contracts/document.types';
+import { getFolders } from '@/app/actions/folders';
+import {
+  type UserFileType,
+  type DocumentFolderItem,
+} from '@/features/documents/contracts/document.types';
 import { type UserFile } from '@/generated/prisma/browser';
 import { subscribeNotification } from '@/app/lib/services/notifications/notification-client';
 import {
@@ -14,23 +18,36 @@ import {
   type NotificationMessage,
 } from '@/app/lib/services/notifications/types';
 
+export type KbViewMode = 'all' | 'my-files' | 'shared-with-me';
+
 type State = {
   files: UserFileType[];
+  subfolders: DocumentFolderItem[];
   isLoading: boolean;
   isError: boolean;
+  currentFolderId: string | null;
+  viewMode: KbViewMode;
 };
 
 type Action =
   | { type: 'LOAD_START' }
-  | { type: 'LOAD_SUCCESS'; payload: UserFileType[] }
+  | {
+      type: 'LOAD_SUCCESS';
+      payload: { files: UserFileType[]; subfolders: DocumentFolderItem[] };
+    }
   | { type: 'LOAD_ERROR' }
   | { type: 'ADD_FILE'; payload: UserFileType }
-  | { type: 'REMOVE_FILE'; payload: string };
+  | { type: 'REMOVE_FILE'; payload: string }
+  | { type: 'SET_FOLDER'; payload: string | null }
+  | { type: 'SET_VIEW_MODE'; payload: KbViewMode };
 
 const initialState: State = {
   files: [],
+  subfolders: [],
   isLoading: true,
   isError: false,
+  currentFolderId: null,
+  viewMode: 'all',
 };
 
 function filesReducer(state: State, action: Action): State {
@@ -42,7 +59,8 @@ function filesReducer(state: State, action: Action): State {
         ...state,
         isLoading: false,
         isError: false,
-        files: action.payload,
+        files: action.payload.files,
+        subfolders: action.payload.subfolders,
       };
     case 'LOAD_ERROR':
       return { ...state, isLoading: false, isError: true };
@@ -51,8 +69,12 @@ function filesReducer(state: State, action: Action): State {
     case 'REMOVE_FILE':
       return {
         ...state,
-        files: state.files.filter((file) => file.publicId !== action.payload),
+        files: state.files.filter((file) => file.id !== action.payload),
       };
+    case 'SET_FOLDER':
+      return { ...state, currentFolderId: action.payload };
+    case 'SET_VIEW_MODE':
+      return { ...state, viewMode: action.payload };
     default:
       return state;
   }
@@ -60,11 +82,16 @@ function filesReducer(state: State, action: Action): State {
 
 type FilesContextType = {
   files: UserFileType[];
+  subfolders: DocumentFolderItem[];
   refreshFiles: () => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (filePublicId: UserFile['publicId']) => void;
+  removeFile: (fileId: UserFile['id']) => void;
   isLoading: boolean;
   isError: boolean;
+  currentFolderId: string | null;
+  viewMode: KbViewMode;
+  setFolder: (folderId: string | null) => void;
+  setViewMode: (mode: KbViewMode) => void;
 };
 
 type Props = {
@@ -86,14 +113,40 @@ export const FilesProvider = ({ children }: Props) => {
     isRefreshingRef.current = true;
     dispatch({ type: 'LOAD_START' });
     try {
-      const { files } = await getUserFiles();
-      dispatch({ type: 'LOAD_SUCCESS', payload: files ?? [] });
+      const [{ files }, allFolders] = await Promise.all([
+        getUserFiles({
+          folderId: state.currentFolderId,
+          viewMode: state.viewMode,
+        }),
+        getFolders(),
+      ]);
+
+      // Filter to subfolders of the current folder
+      let subfolders: typeof allFolders = [];
+      if (state.viewMode === 'shared-with-me') {
+        // Don't show folder tree in "Shared with me" — only explicitly shared files
+        subfolders = [];
+      } else if (state.viewMode === 'my-files') {
+        // Show user's own folders at current level
+        subfolders = allFolders.filter(
+          (f) => f.parentId === state.currentFolderId && f.ownerId !== null,
+        );
+      } else {
+        subfolders = allFolders.filter(
+          (f) => f.parentId === state.currentFolderId,
+        );
+      }
+
+      dispatch({
+        type: 'LOAD_SUCCESS',
+        payload: { files: files ?? [], subfolders },
+      });
     } catch (error) {
       dispatch({ type: 'LOAD_ERROR' });
     } finally {
       isRefreshingRef.current = false;
     }
-  }, []);
+  }, [state.currentFolderId, state.viewMode]);
 
   useEffect(() => {
     refreshFiles();
@@ -117,17 +170,30 @@ export const FilesProvider = ({ children }: Props) => {
     dispatch({ type: 'ADD_FILE', payload: newFile });
   };
 
-  const removeFile = (publicFileId: UserFile['publicId']) => {
-    dispatch({ type: 'REMOVE_FILE', payload: publicFileId });
+  const removeFile = (fileId: UserFile['id']) => {
+    dispatch({ type: 'REMOVE_FILE', payload: fileId });
   };
+
+  const setFolder = useCallback((folderId: string | null) => {
+    dispatch({ type: 'SET_FOLDER', payload: folderId });
+  }, []);
+
+  const setViewMode = useCallback((mode: KbViewMode) => {
+    dispatch({ type: 'SET_VIEW_MODE', payload: mode });
+  }, []);
 
   const value = {
     files: state.files,
+    subfolders: state.subfolders,
     refreshFiles,
     addFile,
     removeFile,
     isLoading: state.isLoading,
     isError: state.isError,
+    currentFolderId: state.currentFolderId,
+    viewMode: state.viewMode,
+    setFolder,
+    setViewMode,
   };
 
   return (

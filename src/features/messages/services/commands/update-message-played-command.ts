@@ -13,7 +13,7 @@ export const updateMessagePlayedCommand = async (messagePublicId: string) => {
 
     const message = await db.message.findFirst({
       where: {
-        publicId: messagePublicId,
+        id: messagePublicId,
         thread: { organizationId: orgId },
       },
       select: { id: true },

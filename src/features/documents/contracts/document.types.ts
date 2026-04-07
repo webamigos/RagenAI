@@ -13,7 +13,7 @@ export type ProjectType = {
 };
 
 export type UserFileType = {
-  publicId: UserFile['publicId'];
+  id: UserFile['id'];
   organizationId: UserFile['organizationId'];
   fileName: UserFile['fileName'];
   fileSize: UserFile['fileSize'];
@@ -30,7 +30,7 @@ export type UserFileType = {
   parsingStatus?: ParsingStatus;
   project: ProjectType | null;
   document?: {
-    publicId: UserDocument['publicId'];
+    id: UserDocument['id'];
   } | null;
 };
 
@@ -43,6 +43,8 @@ export interface ThreadDocumentUI {
   sourceUrl?: string;
   driveFileId?: string;
   driveModifiedTime?: string;
+  imageData?: string; // base64 data URL for image attachments
+  documentData?: string; // base64 data URL for binary documents (PDF, EPUB)
 }
 
 export enum WebsiteLoaderMode {
@@ -54,6 +56,7 @@ export enum WebsiteLoaderMode {
 export enum Workflow {
   RUN_FILE_EMBEDDINGS = 'runFileEmbeddings',
   SCRAPE_WEBSITE = 'scrapeWebsite',
+  GENERATE_DOCUMENT = 'generateDocument',
 }
 
 export interface ScrapeWebsiteWorkflowPayload {
@@ -78,14 +81,19 @@ export type DocumentFolderItem = {
   name: string;
   teamId: string | null;
   teamName: string | null;
+  parentId: string | null;
+  path: string;
+  ownerId: string | null;
+  ownerName: string | null;
   fileCount: number;
+  children?: DocumentFolderItem[];
 };
 
 export type CreateMarkdownDocumentInput = {
-  publicId: string;
+  id: string;
   title: string;
   content: string;
   organizationId: string;
   fileId?: string;
-  projectId?: number;
+  projectId?: string;
 };

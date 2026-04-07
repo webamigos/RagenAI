@@ -67,7 +67,6 @@ export const ResetPasswordForm = () => {
       <form onSubmit={handleSubmit(reset)}>
         <Input
           errorMessage={errors.password?.message}
-          className="py-1.5"
           label={t('Enter-password')}
           placeholder="New password"
           {...register('password')}

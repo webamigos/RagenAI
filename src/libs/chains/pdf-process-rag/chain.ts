@@ -1,4 +1,5 @@
 import { createMarkdownDocument } from '@/app/lib/services/document';
+import { randomUUID } from 'node:crypto';
 import { logger } from '@/app/lib/utils/logger';
 import {
   convertPDFToImages,
@@ -15,7 +16,7 @@ export async function processPDFDocument(
   fileName: string,
   fileId: string,
   organizationId: string,
-  projectId?: number,
+  projectId?: string,
 ): Promise<{
   rawDocs: VectorStoreDocument[];
   success: boolean;
@@ -55,7 +56,7 @@ export async function processPDFDocument(
     });
 
     await createMarkdownDocument({
-      publicId: fileId,
+      id: randomUUID(),
       title: fileName,
       organizationId: organizationId,
       content: finalDocument,

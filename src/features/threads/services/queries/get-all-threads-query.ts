@@ -5,20 +5,15 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 
 const THREAD_SELECT = {
-  publicId: true,
+  id: true,
   createdAt: true,
   isStarred: true,
   title: true,
   projectId: true,
   organizationId: true,
   teamId: true,
-  project: { select: { publicId: true, title: true } },
+  project: { select: { id: true, title: true } },
   team: { select: { id: true, name: true } },
-  messages: {
-    select: { content: true },
-    take: 1,
-    orderBy: { createdAt: 'asc' as const },
-  },
 } as const;
 
 export const getAllThreadsQuery = async (
@@ -37,13 +32,10 @@ export const getAllThreadsQuery = async (
 
   const where = {
     organizationId: orgId,
-    messages: query
-      ? {
-          some: {
-            content: { contains: query, mode: 'insensitive' as const },
-          },
-        }
-      : { some: {} },
+    ...(query
+      ? { title: { contains: query, mode: 'insensitive' as const } }
+      : {}),
+    messages: { some: {} },
     OR: [
       { visitorId: visitorId },
       ...(userTeamIds.length > 0 ? [{ teamId: { in: userTeamIds } }] : []),

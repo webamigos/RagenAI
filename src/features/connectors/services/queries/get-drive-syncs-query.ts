@@ -3,7 +3,6 @@ import { logger } from '@/app/lib/utils/logger';
 
 export interface DriveSyncDto {
   id: string;
-  publicId: string;
   driveFolderId: string;
   folderName: string;
   enabled: boolean;
@@ -13,19 +12,17 @@ export interface DriveSyncDto {
 
 export const getDriveSyncsQuery = async (
   organizationId: string,
-  projectPublicId?: string,
+  projectId?: string,
 ) => {
   try {
-    let projectId: number | undefined;
-    if (projectPublicId) {
+    if (projectId) {
       const project = await db.project.findFirst({
-        where: { publicId: projectPublicId, organizationId },
+        where: { id: projectId, organizationId },
         select: { id: true },
       });
       if (!project) {
         return { success: true as const, syncs: [] };
       }
-      projectId = project.id;
     }
 
     const syncs = await db.googleDriveSync.findMany({
@@ -35,7 +32,6 @@ export const getDriveSyncsQuery = async (
       },
       select: {
         id: true,
-        publicId: true,
         driveFolderId: true,
         folderName: true,
         enabled: true,

@@ -97,13 +97,15 @@ export const SubscriptionInfo = ({
             {plan} {planType ? `(${planType})` : ''}
           </h2>
           <span
-            className={`rounded-md px-2 py-0.5 text-xs font-medium ${
-              status === 'active'
-                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                : status === 'trialing'
-                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                  : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-            }`}
+            className={`rounded-md px-2 py-0.5 text-xs font-medium ${(() => {
+              if (status === 'active') {
+                return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+              }
+              if (status === 'trialing') {
+                return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+              }
+              return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+            })()}`}
           >
             {status}
           </span>

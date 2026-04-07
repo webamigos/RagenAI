@@ -12,6 +12,7 @@ import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
+import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -29,8 +30,15 @@ async function sendPasswordResetEmail({
   try {
     const { sendPasswordResetEmailViaMailer } =
       await import('@/app/emails/services/mailer');
-    await sendPasswordResetEmailViaMailer({ to, resetUrl });
-    console.log('[AUTH] Password reset email sent', { to });
+    const result = await sendPasswordResetEmailViaMailer({ to, resetUrl });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to send password reset email', {
+        to,
+        error: result.error,
+      });
+    } else {
+      console.log('[AUTH] Password reset email sent', { to });
+    }
   } catch (error) {
     console.error('[AUTH] Failed to send password reset email', { to, error });
   }
@@ -230,9 +238,19 @@ export const auth = betterAuth({
             await createOrganizationWithDefaultProject(orgId, user.id);
             await applyDefaultLimitsToOrg(orgId);
 
-            // Set default vector store (meilisearch for local dev, can be changed in settings)
+            // Create LiteLLM team + virtual key for this organization
+            try {
+              await ensureLiteLLMTeamCommand(orgId, organizationName);
+            } catch (litellmError) {
+              console.error(
+                '[AUTH] Failed to create LiteLLM team (will retry later)',
+                { orgId, error: litellmError },
+              );
+            }
+
+            // Set default vector store (qdrant for local dev, can be changed in settings)
             const defaultVectorStore =
-              process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
+              process.env.DEFAULT_VECTOR_STORE || 'qdrant';
             await db.organization.update({
               where: { id: orgId },
               data: {

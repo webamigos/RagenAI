@@ -12,7 +12,7 @@ import {
 
 type CreateProjectResponse = {
   status: StatusCodes;
-  project?: Omit<Project, 'id'>;
+  project?: Project;
   error?: string;
 };
 
@@ -34,10 +34,7 @@ export const createProject = async (
 
     const project = await createProjectForOrganization(title, orgId, userId);
 
-    logger.info(
-      { projectPublicId: project.publicId },
-      'Project created successfully',
-    );
+    logger.info({ projectId: project.id }, 'Project created successfully');
 
     return {
       project,

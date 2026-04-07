@@ -5,22 +5,20 @@ import type { ThreadType, ThreadsListProps } from '../Projects/types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 import { TUIThreadItem } from './TUIThreadItem';
 
-const hasMessages = (thread: ThreadType): boolean => {
-  return (
-    thread.messages?.length > 0 && thread.messages[0]?.content !== undefined
-  );
+const hasContent = (thread: ThreadType): boolean => {
+  return thread.title !== undefined || (thread.messages?.length ?? 0) > 0;
 };
 
 export const TUIThreadsList = ({
   threads,
-  projectPublicId,
+  projectId,
   activeThread,
   onClose,
 }: ThreadsListProps) => {
   const t = useTranslations('sidebar.threads-categories');
 
   const threadsWithMessages = useMemo(() => {
-    return threads.filter(hasMessages);
+    return threads.filter(hasContent);
   }, [threads]);
 
   const categories = useMemo(() => {
@@ -46,11 +44,11 @@ export const TUIThreadsList = ({
                 aria-label={`${title} project threads`}
               >
                 {threads.map((thread) => (
-                  <div key={thread.publicId} role="listitem">
+                  <div key={thread.id} role="listitem">
                     <TUIThreadItem
                       thread={thread}
-                      projectPublicId={projectPublicId}
-                      isActive={activeThread === thread.publicId}
+                      projectId={projectId}
+                      isActive={activeThread === thread.id}
                       onClose={onClose}
                     />
                   </div>

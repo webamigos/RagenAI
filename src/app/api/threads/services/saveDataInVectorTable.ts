@@ -13,6 +13,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadata } from '@/app/actions';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { PDFOCRDocumentLoader } from '@/libs/document-loaders/pdf-ocr-loader';
 import { SRTLLMDocumentLoader } from '@/libs/document-loaders/srt-llm-loader';
@@ -38,8 +39,7 @@ type ConvertAndStoreDocumentParams = {
   fileName: string;
   organizationId: string;
   fileId: string;
-  projectId: number;
-  projectPublicId?: string;
+  projectId: string;
   mimeType: string;
 };
 
@@ -150,7 +150,6 @@ export const convertAndStoreDocument = async ({
   organizationId,
   fileId,
   projectId,
-  projectPublicId,
   mimeType,
 }: ConvertAndStoreDocumentParams): Promise<ConvertAndStoreResult> => {
   try {
@@ -168,16 +167,6 @@ export const convertAndStoreDocument = async ({
     }
 
     logger.info({ mimeType }, 'Detected MIME type');
-
-    // Resolve project publicId for Meilisearch metadata
-    let resolvedProjectPublicId = projectPublicId ?? null;
-    if (!resolvedProjectPublicId && projectId) {
-      const project = await db.project.findUnique({
-        where: { id: projectId },
-        select: { publicId: true },
-      });
-      resolvedProjectPublicId = project?.publicId ?? null;
-    }
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId,
@@ -253,7 +242,6 @@ export const convertAndStoreDocument = async ({
             url,
             mode,
             fileName,
-            fileId,
             organizationId,
             projectId,
           });
@@ -311,11 +299,10 @@ export const convertAndStoreDocument = async ({
           file_name: fileName,
           page_number: index + 1,
           created_at: new Date().toISOString().split('T')[0],
-          id: index,
+          id: String(index),
           organization_id: organizationId,
           file_id: fileId,
-          project_id: null,
-          project_public_id: resolvedProjectPublicId,
+          project_id: projectId || null,
           source_type: fileExtension,
           chunk_size: splitterSettings.chunkSize,
           chunk_overlap: splitterSettings.chunkOverlap,
@@ -358,11 +345,25 @@ export const convertAndStoreDocument = async ({
           metadata: doc.metadata,
         })),
       );
-    } else {
+    } else if (vectorStoreType === 'meilisearch') {
       const vectorStore = new MeilisearchVectorStoreClient(embeddingModel, {
         url: process.env.MEILISEARCH_URL!,
         apiKey: process.env.MEILISEARCH_MASTER_KEY,
         indexName: orgId,
+      });
+
+      await vectorStore.addDocuments(
+        updatedDocs.map((doc) => ({
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        })),
+      );
+    } else {
+      // Default: Qdrant
+      const vectorStore = new QdrantVectorStoreClient(embeddingModel, {
+        url: process.env.QDRANT_URL || 'http://localhost:6333',
+        apiKey: process.env.QDRANT_API_KEY,
+        collectionName: orgId,
       });
 
       await vectorStore.addDocuments(

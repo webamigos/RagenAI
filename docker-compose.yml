@@ -20,29 +20,50 @@ services:
     networks:
       - ragen-network
 
-  meilisearch:
-    image: getmeili/meilisearch:v1.36
-    container_name: ragen-meilisearch
+  qdrant:
+    image: qdrant/qdrant:v1.17.1
+    container_name: ragen-qdrant
     restart: unless-stopped
     environment:
-      MEILI_ENV: development
-      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY:-ragen-dev-key}
-      MEILI_NO_ANALYTICS: "true"
-      MEILI_EXPERIMENTAL_ENABLE_METRICS: "true"
+      QDRANT__SERVICE__GRPC_PORT: 6334
     ports:
-      - "${MEILISEARCH_PORT:-7700}:7700"
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
-      - meilisearch_data:/meili_data
+      - qdrant_data:/qdrant/storage
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - ragen-network
 
+  # meilisearch:
+  #   image: getmeili/meilisearch:v1.36
+  #   container_name: ragen-meilisearch
+  #   restart: unless-stopped
+  #   profiles:
+  #     - meilisearch
+  #   environment:
+  #     MEILI_ENV: development
+  #     MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY:-ragen-dev-key}
+  #     MEILI_NO_ANALYTICS: "true"
+  #     MEILI_EXPERIMENTAL_ENABLE_METRICS: "true"
+  #   ports:
+  #     - "${MEILISEARCH_PORT:-7700}:7700"
+  #   volumes:
+  #     - meilisearch_data:/meili_data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   networks:
+  #     - ragen-network
+
   temporal:
-    image: temporalio/auto-setup:latest
+    image: temporalio/auto-setup:1.26.2
     container_name: ragen-temporal
     restart: unless-stopped
     depends_on:
@@ -63,7 +84,7 @@ services:
       - ragen-network
 
   temporal-ui:
-    image: temporalio/ui:latest
+    image: temporalio/ui:2.36.0
     container_name: ragen-temporal-ui
     restart: unless-stopped
     depends_on:
@@ -73,6 +94,47 @@ services:
       TEMPORAL_CORS_ORIGINS: http://localhost:3000
     ports:
       - "${TEMPORAL_UI_PORT:-8080}:8080"
+    networks:
+      - ragen-network
+
+  litellm-postgres:
+    image: postgres
+    container_name: ragen-litellm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${LITELLM_DB_USER:-litellm}
+      POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm123}
+      POSTGRES_DB: ${LITELLM_DB_NAME:-litellm}
+    ports:
+      - "${LITELLM_DB_PORT:-5433}:5432"
+    volumes:
+      - litellm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LITELLM_DB_USER:-litellm}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ragen-network
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: ragen-litellm
+    restart: unless-stopped
+    depends_on:
+      litellm-postgres:
+        condition: service_healthy
+    env_file:
+      - .env.local
+    environment:
+      # These override .env.local — internal Docker networking values
+      LITELLM_DATABASE_URL: "postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-litellm123}@litellm-postgres:5432/${LITELLM_DB_NAME:-litellm}"
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-litellm-dev-key}
+    ports:
+      - "${LITELLM_PORT:-4000}:4000"
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
     networks:
       - ragen-network
 
@@ -97,8 +159,12 @@ volumes:
     name: ragen-postgres-data
   redis_data:
     name: ragen-redis-data
-  meilisearch_data:
-    name: ragen-meilisearch-data
+  qdrant_data:
+    name: ragen-qdrant-data
+  # meilisearch_data:
+  #   name: ragen-meilisearch-data
+  litellm_postgres_data:
+    name: ragen-litellm-postgres-data
 
 networks:
   ragen-network:

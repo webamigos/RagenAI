@@ -17,6 +17,8 @@ type Props = {
   onClose: () => void;
   teams: TeamOption[];
   onCreated: () => void;
+  parentId?: string | null;
+  parentName?: string;
 };
 
 export function CreateFolderDialog({
@@ -24,6 +26,8 @@ export function CreateFolderDialog({
   onClose,
   teams,
   onCreated,
+  parentId,
+  parentName,
 }: Props) {
   const { successToast, errorToast } = statusToast();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +49,7 @@ export function CreateFolderDialog({
 
     setIsSubmitting(true);
     try {
-      await createFolder(name.trim(), teamId || null);
+      await createFolder(name.trim(), teamId || null, parentId ?? null);
       successToast({ message: 'Folder created' });
       setName('');
       setTeamId('');
@@ -66,7 +70,9 @@ export function CreateFolderDialog({
 
   return (
     <Dialog open={isOpen} onClose={handleClose} size="md">
-      <DialogTitle>Create Folder</DialogTitle>
+      <DialogTitle>
+        {parentName ? `Create Subfolder in "${parentName}"` : 'Create Folder'}
+      </DialogTitle>
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <div>

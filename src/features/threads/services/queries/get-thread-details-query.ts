@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
+import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 
 export const getThreadDetailsQuery = async (
   publicThreadId: string,
@@ -11,12 +12,11 @@ export const getThreadDetailsQuery = async (
   try {
     const thread = await db.thread.findFirstOrThrow({
       where: {
-        publicId: publicThreadId,
+        id: publicThreadId,
         organizationId: orgId,
       },
       select: {
         id: true,
-        publicId: true,
         createdAt: true,
         visitorId: true,
         preferredCommunicationType: true,
@@ -24,9 +24,9 @@ export const getThreadDetailsQuery = async (
         projectId: true,
         mentionedProjectId: true,
         teamId: true,
+        encryptedDek: true,
         project: {
           select: {
-            publicId: true,
             id: true,
             title: true,
           },
@@ -51,10 +51,31 @@ export const getThreadDetailsQuery = async (
       },
     });
 
+    // Decrypt messages if thread is encrypted and messages were included
+    let messages: { role: string; content: string }[] | undefined;
+    if ('messages' in thread && Array.isArray(thread.messages)) {
+      try {
+        messages = await decryptMessageContents(
+          thread.messages as { role: string; content: string }[],
+          thread.encryptedDek,
+        );
+      } catch (error) {
+        logger.error(
+          { err: error, threadId: thread.id },
+          'Failed to decrypt thread messages',
+        );
+        messages = thread.messages as { role: string; content: string }[];
+      }
+    }
+
+    // Exclude encryptedDek from response
+    const { encryptedDek: _, ...threadData } = thread;
+
     // Convert Date object to ISO string for serialization
     return {
-      ...thread,
-      createdAt: thread.createdAt.toISOString(),
+      ...threadData,
+      ...(messages ? { messages } : {}),
+      createdAt: threadData.createdAt.toISOString(),
     };
   } catch (error) {
     logger.error({ err: error }, `Failed to fetch thread ${publicThreadId}`);
@@ -69,10 +90,11 @@ export const getThreadMessagesListQuery = async (
   try {
     const thread = await db.thread.findFirst({
       where: {
-        publicId: publicThreadId,
+        id: publicThreadId,
         organizationId: orgId,
       },
       select: {
+        encryptedDek: true,
         messages: {
           orderBy: {
             createdAt: 'asc',
@@ -83,13 +105,24 @@ export const getThreadMessagesListQuery = async (
 
     // Convert Date objects to ISO strings for serialization
     if (thread?.messages) {
+      const decryptedMessages = await decryptMessageContents(
+        thread.messages,
+        thread.encryptedDek,
+      );
+
+      const { encryptedDek: _, ...threadData } = thread;
       return {
-        ...thread,
-        messages: thread.messages.map((message) => ({
+        ...threadData,
+        messages: decryptedMessages.map((message) => ({
           ...message,
           createdAt: message.createdAt.toISOString(),
         })),
       };
+    }
+
+    if (thread) {
+      const { encryptedDek: _, ...threadData } = thread;
+      return threadData;
     }
 
     return thread;

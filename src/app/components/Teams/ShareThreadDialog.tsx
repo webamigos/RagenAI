@@ -14,7 +14,7 @@ type TeamOption = {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  threadPublicId: string;
+  threadId: string;
   currentTeamId: string | null;
   userTeams: TeamOption[];
   onShared: () => void;
@@ -23,7 +23,7 @@ type Props = {
 export function ShareThreadDialog({
   isOpen,
   onClose,
-  threadPublicId,
+  threadId,
   currentTeamId,
   userTeams,
   onShared,
@@ -44,7 +44,7 @@ export function ShareThreadDialog({
     setIsSubmitting(true);
     try {
       const teamId = selectedTeamId || null;
-      const result = await shareThreadWithTeam(threadPublicId, teamId);
+      const result = await shareThreadWithTeam(threadId, teamId);
       if (result.success) {
         successToast({
           message: teamId

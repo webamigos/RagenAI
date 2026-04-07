@@ -71,7 +71,7 @@ export const voiceModeReducer = (
       return {
         ...state,
         currentMessages: state.currentMessages.map((message) =>
-          message.publicId === action.payload
+          message.id === action.payload
             ? { ...message, voicePlayed: true }
             : message,
         ),

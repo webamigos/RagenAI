@@ -90,6 +90,7 @@
     "Forgot-password": "Zapomniałeś hasła?",
     "Provide-email": "Twój email",
     "Send-reset-code": "Wyślij kod do resetowania hasła",
+    "email-sent": "E-mail z resetem hasła został wysłany! Sprawdź swoją skrzynkę.",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
     "Reset-password": "Zresetuj hasło",
@@ -258,7 +259,8 @@
   "success-toast": {
     "copied": "Skopiowano ",
     "deleted": "Usunięto ",
-    "saved": "Zapisano "
+    "saved": "Zapisano ",
+    "files-uploaded": "Przesłano {count} plik(ów)"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
@@ -587,6 +589,9 @@
     "recent": {
       "title": "Ostatnie"
     },
+    "shared": {
+      "title": "Udostępnione dla mnie"
+    },
     "footer": {
       "my-profile": "Mój profil",
       "settings": "Ustawienia",
@@ -618,6 +623,10 @@
     "cancel": "Anuluj",
     "add-selected": "Dodaj {count, plural, =0 {wybrane} =1 {1 plik} few {# pliki} other {# plików}}"
   },
+  "page-drop": {
+    "drop-to-chat": "Upuść pliki, aby dodać do czatu",
+    "drop-to-project": "Upuść pliki, aby dodać do bazy wiedzy projektu"
+  },
   "prompt-attachments": {
     "upload-file": "Wgraj plik",
     "from-knowledge-base": "Z Bazy Wiedzy",
@@ -632,6 +641,7 @@
     "no-folders": "Nie znaleziono folderów",
     "no-results": "Brak folderów pasujących do wyszukiwania",
     "no-files": "Ten folder jest pusty",
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "select-files-title": "Wybierz pliki",
     "back": "Wstecz",
     "attach-selected": "Dołącz wybrane",
@@ -675,12 +685,22 @@
     "unstar": "Odepnij",
     "rename": "Zmień nazwę",
     "delete": "Usuń",
+    "share": "Udostępnij",
     "rename-placeholder": "Nazwa wątku",
     "rename-title": "Zmień nazwę wątku",
     "delete-title": "Usuń wątek",
     "delete-confirm": "Czy na pewno chcesz usunąć ten wątek? Tej operacji nie można cofnąć.",
     "cancel": "Anuluj",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "share-title": "Udostępnij wątek",
+    "share-description": "Udostępnij ten wątek członkom organizacji",
+    "share-save": "Zapisz",
+    "share-success": "Udostępnianie wątku zaktualizowane",
+    "share-no-members": "Brak innych członków w tej organizacji",
+    "share-error": "Nie udało się zaktualizować udostępniania",
+    "share-load-error": "Nie udało się załadować informacji o udostępnianiu",
+    "share-retry": "Ponów",
+    "shared-by": "Udostępnione przez {name}"
   },
   "assistants-page": {
     "title": "Asystenci",
@@ -689,7 +709,8 @@
     "no-assistants": "Brak asystentów",
     "no-assistants-description": "Stwórz pierwszego asystenta, aby rozpocząć",
     "thread-count": "{count} wątków",
-    "updated": "Zaktualizowany {time}"
+    "updated": "Zaktualizowany {time}",
+    "global-assistants": "Globalni asystenci"
   },
   "search-threads": {
     "title": "Szukaj czatów i asystentów",
@@ -722,11 +743,38 @@
     "preview": "Podgląd",
     "no-files": "Brak plików",
     "download": "Pobierz",
+    "move": "Przenieś",
+    "share": "Udostępnij",
     "search-placeholder": "Wyszukaj pliki",
     "status-ready": "Gotowy",
     "status-processing": "Przetwarzanie",
     "status-failed": "Błąd",
     "status-uploading": "Wysyłanie"
+  },
+  "folders": {
+    "title": "Foldery",
+    "new": "Nowy folder",
+    "all-files": "Wszystkie pliki",
+    "my-files": "Moje pliki",
+    "shared-with-me": "Udostępnione dla mnie",
+    "delete": "Usuń",
+    "delete-title": "Usuń folder \"{folderName}\"",
+    "delete-confirm-with-files": "Spowoduje to trwałe usunięcie {count, plural, one {# pliku} few {# plików} other {# plików}} z tego folderu i wszystkich podfolderów. Pliki zostaną usunięte z bazy wiedzy, magazynu i indeksu wyszukiwania. Tej operacji nie można cofnąć.",
+    "delete-confirm-empty": "Czy na pewno chcesz usunąć ten pusty folder? Tej operacji nie można cofnąć.",
+    "deleting": "Usuwanie...",
+    "cancel": "Anuluj",
+    "folder-deleted": "Folder usunięty",
+    "folder-created": "Folder utworzony",
+    "failed-to-delete": "Nie udało się usunąć folderu",
+    "failed-to-create": "Nie udało się utworzyć folderu",
+    "upload": "Dodaj pliki",
+    "add-document": "Dodaj dokument",
+    "from-disk": "Z dysku",
+    "create-document": "Stwórz dokument",
+    "add-from-url": "Dodaj z linku",
+    "drag-drop": "Przeciągnij i upuść pliki tutaj",
+    "or-browse": "lub kliknij, aby wybrać",
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików"
   },
   "file-delete-modal": {
     "title": "Usuń plik",
@@ -954,7 +1002,8 @@
       "share": "Udostępnij",
       "storage-used": "{percentage}% użycia pamięci",
       "selected": "zaznaczonych",
-      "last-message": "Ostatnia wiadomość {time}"
+      "last-message": "Ostatnia wiadomość {time}",
+      "powered-by": "Obsługiwany przez {name}"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

@@ -43,6 +43,18 @@ export async function getTemperatureSetting(orgId: string): Promise<number> {
   return settings?.temperature ?? defaultOrganizationSettings.temperature;
 }
 
+// --- LiteLLM API Key ---
+
+export async function getLiteLLMOrgApiKey(
+  orgId: string,
+): Promise<string | null> {
+  const settings = await getSettings(orgId);
+  if (!settings?.litellmApiKey) {
+    return null;
+  }
+  return decryptApiKey(settings.litellmApiKey);
+}
+
 // --- OpenAI API Key ---
 
 export async function saveOpenaiAPIKey(

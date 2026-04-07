@@ -90,6 +90,7 @@
     "Forgot-password": "Forgot your password?",
     "Provide-email": "Your email",
     "Send-reset-code": "Send password reset code",
+    "email-sent": "Password reset email sent! Check your inbox.",
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Reset password"
@@ -257,7 +258,8 @@
   "success-toast": {
     "copied": "Copied",
     "deleted": "Deleted",
-    "saved": "Saved"
+    "saved": "Saved",
+    "files-uploaded": "{count} file(s) uploaded"
   },
   "error-toast": {
     "no-user-id": "user id missing",
@@ -584,6 +586,9 @@
     "recent": {
       "title": "Recent"
     },
+    "shared": {
+      "title": "Shared with me"
+    },
     "footer": {
       "my-profile": "My profile",
       "settings": "Settings",
@@ -615,6 +620,10 @@
     "cancel": "Cancel",
     "add-selected": "Add {count, plural, =0 {selected} =1 {1 file} other {# files}}"
   },
+  "page-drop": {
+    "drop-to-chat": "Drop files here to add to chat",
+    "drop-to-project": "Drop files here to add to project knowledge"
+  },
   "prompt-attachments": {
     "upload-file": "Upload file",
     "from-knowledge-base": "From Knowledge Base",
@@ -629,6 +638,7 @@
     "no-folders": "No folders found",
     "no-results": "No folders match your search",
     "no-files": "This folder is empty",
+    "no-shared-files": "No files have been shared with you yet",
     "select-files-title": "Select files",
     "back": "Back",
     "attach-selected": "Attach selected",
@@ -672,12 +682,22 @@
     "unstar": "Unstar",
     "rename": "Rename",
     "delete": "Delete",
+    "share": "Share",
     "rename-placeholder": "Thread name",
     "rename-title": "Rename thread",
     "delete-title": "Delete thread",
     "delete-confirm": "Are you sure you want to delete this thread? This action cannot be undone.",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "share-title": "Share thread",
+    "share-description": "Share this thread with organization members",
+    "share-save": "Save",
+    "share-success": "Thread sharing updated",
+    "share-no-members": "No other members in this organization",
+    "share-error": "Failed to update sharing",
+    "share-load-error": "Failed to load sharing info",
+    "share-retry": "Retry",
+    "shared-by": "Shared by {name}"
   },
   "assistants-page": {
     "title": "Assistants",
@@ -686,7 +706,8 @@
     "no-assistants": "No assistants yet",
     "no-assistants-description": "Create your first assistant to get started",
     "thread-count": "{count} threads",
-    "updated": "Updated {time}"
+    "updated": "Updated {time}",
+    "global-assistants": "Global Assistants"
   },
   "search-threads": {
     "title": "Search chats and assistants",
@@ -719,11 +740,38 @@
     "preview": "Preview",
     "no-files": "No files",
     "download": "Download",
+    "move": "Move",
+    "share": "Share",
     "search-placeholder": "Search in files...",
     "status-ready": "Ready",
     "status-processing": "Processing",
     "status-failed": "Failed",
     "status-uploading": "Uploading"
+  },
+  "folders": {
+    "title": "Folders",
+    "new": "New folder",
+    "all-files": "All Files",
+    "my-files": "My Files",
+    "shared-with-me": "Shared with me",
+    "delete": "Delete",
+    "delete-title": "Delete folder \"{folderName}\"",
+    "delete-confirm-with-files": "This will permanently delete {count, plural, one {# file} other {# files}} inside this folder and all subfolders. Files will be removed from the knowledge base, storage, and search index. This action cannot be undone.",
+    "delete-confirm-empty": "Are you sure you want to delete this empty folder? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "cancel": "Cancel",
+    "folder-deleted": "Folder deleted",
+    "folder-created": "Folder created",
+    "failed-to-delete": "Failed to delete folder",
+    "failed-to-create": "Failed to create folder",
+    "upload": "Upload",
+    "add-document": "Add document",
+    "from-disk": "From disk",
+    "create-document": "Create document",
+    "add-from-url": "Add from URL",
+    "drag-drop": "Drag & drop files here",
+    "or-browse": "or click to browse",
+    "no-shared-files": "No files have been shared with you yet"
   },
   "file-delete-modal": {
     "title": "Delete file",
@@ -996,7 +1044,8 @@
       "share": "Share",
       "storage-used": "{percentage}% memory used",
       "selected": "selected",
-      "last-message": "Last message {time}"
+      "last-message": "Last message {time}",
+      "powered-by": "Powered by {name}"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

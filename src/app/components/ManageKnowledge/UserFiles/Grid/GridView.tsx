@@ -20,11 +20,11 @@ type GridViewProps = {
   isError: boolean;
   showModal: ModalStateProps;
   deleteLoading: boolean;
-  toggleModal: (publicFileId: UserFile['publicId'] | null) => void;
+  toggleModal: (publicFileId: UserFile['id'] | null) => void;
   addFile: (newFile: UserFileType) => void;
-  removeFile: (publicFileId: UserFile['publicId']) => void;
+  removeFile: (publicFileId: UserFile['id']) => void;
   handleDelete: (
-    filePublicId: UserFile['publicId'],
+    fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
 };
@@ -64,23 +64,22 @@ export const GridView = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-4">
       {files.map((file) => (
         <FileCard
-          key={file.publicId}
+          key={file.id}
           file={file as UserFileTypeSafe}
           isLoading={isLoading}
           deleteLoading={deleteLoading}
           toggleModal={toggleModal}
         />
       ))}
-      {showModal.filePublicId && (
+      {showModal.fileId && (
         <DeleteFileModal
           isOpen={showModal.isOpen}
           onClose={() => toggleModal(null)}
           onConfirm={handleDelete}
           fileName={
-            files.find((f) => f.publicId === showModal.filePublicId)
-              ?.fileName ?? ''
+            files.find((f) => f.id === showModal.fileId)?.fileName ?? ''
           }
-          filePublicId={showModal.filePublicId}
+          fileId={showModal.fileId}
           isLoading={deleteLoading}
         />
       )}

@@ -5,11 +5,9 @@ import type {
 } from 'promptfoo';
 import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
-import { createNoopModeration, resolveApiKey } from './shared';
-import type { ProviderCredentials } from '@/libs/llm/types';
+import { createNoopModeration, getLiteLLMCredentials } from './shared';
 
 export interface ConversationProviderConfig {
-  provider?: ProviderCredentials['provider'];
   model?: string;
   answerInstructions?: string;
   projectInstruction?: string;
@@ -23,24 +21,17 @@ export class ConversationProvider implements ApiProvider {
   }
 
   id(): string {
-    return `conversation:${this.providerConfig.provider ?? 'openrouter'}:${this.providerConfig.model ?? 'openai/gpt-4o'}`;
+    return `conversation:litellm:${this.providerConfig.model ?? 'gpt-4o'}`;
   }
 
   async callApi(
     prompt: string,
     context?: CallApiContextParams,
   ): Promise<ProviderResponse> {
-    const provider = this.providerConfig.provider ?? 'openrouter';
-    const model = this.providerConfig.model ?? 'openai/gpt-4o';
-
-    const apiKey = resolveApiKey(provider);
-
-    if (!apiKey) {
-      return { error: `Missing API key for provider ${provider}` };
-    }
+    const model = this.providerConfig.model ?? 'gpt-4o';
 
     const answerGenerator = ChatCompletionFactory.createInstance(
-      { provider, apiKey } as ProviderCredentials,
+      getLiteLLMCredentials(),
       { model },
     );
 

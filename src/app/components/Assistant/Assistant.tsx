@@ -10,8 +10,15 @@ import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useMemo, useState } from 'react';
-import { DocumentTextIcon } from '@heroicons/react/24/outline';
+import {
+  PageDropOverlay,
+  usePageDrop,
+  type DropZoneConfig,
+} from '@/app/components/PageDropOverlay';
+import { useTranslations } from 'next-intl';
+import { DocumentTextIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
+import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
@@ -22,8 +29,7 @@ import { getOrganizationSettings } from '@/app/lib/actions/getOrganizationSettin
 import { getThreadDetailsAction } from '@/app/lib/actions/threads-actions';
 
 type ProjectForContext = {
-  id: number;
-  publicId: string;
+  id: string;
   title: string;
 };
 
@@ -69,6 +75,21 @@ export const Assistant = ({ threadId }: Props) => {
     string | null
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const tDrop = useTranslations('page-drop');
+  const { isDragging } = usePageDrop();
+
+  const dropZones: DropZoneConfig[] = useMemo(() => {
+    if (isPublicAccess) {
+      return [];
+    }
+    return [
+      {
+        label: tDrop('drop-to-chat'),
+        onDrop: (files) => promptFormRef.current?.dropFiles(files),
+      },
+    ];
+  }, [isPublicAccess, tDrop]);
 
   const allAttachments = useMemo(
     () => messages.flatMap((m) => m.attachments ?? []),
@@ -99,7 +120,6 @@ export const Assistant = ({ threadId }: Props) => {
           const mappedProjects: ProjectForContext[] = response.projects.map(
             (project) => ({
               id: project.id,
-              publicId: project.publicId,
               title: project.title,
             }),
           );
@@ -166,6 +186,7 @@ export const Assistant = ({ threadId }: Props) => {
 
   return (
     <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
+      <PageDropOverlay visible={isDragging} zones={dropZones} />
       <div className="flex flex-1 min-w-0 flex-col font-sans">
         <div className="sticky top-0 z-40 flex items-center justify-between gap-2 border-b border-border/40 bg-background/80 backdrop-blur-md px-4 py-2.5">
           <BreadcrumbNavigation threadId={threadId} />
@@ -178,6 +199,16 @@ export const Assistant = ({ threadId }: Props) => {
               <ThreadModelLabel
                 model={currentThreadModel || organizationDefaultModel}
               />
+            )}
+            {!isPublicAccess && (
+              <button
+                type="button"
+                onClick={() => setIsShareOpen(true)}
+                className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                title="Share"
+              >
+                <ShareIcon className="size-4" />
+              </button>
             )}
             {allAttachments.length > 0 && (
               <button
@@ -195,6 +226,12 @@ export const Assistant = ({ threadId }: Props) => {
             )}
           </div>
         </div>
+
+        <ShareThreadDialog
+          isOpen={isShareOpen}
+          onClose={() => setIsShareOpen(false)}
+          threadId={threadId}
+        />
 
         <div className="flex-1">
           <ChatOutput

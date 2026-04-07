@@ -48,13 +48,13 @@ export const sidebarSlice = createSlice({
     },
     addThreadToProject: (
       state,
-      action: PayloadAction<{ projectId: number; thread: ThreadType }>,
+      action: PayloadAction<{ projectId: string; thread: ThreadType }>,
     ) => {
       const { projectId, thread } = action.payload;
-      const project = state.projects.find((p) => (p as any).id === projectId);
+      const project = state.projects.find((p) => p.id === projectId);
       if (project) {
         const existingThreadIndex = project.threads.findIndex(
-          (t) => t.publicId === thread.publicId,
+          (t) => t.id === thread.id,
         );
         if (existingThreadIndex === -1) {
           project.threads.unshift(thread);
@@ -67,7 +67,7 @@ export const sidebarSlice = createSlice({
     ) => {
       const { threadId, model } = action.payload;
       state.projects.forEach((project) => {
-        const thread = project.threads.find((t) => t.publicId === threadId);
+        const thread = project.threads.find((t) => t.id === threadId);
         if (thread) {
           thread.preferredModel = model;
         }

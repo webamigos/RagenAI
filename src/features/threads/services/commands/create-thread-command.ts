@@ -16,8 +16,8 @@ export const createThreadCommand = async ({
   userId,
 }: {
   visitorId: string | null | undefined;
-  projectId?: number;
-  mentionedProjectId?: number;
+  projectId?: string;
+  mentionedProjectId?: string;
   preferredModel?: string;
   threadDocuments?: ThreadDocumentUI[];
   orgId: string;
@@ -51,13 +51,13 @@ export const createThreadCommand = async ({
 
         const validFiles = await db.userFile.findMany({
           where: {
-            publicId: { in: userFileIds },
+            id: { in: userFileIds },
             organizationId: orgId,
           },
-          select: { publicId: true },
+          select: { id: true },
         });
 
-        const validFileIds = new Set(validFiles.map((f) => f.publicId));
+        const validFileIds = new Set(validFiles.map((f) => f.id));
         const validDocuments = documentsWithUserFileId.filter((doc) =>
           validFileIds.has(doc.userFileId!),
         );
@@ -88,12 +88,12 @@ export const createThreadCommand = async ({
     trackAudit({
       action: 'thread.created',
       entityType: 'thread',
-      entityId: threadRecord.publicId,
+      entityId: threadRecord.id,
       newData: { projectId: projectId ?? null },
     });
 
     return {
-      publicId: threadRecord.publicId,
+      id: threadRecord.id,
       projectId: projectId ?? null,
     };
   } catch (error) {
@@ -105,8 +105,8 @@ export const createThreadCommand = async ({
 export const createThreadAction = async (
   orgId: string,
   userId: string | undefined,
-  projectId?: number,
-  mentionedProjectId?: number,
+  projectId?: string,
+  mentionedProjectId?: string,
   preferredModel?: string,
   threadDocuments?: ThreadDocumentUI[],
 ): Promise<ThreadAction> => {
@@ -124,7 +124,7 @@ export const createThreadAction = async (
     return {
       success: true,
       thread: {
-        publicId: thread.publicId,
+        id: thread.id,
         projectId: thread.projectId,
       },
     };

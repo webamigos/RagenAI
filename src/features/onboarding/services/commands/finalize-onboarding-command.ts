@@ -78,10 +78,9 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           await import('@/features/organizations/services/commands/create-organization-command');
         await createOrganizationWithDefaultProjectCommand(orgId, userId);
 
-        // Set default vector store (meilisearch for local dev, can be changed in settings)
+        // Set default vector store (qdrant for local dev, can be changed in settings)
         // This prevents defaulting to Supabase which may not be available
-        const defaultVectorStore =
-          process.env.DEFAULT_VECTOR_STORE || 'meilisearch';
+        const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'qdrant';
         await db.organization.update({
           where: { id: orgId },
           data: {
@@ -96,6 +95,18 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           { userId, orgId, vectorStore: defaultVectorStore },
           'Set default vector store for new organization',
         );
+
+        // Create LiteLLM team + virtual key
+        try {
+          const { ensureLiteLLMTeamCommand } =
+            await import('@/features/organizations/services/commands/litellm-team-command');
+          await ensureLiteLLMTeamCommand(orgId, `${userName}'s Organization`);
+        } catch (litellmError) {
+          logger.error(
+            { err: litellmError, orgId },
+            'Failed to create LiteLLM team during onboarding (will retry later)',
+          );
+        }
 
         // Set firstOrg to the created organization
         firstOrg = { id: orgId, name: `${userName}'s Organization` };

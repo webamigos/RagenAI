@@ -51,6 +51,28 @@ export async function saveOrgAllowedModelsAction(
     create: { organizationId: orgId, allowedModels: models },
   });
 
+  // Sync allowed models to LiteLLM team (direct API call — admin app can't import from main app)
+  try {
+    const litellmUrl = process.env.LITELLM_PROXY_URL;
+    const litellmKey = process.env.LITELLM_MASTER_KEY;
+    if (litellmUrl) {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (litellmKey) {
+        headers['Authorization'] = `Bearer ${litellmKey}`;
+      }
+      await fetch(`${litellmUrl}/team/update`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ team_id: orgId, models }),
+        signal: AbortSignal.timeout(5000),
+      });
+    }
+  } catch {
+    // LiteLLM sync is best-effort — don't block the admin action
+  }
+
   revalidatePath('/models');
   revalidatePath(`/organizations/${orgId}`);
 }

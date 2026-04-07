@@ -4,22 +4,22 @@ import db from '@ragenai/prisma-client';
 
 export const getDocumentPreviewQuery = async ({
   orgId,
-  documentPublicId,
+  documentId,
 }: {
   orgId: string;
-  documentPublicId: string;
+  documentId: string;
 }) => {
   return await db.userDocument.findMany({
     where: {
       organizationId: orgId,
-      publicId: documentPublicId,
+      id: documentId,
     },
     select: {
       content: true,
       title: true,
       file: {
         select: {
-          publicId: true,
+          id: true,
           fileType: true,
           fileExtension: true,
         },

@@ -16,16 +16,16 @@ type Props = {
   isOpen: boolean;
   isLoading?: boolean;
   fileName: string;
-  filePublicId: string;
+  fileId: string;
   onClose: () => void;
-  onConfirm: (filePublicId: string, fileName: string) => void;
+  onConfirm: (fileId: string, fileName: string) => void;
 };
 
 export const DeleteFileModal = ({
   isOpen,
   fileName,
   isLoading,
-  filePublicId,
+  fileId,
   onClose,
   onConfirm,
 }: Props) => {
@@ -53,7 +53,7 @@ export const DeleteFileModal = ({
           </Button>
           <Button
             variant="destructive"
-            onClick={() => onConfirm(filePublicId, fileName)}
+            onClick={() => onConfirm(fileId, fileName)}
             disabled={isLoading}
           >
             {isLoading ? t('deleting') : t('delete')}

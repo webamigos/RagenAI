@@ -5,7 +5,7 @@ import {
   getCurrentUser,
 } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { getProjectByPublicIdOrThrowQuery as getProjectByPublicIdOrThrow } from '@/features/projects/services/queries/get-project-query';
+import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { uploadToS3 } from '@/app/lib/services/aws';
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     getCurrentUser(),
     db.organization.findUnique({
       where: { id: orgId },
-      select: { slug: true, publicId: true },
+      select: { slug: true, id: true },
     }),
   ]);
 
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const formProjectId = formData.get('projectId')?.toString();
+    const folderId = formData.get('folderId')?.toString() || null;
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     let projectRecord = undefined;
     if (formProjectId) {
-      projectRecord = await getProjectByPublicIdOrThrow(formProjectId);
+      projectRecord = await getProjectByIdOrThrow(formProjectId);
       if (projectRecord.organizationId !== orgId) {
         return NextResponse.json(
           { message: 'Project does not belong to this organization' },
@@ -125,11 +126,17 @@ export async function POST(request: NextRequest) {
           orgId,
           fileType,
           projectRecord?.id ?? null,
+          {
+            folderId: folderId || null,
+            ownerId: user?.id ?? null,
+            fileExtension: fileExtension ?? null,
+            fileMimeType: file.type || null,
+          },
         );
 
         // Step 2: upload to S3
         await uploadToS3(
-          `${fileRecord.publicId}.${fileExtension}`,
+          `${fileRecord.id}.${fileExtension}`,
           parsedFile.content as Buffer,
         );
 
@@ -156,9 +163,9 @@ export async function POST(request: NextRequest) {
           args: [
             {
               ...fileRecord,
-              projectPublicId: projectRecord?.publicId ?? null,
+              projectId: projectRecord?.id ?? null,
               organizationSlug: org.slug,
-              organizationPublicId: org.publicId,
+              organizationId: orgId,
               userEmail: user?.email ?? undefined,
               userId: user?.id ?? undefined,
             },
@@ -174,7 +181,7 @@ export async function POST(request: NextRequest) {
         processedFiles.push({
           fileName: parsedFile.fileName,
           fileSize: file.size,
-          uniqueFileId: fileRecord.publicId,
+          uniqueFileId: fileRecord.id,
         });
 
         // Update running totals for cumulative validation

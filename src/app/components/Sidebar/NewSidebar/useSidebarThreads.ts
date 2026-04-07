@@ -4,6 +4,7 @@ import { useEffect, useCallback, useState, useRef } from 'react';
 import { useUser } from '@/app/hooks/use-auth';
 import { useActiveOrganization } from '@/app/hooks/use-better-auth';
 import { getSidebarThreads, toggleThreadStarred } from '@/app/actions';
+import { getSharedThreadsAction } from '@/features/threads/services/actions/thread-share-actions';
 import { logger } from '@/app/lib/utils/logger';
 import type { SidebarThreadItem } from '@/features/threads/contracts/thread.types';
 
@@ -32,6 +33,7 @@ export const useSidebarThreads = () => {
   const activeOrgId = activeOrg?.id;
   const [starredThreads, setStarredThreads] = useState<SidebarThreadItem[]>([]);
   const [recentThreads, setRecentThreads] = useState<SidebarThreadItem[]>([]);
+  const [sharedThreads, setSharedThreads] = useState<SidebarThreadItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [recentSkip, setRecentSkip] = useState(0);
@@ -45,7 +47,10 @@ export const useSidebarThreads = () => {
       }
       setIsLoading(true);
       try {
-        const result = await getSidebarThreads(user.id, RECENT_LIMIT, skip);
+        const [result, shared] = await Promise.all([
+          getSidebarThreads(user.id, RECENT_LIMIT, skip),
+          skip === 0 ? getSharedThreadsAction() : Promise.resolve(null),
+        ]);
         setStarredThreads(result.starred as SidebarThreadItem[]);
         if (append) {
           setRecentThreads((prev) => [
@@ -54,6 +59,9 @@ export const useSidebarThreads = () => {
           ]);
         } else {
           setRecentThreads(result.recent as SidebarThreadItem[]);
+        }
+        if (shared !== null) {
+          setSharedThreads(shared);
         }
         setHasMore(result.hasMore);
       } catch (error) {
@@ -72,6 +80,7 @@ export const useSidebarThreads = () => {
       if (prevOrgIdRef.current !== undefined) {
         setStarredThreads([]);
         setRecentThreads([]);
+        setSharedThreads([]);
         setRecentSkip(0);
         setHasMore(false);
       }
@@ -93,7 +102,7 @@ export const useSidebarThreads = () => {
       if (event.type === 'thread-created') {
         setRecentThreads((prev) => {
           // Avoid duplicates
-          if (prev.some((t) => t.publicId === event.thread.publicId)) {
+          if (prev.some((t) => t.id === event.thread.id)) {
             return prev;
           }
           return [event.thread, ...prev];
@@ -109,42 +118,34 @@ export const useSidebarThreads = () => {
   }, [recentSkip, fetchThreads]);
 
   const toggleStar = useCallback(
-    async (threadPublicId: string, isStarred: boolean) => {
+    async (threadId: string, isStarred: boolean) => {
       // Optimistic update
       const updateThread = (thread: SidebarThreadItem): SidebarThreadItem =>
-        thread.publicId === threadPublicId
-          ? { ...thread, isStarred: isStarred }
-          : thread;
+        thread.id === threadId ? { ...thread, isStarred: isStarred } : thread;
 
       if (isStarred) {
         // Moving from recent to starred
-        const thread = recentThreads.find((t) => t.publicId === threadPublicId);
+        const thread = recentThreads.find((t) => t.id === threadId);
         if (thread) {
           const updated = { ...thread, isStarred: true };
           setStarredThreads((prev) => [updated, ...prev]);
-          setRecentThreads((prev) =>
-            prev.filter((t) => t.publicId !== threadPublicId),
-          );
+          setRecentThreads((prev) => prev.filter((t) => t.id !== threadId));
         } else {
           // Thread might be in starred already (shouldn't happen, but be safe)
           setStarredThreads((prev) => prev.map(updateThread));
         }
       } else {
         // Moving from starred to recent
-        const thread = starredThreads.find(
-          (t) => t.publicId === threadPublicId,
-        );
+        const thread = starredThreads.find((t) => t.id === threadId);
         if (thread) {
           const updated = { ...thread, isStarred: false };
-          setStarredThreads((prev) =>
-            prev.filter((t) => t.publicId !== threadPublicId),
-          );
+          setStarredThreads((prev) => prev.filter((t) => t.id !== threadId));
           setRecentThreads((prev) => [updated, ...prev]);
         }
       }
 
       try {
-        const result = await toggleThreadStarred(threadPublicId, isStarred);
+        const result = await toggleThreadStarred(threadId, isStarred);
         if (!result.success) {
           // Revert on failure
           fetchThreads(0);
@@ -156,23 +157,16 @@ export const useSidebarThreads = () => {
     [starredThreads, recentThreads, fetchThreads],
   );
 
-  const renameThread = useCallback(
-    (threadPublicId: string, newTitle: string) => {
-      const update = (t: SidebarThreadItem): SidebarThreadItem =>
-        t.publicId === threadPublicId ? { ...t, title: newTitle } : t;
-      setStarredThreads((prev) => prev.map(update));
-      setRecentThreads((prev) => prev.map(update));
-    },
-    [],
-  );
+  const renameThread = useCallback((threadId: string, newTitle: string) => {
+    const update = (t: SidebarThreadItem): SidebarThreadItem =>
+      t.id === threadId ? { ...t, title: newTitle } : t;
+    setStarredThreads((prev) => prev.map(update));
+    setRecentThreads((prev) => prev.map(update));
+  }, []);
 
-  const removeThread = useCallback((threadPublicId: string) => {
-    setStarredThreads((prev) =>
-      prev.filter((t) => t.publicId !== threadPublicId),
-    );
-    setRecentThreads((prev) =>
-      prev.filter((t) => t.publicId !== threadPublicId),
-    );
+  const removeThread = useCallback((threadId: string) => {
+    setStarredThreads((prev) => prev.filter((t) => t.id !== threadId));
+    setRecentThreads((prev) => prev.filter((t) => t.id !== threadId));
   }, []);
 
   const refetch = useCallback(() => {
@@ -184,6 +178,7 @@ export const useSidebarThreads = () => {
   return {
     starredThreads,
     recentThreads,
+    sharedThreads,
     isLoading,
     hasMore,
     loadMore,

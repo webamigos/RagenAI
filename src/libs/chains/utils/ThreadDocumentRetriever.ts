@@ -124,34 +124,22 @@ export class ThreadDocumentRetriever {
     maxChunks: number,
   ): Promise<VectorStoreDocument[]> {
     try {
-      // Lookup internal UserFile.id from UserFile.publicId
-      const userFilePublicIds = threadDocuments
+      // Get UserFile IDs from thread documents
+      const userFileIds = threadDocuments
         .map((doc) => doc.userFileId)
         .filter(Boolean) as string[];
-      const userFiles = await db.userFile.findMany({
-        where: {
-          publicId: {
-            in: userFilePublicIds,
-          },
-        },
-        select: {
-          id: true,
-          publicId: true,
-        },
-      });
 
-      if (userFiles.length === 0) {
+      if (userFileIds.length === 0) {
         logger.warn(
-          { userFilePublicIds },
-          'ThreadDocumentRetriever: No UserFiles found for vectorstore search',
+          'ThreadDocumentRetriever: No UserFile IDs found for vectorstore search',
         );
         return [];
       }
 
-      const internalUserFileIds = userFiles.map((file) => file.id);
+      const internalUserFileIds = userFileIds;
 
-      // Search vectorstore with fileId filter (Meilisearch format)
-      const meilisearchFilter = {
+      // Search vectorstore with fileId filter (intermediate format — works with all backends)
+      const fileIdFilter = {
         should: internalUserFileIds.map((fileId) => ({
           key: 'metadata.file_id',
           match: {
@@ -163,13 +151,14 @@ export class ThreadDocumentRetriever {
       const searchResults = await this.vectorStore.similaritySearch(
         query,
         maxChunks * 2, // Get more results for better filtering
-        meilisearchFilter,
+        fileIdFilter,
       );
 
       // Additional filtering to ensure results match our files
+      // Metadata uses snake_case (file_id) — check both for safety
       const filteredResults = searchResults
         .filter((doc) => {
-          const fileId = doc.metadata?.fileId;
+          const fileId = doc.metadata?.file_id ?? doc.metadata?.fileId;
           return fileId && internalUserFileIds.includes(fileId);
         })
         .slice(0, maxChunks);

@@ -24,6 +24,7 @@ export const NewMainSidebarBody = () => {
   const {
     starredThreads,
     recentThreads,
+    sharedThreads,
     isLoading,
     hasMore,
     loadMore,
@@ -58,9 +59,9 @@ export const NewMainSidebarBody = () => {
           <SidebarHeading>{t('starred.title')}</SidebarHeading>
           {starredThreads.map((thread) => (
             <SidebarThreadItem
-              key={thread.publicId}
+              key={thread.id}
               thread={thread}
-              isActive={thread.publicId === activeThread}
+              isActive={thread.id === activeThread}
               onClose={closeSidebar}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
@@ -70,44 +71,71 @@ export const NewMainSidebarBody = () => {
         </SidebarSection>
       )}
 
+      {/* Shared threads */}
+      {sharedThreads.length > 0 && (
+        <SidebarSection>
+          <SidebarHeading>{t('shared.title')}</SidebarHeading>
+          {sharedThreads.map((thread) => (
+            <SidebarThreadItem
+              key={thread.id}
+              thread={thread}
+              isActive={thread.id === activeThread}
+              onClose={closeSidebar}
+              onToggleStar={toggleStar}
+              onRenamed={renameThread}
+              onDeleted={removeThread}
+              isShared
+            />
+          ))}
+        </SidebarSection>
+      )}
+
       {/* Recent threads */}
       <SidebarSection>
         <SidebarHeading>{t('recent.title')}</SidebarHeading>
-        {isLoading && recentThreads.length === 0 ? (
-          <div className="px-2 py-4 text-center">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400 mx-auto" />
-          </div>
-        ) : recentThreads.length === 0 && starredThreads.length === 0 ? (
-          <div className="px-2 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
-            {t('threads.no-threads')}
-          </div>
-        ) : (
-          <>
-            {recentThreads.map((thread) => (
-              <SidebarThreadItem
-                key={thread.publicId}
-                thread={thread}
-                isActive={thread.publicId === activeThread}
-                onClose={closeSidebar}
-                onToggleStar={toggleStar}
-                onRenamed={renameThread}
-                onDeleted={removeThread}
-              />
-            ))}
-            {hasMore && (
-              <button
-                type="button"
-                onClick={loadMore}
-                disabled={isLoading}
-                className="w-full px-2 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
-              >
-                {isLoading
-                  ? '...'
-                  : t('threads.load-more', { defaultMessage: 'Load more' })}
-              </button>
-            )}
-          </>
-        )}
+        {(() => {
+          if (isLoading && recentThreads.length === 0) {
+            return (
+              <div className="px-2 py-4 text-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400 mx-auto" />
+              </div>
+            );
+          }
+          if (recentThreads.length === 0 && starredThreads.length === 0) {
+            return (
+              <div className="px-2 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                {t('threads.no-threads')}
+              </div>
+            );
+          }
+          return (
+            <>
+              {recentThreads.map((thread) => (
+                <SidebarThreadItem
+                  key={thread.id}
+                  thread={thread}
+                  isActive={thread.id === activeThread}
+                  onClose={closeSidebar}
+                  onToggleStar={toggleStar}
+                  onRenamed={renameThread}
+                  onDeleted={removeThread}
+                />
+              ))}
+              {hasMore && (
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  disabled={isLoading}
+                  className="w-full px-2 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
+                >
+                  {isLoading
+                    ? '...'
+                    : t('threads.load-more', { defaultMessage: 'Load more' })}
+                </button>
+              )}
+            </>
+          );
+        })()}
       </SidebarSection>
     </SidebarBody>
   );

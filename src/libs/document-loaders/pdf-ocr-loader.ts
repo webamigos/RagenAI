@@ -6,7 +6,7 @@ type PDFOCRDocumentLoaderProps = {
   fileName: string;
   fileId: string;
   organizationId: string;
-  projectId?: number;
+  projectId?: string;
 };
 
 /**
@@ -18,7 +18,7 @@ export class PDFOCRDocumentLoader {
   private fileName: string;
   private fileId: string;
   private organizationId: string;
-  private projectId?: number;
+  private projectId?: string;
 
   constructor({
     filePath,
@@ -40,7 +40,7 @@ export class PDFOCRDocumentLoader {
       this.fileName,
       this.fileId,
       this.organizationId,
-      this.projectId
+      this.projectId,
     );
 
     if (!success) {

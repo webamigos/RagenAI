@@ -21,13 +21,17 @@ export const createConnectorCommand = async (
 
   const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
   const baseUrl = providerDef.mcpServerUrl.replace(/\/+$/, '');
-  const mcpServerUrl =
+  let mcpServerUrl: string;
+  if (
     providerDef.authType === 'external_mcp' ||
     providerDef.authType === 'api_key_bearer'
-      ? baseUrl
-      : baseUrl.endsWith('/mcp')
-        ? baseUrl
-        : `${baseUrl}/mcp`;
+  ) {
+    mcpServerUrl = baseUrl;
+  } else if (baseUrl.endsWith('/mcp')) {
+    mcpServerUrl = baseUrl;
+  } else {
+    mcpServerUrl = `${baseUrl}/mcp`;
+  }
 
   try {
     const connector = await db.mcpConnector.upsert({

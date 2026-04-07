@@ -65,7 +65,7 @@ export async function getAdminOrgProjectsStorageQuery(
   const [projects, fileAggs] = await Promise.all([
     db.project.findMany({
       where: { organizationId: orgId },
-      select: { id: true, publicId: true, title: true },
+      select: { id: true, title: true },
     }),
     db.userFile.groupBy({
       by: ['projectId'],
@@ -86,7 +86,6 @@ export async function getAdminOrgProjectsStorageQuery(
     const usage = usageMap.get(project.id) ?? { totalBytes: 0, fileCount: 0 };
     return {
       projectId: project.id,
-      projectPublicId: project.publicId,
       projectTitle: project.title,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,

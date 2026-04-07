@@ -41,6 +41,8 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           type: z.string(),
           userFileId: z.string().optional(),
           sourceUrl: z.string().optional(),
+          imageData: z.string().optional(),
+          documentData: z.string().optional(),
         }),
       )
       .optional(),
@@ -53,13 +55,15 @@ export type MessageAttachment = {
   size: number;
   type: string;
   sourceUrl?: string;
+  imageData?: string; // base64 data URL for image attachments
+  documentData?: string; // base64 data URL for binary documents (PDF, EPUB)
 };
 
 export type MessageDto = {
   role: Role;
   content: MessageModel['content'];
   createdAt: string;
-  publicId: MessageModel['publicId'];
+  id: MessageModel['id'];
   runId?: MessageModel['runId'];
   rate?: MessageModel['rate'];
   messageType?: MessageModel['messageType'];
@@ -69,14 +73,14 @@ export type MessageDto = {
 };
 
 export type ApiMessageDto = {
-  id: MessageModel['publicId'];
+  id: MessageModel['id'];
   content: MessageModel['content'];
   role: Role;
   createdAt: string;
   runId: string; // TODO: to remove
 };
 
-export type MessageDtoWithoutPublicId = Omit<MessageDto, 'publicId'>;
+export type MessageDtoWithoutId = Omit<MessageDto, 'id'>;
 
 export type StreamedMessageDto = {
   content: string;

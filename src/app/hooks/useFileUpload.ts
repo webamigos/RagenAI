@@ -9,7 +9,7 @@ import { processFileType } from '../lib/utils/fileValidation';
 /**
  * Custom hook for managing file uploads
  */
-export function useFileUpload(projectPublicId: string) {
+export function useFileUpload(projectId: string) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
   const { organization } = useOrganization();
@@ -37,7 +37,7 @@ export function useFileUpload(projectPublicId: string) {
         });
       }
     },
-    [uploading]
+    [uploading],
   );
 
   /**
@@ -52,10 +52,10 @@ export function useFileUpload(projectPublicId: string) {
     setUploading(true);
     const formData = new FormData();
     files.forEach((file) => formData.append('files', file));
-    formData.append('projectId', projectPublicId);
+    formData.append('projectId', projectId);
 
     try {
-      await uploadProjectFiles(projectPublicId, formData);
+      await uploadProjectFiles(projectId, formData);
       successToast({ message: 'Files uploaded successfully' });
       setFiles([]);
       router.refresh();
@@ -66,7 +66,7 @@ export function useFileUpload(projectPublicId: string) {
     } finally {
       setUploading(false);
     }
-  }, [files, organization, projectPublicId, errorToast, successToast, router]);
+  }, [files, organization, projectId, errorToast, successToast, router]);
 
   return {
     files,

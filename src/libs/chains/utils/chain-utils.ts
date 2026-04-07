@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import type { ModerationInstance } from '@/app/lib/services/llm';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { ModerationError } from '../errors';
 
 export const normalizeAndSanitizeText = (input: string) => {
@@ -27,14 +28,50 @@ export const zodUserInputValidator = (input: string, maxLength: number) => {
 //Very naive implementation, consider using a more sophisticated approach like history summarization
 export const limitChatHistory = (
   history: string | undefined,
-  limit: number
+  limit: number,
 ) => {
   return history ? history.slice(-limit) : undefined;
 };
 
+export function partitionThreadDocuments(docs: ThreadDocumentUI[]): {
+  textDocs: ThreadDocumentUI[];
+  imageDocs: ThreadDocumentUI[];
+} {
+  const textDocs: ThreadDocumentUI[] = [];
+  const imageDocs: ThreadDocumentUI[] = [];
+  for (const doc of docs) {
+    if (doc.imageData) {
+      imageDocs.push(doc);
+    } else {
+      textDocs.push(doc);
+    }
+  }
+  return { textDocs, imageDocs };
+}
+
+export function buildUserMessageWithImages(
+  humanMessage: string,
+  imageDocuments?: ThreadDocumentUI[],
+):
+  | string
+  | Array<{ type: 'text'; text: string } | { type: 'image'; image: string }> {
+  if (!imageDocuments || imageDocuments.length === 0) {
+    return humanMessage;
+  }
+  const content: Array<
+    { type: 'text'; text: string } | { type: 'image'; image: string }
+  > = [{ type: 'text', text: humanMessage }];
+  for (const imgDoc of imageDocuments) {
+    if (imgDoc.imageData) {
+      content.push({ type: 'image', image: imgDoc.imageData });
+    }
+  }
+  return content;
+}
+
 export const runModeration = async (
   moderationInstance: ModerationInstance,
-  contentToModerate: string
+  contentToModerate: string,
 ): Promise<void> => {
   const { results } = await moderationInstance.invoke({
     input: contentToModerate,

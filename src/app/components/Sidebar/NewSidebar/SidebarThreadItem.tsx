@@ -9,23 +9,18 @@ type Props = {
   thread: SidebarThreadItemType;
   isActive: boolean;
   onClose?: () => void;
-  onToggleStar: (threadPublicId: string, isStarred: boolean) => void;
-  onRenamed?: (threadPublicId: string, newTitle: string) => void;
-  onDeleted?: (threadPublicId: string) => void;
+  onToggleStar: (threadId: string, isStarred: boolean) => void;
+  onRenamed?: (threadId: string, newTitle: string) => void;
+  onDeleted?: (threadId: string) => void;
+  isShared?: boolean;
 };
 
 function getThreadDisplayTitle(thread: SidebarThreadItemType): string {
-  if (thread.title) {
-    return thread.title;
-  }
-  if (thread.messages[0]?.content) {
-    return truncateFileName(thread.messages[0].content, 30);
-  }
-  return 'New conversation';
+  return thread.title || 'New conversation';
 }
 
 function getThreadHref(thread: SidebarThreadItemType): string {
-  return `/chats/${thread.publicId}`;
+  return `/chats/${thread.id}`;
 }
 
 export const SidebarThreadItem = ({
@@ -35,6 +30,7 @@ export const SidebarThreadItem = ({
   onToggleStar,
   onRenamed,
   onDeleted,
+  isShared = false,
 }: Props) => {
   const title = getThreadDisplayTitle(thread);
   const href = getThreadHref(thread);
@@ -58,6 +54,7 @@ export const SidebarThreadItem = ({
           onDeleted={onDeleted}
           side="right"
           align="start"
+          isOwner={!isShared}
         />
       </div>
     </div>

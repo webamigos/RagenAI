@@ -161,9 +161,9 @@ export class MeilisearchVectorStoreClient implements VectorStoreClient {
     // Configure filterable attributes for metadata-based filtering
     const filterableTask = await index.updateFilterableAttributes([
       'metadata.project_id',
-      'metadata.project_public_id',
       'metadata.file_id',
       'metadata.organization_id',
+      'metadata.accessible_by',
     ]);
     await this.client.waitForTask(filterableTask.taskUid);
 

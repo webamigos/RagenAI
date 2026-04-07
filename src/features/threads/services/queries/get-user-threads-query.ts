@@ -4,6 +4,7 @@ import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { logger } from '@/app/lib/utils/logger';
+import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 
 export const getUserThreadsQuery = async (
   visitorId: string,
@@ -50,11 +51,12 @@ export const getUserThreadsQuery = async (
     skip: skip,
     take: take,
     select: {
-      publicId: true,
+      id: true,
       createdAt: true,
       visitorId: true,
       projectId: true,
       isStarred: true,
+      encryptedDek: true,
       messages: {
         select: {
           content: true,
@@ -65,13 +67,36 @@ export const getUserThreadsQuery = async (
     },
   });
 
-  // Convert Date objects to ISO strings for Redux serialization
-  return threads.map((thread) => ({
-    ...thread,
-    createdAt: thread.createdAt.toISOString(),
-    messages: thread.messages.map((msg) => ({
-      ...msg,
-      createdAt: msg.createdAt.toISOString(),
-    })),
-  }));
+  // Decrypt messages and convert Date objects to ISO strings for Redux serialization
+  const results = await Promise.all(
+    threads.map(async (thread) => {
+      let decryptedMessages;
+      try {
+        decryptedMessages = await decryptMessageContents(
+          thread.messages,
+          thread.encryptedDek,
+        );
+      } catch (error) {
+        logger.error(
+          { err: error, threadId: thread.id },
+          'Failed to decrypt thread messages',
+        );
+        decryptedMessages = thread.messages.map((msg) => ({
+          ...msg,
+          content: '',
+        }));
+      }
+      const { encryptedDek: _, ...threadData } = thread;
+      return {
+        ...threadData,
+        createdAt: thread.createdAt.toISOString(),
+        messages: decryptedMessages.map((msg) => ({
+          ...msg,
+          createdAt: msg.createdAt.toISOString(),
+        })),
+      };
+    }),
+  );
+
+  return results;
 };

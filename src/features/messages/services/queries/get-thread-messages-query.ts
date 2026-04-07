@@ -4,19 +4,22 @@ import { type Thread } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import type { MessageAttachment } from '../../contracts/message.types';
+import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 
 export const getThreadMessagesQuery = async (
-  threadPublicId: Thread['publicId'],
+  threadId: Thread['id'],
   visitorId: Thread['visitorId'],
 ) => {
   try {
     const thread = await db.thread.findFirst({
-      where: { publicId: threadPublicId, visitorId: visitorId },
-      include: {
+      where: { id: threadId, visitorId: visitorId },
+      select: {
+        id: true,
+        encryptedDek: true,
+        mentionedProjectId: true,
         project: {
           select: {
             id: true,
-            publicId: true,
             title: true,
           },
         },
@@ -27,10 +30,10 @@ export const getThreadMessagesQuery = async (
       return { messages: [], threadContext: null };
     }
 
-    const messages = await db.message.findMany({
-      where: { threadId: thread?.id },
+    const rawMessages = await db.message.findMany({
+      where: { threadId: thread.id },
       select: {
-        publicId: true,
+        id: true,
         createdAt: true,
         content: true,
         role: true,
@@ -48,6 +51,17 @@ export const getThreadMessagesQuery = async (
       ],
     });
 
+    let messages;
+    try {
+      messages = await decryptMessageContents(rawMessages, thread.encryptedDek);
+    } catch (error) {
+      logger.error(
+        { err: error, threadId: thread.id },
+        'Failed to decrypt thread messages',
+      );
+      messages = rawMessages;
+    }
+
     // Get mentioned project details if exists
     let mentionedProject = null;
     if (thread.mentionedProjectId) {
@@ -56,7 +70,6 @@ export const getThreadMessagesQuery = async (
           where: { id: thread.mentionedProjectId },
           select: {
             id: true,
-            publicId: true,
             title: true,
           },
         });

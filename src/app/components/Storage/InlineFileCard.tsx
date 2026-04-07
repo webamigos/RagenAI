@@ -6,7 +6,7 @@ import { Checkbox } from '@ragenai/tui';
 
 type Props = {
   file: {
-    publicId: string;
+    id: string;
     fileName: string;
     fileSize: number;
     fileType: FileType;
@@ -14,7 +14,7 @@ type Props = {
   };
   selected?: boolean;
   selectionMode?: boolean;
-  onToggleSelect?: (publicId: string) => void;
+  onToggleSelect?: (fileId: string) => void;
 };
 
 export const InlineFileCard = memo(
@@ -34,7 +34,7 @@ export const InlineFileCard = memo(
 
     const handleCheckboxClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      onToggleSelect?.(file.publicId);
+      onToggleSelect?.(file.id);
     };
 
     return (

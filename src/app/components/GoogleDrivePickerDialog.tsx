@@ -495,97 +495,113 @@ export const GoogleDrivePickerDialog = ({
         {error && <div className="text-sm text-red-500 px-1">{error}</div>}
 
         <div ref={scrollContainerRef} className="h-96 overflow-y-auto -mx-1">
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
-            </div>
-          ) : files.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              {search ? t('no-results') : t('no-files')}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-0.5">
-              {insideFolder && selectableFiles.length > 0 && (
-                <button
-                  type="button"
-                  onClick={toggleSelectAll}
-                  className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Checkbox checked={allSelected} />
-                  <span>
-                    {allSelected ? t('deselect-all') : t('select-all')}
-                  </span>
-                  <span className="ml-auto">
-                    {selectedFileIds.size}/{selectableFiles.length}
-                  </span>
-                </button>
-              )}
-
-              {files.map((file) => {
-                const isFolder = file.mime_type === FOLDER_MIME_TYPE;
-                const isFileLoading = loadingFileId === file.id;
-
-                return (
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                </div>
+              );
+            }
+            if (files.length === 0) {
+              return (
+                <div className="text-center py-8 text-sm text-muted-foreground">
+                  {search ? t('no-results') : t('no-files')}
+                </div>
+              );
+            }
+            return (
+              <div className="flex flex-col gap-0.5">
+                {insideFolder && selectableFiles.length > 0 && (
                   <button
-                    key={file.id}
                     type="button"
-                    onClick={() => handleItemClick(file)}
-                    disabled={loadingFileId !== null || isAttaching}
-                    className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
+                    onClick={toggleSelectAll}
+                    className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {insideFolder && !isFolder && (
-                      <Checkbox checked={selectedFileIds.has(file.id)} />
-                    )}
-                    {isFileLoading ? (
-                      <div className="size-5 shrink-0 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
-                      </div>
-                    ) : isFolder ? (
-                      <img
-                        src="/assets/connectors/google-drive.svg"
-                        alt="Folder"
-                        className="size-5 shrink-0"
-                      />
-                    ) : (
-                      <img
-                        src="/assets/connectors/google-docs.svg"
-                        alt="Google Doc"
-                        className="size-5 shrink-0"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm truncate">{file.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDate(file.modified_time)}
-                        {file.owner && (
-                          <span className="ml-2">{file.owner}</span>
-                        )}
-                      </div>
-                    </div>
-                    {isFolder && (
-                      <span className="text-xs text-muted-foreground">→</span>
-                    )}
+                    <Checkbox checked={allSelected} />
+                    <span>
+                      {allSelected ? t('deselect-all') : t('select-all')}
+                    </span>
+                    <span className="ml-auto">
+                      {selectedFileIds.size}/{selectableFiles.length}
+                    </span>
                   </button>
-                );
-              })}
+                )}
 
-              {hasMorePages && !reachedBatchLimit && (
-                <div ref={sentinelRef} className="py-2">
-                  {isLoadingMore && (
-                    <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
-                    </div>
-                  )}
-                </div>
-              )}
+                {files.map((file) => {
+                  const isFolder = file.mime_type === FOLDER_MIME_TYPE;
+                  const isFileLoading = loadingFileId === file.id;
 
-              {reachedBatchLimit && (
-                <div className="text-center py-3 text-xs text-muted-foreground">
-                  {t('use-search-hint')}
-                </div>
-              )}
-            </div>
-          )}
+                  return (
+                    <button
+                      key={file.id}
+                      type="button"
+                      onClick={() => handleItemClick(file)}
+                      disabled={loadingFileId !== null || isAttaching}
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
+                    >
+                      {insideFolder && !isFolder && (
+                        <Checkbox checked={selectedFileIds.has(file.id)} />
+                      )}
+                      {(() => {
+                        if (isFileLoading) {
+                          return (
+                            <div className="size-5 shrink-0 flex items-center justify-center">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
+                            </div>
+                          );
+                        }
+                        if (isFolder) {
+                          return (
+                            <img
+                              src="/assets/connectors/google-drive.svg"
+                              alt="Folder"
+                              className="size-5 shrink-0"
+                            />
+                          );
+                        }
+                        return (
+                          <img
+                            src="/assets/connectors/google-docs.svg"
+                            alt="Google Doc"
+                            className="size-5 shrink-0"
+                          />
+                        );
+                      })()}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm truncate">{file.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(file.modified_time)}
+                          {file.owner && (
+                            <span className="ml-2">{file.owner}</span>
+                          )}
+                        </div>
+                      </div>
+                      {isFolder && (
+                        <span className="text-xs text-muted-foreground">→</span>
+                      )}
+                    </button>
+                  );
+                })}
+
+                {hasMorePages && !reachedBatchLimit && (
+                  <div ref={sentinelRef} className="py-2">
+                    {isLoadingMore && (
+                      <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {reachedBatchLimit && (
+                  <div className="text-center py-3 text-xs text-muted-foreground">
+                    {t('use-search-hint')}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {insideFolder && selectableFiles.length > 0 && (

@@ -2,7 +2,7 @@
 
 export { getDocumentByIdQuery as getDocumentById } from '@/features/documents/services/queries/get-document-query';
 
-export { getDocumentByPublicIdQuery as getDocumentByPublicId } from '@/features/documents/services/queries/get-document-query';
+export { getDocumentByIdWithFileQuery as getDocumentByIdWithFile } from '@/features/documents/services/queries/get-document-query';
 
 export { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 

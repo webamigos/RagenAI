@@ -12,25 +12,26 @@ import {
 } from '../../../lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
+import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 type InitializeRagChainParams = {
-  settings: OrganizationSettings;
+  settings: OrganizationSettings & { litellmApiKey?: string };
   orgId: string;
   userId?: string | null;
+  userTeamIds?: string[];
+  isOrgAdmin?: boolean;
   projectInstruction?: string | null;
-  projectId?: number | null;
-  projectPublicId?: string | null;
+  projectId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
 };
 
-const DEFAULT_REPHRASE_MODEL =
-  process.env.REPHRASE_MODEL || 'google/gemini-2.0-flash-001';
+const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
 const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
 const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   ? 0.5
@@ -40,9 +41,10 @@ export const initializeRagChain = async ({
   settings,
   orgId,
   userId,
+  userTeamIds = [],
+  isOrgAdmin = false,
   projectInstruction,
   projectId,
-  projectPublicId,
   threadDocuments,
   mcpTools,
   mcpContext,
@@ -54,10 +56,12 @@ export const initializeRagChain = async ({
       temperature: answerTemperature,
       prompt: answerInstructions,
       maxDocumentsToRetrieve,
+      litellmApiKey,
     } = settings;
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId: orgId,
+      litellmApiKey,
     });
     const contentModerator = createModerationInstance();
 
@@ -65,32 +69,43 @@ export const initializeRagChain = async ({
       apiKey,
       model: DEFAULT_REPHRASE_MODEL,
       temperature: DEFAULT_REPHRASE_TEMPERATURE,
+      litellmApiKey,
     });
     const answerGenerator = createChatCompletionInstance({
       apiKey,
       model: answerModel,
       temperature: answerTemperature,
+      litellmApiKey,
     });
 
     const orgMetadata = await getOrganizationMetadata(orgId);
     let vectorStore: VectorStoreClient;
-    let isMeilisearch = false;
 
     if (orgMetadata.vectorStore === 'supabase') {
       vectorStore = createSupabaseVectorStore(
         supabaseVectorStoreClient,
         embeddingModel,
         orgId,
-        projectPublicId ?? undefined,
+        projectId ?? undefined,
       );
-    } else {
+    } else if (orgMetadata.vectorStore === 'meilisearch') {
       vectorStore = createMeilisearchVectorStore(embeddingModel, orgId);
-      isMeilisearch = true;
+    } else {
+      // Default: Qdrant
+      vectorStore = createQdrantVectorStore(embeddingModel, orgId);
     }
 
-    const filterOptions = isMeilisearch
-      ? await buildMeilisearchFilter(orgId, projectId ?? null)
-      : undefined;
+    // Supabase applies its own filter via constructor — don't pass metadataFilter
+    const isSupabase = orgMetadata.vectorStore === 'supabase';
+    const metadataFilter = isSupabase
+      ? undefined
+      : await buildMetadataFilter(
+          orgId,
+          projectId ?? null,
+          userId ?? null,
+          userTeamIds,
+          isOrgAdmin,
+        );
 
     return await basicRagChain({
       models: {
@@ -100,9 +115,7 @@ export const initializeRagChain = async ({
         embeddings: embeddingModel,
       },
       config: {
-        // SupabaseVectorStore already has filter set in constructor, passing another filter causes error
-        // MeilisearchVectorStore needs filter passed to similaritySearch()
-        metadataFilter: filterOptions,
+        metadataFilter,
         maxDocumentsToRetrieve,
         answerInstructions: answerInstructions || '',
         projectInstruction: projectInstruction || '',
@@ -120,20 +133,43 @@ export const initializeRagChain = async ({
 };
 
 /**
- * Build Meilisearch filter based on project context:
+ * Build metadata filter based on project context and user access.
+ * Uses an intermediate filter format that both Qdrant and Meilisearch clients understand.
+ *
+ * - Always filters by organization_id
+ * - Non-admin users get accessible_by filter for document-level access control
  * - Thread with project: org_id AND (projectId = X OR fileId IN [imported_kb_source_ids])
  * - Thread without project (global KB): org_id AND projectId IS NULL
  */
-async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
+async function buildMetadataFilter(
+  orgId: string,
+  projectId: string | null,
+  userId: string | null,
+  userTeamIds: string[],
+  isOrgAdmin: boolean,
+) {
   const orgCondition = {
     key: 'metadata.organization_id',
     match: { value: orgId },
   };
 
+  // Build access control condition (org admins see everything)
+  const mustConditions = [orgCondition];
+  if (!isOrgAdmin && userId) {
+    const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
+    for (const teamId of userTeamIds) {
+      accessiblePrincipals.push(`team:${teamId}`);
+    }
+    mustConditions.push({
+      key: 'metadata.accessible_by',
+      match_any: { values: accessiblePrincipals },
+    } as unknown as typeof orgCondition);
+  }
+
   if (!projectId) {
     // Global KB: search files without a project
     return {
-      must: [orgCondition, { key: 'metadata.project_id', is_null: true }],
+      must: [...mustConditions, { key: 'metadata.project_id', is_null: true }],
     };
   }
 
@@ -147,7 +183,7 @@ async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
     // No KB imports — simple project filter
     return {
       must: [
-        orgCondition,
+        ...mustConditions,
         { key: 'metadata.project_id', match: { value: projectId } },
       ],
     };
@@ -155,7 +191,7 @@ async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
 
   // Project files OR imported KB source file embeddings
   return {
-    must: [orgCondition],
+    must: mustConditions,
     should: [
       { key: 'metadata.project_id', match: { value: projectId } },
       {
@@ -165,6 +201,22 @@ async function buildMeilisearchFilter(orgId: string, projectId: number | null) {
     ],
   };
 }
+
+const createQdrantVectorStore = (
+  embeddingModel: EmbeddingsProvider,
+  collectionName: string,
+): VectorStoreClient => {
+  logger.debug('creating qdrant vector store', {
+    url: process.env.QDRANT_URL,
+    collectionName,
+  });
+
+  return new QdrantVectorStoreClient(embeddingModel, {
+    url: process.env.QDRANT_URL || 'http://localhost:6333',
+    apiKey: process.env.QDRANT_API_KEY,
+    collectionName,
+  });
+};
 
 const createMeilisearchVectorStore = (
   embeddingModel: EmbeddingsProvider,
@@ -186,7 +238,7 @@ const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: EmbeddingsProvider,
   organizationId: string,
-  projectPublicId?: string,
+  projectId?: string,
 ): VectorStoreClient => {
   try {
     // SECURITY CRITICAL: This organizationId filter is the primary security boundary
@@ -197,8 +249,8 @@ const createSupabaseVectorStore = (
       organization_id: organizationId,
     };
 
-    if (projectPublicId) {
-      metadataFilter.project_public_id = projectPublicId;
+    if (projectId) {
+      metadataFilter.project_id = projectId;
     }
 
     return new SupabaseVectorStoreClient(embeddingModel, {

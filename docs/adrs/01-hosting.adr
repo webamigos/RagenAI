@@ -1,4 +1,0 @@
-2024-03-21 Przetestowane platformy:
-1. Vercel - ubija endpoint sse po 10sek, działa na razei bardzo źle
-2. Heroku - ubija endpoint sse po 55sek, działa tak średnio bo pojawiają się podwójne zapytania - agent zaczyna sam ze sobą rozmawiać
-3. Railway - pakują aplikację w kontener dockerowy i na razie wygląda obiecująco

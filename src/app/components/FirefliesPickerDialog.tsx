@@ -175,63 +175,71 @@ export const FirefliesPickerDialog = ({
         {error && <div className="text-sm text-red-500 px-1">{error}</div>}
 
         <div className="h-96 overflow-y-auto -mx-1">
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
-            </div>
-          ) : transcripts.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              {search ? t('no-results') : t('no-transcripts')}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-0.5">
-              {transcripts.map((transcript) => {
-                const isTranscriptLoading =
-                  loadingTranscriptId === transcript.id;
-                return (
-                  <button
-                    key={transcript.id}
-                    type="button"
-                    onClick={() => handleTranscriptClick(transcript)}
-                    disabled={loadingTranscriptId !== null}
-                    className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
-                  >
-                    {isTranscriptLoading ? (
-                      <div className="size-5 shrink-0 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                </div>
+              );
+            }
+            if (transcripts.length === 0) {
+              return (
+                <div className="text-center py-8 text-sm text-muted-foreground">
+                  {search ? t('no-results') : t('no-transcripts')}
+                </div>
+              );
+            }
+            return (
+              <div className="flex flex-col gap-0.5">
+                {transcripts.map((transcript) => {
+                  const isTranscriptLoading =
+                    loadingTranscriptId === transcript.id;
+                  return (
+                    <button
+                      key={transcript.id}
+                      type="button"
+                      onClick={() => handleTranscriptClick(transcript)}
+                      disabled={loadingTranscriptId !== null}
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
+                    >
+                      {isTranscriptLoading ? (
+                        <div className="size-5 shrink-0 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
+                        </div>
+                      ) : (
+                        <img
+                          src="/assets/connectors/fireflies.svg"
+                          alt="Fireflies"
+                          className="size-5 shrink-0"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm truncate">
+                          {transcript.title || t('untitled-transcript')}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(transcript.date)}
+                          {transcript.duration > 0 && (
+                            <span className="ml-2">
+                              {formatDuration(transcript.duration)}
+                            </span>
+                          )}
+                          {transcript.participants?.length > 0 && (
+                            <span className="ml-2">
+                              {t('participant-count', {
+                                count: transcript.participants.length,
+                              })}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    ) : (
-                      <img
-                        src="/assets/connectors/fireflies.svg"
-                        alt="Fireflies"
-                        className="size-5 shrink-0"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm truncate">
-                        {transcript.title || t('untitled-transcript')}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {formatDate(transcript.date)}
-                        {transcript.duration > 0 && (
-                          <span className="ml-2">
-                            {formatDuration(transcript.duration)}
-                          </span>
-                        )}
-                        {transcript.participants?.length > 0 && (
-                          <span className="ml-2">
-                            {t('participant-count', {
-                              count: transcript.participants.length,
-                            })}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })()}
         </div>
       </DialogContent>
     </Dialog>

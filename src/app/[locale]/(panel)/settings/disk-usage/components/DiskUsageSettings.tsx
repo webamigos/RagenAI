@@ -66,7 +66,7 @@ export function DiskUsageSettings({
     [],
   );
   const [filterProjects, setFilterProjects] = useState<
-    { publicId: string; title: string; orgName: string }[]
+    { id: string; title: string; orgName: string }[]
   >([]);
   const [filterOrgId, setFilterOrgId] = useState<string>('');
   const [filterProjectId, setFilterProjectId] = useState<string>('');
@@ -224,7 +224,7 @@ export function DiskUsageSettings({
 
   // Filter projects in detail view when a project filter is selected
   const filteredProjects = filterProjectId
-    ? projects.filter((p) => p.projectPublicId === filterProjectId)
+    ? projects.filter((p) => p.projectId === filterProjectId)
     : projects;
 
   // Prepare bar chart data for filtered orgs
@@ -273,7 +273,7 @@ export function DiskUsageSettings({
         >
           <option value="">All projects</option>
           {filterProjects.map((p) => (
-            <option key={p.publicId} value={p.publicId}>
+            <option key={p.id} value={p.id}>
               {p.title}
               {!filterOrgId && p.orgName ? ` (${p.orgName})` : ''}
             </option>
@@ -365,13 +365,15 @@ export function DiskUsageSettings({
                       <td className="p-3 text-right">{prettyBytes(limit)}</td>
                       <td className="p-3 text-right">
                         <span
-                          className={
-                            pct > 90
-                              ? 'text-red-500 font-semibold'
-                              : pct > 70
-                                ? 'text-amber-500'
-                                : ''
-                          }
+                          className={(() => {
+                            if (pct > 90) {
+                              return 'text-red-500 font-semibold';
+                            }
+                            if (pct > 70) {
+                              return 'text-amber-500';
+                            }
+                            return '';
+                          })()}
                         >
                           {pct.toFixed(1)}%
                         </span>

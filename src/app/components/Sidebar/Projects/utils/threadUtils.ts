@@ -13,18 +13,13 @@ export type ThreadCategories<T extends BaseThreadType> = {
 };
 
 export const getThreadTitle = (thread: ThreadType): string => {
-  if (!thread.messages?.length) {
-    return `Thread ${thread.publicId.substring(0, 8)}...`;
+  if (thread.title) {
+    return thread.title.length > 30
+      ? `${thread.title.substring(0, 30)}...`
+      : thread.title;
   }
 
-  const firstMessage = thread.messages[0];
-  if (!firstMessage?.content) {
-    return `Thread ${thread.publicId.substring(0, 8)}...`;
-  }
-
-  return firstMessage.content.length > 30
-    ? `${firstMessage.content.substring(0, 30)}...`
-    : firstMessage.content;
+  return 'New conversation';
 };
 
 export const categorizeThreadsByDate = <T extends BaseThreadType>(

@@ -37,8 +37,8 @@ function buildWhereClause(filters?: AiUsageFilters): Prisma.AiUsageWhereInput {
     where.organizationId = filters.organizationId;
   }
 
-  if (filters?.projectPublicId) {
-    where.project = { publicId: filters.projectPublicId };
+  if (filters?.projectId) {
+    where.project = { id: filters.projectId };
   }
 
   if (filters?.userId) {
@@ -83,7 +83,7 @@ export async function getAiUsageDashboardQuery(
         take: 500,
         include: {
           project: {
-            select: { publicId: true, title: true },
+            select: { id: true, title: true },
           },
           user: {
             select: { id: true, name: true, email: true },
@@ -136,7 +136,7 @@ export async function getAiUsageDashboardQuery(
   };
 
   const mappedItems: AiUsageListItem[] = items.map((item) => ({
-    publicId: item.publicId,
+    id: item.id,
     step: item.step,
     provider: item.provider,
     model: item.model,
@@ -149,7 +149,7 @@ export async function getAiUsageDashboardQuery(
     organizationName: orgNames.get(item.organizationId) ?? item.organizationId,
     organizationId: item.organizationId,
     project: item.project
-      ? { publicId: item.project.publicId, title: item.project.title }
+      ? { id: item.project.id, title: item.project.title }
       : null,
     user: item.user
       ? { id: item.user.id, name: item.user.name, email: item.user.email }
@@ -206,11 +206,9 @@ async function getDailyChartData(
     params.push(filters.organizationId);
   }
 
-  if (filters?.projectPublicId) {
-    conditions.push(
-      `project_id IN (SELECT id FROM projects WHERE public_id = $${idx++})`,
-    );
-    params.push(filters.projectPublicId);
+  if (filters?.projectId) {
+    conditions.push(`project_id = $${idx++}`);
+    params.push(filters.projectId);
   }
 
   if (filters?.userId) {
@@ -246,7 +244,7 @@ async function getDailyChartData(
        COUNT(*)::bigint AS calls,
        COALESCE(SUM(total_tokens), 0)::bigint AS tokens,
        COALESCE(SUM(estimated_cost), 0)::float8 AS cost
-     FROM ai_usages
+     FROM ai_usage
      WHERE ${conditions.join(' AND ')}
      GROUP BY DATE(created_at AT TIME ZONE 'UTC')
      ORDER BY date ASC`,
@@ -320,7 +318,7 @@ export async function getUsersForFilterQuery(
 
 export async function getProjectsForFilterQuery(
   orgId?: string,
-): Promise<{ publicId: string; title: string; orgName: string }[]> {
+): Promise<{ id: string; title: string; orgName: string }[]> {
   const where: Prisma.ProjectWhereInput = {};
   if (orgId) {
     where.organizationId = orgId;
@@ -329,7 +327,7 @@ export async function getProjectsForFilterQuery(
   const projects = await db.project.findMany({
     where,
     select: {
-      publicId: true,
+      id: true,
       title: true,
       organizationId: true,
     },
@@ -343,7 +341,7 @@ export async function getProjectsForFilterQuery(
   const orgNameMap = await getOrgNameMap(orgIds);
 
   return projects.map((p) => ({
-    publicId: p.publicId,
+    id: p.id,
     title: p.title,
     orgName: p.organizationId ? (orgNameMap.get(p.organizationId) ?? '') : '',
   }));

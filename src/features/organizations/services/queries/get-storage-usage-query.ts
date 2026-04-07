@@ -61,7 +61,7 @@ export async function getStorageUsageQuery(
  */
 export async function getProjectStorageUsageQuery(
   organizationId: string,
-  projectId: number,
+  projectId: string,
 ): Promise<{ totalBytes: number; fileCount: number }> {
   const agg = await db.userFile.aggregate({
     where: { organizationId: organizationId, projectId: projectId },

@@ -9,7 +9,13 @@ export const createFileCommand = async (
   fileSize: number,
   organizationId: string,
   fileType: FileType,
-  projectId: number | null,
+  projectId: string | null,
+  options?: {
+    folderId?: string | null;
+    ownerId?: string | null;
+    fileExtension?: string | null;
+    fileMimeType?: string | null;
+  },
 ) => {
   const file = await db.userFile.create({
     data: {
@@ -18,13 +24,17 @@ export const createFileCommand = async (
       fileSize,
       fileType,
       projectId,
+      folderId: options?.folderId ?? null,
+      ownerId: options?.ownerId ?? null,
+      fileExtension: options?.fileExtension ?? null,
+      fileMimeType: options?.fileMimeType ?? null,
     },
   });
 
   trackAudit({
     action: 'document.uploaded',
     entityType: 'document',
-    entityId: file.publicId,
+    entityId: file.id,
     newData: { fileName, fileSize, fileType },
   });
 

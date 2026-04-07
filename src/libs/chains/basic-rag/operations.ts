@@ -4,19 +4,26 @@ import { generateText } from 'ai';
 import type { VectorStoreClient } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { BaseChatChainInput } from '../types/common';
-import { combineDocuments } from '../utils/chain-utils';
+import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import {
+  combineDocuments,
+  buildUserMessageWithImages,
+} from '../utils/chain-utils';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
   humanTemplates,
   systemTemplates,
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
-import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
 
 type Message = {
   type: 'user' | 'assistant';
   content: string;
 };
+
+/** Multiplier for initial retrieval count when reranking is enabled. */
+const RERANK_RETRIEVAL_MULTIPLIER = 3;
 
 function formatChatHistory(chatHistory: string): Message[] {
   const lines = chatHistory.split('\n').filter((line) => line.trim());
@@ -78,6 +85,17 @@ export async function rephraseQuestion(
   return result.text;
 }
 
+/**
+ * Retrieve relevant documents from the vector store with optional reranking.
+ *
+ * When reranking is enabled (AWS credentials available):
+ * 1. Retrieve 3x the desired count from the vector store
+ * 2. Rerank candidates using Cohere Rerank v3.5 via Bedrock
+ * 3. Return the top-k most relevant documents
+ *
+ * When reranking is disabled (local dev without Bedrock):
+ * Falls back to returning the vector store results directly.
+ */
 export async function retrieveRelevantDocuments(
   vectorStore: VectorStoreClient,
   standaloneQuestion: string,
@@ -93,11 +111,25 @@ export async function retrieveRelevantDocuments(
       ? metadataFilter
       : undefined;
 
+  const useReranking = isRerankingEnabled();
+  const retrievalCount = useReranking
+    ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
+    : maxDocuments;
+
   const docs = await vectorStore.similaritySearch(
     standaloneQuestion,
-    maxDocuments,
+    retrievalCount,
     filter,
   );
+
+  if (useReranking && docs.length > maxDocuments) {
+    const reranked = await rerankDocuments(
+      standaloneQuestion,
+      docs,
+      maxDocuments,
+    );
+    return combineDocuments(reranked);
+  }
 
   return combineDocuments(docs);
 }
@@ -130,6 +162,7 @@ export function buildRagMessages(
   threadContext: string,
   answerInstructions?: string | null,
   projectInstructions?: string,
+  imageDocuments?: ThreadDocumentUI[],
 ): { system: string; messages: ModelMessage[] } {
   const effectiveAnswerInstructions =
     answerInstructions || DEFAULT_ANSWER_INSTRUCTIONS;
@@ -157,7 +190,11 @@ export function buildRagMessages(
     '{standalone_question}',
     standaloneQuestion,
   );
-  messages.push({ role: 'user', content: humanMessage });
+
+  messages.push({
+    role: 'user',
+    content: buildUserMessageWithImages(humanMessage, imageDocuments),
+  });
 
   return { system: systemMessage, messages };
 }
