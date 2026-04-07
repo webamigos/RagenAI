@@ -51,6 +51,7 @@ export const basicRagChain = async ({
           standaloneQuestion,
           config?.maxDocumentsToRetrieve,
           config?.metadataFilter,
+          config?.litellmApiKey,
         ),
         retrieveThreadDocuments(
           textThreadDocs,
