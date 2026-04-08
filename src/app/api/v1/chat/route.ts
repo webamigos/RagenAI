@@ -1,0 +1,104 @@
+import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import db from '@ragenai/prisma-client';
+import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
+import { getAllSettings } from '@/features/organizations/services/organization-settings';
+import { logger } from '@/app/lib/utils/logger';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
+}
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const chatRequestSchema = z.object({
+  prompt: z.string().min(1).max(10000),
+  assistantId: z.uuid(),
+  context: z.string().max(20000).optional(),
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { prompt, assistantId, context } = chatRequestSchema.parse(body);
+
+    const project = await db.project.findUnique({
+      where: { id: assistantId },
+      select: {
+        organizationId: true,
+        settings: { select: { instructions: true } },
+      },
+    });
+
+    if (!project?.organizationId) {
+      return NextResponse.json(
+        { error: 'Assistant not found', code: 404 },
+        { status: 404, headers: corsHeaders },
+      );
+    }
+
+    const { organizationId, settings: projectSettings } = project;
+    const rawSettings = await getAllSettings(organizationId);
+    const settings = { ...rawSettings, apiKey: rawSettings.apiKey ?? '' };
+
+    const ragChain = await initializeRagChain({
+      settings,
+      orgId: organizationId,
+      projectId: assistantId,
+      projectInstruction: projectSettings?.instructions ?? null,
+    });
+
+    const question = context
+      ? `${prompt}\n\nKontekst strony:\n${context}`
+      : prompt;
+
+    const result = await ragChain.stream({
+      question,
+      chat_history: '',
+    });
+
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of result.textStream) {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
+          );
+        }
+        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Content-Encoding': 'none',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+      },
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Error in /api/v1/chat');
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request', code: 400, details: error.issues },
+        { status: 400, headers: corsHeaders },
+      );
+    }
+
+    return new Response('Internal Server Error', {
+      status: 500,
+      headers: corsHeaders,
+    });
+  }
+}
