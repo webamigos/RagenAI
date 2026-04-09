@@ -65,6 +65,9 @@
     var sid = newUUID();
     var sessions = getSessions();
     sessions.unshift(sid);
+    if (sessions.length > 100) {
+      sessions = sessions.slice(0, 100);
+    }
     localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
     localStorage.setItem(CURRENT_KEY, sid);
     return sid;
