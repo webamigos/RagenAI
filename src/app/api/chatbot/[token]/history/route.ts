@@ -11,14 +11,53 @@ import { logger } from '@/app/lib/utils/logger';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
+function validateOrigin(
+  origin: string | null,
+  allowedOrigins: string[],
+): boolean {
+  if (allowedOrigins.length === 0) {
+    return true;
+  }
+  if (!origin) {
+    return false;
+  }
+  return allowedOrigins.some((allowed) => {
+    if (allowed.startsWith('*.')) {
+      return origin.endsWith(allowed.slice(1));
+    }
+    return allowed === origin;
+  });
+}
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
+function buildCorsHeaders(origin: string | null, allowedOrigins: string[]) {
+  const allowOrigin = allowedOrigins.length === 0 ? '*' : (origin ?? '*');
+
+  return {
+    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials':
+      allowedOrigins.length > 0 ? 'true' : 'false',
+  };
+}
+
+export async function OPTIONS(
+  req: NextRequest,
+  { params }: { params: Promise<{ token: string }> },
+) {
+  const { token } = await params;
+  const origin = req.headers.get('origin');
+  let allowedOrigins: string[] = [];
+  try {
+    const chatbot = await getChatbotByTokenQuery(token);
+    allowedOrigins = chatbot?.allowedOrigins ?? [];
+  } catch (err) {
+    logger.error({ err }, 'Error fetching chatbot in history OPTIONS handler');
+  }
+  return new NextResponse(null, {
+    status: 204,
+    headers: buildCorsHeaders(origin, allowedOrigins),
+  });
 }
 
 // GET /api/chatbot/[token]/history?sessionId=... — messages for one session
@@ -27,12 +66,16 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
+  const origin = req.headers.get('origin');
+
+  const fallbackCorsHeaders = { 'Access-Control-Allow-Origin': origin ?? '*' };
+
   const sessionId = req.nextUrl.searchParams.get('sessionId');
 
-  if (!sessionId) {
+  if (!sessionId || sessionId.length < 1 || sessionId.length > 256) {
     return NextResponse.json(
-      { error: 'sessionId required' },
-      { status: 400, headers: corsHeaders },
+      { error: 'sessionId required and must be 1–256 characters' },
+      { status: 400, headers: fallbackCorsHeaders },
     );
   }
 
@@ -43,14 +86,23 @@ export async function GET(
     logger.error({ err }, 'Error fetching chatbot by token in history GET');
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: corsHeaders },
+      { status: 500, headers: fallbackCorsHeaders },
     );
   }
 
   if (!chatbot) {
     return NextResponse.json(
       { error: 'Not found' },
-      { status: 404, headers: corsHeaders },
+      { status: 404, headers: fallbackCorsHeaders },
+    );
+  }
+
+  const corsHeaders = buildCorsHeaders(origin, chatbot.allowedOrigins);
+
+  if (!validateOrigin(origin, chatbot.allowedOrigins)) {
+    return NextResponse.json(
+      { error: 'Origin not allowed' },
+      { status: 403, headers: corsHeaders },
     );
   }
 
@@ -77,7 +129,7 @@ export async function GET(
 
 // POST /api/chatbot/[token]/history — session list with previews
 const sessionListSchema = z.object({
-  sessionIds: z.array(z.string()).min(1).max(100),
+  sessionIds: z.array(z.string().min(1).max(256)).min(1).max(100),
 });
 
 export async function POST(
@@ -85,6 +137,9 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
+  const origin = req.headers.get('origin');
+
+  const fallbackCorsHeaders = { 'Access-Control-Allow-Origin': origin ?? '*' };
 
   let body: unknown;
   try {
@@ -92,7 +147,7 @@ export async function POST(
   } catch {
     return NextResponse.json(
       { error: 'Invalid body' },
-      { status: 400, headers: corsHeaders },
+      { status: 400, headers: fallbackCorsHeaders },
     );
   }
 
@@ -100,7 +155,7 @@ export async function POST(
   if (!parsed.success) {
     return NextResponse.json(
       { error: 'Invalid body' },
-      { status: 400, headers: corsHeaders },
+      { status: 400, headers: fallbackCorsHeaders },
     );
   }
 
@@ -111,14 +166,23 @@ export async function POST(
     logger.error({ err }, 'Error fetching chatbot by token in history POST');
     return NextResponse.json(
       { error: 'Internal Server Error' },
-      { status: 500, headers: corsHeaders },
+      { status: 500, headers: fallbackCorsHeaders },
     );
   }
 
   if (!chatbot) {
     return NextResponse.json(
       { error: 'Not found' },
-      { status: 404, headers: corsHeaders },
+      { status: 404, headers: fallbackCorsHeaders },
+    );
+  }
+
+  const corsHeaders = buildCorsHeaders(origin, chatbot.allowedOrigins);
+
+  if (!validateOrigin(origin, chatbot.allowedOrigins)) {
+    return NextResponse.json(
+      { error: 'Origin not allowed' },
+      { status: 403, headers: corsHeaders },
     );
   }
 

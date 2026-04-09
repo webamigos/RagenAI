@@ -51,19 +51,29 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
     setSaving(true);
     setSaveError(false);
     try {
-      await updateChatbot(chatbot.id, {
+      const result = await updateChatbot(chatbot.id, {
         name: name.trim(),
         allowedOrigins,
         themeConfig,
       });
-      router.refresh();
-      if (mountedRef.current) {
-        setSaved(true);
-        savedTimeoutRef.current = setTimeout(() => {
-          if (mountedRef.current) {
-            setSaved(false);
+      if (result === null) {
+        logger.error({}, 'updateChatbot returned null — chatbot not found');
+        if (mountedRef.current) {
+          setSaveError(true);
+        }
+      } else {
+        router.refresh();
+        if (mountedRef.current) {
+          setSaved(true);
+          if (savedTimeoutRef.current) {
+            clearTimeout(savedTimeoutRef.current);
           }
-        }, 2000);
+          savedTimeoutRef.current = setTimeout(() => {
+            if (mountedRef.current) {
+              setSaved(false);
+            }
+          }, 2000);
+        }
       }
     } catch (err) {
       logger.error({ err }, 'Failed to save chatbot');
