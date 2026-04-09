@@ -198,5 +198,13 @@ test.describe('Authenticated pages smoke tests', () => {
         timeout: 10_000,
       });
     });
+
+    test('settings chatbots list page loads', async ({ page }) => {
+      await page.goto(ROUTES.settingsChatbots);
+      await expect(page).toHaveURL(/settings\/chatbots/);
+      await expect(page.getByText(/chatboty/i).first()).toBeVisible({
+        timeout: 10_000,
+      });
+    });
   });
 });

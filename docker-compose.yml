@@ -1,7 +1,6 @@
-version: "3"
 services:
   postgres:
-    image: postgres
+    image: postgres:16
     container_name: ragen-postgres
     restart: unless-stopped
     environment:
@@ -98,7 +97,7 @@ services:
       - ragen-network
 
   litellm-postgres:
-    image: postgres
+    image: postgres:16
     container_name: ragen-litellm-postgres
     restart: unless-stopped
     environment:

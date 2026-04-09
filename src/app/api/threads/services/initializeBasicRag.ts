@@ -29,6 +29,8 @@ type InitializeRagChainParams = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
+  /** Override the metadata filter — skips buildMetadataFilter when provided. */
+  metadataFilter?: object;
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
@@ -48,6 +50,7 @@ export const initializeRagChain = async ({
   threadDocuments,
   mcpTools,
   mcpContext,
+  metadataFilter: metadataFilterOverride,
 }: InitializeRagChainParams) => {
   try {
     const {
@@ -99,13 +102,14 @@ export const initializeRagChain = async ({
     const isSupabase = orgMetadata.vectorStore === 'supabase';
     const metadataFilter = isSupabase
       ? undefined
-      : await buildMetadataFilter(
+      : (metadataFilterOverride ??
+        (await buildMetadataFilter(
           orgId,
           projectId ?? null,
           userId ?? null,
           userTeamIds,
           isOrgAdmin,
-        );
+        )));
 
     return await basicRagChain({
       models: {

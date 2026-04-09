@@ -32,6 +32,7 @@ export const ROUTES = {
   settingsUsers: '/pl/settings/users',
   settingsAiUsage: '/pl/settings/ai-usage',
   settingsDiskUsage: '/pl/settings/disk-usage',
+  settingsChatbots: '/pl/settings/chatbots',
   publicAssistant: (accessToken: string) =>
     `/pl/public/assistants/${accessToken}`,
 } as const;

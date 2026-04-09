@@ -198,6 +198,9 @@
     "settings-connectors": {
       "title": "Connectors | Ragen AI"
     },
+    "settings-chatbots": {
+      "title": "Chatbots | Ragen AI"
+    },
     "settings-teams": {
       "title": "Teams | Ragen AI"
     },
@@ -414,7 +417,8 @@
       "users": "Users",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "chatbots": "Chatbots"
     },
     "general": {
       "profile": "Profile",
@@ -451,44 +455,50 @@
       "api-key-error": "Failed to register API key. Please check your key and try again.",
       "coming-soon": "Coming soon",
       "gmail-description": "Search emails and read messages.",
-      "notion-description": "Search pages, databases, and manage content.",
-      "providers": {
-        "GOOGLE_DRIVE": {
-          "name": "Google Drive",
-          "description": "Search and read documents from your Google Drive."
-        },
-        "GOOGLE_CALENDAR": {
-          "name": "Google Calendar",
-          "description": "View calendar events and check availability."
-        },
-        "GOOGLE_ANALYTICS": {
-          "name": "Google Analytics",
-          "description": "Access traffic reports, conversions, and audience insights."
-        },
-        "GOOGLE_ADS": {
-          "name": "Google Ads",
-          "description": "View campaigns, performance, and track costs."
-        },
-        "CLICKUP": {
-          "name": "ClickUp",
-          "description": "Manage tasks, projects, and workspaces."
-        },
-        "HUBSPOT": {
-          "name": "HubSpot",
-          "description": "Access contacts, companies, deals, and CRM data."
-        },
-        "FIREFLIES": {
-          "name": "Fireflies.ai",
-          "description": "Search meeting transcripts, summaries, and action items."
-        },
-        "GMAIL": {
-          "name": "Gmail",
-          "description": "Search emails and read messages."
-        },
-        "SLACK": {
-          "name": "Slack",
-          "description": "Search messages, channels, and send messages."
-        }
+      "notion-description": "Search pages, databases, and manage content."
+    },
+    "chatbots": {
+      "title": "Chatbots",
+      "description": "Create embeddable chat widgets powered by your knowledge base.",
+      "no-chatbots": "No chatbots yet. Create your first one.",
+      "create": "Create chatbot",
+      "creating": "Creating...",
+      "cancel": "Cancel",
+      "name-placeholder": "e.g. Support Bot",
+      "name-label": "Name",
+      "edit": "Edit",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "save-error": "Failed to save changes",
+      "active": "Active",
+      "inactive": "Inactive",
+      "files-count": "{count, plural, =0 {No files selected} =1 {1 file selected} other {# files selected}}",
+      "delete-confirm": "Delete chatbot \"{name}\"? This cannot be undone.",
+      "edit-title": "Edit chatbot",
+      "edit-description": "Customize appearance and allowed domains for this chatbot.",
+      "theme": {
+        "title": "Appearance",
+        "primary-color": "Button color",
+        "bubble-color": "Bubble color",
+        "position": "Position",
+        "position-right": "Right",
+        "position-left": "Left",
+        "bot-name": "Bot name",
+        "bot-name-placeholder": "e.g. Support Bot",
+        "welcome-message": "Welcome message",
+        "welcome-message-placeholder": "Hello! How can I help you today?"
+      },
+      "origins": {
+        "title": "Allowed domains",
+        "description": "Restrict which websites can embed this chatbot. Leave empty to allow all domains.",
+        "empty-warning": "No domains set — all origins are allowed. Add domains for production use.",
+        "placeholder": "https://example.com",
+        "add": "Add"
+      },
+      "embed": {
+        "title": "Embed on your website",
+        "description": "Copy this snippet and paste it before </body> on your website."
       }
     }
   },

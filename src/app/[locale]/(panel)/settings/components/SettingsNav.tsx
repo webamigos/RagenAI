@@ -13,6 +13,7 @@ import {
   UsersIcon,
   CpuChipIcon,
   CircleStackIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
@@ -76,6 +77,12 @@ const navItems: NavItem[] = [
     labelKey: 'users',
     icon: <UsersIcon className={iconClassName} />,
     permission: 'appAdmin',
+  },
+  {
+    href: '/settings/chatbots',
+    labelKey: 'chatbots',
+    icon: <ChatBubbleLeftRightIcon className={iconClassName} />,
+    permission: 'orgAdmin',
   },
   {
     href: '/settings/ai-usage',

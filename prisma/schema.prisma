@@ -405,6 +405,7 @@ model Organization {
   mcpOAuthTokens   McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
   auditLogs        AuditLog[]
+  chatbots         Chatbot[]
 
   @@map("organizations")
 }
@@ -775,4 +776,54 @@ model AssistantTemplate {
   projects Project[]
 
   @@map("assistant_templates")
+}
+
+model Chatbot {
+  id              String               @id @default(uuid()) @db.Uuid
+  organizationId  String               @map("organization_id")
+  name            String
+  selectedFileIds String[]             @default([]) @map("selected_file_ids") @db.Uuid
+  widgetToken     String               @unique @default(uuid()) @map("widget_token") @db.Uuid
+  allowedOrigins  String[]             @default([]) @map("allowed_origins")
+  themeConfig     Json                 @default("{}") @map("theme_config")
+  isActive        Boolean              @default(true) @map("is_active")
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversations ChatbotConversation[]
+
+  @@index([organizationId])
+  @@index([widgetToken])
+
+  @@map("chatbots")
+}
+
+model ChatbotConversation {
+  id        String           @id @default(uuid()) @db.Uuid
+  chatbotId String           @map("chatbot_id") @db.Uuid
+  sessionId String           @map("session_id")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  chatbot  Chatbot          @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
+  messages ChatbotMessage[]
+
+  @@index([chatbotId, sessionId])
+
+  @@map("chatbot_conversations")
+}
+
+model ChatbotMessage {
+  id             String              @id @default(uuid()) @db.Uuid
+  conversationId String              @map("conversation_id") @db.Uuid
+  role           Role
+  content        String
+  sources        Json?
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz
+
+  conversation ChatbotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+
+  @@map("chatbot_messages")
 }
