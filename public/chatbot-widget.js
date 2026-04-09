@@ -10,12 +10,18 @@
       'script[src*="chatbot-widget"][data-chatbot-token]',
     ) ||
     document.querySelector('script[data-chatbot-token]');
-  if (!scriptTag) {return;}
+  if (!scriptTag) {
+    return;
+  }
 
   var token = scriptTag.getAttribute('data-chatbot-token');
-  if (!token) {return;}
+  if (!token) {
+    return;
+  }
 
-  if (window.__ragenChatbotLoaded) {return;}
+  if (window.__ragenChatbotLoaded) {
+    return;
+  }
   window.__ragenChatbotLoaded = true;
 
   var API_BASE = scriptTag.src
@@ -41,7 +47,9 @@
 
   function getCurrentSessionId() {
     var current = localStorage.getItem(CURRENT_KEY);
-    if (current) {return current;}
+    if (current) {
+      return current;
+    }
     // migrate legacy single-session key
     var legacy = localStorage.getItem('ragen_session_' + token);
     if (legacy) {
@@ -400,7 +408,9 @@
     function closeMenu() {
       menuOpen = false;
       var d = windowShadow.querySelector('.menu-dropdown');
-      if (d) {d.remove();}
+      if (d) {
+        d.remove();
+      }
     }
 
     function openMenu() {
@@ -456,10 +466,16 @@
     function relativeTime(dateStr) {
       var diff = Date.now() - new Date(dateStr).getTime();
       var m = Math.floor(diff / 60000);
-      if (m < 1) {return 'przed chwilą';}
-      if (m < 60) {return m + ' min temu';}
+      if (m < 1) {
+        return 'przed chwilą';
+      }
+      if (m < 60) {
+        return m + ' min temu';
+      }
       var h = Math.floor(m / 60);
-      if (h < 24) {return h + ' godz. temu';}
+      if (h < 24) {
+        return h + ' godz. temu';
+      }
       var d = Math.floor(h / 24);
       return d === 1 ? 'wczoraj' : d + ' dni temu';
     }
@@ -499,7 +515,9 @@
           for (var j = 0; j < sessions.length; j++) {
             (function (sid) {
               var conv = convMap[sid];
-              if (!conv) {return;}
+              if (!conv) {
+                return;
+              }
               var firstMsg =
                 conv.messages && conv.messages[0]
                   ? conv.messages[0].content
@@ -587,9 +605,13 @@
     sendEl.addEventListener('click', doSend);
 
     function doSend() {
-      if (sending) {return;}
+      if (sending) {
+        return;
+      }
       var text = inputEl.value.trim();
-      if (!text) {return;}
+      if (!text) {
+        return;
+      }
       inputEl.value = '';
       inputEl.style.height = '36px';
       appendMessage(text, 'user');
@@ -634,7 +656,9 @@
 
     function wrapBotMessage(el) {
       var parent = el.parentElement;
-      if (!parent || parent.classList.contains('msg-wrap')) {return;}
+      if (!parent || parent.classList.contains('msg-wrap')) {
+        return;
+      }
       var wrap = document.createElement('div');
       wrap.className = 'msg-wrap';
       parent.insertBefore(wrap, el);
@@ -688,7 +712,9 @@
       body: JSON.stringify({ message: text, sessionId: sessionId }),
     })
       .then(function (res) {
-        if (!res.ok) {throw new Error('HTTP ' + res.status);}
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status);
+        }
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
         var buffer = '';
@@ -706,9 +732,13 @@
               buffer = lines.pop();
               for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
-                if (!line.startsWith('data: ')) {continue;}
+                if (!line.startsWith('data: ')) {
+                  continue;
+                }
                 var data = line.slice(6);
-                if (data === '[DONE]') {continue;}
+                if (data === '[DONE]') {
+                  continue;
+                }
                 try {
                   var parsed = JSON.parse(data);
                   if (parsed.text) {
@@ -719,7 +749,9 @@
                     accumulated += parsed.text;
                     botMsgEl.innerHTML = renderMarkdown(accumulated);
                     var msgs = botMsgEl.parentElement;
-                    if (msgs) {msgs.scrollTop = msgs.scrollHeight;}
+                    if (msgs) {
+                      msgs.scrollTop = msgs.scrollHeight;
+                    }
                   }
                 } catch (e) {}
               }
@@ -747,13 +779,15 @@
   }
 
   loadConfig(function (config) {
-    if (!config) {return;}
+    if (!config) {
+      return;
+    }
     loadScript(
-      'https://unpkg.com/markdown-it@14/dist/markdown-it.min.js',
+      'https://unpkg.com/markdown-it@14.1.1/dist/markdown-it.min.js',
       'sha384-Er//LYl/BnB6JrXmMQocJS1s7s6Gf/FwvdeAwO8ownRBe+Am//lWQNalk+jwsuYW',
       function () {
         loadScript(
-          'https://unpkg.com/dompurify@3/dist/purify.min.js',
+          'https://unpkg.com/dompurify@3.3.3/dist/purify.min.js',
           'sha384-vu2qbp+54yXbJ2L+jS61uwURGEYfROSgYSPVZ4XPCIuUwv1OTg5N/CeLe+WzNKj0',
           function () {
             if (window.markdownit) {

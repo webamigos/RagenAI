@@ -808,7 +808,7 @@ model ChatbotConversation {
   chatbot  Chatbot          @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
   messages ChatbotMessage[]
 
-  @@index([chatbotId, sessionId])
+  @@unique([chatbotId, sessionId])
 
   @@map("chatbot_conversations")
 }

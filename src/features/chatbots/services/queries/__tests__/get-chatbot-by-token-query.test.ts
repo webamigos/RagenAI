@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockFindUnique = vi.fn();
+const mockFindFirst = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
-    chatbot: { findUnique: (...args: unknown[]) => mockFindUnique(...args) },
+    chatbot: { findFirst: (...args: unknown[]) => mockFindFirst(...args) },
   },
 }));
 
@@ -22,11 +22,11 @@ describe('getChatbotByTokenQuery', () => {
   });
 
   it('returns chatbot config for active token', async () => {
-    mockFindUnique.mockResolvedValue(chatbotRecord);
+    mockFindFirst.mockResolvedValue(chatbotRecord);
 
     const result = await getChatbotByTokenQuery('token-abc');
 
-    expect(mockFindUnique).toHaveBeenCalledWith({
+    expect(mockFindFirst).toHaveBeenCalledWith({
       where: { widgetToken: 'token-abc', isActive: true },
       select: expect.any(Object),
     });
@@ -34,7 +34,7 @@ describe('getChatbotByTokenQuery', () => {
   });
 
   it('returns null for unknown or inactive token', async () => {
-    mockFindUnique.mockResolvedValue(null);
+    mockFindFirst.mockResolvedValue(null);
 
     const result = await getChatbotByTokenQuery('invalid-token');
 

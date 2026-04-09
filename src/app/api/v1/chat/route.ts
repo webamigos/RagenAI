@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     });
 
     const question = context
-      ? `${prompt}\n\nKontekst strony:\n${context}`
+      ? `${prompt}\n\nPage context:\n${context}`
       : prompt;
 
     const result = await ragChain.stream({

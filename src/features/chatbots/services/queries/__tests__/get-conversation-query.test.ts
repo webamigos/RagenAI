@@ -1,15 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockConversationFindFirst = vi.fn();
-const mockConversationCreate = vi.fn();
+const mockConversationUpsert = vi.fn();
 const mockMessageFindMany = vi.fn();
 const mockConversationFindMany = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     chatbotConversation: {
-      findFirst: (...args: unknown[]) => mockConversationFindFirst(...args),
-      create: (...args: unknown[]) => mockConversationCreate(...args),
+      upsert: (...args: unknown[]) => mockConversationUpsert(...args),
       findMany: (...args: unknown[]) => mockConversationFindMany(...args),
     },
     chatbotMessage: {
@@ -29,35 +27,28 @@ describe('getOrCreateConversationQuery', () => {
     vi.clearAllMocks();
   });
 
-  it('returns existing conversation when found', async () => {
-    mockConversationFindFirst.mockResolvedValue({ id: 'conv-1' });
+  it('returns conversation via upsert', async () => {
+    mockConversationUpsert.mockResolvedValue({ id: 'conv-1' });
 
     const result = await getOrCreateConversationQuery('chatbot-1', 'session-1');
 
     expect(result).toEqual({ id: 'conv-1' });
-    expect(mockConversationCreate).not.toHaveBeenCalled();
   });
 
-  it('creates conversation when none exists', async () => {
-    mockConversationFindFirst.mockResolvedValue(null);
-    mockConversationCreate.mockResolvedValue({ id: 'conv-new' });
-
-    const result = await getOrCreateConversationQuery('chatbot-1', 'session-1');
-
-    expect(mockConversationCreate).toHaveBeenCalledWith({
-      data: { chatbotId: 'chatbot-1', sessionId: 'session-1' },
-      select: { id: true },
-    });
-    expect(result).toEqual({ id: 'conv-new' });
-  });
-
-  it('looks up by chatbotId and sessionId', async () => {
-    mockConversationFindFirst.mockResolvedValue({ id: 'conv-1' });
+  it('calls upsert with correct where, create, update and select', async () => {
+    mockConversationUpsert.mockResolvedValue({ id: 'conv-1' });
 
     await getOrCreateConversationQuery('chatbot-42', 'session-xyz');
 
-    expect(mockConversationFindFirst).toHaveBeenCalledWith({
-      where: { chatbotId: 'chatbot-42', sessionId: 'session-xyz' },
+    expect(mockConversationUpsert).toHaveBeenCalledWith({
+      where: {
+        chatbotId_sessionId: {
+          chatbotId: 'chatbot-42',
+          sessionId: 'session-xyz',
+        },
+      },
+      create: { chatbotId: 'chatbot-42', sessionId: 'session-xyz' },
+      update: {},
       select: { id: true },
     });
   });

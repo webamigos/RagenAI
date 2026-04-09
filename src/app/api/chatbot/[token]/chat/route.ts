@@ -55,8 +55,13 @@ export async function OPTIONS(
 ) {
   const { token } = await params;
   const origin = req.headers.get('origin');
-  const chatbot = await getChatbotByTokenQuery(token);
-  const allowedOrigins = chatbot?.allowedOrigins ?? [];
+  let allowedOrigins: string[] = [];
+  try {
+    const chatbot = await getChatbotByTokenQuery(token);
+    allowedOrigins = chatbot?.allowedOrigins ?? [];
+  } catch (err) {
+    logger.error({ err }, 'Error fetching chatbot in OPTIONS handler');
+  }
   return new NextResponse(null, {
     status: 204,
     headers: buildCorsHeaders(origin, allowedOrigins),
@@ -184,7 +189,9 @@ export async function POST(
           const ragChain = await initializeRagChain({
             settings,
             orgId: organizationId,
-            isOrgAdmin: true,
+            // Public widget endpoint — no authenticated user; metadataFilter already
+            // restricts access to selectedFileIds so admin bypass is not needed
+            isOrgAdmin: false,
             metadataFilter,
           });
 
@@ -208,20 +215,20 @@ export async function POST(
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
 
-          appendChatbotMessageCommand(
-            conversation.id,
-            Role.USER,
-            message,
-          ).catch((err) =>
-            logger.error({ err }, 'Failed to save user chatbot message'),
-          );
-          appendChatbotMessageCommand(
-            conversation.id,
-            Role.ASSISTANT,
-            fullResponse,
-          ).catch((err) =>
-            logger.error({ err }, 'Failed to save assistant chatbot message'),
-          );
+          try {
+            await appendChatbotMessageCommand(
+              conversation.id,
+              Role.USER,
+              message,
+            );
+            await appendChatbotMessageCommand(
+              conversation.id,
+              Role.ASSISTANT,
+              fullResponse,
+            );
+          } catch (err) {
+            logger.error({ err }, 'Failed to save chatbot messages');
+          }
         } catch (err) {
           logger.error({ err }, 'Error in chatbot stream');
           controller.error(err);

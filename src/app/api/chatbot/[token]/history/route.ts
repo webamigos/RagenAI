@@ -70,7 +70,7 @@ export async function GET(
   }
 
   return NextResponse.json(
-    { messages: messages.reverse() },
+    { messages: messages.slice().reverse() },
     { headers: { ...corsHeaders, 'Cache-Control': 'no-store' } },
   );
 }

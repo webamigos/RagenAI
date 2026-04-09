@@ -81,10 +81,14 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
     <div className="space-y-6">
       {/* Name */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-zinc-950 dark:text-white">
+        <label
+          htmlFor="chatbot-name"
+          className="text-sm font-medium text-zinc-950 dark:text-white"
+        >
           {t('name-label')}
         </label>
         <input
+          id="chatbot-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}

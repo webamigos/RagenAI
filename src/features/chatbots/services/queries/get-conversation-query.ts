@@ -6,17 +6,10 @@ export const getOrCreateConversationQuery = async (
   chatbotId: string,
   sessionId: string,
 ) => {
-  const existing = await db.chatbotConversation.findFirst({
-    where: { chatbotId, sessionId },
-    select: { id: true },
-  });
-
-  if (existing) {
-    return existing;
-  }
-
-  return db.chatbotConversation.create({
-    data: { chatbotId, sessionId },
+  return db.chatbotConversation.upsert({
+    where: { chatbotId_sessionId: { chatbotId, sessionId } },
+    create: { chatbotId, sessionId },
+    update: {},
     select: { id: true },
   });
 };

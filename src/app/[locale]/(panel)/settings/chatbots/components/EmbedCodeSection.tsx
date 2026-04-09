@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { logger } from '@/app/lib/utils/logger';
 
 type EmbedCodeSectionProps = {
   widgetToken: string;
@@ -11,6 +12,17 @@ type EmbedCodeSectionProps = {
 export function EmbedCodeSection({ widgetToken }: EmbedCodeSectionProps) {
   const t = useTranslations('settings-page.chatbots.embed');
   const [copied, setCopied] = useState(false);
+  const mountedRef = useRef(true);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const appUrl =
     typeof window !== 'undefined'
@@ -20,9 +32,22 @@ export function EmbedCodeSection({ widgetToken }: EmbedCodeSectionProps) {
   const snippet = `<script\n  src="${appUrl}/chatbot-widget.js"\n  data-chatbot-token="${widgetToken}"\n  async\n></script>`;
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(snippet);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(snippet);
+      if (mountedRef.current) {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        setCopied(true);
+        timeoutRef.current = setTimeout(() => {
+          if (mountedRef.current) {
+            setCopied(false);
+          }
+        }, 2000);
+      }
+    } catch (err) {
+      logger.error({ err }, 'Failed to copy embed snippet to clipboard');
+    }
   };
 
   return (
