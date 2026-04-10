@@ -36,7 +36,7 @@ env:
   SUPABASE_ANON_KEY: 'dummy'
   SUPABASE_PROJECT_ID: 'dummy'
   RESEND_API_KEY: 'dummy'
-  RESEND_DEFAULT_AUDIENCE_ID: 'dummy'
+  RESEND_DEFAULT_SEGMENT_ID: 'dummy'
   AWS_REGION: 'dummy'
   AWS_ACCESS_KEY_ID: 'dummy'
   AWS_SECRET_ACCESS_KEY: 'dummy'
