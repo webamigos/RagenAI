@@ -1,23 +1,5 @@
 import { describe, it, expect } from 'vitest';
-
-// validateOrigin is not exported — replicate the logic here to test the contract
-function validateOrigin(
-  origin: string | null,
-  allowedOrigins: string[],
-): boolean {
-  if (allowedOrigins.length === 0) {
-    return true;
-  }
-  if (!origin) {
-    return false;
-  }
-  return allowedOrigins.some((allowed) => {
-    if (allowed.startsWith('*.')) {
-      return origin.endsWith(allowed.slice(1));
-    }
-    return allowed === origin;
-  });
-}
+import { validateOrigin } from '../../cors';
 
 describe('validateOrigin', () => {
   it('returns true when allowedOrigins is empty (open mode)', () => {

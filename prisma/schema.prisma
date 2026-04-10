@@ -65,11 +65,14 @@ model Thread {
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
   encryptedDek              String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
+  chatbotId                 String?                 @map("chatbot_id") @db.Uuid
+  chatbot                   Chatbot?                @relation(fields: [chatbotId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([userId])
   @@index([visitorId, isStarred, createdAt])
   @@index([teamId])
+  @@index([chatbotId])
   @@map("threads")
 }
 
@@ -791,40 +794,11 @@ model Chatbot {
   createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime             @updatedAt @map("updated_at") @db.Timestamptz
 
-  organization  Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  conversations ChatbotConversation[]
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  threads      Thread[]
 
   @@index([organizationId])
   @@index([widgetToken])
 
   @@map("chatbots")
-}
-
-model ChatbotConversation {
-  id        String           @id @default(uuid()) @db.Uuid
-  chatbotId String           @map("chatbot_id") @db.Uuid
-  sessionId String           @map("session_id")
-  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
-
-  chatbot  Chatbot          @relation(fields: [chatbotId], references: [id], onDelete: Cascade)
-  messages ChatbotMessage[]
-
-  @@unique([chatbotId, sessionId])
-
-  @@map("chatbot_conversations")
-}
-
-model ChatbotMessage {
-  id             String              @id @default(uuid()) @db.Uuid
-  conversationId String              @map("conversation_id") @db.Uuid
-  role           Role
-  content        String
-  sources        Json?
-  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz
-
-  conversation ChatbotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId])
-
-  @@map("chatbot_messages")
 }

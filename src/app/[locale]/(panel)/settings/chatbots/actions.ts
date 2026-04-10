@@ -7,6 +7,8 @@ import { createChatbotCommand } from '@/features/chatbots/services/commands/crea
 import { updateChatbotCommand } from '@/features/chatbots/services/commands/update-chatbot-command';
 import { deleteChatbotCommand } from '@/features/chatbots/services/commands/delete-chatbot-command';
 import { getAllOrgFilesQuery } from '@/features/documents/services/queries/get-all-org-files-query';
+import { getChatbotThreadsQuery } from '@/features/chatbots/services/queries/get-chatbot-threads-query';
+import { getChatbotThreadMessagesQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-messages-query';
 import {
   type CreateChatbotDto,
   type UpdateChatbotDto,
@@ -40,4 +42,18 @@ export async function deleteChatbot(chatbotId: string) {
 export async function getChatbotFiles() {
   const orgId = await getOrgIdFromAuthOrThrow();
   return getAllOrgFilesQuery(orgId, [], { isOrgAdmin: true });
+}
+
+export async function getChatbotThreads(
+  chatbotId: string,
+  skip = 0,
+  take = 20,
+) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  return getChatbotThreadsQuery(chatbotId, orgId, skip, take);
+}
+
+export async function getChatbotThreadMessages(threadId: string) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  return getChatbotThreadMessagesQuery(threadId, orgId);
 }

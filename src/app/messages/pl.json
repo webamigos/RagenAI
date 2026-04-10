@@ -231,6 +231,9 @@
     },
     "checkout-success": {
       "title": "Płatność zakończona | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatboty"
     }
   },
   "chat": {
@@ -556,7 +559,34 @@
       "embed": {
         "title": "Osadź na swojej stronie",
         "description": "Skopiuj ten snippet i wklej go przed </body> na swojej stronie."
-      }
+      },
+      "name-required": "Nazwa jest wymagana",
+      "name-max": "Nazwa może mieć maksymalnie 100 znaków",
+      "prompt-max": "Prompt może mieć maksymalnie 5000 znaków",
+      "conversations": {
+        "title": "Rozmowy",
+        "description": "Historia rozmów użytkowników z tym chatbotem.",
+        "back-to-chatbot": "Powrót do chatbota",
+        "no-conversations": "Brak rozmów",
+        "no-conversations-description": "Nikt jeszcze nie rozmawiał z tym chatbotem.",
+        "session-id": "Sesja",
+        "started-at": "Rozpoczęto",
+        "messages-count": "Wiadomości",
+        "first-message": "Pierwsza wiadomość",
+        "view": "Podgląd",
+        "load-more": "Załaduj więcej",
+        "loading": "Ładowanie...",
+        "visitor": "Odwiedzający",
+        "bot": "Bot",
+        "not-found": "Nie znaleziono rozmowy",
+        "back-to-list": "Powrót do listy",
+        "empty-thread": "Ta rozmowa nie zawiera wiadomości",
+        "load-more-error": "Nie udało się załadować rozmów"
+      },
+      "delete-title": "Usuń chatbota",
+      "delete": "Usuń",
+      "deleting": "Usuwanie...",
+      "delete-error": "Nie udało się usunąć chatbota"
     }
   },
   "teams-page": {
@@ -645,7 +675,8 @@
     },
     "nav": {
       "chats": "Wątki",
-      "assistants": "Asystenci"
+      "assistants": "Asystenci",
+      "chatbots": "Chatboty"
     },
     "starred": {
       "title": "Przypięte"
@@ -1385,5 +1416,16 @@
       "success": "Organizacja została utworzona",
       "error": "Nie udało się utworzyć organizacji"
     }
+  },
+  "chatbots-page": {
+    "title": "Chatboty",
+    "description": "Wybierz chatbota, aby zobaczyć jego rozmowy.",
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "conversations-description": "Łącznie {total} rozmów",
+    "no-conversations": "Brak rozmów. Rozmowy pojawią się tutaj gdy użytkownicy zaczną korzystać z widgetu.",
+    "untitled-conversation": "Nowa rozmowa",
+    "load-more": "Załaduj więcej",
+    "loading": "Ładowanie..."
   }
 }

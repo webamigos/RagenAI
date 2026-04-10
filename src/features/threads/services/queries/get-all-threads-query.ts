@@ -32,6 +32,7 @@ export const getAllThreadsQuery = async (
 
   const where = {
     organizationId: orgId,
+    chatbotId: null,
     ...(query
       ? { title: { contains: query, mode: 'insensitive' as const } }
       : {}),

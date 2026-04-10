@@ -30,6 +30,7 @@ export const getSidebarThreadsQuery = async (
 
   const baseWhere = {
     organizationId: orgId,
+    chatbotId: null,
     messages: { some: {} },
     OR: [
       { visitorId: visitorId },

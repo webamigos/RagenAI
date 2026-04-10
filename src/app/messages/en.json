@@ -230,6 +230,9 @@
     },
     "checkout-success": {
       "title": "Payment Successful | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatbots"
     }
   },
   "chat": {
@@ -515,7 +518,34 @@
       "embed": {
         "title": "Embed on your website",
         "description": "Copy this snippet and paste it before </body> on your website."
-      }
+      },
+      "name-required": "Name is required",
+      "name-max": "Name can be at most 100 characters",
+      "prompt-max": "Prompt can be at most 5000 characters",
+      "conversations": {
+        "title": "Conversations",
+        "description": "History of user conversations with this chatbot.",
+        "back-to-chatbot": "Back to chatbot",
+        "no-conversations": "No conversations yet",
+        "no-conversations-description": "Nobody has chatted with this chatbot yet.",
+        "session-id": "Session",
+        "started-at": "Started",
+        "messages-count": "Messages",
+        "first-message": "First message",
+        "view": "View",
+        "load-more": "Load more",
+        "loading": "Loading...",
+        "visitor": "Visitor",
+        "bot": "Bot",
+        "not-found": "Conversation not found",
+        "back-to-list": "Back to list",
+        "empty-thread": "This conversation has no messages",
+        "load-more-error": "Failed to load conversations"
+      },
+      "delete-title": "Delete chatbot",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "delete-error": "Failed to delete chatbot"
     }
   },
   "teams-page": {
@@ -604,7 +634,8 @@
     },
     "nav": {
       "chats": "Chats",
-      "assistants": "Projects"
+      "assistants": "Projects",
+      "chatbots": "Chatbots"
     },
     "starred": {
       "title": "Starred"
@@ -1344,5 +1375,16 @@
       "success": "Organization created",
       "error": "Failed to create organization"
     }
+  },
+  "chatbots-page": {
+    "title": "Chatbots",
+    "description": "Select a chatbot to view its conversations.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "conversations-description": "{total} conversations total",
+    "no-conversations": "No conversations yet. They will appear here once users start using the widget.",
+    "untitled-conversation": "New conversation",
+    "load-more": "Load more",
+    "loading": "Loading..."
   }
 }

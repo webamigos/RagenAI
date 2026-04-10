@@ -2,44 +2,19 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getChatbotByTokenQuery } from '@/features/chatbots/services/queries/get-chatbot-by-token-query';
 import {
-  getOrCreateConversationQuery,
-  getConversationMessagesQuery,
-  getConversationsBySessionIdsQuery,
-} from '@/features/chatbots/services/queries/get-conversation-query';
+  getChatbotSessionMessagesQuery,
+  getChatbotSessionListQuery,
+} from '@/features/chatbots/services/queries/get-chatbot-session-messages-query';
 import { logger } from '@/app/lib/utils/logger';
+import { validateOrigin, buildCorsHeaders } from '../cors';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function validateOrigin(
-  origin: string | null,
-  allowedOrigins: string[],
-): boolean {
-  if (allowedOrigins.length === 0) {
-    return true;
-  }
-  if (!origin) {
-    return false;
-  }
-  return allowedOrigins.some((allowed) => {
-    if (allowed.startsWith('*.')) {
-      return origin.endsWith(allowed.slice(1));
-    }
-    return allowed === origin;
-  });
-}
-
-function buildCorsHeaders(origin: string | null, allowedOrigins: string[]) {
-  const allowOrigin = allowedOrigins.length === 0 ? '*' : (origin ?? '*');
-
-  return {
-    'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Credentials':
-      allowedOrigins.length > 0 ? 'true' : 'false',
-  };
-}
+const sessionIdSchema = z.string().min(1).max(256);
+const sessionListSchema = z.object({
+  sessionIds: z.array(z.string().min(1).max(256)).min(1).max(100),
+});
 
 export async function OPTIONS(
   req: NextRequest,
@@ -70,9 +45,10 @@ export async function GET(
 
   const fallbackCorsHeaders = { 'Access-Control-Allow-Origin': origin ?? '*' };
 
-  const sessionId = req.nextUrl.searchParams.get('sessionId');
-
-  if (!sessionId || sessionId.length < 1 || sessionId.length > 256) {
+  const sessionIdParsed = sessionIdSchema.safeParse(
+    req.nextUrl.searchParams.get('sessionId'),
+  );
+  if (!sessionIdParsed.success) {
     return NextResponse.json(
       { error: 'sessionId required and must be 1–256 characters' },
       { status: 400, headers: fallbackCorsHeaders },
@@ -106,15 +82,14 @@ export async function GET(
     );
   }
 
-  let messages: Awaited<ReturnType<typeof getConversationMessagesQuery>>;
+  let messages: { role: string; content: string }[];
   try {
-    const conversation = await getOrCreateConversationQuery(
+    messages = await getChatbotSessionMessagesQuery(
       chatbot.id,
-      sessionId,
+      sessionIdParsed.data,
     );
-    messages = await getConversationMessagesQuery(conversation.id, 50);
   } catch (err) {
-    logger.error({ err }, 'Error fetching conversation messages');
+    logger.error({ err }, 'Error fetching chatbot session messages');
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500, headers: corsHeaders },
@@ -122,16 +97,12 @@ export async function GET(
   }
 
   return NextResponse.json(
-    { messages: messages.slice().reverse() },
+    { messages },
     { headers: { ...corsHeaders, 'Cache-Control': 'no-store' } },
   );
 }
 
 // POST /api/chatbot/[token]/history — session list with previews
-const sessionListSchema = z.object({
-  sessionIds: z.array(z.string().min(1).max(256)).min(1).max(100),
-});
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> },
@@ -190,16 +161,14 @@ export async function POST(
     );
   }
 
-  let conversations: Awaited<
-    ReturnType<typeof getConversationsBySessionIdsQuery>
-  >;
+  let conversations: Awaited<ReturnType<typeof getChatbotSessionListQuery>>;
   try {
-    conversations = await getConversationsBySessionIdsQuery(
+    conversations = await getChatbotSessionListQuery(
       chatbot.id,
       parsed.data.sessionIds,
     );
   } catch (err) {
-    logger.error({ err }, 'Error fetching conversations by session ids');
+    logger.error({ err }, 'Error fetching chatbot session list');
     return NextResponse.json(
       { error: 'Internal Server Error' },
       { status: 500, headers: corsHeaders },

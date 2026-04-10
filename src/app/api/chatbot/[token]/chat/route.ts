@@ -1,15 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getChatbotByTokenQuery } from '@/features/chatbots/services/queries/get-chatbot-by-token-query';
-import {
-  getOrCreateConversationQuery,
-  getConversationMessagesQuery,
-} from '@/features/chatbots/services/queries/get-conversation-query';
-import { appendChatbotMessageCommand } from '@/features/chatbots/services/commands/append-chatbot-message-command';
+import { getOrCreateChatbotThreadCommand } from '@/features/chatbots/services/commands/get-or-create-chatbot-thread-command';
+import { createMessageInDbCommand } from '@/features/messages/services/commands/create-message-command';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
-import { Role } from '@/generated/prisma/client';
+import { Role, Source } from '@/generated/prisma/client';
+import { validateOrigin, buildCorsHeaders } from '../cors';
+import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-history-query';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,36 +17,6 @@ const chatRequestSchema = z.object({
   message: z.string().min(1).max(10000),
   sessionId: z.string().min(1).max(256),
 });
-
-function validateOrigin(
-  origin: string | null,
-  allowedOrigins: string[],
-): boolean {
-  if (allowedOrigins.length === 0) {
-    return true;
-  }
-  if (!origin) {
-    return false;
-  }
-  return allowedOrigins.some((allowed) => {
-    if (allowed.startsWith('*.')) {
-      return origin.endsWith(allowed.slice(1));
-    }
-    return allowed === origin;
-  });
-}
-
-function buildCorsHeaders(origin: string | null, allowedOrigins: string[]) {
-  const allowOrigin = allowedOrigins.length === 0 ? '*' : (origin ?? '*');
-
-  return {
-    'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Credentials':
-      allowedOrigins.length > 0 ? 'true' : 'false',
-  };
-}
 
 export async function OPTIONS(
   req: NextRequest,
@@ -158,17 +127,15 @@ export async function POST(
             ],
           };
 
-    const conversation = await getOrCreateConversationQuery(
+    const thread = await getOrCreateChatbotThreadCommand(
       chatbot.id,
+      organizationId,
       sessionId,
     );
 
-    const previousMessages = await getConversationMessagesQuery(
-      conversation.id,
-      10,
-    );
+    const previousMessages = await getChatbotThreadHistoryQuery(thread.id, 10);
+
     const chatHistory = previousMessages
-      .reverse()
       .map(
         (m) => `${m.role === Role.USER ? 'Human' : 'Assistant'}: ${m.content}`,
       )
@@ -218,16 +185,19 @@ export async function POST(
           controller.close();
 
           try {
-            await appendChatbotMessageCommand(
-              conversation.id,
-              Role.USER,
-              message,
-            );
-            await appendChatbotMessageCommand(
-              conversation.id,
-              Role.ASSISTANT,
-              fullResponse,
-            );
+            await Promise.all([
+              createMessageInDbCommand({
+                threadId: thread.id,
+                message: { content: message },
+                role: Role.USER,
+                visitorId: sessionId,
+              }),
+              createMessageInDbCommand({
+                threadId: thread.id,
+                message: { content: fullResponse, source: Source.PUBLIC },
+                role: Role.ASSISTANT,
+              }),
+            ]);
           } catch (err) {
             logger.error({ err }, 'Failed to save chatbot messages');
           }
