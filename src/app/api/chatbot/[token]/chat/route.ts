@@ -194,7 +194,7 @@ export async function POST(
               }),
               createMessageInDbCommand({
                 threadId: thread.id,
-                message: { content: fullResponse, source: Source.PUBLIC },
+                message: { content: fullResponse, source: Source.CHATBOT },
                 role: Role.ASSISTANT,
               }),
             ]);

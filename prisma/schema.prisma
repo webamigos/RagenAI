@@ -622,6 +622,7 @@ enum Source {
   UI
   API
   PUBLIC
+  CHATBOT
 }
 
 enum Role {

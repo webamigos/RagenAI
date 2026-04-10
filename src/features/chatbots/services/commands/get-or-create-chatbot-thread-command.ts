@@ -23,7 +23,7 @@ export const getOrCreateChatbotThreadCommand = async (
         chatbotId,
         organizationId,
         visitorId: sessionId,
-        source: Source.PUBLIC,
+        source: Source.CHATBOT,
       },
       select: { id: true },
     });
