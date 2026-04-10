@@ -201,6 +201,9 @@
     "settings-teams": {
       "title": "Teams | Ragen AI"
     },
+    "settings-api-keys": {
+      "title": "API Keys | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
     },
