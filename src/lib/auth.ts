@@ -16,7 +16,7 @@ import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/comm
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-const RESEND_DEFAULT_AUDIENCE_ID = process.env.RESEND_DEFAULT_AUDIENCE_ID!;
+const RESEND_DEFAULT_SEGMENT_ID = process.env.RESEND_DEFAULT_SEGMENT_ID;
 
 // Email functions - using console.log to avoid importing logger/mailer in middleware
 // TODO: Move email sending to background jobs instead of auth hooks
@@ -109,24 +109,36 @@ async function sendWelcomeEmail({ to, name }: { to: string; name: string }) {
   }
 }
 
-async function addEmailToAudience({
+async function addEmailToSegment({
   email,
   firstName,
-  audienceId,
+  segmentId,
 }: {
   email: string;
   firstName: string;
-  audienceId: string;
+  segmentId: string;
 }) {
   try {
-    const { addEmailToAudience: addToAudience } =
+    const { addContactToSegment } =
       await import('@/app/emails/services/mailer');
-    await addToAudience({ email, firstName, audienceId });
-    console.log('[AUTH] Email added to audience', { email });
-  } catch (error) {
-    console.error('[AUTH] Failed to add email to audience', {
+    const result = await addContactToSegment({
       email,
-      audienceId,
+      firstName,
+      segmentId,
+    });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to add email to segment', {
+        email,
+        segmentId,
+        error: result.error,
+      });
+    } else {
+      console.log('[AUTH] Email added to segment', { email });
+    }
+  } catch (error) {
+    console.error('[AUTH] Failed to add email to segment', {
+      email,
+      segmentId,
       error,
     });
   }
@@ -175,6 +187,44 @@ export const auth = betterAuth({
         to: user.email,
         verificationUrl: url,
       });
+    },
+    async afterEmailVerification(user) {
+      try {
+        await sendWelcomeEmail({
+          to: user.email,
+          name: user.name || 'User',
+        });
+      } catch (error) {
+        console.error(
+          '[AUTH] Failed to send welcome email after verification',
+          {
+            email: user.email,
+            error,
+          },
+        );
+      }
+
+      if (RESEND_DEFAULT_SEGMENT_ID) {
+        try {
+          await addEmailToSegment({
+            email: user.email,
+            firstName: user.name || 'User',
+            segmentId: RESEND_DEFAULT_SEGMENT_ID,
+          });
+        } catch (error) {
+          console.error(
+            '[AUTH] Failed to add to newsletter after verification',
+            {
+              email: user.email,
+              error,
+            },
+          );
+        }
+      } else {
+        console.log(
+          '[AUTH] Skipping newsletter signup - RESEND_DEFAULT_SEGMENT_ID not configured',
+        );
+      }
     },
   },
 
@@ -309,28 +359,9 @@ export const auth = betterAuth({
             // Stripe customer + trial subscription handled by Better Auth stripe plugin
             console.log('[AUTH] Stripe customer creation handled by plugin');
 
-            // Send welcome email
-            await sendWelcomeEmail({
-              to: user.email,
-              name: user.name || firstName,
-            });
-            console.log('[AUTH] Welcome email sent', { email: user.email });
-
-            // Add to newsletter (only if RESEND_DEFAULT_AUDIENCE_ID is configured)
-            if (RESEND_DEFAULT_AUDIENCE_ID) {
-              await addEmailToAudience({
-                email: user.email,
-                firstName: user.name || firstName,
-                audienceId: RESEND_DEFAULT_AUDIENCE_ID,
-              });
-              console.log('[AUTH] Added to newsletter audience', {
-                email: user.email,
-              });
-            } else {
-              console.log(
-                '[AUTH] Skipping newsletter signup - RESEND_DEFAULT_AUDIENCE_ID not configured',
-              );
-            }
+            // Welcome email and newsletter signup are sent from
+            // emailVerification.afterEmailVerification — not here —
+            // so they only go out after the user actually verifies their email.
           } catch (error) {
             console.error('[AUTH] Error in user.created hook', {
               userId: user.id,

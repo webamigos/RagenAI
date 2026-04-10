@@ -44,7 +44,7 @@ const envSchema = z
 
     // Resend
     RESEND_API_KEY: z.string(),
-    RESEND_DEFAULT_AUDIENCE_ID: z.string(),
+    RESEND_DEFAULT_SEGMENT_ID: z.string().optional(),
 
     // OpenAI
     OPENAI_API_KEY: z.string(),

@@ -1,4 +1,4 @@
-import { type CreateContactOptions, Resend } from 'resend';
+import { Resend } from 'resend';
 import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
 import { ContactEmail } from '../contact-email';
@@ -79,10 +79,38 @@ export const sendContactEmail = async ({
   }
 };
 
-export const addEmailToAudience = async (
-  resendContactDetails: CreateContactOptions,
-) => {
-  return await getResend().contacts.create(resendContactDetails);
+/**
+ * Creates a Resend contact and adds it to a segment in a single call.
+ *
+ * Uses Resend's new segments API (audiences are deprecated in v6+).
+ * See https://resend.com/docs/dashboard/segments/migrating-from-audiences-to-segments
+ */
+export const addContactToSegment = async ({
+  email,
+  firstName,
+  lastName,
+  segmentId,
+}: {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  segmentId: string;
+}) => {
+  try {
+    const response = await getResend().contacts.create({
+      email,
+      firstName,
+      lastName,
+      segments: [{ id: segmentId }],
+    });
+    return { data: response };
+  } catch (error) {
+    logger.error(
+      { error, email, segmentId },
+      'Failed to add contact to Resend segment',
+    );
+    return { error: 'Failed to add contact to segment' };
+  }
 };
 
 export const sendPasswordResetEmailViaMailer = async ({
