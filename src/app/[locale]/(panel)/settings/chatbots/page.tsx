@@ -13,15 +13,11 @@ export default async function ChatbotsSettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-4">
-      <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-          {t('title')}
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          {t('description')}
-        </p>
-      </section>
-      <ChatbotsList chatbots={chatbots} />
+      <ChatbotsList
+        chatbots={chatbots}
+        title={t('title')}
+        description={t('description')}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@ragenai/tui/button';
+import { Button } from '@ragenai/common-ui/Button';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { logger } from '@/app/lib/utils/logger';
 import { createChatbot } from '../actions';

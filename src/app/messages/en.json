@@ -517,7 +517,7 @@
       },
       "embed": {
         "title": "Embed on your website",
-        "description": "Copy this snippet and paste it before </body> on your website."
+        "description": "Copy this snippet and paste it before the closing body tag on your website."
       },
       "name-required": "Name is required",
       "name-max": "Name can be at most 100 characters",
