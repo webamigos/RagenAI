@@ -43,6 +43,7 @@ export const createApiKeyCommand = async (
     },
   });
 
+  let vaultWritten = false;
   try {
     const fullKey = generateApiKey(apiKey.id);
     const maskedValue = maskApiKey(fullKey);
@@ -53,6 +54,7 @@ export const createApiKeyCommand = async (
       VAULT_PROVIDER,
       { accessToken: fullKey },
     );
+    vaultWritten = true;
 
     // Update the masked value in DB
     await db.apiKey.update({
@@ -69,7 +71,18 @@ export const createApiKeyCommand = async (
 
     return { id: apiKey.id, name, maskedValue, fullKey };
   } catch (error) {
-    // Cleanup orphaned DB record on vault/update failure
+    // Cleanup orphaned vault entry if vault write succeeded but DB update failed
+    if (vaultWritten) {
+      await getRagenAuthClient()
+        .deleteToken(`api-key-${apiKey.id}`, VAULT_PROVIDER)
+        .catch((vaultErr) => {
+          logger.error(
+            { err: vaultErr, apiKeyId: apiKey.id },
+            'Failed to cleanup orphaned vault entry',
+          );
+        });
+    }
+    // Cleanup orphaned DB record
     await db.apiKey.delete({ where: { id: apiKey.id } }).catch((cleanupErr) => {
       logger.error({ err: cleanupErr }, 'Failed to cleanup orphaned API key');
     });
