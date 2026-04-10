@@ -45,7 +45,11 @@ export const LoginForm = () => {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Sign in failed');
+        if (result.error.message === 'Email not verified') {
+          setError(t('email-not-verified'));
+        } else {
+          setError(result.error.message || 'Sign in failed');
+        }
         return;
       }
 
@@ -105,17 +109,6 @@ export const LoginForm = () => {
       >
         {t('sign-in')}
       </Button>
-
-      <div className="relative mt-6">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-        </div>
-        <div className="relative flex justify-center text-sm/6 font-medium">
-          <span className="bg-primary-light dark:bg-primary-dark px-6 text-gray-900 dark:text-gray-300">
-            {t('or-continue-with')}
-          </span>
-        </div>
-      </div>
 
       <div className="mt-6">
         <GoogleSignInButton
