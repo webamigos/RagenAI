@@ -27,6 +27,9 @@ export const updateChatbotCommand = async (
         allowedOrigins: data.allowedOrigins,
       }),
       ...(data.themeConfig !== undefined && { themeConfig: data.themeConfig }),
+      ...(data.chatbotPrompt !== undefined && {
+        chatbotPrompt: data.chatbotPrompt || null,
+      }),
       ...(data.isActive !== undefined && { isActive: data.isActive }),
     },
     select: {
@@ -35,6 +38,7 @@ export const updateChatbotCommand = async (
       widgetToken: true,
       allowedOrigins: true,
       themeConfig: true,
+      chatbotPrompt: true,
       selectedFileIds: true,
       isActive: true,
       organizationId: true,

@@ -785,6 +785,7 @@ model Chatbot {
   selectedFileIds String[]             @default([]) @map("selected_file_ids") @db.Uuid
   widgetToken     String               @unique @default(uuid()) @map("widget_token") @db.Uuid
   allowedOrigins  String[]             @default([]) @map("allowed_origins")
+  chatbotPrompt   String?              @map("chatbot_prompt")
   themeConfig     Json                 @default("{}") @map("theme_config")
   isActive        Boolean              @default(true) @map("is_active")
   createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz

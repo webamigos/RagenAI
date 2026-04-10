@@ -12,6 +12,7 @@ export const getChatbotByIdQuery = async (
       widgetToken: true,
       allowedOrigins: true,
       themeConfig: true,
+      chatbotPrompt: true,
       selectedFileIds: true,
       isActive: true,
       organizationId: true,

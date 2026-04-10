@@ -144,7 +144,11 @@ export async function POST(
   let body: unknown;
   try {
     body = await req.json();
-  } catch {
+  } catch (error) {
+    logger.warn(
+      { err: error },
+      'Chatbot history request contained invalid JSON',
+    );
     return NextResponse.json(
       { error: 'Invalid body' },
       { status: 400, headers: fallbackCorsHeaders },

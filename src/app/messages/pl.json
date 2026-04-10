@@ -518,24 +518,40 @@
       "delete-confirm": "Usunąć chatbota \"{name}\"? Tej operacji nie można cofnąć.",
       "edit-title": "Edytuj chatbota",
       "edit-description": "Dostosuj wygląd i dozwolone domeny dla tego chatbota.",
+      "prompt": {
+        "title": "Prompt chatbota",
+        "description": "Zdefiniuj jak chatbot ma się zachowywać — jego persona, temat rozmów, ton i ograniczenia. Jeśli pozostawisz puste, chatbot będzie działał jako ogólny asystent.",
+        "placeholder": "Jesteś pomocnym asystentem firmy XYZ. Odpowiadasz wyłącznie na pytania dotyczące naszych produktów i usług. Zawsze odpowiadaj po polsku."
+      },
       "theme": {
         "title": "Wygląd",
         "primary-color": "Kolor przycisku",
-        "bubble-color": "Kolor bąbelka",
+        "bubble-color": "Kolor ikony",
         "position": "Pozycja",
         "position-right": "Prawa strona",
         "position-left": "Lewa strona",
         "bot-name": "Nazwa bota",
         "bot-name-placeholder": "np. Bot wsparcia",
         "welcome-message": "Wiadomość powitalna",
-        "welcome-message-placeholder": "Cześć! W czym mogę pomóc?"
+        "welcome-message-placeholder": "Cześć! W czym mogę pomóc?",
+        "hex-hint": "np. #6366f1"
+      },
+      "files": {
+        "title": "Baza wiedzy",
+        "description": "Wybierz pliki, do których chatbot ma dostęp. Jeśli nic nie wybierzesz, chatbot przeszuka wszystkie pliki organizacji.",
+        "search-placeholder": "Szukaj plików...",
+        "all-files-warning": "Chatbot ma dostęp do wszystkich plików organizacji. Wybierz konkretne pliki, aby ograniczyć zakres wiedzy.",
+        "selected-count": "Wybrano {count} {count, plural, one {plik} few {pliki} other {plików}}",
+        "empty": "Brak plików z ukończonym indeksowaniem.",
+        "loading": "Ładowanie plików..."
       },
       "origins": {
         "title": "Dozwolone domeny",
         "description": "Ogranicz witryny, które mogą osadzać tego chatbota. Pozostaw puste, aby zezwolić na wszystkie domeny.",
-        "empty-warning": "Brak domen — wszystkie originy są dozwolone. Dodaj domeny przed wdrożeniem produkcyjnym.",
+        "empty-warning": "Chatbot jest dostępny z każdej strony. Dodaj domeny, aby ograniczyć dostęp tylko do swoich witryn.",
         "placeholder": "https://example.com",
-        "add": "Dodaj"
+        "add": "Dodaj",
+        "invalid-url": "Podaj poprawny adres domeny (np. example.com lub https://example.com)"
       },
       "embed": {
         "title": "Osadź na swojej stronie",

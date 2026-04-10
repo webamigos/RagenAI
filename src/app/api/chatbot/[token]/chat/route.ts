@@ -107,7 +107,8 @@ export async function POST(
   let body: unknown;
   try {
     body = await request.json();
-  } catch {
+  } catch (error) {
+    logger.warn({ err: error }, 'Chatbot chat request contained invalid JSON');
     return NextResponse.json(
       { error: 'Invalid JSON' },
       { status: 400, headers: corsHeaders },
@@ -193,6 +194,7 @@ export async function POST(
             // restricts access to selectedFileIds so admin bypass is not needed
             isOrgAdmin: false,
             metadataFilter,
+            projectInstruction: chatbot.chatbotPrompt,
           });
 
           const result = await ragChain.stream({

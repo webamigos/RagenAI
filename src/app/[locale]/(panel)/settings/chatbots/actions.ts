@@ -6,6 +6,7 @@ import { getChatbotByIdQuery } from '@/features/chatbots/services/queries/get-ch
 import { createChatbotCommand } from '@/features/chatbots/services/commands/create-chatbot-command';
 import { updateChatbotCommand } from '@/features/chatbots/services/commands/update-chatbot-command';
 import { deleteChatbotCommand } from '@/features/chatbots/services/commands/delete-chatbot-command';
+import { getAllOrgFilesQuery } from '@/features/documents/services/queries/get-all-org-files-query';
 import {
   type CreateChatbotDto,
   type UpdateChatbotDto,
@@ -34,4 +35,9 @@ export async function updateChatbot(chatbotId: string, data: UpdateChatbotDto) {
 export async function deleteChatbot(chatbotId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   return deleteChatbotCommand(chatbotId, orgId);
+}
+
+export async function getChatbotFiles() {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  return getAllOrgFilesQuery(orgId, [], { isOrgAdmin: true });
 }

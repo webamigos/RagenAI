@@ -1,12 +1,93 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { ChatbotThemeConfig } from '@/features/chatbots/contracts/chatbot.types';
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
 type ThemeConfiguratorProps = {
   value: ChatbotThemeConfig;
   onChange: (value: ChatbotThemeConfig) => void;
 };
+
+function ColorField({
+  id,
+  label,
+  colorKey,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  colorKey: 'primaryColor' | 'bubbleColor';
+  value: ChatbotThemeConfig;
+  onChange: (value: ChatbotThemeConfig) => void;
+}) {
+  const t = useTranslations('settings-page.chatbots.theme');
+  const resolved = value[colorKey] ?? '#6366f1';
+  const [hexInput, setHexInput] = useState(resolved);
+  const [hexError, setHexError] = useState(false);
+
+  useEffect(() => {
+    setHexInput(resolved);
+    setHexError(false);
+  }, [resolved]);
+
+  const commitHex = (raw: string) => {
+    const hex = raw.startsWith('#') ? raw : `#${raw}`;
+    if (HEX_RE.test(hex)) {
+      setHexError(false);
+      onChange({ ...value, [colorKey]: hex });
+    } else {
+      setHexError(true);
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="text-xs text-zinc-600 dark:text-zinc-400">
+        {label}
+      </label>
+      <div className="flex items-center gap-2">
+        <input
+          id={id}
+          type="color"
+          value={resolved}
+          onChange={(e) => {
+            setHexInput(e.target.value);
+            setHexError(false);
+            onChange({ ...value, [colorKey]: e.target.value });
+          }}
+          className="size-8 cursor-pointer rounded border border-zinc-300 dark:border-zinc-700"
+        />
+        <div className="relative">
+          <input
+            type="text"
+            value={hexInput}
+            maxLength={7}
+            onChange={(e) => setHexInput(e.target.value)}
+            onBlur={(e) => commitHex(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter')
+                {commitHex((e.target as HTMLInputElement).value);}
+            }}
+            className={`w-24 rounded border px-2 py-0.5 font-mono text-xs focus:outline-none focus:ring-2 ${
+              hexError
+                ? 'border-red-400 text-red-600 focus:ring-red-400 dark:border-red-500 dark:text-red-400'
+                : 'border-zinc-300 text-zinc-700 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-300'
+            }`}
+          />
+          {hexError && (
+            <span className="absolute left-0 top-full mt-0.5 text-xs text-red-500">
+              {t('hex-hint')}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
   const t = useTranslations('settings-page.chatbots.theme');
@@ -22,48 +103,22 @@ export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
       </h3>
       <div className="grid grid-cols-2 gap-3">
         {/* Primary color */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="theme-primary-color"
-            className="text-xs text-zinc-600 dark:text-zinc-400"
-          >
-            {t('primary-color')}
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              id="theme-primary-color"
-              type="color"
-              value={value.primaryColor ?? '#6366f1'}
-              onChange={(e) => update('primaryColor', e.target.value)}
-              className="size-8 cursor-pointer rounded border border-zinc-300 dark:border-zinc-700"
-            />
-            <span className="text-xs text-zinc-500">
-              {value.primaryColor ?? '#6366f1'}
-            </span>
-          </div>
-        </div>
+        <ColorField
+          id="theme-primary-color"
+          label={t('primary-color')}
+          colorKey="primaryColor"
+          value={value}
+          onChange={onChange}
+        />
 
         {/* Bubble color */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="theme-bubble-color"
-            className="text-xs text-zinc-600 dark:text-zinc-400"
-          >
-            {t('bubble-color')}
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              id="theme-bubble-color"
-              type="color"
-              value={value.bubbleColor ?? '#6366f1'}
-              onChange={(e) => update('bubbleColor', e.target.value)}
-              className="size-8 cursor-pointer rounded border border-zinc-300 dark:border-zinc-700"
-            />
-            <span className="text-xs text-zinc-500">
-              {value.bubbleColor ?? '#6366f1'}
-            </span>
-          </div>
-        </div>
+        <ColorField
+          id="theme-bubble-color"
+          label={t('bubble-color')}
+          colorKey="bubbleColor"
+          value={value}
+          onChange={onChange}
+        />
 
         {/* Position */}
         <div className="space-y-1.5">

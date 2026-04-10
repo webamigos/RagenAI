@@ -10,6 +10,7 @@ export const getChatbotByTokenQuery = async (widgetToken: string) => {
       selectedFileIds: true,
       allowedOrigins: true,
       themeConfig: true,
+      chatbotPrompt: true,
     },
   });
 };

@@ -18,16 +18,19 @@ export const themeConfigSchema = z
   })
   .optional();
 
-export type CreateChatbotDto = {
-  name: string;
-  selectedFileIds?: string[];
-  allowedOrigins?: string[];
-  themeConfig?: ChatbotThemeConfig;
-};
+export const createChatbotSchema = z.object({
+  name: z.string().min(1),
+  selectedFileIds: z.array(z.string()).optional(),
+  allowedOrigins: z.array(z.string()).optional(),
+  themeConfig: themeConfigSchema,
+  chatbotPrompt: z.string().optional(),
+});
+export type CreateChatbotDto = z.infer<typeof createChatbotSchema>;
 
-export type UpdateChatbotDto = Partial<CreateChatbotDto> & {
-  isActive?: boolean;
-};
+export const updateChatbotSchema = createChatbotSchema.partial().extend({
+  isActive: z.boolean().optional(),
+});
+export type UpdateChatbotDto = z.infer<typeof updateChatbotSchema>;
 
 export type ChatbotPublicConfig = {
   name: string;
