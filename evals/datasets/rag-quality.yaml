@@ -50,9 +50,9 @@
     question: "How do I authenticate with the API?"
   assert:
     - type: contains-any
-      value: ["x-api-key", "API key", "header"]
+      value: ["Authorization", "Bearer", "API key", "header"]
     - type: llm-rubric
-      value: "Explains API key authentication via x-api-key header"
+      value: "Explains API key authentication via Authorization: Bearer header"
 
 - vars:
     question: "What are thread documents?"

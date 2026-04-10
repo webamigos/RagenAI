@@ -7,7 +7,7 @@
 
 - vars:
     question: "How do I use it?"
-    chat_history: "USER: Tell me about the API\nASSISTANT: The API is available at /api/v1/ and uses API key authentication via x-api-key header."
+    chat_history: "USER: Tell me about the API\nASSISTANT: The API is available at /api/v1/ and uses API key authentication via Authorization: Bearer header."
   assert:
     - type: llm-rubric
       value: "Rephrased question is standalone and asks about how to use the Ragen API"
