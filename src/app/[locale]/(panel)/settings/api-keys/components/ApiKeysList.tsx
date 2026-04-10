@@ -1,0 +1,367 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
+import { Button } from '@ragenai/tui/button';
+import { Badge } from '@ragenai/tui/badge';
+import { Switch, SwitchField } from '@ragenai/tui/switch';
+import {
+  PlusIcon,
+  TrashIcon,
+  ClipboardDocumentIcon,
+  CheckIcon,
+} from '@heroicons/react/24/outline';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { createApiKey, deleteApiKey, toggleApiKey } from '../actions';
+
+type ApiKeyDto = {
+  id: string;
+  name: string;
+  maskedValue: string;
+  isActive: boolean;
+  createdAt: Date;
+  project: { id: string; title: string } | null;
+};
+
+type ProjectDto = {
+  id: string;
+  title: string;
+};
+
+type ApiKeysListProps = {
+  initialKeys: ApiKeyDto[];
+  projects: ProjectDto[];
+};
+
+export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
+  const t = useTranslations('api-keys');
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const [keys, setKeys] = useState(initialKeys);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createdKey, setCreatedKey] = useState<string | null>(null);
+  const [deleteKeyId, setDeleteKeyId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Create form state
+  const [name, setName] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  const handleCreate = () => {
+    if (name.length < 3) {
+      setCreateError(t('name-is-to-short'));
+      return;
+    }
+    if (!selectedProjectId) {
+      setCreateError(t('project-is-required'));
+      return;
+    }
+
+    setCreateError(null);
+    startTransition(async () => {
+      try {
+        const result = await createApiKey(name, selectedProjectId);
+        setCreatedKey(result.fullKey);
+        setCreateOpen(false);
+        setName('');
+        setSelectedProjectId('');
+        setKeys((prev) => [
+          {
+            id: result.id,
+            name: result.name,
+            maskedValue: result.maskedValue,
+            isActive: true,
+            createdAt: new Date(),
+            project: projects.find((p) => p.id === selectedProjectId) ?? null,
+          },
+          ...prev,
+        ]);
+      } catch {
+        setCreateError(t('failed-to-load'));
+      }
+    });
+  };
+
+  const handleDelete = (keyId: string) => {
+    startTransition(async () => {
+      try {
+        await deleteApiKey(keyId);
+        setKeys((prev) => prev.filter((k) => k.id !== keyId));
+        setDeleteKeyId(null);
+        router.refresh();
+      } catch {
+        setDeleteKeyId(null);
+      }
+    });
+  };
+
+  const handleToggle = (keyId: string, isActive: boolean) => {
+    const previousState = keys.find((k) => k.id === keyId)?.isActive;
+    setKeys((prev) =>
+      prev.map((k) => (k.id === keyId ? { ...k, isActive } : k)),
+    );
+    startTransition(async () => {
+      try {
+        await toggleApiKey(keyId, isActive);
+      } catch {
+        // Rollback on failure
+        setKeys((prev) =>
+          prev.map((k) =>
+            k.id === keyId ? { ...k, isActive: previousState ?? !isActive } : k,
+          ),
+        );
+      }
+    });
+  };
+
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard access denied
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button
+          onClick={() => {
+            setCreateOpen(true);
+            setCreateError(null);
+          }}
+        >
+          <PlusIcon className="size-4" />
+          {t('create-key')}
+        </Button>
+      </div>
+
+      {keys.length > 0 && (
+        <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                  {t('name')}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                  {t('secret-key')}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                  {t('knowledge-source')}
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                  {t('created')}
+                </th>
+                <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+                  &nbsp;
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {keys.map((key) => (
+                <tr
+                  key={key.id}
+                  className="border-b border-zinc-100 last:border-0 dark:border-zinc-800"
+                >
+                  <td className="px-4 py-3 font-medium text-zinc-950 dark:text-white">
+                    {key.name}
+                  </td>
+                  <td className="px-4 py-3">
+                    <code className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                      {key.maskedValue}
+                    </code>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                    {key.project?.title ?? t('main-knowledge-base')}
+                  </td>
+                  <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                    {new Date(key.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-3">
+                      <SwitchField>
+                        <Switch
+                          checked={key.isActive}
+                          onChange={(checked) => handleToggle(key.id, checked)}
+                        />
+                      </SwitchField>
+                      {!key.isActive && (
+                        <Badge color="zinc">{t('inactive')}</Badge>
+                      )}
+                      <Button
+                        plain
+                        onClick={() => setDeleteKeyId(key.id)}
+                        disabled={isPending}
+                      >
+                        <TrashIcon className="size-4 text-red-500" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Create Dialog */}
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) {
+            setName('');
+            setSelectedProjectId('');
+            setCreateError(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('title-create')}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-zinc-950 dark:text-white">
+                {t('name')}
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCreate();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-zinc-950 dark:text-white">
+                {t('knowledge-source')}
+              </label>
+              <select
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+              >
+                <option value="">&mdash;</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {createError && (
+              <p className="text-sm text-red-500">{createError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button plain onClick={() => setCreateOpen(false)}>
+              {t('dialog.cancel')}
+            </Button>
+            <Button onClick={handleCreate} disabled={isPending}>
+              {t('create')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Key Created Dialog */}
+      <Dialog
+        open={!!createdKey}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCreatedKey(null);
+            setCopied(false);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('dialog.api-key-generated.title')}</DialogTitle>
+            <DialogDescription>
+              {t('dialog.api-key-generated.description')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
+            <code className="flex-1 break-all text-xs text-zinc-950 dark:text-white">
+              {createdKey}
+            </code>
+            <button
+              onClick={() => createdKey && handleCopy(createdKey)}
+              className="shrink-0 rounded p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+            >
+              {copied ? (
+                <CheckIcon className="size-4 text-green-500" />
+              ) : (
+                <ClipboardDocumentIcon className="size-4 text-zinc-500" />
+              )}
+            </button>
+          </div>
+          {copied && (
+            <p className="text-sm text-green-600">
+              {t('dialog.api-key-generated.copied')}
+            </p>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setCreatedKey(null);
+                setCopied(false);
+              }}
+            >
+              {t('done')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!deleteKeyId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteKeyId(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('dialog.remove-key.title')}</DialogTitle>
+            <DialogDescription>
+              {t('dialog.remove-key.description')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button plain onClick={() => setDeleteKeyId(null)}>
+              {t('dialog.cancel')}
+            </Button>
+            <Button
+              color="red"
+              onClick={() => deleteKeyId && handleDelete(deleteKeyId)}
+              disabled={isPending}
+            >
+              {t('dialog.confirm')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

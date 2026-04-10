@@ -11,7 +11,6 @@ import { AiUsageSummaryCards } from './AiUsageSummaryCards';
 import { AiUsageFiltersBar } from './AiUsageFiltersBar';
 import { AiUsageCharts } from './AiUsageCharts';
 import { AiUsageTable } from './AiUsageTable';
-import { AiUsageLimitsManager } from './AiUsageLimitsManager';
 
 type Props = {
   isAppAdmin: boolean;
@@ -74,13 +73,6 @@ export function AiUsageDashboard({ isAppAdmin, orgId }: Props) {
 
   return (
     <div className="space-y-6">
-      {isAppAdmin && (
-        <>
-          <AiUsageLimitsManager />
-          <hr className="border-border" />
-        </>
-      )}
-
       <AiUsageFiltersBar
         filters={filters}
         onChange={handleFiltersChange}

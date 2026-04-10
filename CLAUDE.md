@@ -107,11 +107,14 @@ features/{feature}/
 
 ### API
 
-REST API at `src/app/api/v1/` with route handlers. Key subdirectories:
-- `__logic__/` — Cross-cutting concerns: `guards/`, `context/`, `dtos/`, `types/`, `filters/`, plus `queries/` and `commands/` for API-specific data operations
-- `threads/`, `assistants/`, `documents/`, `auth/`, `healthcheck/`, `query/`
+The public API is served by **ragen-api** (separate NestJS service). ragen-app exposes internal API endpoints at `src/app/api/v1/` that are called by ragen-api, not by external clients directly.
 
-API authentication uses `x-api-key` header → `apiKeyGuard()` (async) → validates key against database (bcrypt hash comparison) → returns `ApiContext` with `orgId`, `userId`, `projectId`. API keys store a `hashed_value` column for verification; keys without a stored hash are rejected.
+**Internal endpoints** (called by ragen-api):
+- `src/app/api/v1/chat/route.ts` — RAG chat endpoint. Protected by shared secret (`INTERNAL_API_SECRET` env var, verified via `x-internal-secret` header with timing-safe comparison). Context (`x-org-id`, `x-user-id`, `x-project-id`) is set by ragen-api after API key validation. Supports both streaming (SSE) and non-streaming (JSON) responses.
+
+**API key format** (ADR-13): Opaque keys in `sk-<keyId>.<secret>` format. No organizational context is embedded in the key — context is resolved from the database by ragen-api at request time. Keys are stored in ragen-token-vault; only `maskedValue` is in the database.
+
+**API key management**: Managed via settings UI (`src/app/[locale]/(panel)/settings/api-keys/`). Org admins can create, delete, and toggle (activate/deactivate) keys. The `ApiKey` model stores `maskedValue` for display, `isActive` for toggling, and `lastUsedAt` for usage tracking.
 
 The app can run in API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1`.
 
