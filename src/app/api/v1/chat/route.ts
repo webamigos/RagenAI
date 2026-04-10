@@ -4,11 +4,15 @@ import db from '@ragenai/prisma-client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
+import {
+  apiKeyGuard,
+  ApiKeyError,
+} from '@/app/api/v1/__logic__/guards/api-key-guard';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
 };
 
 export async function OPTIONS() {
@@ -20,12 +24,15 @@ export const dynamic = 'force-dynamic';
 
 const chatRequestSchema = z.object({
   prompt: z.string().min(1).max(10000),
-  assistantId: z.uuid(),
   context: z.string().max(20000).optional(),
+  stream: z.boolean().optional().default(false),
 });
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate via API key
+    const apiContext = await apiKeyGuard(request);
+
     let body: unknown;
     try {
       body = await request.json();
@@ -35,10 +42,10 @@ export async function POST(request: NextRequest) {
         { status: 400, headers: corsHeaders },
       );
     }
-    const { prompt, assistantId, context } = chatRequestSchema.parse(body);
+    const { prompt, context, stream } = chatRequestSchema.parse(body);
 
     const project = await db.project.findUnique({
-      where: { id: assistantId },
+      where: { id: apiContext.projectId },
       select: {
         organizationId: true,
         settings: { select: { instructions: true } },
@@ -59,7 +66,7 @@ export async function POST(request: NextRequest) {
     const ragChain = await initializeRagChain({
       settings,
       orgId: organizationId,
-      projectId: assistantId,
+      projectId: apiContext.projectId,
       projectInstruction: projectSettings?.instructions ?? null,
     });
 
@@ -72,33 +79,50 @@ export async function POST(request: NextRequest) {
       chat_history: '',
     });
 
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of result.textStream) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-            );
+    if (stream) {
+      const encoder = new TextEncoder();
+      const sseStream = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const chunk of result.textStream) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
+              );
+            }
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          } catch (err) {
+            controller.error(err);
           }
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
-        } catch (err) {
-          controller.error(err);
-        }
-      },
-    });
+        },
+      });
 
-    return new Response(stream, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Content-Encoding': 'none',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-      },
-    });
+      return new Response(sseStream, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Content-Encoding': 'none',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
+    // Non-streaming: collect full response and return JSON
+    let text = '';
+    for await (const chunk of result.textStream) {
+      text += chunk;
+    }
+
+    return NextResponse.json({ text }, { headers: corsHeaders });
   } catch (error) {
+    if (error instanceof ApiKeyError) {
+      return NextResponse.json(
+        { error: error.message, code: error.statusCode },
+        { status: error.statusCode, headers: corsHeaders },
+      );
+    }
+
     logger.error({ err: error }, 'Error in /api/v1/chat');
 
     if (error instanceof z.ZodError) {

@@ -838,7 +838,8 @@
       }
     },
     "knowledge-source": "Źródło wiedzy",
-    "main-knowledge-base": "Główna baza wiedzy"
+    "main-knowledge-base": "Główna baza wiedzy",
+    "inactive": "Nieaktywny"
   },
   "subscription": {
     "title": "Szczegóły subskrypcji",

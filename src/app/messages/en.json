@@ -835,7 +835,8 @@
       }
     },
     "knowledge-source": "Knowledge source",
-    "main-knowledge-base": "Main knowledge base"
+    "main-knowledge-base": "Main knowledge base",
+    "inactive": "Inactive"
   },
   "subscription": {
     "title": "Subscription details",
