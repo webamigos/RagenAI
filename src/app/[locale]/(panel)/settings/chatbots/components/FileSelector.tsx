@@ -72,12 +72,16 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
   const t = useTranslations('settings-page.chatbots.files');
   const [files, setFiles] = useState<OrgFile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [search, setSearch] = useState('');
 
   useEffect(() => {
     getChatbotFiles()
       .then(setFiles)
-      .catch((err) => logger.error({ err }, 'Failed to load chatbot files'))
+      .catch((err) => {
+        logger.error({ err }, 'Failed to load chatbot files');
+        setFetchError(true);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -120,12 +124,18 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
             {t('loading')}
           </p>
         )}
-        {!loading && filtered.length === 0 && (
+        {!loading && fetchError && (
+          <p className="px-4 py-6 text-center text-xs text-red-500 dark:text-red-400">
+            {t('fetch-error')}
+          </p>
+        )}
+        {!loading && !fetchError && filtered.length === 0 && (
           <p className="px-4 py-6 text-center text-xs text-zinc-400">
             {t('empty')}
           </p>
         )}
         {!loading &&
+          !fetchError &&
           filtered.map((file) => (
             <FileRow
               key={file.id}
@@ -137,14 +147,18 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
       </div>
 
       {/* Status */}
-      {value.length > 0 ? (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {t('selected-count', { count: value.length })}
-        </p>
-      ) : (
-        <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
-          {t('all-files-warning')}
-        </p>
+      {!fetchError && (
+        <>
+          {value.length > 0 ? (
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {t('selected-count', { count: value.length })}
+            </p>
+          ) : (
+            <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+              {t('all-files-warning')}
+            </p>
+          )}
+        </>
       )}
     </div>
   );

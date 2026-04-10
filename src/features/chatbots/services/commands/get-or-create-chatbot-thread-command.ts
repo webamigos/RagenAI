@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { Source } from '@/generated/prisma/client';
+import { Prisma, Source } from '@/generated/prisma/client';
 
 export const getOrCreateChatbotThreadCommand = async (
   chatbotId: string,
@@ -17,13 +17,26 @@ export const getOrCreateChatbotThreadCommand = async (
     return existing;
   }
 
-  return db.thread.create({
-    data: {
-      chatbotId,
-      organizationId,
-      visitorId: sessionId,
-      source: Source.PUBLIC,
-    },
-    select: { id: true },
-  });
+  try {
+    return await db.thread.create({
+      data: {
+        chatbotId,
+        organizationId,
+        visitorId: sessionId,
+        source: Source.PUBLIC,
+      },
+      select: { id: true },
+    });
+  } catch (err) {
+    if (
+      err instanceof Prisma.PrismaClientKnownRequestError &&
+      err.code === 'P2002'
+    ) {
+      return db.thread.findFirstOrThrow({
+        where: { chatbotId, visitorId: sessionId },
+        select: { id: true },
+      });
+    }
+    throw err;
+  }
 };

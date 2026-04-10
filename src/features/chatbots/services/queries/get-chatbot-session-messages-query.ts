@@ -15,12 +15,14 @@ export const getChatbotSessionMessagesQuery = async (
     return [];
   }
 
-  return db.message.findMany({
+  const messages = await db.message.findMany({
     where: { threadId: thread.id },
     select: { role: true, content: true },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: 'desc' },
     take: 50,
   });
+
+  return messages.reverse();
 };
 
 export const getChatbotSessionListQuery = async (

@@ -19,8 +19,8 @@ export const themeConfigSchema = z
   .optional();
 
 export const createChatbotSchema = z.object({
-  name: z.string().min(1),
-  selectedFileIds: z.array(z.string()).optional(),
+  name: z.string().trim().min(1),
+  selectedFileIds: z.array(z.string().uuid()).optional(),
   allowedOrigins: z.array(z.string()).optional(),
   themeConfig: themeConfigSchema,
   chatbotPrompt: z.string().optional(),

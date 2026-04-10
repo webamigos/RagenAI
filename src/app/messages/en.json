@@ -505,7 +505,8 @@
         "all-files-warning": "The chatbot has access to all organization files. Select specific files to limit the scope of knowledge.",
         "selected-count": "{count, plural, one {# file selected} other {# files selected}}",
         "empty": "No files with completed indexing.",
-        "loading": "Loading files..."
+        "loading": "Loading files...",
+        "fetch-error": "Failed to load files. Please refresh the page."
       },
       "origins": {
         "title": "Allowed domains",

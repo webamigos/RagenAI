@@ -517,7 +517,7 @@
       "save-error": "Nie udało się zapisać zmian",
       "active": "Aktywny",
       "inactive": "Nieaktywny",
-      "files-count": "{count, plural, =0 {Brak wybranych plików} =1 {1 plik wybrany} other {# pliki(ów) wybranych}}",
+      "files-count": "{count, plural, =0 {Brak wybranych plików} =1 {1 plik wybrany} few {# pliki wybrane} other {# plików wybranych}}",
       "delete-confirm": "Usunąć chatbota \"{name}\"? Tej operacji nie można cofnąć.",
       "edit-title": "Edytuj chatbota",
       "edit-description": "Dostosuj wygląd i dozwolone domeny dla tego chatbota.",
@@ -546,7 +546,8 @@
         "all-files-warning": "Chatbot ma dostęp do wszystkich plików organizacji. Wybierz konkretne pliki, aby ograniczyć zakres wiedzy.",
         "selected-count": "Wybrano {count} {count, plural, one {plik} few {pliki} other {plików}}",
         "empty": "Brak plików z ukończonym indeksowaniem.",
-        "loading": "Ładowanie plików..."
+        "loading": "Ładowanie plików...",
+        "fetch-error": "Nie udało się załadować plików. Odśwież stronę."
       },
       "origins": {
         "title": "Dozwolone domeny",

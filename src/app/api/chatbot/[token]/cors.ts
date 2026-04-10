@@ -8,9 +8,21 @@ export function validateOrigin(
   if (!origin) {
     return false;
   }
+  let hostname: string;
+  try {
+    hostname = new URL(origin).hostname;
+  } catch {
+    return false;
+  }
+
   return allowedOrigins.some((allowed) => {
     if (allowed.startsWith('*.')) {
-      return origin.endsWith(allowed.slice(1));
+      const suffix = allowed.slice(2); // e.g. "example.com"
+      return (
+        hostname.endsWith(suffix) &&
+        hostname.length > suffix.length &&
+        hostname[hostname.length - suffix.length - 1] === '.'
+      );
     }
     return allowed === origin;
   });

@@ -37,7 +37,7 @@ export const getChatbotThreadMessagesQuery = async (
       { err: error, threadId },
       'Failed to decrypt chatbot thread messages',
     );
-    messages = thread.messages;
+    messages = [];
   }
 
   return {

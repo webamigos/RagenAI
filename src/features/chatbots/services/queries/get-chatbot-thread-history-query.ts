@@ -27,15 +27,12 @@ export const getChatbotThreadHistoryQuery = async (
 
   try {
     const decrypted = await decryptMessageContents(
-      rawMessages.map((m) => ({ ...m, id: '' })),
+      rawMessages,
       threadMeta.encryptedDek,
     );
     return decrypted.reverse();
   } catch (err) {
-    logger.warn(
-      { err, threadId },
-      'Failed to decrypt chatbot history, falling back to raw messages',
-    );
-    return rawMessages.reverse();
+    logger.error({ err, threadId }, 'Failed to decrypt chatbot history');
+    return [];
   }
 };

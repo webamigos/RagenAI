@@ -68,6 +68,7 @@ model Thread {
   chatbotId                 String?                 @map("chatbot_id") @db.Uuid
   chatbot                   Chatbot?                @relation(fields: [chatbotId], references: [id], onDelete: SetNull)
 
+  @@unique([chatbotId, visitorId])
   @@index([organizationId])
   @@index([userId])
   @@index([visitorId, isStarred, createdAt])
