@@ -96,7 +96,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
     try {
       const result = await updateChatbot(chatbot.id, {
         name: data.name,
-        chatbotPrompt: data.chatbotPrompt?.trim() || undefined,
+        chatbotPrompt: data.chatbotPrompt?.trim() || null,
         allowedOrigins,
         themeConfig,
         selectedFileIds,

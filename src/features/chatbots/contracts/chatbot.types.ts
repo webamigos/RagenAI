@@ -29,6 +29,7 @@ export type CreateChatbotDto = z.infer<typeof createChatbotSchema>;
 
 export const updateChatbotSchema = createChatbotSchema.partial().extend({
   isActive: z.boolean().optional(),
+  chatbotPrompt: z.string().nullable().optional(),
 });
 export type UpdateChatbotDto = z.infer<typeof updateChatbotSchema>;
 
