@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useRouter } from '@/i18n/routing';
+import { useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { authClient } from '@/app/hooks/use-better-auth';
+import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
+import { logger } from '@/app/lib/utils/logger';
 
 type VerifyEmailData = {
   code: string;
@@ -17,7 +20,9 @@ export const VerifyEmailForm = () => {
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
 
-  const { push } = useRouter();
+  const t = useTranslations('verify-email');
+  const locale = useLocale();
+
   const {
     register,
     handleSubmit,
@@ -36,14 +41,24 @@ export const VerifyEmailForm = () => {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Verification failed');
+        setError(result.error.message || t('error-verification-failed'));
         return;
       }
 
-      // Redirect to home or onboarding
-      push('/');
-    } catch (err) {
-      setError('An unexpected error occurred');
+      // Finalize user onboarding after verification (set activeOrganizationId + trial subscription)
+      try {
+        await finalizeUserOnboarding();
+      } catch (err) {
+        logger.warn(
+          { error: err },
+          'Onboarding finalization failed after email verification',
+        );
+      }
+
+      // Redirect to dashboard with full page reload to refresh session
+      window.location.href = `/${locale}/new`;
+    } catch {
+      setError(t('error-generic'));
     } finally {
       setIsSubmitting(false);
     }
@@ -55,11 +70,17 @@ export const VerifyEmailForm = () => {
     setError(null);
 
     try {
-      // Better Auth should have a resend verification email method
-      // TODO: Implement resend functionality if available in Better Auth
-      setResendSuccess(true);
-    } catch (err) {
-      setError('Failed to resend verification email');
+      // Get the email from URL search params if available
+      const searchParams = new URLSearchParams(window.location.search);
+      const email = searchParams.get('email');
+      if (email) {
+        await authClient.sendVerificationEmail({ email });
+        setResendSuccess(true);
+      } else {
+        setError(t('error-generic'));
+      }
+    } catch {
+      setError(t('error-generic'));
     } finally {
       setIsResending(false);
     }
@@ -69,18 +90,18 @@ export const VerifyEmailForm = () => {
     <div className="w-full max-w-md">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Verify your email
+          {t('title')}
         </h2>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          We&apos;ve sent a verification code to your email address.
+          {t('description')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
-          label="Verification Code"
-          placeholder="Enter the code from your email"
-          {...register('code', { required: 'Verification code is required' })}
+          label={t('verification-code')}
+          placeholder={t('verification-code-placeholder')}
+          {...register('code', { required: t('verification-code') })}
           type="text"
           error={errors.code}
           errorMessage={errors.code?.message}
@@ -92,7 +113,7 @@ export const VerifyEmailForm = () => {
 
         {resendSuccess && (
           <p className="text-sm text-green-600 dark:text-green-500">
-            Verification email resent successfully!
+            {t('resend-success')}
           </p>
         )}
 
@@ -102,7 +123,7 @@ export const VerifyEmailForm = () => {
           isLoading={isSubmitting}
           isSubmit={true}
         >
-          Verify Email
+          {t('verify')}
         </Button>
 
         <div className="text-center">
@@ -112,7 +133,7 @@ export const VerifyEmailForm = () => {
             disabled={isResending}
             className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 disabled:opacity-50"
           >
-            {isResending ? 'Resending...' : "Didn't receive the code? Resend"}
+            {isResending ? t('resending') : t('resend')}
           </button>
         </div>
       </form>
