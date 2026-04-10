@@ -44,6 +44,33 @@ async function sendPasswordResetEmail({
   }
 }
 
+async function sendVerificationEmailViaMailer({
+  to,
+  verificationUrl,
+}: {
+  to: string;
+  verificationUrl: string;
+}) {
+  try {
+    const { sendVerificationEmailViaResend } =
+      await import('@/app/emails/services/mailer');
+    const result = await sendVerificationEmailViaResend({
+      to,
+      verificationUrl,
+    });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to send verification email', {
+        to,
+        error: result.error,
+      });
+    } else {
+      console.log('[AUTH] Verification email sent', { to });
+    }
+  } catch (error) {
+    console.error('[AUTH] Failed to send verification email', { to, error });
+  }
+}
+
 async function sendOrganizationInvite(data: any) {
   // Import mailer dynamically to avoid Edge Runtime issues
   const { sendInvitationEmail } = await import('@/app/emails/services/mailer');
@@ -125,10 +152,9 @@ export const auth = betterAuth({
       user: { email: string };
       url: string;
     }) {
-      // TODO: Create email template and send via mailer (like sendPasswordResetEmailViaMailer)
-      console.log('[AUTH] Verification email requested', {
+      await sendVerificationEmailViaMailer({
         to: user.email,
-        url,
+        verificationUrl: url,
       });
     },
   },

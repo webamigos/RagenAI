@@ -3,6 +3,7 @@ import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
 import { ContactEmail } from '../contact-email';
 import { PasswordResetEmail } from '../password-reset-email';
+import { VerificationEmail } from '../verification-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -103,6 +104,28 @@ export const sendPasswordResetEmailViaMailer = async ({
   } catch (error) {
     logger.error({ error, to }, 'Failed to send password reset email');
     return { error: 'Failed to send password reset email' };
+  }
+};
+
+export const sendVerificationEmailViaResend = async ({
+  to,
+  verificationUrl,
+}: {
+  to: string;
+  verificationUrl: string;
+}) => {
+  try {
+    const response = await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: 'Zweryfikuj swój adres email - Ragen AI',
+      react: VerificationEmail({ verificationUrl }),
+    });
+
+    return { data: response };
+  } catch (error) {
+    logger.error({ error, to }, 'Failed to send verification email');
+    return { error: 'Failed to send verification email' };
   }
 };
 

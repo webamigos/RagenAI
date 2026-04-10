@@ -6,11 +6,12 @@ import { useLocale, useTranslations } from 'next-intl';
 
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
-import { signUp } from '@/app/hooks/use-better-auth';
+import { signUp, authClient } from '@/app/hooks/use-better-auth';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 import { logger } from '@/app/lib/utils/logger';
 import { GoogleSignInButton } from '@/app/components/Forms/GoogleSignInButton';
+import { Link } from '@/i18n/routing';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -20,6 +21,9 @@ import { addSubscriberToKit } from './actions';
 export const RegisterForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const locale = useLocale();
   const searchParams = useSearchParams();
   const invitationId = searchParams.get('invitationId');
@@ -37,6 +41,29 @@ export const RegisterForm = () => {
   });
 
   const termsAccepted = watch('terms');
+
+  const handleResendVerification = async () => {
+    if (!registeredEmail) {
+      return;
+    }
+    setIsResending(true);
+    setResendSuccess(false);
+    setError(null);
+    try {
+      const { error: resendError } = await authClient.sendVerificationEmail({
+        email: registeredEmail,
+      });
+      if (resendError) {
+        setError(resendError.message || t('email_code.resend-failed'));
+        return;
+      }
+      setResendSuccess(true);
+    } catch {
+      setError(t('email_code.resend-failed'));
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
@@ -87,8 +114,14 @@ export const RegisterForm = () => {
         }
       }
 
-      // Email verification is disabled (requireEmailVerification: false)
-      // User is automatically logged in after registration
+      // If email verification is required, Better Auth returns token: null.
+      // Show the "check your email" state instead of redirecting.
+      if (!result.data?.token) {
+        setRegisteredEmail(email);
+        return;
+      }
+
+      // User is automatically logged in (email verification not required)
       // Finalize user onboarding (set activeOrganizationId + trial subscription)
       // Pass invitingOrgId so the user lands in the inviting org, not their personal one
       try {
@@ -113,6 +146,69 @@ export const RegisterForm = () => {
     }
   };
 
+  // Show "check your email" state after successful registration with email verification
+  if (registeredEmail) {
+    return (
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+          <svg
+            className="h-6 w-6 text-green-600 dark:text-green-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+            />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          {t('verification-email-sent-title')}
+        </h3>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          {t('verification-email-sent-description', {
+            email: registeredEmail,
+          })}
+        </p>
+        <p className="mt-4 text-sm text-gray-500 dark:text-gray-500">
+          {t('verification-email-sent-hint')}
+        </p>
+
+        {resendSuccess && (
+          <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+            {t('resend-success')}
+          </p>
+        )}
+
+        {error && (
+          <p className="mt-2 text-sm text-red-600 dark:text-red-500">{error}</p>
+        )}
+
+        <Button
+          type="button"
+          onClick={handleResendVerification}
+          className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          isLoading={isResending}
+          disabled={isResending}
+        >
+          {t('resend-verification')}
+        </Button>
+
+        <div className="mt-4">
+          <Link
+            href="/sign-in"
+            className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            {t('go-to-sign-in')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -129,8 +225,16 @@ export const RegisterForm = () => {
           type="password"
           id="password"
           {...register('password')}
-          error={errors.email}
+          error={errors.password}
           errorMessage={errors.password?.message}
+        />
+        <Input
+          label={t('confirm-password')}
+          type="password"
+          id="confirmPassword"
+          {...register('confirmPassword')}
+          error={errors.confirmPassword}
+          errorMessage={errors.confirmPassword?.message}
         />
 
         <div className="pt-4 ml-1">
@@ -207,10 +311,15 @@ export const RegisterForm = () => {
                   >
                     {t('newsletter-consent-link')}
                   </a>
-                  .
+                  .<span className="text-red-600">*</span>
                 </label>
               </div>
             </div>
+            {errors.newsletter_consent && (
+              <p className="text-sm mt-0 text-red-600 dark:text-red-500">
+                {t('validation.newsletter-consent')}
+              </p>
+            )}
           </div>
         </div>
 
@@ -227,20 +336,6 @@ export const RegisterForm = () => {
         >
           {t('sign-up')}
         </Button>
-
-        <div className="relative mt-6">
-          <div
-            className="absolute inset-0 flex items-center"
-            aria-hidden="true"
-          >
-            <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-          </div>
-          <div className="relative flex justify-center text-sm/6 font-medium">
-            <span className="bg-primary-light dark:bg-primary-dark px-6 text-gray-900 dark:text-gray-300">
-              {t('or-continue-with')}
-            </span>
-          </div>
-        </div>
 
         <div className="mt-6">
           <GoogleSignInButton
