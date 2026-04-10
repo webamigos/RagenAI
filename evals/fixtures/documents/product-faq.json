@@ -36,7 +36,7 @@
     }
   },
   {
-    "pageContent": "The API is available at /api/v1/ and uses API key authentication via the x-api-key header. You can create API keys in the organization settings. Each API key is scoped to a specific project and grants access to threads, assistants, documents, and query endpoints.",
+    "pageContent": "The API is available at /api/v1/ and uses API key authentication via the Authorization: Bearer header. You can create API keys in the organization settings. Each API key is scoped to a specific project and grants access to threads, assistants, documents, and query endpoints.",
     "metadata": { "source": "faq", "topic": "api", "document_id": "doc-006" }
   },
   {

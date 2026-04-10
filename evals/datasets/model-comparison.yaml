@@ -38,4 +38,4 @@
     question: "Can I use my own API keys?"
   assert:
     - type: llm-rubric
-      value: "Answer addresses API key management and mentions x-api-key or organization settings"
+      value: "Answer addresses API key management and mentions Authorization Bearer or organization settings"

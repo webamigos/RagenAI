@@ -46,7 +46,7 @@ export class HttpProvider implements ApiProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({ assistant_id: assistantId }),
       });
@@ -65,7 +65,7 @@ export class HttpProvider implements ApiProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           threadId: thread.id,
