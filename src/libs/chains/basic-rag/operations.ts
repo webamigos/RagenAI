@@ -1,7 +1,11 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider';
 import type { ModelMessage } from 'ai';
-import { generateText } from 'ai';
-import type { VectorStoreClient } from '@/libs/vector-store/types';
+import { generateObject, generateText } from 'ai';
+import { z } from 'zod';
+import type {
+  VectorStoreClient,
+  VectorStoreDocument,
+} from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { BaseChatChainInput } from '../types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
@@ -16,6 +20,7 @@ import {
 } from './config';
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
 import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
+import { logger } from '@/app/lib/utils/logger';
 
 type Message = {
   type: 'user' | 'assistant';
@@ -24,6 +29,19 @@ type Message = {
 
 /** Multiplier for initial retrieval count when reranking is enabled. */
 const RERANK_RETRIEVAL_MULTIPLIER = 3;
+
+/**
+ * Number of alternate phrasings to generate per turn. The total number of
+ * queries issued to the vector store is this value + 1 (the original
+ * standalone question is always included as the first query).
+ */
+export const MULTI_QUERY_VARIANT_COUNT = 2;
+
+const expandQueriesSchema = z.object({
+  variants: z
+    .array(z.string())
+    .describe('Alternative phrasings of the input question'),
+});
 
 function formatChatHistory(chatHistory: string): Message[] {
   const lines = chatHistory.split('\n').filter((line) => line.trim());
@@ -86,19 +104,78 @@ export async function rephraseQuestion(
 }
 
 /**
+ * Generate alternative phrasings of a standalone question for multi-query
+ * retrieval. Uses structured output (Zod schema) so a malformed response
+ * raises an error rather than returning invalid data.
+ *
+ * On any failure (LLM error, invalid structured output, empty array after
+ * filtering), returns an empty array and lets the caller fall back to
+ * single-query retrieval. The expansion step must never regress behavior.
+ */
+export async function expandQueries(
+  model: LanguageModelV3,
+  standaloneQuestion: string,
+  variantCount: number = MULTI_QUERY_VARIANT_COUNT,
+): Promise<string[]> {
+  if (!model) {
+    throw new Error('Error expanding queries: No model instance');
+  }
+
+  const humanMessage = humanTemplates.expandQueries
+    .replace('{count}', String(variantCount))
+    .replace('{question}', standaloneQuestion);
+
+  try {
+    const result = await generateObject({
+      model,
+      schema: expandQueriesSchema,
+      system: systemTemplates.expandQueries,
+      messages: [{ role: 'user', content: humanMessage }],
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'expand-queries',
+      },
+    });
+
+    const variants = result.object.variants
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
+
+    logger.debug(
+      { standaloneQuestion, variants },
+      'Generated query variants for multi-query retrieval',
+    );
+
+    return variants;
+  } catch (err) {
+    // Graceful degradation: any failure falls back to single-query retrieval.
+    logger.warn(
+      { err, standaloneQuestion },
+      'Query expansion failed, falling back to single query',
+    );
+    return [];
+  }
+}
+
+/**
  * Retrieve relevant documents from the vector store with optional reranking.
+ * Supports both single-query and multi-query retrieval.
  *
- * When reranking is enabled (AWS credentials available):
- * 1. Retrieve 3x the desired count from the vector store
- * 2. Rerank candidates using Cohere Rerank v3.5 via Bedrock
- * 3. Return the top-k most relevant documents
+ * When multiple queries are provided:
+ * 1. Fan out vector search in parallel (one per query)
+ * 2. Deduplicate candidates by content string (first occurrence wins)
+ * 3. Rerank the deduplicated pool to top-k
  *
- * When reranking is disabled (local dev without Bedrock):
- * Falls back to returning the vector store results directly.
+ * Per-query retrieval count is divided by the number of queries so the
+ * total pre-dedupe candidate pool stays roughly the same as single-query
+ * behavior. This keeps the reranker input size bounded.
+ *
+ * When reranking is disabled (local dev without Bedrock), skips the rerank
+ * step and returns the first `maxDocuments` deduplicated results.
  */
 export async function retrieveRelevantDocuments(
   vectorStore: VectorStoreClient,
-  standaloneQuestion: string,
+  queries: string | string[],
   maxDocuments = 4,
   metadataFilter?: object,
   litellmApiKey?: string,
@@ -107,33 +184,58 @@ export async function retrieveRelevantDocuments(
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
+  const queryList = Array.isArray(queries) ? queries : [queries];
+  if (queryList.length === 0) {
+    return combineDocuments([]);
+  }
+
   const filter =
     metadataFilter && Object.keys(metadataFilter).length > 0
       ? metadataFilter
       : undefined;
 
   const useReranking = isRerankingEnabled();
-  const retrievalCount = useReranking
+  const totalPoolTarget = useReranking
     ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
     : maxDocuments;
-
-  const docs = await vectorStore.similaritySearch(
-    standaloneQuestion,
-    retrievalCount,
-    filter,
+  // Divide the pool target across queries, floored at maxDocuments so every
+  // branch returns at least enough results to matter.
+  const perQueryCount = Math.max(
+    maxDocuments,
+    Math.floor(totalPoolTarget / queryList.length),
   );
 
-  if (useReranking && docs.length > maxDocuments) {
+  const resultsPerQuery = await Promise.all(
+    queryList.map((q) =>
+      vectorStore.similaritySearch(q, perQueryCount, filter),
+    ),
+  );
+
+  // Dedupe by pageContent — chunks identical in content are the same document
+  // even if retrieved by different query variants.
+  const deduped = new Map<string, VectorStoreDocument>();
+  for (const docs of resultsPerQuery) {
+    for (const doc of docs) {
+      if (!deduped.has(doc.pageContent)) {
+        deduped.set(doc.pageContent, doc);
+      }
+    }
+  }
+  const uniqueDocs = Array.from(deduped.values());
+
+  if (useReranking && uniqueDocs.length > maxDocuments) {
+    // Rerank using the first (primary) query — it is the original standalone
+    // phrasing, which is the most faithful representation of user intent.
     const reranked = await rerankDocuments(
-      standaloneQuestion,
-      docs,
+      queryList[0],
+      uniqueDocs,
       maxDocuments,
       litellmApiKey,
     );
     return combineDocuments(reranked);
   }
 
-  return combineDocuments(docs);
+  return combineDocuments(uniqueDocs.slice(0, maxDocuments));
 }
 
 export async function retrieveThreadDocuments(

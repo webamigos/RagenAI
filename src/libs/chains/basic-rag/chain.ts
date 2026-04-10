@@ -1,11 +1,25 @@
 import { streamText, stepCountIs } from 'ai';
 import {
+  expandQueries,
   rephraseQuestion,
   retrieveRelevantDocuments,
   retrieveThreadDocuments,
   buildRagMessages,
   validateAnswerGenerator,
 } from './operations';
+
+/**
+ * Feature flag for multi-query expansion (ADR-15).
+ * Enabled unless explicitly set to "0" or "false". Disable by setting
+ * FEATURE_FLAG_MULTI_QUERY=0 in the environment.
+ */
+function isMultiQueryEnabled(): boolean {
+  const value = process.env.FEATURE_FLAG_MULTI_QUERY;
+  if (value === undefined) {
+    return true;
+  }
+  return value !== '0' && value.toLowerCase() !== 'false';
+}
 import {
   sanitizeAndValidateInput,
   moderateContent,
@@ -40,15 +54,25 @@ export const basicRagChain = async ({
         sanitizedInput,
       );
 
-      // Step 3: Partition thread documents — images go to multimodal message, text to retrieval
+      // Step 3: Expand into multiple query variants for retrieval (ADR-15).
+      // The original standalone question is always the first query; variants
+      // are additive. expandQueries() catches LLM/structured-output errors
+      // internally and returns [] on failure, so retrieval falls back to a
+      // single-query pipeline transparently — no try-catch needed here.
+      const variants = isMultiQueryEnabled()
+        ? await expandQueries(models.questionRephraser, standaloneQuestion)
+        : [];
+      const retrievalQueries = [standaloneQuestion, ...variants];
+
+      // Step 4: Partition thread documents — images go to multimodal message, text to retrieval
       const { textDocs: textThreadDocs, imageDocs: imageThreadDocs } =
         partitionThreadDocuments(config?.threadDocuments || []);
 
-      // Step 4: Retrieve KB documents and thread documents in parallel
+      // Step 5: Retrieve KB documents and thread documents in parallel
       const [context, threadContext] = await Promise.all([
         retrieveRelevantDocuments(
           vectorStore,
-          standaloneQuestion,
+          retrievalQueries,
           config?.maxDocumentsToRetrieve,
           config?.metadataFilter,
           config?.litellmApiKey,
