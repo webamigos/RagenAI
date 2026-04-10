@@ -2,6 +2,8 @@
 
 import { type ReactNode, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { Link } from '@/i18n/routing';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getChatbotThreads } from '../../actions';
@@ -59,9 +61,17 @@ export function ConversationsContent({
     <div className="max-w-4xl space-y-6">
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-            {chatbotName}
-          </h2>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/settings/chatbots"
+              className="flex size-7 items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <ArrowLeftIcon className="size-4" />
+            </Link>
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              {chatbotName}
+            </h2>
+          </div>
           {total > 0 && (
             <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
               {total}

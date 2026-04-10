@@ -14,12 +14,14 @@ export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'USER';
 
   return (
-    <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+    <div
+      className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+    >
       <div
         className={`flex size-7 shrink-0 items-center justify-center rounded-full ${
           isUser
-            ? 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400'
-            : 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+            ? 'bg-stone-200 text-stone-600 dark:bg-stone-700 dark:text-stone-300'
+            : 'bg-gray-200 text-gray-600 dark:bg-muted dark:text-gray-400'
         }`}
       >
         {isUser ? (
@@ -30,10 +32,10 @@ export function MessageBubble({ message }: { message: Message }) {
       </div>
 
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${
+        className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm text-foreground ${
           isUser
-            ? 'rounded-tr-sm bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200'
-            : 'rounded-tl-sm bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
+            ? 'rounded-br-md bg-stone-100 dark:bg-stone-800/50'
+            : 'rounded-bl-md bg-gray-100 dark:bg-muted/50'
         }`}
       >
         <p className="whitespace-pre-wrap break-words leading-relaxed">
