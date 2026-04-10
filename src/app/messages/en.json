@@ -201,6 +201,9 @@
     "settings-teams": {
       "title": "Teams | Ragen AI"
     },
+    "settings-api-keys": {
+      "title": "API Keys | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
     },
@@ -808,6 +811,7 @@
   },
   "api-keys": {
     "title": "API Keys",
+    "description": "Manage API keys for programmatic access. See the <link>API documentation</link> for integration guides and endpoint reference.",
     "title-create": "Create API Key",
     "create-key": "Create Key",
     "name": "Name",
@@ -835,7 +839,8 @@
       }
     },
     "knowledge-source": "Knowledge source",
-    "main-knowledge-base": "Main knowledge base"
+    "main-knowledge-base": "Main knowledge base",
+    "inactive": "Inactive"
   },
   "subscription": {
     "title": "Subscription details",

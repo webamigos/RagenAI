@@ -202,6 +202,9 @@
     "settings-teams": {
       "title": "Zespoły | Ragen AI"
     },
+    "settings-api-keys": {
+      "title": "Klucze API | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
     },
@@ -811,6 +814,7 @@
   },
   "api-keys": {
     "title": "Klucze API",
+    "description": "Zarządzaj kluczami API do programistycznego dostępu. Zobacz <link>dokumentację API</link>, aby poznać przewodniki integracji i opis endpointów.",
     "title-create": "Stwórz nowy klucz",
     "create-key": "Nowy klucz",
     "name": "Nazwa",
@@ -838,7 +842,8 @@
       }
     },
     "knowledge-source": "Źródło wiedzy",
-    "main-knowledge-base": "Główna baza wiedzy"
+    "main-knowledge-base": "Główna baza wiedzy",
+    "inactive": "Nieaktywny"
   },
   "subscription": {
     "title": "Szczegóły subskrypcji",

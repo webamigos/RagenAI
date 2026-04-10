@@ -287,7 +287,7 @@ model ApiKey {
   id             String        @id @default(uuid()) @db.Uuid
   name           String
   maskedValue    String        @map("masked_value")
-  hashedValue    String?       @map("hashed_value")
+  isActive       Boolean       @default(true) @map("is_active")
   lastUsedAt     DateTime?     @map("last_used_at") @db.Timestamptz
   createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
   createdBy      String?       @map("created_by")

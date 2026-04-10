@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
@@ -5,40 +6,78 @@ import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRa
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
-}
-
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const chatRequestSchema = z.object({
   prompt: z.string().min(1).max(10000),
-  assistantId: z.uuid(),
   context: z.string().max(20000).optional(),
+  stream: z.boolean().optional().default(false),
 });
+
+type InternalContext = {
+  orgId: string;
+  userId: string;
+  projectId: string;
+};
+
+function verifyInternalSecret(request: NextRequest): void {
+  const secret = request.headers.get('x-internal-secret');
+  const expected = process.env.INTERNAL_API_SECRET;
+
+  if (!expected) {
+    throw new Error('INTERNAL_API_SECRET not configured');
+  }
+
+  if (!secret) {
+    throw new InternalAuthError();
+  }
+
+  const secretBuf = Buffer.from(secret);
+  const expectedBuf = Buffer.from(expected);
+
+  if (
+    secretBuf.length !== expectedBuf.length ||
+    !timingSafeEqual(secretBuf, expectedBuf)
+  ) {
+    throw new InternalAuthError();
+  }
+}
+
+function extractInternalContext(request: NextRequest): InternalContext {
+  const orgId = request.headers.get('x-org-id');
+  const userId = request.headers.get('x-user-id');
+  const projectId = request.headers.get('x-project-id');
+
+  if (!orgId || !userId || !projectId) {
+    throw new InternalAuthError();
+  }
+
+  return { orgId, userId, projectId };
+}
 
 export async function POST(request: NextRequest) {
   try {
+    verifyInternalSecret(request);
+    const context = extractInternalContext(request);
+
     let body: unknown;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON', code: 400 },
-        { status: 400, headers: corsHeaders },
+        { status: 400 },
       );
     }
-    const { prompt, assistantId, context } = chatRequestSchema.parse(body);
+    const {
+      prompt,
+      context: pageContext,
+      stream,
+    } = chatRequestSchema.parse(body);
 
     const project = await db.project.findUnique({
-      where: { id: assistantId },
+      where: { id: context.projectId },
       select: {
         organizationId: true,
         settings: { select: { instructions: true } },
@@ -48,7 +87,7 @@ export async function POST(request: NextRequest) {
     if (!project?.organizationId) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
-        { status: 404, headers: corsHeaders },
+        { status: 404 },
       );
     }
 
@@ -59,12 +98,12 @@ export async function POST(request: NextRequest) {
     const ragChain = await initializeRagChain({
       settings,
       orgId: organizationId,
-      projectId: assistantId,
+      projectId: context.projectId,
       projectInstruction: projectSettings?.instructions ?? null,
     });
 
-    const question = context
-      ? `${prompt}\n\nKontekst strony:\n${context}`
+    const question = pageContext
+      ? `${prompt}\n\nKontekst strony:\n${pageContext}`
       : prompt;
 
     const result = await ragChain.stream({
@@ -72,45 +111,65 @@ export async function POST(request: NextRequest) {
       chat_history: '',
     });
 
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of result.textStream) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-            );
+    if (stream) {
+      const encoder = new TextEncoder();
+      const sseStream = new ReadableStream({
+        async start(controller) {
+          try {
+            for await (const chunk of result.textStream) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
+              );
+            }
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          } catch (err) {
+            controller.error(err);
           }
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
-        } catch (err) {
-          controller.error(err);
-        }
-      },
-    });
+        },
+      });
 
-    return new Response(stream, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/event-stream; charset=utf-8',
-        'Content-Encoding': 'none',
-        'Cache-Control': 'no-cache, no-transform',
-        Connection: 'keep-alive',
-      },
-    });
+      return new Response(sseStream, {
+        headers: {
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Content-Encoding': 'none',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+        },
+      });
+    }
+
+    // Non-streaming: collect full response and return JSON
+    let text = '';
+    for await (const chunk of result.textStream) {
+      text += chunk;
+    }
+
+    return NextResponse.json({ text });
   } catch (error) {
+    if (error instanceof InternalAuthError) {
+      return NextResponse.json(
+        { error: 'Unauthorized', code: 401 },
+        { status: 401 },
+      );
+    }
+
     logger.error({ err: error }, 'Error in /api/v1/chat');
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request', code: 400, details: error.issues },
-        { status: 400, headers: corsHeaders },
+        { status: 400 },
       );
     }
 
-    return new Response('Internal Server Error', {
-      status: 500,
-      headers: corsHeaders,
-    });
+    return new Response('Internal Server Error', { status: 500 });
+  }
+}
+
+class InternalAuthError extends Error {
+  constructor() {
+    super('Unauthorized');
+    this.name = 'InternalAuthError';
   }
 }

@@ -61,7 +61,7 @@ export const createEmbedScript = (
   iframe.style.boxShadow = 'var(--widget-shadow)';
   iframe.style.border = 'var(--widget-border)';
 
-  iframe.src = "${safeOrigin}/en/public/${safeOrgId}/widget" +
+  iframe.src = "${safeOrigin}/public/${safeOrgId}/widget" +
     (queryParams ? '?' + queryParams : '');
 
   console.info('Creating iframe with src:', iframe.src);
