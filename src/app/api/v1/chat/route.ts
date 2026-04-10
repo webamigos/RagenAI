@@ -26,7 +26,15 @@ const chatRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON', code: 400 },
+        { status: 400, headers: corsHeaders },
+      );
+    }
     const { prompt, assistantId, context } = chatRequestSchema.parse(body);
 
     const project = await db.project.findUnique({
@@ -67,13 +75,17 @@ export async function POST(request: NextRequest) {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of result.textStream) {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-          );
+        try {
+          for await (const chunk of result.textStream) {
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
+            );
+          }
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        } catch (err) {
+          controller.error(err);
         }
-        controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-        controller.close();
       },
     });
 
