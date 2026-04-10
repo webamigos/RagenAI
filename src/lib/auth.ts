@@ -92,7 +92,21 @@ async function sendOrganizationInvite(data: any) {
 }
 
 async function sendWelcomeEmail({ to, name }: { to: string; name: string }) {
-  console.log('[AUTH] Welcome email would be sent', { to, name });
+  try {
+    const { sendWelcomeEmail: sendWelcomeEmailViaResend } =
+      await import('@/app/emails/services/mailer');
+    const result = await sendWelcomeEmailViaResend({ to, name });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to send welcome email', {
+        to,
+        error: result.error,
+      });
+    } else {
+      console.log('[AUTH] Welcome email sent', { to });
+    }
+  } catch (error) {
+    console.error('[AUTH] Failed to send welcome email', { to, error });
+  }
 }
 
 async function addEmailToAudience({
@@ -104,11 +118,18 @@ async function addEmailToAudience({
   firstName: string;
   audienceId: string;
 }) {
-  console.log('[AUTH] Email would be added to audience', {
-    email,
-    firstName,
-    audienceId,
-  });
+  try {
+    const { addEmailToAudience: addToAudience } =
+      await import('@/app/emails/services/mailer');
+    await addToAudience({ email, firstName, audienceId });
+    console.log('[AUTH] Email added to audience', { email });
+  } catch (error) {
+    console.error('[AUTH] Failed to add email to audience', {
+      email,
+      audienceId,
+      error,
+    });
+  }
 }
 
 export const auth = betterAuth({
@@ -145,13 +166,11 @@ export const auth = betterAuth({
     async sendResetPassword({ user, url }) {
       await sendPasswordResetEmail({ to: user.email, resetUrl: url });
     },
-    async sendVerificationEmail({
-      user,
-      url,
-    }: {
-      user: { email: string };
-      url: string;
-    }) {
+  },
+
+  emailVerification: {
+    sendOnSignUp: true,
+    async sendVerificationEmail({ user, url }) {
       await sendVerificationEmailViaMailer({
         to: user.email,
         verificationUrl: url,
