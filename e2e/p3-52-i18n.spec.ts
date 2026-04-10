@@ -87,7 +87,8 @@ test.describe('i18n P3', () => {
       const page = await context.newPage();
 
       await page.goto('/en/sign-in');
-      await expect(page).toHaveURL(/en\/sign-in/);
+      // With localePrefix: 'as-needed', /en/ is stripped for the default locale
+      await expect(page).toHaveURL(/sign-in/);
       await expect(page.getByTestId('sign-in-submit')).toBeVisible({
         timeout: 10_000,
       });

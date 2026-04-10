@@ -14,24 +14,7 @@ import {
   getProjectsForFilterQuery,
   getUsersForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
-import {
-  getLiteLLMUsageDashboardQuery,
-  getLiteLLMOrgUsageLimitsQuery,
-} from '@/features/ai-usage/services/queries/get-litellm-usage-query';
-import {
-  saveUsageLimits,
-  getDefaultOrganizationLimits,
-  saveDefaultOrganizationLimits,
-} from '@/features/organizations/services/organization-settings';
-import type {
-  UsageLimits,
-  DefaultOrganizationLimits,
-} from '@/features/organizations/contracts/organization.types';
-import {
-  syncLiteLLMTeamBudgetCommand,
-  syncLiteLLMTeamModelsCommand,
-} from '@/features/organizations/services/commands/litellm-team-command';
-import { logger } from '@/app/lib/utils/logger';
+import { getLiteLLMUsageDashboardQuery } from '@/features/ai-usage/services/queries/get-litellm-usage-query';
 
 /**
  * Ensures the caller is an app admin or org admin.
@@ -86,36 +69,4 @@ export async function getUsersForFilter(orgId?: string) {
   const access = await requireUsageAccess();
   const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
   return getUsersForFilterQuery(scopedOrgId);
-}
-
-export async function getOrgUsageLimitsAction(orgId: string) {
-  await requireAppAdmin();
-  return getLiteLLMOrgUsageLimitsQuery(orgId);
-}
-
-export async function updateOrgUsageLimitsAction(
-  orgId: string,
-  limits: Partial<UsageLimits>,
-) {
-  await requireAppAdmin();
-  await saveUsageLimits(orgId, limits);
-
-  // Sync budget and models to LiteLLM team
-  try {
-    await syncLiteLLMTeamBudgetCommand(orgId);
-  } catch (error) {
-    logger.error({ err: error, orgId }, 'Failed to sync LiteLLM team budget');
-  }
-}
-
-export async function getDefaultLimitsAction() {
-  await requireAppAdmin();
-  return getDefaultOrganizationLimits();
-}
-
-export async function updateDefaultLimitsAction(
-  limits: Partial<DefaultOrganizationLimits>,
-) {
-  await requireAppAdmin();
-  await saveDefaultOrganizationLimits(limits);
 }
