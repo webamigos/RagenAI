@@ -22,15 +22,9 @@ type CreateApiKeyResult = {
   fullKey: string;
 };
 
-function generateApiKey(
-  orgId: string,
-  userId: string,
-  projectId: string,
-  keyId: string,
-): string {
-  const randomPart = randomBytes(32).toString('base64url');
-  const content = `${randomPart} ${orgId} ${userId} ${projectId} ${keyId}`;
-  return `${KEY_PREFIX}${Buffer.from(content).toString('base64url')}`;
+function generateApiKey(keyId: string): string {
+  const secret = randomBytes(32).toString('base64url');
+  return `${KEY_PREFIX}${keyId}.${secret}`;
 }
 
 export const createApiKeyCommand = async (
@@ -50,7 +44,7 @@ export const createApiKeyCommand = async (
   });
 
   try {
-    const fullKey = generateApiKey(orgId, userId, projectId, apiKey.id);
+    const fullKey = generateApiKey(apiKey.id);
     const maskedValue = maskApiKey(fullKey);
 
     // Store the full key in vault

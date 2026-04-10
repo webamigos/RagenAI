@@ -98,7 +98,7 @@ describe('createApiKeyCommand', () => {
     expect(result.name).toBe('Test Key');
   });
 
-  it('generates key in correct format', async () => {
+  it('generates opaque key in sk-keyId.secret format', async () => {
     const keyId = 'key-uuid-123';
     mockCreate.mockResolvedValue({ id: keyId });
     mockUpdate.mockResolvedValue({});
@@ -111,19 +111,23 @@ describe('createApiKeyCommand', () => {
       projectId: 'proj-1',
     });
 
-    // Key should start with sk- prefix
+    // Key format: sk-<keyId>.<secret>
     expect(result.fullKey).toMatch(/^sk-/);
 
-    // Decode the key to verify structure
-    const plainKey = result.fullKey.slice(3); // remove 'sk-'
-    const decoded = Buffer.from(plainKey, 'base64url').toString('ascii');
-    const parts = decoded.split(' ');
+    const withoutPrefix = result.fullKey.slice(3);
+    const dotIndex = withoutPrefix.indexOf('.');
+    expect(dotIndex).toBeGreaterThan(0);
 
-    expect(parts).toHaveLength(5);
-    expect(parts[1]).toBe('org-1');
-    expect(parts[2]).toBe('user-1');
-    expect(parts[3]).toBe('proj-1');
-    expect(parts[4]).toBe(keyId);
+    const parsedKeyId = withoutPrefix.slice(0, dotIndex);
+    const secret = withoutPrefix.slice(dotIndex + 1);
+
+    expect(parsedKeyId).toBe(keyId);
+    expect(secret.length).toBeGreaterThan(0);
+
+    // Key should NOT contain embedded orgId, userId, projectId
+    expect(result.fullKey).not.toContain('org-1');
+    expect(result.fullKey).not.toContain('user-1');
+    expect(result.fullKey).not.toContain('proj-1');
   });
 
   it('cleans up DB record if vault write fails', async () => {

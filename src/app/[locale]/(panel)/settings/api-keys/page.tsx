@@ -17,6 +17,20 @@ export default async function ApiKeysSettingsPage() {
         <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
           {t('title')}
         </h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          {t.rich('description', {
+            link: (chunks) => (
+              <a
+                href="https://docs.ragen.ai"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline hover:no-underline"
+              >
+                {chunks}
+              </a>
+            ),
+          })}
+        </p>
       </section>
       <ApiKeysList initialKeys={keys} projects={projects} />
     </div>

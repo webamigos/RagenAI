@@ -1,23 +1,10 @@
+import { timingSafeEqual } from 'node:crypto';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
-import {
-  apiKeyGuard,
-  ApiKeyError,
-} from '@/app/api/v1/__logic__/guards/api-key-guard';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
-};
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders });
-}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,10 +15,51 @@ const chatRequestSchema = z.object({
   stream: z.boolean().optional().default(false),
 });
 
+type InternalContext = {
+  orgId: string;
+  userId: string;
+  projectId: string;
+};
+
+function verifyInternalSecret(request: NextRequest): void {
+  const secret = request.headers.get('x-internal-secret');
+  const expected = process.env.INTERNAL_API_SECRET;
+
+  if (!expected) {
+    throw new Error('INTERNAL_API_SECRET not configured');
+  }
+
+  if (!secret) {
+    throw new InternalAuthError();
+  }
+
+  const secretBuf = Buffer.from(secret);
+  const expectedBuf = Buffer.from(expected);
+
+  if (
+    secretBuf.length !== expectedBuf.length ||
+    !timingSafeEqual(secretBuf, expectedBuf)
+  ) {
+    throw new InternalAuthError();
+  }
+}
+
+function extractInternalContext(request: NextRequest): InternalContext {
+  const orgId = request.headers.get('x-org-id');
+  const userId = request.headers.get('x-user-id');
+  const projectId = request.headers.get('x-project-id');
+
+  if (!orgId || !userId || !projectId) {
+    throw new InternalAuthError();
+  }
+
+  return { orgId, userId, projectId };
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Authenticate via API key
-    const apiContext = await apiKeyGuard(request);
+    verifyInternalSecret(request);
+    const context = extractInternalContext(request);
 
     let body: unknown;
     try {
@@ -39,13 +67,17 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json(
         { error: 'Invalid JSON', code: 400 },
-        { status: 400, headers: corsHeaders },
+        { status: 400 },
       );
     }
-    const { prompt, context, stream } = chatRequestSchema.parse(body);
+    const {
+      prompt,
+      context: pageContext,
+      stream,
+    } = chatRequestSchema.parse(body);
 
     const project = await db.project.findUnique({
-      where: { id: apiContext.projectId },
+      where: { id: context.projectId },
       select: {
         organizationId: true,
         settings: { select: { instructions: true } },
@@ -55,7 +87,7 @@ export async function POST(request: NextRequest) {
     if (!project?.organizationId) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
-        { status: 404, headers: corsHeaders },
+        { status: 404 },
       );
     }
 
@@ -66,12 +98,12 @@ export async function POST(request: NextRequest) {
     const ragChain = await initializeRagChain({
       settings,
       orgId: organizationId,
-      projectId: apiContext.projectId,
+      projectId: context.projectId,
       projectInstruction: projectSettings?.instructions ?? null,
     });
 
-    const question = context
-      ? `${prompt}\n\nKontekst strony:\n${context}`
+    const question = pageContext
+      ? `${prompt}\n\nKontekst strony:\n${pageContext}`
       : prompt;
 
     const result = await ragChain.stream({
@@ -99,7 +131,6 @@ export async function POST(request: NextRequest) {
 
       return new Response(sseStream, {
         headers: {
-          ...corsHeaders,
           'Content-Type': 'text/event-stream; charset=utf-8',
           'Content-Encoding': 'none',
           'Cache-Control': 'no-cache, no-transform',
@@ -114,12 +145,12 @@ export async function POST(request: NextRequest) {
       text += chunk;
     }
 
-    return NextResponse.json({ text }, { headers: corsHeaders });
+    return NextResponse.json({ text });
   } catch (error) {
-    if (error instanceof ApiKeyError) {
+    if (error instanceof InternalAuthError) {
       return NextResponse.json(
-        { error: error.message, code: error.statusCode },
-        { status: error.statusCode, headers: corsHeaders },
+        { error: 'Unauthorized', code: 401 },
+        { status: 401 },
       );
     }
 
@@ -128,13 +159,17 @@ export async function POST(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Invalid request', code: 400, details: error.issues },
-        { status: 400, headers: corsHeaders },
+        { status: 400 },
       );
     }
 
-    return new Response('Internal Server Error', {
-      status: 500,
-      headers: corsHeaders,
-    });
+    return new Response('Internal Server Error', { status: 500 });
+  }
+}
+
+class InternalAuthError extends Error {
+  constructor() {
+    super('Unauthorized');
+    this.name = 'InternalAuthError';
   }
 }

@@ -57,8 +57,8 @@ src/
 │   │   ├── (auth)/               # Sign-in, sign-up, forgot password
 │   │   └── public/               # Public assistant chat widgets
 │   ├── api/
-│   │   ├── v1/                   # Public REST API
-│   │   │   └── __logic__/        # API guards, context, DTOs, filters
+│   │   ├── v1/                   # Internal API endpoints (called by ragen-api)
+│   │   │   └── chat/             # RAG chat endpoint (SSE + JSON)
 │   │   ├── threads/              # Internal thread streaming endpoints
 │   │   └── ...
 │   ├── actions/                  # Server actions
@@ -122,7 +122,9 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware ha
 
 ### API
 
-REST API at `/api/v1/` authenticated via `x-api-key` header. Keys are validated against the database with bcrypt hash comparison. The app supports API-only mode (`IS_API_MODE=1`) which rewrites `/v1` → `/api/v1` for deployment at `api.ragen.io`.
+The public API is served by **ragen-api** (separate NestJS service on port 3001). ragen-app exposes internal endpoints at `/api/v1/` that are called by ragen-api only. Internal endpoints are protected by a shared secret (`INTERNAL_API_SECRET` env var) and context headers (`x-org-id`, `x-user-id`, `x-project-id`).
+
+API keys use an opaque format (`sk-<keyId>.<secret>`) with no embedded context (see [ADR-13](docs/adrs/13-opaque-api-keys.md)). Keys are stored in ragen-token-vault; the database only holds `maskedValue`, `isActive`, and `lastUsedAt`.
 
 ### Auth
 
@@ -289,15 +291,24 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 
 ### Ragen API
 
-Standalone public API service built with NestJS. Currently a boilerplate — will be developed to replace the API routes in ragen-app (`/api/v1/`).
+Standalone public API service built with NestJS. Handles API key authentication, rate limiting, and proxies chat requests to ragen-app's internal endpoints.
 
 ```bash
 cd ../ragen-api
 npm install
-npm run start:dev        # http://localhost:3300 (watch mode)
+cp .env.example .env.local   # Fill in env vars
+npm run start:dev             # http://localhost:3001 (watch mode)
 ```
 
-**Stack**: NestJS + TypeScript. Will share the same PostgreSQL database as ragen-app.
+**Stack**: NestJS 11 + TypeScript + Prisma (`@prisma/adapter-pg`). Shares the same PostgreSQL database as ragen-app.
+
+**Key features**:
+- API key validation via ragen-token-vault (timing-safe comparison)
+- Chat proxy to ragen-app (`POST /v1/chat` with SSE streaming support)
+- In-memory rate limiting (per-IP and per-key)
+- OpenTelemetry instrumentation
+
+**Requires**: ragen-app (port 3000) + ragen-token-vault (port 3100).
 
 ### Running Everything Locally
 
@@ -319,9 +330,13 @@ cd ../ragen-mcp && npm run dev:google     # http://localhost:8001
 
 # 6. Start admin (separate terminal, needed for platform admin)
 cd apps/admin && npm run dev              # http://localhost:3200
+
+# 7. Start API (separate terminal, needed for public API)
+cd ../ragen-api && npm run start:dev      # http://localhost:3001
 ```
 
 **Minimum for basic usage**: Steps 1-3 (infrastructure + app + worker).
+**For public API**: Also need steps 4 (token vault) + 7 (ragen-api).
 
 | Service | Port | When needed |
 |---------|------|-------------|
@@ -329,10 +344,10 @@ cd apps/admin && npm run dev              # http://localhost:3200
 | ragen-worker | — | Always (processes document uploads) |
 | LiteLLM | 4000 | Always (auto-started via docker compose) |
 | Temporal UI | 8080 | Debugging workflows |
-| ragen-token-vault | 3100 | External connectors (Google, ClickUp, etc.) |
+| ragen-token-vault | 3100 | External connectors + API key validation |
 | ragen-mcp | 8001-8003 | External connectors |
 | Ragen Admin | 3200 | Platform administration |
-| Ragen API | 3300 | Not yet (boilerplate) |
+| Ragen API | 3001 | Public API (chat endpoint, API key auth) |
 
 ## Path Aliases
 

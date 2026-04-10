@@ -811,6 +811,7 @@
   },
   "api-keys": {
     "title": "Klucze API",
+    "description": "Zarządzaj kluczami API do programistycznego dostępu. Zobacz <link>dokumentację API</link>, aby poznać przewodniki integracji i opis endpointów.",
     "title-create": "Stwórz nowy klucz",
     "create-key": "Nowy klucz",
     "name": "Nazwa",

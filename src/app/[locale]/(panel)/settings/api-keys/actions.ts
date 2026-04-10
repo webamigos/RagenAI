@@ -12,14 +12,14 @@ import { toggleApiKeyCommand } from '@/features/organizations/services/commands/
 import db from '@ragenai/prisma-client';
 
 export async function getApiKeys() {
-  await requireOrgAdmin();
   const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
   return getApiKeysQuery(orgId);
 }
 
 export async function getProjects() {
-  await requireOrgAdmin();
   const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
   return db.project.findMany({
     where: { organizationId: orgId },
     select: { id: true, title: true },
@@ -28,8 +28,8 @@ export async function getProjects() {
 }
 
 export async function createApiKey(name: string, projectId: string) {
-  await requireOrgAdmin();
   const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
   const userId = await getCurrentUserId();
   if (!userId) {
     throw new Error('Unauthorized');
@@ -38,13 +38,13 @@ export async function createApiKey(name: string, projectId: string) {
 }
 
 export async function deleteApiKey(apiKeyId: string) {
-  await requireOrgAdmin();
   const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
   return removeApiKeyCommand(orgId, apiKeyId);
 }
 
 export async function toggleApiKey(apiKeyId: string, isActive: boolean) {
-  await requireOrgAdmin();
   const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
   return toggleApiKeyCommand(orgId, apiKeyId, isActive);
 }

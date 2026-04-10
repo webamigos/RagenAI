@@ -118,6 +118,36 @@ export async function saveOrgLimitsAction(
     create: { organizationId: orgId, ...data },
   });
 
+  // Sync budget to LiteLLM team (direct API call — admin app can't import from main app)
+  try {
+    const litellmUrl = process.env.LITELLM_PROXY_URL;
+    const litellmKey = process.env.LITELLM_MASTER_KEY;
+    if (litellmUrl) {
+      const maxBudget =
+        limits.monthlyCostLimitCents != null
+          ? limits.monthlyCostLimitCents / 100
+          : null;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (litellmKey) {
+        headers['Authorization'] = `Bearer ${litellmKey}`;
+      }
+      await fetch(`${litellmUrl}/team/update`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          team_id: orgId,
+          max_budget: maxBudget,
+          budget_duration: maxBudget != null ? '30d' : null,
+        }),
+        signal: AbortSignal.timeout(5000),
+      });
+    }
+  } catch {
+    // LiteLLM sync is best-effort — don't block the admin action
+  }
+
   revalidatePath('/limits');
   revalidatePath(`/organizations/${orgId}`);
 }
