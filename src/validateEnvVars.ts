@@ -53,6 +53,12 @@ const envSchema = z
     // Lower it to `warn` to also email on brute-force / access violations.
     SECURITY_ALERT_SEVERITY: z.enum(['info', 'warn', 'critical']).optional(),
 
+    // Jailbreak / prompt-injection classifier (Phase 6, feature-flagged).
+    // Off by default — flip on after validating cost/latency in staging.
+    JAILBREAK_DETECTION_ENABLED: z.string().optional(),
+    // Threshold 0.0–1.0 for firing CHAT_JAILBREAK_DETECTED. Default 0.7.
+    JAILBREAK_DETECTION_THRESHOLD: z.string().optional(),
+
     // OpenAI
     OPENAI_API_KEY: z.string(),
     OPENAI_MODERATION_KEY: z.string(),

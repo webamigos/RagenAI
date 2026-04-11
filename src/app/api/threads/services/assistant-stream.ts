@@ -35,6 +35,10 @@ import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
+import {
+  classifyJailbreakRisk,
+  isAboveJailbreakThreshold,
+} from '@/libs/security/jailbreak-classifier';
 
 /**
  * Load thread documents from database for a specific thread
@@ -487,6 +491,52 @@ export async function streamEvents({
             sessionId: `${orgId}:${threadRecord.id}`,
             tags: traceTags,
           });
+
+          // Phase 6 — fire-and-forget jailbreak classification. Must
+          // NEVER delay the user's stream; we don't await this here.
+          // On resolve: attach score to Langfuse trace, and if it
+          // crosses the threshold, record a CHAT_JAILBREAK_DETECTED
+          // event. The Phase 0.5 escalation rule (5 in 10 min from
+          // same user) bumps severity to critical automatically.
+          // Disabled unless JAILBREAK_DETECTION_ENABLED is truthy in
+          // env — the classifier short-circuits to score=0 otherwise.
+          void classifyJailbreakRisk(userMessage.prompt)
+            .then((classification) => {
+              if (classification.skipped) {
+                return;
+              }
+              updateActiveTrace({
+                metadata: {
+                  jailbreakScore: classification.score,
+                  ...(classification.reason
+                    ? { jailbreakReason: classification.reason }
+                    : {}),
+                },
+              });
+              if (isAboveJailbreakThreshold(classification.score)) {
+                recordSecurityEvent({
+                  eventType: 'CHAT_JAILBREAK_DETECTED',
+                  severity: 'info',
+                  source: 'chat',
+                  organizationId: orgId ?? null,
+                  userId: userId ?? null,
+                  metadata: {
+                    score: classification.score,
+                    threadId: threadRecord.id,
+                    messageLength: userMessage.prompt.length,
+                    ...(classification.reason
+                      ? { reason: classification.reason }
+                      : {}),
+                  },
+                });
+              }
+            })
+            .catch((err) => {
+              logger.debug(
+                { err },
+                'Jailbreak classifier post-processing failed',
+              );
+            });
 
           if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
