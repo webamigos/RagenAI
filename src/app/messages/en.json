@@ -1162,6 +1162,23 @@
     "approve-prompt": "Yes, please proceed with {toolName}.",
     "deny-prompt": "No, cancel that tool call."
   },
+  "link-interstitial": {
+    "title": "You are about to leave Ragen",
+    "description": "This link was generated from conversation content that may include untrusted sources. Make sure the destination looks right before continuing.",
+    "host-label": "Destination host",
+    "url-label": "Full URL",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "back-home": "Back to Ragen",
+    "error-title": "Link error",
+    "error-missing": "No destination URL was provided.",
+    "error-invalid": "The destination URL could not be parsed.",
+    "error-unsupported-scheme": "Only http and https links are supported."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "This file contains patterns that look like injected instructions. Review it before using in RAG queries.",
+    "aria-label": "Suspicious content warning"
+  },
   "ErrorBoundary": {
     "error": "An error occurred",
     "try-again": "Try again",
