@@ -5,14 +5,14 @@
 
 ## Context
 
-The RAG improvements landed in ADR-14 (hybrid dense + sparse), ADR-15 (multi-query expansion), and ADR-16 (document summaries) all improved what retrieval *does* with chunks. None of them changed **how chunks are produced**. Until this ADR, every file type flowed through the same recursive character-based splitter with different `chunkSize` / `chunkOverlap` constants. That works reasonably well for prose (markdown, text, EPUB) but systematically destroys structural information in everything else:
+The RAG improvements landed in ADR-14 (hybrid dense + sparse), ADR-15 (multi-query expansion), and ADR-16 (document summaries) all improved what retrieval *does* with chunks. None of them changed **how chunks are produced**. Until this ADR, every file type flowed through the same recursive character-based splitter with different `chunkSize` / `chunkOverlap` constants. That works reasonably well for prose (Markdown, text, EPUB) but systematically destroys structural information in everything else:
 
 - **CSV and XLSX files** were fed to the character splitter as raw text. The **header row appeared only in the first chunk**. Chunks 2, 3, 4, ... were just rows of numbers with no column names. A user asking "what was Q3 revenue?" had to match their query against a chunk containing `1,200,000` with no nearby indication that the column means revenue. Dense embeddings couldn't rescue that, hybrid BM25 couldn't either — the information was thrown away before indexing.
 - **DOCX files** were extracted via `mammoth.extractRawText()`, which **discards all heading styles**. A 50-page contract became flat prose. Chunks had no section context for retrieval matching or for citations. The LLM couldn't reference "Section 3.2 — Revenue terms" because that structure was invisible.
 - **XLSX multi-sheet files** had sheet identity leaking into pageContent as a `[Sheet: name]\n` prefix — a hybrid of data and metadata that confused both the splitter and downstream retrieval.
 - **SRT subtitle files** were semantically segmented by an LLM call (retaining Phase 3-tier quality) but **timestamps were thrown away** before the LLM saw the text. There was no way to cite back to a specific timestamp in the source video/audio, and no path toward time-range filtering.
 
-The practical impact: ingestion was leaving retrieval-quality on the table for every structured file type. The ingested chunks worked for prose and mostly worked for markdown (which already had its own heading-aware splitter), but everything else lost its structural backbone.
+The practical impact: ingestion was leaving retrieval-quality on the table for every structured file type. The ingested chunks worked for prose and mostly worked for Markdown (which already had its own heading-aware splitter), but everything else lost its structural backbone.
 
 ## Decision
 
@@ -26,9 +26,11 @@ Replace the one-size-fits-all splitter dispatcher with **type-specific chunking 
 | **XLSX** | Same row-group chunker, one document per sheet from the loader | `sheet_name` |
 | **DOCX** | Heading-aware splitter: Mammoth HTML output walked to track an `<h1>`/`<h2>`/`<h3>` stack; paragraphs chunked under each heading path; oversized paragraphs fall through to recursive character split with the same `section_path` | `section_path` (e.g. `"Chapter 3 > 3.2 Revenue > Q3 Details"`) |
 | **SRT** | Raw file parsed into timestamped blocks **before** the LLM semantic segmentation call (unchanged); after the LLM returns segments, each segment is matched back to its source blocks via normalized substring search; min/max timestamps flow into chunk metadata. Unmatched segments leave the fields unset. | `timestamp_start_ms`, `timestamp_end_ms` |
-| **MARKDOWN** | Existing heading-aware markdown splitter — no change | — |
+| **MARKDOWN** | Existing heading-aware Markdown splitter — no change | — |
 | **PDF** | No change in Phase 4a — deferred to Phase 4b (heading heuristic) and 4c (table extraction) | — |
 | **TEXT**, **EPUB**, **URL**, **IMAGE** | Generic recursive character splitter — no change | — |
+
+> **Note on field names in the "Key metadata added" column:** the names shown (`sheet_name`, `section_path`, `timestamp_start_ms`, `timestamp_end_ms`) are the **Qdrant canonical snake_case field names** — what appears on chunk payloads at query time. Loaders and splitters internally use camelCase (`sheetName`, `sectionPath`, `timestampStartMs`, `timestampEndMs`), and `prepareMetadata` is the boundary that maps between the two. See the **Naming convention** subsection below for details.
 
 ### Metadata extension
 
@@ -67,11 +69,11 @@ The CSV parser is a ~60-line inline tokenizer (quoted fields, escaped quotes, CR
 
 ## Alternatives Considered
 
-1. **"Just convert everything to markdown and reuse the markdown splitter."** Tempting — the markdown splitter already handles headings. Rejected because:
-   - CSV → markdown table conversion destroys column alignment once the table is larger than what fits on a row
-   - XLSX with multi-sheet workbooks would need an invented `## Sheet: name` convention that the markdown splitter doesn't know about
-   - SRT converted to markdown doesn't have a natural representation of timestamps
-   - The "universal markdown" approach leaks formatting concerns into every loader; type-specific splitters keep the strategies localized to where the knowledge lives.
+1. **"Just convert everything to Markdown and reuse the Markdown splitter."** Tempting — the Markdown splitter already handles headings. Rejected because:
+   - CSV → Markdown table conversion destroys column alignment once the table is larger than what fits on a row
+   - XLSX with multi-sheet workbooks would need an invented `## Sheet: name` convention that the Markdown splitter doesn't know about
+   - SRT converted to Markdown doesn't have a natural representation of timestamps
+   - The "universal Markdown" approach leaks formatting concerns into every loader; type-specific splitters keep the strategies localized to where the knowledge lives.
 
 2. **LLM-based universal chunking.** Feed every document to an LLM and ask it to produce chunks. Rejected because:
    - Cost scales linearly with document size at ingest time (currently only PDF vision does per-page LLM calls, and that's expensive enough)
