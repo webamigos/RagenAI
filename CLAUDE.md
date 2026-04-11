@@ -63,7 +63,7 @@ QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
 DEFAULT_MODEL_PROVIDER=litellm
-DEFAULT_MODEL=gpt-5.4
+DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
 ## Architecture
@@ -349,7 +349,7 @@ The client issues a single request with two prefetch branches and `fusion: 'rrf'
 - Organization collection: each org gets its own Qdrant collection (named by org ID)
 - Embeddings (dense): Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions, Cosine distance)
 - Sparse: pure-TS BM25 encoder, Qdrant `modifier: idf` handles server-side BM25 scoring
-- Payload indexes: `metadata.project_id`, `metadata.project_public_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by`
+- Payload indexes: `metadata.project_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by` (all `keyword` type). **Note**: ADR-11 originally mentioned `metadata.project_public_id` as well, but that index was never created in code — retrieval filters use internal `project_id`, not the external public UUID. If public-ID-based filtering is ever needed, the index must be added in `src/libs/vector-store/qdrant-client.ts`.
 - `metadata.chunk_type: 'summary'` marks the synthetic summary chunks written by ADR-16; no filter routing needed, they participate in the same hybrid retrieval as body chunks
 - Access control: `metadata.accessible_by` array contains principals (`org:<id>`, `user:<id>`, `team:<id>`) — filtered at query time for non-admin users
 - Filter format: intermediate format (`{ must: [...], should: [...] }`) used across the codebase — each client converts internally

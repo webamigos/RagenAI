@@ -37,7 +37,7 @@ top-k documents → LLM
 
 A single LLM call using `generateObject` from the AI SDK with a Zod schema constraining the output to `{ variants: string[] }`. The prompt instructs the model to produce 2 alternative phrasings that capture the same information need using different vocabulary or related terms. The **original standalone question is always preserved as the first query** — variants are additive, never a replacement.
 
-- **Model**: reuses `REPHRASE_MODEL` (`gpt-4.1-nano` per CLAUDE.md). Cheapest/fastest provisioned model. No new env var.
+- **Model**: reuses `REPHRASE_MODEL` (default `gemini-2.5-flash`). Faster than the nano tier for short-output tasks in our LiteLLM → Vertex setup, strong Polish support, and no new env var. See ADR-16 for the latency-driven rationale that led us to pick Gemini Flash over `gpt-5.4-nano` for similar short-output LLM roles.
 - **Count**: 2 variants → 3 total queries including the original. Balances recall gain against latency and reranker input size.
 - **Structured output**: Zod schema eliminates JSON parsing bugs. If the LLM returns malformed output, the AI SDK throws and the caller falls back to the single standalone query.
 
@@ -81,9 +81,9 @@ Multi-query expansion is designed to **never regress** below single-query behavi
 
 **Higher recall** — particularly for queries where the user's phrasing doesn't match the document's. The hybrid search improvement (ADR-14) already helps with exact-term matches; multi-query helps with semantic vocabulary mismatch. The two are orthogonal and stack.
 
-**Added latency** — one extra LLM call (~100–300ms on `gpt-4.1-nano`) plus 2 extra parallel Qdrant queries. The Qdrant queries parallelize with each other, so the wall-clock cost is roughly one expansion call plus one vector search round trip. Total added latency is typically under 500ms — acceptable for chat UX.
+**Added latency** — one extra LLM call (~200–500ms on `gemini-2.5-flash`) plus 2 extra parallel Qdrant queries. The Qdrant queries parallelize with each other, so the wall-clock cost is roughly one expansion call plus one vector search round trip. Total added latency is typically under 700ms — acceptable for chat UX.
 
-**Added LLM cost** — one `gpt-4.1-nano` call per RAG turn. This is the cheapest provisioned model; per-call cost is negligible compared to the answer generation call that follows.
+**Added LLM cost** — one `gemini-2.5-flash` call per RAG turn. Per-call cost is negligible compared to the answer generation call that follows.
 
 **Reranker input stays bounded** — per-query retrieval count is divided by N so the pre-dedupe pool stays roughly the same as before. Reranker latency and cost are essentially unchanged.
 
@@ -108,7 +108,7 @@ All three are active simultaneously and compose cleanly. ADR-15 multiplies the n
 | Env var | Default | Purpose |
 |---------|---------|---------|
 | `FEATURE_FLAG_MULTI_QUERY` | `1` (on) | Set to `0` or `false` to disable query expansion entirely |
-| `REPHRASE_MODEL` | `gpt-4.1-nano` | Reused for expansion (no new variable) |
+| `REPHRASE_MODEL` | `gemini-2.5-flash` | Reused for expansion (no new variable) |
 
 Code constants in `basic-rag/operations.ts`:
 - `MULTI_QUERY_VARIANT_COUNT = 2` — alternates to generate per turn (total queries = this + 1)

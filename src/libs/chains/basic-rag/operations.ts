@@ -137,20 +137,51 @@ export async function expandQueries(
       },
     });
 
-    const variants = result.object.variants
-      .map((v) => v.trim())
-      .filter((v) => v.length > 0);
+    // Defensive cleanup of LLM output:
+    // 1. trim whitespace
+    // 2. drop empty strings
+    // 3. drop variants that are identical to the original standalone question
+    //    (case-insensitive — LLMs sometimes regurgitate the input)
+    // 4. dedupe by normalized form so the fan-out does not run duplicate searches
+    // 5. cap at variantCount so the model cannot exceed its instructed budget
+    const standaloneNormalized = standaloneQuestion.trim().toLowerCase();
+    const seen = new Set<string>();
+    const variants: string[] = [];
+    for (const raw of result.object.variants) {
+      const trimmed = raw.trim();
+      if (trimmed.length === 0) {
+        continue;
+      }
+      const normalized = trimmed.toLowerCase();
+      if (normalized === standaloneNormalized) {
+        continue;
+      }
+      if (seen.has(normalized)) {
+        continue;
+      }
+      seen.add(normalized);
+      variants.push(trimmed);
+      if (variants.length >= variantCount) {
+        break;
+      }
+    }
 
+    // Log non-sensitive diagnostics only — never log raw user text (PII).
     logger.debug(
-      { standaloneQuestion, variants },
+      {
+        variantCount: variants.length,
+        requestedCount: variantCount,
+        standaloneQuestionLength: standaloneQuestion.length,
+      },
       'Generated query variants for multi-query retrieval',
     );
 
     return variants;
   } catch (err) {
     // Graceful degradation: any failure falls back to single-query retrieval.
+    // Log the error type but NOT the raw question (PII).
     logger.warn(
-      { err, standaloneQuestion },
+      { err, standaloneQuestionLength: standaloneQuestion.length },
       'Query expansion failed, falling back to single query',
     );
     return [];

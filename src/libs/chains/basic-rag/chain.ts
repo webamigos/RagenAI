@@ -59,10 +59,22 @@ export const basicRagChain = async ({
       // are additive. expandQueries() catches LLM/structured-output errors
       // internally and returns [] on failure, so retrieval falls back to a
       // single-query pipeline transparently — no try-catch needed here.
+      // expandQueries() already dedupes variants against each other and the
+      // standalone question, but we defensively dedupe the full list here too
+      // (order-preserving) so any future change in expandQueries cannot cause
+      // redundant Qdrant round-trips.
       const variants = isMultiQueryEnabled()
         ? await expandQueries(models.questionRephraser, standaloneQuestion)
         : [];
-      const retrievalQueries = [standaloneQuestion, ...variants];
+      const seenQueries = new Set<string>();
+      const retrievalQueries = [standaloneQuestion, ...variants].filter((q) => {
+        const key = q.trim().toLowerCase();
+        if (seenQueries.has(key)) {
+          return false;
+        }
+        seenQueries.add(key);
+        return true;
+      });
 
       // Step 4: Partition thread documents — images go to multimodal message, text to retrieval
       const { textDocs: textThreadDocs, imageDocs: imageThreadDocs } =

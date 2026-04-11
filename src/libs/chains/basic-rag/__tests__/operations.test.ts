@@ -125,10 +125,52 @@ describe('expandQueries', () => {
       object: { variants: ['a', 'b', 'c', 'd', 'e'] },
     });
 
-    await expandQueries(fakeModel, 'question', 5);
+    const result = await expandQueries(fakeModel, 'question', 5);
 
     const callArgs = mockGenerateObject.mock.calls[0][0];
     expect(callArgs.messages[0].content).toContain('5');
+    // All 5 unique variants pass through the cap
+    expect(result).toHaveLength(5);
+  });
+
+  it('caps the number of returned variants at variantCount', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: { variants: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] },
+    });
+
+    const result = await expandQueries(fakeModel, 'question', 3);
+
+    expect(result).toEqual(['a', 'b', 'c']);
+  });
+
+  it('deduplicates variants that collide after normalization', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        variants: ['How do I cancel', 'HOW DO I CANCEL', 'how do i cancel'],
+      },
+    });
+
+    const result = await expandQueries(fakeModel, 'different question', 3);
+
+    expect(result).toEqual(['How do I cancel']);
+  });
+
+  it('drops variants that collide with the original standalone question', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        variants: [
+          'how do I cancel',
+          'How Do I Cancel',
+          'canceling subscription',
+        ],
+      },
+    });
+
+    const result = await expandQueries(fakeModel, 'how do I cancel', 3);
+
+    // Both of the first two match the standalone question (case-insensitive)
+    // and should be dropped; only the genuinely-different variant survives.
+    expect(result).toEqual(['canceling subscription']);
   });
 });
 

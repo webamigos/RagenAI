@@ -24,7 +24,7 @@ Add **BM25 sparse vectors** alongside the existing Cohere dense vectors in every
 
 Collections are created with **named vectors** — a breaking change from the previous unnamed single-vector schema. The vector store was wiped before rollout, so no migration was required.
 
-```
+```yaml
 vectors:
   dense:  { size: 1024, distance: Cosine }   # Cohere embed-multilingual-v3
 sparse_vectors:
@@ -46,13 +46,12 @@ A pure-TypeScript encoder at `src/libs/vector-store/bm25-encoder.ts` (and a para
 
 Single request to Qdrant's Query API with two prefetch branches:
 
-```
-prefetch: [
-  { query: denseVector,  using: 'dense',  limit: k * 4, filter },
-  { query: sparseVector, using: 'sparse', limit: k * 4, filter },
-]
-query:   { fusion: 'rrf' }
-limit:   k
+```yaml
+prefetch:
+  - { query: denseVector,  using: 'dense',  limit: k * 4, filter }
+  - { query: sparseVector, using: 'sparse', limit: k * 4, filter }
+query: { fusion: 'rrf' }
+limit: k
 ```
 
 `PREFETCH_MULTIPLIER = 4` over-fetches 4×k candidates per branch before RRF fusion. Qdrant applies the metadata filter to both branches so access control stays intact.

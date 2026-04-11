@@ -169,7 +169,7 @@ Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (h
 
 ### RAG Pipeline
 
-Retrieval quality is the result of four composed improvements, all gated behind env flags that default to on. See ADRs 11, 12, 14, 15, 16 for the full decision history.
+Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Cohere Rerank** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) is gated on AWS Bedrock credentials being present — no credentials = silent skip (see ADR-12 for details). See ADRs 11, 12, 14, 15, 16 for the full decision history.
 
 **Ingest** (happens in ragen-worker):
 
@@ -213,9 +213,10 @@ flowchart TD
 
 ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what comes out.
 
-**Feature flags** (set in ragen-app env; defaults on):
-- `FEATURE_FLAG_MULTI_QUERY` — disable to fall back to single-query retrieval
-- `FEATURE_FLAG_DOC_SUMMARIES` — (read by worker) disable to skip summary generation at ingest
+**Feature flags** (defaults on):
+- `FEATURE_FLAG_MULTI_QUERY` (ragen-app) — disable to fall back to single-query retrieval (ADR-15)
+- `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
+- Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
 
 ### State Management
 
@@ -337,7 +338,7 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
 - `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
 
-**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gpt-5.4`. Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
+**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
 
 ### Ragen API
 
