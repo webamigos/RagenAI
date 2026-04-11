@@ -49,6 +49,9 @@ const envSchema = z
     // Security alert emails (optional — empty disables email dispatch)
     SECURITY_ALERT_EMAIL: z.string().optional(),
     SECURITY_ALERT_FROM: z.string().optional(),
+    // Minimum severity that triggers an email. Defaults to `critical`.
+    // Lower it to `warn` to also email on brute-force / access violations.
+    SECURITY_ALERT_SEVERITY: z.enum(['info', 'warn', 'critical']).optional(),
 
     // OpenAI
     OPENAI_API_KEY: z.string(),

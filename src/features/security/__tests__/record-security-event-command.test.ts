@@ -116,6 +116,32 @@ describe('recordSecurityEvent', () => {
     expect(mockSendSecurityAlertEmail).toHaveBeenCalledTimes(1);
   });
 
+  it('fires email for warn events when SECURITY_ALERT_SEVERITY=warn', async () => {
+    const originalEnv = process.env.SECURITY_ALERT_SEVERITY;
+    process.env.SECURITY_ALERT_SEVERITY = 'warn';
+
+    mockSecurityEventCreate.mockResolvedValue(
+      buildEventRow({ severity: 'warn' }),
+    );
+
+    recordSecurityEvent({
+      eventType: 'CROSS_ORG_ACCESS_ATTEMPTED',
+      severity: 'warn',
+      source: 'auth',
+      userId: 'user-1',
+    });
+
+    await flushAsync();
+
+    expect(mockSendSecurityAlertEmail).toHaveBeenCalledTimes(1);
+
+    if (originalEnv === undefined) {
+      delete process.env.SECURITY_ALERT_SEVERITY;
+    } else {
+      process.env.SECURITY_ALERT_SEVERITY = originalEnv;
+    }
+  });
+
   it('escalates severity to critical when burst threshold is reached', async () => {
     // AUTH_LOGIN_FAILED threshold is 10 in 60 minutes.
     // Simulate 9 prior events — the 10th (this one) should escalate.

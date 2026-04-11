@@ -3,6 +3,7 @@ import type { Prisma } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { scrubPii } from '../../utils/pii-scrubber';
 import { getEscalationRule } from '../../utils/escalation-rules';
+import { meetsAlertSeverityThreshold } from '../../utils/severity-threshold';
 import type {
   RecordSecurityEventInput,
   SecurityEventSeverity,
@@ -69,7 +70,10 @@ async function runRecordPipeline(
     'Security event recorded',
   );
 
-  if (effectiveSeverity === 'critical') {
+  // Severity gate for email dispatch. Default threshold is `critical` but
+  // operators can lower it to `warn` or `info` via SECURITY_ALERT_SEVERITY.
+  // Below-threshold events still land in the DB and admin UI — just no email.
+  if (meetsAlertSeverityThreshold(effectiveSeverity)) {
     // Dynamic import avoids pulling Resend + React Email into edge-runtime
     // callers (middleware, auth hooks) and mirrors how src/lib/auth.ts
     // imports the mailer to dodge webpack bundling issues.
