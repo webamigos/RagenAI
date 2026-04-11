@@ -8,6 +8,7 @@ import {
   Brain,
   HardDrive,
   ScrollText,
+  ShieldAlert,
   LogOut,
   LayoutDashboard,
   Mail,
@@ -45,6 +46,7 @@ const navItems = [
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },
   { href: '/activity-log', label: 'Activity Log', icon: ScrollText },
+  { href: '/incidents', label: 'Incidents', icon: ShieldAlert },
 ];
 
 const SidebarContext = createContext<{

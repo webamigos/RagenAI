@@ -5,6 +5,7 @@ import db from '@ragenai/prisma-client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -148,6 +149,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ text });
   } catch (error) {
     if (error instanceof InternalAuthError) {
+      // Record the mismatch as a security event. Fire-and-forget —
+      // cannot block the 401 response. Escalation rules upgrade to
+      // `critical` on a burst of 5 in 10 minutes from the same IP.
+      recordSecurityEvent({
+        eventType: 'API_INTERNAL_SECRET_MISMATCH',
+        severity: 'warn',
+        source: 'api',
+        ipAddress:
+          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
+        userAgent: request.headers.get('user-agent') ?? null,
+        metadata: {
+          path: '/api/v1/chat',
+          reason: error.message,
+        },
+      });
+
       return NextResponse.json(
         { error: 'Unauthorized', code: 401 },
         { status: 401 },
