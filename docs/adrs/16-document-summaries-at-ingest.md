@@ -67,12 +67,15 @@ After embedding succeeds, the workflow calls `mergeFileMetadata` with `{ summary
 
 ### Model choice
 
-`SUMMARY_MODEL` env var, default `gpt-5.4-nano`. Rationale:
-- Smallest and cheapest model currently provisioned in the LiteLLM proxy (`litellm/config.yaml`). Per-document summarization cost matters — this runs once per uploaded file.
-- Summarization is a well-trodden task for small models; quality is sufficient for retrieval-matching purposes (we are not writing journalism).
-- Aligns with CLAUDE.md's guidance "do not upgrade cheap models without explicit approval."
+`SUMMARY_MODEL` env var, default `gemini-2.5-flash`. Rationale:
+- **Faster in practice** than `gpt-5.4-nano` for the short-output summary task in our LiteLLM → Vertex setup. The first production ingest showed `generateDocumentSummary` as the longest bar in the Temporal timeline on `gpt-5.4-nano`, longer than the embedding + upsert step combined. Switching to `gemini-2.5-flash` dropped it back in line with the other activities.
+- **Strong multilingual support** — Gemini 2.5 Flash handles Polish as well or better than the nano Azure models, which matters for our mixed Polish/English content.
+- **Shared infrastructure** with the ragen-app rephrase step, which already defaults to `gemini-2.5-flash` — fewer moving model parts across the codebase.
+- Cost is still negligible at the Flash tier; per-document summarization is run once at upload and dominated by the embedding cost that follows.
 
-**Note**: CLAUDE.md previously referenced `gpt-4.1-nano` as the cheap/fast default. That model is no longer provisioned in the proxy — the 5.4 family and Claude 4-6 replaced the 4.x tier. CLAUDE.md should be updated as a follow-up; this ADR sets the corrected reference.
+**Initial choice was `gpt-5.4-nano`** (smallest provisioned model in LiteLLM, bias toward "cheapest possible"). Switched to `gemini-2.5-flash` after observing the latency hit. Override via `SUMMARY_MODEL` env var — do not upgrade to a larger model without explicit approval.
+
+**Note**: CLAUDE.md previously referenced `gpt-4.1-nano` as the cheap/fast default. That model is no longer provisioned in the proxy — the 5.4 family and Claude 4-6 replaced the 4.x tier. This ADR sets the corrected reference and documents the observed latency trade-off that drove the subsequent switch to `gemini-2.5-flash`.
 
 ### Feature flag
 
@@ -84,7 +87,7 @@ After embedding succeeds, the workflow calls `mergeFileMetadata` with `{ summary
 
 2. **Summary in Qdrant only, not on `UserFile.metadata`.** Removes the JSONB write and the new db activity. Rejected: the UI benefit is real and low-cost (one more activity call), and future features (summary-based document previews, summary-first retrieval) need it on the row.
 
-3. **Generate summaries asynchronously after embedding** (a separate Temporal workflow triggered after ingest). More resilient in theory — a slow LLM doesn't block ingest. Rejected: adds orchestration complexity, creates a window where documents exist without summaries, and the "best-effort, returns empty string" error handling in the inline path already protects against LLM slowness. Inline is simpler and the latency hit is ~3-10 seconds on gpt-5.4-nano per document, acceptable for an ingest pipeline that already runs parsing, chunking, and embedding serially.
+3. **Generate summaries asynchronously after embedding** (a separate Temporal workflow triggered after ingest). More resilient in theory — a slow LLM doesn't block ingest. Rejected: adds orchestration complexity, creates a window where documents exist without summaries, and the "best-effort, returns empty string" error handling in the inline path already protects against LLM slowness. Inline is simpler and the latency hit is ~2-5 seconds per document on `gemini-2.5-flash`, acceptable for an ingest pipeline that already runs parsing, chunking, and embedding serially.
 
 4. **Structured summary** (title, abstract, key facts, entities as JSON). Richer output, more useful downstream. Rejected for v1: requires prompt complexity and JSON parsing, adds failure modes, and the simple "1-2 paragraphs of prose" approach is enough for retrieval matching. Structured output is a candidate for a follow-up ADR if quality data shows plain summaries plateau.
 
@@ -100,7 +103,7 @@ After embedding succeeds, the workflow calls `mergeFileMetadata` with `{ summary
 
 **Added ingest cost** — one extra LLM call per uploaded document on the cheapest provisioned model. Negligible compared to the embedding cost (which makes dozens of calls per document via `embedMany`).
 
-**Added ingest latency** — ~3-10 seconds per document on `gpt-5.4-nano`, running synchronously between parsing and embedding. Acceptable for an already-async Temporal pipeline.
+**Added ingest latency** — ~2-5 seconds per document on `gemini-2.5-flash`, running synchronously between parsing and embedding. Initial testing on `gpt-5.4-nano` showed the summary step as the longest activity in the Temporal timeline; switching to `gemini-2.5-flash` brought it back in line with the other steps. Acceptable for an already-async Temporal pipeline.
 
 **One extra Qdrant point per document** — the summary chunk. Storage cost is trivial.
 
@@ -115,7 +118,7 @@ After embedding succeeds, the workflow calls `mergeFileMetadata` with `{ summary
 | Env var | Default | Purpose |
 |---------|---------|---------|
 | `FEATURE_FLAG_DOC_SUMMARIES` | `1` (on) | Set to `0` or `false` to disable summary generation |
-| `SUMMARY_MODEL` | `gpt-5.4-nano` | LLM model used for summarization. Must be provisioned in LiteLLM. |
+| `SUMMARY_MODEL` | `gemini-2.5-flash` | LLM model used for summarization. Must be provisioned in LiteLLM. |
 
 ## Key Files
 

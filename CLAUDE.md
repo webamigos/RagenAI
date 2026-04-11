@@ -374,7 +374,7 @@ Before retrieval, the standalone question is expanded into N-1 alternative phras
 
 ### Ingest-Side: Document Summaries (ADR-16)
 
-Lives in `ragen-worker` (see worker's own docs for details). At ingest, after parsing and chunking, a 1-2 paragraph summary is generated via `SUMMARY_MODEL` (default `gpt-5.4-nano`). The summary is:
+Lives in `ragen-worker` (see worker's own docs for details). At ingest, after parsing and chunking, a 1-2 paragraph summary is generated via `SUMMARY_MODEL` (default `gemini-2.5-flash`). The summary is:
 
 1. **Prepended as a synthetic chunk** with `metadata.chunk_type: 'summary'` — participates in hybrid retrieval alongside body chunks
 2. **Merged into `UserFile.metadata.summary`** — for UI previews and future summary-first retrieval paths
@@ -551,7 +551,7 @@ All LLM calls (chat completions and embeddings) are routed through a **LiteLLM p
 
 - **Default chat model**: `gpt-5.4` (via LiteLLM → Azure OpenAI)
 - **Rephrase / multi-query expansion model**: `gemini-2.5-flash` — cheap/fast model used for standalone question rephrasing and for the expansion step in ADR-15 multi-query. Do not upgrade without explicit approval.
-- **Summary model** (worker-side, ADR-16): `gpt-5.4-nano` — smallest Azure model available, set via `SUMMARY_MODEL` in `ragen-worker/src/consts.ts`. See ADR-16 for rationale.
+- **Summary model** (worker-side, ADR-16): `gemini-2.5-flash` — faster than gpt-5.4-nano in practice for the short-output summary task, strong Polish support. Set via `SUMMARY_MODEL` in `ragen-worker/src/consts.ts`. See ADR-16 for the latency-driven rationale.
 - Always verify against `litellm/config.yaml` — previously the code documented `gpt-4o` / `gpt-4.1-nano` which are no longer provisioned.
 
 ## Per-Organization Model Management
