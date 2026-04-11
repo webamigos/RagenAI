@@ -7,8 +7,8 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
 - **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
-- **Vector Search**: Qdrant (default) + Cohere Rerank v3.5 via Bedrock (post-retrieval)
-- **LLM Providers**: OpenAI, Anthropic, Google, AWS Bedrock, Ollama, OpenRouter (with provider routing & ZDR), Fireworks, Azure OpenAI
+- **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and Cohere Rerank v3.5 via Bedrock ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
+- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Azure OpenAI, AWS Bedrock, Google Vertex AI)
 - **Auth**: Better Auth with Prisma adapter
 - **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
 - **Payments**: Stripe
@@ -163,9 +163,60 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Qdrant. Each organization gets its own Qdrant collection. Embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions). Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock improves quality (especially for Polish content).
+Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock sharpens the top-k.
 
 **Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
+
+### RAG Pipeline
+
+Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Cohere Rerank** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) is gated on AWS Bedrock credentials being present — no credentials = silent skip (see ADR-12 for details). See ADRs 11, 12, 14, 15, 16 for the full decision history.
+
+**Ingest** (happens in ragen-worker):
+
+```mermaid
+flowchart LR
+    A[File upload] --> B[Parse<br/>PDF/DOCX/EPUB/…]
+    B --> C[Chunk<br/>type-specific splitter]
+    C --> D["Generate summary<br/>ADR-16 · SUMMARY_MODEL"]
+    D --> E["Prepend summary as chunk<br/>chunk_type: summary"]
+    E --> F["Hybrid embed<br/>dense (Cohere) + sparse (BM25)<br/>ADR-14"]
+    F --> G["Upsert to Qdrant<br/>named vectors"]
+    F --> H["Merge UserFile.metadata.summary<br/>jsonb merge, best-effort"]
+```
+
+**Retrieval** (ragen-app `src/libs/chains/basic-rag/`):
+
+```mermaid
+flowchart TD
+    Q[User question] --> R[Rephrase → standalone question]
+    R --> X["expandQueries<br/>ADR-15 · +2 alternative phrasings"]
+    X --> P["[standalone, variant1, variant2]"]
+    P --> S1[Hybrid search · q1]
+    P --> S2[Hybrid search · q2]
+    P --> S3[Hybrid search · q3]
+    S1 --> D1["Qdrant RRF fusion<br/>dense + sparse per query<br/>ADR-14"]
+    S2 --> D1
+    S3 --> D1
+    D1 --> U[Dedupe by content]
+    U --> RR["Cohere Rerank v3.5<br/>ADR-12"]
+    RR --> G["Answer generation<br/>with citation prompting<br/>ADR-16"]
+```
+
+**How they compose**:
+
+| ADR | Stage | Problem solved |
+|-----|-------|----------------|
+| [ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md) Hybrid search | Retrieval | Exact-term and morphological matches dense alone misses |
+| [ADR-15](docs/adrs/15-multi-query-expansion.md) Multi-query | Before retrieval | Vocabulary mismatch between user phrasing and document phrasing |
+| [ADR-16](docs/adrs/16-document-summaries-at-ingest.md) Summaries | Ingest | Per-document topic anchors that no flat chunk contains |
+| [ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md) Cohere Rerank | After retrieval | Cross-encoder sharpens the final top-k |
+
+ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what comes out.
+
+**Feature flags** (defaults on):
+- `FEATURE_FLAG_MULTI_QUERY` (ragen-app) — disable to fall back to single-query retrieval (ADR-15)
+- `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
+- Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
 
 ### State Management
 
@@ -287,7 +338,7 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
 - `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
 
-**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gpt-4o`.
+**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
 
 ### Ragen API
 

@@ -2,9 +2,14 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { VectorStoreClient, VectorStoreDocument } from './types';
 import { logger } from '@/app/lib/utils/logger';
+import { encode as encodeBm25, type SparseVector } from './bm25-encoder';
 
 const BATCH_SIZE = 100;
 const VECTOR_SIZE = 1024; // Cohere embed-multilingual-v3
+const DENSE_VECTOR_NAME = 'dense';
+const SPARSE_VECTOR_NAME = 'sparse';
+/** Over-fetch multiplier per branch so RRF fusion has enough candidates. */
+const PREFETCH_MULTIPLIER = 4;
 
 /** Tracks collections already verified in this process to avoid redundant API calls. */
 const verifiedCollections = new Set<string>();
@@ -48,6 +53,13 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
     this.embeddings = embeddings;
   }
 
+  /**
+   * Hybrid search: runs dense (Cohere) and sparse (BM25) retrieval in parallel
+   * on the Qdrant server and fuses results with Reciprocal Rank Fusion.
+   *
+   * If the query has no sparse signal (e.g., punctuation only), falls back to
+   * dense-only search.
+   */
   async similaritySearch(
     query: string,
     k: number,
@@ -55,15 +67,38 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
   ): Promise<VectorStoreDocument[]> {
     await this.ensureCollection();
 
-    const queryEmbedding = await this.embeddings.embedQuery(query);
+    const [denseVector, sparseVector] = await Promise.all([
+      this.embeddings.embedQuery(query),
+      Promise.resolve(encodeBm25(query)),
+    ]);
+
     const qdrantFilter = filter
       ? convertToQdrantFilter(filter as IntermediateFilter)
       : undefined;
 
+    const prefetchLimit = k * PREFETCH_MULTIPLIER;
+    const prefetch: Record<string, unknown>[] = [
+      {
+        query: denseVector,
+        using: DENSE_VECTOR_NAME,
+        limit: prefetchLimit,
+        filter: qdrantFilter,
+      },
+    ];
+
+    if (sparseVector.indices.length > 0) {
+      prefetch.push({
+        query: sparseVector,
+        using: SPARSE_VECTOR_NAME,
+        limit: prefetchLimit,
+        filter: qdrantFilter,
+      });
+    }
+
     const results = await this.client.query(this.collectionName, {
-      query: queryEmbedding,
+      prefetch,
+      query: { fusion: 'rrf' },
       limit: k,
-      filter: qdrantFilter,
       with_payload: true,
     });
 
@@ -85,17 +120,28 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
     await this.ensureCollection();
 
     const texts = documents.map((doc) => doc.pageContent);
-    const embeddings = await this.embeddings.embedDocuments(texts);
+    const denseEmbeddings = await this.embeddings.embedDocuments(texts);
 
-    const points = documents.map((doc, i) => ({
-      id: crypto.randomUUID(),
-      vector: embeddings[i],
-      payload: {
-        content: doc.pageContent,
-        pageContent: doc.pageContent,
-        metadata: doc.metadata,
-      },
-    }));
+    const points = documents.map((doc, i) => {
+      const sparse = encodeBm25(doc.pageContent);
+      const vector: Record<string, number[] | SparseVector> = {
+        [DENSE_VECTOR_NAME]: denseEmbeddings[i],
+      };
+      // Skip sparse vector for chunks with no tokens (pure numbers/punctuation).
+      // Qdrant accepts partial named vectors — the point is still retrievable via dense.
+      if (sparse.indices.length > 0) {
+        vector[SPARSE_VECTOR_NAME] = sparse;
+      }
+      return {
+        id: crypto.randomUUID(),
+        vector,
+        payload: {
+          content: doc.pageContent,
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        },
+      };
+    });
 
     // Batch upserts to avoid payload size limits
     for (let i = 0; i < points.length; i += BATCH_SIZE) {
@@ -108,7 +154,7 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
 
     logger.info(
       { count: documents.length, collection: this.collectionName },
-      'Documents added to Qdrant',
+      'Documents added to Qdrant (hybrid: dense + sparse)',
     );
   }
 
@@ -232,8 +278,16 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
 
     await this.client.createCollection(this.collectionName, {
       vectors: {
-        size: VECTOR_SIZE,
-        distance: 'Cosine',
+        [DENSE_VECTOR_NAME]: {
+          size: VECTOR_SIZE,
+          distance: 'Cosine',
+        },
+      },
+      sparse_vectors: {
+        [SPARSE_VECTOR_NAME]: {
+          // Qdrant computes IDF from stored TFs and scores BM25-style at query time.
+          modifier: 'idf',
+        },
       },
       optimizers_config: {
         indexing_threshold: 20000,
@@ -257,7 +311,7 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
 
     logger.info(
       { collection: this.collectionName },
-      'Qdrant collection created with payload indexes',
+      'Qdrant collection created with hybrid dense+sparse vectors and payload indexes',
     );
   }
 }

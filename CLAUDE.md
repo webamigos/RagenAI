@@ -63,14 +63,60 @@ QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
 DEFAULT_MODEL_PROVIDER=litellm
-DEFAULT_MODEL=gpt-4o
+DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
 ## Architecture
 
-**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Qdrant (vector search, default) + Temporal.io (async workflow orchestration) + LiteLLM (unified LLM proxy) + Cohere Rerank via Bedrock (post-retrieval reranking)
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind CSS 4 + PostgreSQL (Prisma 7) + Redis (optional, for rate limiting only) + Qdrant (hybrid dense+sparse vector search, default) + Temporal.io (async workflow orchestration) + LiteLLM (unified LLM proxy) + Cohere Rerank via Bedrock (post-retrieval reranking)
 
 **What it does**: RAG (Retrieval Augmented Generation) AI chat application with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
+
+### RAG Pipeline (retrieval quality stack)
+
+Four composed improvements, all active by default. See ADRs 11, 12, 14, 15, 16 for the full decision history.
+
+**Ingest flow** (in `ragen-worker`):
+
+```mermaid
+flowchart LR
+    A[File upload] --> B[Parse<br/>PDF/DOCX/EPUB/…]
+    B --> C[Chunk<br/>type-specific splitter]
+    C --> D[Generate summary<br/>ADR-16]
+    D --> E[Prepend summary chunk<br/>chunk_type: summary]
+    E --> F[Hybrid embed<br/>Cohere dense + BM25 sparse<br/>ADR-14]
+    F --> G[Upsert to Qdrant<br/>named vectors]
+    F --> H[Merge UserFile.metadata.summary<br/>jsonb merge, best-effort]
+```
+
+**Retrieval flow** (in `ragen-app`, `src/libs/chains/basic-rag/`):
+
+```mermaid
+flowchart TD
+    Q[User question] --> R[Rephrase → standalone question]
+    R --> X[expandQueries<br/>ADR-15<br/>+2 alternative phrasings via LLM]
+    X --> P["[standalone, variant1, variant2]"]
+    P --> S1[Hybrid search<br/>q=standalone]
+    P --> S2[Hybrid search<br/>q=variant1]
+    P --> S3[Hybrid search<br/>q=variant2]
+    S1 --> D1[Qdrant RRF fusion<br/>dense + sparse per query<br/>ADR-14]
+    S2 --> D1
+    S3 --> D1
+    D1 --> U[Dedupe by content]
+    U --> RR[Cohere Rerank v3.5<br/>ADR-12]
+    RR --> G[Answer generation<br/>with citation prompting<br/>ADR-16]
+```
+
+**How the four improvements compose**:
+
+| ADR | Pipeline stage | Problem it solves |
+|-----|---------------|-------------------|
+| **ADR-12** Cohere Rerank | After retrieval | Sharpens top-k by cross-encoder precision |
+| **ADR-14** Hybrid search | At retrieval | Exact-term + morphological matches that dense alone misses |
+| **ADR-15** Multi-query | Before retrieval | Vocabulary mismatch between user phrasing and document phrasing |
+| **ADR-16** Summaries | At ingest | Per-document topic anchors that no flat chunk contains |
+
+ADR-14/15/16 widen the candidate pool; ADR-12 sharpens it. All four are gated behind env flags that default to on.
 
 ### Routing & Layouts
 
@@ -264,33 +310,81 @@ Message content (`Message.content`) is encrypted at rest using **AWS KMS envelop
 
 **Admin migration:** `encryptAllThreadsAction()` (app admin only) batch-encrypts all unencrypted threads across all organizations. Idempotent and resumable.
 
-### Vector Store (Qdrant)
+### Vector Store (Qdrant, Hybrid Search)
 
-Qdrant is the default vector database for RAG document retrieval. Meilisearch and Supabase are supported as legacy backends via the `Organization.vectorStore` column.
+Qdrant is the default vector database for RAG document retrieval. Collections use **hybrid named vectors** (dense + sparse, ADR-14) with **Reciprocal Rank Fusion** at query time. Meilisearch and Supabase are supported as legacy backends via the `Organization.vectorStore` column (dense-only).
+
+**Collection schema (Qdrant)**:
+
+```
+vectors:
+  dense:  { size: 1024, distance: Cosine }   # Cohere embed-multilingual-v3
+sparse_vectors:
+  sparse: { modifier: idf }                  # Qdrant computes IDF server-side, BM25-style
+```
 
 **Key files:**
 - Interface: `src/libs/vector-store/types.ts` — `VectorStoreClient` with `similaritySearch()`, `addDocuments()`, optional `deleteDocuments()`
-- Qdrant client: `src/libs/vector-store/qdrant-client.ts` — default implementation, auto-creates collections with payload indexes
-- Meilisearch client: `src/libs/vector-store/meilisearch-client.ts` — legacy, converts intermediate filter format to Meilisearch strings
-- Supabase client: `src/libs/vector-store/supabase-client.ts` — legacy pgvector backend
+- Qdrant client: `src/libs/vector-store/qdrant-client.ts` — named dense+sparse vectors, RRF fusion via Query API `prefetch`
+- BM25 encoder: `src/libs/vector-store/bm25-encoder.ts` — pure-TS unicode-aware tokenizer + FNV-1a hashing, produces `{ indices, values }` sparse vectors. Mirror lives in `ragen-worker/src/services/bm25-encoder.ts`
+- Meilisearch client: `src/libs/vector-store/meilisearch-client.ts` — legacy dense-only
+- Supabase client: `src/libs/vector-store/supabase-client.ts` — legacy pgvector backend (dense-only)
+
+**How the query works:**
+
+```mermaid
+flowchart LR
+    Q[Query text] --> D[Dense embed<br/>Cohere multilingual]
+    Q --> S[Sparse encode<br/>BM25 tokens<br/>pure TS]
+    D --> P[Qdrant Query API]
+    S --> P
+    P --> RRF[Server-side<br/>RRF fusion]
+    RRF --> K[top-k fused]
+    K --> C[Cohere Rerank<br/>ADR-12]
+```
+
+The client issues a single request with two prefetch branches and `fusion: 'rrf'`; Qdrant fuses server-side. Falls back to dense-only when the query has no tokenizable content (e.g., `"42 !!"`). `PREFETCH_MULTIPLIER = 4` per branch over-fetches before fusion.
 
 **Configuration:**
 - Organization collection: each org gets its own Qdrant collection (named by org ID)
-- Embeddings: Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions, Cosine distance)
-- Payload indexes: `metadata.project_id`, `metadata.project_public_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by`
+- Embeddings (dense): Cohere `cohere-embed-multilingual-v3` via LiteLLM proxy (1024 dimensions, Cosine distance)
+- Sparse: pure-TS BM25 encoder, Qdrant `modifier: idf` handles server-side BM25 scoring
+- Payload indexes: `metadata.project_id`, `metadata.file_id`, `metadata.organization_id`, `metadata.accessible_by` (all `keyword` type). **Note**: ADR-11 originally mentioned `metadata.project_public_id` as well, but that index was never created in code — retrieval filters use internal `project_id`, not the external public UUID. If public-ID-based filtering is ever needed, the index must be added in `src/libs/vector-store/qdrant-client.ts`.
+- `metadata.chunk_type: 'summary'` marks the synthetic summary chunks written by ADR-16; no filter routing needed, they participate in the same hybrid retrieval as body chunks
 - Access control: `metadata.accessible_by` array contains principals (`org:<id>`, `user:<id>`, `team:<id>`) — filtered at query time for non-admin users
 - Filter format: intermediate format (`{ must: [...], should: [...] }`) used across the codebase — each client converts internally
 - Env vars: `QDRANT_URL` (default `http://localhost:6333`), `QDRANT_API_KEY` (optional for local dev)
 
 **Multi-backend selection** (`Organization.vectorStore` column):
-- `null` or `'qdrant'` → Qdrant (default for new orgs)
-- `'meilisearch'` → Meilisearch (legacy)
-- `'supabase'` → Supabase pgvector (legacy)
+- `null` or `'qdrant'` → Qdrant (default, hybrid dense+sparse)
+- `'meilisearch'` → Meilisearch (legacy, dense-only)
+- `'supabase'` → Supabase pgvector (legacy, dense-only)
 
-### Post-Retrieval Reranking
+**Schema-breaking note**: hybrid collections use named vectors. Pre-ADR-14 collections (unnamed single vector) are not compatible — the vector store was wiped before rollout. Any re-rollout that needs to preserve data would require a reindex.
 
-Cohere Rerank v3.5 via AWS Bedrock improves retrieval quality as a post-retrieval step:
-- Over-retrieves 3x candidates from vector store, then reranks to top-k using Cohere cross-encoder
+### Query-Side: Multi-Query Expansion (ADR-15)
+
+Before retrieval, the standalone question is expanded into N-1 alternative phrasings via a single `generateObject` call using `REPHRASE_MODEL`. The **original standalone question is always included as the first query**, so behavior never regresses below single-query. All queries are submitted in parallel to Qdrant, results are deduplicated by content string, and the unified pool feeds the reranker.
+
+- Code: `expandQueries()` and updated `retrieveRelevantDocuments()` in `src/libs/chains/basic-rag/operations.ts`
+- Config: `MULTI_QUERY_VARIANT_COUNT = 2` (→ 3 total queries per turn)
+- Feature flag: `FEATURE_FLAG_MULTI_QUERY` (default on; set to `0` or `false` to disable)
+- Graceful fallback: LLM error, invalid structured output, or empty variants all fall back to single-query
+- Per-query retrieval count is divided across queries so the pre-dedupe pool stays roughly the same as single-query — reranker input stays bounded
+
+### Ingest-Side: Document Summaries (ADR-16)
+
+Lives in `ragen-worker` (see worker's own docs for details). At ingest, after parsing and chunking, a 1-2 paragraph summary is generated via `SUMMARY_MODEL` (default `gemini-2.5-flash`). The summary is:
+
+1. **Prepended as a synthetic chunk** with `metadata.chunk_type: 'summary'` — participates in hybrid retrieval alongside body chunks
+2. **Merged into `UserFile.metadata.summary`** — for UI previews and future summary-first retrieval paths
+
+Best-effort at every layer: feature flag off / LLM error / Temporal failure / DB error all degrade to "no summary" without affecting ingest success. Feature flag: `FEATURE_FLAG_DOC_SUMMARIES` (default on). The ragen-app side needs no retrieval changes — summary chunks show up naturally; only the answer prompt was updated with a light citation rule (`src/libs/chains/basic-rag/config.ts`).
+
+### Post-Retrieval Reranking (ADR-12)
+
+Cohere Rerank v3.5 via AWS Bedrock improves retrieval quality as the final sharpening step over the fused + deduplicated pool:
+- Over-retrieves 3x candidates (in addition to the fan-out from multi-query), then reranks to top-k using Cohere cross-encoder
 - Particularly effective for Polish and multilingual content
 - Gracefully disabled when AWS credentials are not set (local dev without Bedrock)
 - Falls back to original vector search results on Bedrock errors
@@ -431,11 +525,12 @@ All LLM calls (chat completions and embeddings) are routed through a **LiteLLM p
 - `src/app/lib/services/llm.ts` — Credential setup, model creation
 - `src/app/lib/actions/checkAvailableProviders.ts` — Dynamically fetches model list from LiteLLM
 
-**Configured models** (in `litellm/config.yaml`):
-- Azure OpenAI: `gpt-4o`, `gpt-4o-mini`, `gpt-4.1`, `gpt-4.1-mini`, `gpt-4.1-nano`
-- AWS Bedrock: `claude-sonnet-4-20250514`, `claude-opus-4-20250514`, `claude-3-5-sonnet-20241022`, `claude-3-5-haiku-20241022`
-- Google Vertex AI: `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`
-- Embeddings: `cohere-embed-multilingual-v3` (Bedrock)
+**Configured models** (in `litellm/config.yaml` — this is the source of truth, check it directly as this list drifts):
+- Azure OpenAI: `gpt-5.4`, `gpt-5.4-nano`, `gpt-5.3-chat`
+- AWS Bedrock: `claude-sonnet-4-6`, `claude-opus-4-6`, `claude-haiku-4-5`
+- Google Vertex AI: `gemini-3-flash-preview`, `gemini-2.5-flash`
+- Reranker: `cohere-rerank-v3-5` (Bedrock, used by ADR-12)
+- Embeddings: `cohere-embed-multilingual-v3` (Bedrock, 1024-dim, used for dense vectors in hybrid search)
 
 **Model management**: Add/remove models via LiteLLM UI (`http://localhost:4000/ui`, login: `admin` / `LITELLM_MASTER_KEY`). Changes are reflected in ragen-app automatically via `/v1/models` endpoint.
 
@@ -443,9 +538,10 @@ All LLM calls (chat completions and embeddings) are routed through a **LiteLLM p
 - `LITELLM_PROXY_URL` — proxy URL (default: `http://localhost:4000`)
 - `LITELLM_MASTER_KEY` — API key for proxy auth (default for local dev: `sk-litellm-dev-key`)
 - `DEFAULT_MODEL_PROVIDER` — must be `litellm`
-- `DEFAULT_MODEL` — model name matching `litellm/config.yaml` (e.g., `gpt-4o`)
-- `REPHRASE_MODEL` — cheap/fast model for question rephrasing (e.g., `gpt-4.1-nano`)
+- `DEFAULT_MODEL` — model name matching `litellm/config.yaml` (e.g., `gpt-5.4`)
+- `REPHRASE_MODEL` — cheap/fast model for question rephrasing and multi-query expansion, default `gemini-2.5-flash` (hardcoded in `src/app/api/threads/services/initializeBasicRag.ts`)
 - `EMBEDDING_MODEL` — embedding model name (default: `cohere-embed-multilingual-v3`)
+- `FEATURE_FLAG_MULTI_QUERY` — enable/disable multi-query expansion (ADR-15, default on; set to `0` or `false` to disable)
 
 **Langfuse tracing**: LiteLLM automatically traces all LLM calls (chat + embeddings) to Langfuse via `success_callback` / `failure_callback` in `config.yaml`. Set `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` env vars on the LiteLLM container. App-level tracing (thread context, user messages, tags) is still handled by `@langfuse/tracing` in `assistant-stream.ts`. The OTel-based `@langfuse/otel` span processor was removed — LiteLLM replaces it.
 
@@ -453,8 +549,10 @@ All LLM calls (chat completions and embeddings) are routed through a **LiteLLM p
 
 ## Model Defaults
 
-- **Default chat model**: `gpt-4o` (via LiteLLM → Azure OpenAI)
-- **Rephrase model**: `gpt-4.1-nano` — cheapest/fastest model for question rephrasing. Do not upgrade this without explicit approval.
+- **Default chat model**: `gpt-5.4` (via LiteLLM → Azure OpenAI)
+- **Rephrase / multi-query expansion model**: `gemini-2.5-flash` — cheap/fast model used for standalone question rephrasing and for the expansion step in ADR-15 multi-query. Do not upgrade without explicit approval.
+- **Summary model** (worker-side, ADR-16): `gemini-2.5-flash` — faster than gpt-5.4-nano in practice for the short-output summary task, strong Polish support. Set via `SUMMARY_MODEL` in `ragen-worker/src/consts.ts`. See ADR-16 for the latency-driven rationale.
+- Always verify against `litellm/config.yaml` — previously the code documented `gpt-4o` / `gpt-4.1-nano` which are no longer provisioned.
 
 ## Per-Organization Model Management
 
