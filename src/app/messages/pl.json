@@ -1150,8 +1150,20 @@
     "reasoning_end": "",
     "tool_call": "wywołuję narzędzie",
     "tool_result": "",
+    "tool_approval_request": "narzędzie wymaga potwierdzenia",
     "error": "Wystąpił błąd",
     "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Potwierdzenie wywołania narzędzia",
+    "title": "Potwierdź działanie narzędzia",
+    "description": "To działanie ma skutki uboczne, a bieżąca rozmowa zawiera treści pobrane z bazy wiedzy. Zatwierdź tylko jeśli zgadza się to z Twoim zamiarem.",
+    "tool-label": "Narzędzie",
+    "provider-label": "Dostawca",
+    "approve": "Zatwierdź",
+    "deny": "Odrzuć",
+    "approve-prompt": "Tak, proszę wykonaj {toolName}.",
+    "deny-prompt": "Nie, anuluj wywołanie tego narzędzia."
   },
   "ErrorBoundary": {
     "error": "Wystąpił błąd",

@@ -34,6 +34,7 @@ import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 /**
  * Load thread documents from database for a specific thread
@@ -546,7 +547,50 @@ export async function streamEvents({
                 threadDocuments,
                 mcpTools,
                 mcpContext,
+                approvedToolCalls: userMessage.approvedToolCalls,
               });
+
+              // Phase 2b — record user approval/denial decisions. Both
+              // are fire-and-forget audit events so admins see the
+              // full decision trail in the security dashboard and the
+              // escalation engine can detect abuse patterns (e.g. a
+              // user approving 50 tool calls in 5 minutes).
+              if (
+                userMessage.approvedToolCalls &&
+                userMessage.approvedToolCalls.length > 0
+              ) {
+                for (const approvedId of userMessage.approvedToolCalls) {
+                  recordSecurityEvent({
+                    eventType: 'TOOL_CALL_CONFIRMED',
+                    severity: 'info',
+                    source: 'chat',
+                    organizationId: orgId ?? null,
+                    userId: userId ?? null,
+                    metadata: {
+                      toolCallId: approvedId,
+                      threadId: threadRecord.id,
+                    },
+                  });
+                }
+              }
+              if (
+                userMessage.deniedToolCalls &&
+                userMessage.deniedToolCalls.length > 0
+              ) {
+                for (const deniedId of userMessage.deniedToolCalls) {
+                  recordSecurityEvent({
+                    eventType: 'TOOL_CALL_DENIED',
+                    severity: 'info',
+                    source: 'chat',
+                    organizationId: orgId ?? null,
+                    userId: userId ?? null,
+                    metadata: {
+                      toolCallId: deniedId,
+                      threadId: threadRecord.id,
+                    },
+                  });
+                }
+              }
             }
           } else if (mode === AssistantMode.PUBLIC) {
             const projectIdToUsePublic =
@@ -632,6 +676,52 @@ export async function streamEvents({
                   toolName: part.toolName,
                 });
                 break;
+              case 'tool-approval-request': {
+                // Phase 2 prompt-injection gating: the SDK paused a write
+                // tool because RAG context is present in this turn. The
+                // tool has NOT executed. Surface the pause to the client
+                // and record a security event so admins see repeated
+                // blocks in the dashboard / daily digest.
+                const provider = part.toolName.split('__')[0] ?? 'unknown';
+                logger.warn(
+                  {
+                    approvalId: part.approvalId,
+                    toolName: part.toolName,
+                    toolCallId: part.toolCallId,
+                    provider,
+                  },
+                  'MCP tool call blocked pending user confirmation',
+                );
+                sendApiEvent(controller, 'tool_approval_request', {
+                  approvalId: part.approvalId,
+                  toolCallId: part.toolCallId,
+                  toolName: part.toolName,
+                  provider,
+                });
+                // Synthesize an assistant-visible explanation so the
+                // user sees WHY the turn stopped without waiting for
+                // Phase 2b's modal. The message becomes part of the
+                // persisted fullMessage below.
+                const explanation = `\n\n_I wanted to call **${part.toolName}**, but this action has side effects and the current conversation includes content retrieved from your knowledge base. For your safety I'm not running it automatically — please reply with explicit intent (e.g. "yes, go ahead and ${part.toolName.split('__').pop()}") if you want me to proceed._`;
+                fullMessage += explanation;
+                sendApiEvent(controller, 'delta', { content: explanation });
+
+                recordSecurityEvent({
+                  eventType: 'TOOL_CALL_BLOCKED',
+                  severity: 'info',
+                  source: 'chat',
+                  organizationId: orgId ?? null,
+                  userId: userId ?? null,
+                  metadata: {
+                    toolName: part.toolName,
+                    provider,
+                    toolCallId: part.toolCallId,
+                    approvalId: part.approvalId,
+                    threadId: threadRecord.id,
+                  },
+                });
+                break;
+              }
             }
           }
 

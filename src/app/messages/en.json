@@ -1147,8 +1147,20 @@
     "reasoning_end": "",
     "tool_call": "calling tool",
     "tool_result": "",
+    "tool_approval_request": "tool requires confirmation",
     "error": "An Error has occurred",
     "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Tool call confirmation",
+    "title": "Confirm tool action",
+    "description": "This action has side effects and the current conversation includes retrieved knowledge-base content. Approve only if the request matches your intent.",
+    "tool-label": "Tool",
+    "provider-label": "Provider",
+    "approve": "Approve",
+    "deny": "Deny",
+    "approve-prompt": "Yes, please proceed with {toolName}.",
+    "deny-prompt": "No, cancel that tool call."
   },
   "ErrorBoundary": {
     "error": "An error occurred",

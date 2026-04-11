@@ -52,6 +52,20 @@ export async function* mapFullStream(
           result: part.output !== undefined ? part.output : part.result,
         };
         break;
+      case 'tool-approval-request': {
+        // AI SDK v6 emits this when a tool's `needsApproval` predicate
+        // returns true. The shape has the full typed tool call nested
+        // under `toolCall`; we flatten it into our ChainStreamPart.
+        const toolCall = part.toolCall ?? {};
+        yield {
+          type: 'tool-approval-request',
+          approvalId: part.approvalId,
+          toolCallId: cleanToolCallId(toolCall.toolCallId ?? ''),
+          toolName: toolCall.toolName ?? 'unknown',
+          args: toolCall.input ?? toolCall.args,
+        };
+        break;
+      }
       // Ignore other event types (source, finish, finish-step, etc.)
     }
   }

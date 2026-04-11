@@ -6,6 +6,8 @@ import {
   RagenAuthOAuthClientProvider,
   ragenAuthClient,
 } from '@/libs/ragen-vault';
+import { classifyMcpTool } from '@/libs/security/mcp-tool-classifier';
+import { shouldPauseForApproval } from '@/libs/security/tool-gating-context';
 
 export type McpConnectorInfo = {
   id: string;
@@ -51,9 +53,14 @@ function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
  * Wrap tool execute functions to:
  * 1. Sanitize args (strip empty values)
  * 2. Auto-inject customer_id from connector config (remove it from LLM-visible params)
+ * 3. Attach `needsApproval` to write tools so the SDK pauses them when
+ *    RAG context is present in the turn (Phase 2 prompt-injection gating)
+ *
+ * Exported for unit testing; the production call site is
+ * `createMcpToolsFromConnectors` below.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrapToolsForConnector(
+export function wrapToolsForConnector(
   tools: Record<string, any>,
   customerId: string,
 ): Record<string, any> {
@@ -82,9 +89,33 @@ function wrapToolsForConnector(
         };
       }
 
+      // Phase 2 prompt-injection defense: classify the tool and, if it
+      // has side effects, attach a `needsApproval` predicate that pauses
+      // execution when retrieved RAG context is present in the turn.
+      // The AI SDK v6 pauses natively (emits a `tool-approval-request`
+      // content part) when this returns true — we do NOT return a
+      // sentinel from `execute` here, the SDK never calls `execute` in
+      // the pause path.
+      const sideEffect = classifyMcpTool(name);
+      const isWrite = sideEffect === 'write';
+
       wrapped[name] = {
         ...tool,
         parameters,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        needsApproval: isWrite
+          ? (
+              _input: Record<string, unknown>,
+              options: {
+                toolCallId: string;
+                experimental_context?: unknown;
+              },
+            ) =>
+              shouldPauseForApproval(
+                options.experimental_context,
+                options.toolCallId,
+              )
+          : undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
@@ -93,6 +124,7 @@ function wrapToolsForConnector(
           logger.info(
             {
               toolName: name,
+              sideEffect,
               originalArgCount: Object.keys(args).length,
               cleanedArgs: cleaned,
             },

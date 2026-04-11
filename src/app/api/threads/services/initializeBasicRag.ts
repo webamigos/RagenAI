@@ -29,6 +29,12 @@ type InitializeRagChainParams = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
+  /**
+   * Phase 2b — tool-call approval list, threaded into the chain's
+   * experimental_context so `needsApproval` lets these specific
+   * toolCallIds through without pausing.
+   */
+  approvedToolCalls?: readonly string[];
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
@@ -48,6 +54,7 @@ export const initializeRagChain = async ({
   threadDocuments,
   mcpTools,
   mcpContext,
+  approvedToolCalls,
 }: InitializeRagChainParams) => {
   try {
     const {
@@ -123,6 +130,7 @@ export const initializeRagChain = async ({
         threadDocuments: threadDocuments || [],
         mcpTools,
         mcpContext,
+        approvedToolCalls: approvedToolCalls ?? [],
         tracking: { organizationId: orgId, projectId, userId },
       },
       vectorStore,
