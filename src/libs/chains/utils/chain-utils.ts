@@ -13,9 +13,75 @@ export const normalizeAndSanitizeText = (input: string) => {
     .trim(); // Remove leading and trailing whitespace
 };
 
+/**
+ * Render retrieved chunks into the context block fed to the answer LLM.
+ *
+ * Each chunk is wrapped in a `<chunk>` element that surfaces source
+ * metadata the LLM can use for citation (ADR-19). The wrapper includes:
+ *   - `file` — the source document name (from `metadata.file_name`)
+ *   - `section` — heading-aware section path for DOCX/PDF chunks
+ *     (from `metadata.section_path`, set by ADR-17 and ADR-18)
+ *   - `type` — only set for synthetic summary chunks (`chunk_type: 'summary'`
+ *     from ADR-16), so the LLM can treat them as topic overviews rather
+ *     than verbatim excerpts
+ *
+ * The wrapper attributes are omitted when the corresponding metadata field
+ * is missing or empty — e.g., chunks from MARKDOWN/TEXT files have no
+ * section and render as `<chunk file="notes.md">…</chunk>`. Chunks with no
+ * `file_name` metadata at all (legacy, edge cases) fall back to the bare
+ * pageContent with no wrapper, preserving the pre-ADR-19 behavior so
+ * nothing regresses.
+ *
+ * Attributes are XML-escaped (`&`, `<`, `>`, `"`) so metadata values with
+ * those characters don't break the wrapper — rare in practice but worth
+ * handling so the LLM never sees malformed XML.
+ */
 export const combineDocuments = (docs: VectorStoreDocument[]) => {
-  return docs.map((doc) => doc.pageContent).join('\n\n');
+  return docs.map(renderDocumentChunk).join('\n\n');
 };
+
+function renderDocumentChunk(doc: VectorStoreDocument): string {
+  const content = doc.pageContent;
+  const metadata = (doc.metadata || {}) as Record<string, unknown>;
+
+  const fileName =
+    typeof metadata.file_name === 'string' ? metadata.file_name : undefined;
+  const sectionPath =
+    typeof metadata.section_path === 'string'
+      ? metadata.section_path
+      : undefined;
+  const chunkType = metadata.chunk_type === 'summary' ? 'summary' : undefined;
+
+  // Bare-content fallback for chunks with no file_name metadata.
+  // Matches the pre-ADR-19 behavior so legacy chunks are unaffected.
+  if (!fileName) {
+    return content;
+  }
+
+  const attrs: string[] = [`file="${escapeXmlAttribute(fileName)}"`];
+  if (sectionPath && sectionPath.trim().length > 0) {
+    attrs.push(`section="${escapeXmlAttribute(sectionPath)}"`);
+  }
+  if (chunkType) {
+    attrs.push(`type="${chunkType}"`);
+  }
+
+  return `<chunk ${attrs.join(' ')}>\n${content}\n</chunk>`;
+}
+
+/**
+ * Escape XML attribute characters so metadata values containing `"`, `<`,
+ * `>`, or `&` don't break the wrapper. This is defensive — section_path
+ * values like `"Chapter 3 > 3.2 Revenue"` contain a literal `>` which
+ * becomes `&gt;` inside the attribute.
+ */
+function escapeXmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 export const zodUserInputValidator = (input: string, maxLength: number) => {
   const schema = z.object({
