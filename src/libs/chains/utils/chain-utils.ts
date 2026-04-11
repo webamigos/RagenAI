@@ -32,9 +32,14 @@ export const normalizeAndSanitizeText = (input: string) => {
  * pageContent with no wrapper, preserving the pre-ADR-19 behavior so
  * nothing regresses.
  *
- * Attributes are XML-escaped (`&`, `<`, `>`, `"`) so metadata values with
- * those characters don't break the wrapper — rare in practice but worth
- * handling so the LLM never sees malformed XML.
+ * Both attributes AND body text are XML-escaped. Attribute escaping covers
+ * metadata values like `section_path: "Chapter 3 > 3.2 Revenue"`. Body
+ * escaping is a prompt-injection defense (Phase 1 of the security plan):
+ * a malicious document could contain literal `</chunk>` or a forged
+ * `<system>` element that would otherwise break out of the wrapper and
+ * appear to the LLM as a top-level instruction. Escaping `<`, `>`, and `&`
+ * in the body neutralizes that vector while leaving all natural-language
+ * content readable.
  */
 export const combineDocuments = (docs: VectorStoreDocument[]) => {
   return docs.map(renderDocumentChunk).join('\n\n');
@@ -66,7 +71,7 @@ function renderDocumentChunk(doc: VectorStoreDocument): string {
     attrs.push(`type="${chunkType}"`);
   }
 
-  return `<chunk ${attrs.join(' ')}>\n${content}\n</chunk>`;
+  return `<chunk ${attrs.join(' ')}>\n${escapeXmlText(content)}\n</chunk>`;
 }
 
 /**
@@ -81,6 +86,20 @@ function escapeXmlAttribute(value: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/**
+ * Escape XML body-text characters in chunk content. Prevents a malicious
+ * document from closing the wrapper with a literal `</chunk>` or forging a
+ * `<system>`-style element that the LLM might treat as a top-level
+ * instruction. Only `<`, `>`, and `&` matter for element boundaries —
+ * quotes are left as-is since they are unambiguous in element text.
+ */
+function escapeXmlText(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 export const zodUserInputValidator = (input: string, maxLength: number) => {
