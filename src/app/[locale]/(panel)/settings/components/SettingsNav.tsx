@@ -14,6 +14,7 @@ import {
   UsersIcon,
   CpuChipIcon,
   CircleStackIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
@@ -76,6 +77,12 @@ const navItems: NavItem[] = [
     href: '/settings/api-keys',
     labelKey: 'api-keys',
     icon: <KeyIcon className={iconClassName} />,
+    permission: 'orgAdmin',
+  },
+  {
+    href: '/settings/security',
+    labelKey: 'security',
+    icon: <ShieldCheckIcon className={iconClassName} />,
     permission: 'orgAdmin',
   },
   {

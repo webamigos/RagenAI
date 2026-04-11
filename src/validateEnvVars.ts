@@ -46,6 +46,10 @@ const envSchema = z
     RESEND_API_KEY: z.string(),
     RESEND_DEFAULT_SEGMENT_ID: z.string().optional(),
 
+    // Security alert emails (optional — empty disables email dispatch)
+    SECURITY_ALERT_EMAIL: z.string().optional(),
+    SECURITY_ALERT_FROM: z.string().optional(),
+
     // OpenAI
     OPENAI_API_KEY: z.string(),
     OPENAI_MODERATION_KEY: z.string(),
