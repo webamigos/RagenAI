@@ -226,6 +226,9 @@
     "settings-api-keys": {
       "title": "API Keys | Ragen AI"
     },
+    "settings-security": {
+      "title": "Security | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
     },
@@ -436,6 +439,7 @@
       "subscription": "Subscription",
       "teams": "Teams",
       "api-keys": "API Keys",
+      "security": "Security",
       "users": "Users",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
@@ -1344,6 +1348,61 @@
       "submit": "Create",
       "success": "Organization created",
       "error": "Failed to create organization"
+    }
+  },
+  "settings-security": {
+    "title": "Security events",
+    "description": "Security-relevant events scoped to your organization. Critical events also trigger an email alert to the configured admin address.",
+    "empty": "No security events recorded in the selected window.",
+    "totalCount": "{count} total",
+    "page": "Page {page} of {totalPages}",
+    "columns": {
+      "time": "Time",
+      "severity": "Severity",
+      "eventType": "Event",
+      "user": "User",
+      "ip": "IP",
+      "resolved": "Resolved"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Warning",
+      "critical": "Critical"
+    },
+    "filters": {
+      "all": "All",
+      "allSeverities": "All severities",
+      "unresolved": "Unresolved",
+      "resolved": "Resolved"
+    },
+    "period": {
+      "1d": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "actions": {
+      "view": "View",
+      "close": "Close",
+      "resolve": "Resolve",
+      "resolving": "Resolving…"
+    },
+    "detail": {
+      "source": "Source",
+      "occurredAt": "Occurred at",
+      "user": "User",
+      "ip": "IP address",
+      "requestId": "Request ID",
+      "metadata": "Metadata",
+      "resolvedBy": "Resolved by {user}"
+    },
+    "resolveError": {
+      "not_found": "Event not found.",
+      "forbidden": "This event belongs to a different organization.",
+      "already_resolved": "Event is already resolved."
     }
   }
 }

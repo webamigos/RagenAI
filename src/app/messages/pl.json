@@ -227,6 +227,9 @@
     "settings-api-keys": {
       "title": "Klucze API | Ragen AI"
     },
+    "settings-security": {
+      "title": "Bezpieczeństwo | Ragen AI"
+    },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
     },
@@ -439,6 +442,7 @@
       "subscription": "Subskrypcja",
       "teams": "Zespoły",
       "api-keys": "Klucze API",
+      "security": "Bezpieczeństwo",
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
@@ -1347,6 +1351,61 @@
       "submit": "Utwórz",
       "success": "Organizacja została utworzona",
       "error": "Nie udało się utworzyć organizacji"
+    }
+  },
+  "settings-security": {
+    "title": "Zdarzenia bezpieczeństwa",
+    "description": "Zdarzenia bezpieczeństwa w zakresie Twojej organizacji. Zdarzenia krytyczne wyzwalają dodatkowo powiadomienie e-mail na skonfigurowany adres administratora.",
+    "empty": "Brak zarejestrowanych zdarzeń bezpieczeństwa w wybranym okresie.",
+    "totalCount": "{count} łącznie",
+    "page": "Strona {page} z {totalPages}",
+    "columns": {
+      "time": "Czas",
+      "severity": "Waga",
+      "eventType": "Zdarzenie",
+      "user": "Użytkownik",
+      "ip": "IP",
+      "resolved": "Zamknięte"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Ostrzeżenie",
+      "critical": "Krytyczne"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "allSeverities": "Wszystkie poziomy",
+      "unresolved": "Otwarte",
+      "resolved": "Zamknięte"
+    },
+    "period": {
+      "1d": "Ostatnie 24 godziny",
+      "7d": "Ostatnie 7 dni",
+      "30d": "Ostatnie 30 dni"
+    },
+    "pagination": {
+      "prev": "Poprzednia",
+      "next": "Następna"
+    },
+    "actions": {
+      "view": "Szczegóły",
+      "close": "Zamknij",
+      "resolve": "Zamknij zdarzenie",
+      "resolving": "Zamykanie…"
+    },
+    "detail": {
+      "source": "Źródło",
+      "occurredAt": "Wystąpiło",
+      "user": "Użytkownik",
+      "ip": "Adres IP",
+      "requestId": "ID żądania",
+      "metadata": "Metadane",
+      "resolvedBy": "Zamknięte przez {user}"
+    },
+    "resolveError": {
+      "not_found": "Nie znaleziono zdarzenia.",
+      "forbidden": "To zdarzenie należy do innej organizacji.",
+      "already_resolved": "Zdarzenie zostało już zamknięte."
     }
   }
 }
