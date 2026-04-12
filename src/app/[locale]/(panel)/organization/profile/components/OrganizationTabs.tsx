@@ -4,8 +4,6 @@ import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { useTranslations } from 'next-intl';
 import { MembersList } from './MembersList';
 import { ManageInvitationsSection } from './ManageInvitationsSection';
-import { OrganizationProfileForm } from './OrganizationProfileForm';
-import { isOrgAdmin } from '@/lib/auth-access-control';
 import type { Member, Invitation } from '../types';
 
 type Organization = {
@@ -52,11 +50,9 @@ export function OrganizationTabs({
             </span>
           )}
         </Tab>
-        <Tab className={tabClasses}>{t('tabs.general')}</Tab>
       </TabList>
 
       <TabPanels className="mt-6">
-        {/* Members tab */}
         <TabPanel>
           <MembersList
             members={organization.members}
@@ -67,20 +63,11 @@ export function OrganizationTabs({
           />
         </TabPanel>
 
-        {/* Invitations tab */}
         <TabPanel>
           <ManageInvitationsSection
             invitations={invitations}
             organizationId={organization.id}
             currentUserRole={currentUserRole}
-          />
-        </TabPanel>
-
-        {/* General tab - Organization profile form */}
-        <TabPanel>
-          <OrganizationProfileForm
-            organization={organization}
-            canEdit={isOrgAdmin(currentUserRole)}
           />
         </TabPanel>
       </TabPanels>
