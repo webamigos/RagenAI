@@ -36,7 +36,6 @@ import {
   getDiskProjectsForFilter,
 } from '../actions';
 
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#4f46e5'];
 const CATEGORY_COLORS = {
   knowledgeBase: '#3b82f6',
   projectFiles: '#10b981',
@@ -50,7 +49,7 @@ type DiskUsageSettingsProps = {
 
 export function DiskUsageSettings({
   isAppAdmin = false,
-  orgId,
+  orgId: _orgId,
 }: DiskUsageSettingsProps) {
   const [orgs, setOrgs] = useState<OrgStorageSummary[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
@@ -326,6 +325,7 @@ export function DiskUsageSettings({
                 <tr>
                   <th className="text-left p-3 font-medium">Organization</th>
                   <th className="text-right p-3 font-medium">Files</th>
+                  <th className="text-right p-3 font-medium">Pages</th>
                   <th className="text-right p-3 font-medium">Usage</th>
                   <th className="text-right p-3 font-medium">Limit</th>
                   <th className="text-right p-3 font-medium">% Used</th>
@@ -360,6 +360,9 @@ export function DiskUsageSettings({
                       <td className="p-3 font-medium">{org.orgName}</td>
                       <td className="p-3 text-right">{org.fileCount}</td>
                       <td className="p-3 text-right">
+                        {org.pageCount.toLocaleString()}
+                      </td>
+                      <td className="p-3 text-right">
                         {prettyBytes(org.totalBytes)}
                       </td>
                       <td className="p-3 text-right">{prettyBytes(limit)}</td>
@@ -389,7 +392,7 @@ export function DiskUsageSettings({
                 {filteredOrgs.length === 0 && (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="p-6 text-center text-muted-foreground"
                     >
                       No organizations found
@@ -490,18 +493,21 @@ export function DiskUsageSettings({
                 label="Knowledge Base"
                 bytes={orgDetails.usage.knowledgeBaseBytes}
                 count={orgDetails.usage.knowledgeBaseFileCount}
+                pages={orgDetails.usage.knowledgeBasePageCount}
               />
               <CategoryRow
                 color={CATEGORY_COLORS.projectFiles}
                 label="Project Files"
                 bytes={orgDetails.usage.projectFilesBytes}
                 count={orgDetails.usage.projectFilesFileCount}
+                pages={orgDetails.usage.projectFilesPageCount}
               />
               <CategoryRow
                 color={CATEGORY_COLORS.threadFiles}
                 label="Thread Files"
                 bytes={orgDetails.usage.threadFilesBytes}
                 count={orgDetails.usage.threadFilesFileCount}
+                pages={orgDetails.usage.threadFilesPageCount}
               />
               <div className="border-t pt-2">
                 <CategoryRow
@@ -509,6 +515,7 @@ export function DiskUsageSettings({
                   label="Total"
                   bytes={orgDetails.usage.totalBytes}
                   count={orgDetails.usage.totalFileCount}
+                  pages={orgDetails.usage.totalPageCount}
                 />
               </div>
             </div>
@@ -524,6 +531,7 @@ export function DiskUsageSettings({
                     <tr>
                       <th className="text-left p-2 font-medium">Project</th>
                       <th className="text-right p-2 font-medium">Files</th>
+                      <th className="text-right p-2 font-medium">Pages</th>
                       <th className="text-right p-2 font-medium">Usage</th>
                     </tr>
                   </thead>
@@ -532,6 +540,9 @@ export function DiskUsageSettings({
                       <tr key={p.projectId} className="border-t">
                         <td className="p-2">{p.projectTitle}</td>
                         <td className="p-2 text-right">{p.fileCount}</td>
+                        <td className="p-2 text-right">
+                          {p.pageCount.toLocaleString()}
+                        </td>
                         <td className="p-2 text-right">
                           {prettyBytes(p.totalBytes)}
                         </td>
@@ -582,11 +593,13 @@ function CategoryRow({
   label,
   bytes,
   count,
+  pages,
 }: {
   color: string;
   label: string;
   bytes: number;
   count: number;
+  pages: number;
 }) {
   return (
     <div className="flex items-center justify-between">
@@ -600,7 +613,10 @@ function CategoryRow({
       <div className="text-sm text-right">
         <span className="font-medium">{prettyBytes(bytes)}</span>
         <span className="text-muted-foreground ml-2">
-          ({count} {count === 1 ? 'file' : 'files'})
+          ({count} {count === 1 ? 'file' : 'files'}
+          {pages > 0 &&
+            ` · ${pages.toLocaleString()} ${pages === 1 ? 'page' : 'pages'}`}
+          )
         </span>
       </div>
     </div>

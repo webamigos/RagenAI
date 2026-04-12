@@ -46,14 +46,18 @@ async function getDiskUsage(params: SearchParams) {
 
   const fileSizes = await prisma.userFile.groupBy({
     by: ['organizationId'],
-    _sum: { fileSize: true },
+    _sum: { fileSize: true, pageCount: true },
     _count: true,
   });
 
   const fileSizeMap = new Map(
     fileSizes.map((f) => [
       f.organizationId,
-      { totalSize: f._sum.fileSize ?? 0, fileCount: f._count },
+      {
+        totalSize: f._sum.fileSize ?? 0,
+        fileCount: f._count,
+        pageCount: f._sum.pageCount ?? 0,
+      },
     ]),
   );
 
@@ -66,10 +70,17 @@ async function getDiskUsage(params: SearchParams) {
   const totalSize = fileSizes
     .filter((f) => filteredOrgIds.has(f.organizationId))
     .reduce((sum, f) => sum + (f._sum.fileSize ?? 0), 0);
+  const totalPages = fileSizes
+    .filter((f) => filteredOrgIds.has(f.organizationId))
+    .reduce((sum, f) => sum + (f._sum.pageCount ?? 0), 0);
 
   const orgsWithUsage = organizations
     .map((org) => {
-      const usage = fileSizeMap.get(org.id) || { totalSize: 0, fileCount: 0 };
+      const usage = fileSizeMap.get(org.id) || {
+        totalSize: 0,
+        fileCount: 0,
+        pageCount: 0,
+      };
       const limit = org.settings?.storageLimitBytes
         ? Number(org.settings.storageLimitBytes)
         : null;
@@ -77,6 +88,7 @@ async function getDiskUsage(params: SearchParams) {
         ...org,
         totalSize: usage.totalSize,
         fileCount: usage.fileCount,
+        pageCount: usage.pageCount,
         storageLimit: limit,
         usagePercent: limit ? (usage.totalSize / limit) * 100 : null,
       };
@@ -101,7 +113,23 @@ async function getDiskUsage(params: SearchParams) {
     orderBy: { name: 'asc' },
   });
 
-  return { organizations: orgsWithUsage, totalFiles, totalSize, allOrgs };
+  return {
+    organizations: orgsWithUsage,
+    totalFiles,
+    totalSize,
+    totalPages,
+    allOrgs,
+  };
+}
+
+function getUsageBarColor(percent: number): string {
+  if (percent > 90) {
+    return 'bg-destructive';
+  }
+  if (percent > 70) {
+    return 'bg-yellow-500';
+  }
+  return 'bg-green-500';
 }
 
 export default async function DiskUsagePage({
@@ -110,7 +138,7 @@ export default async function DiskUsagePage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const { organizations, totalFiles, totalSize, allOrgs } =
+  const { organizations, totalFiles, totalSize, totalPages, allOrgs } =
     await getDiskUsage(params);
 
   const extraParams = {
@@ -122,7 +150,7 @@ export default async function DiskUsagePage({
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Disk Usage</h1>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Total Storage</p>
           <p className="mt-2 text-3xl font-bold">{prettyBytes(totalSize)}</p>
@@ -131,6 +159,12 @@ export default async function DiskUsagePage({
           <p className="text-sm text-muted-foreground">Total Files</p>
           <p className="mt-2 text-3xl font-bold">
             {totalFiles.toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <p className="text-sm text-muted-foreground">Total Pages</p>
+          <p className="mt-2 text-3xl font-bold">
+            {totalPages.toLocaleString()}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-6">
@@ -197,6 +231,7 @@ export default async function DiskUsagePage({
                 extraParams={extraParams}
                 className="text-right"
               />
+              <th className="px-4 py-3 text-right font-medium">Pages</th>
               <SortableHeader
                 label="Used"
                 field="totalSize"
@@ -221,6 +256,9 @@ export default async function DiskUsagePage({
                   {org.fileCount.toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
+                  {org.pageCount.toLocaleString()}
+                </td>
+                <td className="px-4 py-3 text-right text-muted-foreground">
                   {prettyBytes(org.totalSize)}
                 </td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
@@ -233,13 +271,7 @@ export default async function DiskUsagePage({
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-24 rounded-full bg-secondary">
                         <div
-                          className={`h-2 rounded-full ${
-                            org.usagePercent > 90
-                              ? 'bg-destructive'
-                              : org.usagePercent > 70
-                                ? 'bg-yellow-500'
-                                : 'bg-green-500'
-                          }`}
+                          className={`h-2 rounded-full ${getUsageBarColor(org.usagePercent)}`}
                           style={{
                             width: `${Math.min(100, org.usagePercent)}%`,
                           }}
@@ -258,7 +290,7 @@ export default async function DiskUsagePage({
             {organizations.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
                   No organizations found.

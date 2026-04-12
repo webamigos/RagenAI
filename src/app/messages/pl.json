@@ -821,7 +821,10 @@
     "add-from-url": "Dodaj z linku",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
-    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików"
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
+    "usage": "Użycie",
+    "storage": "Przestrzeń",
+    "pages": "Strony"
   },
   "file-delete-modal": {
     "title": "Usuń plik",

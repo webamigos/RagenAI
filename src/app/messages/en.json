@@ -818,7 +818,10 @@
     "add-from-url": "Add from URL",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",
-    "no-shared-files": "No files have been shared with you yet"
+    "no-shared-files": "No files have been shared with you yet",
+    "usage": "Usage",
+    "storage": "Storage",
+    "pages": "Pages"
   },
   "file-delete-modal": {
     "title": "Delete file",
