@@ -19,11 +19,11 @@ test.beforeEach(async ({ page, context }) => {
 });
 
 test.describe('Admin Functions P3', () => {
-  test.describe('Users management', () => {
-    test('users page lists all users', async ({ page }) => {
-      await page.goto(
-        ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
-      );
+  // Users management page was moved to ragen-admin — these tests need
+  // to be migrated to the admin app's E2E suite. Skipping in ragen-app.
+  test.describe('Users management (moved to ragen-admin)', () => {
+    test.skip('users page lists all users', async ({ page }) => {
+      await page.goto(ROUTES.settingsGeneral);
       await page.waitForLoadState('domcontentloaded');
 
       // Page heading should be visible
@@ -37,7 +37,7 @@ test.describe('Admin Functions P3', () => {
       ).toBeVisible({ timeout: 10_000 });
     });
 
-    test('users page has search functionality', async ({ page }) => {
+    test.skip('users page has search functionality', async ({ page }) => {
       await page.goto(
         ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
       );
@@ -63,7 +63,7 @@ test.describe('Admin Functions P3', () => {
       });
     });
 
-    test('user row shows role badge', async ({ page }) => {
+    test.skip('user row shows role badge', async ({ page }) => {
       await page.goto(
         ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
       );
@@ -75,7 +75,7 @@ test.describe('Admin Functions P3', () => {
       });
     });
 
-    test('user actions dropdown opens', async ({ page }) => {
+    test.skip('user actions dropdown opens', async ({ page }) => {
       await page.goto(
         ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
       );
