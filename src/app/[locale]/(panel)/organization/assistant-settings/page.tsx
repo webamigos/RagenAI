@@ -26,9 +26,16 @@ export default async function SettingsPage() {
     select: { id: true, name: true },
   });
 
+  const t = await getTranslations('organization-page');
+
   return (
     <div className="space-y-8">
-      {org && <OrganizationProfileForm organization={org} canEdit={true} />}
+      <section>
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white mb-4">
+          {t('general-settings')}
+        </h2>
+        {org && <OrganizationProfileForm organization={org} canEdit={true} />}
+      </section>
       <hr className="border-zinc-200 dark:border-zinc-800" />
       <PromptManagementPage />
     </div>

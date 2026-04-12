@@ -434,6 +434,7 @@
   },
   "organization-page": {
     "title": "Organizacja",
+    "general-settings": "Ustawienia ogólne",
     "nav": {
       "profile": "Organizacja",
       "members": "Użytkownicy",

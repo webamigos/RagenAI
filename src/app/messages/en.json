@@ -431,6 +431,7 @@
   },
   "organization-page": {
     "title": "Organization",
+    "general-settings": "General settings",
     "nav": {
       "profile": "Organization",
       "members": "Members",
