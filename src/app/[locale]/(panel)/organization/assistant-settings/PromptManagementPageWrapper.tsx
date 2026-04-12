@@ -13,7 +13,7 @@ export default function PromptManagementPage() {
   const t = useTranslations('assistant-settings');
 
   return (
-    <div className="max-w-2xl space-y-8">
+    <div className="space-y-8">
       <Suspense fallback={<Fallback />}>
         <section>
           <h2 className="text-base font-semibold text-zinc-950 dark:text-white">

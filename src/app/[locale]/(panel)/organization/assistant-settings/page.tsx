@@ -29,7 +29,7 @@ export default async function SettingsPage() {
   const t = await getTranslations('organization-page');
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-2xl space-y-8">
       <section>
         <h2 className="text-base font-semibold text-zinc-950 dark:text-white mb-4">
           {t('general-settings')}

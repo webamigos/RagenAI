@@ -97,7 +97,9 @@ export const EditablePrompt = () => {
         placeholder={t('placeholder')}
       />
       <div className="flex justify-end">
-        <Button isSubmit={true}>{t('update')}</Button>
+        <Button isSubmit={true} disabled={!isDirty}>
+          {t('update')}
+        </Button>
       </div>
     </form>
   );
