@@ -1,8 +1,7 @@
 FROM ghcr.io/docling-project/docling-serve-cpu:latest
 
-COPY entrypoint.sh /app/entrypoint.sh
+COPY --chmod=755 entrypoint.sh /app/entrypoint.sh
 COPY port-forward.py /app/port-forward.py
-RUN chmod +x /app/entrypoint.sh
 
 # Railway sets PORT dynamically — Docling must listen on it
 ENV PORT=5001
