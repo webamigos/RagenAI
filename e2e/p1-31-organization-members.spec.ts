@@ -6,15 +6,15 @@ import { ROUTES } from './helpers';
 test.use({ storageState: AUTH_FILE });
 
 test.describe('Organization & Members P1', () => {
-  test('organization settings page loads with tabs', async ({ page }) => {
+  test('organization profile page loads with tabs', async ({ page }) => {
     await page.goto(ROUTES.settingsOrganization);
     await page.waitForLoadState('domcontentloaded');
 
-    // Should see the organization page with tabs
-    await expect(page.getByText(/ogólne/i).first()).toBeVisible({
+    // Members tab is the default first tab (Ogólne was removed)
+    await expect(page.getByText(/użytkownicy/i).first()).toBeVisible({
       timeout: 10_000,
     });
-    await expect(page.getByText(/użytkownicy/i).first()).toBeVisible({
+    await expect(page.getByText(/zaproszenia/i).first()).toBeVisible({
       timeout: 10_000,
     });
   });
@@ -23,37 +23,22 @@ test.describe('Organization & Members P1', () => {
     await page.goto(ROUTES.settingsOrganization);
     await page.waitForLoadState('domcontentloaded');
 
-    // Click the members tab
-    await page
-      .getByText(/użytkownicy/i)
-      .first()
-      .click();
+    // Members tab is the default — no need to click it
 
-    // The current test user should be listed — use main content area to avoid sidebar matches
+    // The current test user should be listed
     await expect(
       page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
     ).toBeVisible({ timeout: 10_000 });
-
-    // Should show the user with a role badge visible in the members list
-    await expect(
-      page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
-    ).toBeVisible({ timeout: 5_000 });
   });
 
   test('invite member dialog opens and validates email', async ({ page }) => {
     await page.goto(ROUTES.settingsOrganization);
     await page.waitForLoadState('domcontentloaded');
 
-    // Switch to members tab
-    await page
-      .getByText(/użytkownicy/i)
-      .first()
-      .click();
+    // Members tab is the default — invite button should be visible directly
 
-    // Click invite button
     const inviteButton = page.getByText(/zaproś użytkownika/i);
 
-    // Invite may not be visible if plan doesn't allow it
     if (
       !(await inviteButton.isVisible({ timeout: 5_000 }).catch(() => false))
     ) {
@@ -86,11 +71,7 @@ test.describe('Organization & Members P1', () => {
     await page.goto(ROUTES.settingsOrganization);
     await page.waitForLoadState('domcontentloaded');
 
-    // Switch to members tab
-    await page
-      .getByText(/użytkownicy/i)
-      .first()
-      .click();
+    // Members tab is the default
 
     const inviteButton = page.getByText(/zaproś użytkownika/i);
     if (
@@ -151,11 +132,7 @@ test.describe('Organization & Members P1', () => {
     await page.goto(ROUTES.settingsOrganization);
     await page.waitForLoadState('domcontentloaded');
 
-    // Switch to members tab
-    await page
-      .getByText(/użytkownicy/i)
-      .first()
-      .click();
+    // Members tab is the default — no need to click
 
     // Look for actions button (ellipsis icon) — only visible for non-owner members
     const actionsButtons = page.locator('button[aria-label="Akcje"]');
