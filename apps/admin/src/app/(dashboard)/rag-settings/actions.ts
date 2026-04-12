@@ -1,9 +1,21 @@
 'use server';
 
+import { headers } from 'next/headers';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 const DEFAULT_RAG_SETTINGS_KEY = 'default_rag_pipeline_settings';
+
+async function requireAdminSession() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
+  return session;
+}
 
 export type RagPipelineSettings = {
   multiQueryEnabled: boolean;
@@ -68,6 +80,7 @@ function validateRagSettings(input: unknown): RagPipelineSettings {
 export async function saveDefaultRagSettingsAction(
   settings: RagPipelineSettings,
 ): Promise<void> {
+  await requireAdminSession();
   const validated = validateRagSettings(settings);
   await prisma.settings.upsert({
     where: { key: DEFAULT_RAG_SETTINGS_KEY },
@@ -81,6 +94,7 @@ export async function saveOrgRagSettingsAction(
   orgId: string,
   settings: RagPipelineSettings,
 ): Promise<void> {
+  await requireAdminSession();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
