@@ -176,7 +176,9 @@ test.describe('Authenticated pages smoke tests', () => {
     });
 
     test('settings users page loads (admin)', async ({ page }) => {
-      await page.goto(ROUTES.settingsUsers);
+      await page.goto(
+        ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
+      );
       await expect(page).toHaveURL(/settings\/users/);
       await expect(
         page.getByRole('heading', { name: /użytkownicy/i }),
@@ -184,7 +186,7 @@ test.describe('Authenticated pages smoke tests', () => {
     });
 
     test('settings AI usage page loads (admin)', async ({ page }) => {
-      await page.goto(ROUTES.settingsAiUsage);
+      await page.goto(ROUTES.organizationAiUsage);
       await expect(page).toHaveURL(/settings\/ai-usage/);
       await expect(page.getByText(/AI Usage/i).first()).toBeVisible({
         timeout: 10_000,
@@ -192,7 +194,7 @@ test.describe('Authenticated pages smoke tests', () => {
     });
 
     test('settings disk usage page loads (admin)', async ({ page }) => {
-      await page.goto(ROUTES.settingsDiskUsage);
+      await page.goto(ROUTES.organizationDiskUsage);
       await expect(page).toHaveURL(/settings\/disk-usage/);
       await expect(page.getByText(/Disk Usage/i).first()).toBeVisible({
         timeout: 10_000,

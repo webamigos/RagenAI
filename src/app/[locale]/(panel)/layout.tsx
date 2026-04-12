@@ -12,6 +12,7 @@ import {
   PlusIcon as PlusIconOutline,
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
+  BuildingOfficeIcon as BuildingOfficeIconOutline,
 } from '@heroicons/react/24/outline';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
@@ -23,7 +24,8 @@ import { getTranslations } from 'next-intl/server';
 import { OrganizationSwitcher } from '@/app/components/Sidebar/OrganizationSwitcher';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
-import { isAppAdmin } from '@/lib/auth-access-control';
+import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
+import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
 
 type Props = Readonly<{
@@ -41,6 +43,10 @@ export default async function PanelLayout({ children }: Props) {
     getOrgIdFromAuth(),
     getUserOrganizationsQuery(),
   ]);
+
+  const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
+  const userIsOrgAdmin =
+    (user && isAppAdmin(user)) || (member ? isOrgAdmin(member.role) : false);
 
   const navbar = (
     <Navbar>
@@ -76,12 +82,22 @@ export default async function PanelLayout({ children }: Props) {
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
           </SearchButton>
-          <SidebarItem href="/knowledge/documents-list">
-            <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-            <SidebarLabel className="font-normal">
-              {t('manage-knowledge')}
-            </SidebarLabel>
-          </SidebarItem>
+          {userIsOrgAdmin && (
+            <SidebarItem href="/knowledge/documents-list">
+              <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+              <SidebarLabel className="font-normal">
+                {t('manage-knowledge')}
+              </SidebarLabel>
+            </SidebarItem>
+          )}
+          {userIsOrgAdmin && (
+            <SidebarItem href="/organization/assistant-settings">
+              <BuildingOfficeIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+              <SidebarLabel className="font-normal">
+                {t('nav.organization')}
+              </SidebarLabel>
+            </SidebarItem>
+          )}
         </SidebarSection>
       </SidebarHeader>
 

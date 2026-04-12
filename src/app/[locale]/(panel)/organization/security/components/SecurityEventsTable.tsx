@@ -45,7 +45,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
       params.set(key, value);
     }
     const qs = params.toString();
-    router.push(`/settings/security${qs ? `?${qs}` : ''}`);
+    router.push(`/organization/security${qs ? `?${qs}` : ''}`);
   };
 
   const handleResolve = (publicId: string) => {

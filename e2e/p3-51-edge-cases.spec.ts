@@ -173,7 +173,8 @@ test.describe('Edge Cases & Error Handling P3', () => {
       });
       const page = await context.newPage();
 
-      await page.goto(ROUTES.settingsUsers);
+      // TODO: users page moved to ragen-admin — this test needs updating
+      await page.goto(ROUTES.settingsGeneral);
       await page.waitForLoadState('domcontentloaded');
 
       // Admin should see the users page heading

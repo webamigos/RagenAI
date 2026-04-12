@@ -159,7 +159,11 @@ describe('wrapToolsForConnector — write tool gating', () => {
     );
 
     expect(fake.execute).toHaveBeenCalledTimes(1);
-    const passedArgs = fake.execute.mock.calls[0][0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const passedArgs = (fake.execute as any).mock.calls[0][0] as Record<
+      string,
+      unknown
+    >;
     expect(passedArgs.customer_id).toBe('customer-1');
     expect(passedArgs.q).toBe('test');
   });

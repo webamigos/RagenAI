@@ -42,7 +42,7 @@ export async function cancelInvitation(invitationId: string) {
 
     logger.info({ invitationId }, 'Invitation canceled successfully');
 
-    revalidatePath('/settings/organization-profile');
+    revalidatePath('/organization/profile');
 
     return { success: true };
   } catch (error) {
@@ -136,7 +136,7 @@ export async function resendInvitation(
       'Invitation resent successfully',
     );
 
-    revalidatePath('/settings/organization-profile');
+    revalidatePath('/organization/profile');
 
     return { success: true };
   } catch (error) {

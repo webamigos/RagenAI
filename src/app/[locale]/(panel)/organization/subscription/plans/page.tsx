@@ -25,7 +25,7 @@ export default async function PlansPage({ params }: PropsWihLocale) {
     <Container size="2xl">
       <div className="mb-6">
         <Link
-          href="/settings/subscription"
+          href="/organization/subscription"
           className="flex text-sm align-middle items-center text-zinc-500"
         >
           <ArrowLeftIcon className="w-4 h-4" />{' '}

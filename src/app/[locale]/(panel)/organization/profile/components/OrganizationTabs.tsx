@@ -41,7 +41,6 @@ export function OrganizationTabs({
   return (
     <TabGroup>
       <TabList className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900">
-        <Tab className={tabClasses}>{t('tabs.general')}</Tab>
         <Tab className={tabClasses}>
           {t('tabs.members')} ({organization.members.length})
         </Tab>
@@ -53,17 +52,10 @@ export function OrganizationTabs({
             </span>
           )}
         </Tab>
+        <Tab className={tabClasses}>{t('tabs.general')}</Tab>
       </TabList>
 
       <TabPanels className="mt-6">
-        {/* General tab - Organization profile form */}
-        <TabPanel>
-          <OrganizationProfileForm
-            organization={organization}
-            canEdit={isOrgAdmin(currentUserRole)}
-          />
-        </TabPanel>
-
         {/* Members tab */}
         <TabPanel>
           <MembersList
@@ -81,6 +73,14 @@ export function OrganizationTabs({
             invitations={invitations}
             organizationId={organization.id}
             currentUserRole={currentUserRole}
+          />
+        </TabPanel>
+
+        {/* General tab - Organization profile form */}
+        <TabPanel>
+          <OrganizationProfileForm
+            organization={organization}
+            canEdit={isOrgAdmin(currentUserRole)}
           />
         </TabPanel>
       </TabPanels>

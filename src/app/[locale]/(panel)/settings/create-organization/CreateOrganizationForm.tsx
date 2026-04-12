@@ -46,7 +46,7 @@ export function CreateOrganizationForm() {
       try {
         await createOrganizationAction(name.trim(), slug.trim());
         await refetch();
-        router.push('/settings/organization-profile');
+        router.push('/organization/profile');
         router.refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : t('error'));

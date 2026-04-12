@@ -374,6 +374,7 @@
   "assistant-settings": {
     "api-key": "API Key",
     "prompt-assistant-settings": "Assistant settings",
+    "model-selection": "Language model",
     "model-select": {
       "title": "Language model",
       "failed-to-fetch-model": "Error fetching language model",
@@ -427,6 +428,21 @@
     "documents-list": "List of documents",
     "upload-files": "Upload files",
     "add-from-url": "Add Knowledge from URL"
+  },
+  "organization-page": {
+    "title": "Organization",
+    "nav": {
+      "profile": "Organization",
+      "members": "Members",
+      "assistant-settings": "Assistant settings",
+      "settings": "Settings",
+      "subscription": "Subscription",
+      "teams": "Teams",
+      "api-keys": "API Keys",
+      "security": "Security",
+      "ai-usage": "AI Usage",
+      "disk-usage": "Disk Usage"
+    }
   },
   "settings-page": {
     "title": "Settings",
@@ -607,7 +623,8 @@
     },
     "nav": {
       "chats": "Chats",
-      "assistants": "Projects"
+      "assistants": "Projects",
+      "organization": "Organization"
     },
     "starred": {
       "title": "Starred"
