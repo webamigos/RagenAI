@@ -1,9 +1,7 @@
 FROM ghcr.io/docling-project/docling-serve-cpu:latest
 
-# Install socat for IPv4→IPv6 port forwarding (Railway networking)
-RUN apk add --no-cache socat
-
 COPY entrypoint.sh /app/entrypoint.sh
+COPY port-forward.py /app/port-forward.py
 RUN chmod +x /app/entrypoint.sh
 
 # Railway sets PORT dynamically — Docling must listen on it
