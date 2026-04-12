@@ -83,6 +83,13 @@ export type DefaultOrganizationLimits = {
   maxMembers: number | null;
 };
 
+export type RagPipelineSettings = {
+  multiQueryEnabled: boolean;
+  docSummariesEnabled: boolean;
+  contentModerationEnabled: boolean;
+  rerankingEnabled: boolean;
+};
+
 export type StorageUsage = {
   knowledgeBaseBytes: number;
   knowledgeBaseFileCount: number;

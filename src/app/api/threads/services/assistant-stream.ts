@@ -551,6 +551,7 @@ export async function streamEvents({
                   ...effectiveSettings,
                   apiKey: effectiveSettings.apiKey,
                 },
+                orgId,
                 projectInstruction,
                 mcpTools,
                 mcpContext,

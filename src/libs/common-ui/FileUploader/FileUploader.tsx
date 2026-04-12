@@ -125,7 +125,7 @@ export const FileUploader = ({
           ref={fileInputRef}
           className="hidden"
           type="file"
-          accept=".md,.epub,.srt,.pdf,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx"
+          accept=".md,.epub,.srt,.pdf,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx,.pptx,.ppt"
           multiple
           onChange={handleFileSelect}
         />
@@ -136,8 +136,8 @@ export const FileUploader = ({
         color="gray-500"
         className="mt-4 w-full flex justify-center"
       >
-        {t('supported-formats')}: .pdf, .docx, .xlsx, .csv, .md, .epub, .srt,
-        .jpg, .png, .webp, .gif
+        {t('supported-formats')}: .pdf, .docx, .pptx, .xlsx, .csv, .md, .epub,
+        .srt, .jpg, .png, .webp, .gif
       </Text>
     </>
   );

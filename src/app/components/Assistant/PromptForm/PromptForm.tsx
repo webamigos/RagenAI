@@ -482,7 +482,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
         <input
           ref={fileInputRef}
           type="file"
-          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx"
+          accept=".md,.srt,.txt,.pdf,.epub,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx,.pptx,.ppt"
           multiple
           className="hidden"
           onChange={handleFileInputChange}

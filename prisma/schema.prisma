@@ -191,8 +191,12 @@ model OrganizationSettings {
   monthlyCostLimitCents   Int?     @map("monthly_cost_limit_cents")
   monthlyMessageLimit     Int?     @map("monthly_message_limit")
   maxMembers              Int?     @map("max_members")
-  allowedModels           String[] @default([]) @map("allowed_models")
-  litellmApiKey           String?  @map("litellm_api_key")
+  allowedModels            String[] @default([]) @map("allowed_models")
+  multiQueryEnabled        Boolean? @map("multi_query_enabled")
+  docSummariesEnabled      Boolean? @map("doc_summaries_enabled")
+  contentModerationEnabled Boolean? @map("content_moderation_enabled")
+  rerankingEnabled         Boolean? @map("reranking_enabled")
+  litellmApiKey            String?  @map("litellm_api_key")
   createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -639,6 +643,7 @@ enum FileType {
   CSV
   XLSX
   DOCX
+  PPTX
 }
 
 enum EmbeddingStatus {

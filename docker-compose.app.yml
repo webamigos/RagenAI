@@ -1,4 +1,10 @@
 version: "3"
+
+# Lightweight compose for developing the app without document processing.
+# Excludes: Temporal, Temporal UI, Docling.
+# Includes Qdrant for RAG retrieval (querying existing knowledge base).
+# Usage: docker compose -f docker-compose.app.yml up
+
 services:
   postgres:
     image: postgres
@@ -39,41 +45,6 @@ services:
     networks:
       - ragen-network
 
-  temporal:
-    image: temporalio/auto-setup:1.26.2
-    container_name: ragen-temporal
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      DB: postgres12
-      DB_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PWD: ${POSTGRES_PASSWORD:-pass123}
-      POSTGRES_SEEDS: postgres
-      DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
-    ports:
-      - "${TEMPORAL_PORT:-7233}:7233"
-    volumes:
-      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
-    networks:
-      - ragen-network
-
-  temporal-ui:
-    image: temporalio/ui:2.36.0
-    container_name: ragen-temporal-ui
-    restart: unless-stopped
-    depends_on:
-      - temporal
-    environment:
-      TEMPORAL_ADDRESS: temporal:7233
-      TEMPORAL_CORS_ORIGINS: http://localhost:3000
-    ports:
-      - "${TEMPORAL_UI_PORT:-8080}:8080"
-    networks:
-      - ragen-network
-
   litellm-postgres:
     image: postgres
     container_name: ragen-litellm-postgres
@@ -104,7 +75,6 @@ services:
     env_file:
       - .env.local
     environment:
-      # These override .env.local — internal Docker networking values
       LITELLM_DATABASE_URL: "postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-litellm123}@litellm-postgres:5432/${LITELLM_DB_NAME:-litellm}"
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-litellm-dev-key}
     ports:
@@ -115,50 +85,9 @@ services:
     networks:
       - ragen-network
 
-  docling:
-    image: ghcr.io/docling-project/docling-serve-cpu:latest
-    container_name: ragen-docling
-    restart: unless-stopped
-    environment:
-      UVICORN_HOST: "0.0.0.0"
-      UVICORN_PORT: "5001"
-      UVICORN_WORKERS: "1"
-      DOCLING_SERVE_MAX_SYNC_WAIT: "300"
-      DOCLING_SERVE_LOAD_MODELS_AT_BOOT: "true"
-      DOCLING_SERVE_ENABLE_UI: "true"
-      DOCLING_NUM_THREADS: "4"
-    ports:
-      - "${DOCLING_PORT:-5001}:5001"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 120s
-    networks:
-      - ragen-network
-
-  # Optional — only needed for API rate limiting
-  redis:
-    image: redis:7-alpine
-    container_name: ragen-redis
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ragen-network
-
 volumes:
   postgres_data:
     name: ragen-postgres-data
-  redis_data:
-    name: ragen-redis-data
   qdrant_data:
     name: ragen-qdrant-data
   litellm_postgres_data:

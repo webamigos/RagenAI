@@ -33,6 +33,9 @@ export const getFileType = (fileName: string): FileType => {
   if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
     return 'XLSX';
   }
+  if (lower.endsWith('.pptx') || lower.endsWith('.ppt')) {
+    return 'PPTX';
+  }
 
   throw new Error(`Unknown file type: ${fileName}`);
 };
