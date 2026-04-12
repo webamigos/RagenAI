@@ -23,11 +23,11 @@ test.describe('Organization & Members P1', () => {
     await page.goto(ROUTES.settingsOrganization);
     await page.waitForLoadState('domcontentloaded');
 
-    // Members tab is the default — no need to click it
-
-    // The current test user should be listed
+    // Members tab is the default — no need to click it.
+    // The org layout uses a plain <div>, not <main>, so we search
+    // the full page for the test user name.
     await expect(
-      page.getByRole('main').getByText(TEST_USER_NAME, { exact: true }),
+      page.getByText(TEST_USER_NAME, { exact: true }).first(),
     ).toBeVisible({ timeout: 10_000 });
   });
 
