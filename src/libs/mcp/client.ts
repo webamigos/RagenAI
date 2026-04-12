@@ -6,6 +6,10 @@ import {
   RagenAuthOAuthClientProvider,
   ragenAuthClient,
 } from '@/libs/ragen-vault';
+import { classifyMcpTool } from '@/libs/security/mcp-tool-classifier';
+import { shouldPauseForApproval } from '@/libs/security/tool-gating-context';
+import { inspectToolArgs } from '@/libs/security/tool-arg-inspector';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 export type McpConnectorInfo = {
   id: string;
@@ -51,9 +55,14 @@ function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
  * Wrap tool execute functions to:
  * 1. Sanitize args (strip empty values)
  * 2. Auto-inject customer_id from connector config (remove it from LLM-visible params)
+ * 3. Attach `needsApproval` to write tools so the SDK pauses them when
+ *    RAG context is present in the turn (Phase 2 prompt-injection gating)
+ *
+ * Exported for unit testing; the production call site is
+ * `createMcpToolsFromConnectors` below.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function wrapToolsForConnector(
+export function wrapToolsForConnector(
   tools: Record<string, any>,
   customerId: string,
 ): Record<string, any> {
@@ -82,9 +91,33 @@ function wrapToolsForConnector(
         };
       }
 
+      // Phase 2 prompt-injection defense: classify the tool and, if it
+      // has side effects, attach a `needsApproval` predicate that pauses
+      // execution when retrieved RAG context is present in the turn.
+      // The AI SDK v6 pauses natively (emits a `tool-approval-request`
+      // content part) when this returns true — we do NOT return a
+      // sentinel from `execute` here, the SDK never calls `execute` in
+      // the pause path.
+      const sideEffect = classifyMcpTool(name);
+      const isWrite = sideEffect === 'write';
+
       wrapped[name] = {
         ...tool,
         parameters,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        needsApproval: isWrite
+          ? (
+              _input: Record<string, unknown>,
+              options: {
+                toolCallId: string;
+                experimental_context?: unknown;
+              },
+            ) =>
+              shouldPauseForApproval(
+                options.experimental_context,
+                options.toolCallId,
+              )
+          : undefined,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
@@ -93,11 +126,76 @@ function wrapToolsForConnector(
           logger.info(
             {
               toolName: name,
+              sideEffect,
               originalArgCount: Object.keys(args).length,
               cleanedArgs: cleaned,
             },
             'Sanitized tool args',
           );
+
+          // Phase 3 — exfiltration inspector. Only runs on write tools
+          // because read tools can't leak outbound data by definition.
+          // We inspect the cleaned args (post-sanitization, post-
+          // customer_id injection) so the customer_id itself doesn't
+          // trigger false positives — it's an opaque identifier, not
+          // user content.
+          if (isWrite) {
+            // Exclude customer_id from inspection — it's a trusted
+            // internal value, not attacker-controllable data.
+            const { customer_id: _, ...userArgs } = cleaned;
+            // inspectToolArgs is guaranteed not to throw — it wraps its
+            // internal walker in a try/catch and falls back to
+            // `{ risk: 'low', signals: [] }` on any error. No try/catch
+            // needed here; see src/libs/security/tool-arg-inspector.ts.
+            const inspection = inspectToolArgs(userArgs);
+
+            if (inspection.risk !== 'low') {
+              // Audit both medium and high — admins need the full
+              // decision trail, not just blocks. Escalation rule
+              // (Phase 0.5) bumps to critical on bursts of the same
+              // user triggering TOOL_ARGS_HIGH_RISK.
+              recordSecurityEvent({
+                eventType: 'TOOL_ARGS_HIGH_RISK',
+                severity: 'info',
+                source: 'mcp',
+                metadata: {
+                  toolName: name,
+                  risk: inspection.risk,
+                  score: inspection.score,
+                  signals: inspection.signals.map((s) => ({
+                    type: s.type,
+                    path: s.path,
+                    weight: s.weight,
+                    detail: s.detail,
+                  })),
+                },
+              });
+            }
+
+            if (inspection.risk === 'high') {
+              logger.warn(
+                {
+                  toolName: name,
+                  score: inspection.score,
+                  signalCount: inspection.signals.length,
+                },
+                'MCP tool call blocked: high-risk arguments',
+              );
+              // Return an error result the SDK hands back to the LLM.
+              // The LLM surfaces this to the user in its next step.
+              // NOTE: we do NOT throw — throwing interrupts the whole
+              // stream. Returning a structured error lets the LLM
+              // recover gracefully ("I tried to call X but the
+              // arguments looked suspicious — please rephrase").
+              return Promise.resolve({
+                error: 'BLOCKED_SUSPICIOUS_ARGS',
+                reason:
+                  'The arguments to this tool contained potentially exfiltrated data (secrets, large encoded blobs, or high-entropy strings). The call was blocked. Rephrase your request and try again.',
+                riskScore: inspection.score,
+              });
+            }
+          }
+
           return originalExecute(cleaned, options);
         },
       };

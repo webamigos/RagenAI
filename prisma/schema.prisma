@@ -799,6 +799,7 @@ enum SecurityEventType {
   // Chat / LLM (wired in Phases 2/3/6)
   CHAT_JAILBREAK_DETECTED
   TOOL_CALL_BLOCKED
+  TOOL_CALL_CONFIRMED
   TOOL_CALL_DENIED
   TOOL_ARGS_HIGH_RISK
   // Ingest (wired in Phase 4)

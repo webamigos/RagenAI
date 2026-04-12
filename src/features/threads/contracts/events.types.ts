@@ -56,6 +56,19 @@ export type ApiSseToolResult = {
   toolName: string;
 };
 
+/**
+ * Emitted when the AI SDK pauses a write tool because its `needsApproval`
+ * predicate returned true — Phase 2 prompt-injection gating. The client
+ * currently renders a plain inline message ("this action requires
+ * confirmation"); Phase 2b will upgrade this to a modal approval card.
+ */
+export type ApiSseToolApprovalRequest = {
+  approvalId: string;
+  toolCallId: string;
+  toolName: string;
+  provider: string;
+};
+
 export type SseEndEvent = {
   type: 'end';
 };

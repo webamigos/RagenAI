@@ -15,26 +15,23 @@ import { prisma } from '@/lib/db';
  * requires ugly relative paths and the update is trivial. Keep the PII
  * contract (no raw metadata logging) even so.
  */
-export async function resolveIncidentAction(formData: FormData) {
+export async function resolveIncidentAction(formData: FormData): Promise<void> {
   const publicId = String(formData.get('publicId') ?? '').trim();
   if (!publicId) {
-    return { ok: false, reason: 'missing_public_id' as const };
+    return;
   }
 
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
-    return { ok: false, reason: 'unauthorized' as const };
+    return;
   }
 
   const event = await prisma.securityEvent.findUnique({
     where: { publicId },
     select: { id: true, resolvedAt: true },
   });
-  if (!event) {
-    return { ok: false, reason: 'not_found' as const };
-  }
-  if (event.resolvedAt) {
-    return { ok: false, reason: 'already_resolved' as const };
+  if (!event || event.resolvedAt) {
+    return;
   }
 
   await prisma.securityEvent.update({
@@ -47,5 +44,4 @@ export async function resolveIncidentAction(formData: FormData) {
 
   revalidatePath(`/incidents/${publicId}`);
   revalidatePath('/incidents');
-  return { ok: true as const };
 }

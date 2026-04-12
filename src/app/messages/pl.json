@@ -1150,8 +1150,37 @@
     "reasoning_end": "",
     "tool_call": "wywołuję narzędzie",
     "tool_result": "",
+    "tool_approval_request": "narzędzie wymaga potwierdzenia",
     "error": "Wystąpił błąd",
     "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Potwierdzenie wywołania narzędzia",
+    "title": "Potwierdź działanie narzędzia",
+    "description": "To działanie ma skutki uboczne, a bieżąca rozmowa zawiera treści pobrane z bazy wiedzy. Zatwierdź tylko jeśli zgadza się to z Twoim zamiarem.",
+    "tool-label": "Narzędzie",
+    "provider-label": "Dostawca",
+    "approve": "Zatwierdź",
+    "deny": "Odrzuć",
+    "approve-prompt": "Tak, proszę wykonaj {toolName}.",
+    "deny-prompt": "Nie, anuluj wywołanie tego narzędzia."
+  },
+  "link-interstitial": {
+    "title": "Zaraz opuścisz Ragen",
+    "description": "Ten link został wygenerowany z treści rozmowy, która może pochodzić z niezaufanych źródeł. Upewnij się, że adres docelowy wygląda poprawnie, zanim przejdziesz dalej.",
+    "host-label": "Host docelowy",
+    "url-label": "Pełny adres URL",
+    "continue": "Kontynuuj",
+    "cancel": "Anuluj",
+    "back-home": "Wróć do Ragen",
+    "error-title": "Błąd linku",
+    "error-missing": "Nie podano adresu docelowego.",
+    "error-invalid": "Nie udało się przeanalizować adresu docelowego.",
+    "error-unsupported-scheme": "Obsługiwane są tylko linki http i https."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Ten plik zawiera wzorce przypominające wstrzyknięte instrukcje. Sprawdź go przed użyciem w zapytaniach RAG.",
+    "aria-label": "Ostrzeżenie o podejrzanej treści"
   },
   "ErrorBoundary": {
     "error": "Wystąpił błąd",
