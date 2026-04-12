@@ -16,6 +16,7 @@ export interface WebsiteDocumentLoaderParams {
   fileName: string;
   organizationId: string;
   projectId: string;
+  userId?: string | null;
 }
 
 export class WebsiteDocumentLoader {
@@ -24,6 +25,7 @@ export class WebsiteDocumentLoader {
   private readonly fileName: string;
   private readonly organizationId: string;
   private readonly projectId: string;
+  private readonly userId: string | null;
 
   constructor({
     url,
@@ -31,12 +33,14 @@ export class WebsiteDocumentLoader {
     fileName,
     organizationId,
     projectId,
+    userId,
   }: WebsiteDocumentLoaderParams) {
     this.url = url;
     this.fileName = fileName;
     this.mode = mode;
     this.organizationId = organizationId;
     this.projectId = projectId;
+    this.userId = userId ?? null;
   }
 
   async load(): Promise<VectorStoreDocument[]> {
@@ -133,6 +137,7 @@ export class WebsiteDocumentLoader {
           severity: 'info',
           source: 'upload',
           organizationId: this.organizationId,
+          userId: this.userId,
           metadata: {
             fileId: fileRecord.id,
             fileName: `${this.url} | ${this.mode}`,
