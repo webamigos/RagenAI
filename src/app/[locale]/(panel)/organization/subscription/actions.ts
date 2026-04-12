@@ -23,7 +23,7 @@ export async function getSubscriptionData(): Promise<SubscriptionDetails | null>
 }
 
 export async function cancelSubscription(
-  stripeSubscriptionId: string | null
+  stripeSubscriptionId: string | null,
 ): Promise<{ canceledAt: Date | null } | null> {
   const orgId = await getOrgIdFromAuthOrThrow();
 

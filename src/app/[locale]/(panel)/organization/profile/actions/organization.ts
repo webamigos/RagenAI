@@ -54,7 +54,7 @@ export async function updateOrganization(data: UpdateOrganizationFormData) {
     );
 
     // 5. Revalidate cache
-    revalidatePath('/settings/organization-profile');
+    revalidatePath('/organization/profile');
 
     return {
       success: true,

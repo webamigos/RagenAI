@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { useSession } from '@/app/hooks/use-better-auth';
-import { stopImpersonationAction } from '@/app/[locale]/(panel)/settings/users/actions';
+import { stopImpersonationAction } from '@/app/actions/impersonation';
 import { useTransition } from 'react';
 import { statusToast } from '@/app/lib/utils/toast';
 

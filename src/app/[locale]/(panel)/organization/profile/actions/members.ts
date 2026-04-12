@@ -167,7 +167,7 @@ export async function inviteMember(
       'Invitation created and email sent successfully',
     );
 
-    revalidatePath('/settings/organization-profile');
+    revalidatePath('/organization/profile');
 
     return { success: true };
   } catch (error) {
@@ -254,7 +254,7 @@ export async function removeMember(
     // Sync seat count to Stripe (non-blocking)
     syncSeatsToStripe(organizationId);
 
-    revalidatePath('/settings/organization-profile');
+    revalidatePath('/organization/profile');
 
     return { success: true };
   } catch (error) {
@@ -315,7 +315,7 @@ export async function updateMemberRole(
       'Role updated successfully',
     );
 
-    revalidatePath('/settings/organization-profile');
+    revalidatePath('/organization/profile');
 
     return { success: true };
   } catch (error) {

@@ -19,9 +19,11 @@ test.beforeEach(async ({ page, context }) => {
 });
 
 test.describe('Admin Functions P3', () => {
-  test.describe('Users management', () => {
-    test('users page lists all users', async ({ page }) => {
-      await page.goto(ROUTES.settingsUsers);
+  // Users management page was moved to ragen-admin — these tests need
+  // to be migrated to the admin app's E2E suite. Skipping in ragen-app.
+  test.describe('Users management (moved to ragen-admin)', () => {
+    test.skip('users page lists all users', async ({ page }) => {
+      await page.goto(ROUTES.settingsGeneral);
       await page.waitForLoadState('domcontentloaded');
 
       // Page heading should be visible
@@ -35,8 +37,10 @@ test.describe('Admin Functions P3', () => {
       ).toBeVisible({ timeout: 10_000 });
     });
 
-    test('users page has search functionality', async ({ page }) => {
-      await page.goto(ROUTES.settingsUsers);
+    test.skip('users page has search functionality', async ({ page }) => {
+      await page.goto(
+        ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
+      );
       await page.waitForLoadState('domcontentloaded');
 
       const searchInput = page.getByPlaceholder(/szukaj użytkowników/i);
@@ -59,8 +63,10 @@ test.describe('Admin Functions P3', () => {
       });
     });
 
-    test('user row shows role badge', async ({ page }) => {
-      await page.goto(ROUTES.settingsUsers);
+    test.skip('user row shows role badge', async ({ page }) => {
+      await page.goto(
+        ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
+      );
       await page.waitForLoadState('domcontentloaded');
 
       // The test user has admin role
@@ -69,8 +75,10 @@ test.describe('Admin Functions P3', () => {
       });
     });
 
-    test('user actions dropdown opens', async ({ page }) => {
-      await page.goto(ROUTES.settingsUsers);
+    test.skip('user actions dropdown opens', async ({ page }) => {
+      await page.goto(
+        ROUTES.settingsGeneral /* TODO: users page moved to ragen-admin */,
+      );
       await page.waitForLoadState('domcontentloaded');
 
       // Find ellipsis buttons in the main content area (user action menus)
@@ -101,7 +109,7 @@ test.describe('Admin Functions P3', () => {
 
   test.describe('AI Usage dashboard', () => {
     test('AI usage page loads with summary cards', async ({ page }) => {
-      await page.goto(ROUTES.settingsAiUsage);
+      await page.goto(ROUTES.organizationAiUsage);
       await expect(page.getByText(/ai usage/i)).toBeVisible({
         timeout: 10_000,
       });
@@ -119,7 +127,7 @@ test.describe('Admin Functions P3', () => {
     });
 
     test('AI usage page has period filter buttons', async ({ page }) => {
-      await page.goto(ROUTES.settingsAiUsage);
+      await page.goto(ROUTES.organizationAiUsage);
       await page.waitForLoadState('domcontentloaded');
 
       // Period filter buttons should be visible
@@ -139,14 +147,14 @@ test.describe('Admin Functions P3', () => {
 
   test.describe('Disk Usage dashboard', () => {
     test('disk usage page loads', async ({ page }) => {
-      await page.goto(ROUTES.settingsDiskUsage);
+      await page.goto(ROUTES.organizationDiskUsage);
       await expect(page.getByText(/disk usage/i)).toBeVisible({
         timeout: 10_000,
       });
     });
 
     test('disk usage shows organization storage info', async ({ page }) => {
-      await page.goto(ROUTES.settingsDiskUsage);
+      await page.goto(ROUTES.organizationDiskUsage);
       await page.waitForLoadState('domcontentloaded');
 
       // Should show some storage-related content

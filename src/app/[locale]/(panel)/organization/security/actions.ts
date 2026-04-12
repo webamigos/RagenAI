@@ -43,6 +43,6 @@ export async function resolveOrgSecurityEventAction(publicId: string) {
     organizationId: orgId,
   });
 
-  revalidatePath('/settings/security');
+  revalidatePath('/organization/security');
   return result;
 }
