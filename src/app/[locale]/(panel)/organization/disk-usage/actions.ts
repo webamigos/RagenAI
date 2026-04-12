@@ -69,6 +69,7 @@ export async function getAdminStorageOverview() {
       orgName: org?.name ?? 'My Organization',
       totalBytes: usage.totalBytes,
       fileCount: usage.totalFileCount,
+      pageCount: usage.totalPageCount,
       storageLimitBytes: limits.storageLimitBytes,
     },
   ];

@@ -9,12 +9,17 @@ import {
 import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { getFolders } from '@/app/actions/folders';
+import { getKnowledgeBaseUsage } from '../actions';
 import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
 
 export function DocumentsListContent() {
   const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
+  const [usage, setUsage] = useState<{
+    storageBytes: number;
+    pageCount: number;
+  } | null>(null);
 
   const loadFolders = useCallback(async () => {
     try {
@@ -27,6 +32,11 @@ export function DocumentsListContent() {
 
   useEffect(() => {
     loadFolders();
+    getKnowledgeBaseUsage()
+      .then(setUsage)
+      .catch(() => {
+        // Usage is non-critical, don't block the page
+      });
   }, [loadFolders]);
 
   const handleSelectFolder = (folderId: string | null, mode?: ViewMode) => {
@@ -49,6 +59,7 @@ export function DocumentsListContent() {
           onSelectFolder={handleSelectFolder}
           selectedFolderId={currentFolderId}
           selectedViewMode={viewMode}
+          usage={usage}
         />
       </div>
 
