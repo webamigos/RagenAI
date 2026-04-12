@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { saveOrgRagSettingsAction, type RagPipelineSettings } from './actions';
 
 const toggleItems: {
@@ -43,6 +43,12 @@ export function OrgRagSettingsForm({
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setSettings(current);
+    setSaved(false);
+    setError('');
+  }, [orgId, current]);
 
   const toggle = (key: keyof RagPipelineSettings) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
