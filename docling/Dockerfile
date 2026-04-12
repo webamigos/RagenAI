@@ -1,7 +1,7 @@
 FROM ghcr.io/docling-project/docling-serve-cpu:latest
 
 # Install socat for IPv4→IPv6 port forwarding (Railway networking)
-RUN apt-get update -qq && apt-get install -y -qq socat > /dev/null 2>&1 && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache socat
 
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
