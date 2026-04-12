@@ -116,6 +116,19 @@ export const basicRagChain = async ({
         ? `${system}\n\n${config.mcpContext}`
         : system;
 
+      // Phase 2 prompt-injection gating: tell the MCP tool wrappers
+      // whether retrieved RAG context is present in this turn. Write
+      // tools consult this via their `needsApproval` predicate and
+      // pause execution when true (exfiltration via malicious document
+      // content is the vector we're closing). `approvedToolCalls` is
+      // always empty in Phase 2a; Phase 2b will populate it from the
+      // request body on explicit user approval.
+      const ragContextPresent = context.trim().length > 0;
+      const toolGatingContext = {
+        ragContextPresent,
+        approvedToolCalls: config?.approvedToolCalls ?? [],
+      };
+
       const result = streamText({
         model: models.answerGenerator,
         system: effectiveSystem,
@@ -124,6 +137,7 @@ export const basicRagChain = async ({
           isEnabled: true,
           functionId: 'basic-rag-stream',
         },
+        experimental_context: toolGatingContext,
         ...(hasTools
           ? {
               tools: config!.mcpTools,

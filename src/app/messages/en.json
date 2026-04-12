@@ -1147,8 +1147,37 @@
     "reasoning_end": "",
     "tool_call": "calling tool",
     "tool_result": "",
+    "tool_approval_request": "tool requires confirmation",
     "error": "An Error has occurred",
     "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Tool call confirmation",
+    "title": "Confirm tool action",
+    "description": "This action has side effects and the current conversation includes retrieved knowledge-base content. Approve only if the request matches your intent.",
+    "tool-label": "Tool",
+    "provider-label": "Provider",
+    "approve": "Approve",
+    "deny": "Deny",
+    "approve-prompt": "Yes, please proceed with {toolName}.",
+    "deny-prompt": "No, cancel that tool call."
+  },
+  "link-interstitial": {
+    "title": "You are about to leave Ragen",
+    "description": "This link was generated from conversation content that may include untrusted sources. Make sure the destination looks right before continuing.",
+    "host-label": "Destination host",
+    "url-label": "Full URL",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "back-home": "Back to Ragen",
+    "error-title": "Link error",
+    "error-missing": "No destination URL was provided.",
+    "error-invalid": "The destination URL could not be parsed.",
+    "error-unsupported-scheme": "Only http and https links are supported."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "This file contains patterns that look like injected instructions. Review it before using in RAG queries.",
+    "aria-label": "Suspicious content warning"
   },
   "ErrorBoundary": {
     "error": "An error occurred",

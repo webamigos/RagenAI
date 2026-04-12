@@ -11,6 +11,7 @@ import {
   type ApiSseMessageCreated,
   type ApiSseToolCall,
   type ApiSseToolResult,
+  type ApiSseToolApprovalRequest,
 } from '@/features/threads/contracts/events.types';
 
 export const prepareSseMessage = (
@@ -46,6 +47,7 @@ export type ApiEvent =
   | 'final_response'
   | 'tool_call'
   | 'tool_result'
+  | 'tool_approval_request'
   | 'error'
   | 'close';
 
@@ -56,7 +58,8 @@ export type ApiEventData =
   | ApiSseThreadFound
   | ApiSseMessageCreated
   | ApiSseToolCall
-  | ApiSseToolResult;
+  | ApiSseToolResult
+  | ApiSseToolApprovalRequest;
 
 export const prepareApiSseMessage = (
   event: ApiEvent,

@@ -34,6 +34,13 @@ export interface ChainConfig {
   mcpContext?: string;
   tracking?: ChainTrackingContext;
   threadDocuments?: import('@/features/documents/contracts/document.types').ThreadDocumentUI[];
+  /**
+   * Tool call IDs the user has already explicitly approved for this turn.
+   * Populated in Phase 2b (modal approval re-entry). Phase 2a always
+   * passes an empty array — a paused tool stays paused until the user
+   * sends a new message expressing explicit intent.
+   */
+  approvedToolCalls?: readonly string[];
 }
 
 export interface RagChainConfig extends ChainConfig {
@@ -68,6 +75,20 @@ export type ChainStreamPart =
       toolCallId: string;
       toolName: string;
       result: unknown;
+    }
+  /**
+   * Emitted by the SDK when a tool's `needsApproval` predicate returns
+   * true. Phase 2 prompt-injection gating: the tool is NOT executed —
+   * the SDK pauses and surfaces this part so the stream can prompt the
+   * user for confirmation. See `src/libs/mcp/client.ts` and
+   * `src/libs/security/tool-gating-context.ts`.
+   */
+  | {
+      type: 'tool-approval-request';
+      approvalId: string;
+      toolCallId: string;
+      toolName: string;
+      args: unknown;
     }
   | { type: 'other'; [key: string]: unknown };
 

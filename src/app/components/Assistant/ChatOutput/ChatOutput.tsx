@@ -19,6 +19,10 @@ import type {
   MessageDto,
   StreamedMessageDto,
 } from '@/features/messages/contracts/message.types';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
+import type { PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSlice';
+import { ToolConfirmationCard } from './ToolConfirmationCard';
 import './chat-response.css';
 
 function isImageAttachment(att: MessageAttachment): boolean {
@@ -134,6 +138,20 @@ type Props = {
   isPublicAccess?: boolean;
   onMessagePlayed?: (messageId: string) => void;
   voiceId?: string;
+  /**
+   * Threads the current thread ID into ChatOutput so the Phase 2b tool
+   * confirmation card can look up its per-thread pending approval state.
+   * Optional — guests / public chats don't need it.
+   */
+  threadId?: string;
+  /**
+   * Callbacks fired by the inline ToolConfirmationCard when the user
+   * approves or denies a paused tool call. The parent (Assistant.tsx)
+   * translates these into normal chat submissions with
+   * `approvedToolCalls` set, so the SDK unpauses the tool.
+   */
+  onApproveToolCall?: (approval: PendingToolApproval) => void;
+  onDenyToolCall?: (approval: PendingToolApproval) => void;
 };
 
 function MessageTimestamp({ date }: { date?: Date | string | null }) {
@@ -223,12 +241,30 @@ export const ChatOutput = ({
   streamedMessage,
   isPublicAccess = false,
   voiceId,
+  threadId,
+  onApproveToolCall,
+  onDenyToolCall,
 }: Props) => {
   const { renderedStreamedMessage } = useChatViewLogic(streamedMessage);
   const [lightboxImage, setLightboxImage] = useState<{
     src: string;
     alt: string;
   } | null>(null);
+
+  // Phase 2b — pending approval for the current thread (if any). The
+  // card is rendered inline inside the last assistant message bubble
+  // when this is set.
+  const pendingApproval = useSelector((state: RootState) =>
+    threadId ? state.toolApprovals.pendingByThread[threadId] : undefined,
+  );
+  const lastAssistantMessageIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i].role === 'ASSISTANT') {
+        return i;
+      }
+    }
+    return -1;
+  })();
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-4">
@@ -361,6 +397,20 @@ export const ChatOutput = ({
                   isPublicAccess={isPublicAccess}
                   voiceId={!isPublicAccess ? voiceId : undefined}
                 />
+                {/* Phase 2b — inline tool confirmation card on the last
+                    assistant message when the SDK paused a write tool. */}
+                {pendingApproval &&
+                  messageIndex === lastAssistantMessageIndex &&
+                  message.role === 'ASSISTANT' &&
+                  onApproveToolCall &&
+                  onDenyToolCall && (
+                    <ToolConfirmationCard
+                      approval={pendingApproval}
+                      onApprove={onApproveToolCall}
+                      onDeny={onDenyToolCall}
+                      disabled={isLoading}
+                    />
+                  )}
               </div>
             )}
           </div>

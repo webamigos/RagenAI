@@ -168,6 +168,11 @@ export async function POST(request: NextRequest) {
               organizationId: orgId,
               userEmail: user?.email ?? undefined,
               userId: user?.id ?? undefined,
+              // Correlation ID for e2e request tracing. The Temporal
+              // workflow ID doubles as the requestId since it's unique
+              // per upload and links directly to the Temporal UI. Worker
+              // activities thread it into security events and logs.
+              requestId: embeddingWorkflowId,
             },
           ],
         });
