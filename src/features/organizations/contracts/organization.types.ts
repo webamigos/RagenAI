@@ -86,12 +86,16 @@ export type DefaultOrganizationLimits = {
 export type StorageUsage = {
   knowledgeBaseBytes: number;
   knowledgeBaseFileCount: number;
+  knowledgeBasePageCount: number;
   projectFilesBytes: number;
   projectFilesFileCount: number;
+  projectFilesPageCount: number;
   threadFilesBytes: number;
   threadFilesFileCount: number;
+  threadFilesPageCount: number;
   totalBytes: number;
   totalFileCount: number;
+  totalPageCount: number;
 };
 
 // --- Admin storage types ---
@@ -101,6 +105,7 @@ export type OrgStorageSummary = {
   orgName: string;
   totalBytes: number;
   fileCount: number;
+  pageCount: number;
   storageLimitBytes: number | null;
 };
 
@@ -109,6 +114,7 @@ export type ProjectStorageSummary = {
   projectTitle: string;
   totalBytes: number;
   fileCount: number;
+  pageCount: number;
 };
 
 // --- User & organization role types ---

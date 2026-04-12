@@ -167,21 +167,7 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await context.close();
     });
 
-    test('admin users page loads for admin user', async ({ browser }) => {
-      const context = await browser.newContext({
-        storageState: AUTH_FILE,
-      });
-      const page = await context.newPage();
-
-      await page.goto(ROUTES.settingsUsers);
-      await page.waitForLoadState('domcontentloaded');
-
-      // Admin should see the users page heading
-      await expect(
-        page.getByRole('heading', { name: /użytkownicy/i }),
-      ).toBeVisible({ timeout: 10_000 });
-
-      await context.close();
-    });
+    // Users page was moved to ragen-admin — skip in ragen-app E2E.
+    test.skip('admin users page loads for admin user', async () => {});
   });
 });

@@ -39,7 +39,7 @@ const SecurityAlertEmail = ({
 }: Props) => {
   const color = SEVERITY_COLOR[severity] ?? '#525f7f';
   const label = SEVERITY_LABEL[severity] ?? severity;
-  const incidentUrl = `${getBaseUrl()}/settings/security?highlight=${encodeURIComponent(
+  const incidentUrl = `${getBaseUrl()}/organization/security?highlight=${encodeURIComponent(
     publicId,
   )}`;
 

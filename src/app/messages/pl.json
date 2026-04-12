@@ -377,6 +377,7 @@
   "assistant-settings": {
     "api-key": "Klucz API",
     "prompt-assistant-settings": "Ustawienia asystenta",
+    "model-selection": "Model językowy",
     "model-select": {
       "title": "Model językowy",
       "failed-to-fetch-model": "Błąd podczas pobierania modelu językowego",
@@ -430,6 +431,22 @@
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki",
     "add-from-url": "Dodaj wiedzę z linku"
+  },
+  "organization-page": {
+    "title": "Organizacja",
+    "general-settings": "Ustawienia ogólne",
+    "nav": {
+      "profile": "Organizacja",
+      "members": "Użytkownicy",
+      "assistant-settings": "Ustawienia asystenta",
+      "settings": "Ustawienia",
+      "subscription": "Subskrypcja",
+      "teams": "Zespoły",
+      "api-keys": "Klucze API",
+      "security": "Bezpieczeństwo",
+      "ai-usage": "Użycie AI",
+      "disk-usage": "Użycie dysku"
+    }
   },
   "settings-page": {
     "title": "Ustawienia",
@@ -610,7 +627,8 @@
     },
     "nav": {
       "chats": "Wątki",
-      "assistants": "Asystenci"
+      "assistants": "Asystenci",
+      "organization": "Organizacja"
     },
     "starred": {
       "title": "Przypięte"
@@ -803,7 +821,10 @@
     "add-from-url": "Dodaj z linku",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
-    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików"
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
+    "usage": "Użycie",
+    "storage": "Przestrzeń",
+    "pages": "Strony"
   },
   "file-delete-modal": {
     "title": "Usuń plik",

@@ -120,6 +120,7 @@ model UserFile {
   folder             DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
   ownerId            String?         @map("owner_id")
   owner              User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  pageCount          Int?            @map("page_count")
   permissions        DocumentPermission[]
 
   @@unique([id, organizationId])

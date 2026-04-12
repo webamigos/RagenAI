@@ -139,61 +139,52 @@ test.describe('Authenticated pages smoke tests', () => {
       });
     });
 
-    test('settings organization page loads', async ({ page }) => {
+    test('organization profile page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsOrganization);
-      await expect(page).toHaveURL(/settings\/organization-profile/);
-      await expect(page.getByText(/ogólne/i).first()).toBeVisible({
-        timeout: 10_000,
-      });
-    });
-
-    test('settings prompt management page loads', async ({ page }) => {
-      await page.goto(ROUTES.settingsPromptManagement);
-      await expect(page).toHaveURL(/settings\/prompt-management/);
+      await expect(page).toHaveURL(/organization\/profile/);
       await expect(
         page.getByRole('main').locator('h1, h2, form').first(),
-      ).toBeVisible({
-        timeout: 10_000,
-      });
+      ).toBeVisible({ timeout: 10_000 });
     });
 
-    test('settings subscription page loads', async ({ page }) => {
+    test('organization settings page loads', async ({ page }) => {
+      await page.goto(ROUTES.settingsPromptManagement);
+      await expect(page).toHaveURL(/organization\/assistant-settings/);
+      await expect(
+        page.getByRole('main').locator('h1, h2, form').first(),
+      ).toBeVisible({ timeout: 10_000 });
+    });
+
+    test('organization subscription page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsSubscription);
-      await expect(page).toHaveURL(/settings\/subscription/);
+      await expect(page).toHaveURL(/organization\/subscription/);
       await expect(
         page.getByRole('main').locator('h1, h2').first(),
-      ).toBeVisible({
-        timeout: 10_000,
-      });
+      ).toBeVisible({ timeout: 10_000 });
     });
 
-    test('settings teams page loads', async ({ page }) => {
+    test('organization teams page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsTeams);
-      await expect(page).toHaveURL(/settings\/teams/);
+      await expect(page).toHaveURL(/organization\/teams/);
       await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible(
         { timeout: 10_000 },
       );
     });
 
-    test('settings users page loads (admin)', async ({ page }) => {
-      await page.goto(ROUTES.settingsUsers);
-      await expect(page).toHaveURL(/settings\/users/);
-      await expect(
-        page.getByRole('heading', { name: /użytkownicy/i }),
-      ).toBeVisible({ timeout: 10_000 });
-    });
+    // Users page was moved to ragen-admin
+    test.skip('settings users page loads (admin)', async () => {});
 
-    test('settings AI usage page loads (admin)', async ({ page }) => {
-      await page.goto(ROUTES.settingsAiUsage);
-      await expect(page).toHaveURL(/settings\/ai-usage/);
+    test('organization AI usage page loads', async ({ page }) => {
+      await page.goto(ROUTES.organizationAiUsage);
+      await expect(page).toHaveURL(/organization\/ai-usage/);
       await expect(page.getByText(/AI Usage/i).first()).toBeVisible({
         timeout: 10_000,
       });
     });
 
-    test('settings disk usage page loads (admin)', async ({ page }) => {
-      await page.goto(ROUTES.settingsDiskUsage);
-      await expect(page).toHaveURL(/settings\/disk-usage/);
+    test('organization disk usage page loads', async ({ page }) => {
+      await page.goto(ROUTES.organizationDiskUsage);
+      await expect(page).toHaveURL(/organization\/disk-usage/);
       await expect(page.getByText(/Disk Usage/i).first()).toBeVisible({
         timeout: 10_000,
       });
