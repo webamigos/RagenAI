@@ -5,6 +5,7 @@ import { classMerge } from '@ragenai/common-ui/utils/cn';
 import {
   BuildingOfficeIcon,
   AdjustmentsHorizontalIcon,
+  BeakerIcon,
   CreditCardIcon,
   UserGroupIcon,
   KeyIcon,
@@ -27,6 +28,11 @@ const navItems: NavItem[] = [
     href: '/organization/assistant-settings',
     labelKey: 'settings',
     icon: <AdjustmentsHorizontalIcon className={iconClassName} />,
+  },
+  {
+    href: '/organization/rag-settings',
+    labelKey: 'rag-settings',
+    icon: <BeakerIcon className={iconClassName} />,
   },
   {
     href: '/organization/profile',

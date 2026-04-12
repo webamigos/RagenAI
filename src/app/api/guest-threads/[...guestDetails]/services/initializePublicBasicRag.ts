@@ -13,6 +13,7 @@ import {
   createModerationInstance,
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadata } from '@/app/actions';
+import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
@@ -65,7 +66,10 @@ export const initializePublicRagChain = async ({
       litellmApiKey,
     });
 
-    const orgMetadata = await getOrganizationMetadata(organizationId);
+    const [orgMetadata, ragPipelineSettings] = await Promise.all([
+      getOrganizationMetadata(organizationId),
+      getRagPipelineSettings(organizationId),
+    ]);
     let vectorStore: VectorStoreClient;
 
     if (orgMetadata.vectorStore === 'supabase') {
@@ -124,6 +128,12 @@ export const initializePublicRagChain = async ({
         litellmApiKey,
         answerInstructions: finalInstructions,
         tracking: { organizationId },
+        ragSettings: {
+          multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,
+          contentModerationEnabled:
+            ragPipelineSettings.contentModerationEnabled,
+          rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+        },
       },
       vectorStore,
     });

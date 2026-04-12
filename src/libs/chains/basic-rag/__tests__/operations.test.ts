@@ -347,4 +347,43 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
     expect(vs.similaritySearch).not.toHaveBeenCalled();
     expect(result).toBe('');
   });
+
+  it('skips reranking when rerankingEnabled param is false even if infra supports it', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    const vs = makeVectorStore([
+      [
+        { pageContent: 'doc A', metadata: {} },
+        { pageContent: 'doc B', metadata: {} },
+        { pageContent: 'doc C', metadata: {} },
+        { pageContent: 'doc D', metadata: {} },
+        { pageContent: 'doc E', metadata: {} },
+      ],
+    ]);
+
+    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, undefined, false);
+
+    expect(mockRerankDocuments).not.toHaveBeenCalled();
+    // Without reranking, per-query count = maxDocuments (no multiplier)
+    expect(vs.similaritySearch).toHaveBeenCalledWith('q1', 3, undefined);
+  });
+
+  it('reranks when both rerankingEnabled param and infra check are true', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    mockRerankDocuments.mockImplementation(async (_q, docs, k) =>
+      docs.slice(0, k),
+    );
+    const vs = makeVectorStore([
+      [
+        { pageContent: 'doc A', metadata: {} },
+        { pageContent: 'doc B', metadata: {} },
+        { pageContent: 'doc C', metadata: {} },
+        { pageContent: 'doc D', metadata: {} },
+        { pageContent: 'doc E', metadata: {} },
+      ],
+    ]);
+
+    await retrieveRelevantDocuments(vs, ['q1'], 3, undefined, undefined, true);
+
+    expect(mockRerankDocuments).toHaveBeenCalled();
+  });
 });

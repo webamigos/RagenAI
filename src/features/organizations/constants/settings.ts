@@ -1,5 +1,6 @@
 import type {
   OrganizationSettingsLimits,
+  RagPipelineSettings,
   RawOrganizationSettings,
   StorageLimits,
 } from '../contracts/organization.types';
@@ -22,6 +23,15 @@ export const organizationSettingsLimits: OrganizationSettingsLimits = {
     step: 1,
   },
 } as const;
+
+export const defaultRagPipelineSettings: RagPipelineSettings = {
+  multiQueryEnabled: true,
+  docSummariesEnabled: true,
+  contentModerationEnabled: true,
+  rerankingEnabled: true,
+} as const;
+
+export const DEFAULT_MONTHLY_COST_LIMIT_CENTS = 1000; // $10
 
 export const defaultStorageLimits: StorageLimits = {
   storageLimitBytes: 50 * 1024 * 1024, // 50 MB org-wide

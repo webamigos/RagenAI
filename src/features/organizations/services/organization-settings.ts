@@ -1,10 +1,13 @@
 import db from '@ragenai/prisma-client';
 import {
+  DEFAULT_MONTHLY_COST_LIMIT_CENTS,
   defaultOrganizationSettings,
+  defaultRagPipelineSettings,
   defaultStorageLimits,
 } from '../constants/settings';
 import { getApiKeyFromPool } from './queries/get-api-keys-query';
 import type {
+  RagPipelineSettings,
   RawOrganizationSettings,
   StorageLimits,
   UsageLimits,
@@ -432,7 +435,7 @@ export async function getDefaultOrganizationLimits(): Promise<DefaultOrganizatio
       projectStorageLimitBytes: defaultStorageLimits.projectStorageLimitBytes,
       singleFileLimitBytes: defaultStorageLimits.singleFileLimitBytes,
       monthlyTokenLimit: null,
-      monthlyCostLimitCents: null,
+      monthlyCostLimitCents: DEFAULT_MONTHLY_COST_LIMIT_CENTS,
       monthlyMessageLimit: null,
       maxMembers: null,
     };
@@ -513,6 +516,103 @@ export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
   if (Object.keys(data).length > 0) {
     await upsertSettings(orgId, data);
   }
+}
+
+// --- RAG Pipeline Settings ---
+
+export async function saveRagPipelineSettings(
+  orgId: string,
+  settings: Partial<RagPipelineSettings>,
+): Promise<void> {
+  const data: Record<string, unknown> = {};
+  if (settings.multiQueryEnabled !== undefined) {
+    data.multiQueryEnabled = settings.multiQueryEnabled;
+  }
+  if (settings.docSummariesEnabled !== undefined) {
+    data.docSummariesEnabled = settings.docSummariesEnabled;
+  }
+  if (settings.contentModerationEnabled !== undefined) {
+    data.contentModerationEnabled = settings.contentModerationEnabled;
+  }
+  if (settings.rerankingEnabled !== undefined) {
+    data.rerankingEnabled = settings.rerankingEnabled;
+  }
+  await upsertSettings(orgId, data);
+}
+
+export async function getRagPipelineSettings(
+  orgId: string,
+): Promise<RagPipelineSettings> {
+  const settings = await getSettings(orgId);
+  return {
+    multiQueryEnabled:
+      settings?.multiQueryEnabled ??
+      defaultRagPipelineSettings.multiQueryEnabled,
+    docSummariesEnabled:
+      settings?.docSummariesEnabled ??
+      defaultRagPipelineSettings.docSummariesEnabled,
+    contentModerationEnabled:
+      settings?.contentModerationEnabled ??
+      defaultRagPipelineSettings.contentModerationEnabled,
+    rerankingEnabled:
+      settings?.rerankingEnabled ?? defaultRagPipelineSettings.rerankingEnabled,
+  };
+}
+
+// --- Default RAG Pipeline Settings ---
+
+const DEFAULT_RAG_SETTINGS_KEY = 'default_rag_pipeline_settings';
+
+export async function getDefaultRagPipelineSettings(): Promise<RagPipelineSettings> {
+  const row = await db.settings.findUnique({
+    where: { key: DEFAULT_RAG_SETTINGS_KEY },
+  });
+  if (!row) {
+    return { ...defaultRagPipelineSettings };
+  }
+  try {
+    const parsed = JSON.parse(row.value) as Partial<RagPipelineSettings>;
+    return {
+      multiQueryEnabled:
+        parsed.multiQueryEnabled ??
+        defaultRagPipelineSettings.multiQueryEnabled,
+      docSummariesEnabled:
+        parsed.docSummariesEnabled ??
+        defaultRagPipelineSettings.docSummariesEnabled,
+      contentModerationEnabled:
+        parsed.contentModerationEnabled ??
+        defaultRagPipelineSettings.contentModerationEnabled,
+      rerankingEnabled:
+        parsed.rerankingEnabled ?? defaultRagPipelineSettings.rerankingEnabled,
+    };
+  } catch {
+    return { ...defaultRagPipelineSettings };
+  }
+}
+
+export async function saveDefaultRagPipelineSettings(
+  settings: Partial<RagPipelineSettings>,
+): Promise<void> {
+  const current = await getDefaultRagPipelineSettings();
+  const merged = { ...current, ...settings };
+  await db.settings.upsert({
+    where: { key: DEFAULT_RAG_SETTINGS_KEY },
+    update: { value: JSON.stringify(merged) },
+    create: { key: DEFAULT_RAG_SETTINGS_KEY, value: JSON.stringify(merged) },
+  });
+}
+
+export async function applyDefaultRagSettingsToOrg(
+  orgId: string,
+): Promise<void> {
+  const defaults = await getDefaultRagPipelineSettings();
+  const data: Record<string, unknown> = {
+    multiQueryEnabled: defaults.multiQueryEnabled,
+    docSummariesEnabled: defaults.docSummariesEnabled,
+    contentModerationEnabled: defaults.contentModerationEnabled,
+    rerankingEnabled: defaults.rerankingEnabled,
+  };
+  await upsertSettings(orgId, data);
 }
 
 // --- Get All Settings ---
