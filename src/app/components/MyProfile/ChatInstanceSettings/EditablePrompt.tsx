@@ -39,6 +39,7 @@ export const EditablePrompt = () => {
     formState: { errors, isDirty },
   } = useForm<PromptFormValues>({
     resolver: zodResolver(promptSchema(t)),
+    defaultValues: { editablePrompt: '' },
   });
 
   useEffect(() => {
