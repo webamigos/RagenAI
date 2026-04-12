@@ -12,4 +12,5 @@ DOCLING_PORT=$((PORT + 1))
 python /app/port-forward.py ${PORT} ${DOCLING_PORT} &
 
 # Start Docling on localhost only (internal port)
-exec uvicorn docling_serve.app:app --host 127.0.0.1 --port ${DOCLING_PORT}
+# create_app is a factory function, so --factory is required
+exec uvicorn docling_serve.app:create_app --factory --host 127.0.0.1 --port ${DOCLING_PORT}
