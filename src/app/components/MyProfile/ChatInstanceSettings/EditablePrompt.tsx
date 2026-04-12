@@ -97,7 +97,11 @@ export const EditablePrompt = () => {
         placeholder={t('placeholder')}
       />
       <div className="flex justify-end">
-        <Button isSubmit={true} disabled={!isDirty}>
+        <Button
+          isSubmit={true}
+          disabled={!isDirty}
+          className={!isDirty ? 'opacity-50 cursor-not-allowed' : ''}
+        >
           {t('update')}
         </Button>
       </div>
