@@ -125,7 +125,7 @@ export const FileUploader = ({
           ref={fileInputRef}
           className="hidden"
           type="file"
-          accept=".md,.epub,.srt,.pdf,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx"
+          accept=".md,.epub,.srt,.pdf,.jpg,.jpeg,.png,.webp,.gif,.csv,.xlsx,.xls,.docx,.pptx,.ppt"
           multiple
           onChange={handleFileSelect}
         />

@@ -20,7 +20,12 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 **Prerequisites**: Node.js 22.x, Docker
 
 ```bash
-docker compose up          # Start Postgres (5432), Redis (6379), Qdrant (6333), Temporal, LiteLLM
+# Full stack (includes document processing pipeline)
+npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
+
+# App-only (no document ingestion — can still query existing knowledge bases)
+npm run ragen:up:app       # Postgres, Qdrant, LiteLLM
+
 npm install                # Install dependencies
 npm run generate:types     # Generate Prisma client
 npm run dev                # Start Next.js dev server (Turbopack)
@@ -45,6 +50,8 @@ npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:ui      # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types
 npm run db:seed          # Seed database
+npm run ragen:up:full    # Docker: full stack (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
+npm run ragen:up:app     # Docker: app-only (Postgres, Qdrant, LiteLLM — no document processing)
 ```
 
 ## Project Structure
@@ -164,6 +171,10 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 ### Document Processing
 
 Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock sharpens the top-k.
+
+**Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on ragen-worker):
+- `legacy` (default): per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc.
+- `docling`: IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images). Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure. PPTX is only supported via Docling.
 
 **Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
 
@@ -340,6 +351,27 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 
 **ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
 
+### Docling (Document Parser)
+
+IBM Docling provides high-quality document parsing with layout understanding, table extraction, and heading hierarchy. It replaces the per-format legacy loaders (Claude native PDF, Mammoth DOCX, SheetJS XLSX) with a single unified pipeline that outputs Markdown.
+
+Docling is started automatically via `npm run ragen:up:full` on port **5001** (not included in `ragen:up:app`).
+
+```bash
+# UI for testing document conversion
+open http://localhost:5001/ui
+```
+
+**Config**: `docling/Dockerfile` + `docling/entrypoint.sh` — baked into Docker image for Railway deployment. `docling/railway.toml` for Railway-specific settings.
+
+**Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
+
+**Worker env vars**:
+- `DOCUMENT_PARSER=docling` — enable Docling (default: `legacy`, uses existing per-format loaders)
+- `DOCLING_URL=http://localhost:5001` — Docling service URL
+
+**CPU-only mode**: The Docker image uses CPU-only inference. Digital PDFs work well; scanned/image-heavy PDFs are slower but functional. OCR is available but slower than GPU.
+
 ### Ragen API
 
 Standalone public API service built with NestJS. Handles API key authentication, rate limiting, and proxies chat requests to ragen-app's internal endpoints.
@@ -364,13 +396,14 @@ npm run start:dev             # http://localhost:3001 (watch mode)
 ### Running Everything Locally
 
 ```bash
-# 1. Start infrastructure (from ragen-app)
-docker compose up -d             # Postgres, Qdrant, Temporal, LiteLLM, Redis
+# 1. Start infrastructure (from ragen-app) — pick one:
+npm run ragen:up:full            # Full stack: Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
+npm run ragen:up:app             # App-only:  Postgres, Qdrant, LiteLLM (no document processing)
 
 # 2. Start ragen-app
 npm run dev                      # http://localhost:3000
 
-# 3. Start worker (separate terminal)
+# 3. Start worker (separate terminal — only needed with ragen:up:full)
 cd ../ragen-worker && npm run dev
 
 # 4. Start token vault (separate terminal, needed for connectors)
@@ -386,15 +419,17 @@ cd apps/admin && npm run dev              # http://localhost:3200
 cd ../ragen-api && npm run start:dev      # http://localhost:3001
 ```
 
-**Minimum for basic usage**: Steps 1-3 (infrastructure + app + worker).
+**Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
+**Minimum with document processing**: Steps 1 (`ragen:up:full`) + 2 + 3.
 **For public API**: Also need steps 4 (token vault) + 7 (ragen-api).
 
 | Service | Port | When needed |
 |---------|------|-------------|
 | ragen-app | 3000 | Always |
-| ragen-worker | — | Always (processes document uploads) |
+| ragen-worker | — | Document processing (requires `ragen:up:full`) |
 | LiteLLM | 4000 | Always (auto-started via docker compose) |
-| Temporal UI | 8080 | Debugging workflows |
+| Docling | 5001 | Document parsing (`ragen:up:full`, UI at `/ui`) |
+| Temporal UI | 8080 | Debugging workflows (`ragen:up:full`) |
 | ragen-token-vault | 3100 | External connectors + API key validation |
 | ragen-mcp | 8001-8003 | External connectors |
 | Ragen Admin | 3200 | Platform administration |
