@@ -31,6 +31,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
 
 import {
   expandQueries,
+  rephraseAndExpand,
   retrieveRelevantDocuments,
   MULTI_QUERY_VARIANT_COUNT,
 } from '../operations';
@@ -69,7 +70,8 @@ describe('expandQueries', () => {
       },
     });
 
-    const variants = await expandQueries(fakeModel, 'how do I cancel');
+    // Explicit count=2 to test full happy path independently of the default
+    const variants = await expandQueries(fakeModel, 'how do I cancel', 2);
 
     expect(variants).toEqual([
       'how do I terminate my plan',
@@ -79,9 +81,21 @@ describe('expandQueries', () => {
     const callArgs = mockGenerateObject.mock.calls[0][0];
     expect(callArgs.system).toContain('query expansion');
     expect(callArgs.messages[0].content).toContain('how do I cancel');
-    expect(callArgs.messages[0].content).toContain(
-      String(MULTI_QUERY_VARIANT_COUNT),
-    );
+    expect(callArgs.messages[0].content).toContain('2');
+  });
+
+  it('respects default MULTI_QUERY_VARIANT_COUNT of 1', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        variants: ['variant A', 'variant B'],
+      },
+    });
+
+    const variants = await expandQueries(fakeModel, 'question');
+
+    // Default count is 1, so only the first variant is returned
+    expect(variants).toEqual(['variant A']);
+    expect(MULTI_QUERY_VARIANT_COUNT).toBe(1);
   });
 
   it('trims whitespace and drops empty strings from variants', async () => {
@@ -91,7 +105,7 @@ describe('expandQueries', () => {
       },
     });
 
-    const variants = await expandQueries(fakeModel, 'question');
+    const variants = await expandQueries(fakeModel, 'question', 4);
 
     expect(variants).toEqual(['real variant', 'another one']);
   });
@@ -171,6 +185,157 @@ describe('expandQueries', () => {
     // Both of the first two match the standalone question (case-insensitive)
     // and should be dropped; only the genuinely-different variant survives.
     expect(result).toEqual(['canceling subscription']);
+  });
+});
+
+describe('rephraseAndExpand', () => {
+  const makeInput = (question: string, chatHistory?: string) => ({
+    question,
+    chat_history: chatHistory ?? '',
+  });
+
+  it('returns standalone question and variants in a single call', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'How do I cancel my subscription?',
+        variants: ['terminate my plan'],
+      },
+    });
+
+    const result = await rephraseAndExpand(fakeModel, makeInput('cancel'));
+
+    expect(result.standaloneQuestion).toBe('How do I cancel my subscription?');
+    expect(result.variants).toEqual(['terminate my plan']);
+    expect(mockGenerateObject).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns empty variants when expandVariants is false', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'How do I cancel?',
+        variants: ['should be ignored'],
+      },
+    });
+
+    const result = await rephraseAndExpand(
+      fakeModel,
+      makeInput('cancel'),
+      false,
+    );
+
+    expect(result.standaloneQuestion).toBe('How do I cancel?');
+    expect(result.variants).toEqual([]);
+  });
+
+  it('deduplicates variants against standalone question (case-insensitive)', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'How do I cancel?',
+        variants: ['How Do I Cancel?', 'terminate subscription'],
+      },
+    });
+
+    const result = await rephraseAndExpand(fakeModel, makeInput('cancel'));
+
+    expect(result.variants).toEqual(['terminate subscription']);
+  });
+
+  it('caps variants at variantCount', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'question',
+        variants: ['a', 'b', 'c', 'd', 'e'],
+      },
+    });
+
+    const result = await rephraseAndExpand(fakeModel, makeInput('q'), true, 2);
+
+    expect(result.variants).toHaveLength(2);
+    expect(result.variants).toEqual(['a', 'b']);
+  });
+
+  it('falls back to raw input question on LLM error', async () => {
+    mockGenerateObject.mockRejectedValue(new Error('timeout'));
+
+    const result = await rephraseAndExpand(fakeModel, makeInput('my question'));
+
+    expect(result.standaloneQuestion).toBe('my question');
+    expect(result.variants).toEqual([]);
+  });
+
+  it('falls back to raw input when standalone question is empty', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: '   ',
+        variants: ['variant'],
+      },
+    });
+
+    const result = await rephraseAndExpand(
+      fakeModel,
+      makeInput('original question'),
+    );
+
+    expect(result.standaloneQuestion).toBe('original question');
+    expect(result.variants).toEqual([]);
+  });
+
+  it('throws when called with no model', async () => {
+    await expect(
+      rephraseAndExpand(null as unknown as LanguageModelV3, makeInput('q')),
+    ).rejects.toThrow(/No model instance/);
+  });
+
+  it('trims whitespace and drops empty variants', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'clean question',
+        variants: ['  good  ', '', '   ', 'also good'],
+      },
+    });
+
+    const result = await rephraseAndExpand(fakeModel, makeInput('q'), true, 5);
+
+    expect(result.variants).toEqual(['good', 'also good']);
+  });
+
+  it('deduplicates variants against each other', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'question',
+        variants: ['Alpha', 'ALPHA', 'alpha', 'Beta'],
+      },
+    });
+
+    const result = await rephraseAndExpand(fakeModel, makeInput('q'), true, 5);
+
+    expect(result.variants).toEqual(['Alpha', 'Beta']);
+  });
+
+  it('passes chat history as conversation messages', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: {
+        standaloneQuestion: 'standalone',
+        variants: [],
+      },
+    });
+
+    await rephraseAndExpand(
+      fakeModel,
+      makeInput('follow up', 'USER: hello\nASSISTANT: hi there'),
+    );
+
+    const callArgs = mockGenerateObject.mock.calls[0][0];
+    // Chat history messages + the user's current question
+    expect(callArgs.messages).toHaveLength(3);
+    expect(callArgs.messages[0]).toEqual({
+      role: 'user',
+      content: 'hello',
+    });
+    expect(callArgs.messages[1]).toEqual({
+      role: 'assistant',
+      content: 'hi there',
+    });
   });
 });
 

@@ -6,6 +6,7 @@ export const DEFAULT_ANSWER_INSTRUCTIONS =
 export const systemTemplates = {
   rephraseQuestion: `Based on the chat history and the user's question, rephrase the question so that it is a standalone question. Only produce the standalone question without any additional commentary.`,
   expandQueries: `You are a query expansion assistant for a retrieval system. Given a standalone question, produce alternative phrasings that capture the same information need from different angles. Use different vocabulary, synonyms, related terms, or a different level of abstraction. Each alternative must be a complete, standalone question — not a fragment. Respond in the same language as the input question. Do not include the original question in your output.`,
+  rephraseAndExpand: `You rephrase user questions into standalone questions and generate alternative phrasings for retrieval. Based on the chat history and the user's question, first rephrase the question so that it is a fully self-contained standalone question. Then produce alternative phrasings that capture the same information need from different angles. Use different vocabulary, synonyms, related terms, or a different level of abstraction. Each alternative must be a complete, standalone question. Respond in the same language as the input question. Do not include the standalone question in the variants.`,
   answerChain: `
       {answer_instructions}
 

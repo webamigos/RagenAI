@@ -1,7 +1,6 @@
 import { streamText, stepCountIs } from 'ai';
 import {
-  expandQueries,
-  rephraseQuestion,
+  rephraseAndExpand,
   retrieveRelevantDocuments,
   retrieveThreadDocuments,
   buildRagMessages,
@@ -44,33 +43,32 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate content (skippable in on-premise), then rephrase
-      if (shouldModerate(config?.ragSettings)) {
-        await moderateContent(
-          models.contentModerator,
-          sanitizedInput,
-          true,
-          config?.tracking,
-        );
-      }
-      const standaloneQuestion = await rephraseQuestion(
-        models.questionRephraser,
-        sanitizedInput,
-      );
-
-      // Step 3: Expand into multiple query variants for retrieval (ADR-15).
-      // The original standalone question is always the first query; variants
-      // are additive. expandQueries() catches LLM/structured-output errors
-      // internally and returns [] on failure, so retrieval falls back to a
-      // single-query pipeline transparently — no try-catch needed here.
-      // expandQueries() already dedupes variants against each other and the
-      // standalone question, but we defensively dedupe the full list here too
-      // (order-preserving) so any future change in expandQueries cannot cause
-      // redundant Qdrant round-trips.
+      // Step 2: Moderate content and rephrase+expand in parallel.
+      // Moderation doesn't affect the rephrased query — it only gates the
+      // final answer. Running them concurrently saves one full LLM round-trip.
+      // The merged rephraseAndExpand() produces the standalone question AND
+      // query variants in a single LLM call (saves another round-trip vs the
+      // old sequential rephrase → expandQueries flow).
       const multiQueryEnabled = config?.ragSettings?.multiQueryEnabled ?? true;
-      const variants = multiQueryEnabled
-        ? await expandQueries(models.questionRephraser, standaloneQuestion)
-        : [];
+      const [, { standaloneQuestion, variants }] = await Promise.all([
+        shouldModerate(config?.ragSettings)
+          ? moderateContent(
+              models.contentModerator,
+              sanitizedInput,
+              true,
+              config?.tracking,
+            )
+          : Promise.resolve(),
+        rephraseAndExpand(
+          models.questionRephraser,
+          sanitizedInput,
+          multiQueryEnabled,
+        ),
+      ]);
+
+      // Defensively dedupe the full query list (order-preserving) so any
+      // future change in rephraseAndExpand cannot cause redundant Qdrant
+      // round-trips.
       const seenQueries = new Set<string>();
       const retrievalQueries = [standaloneQuestion, ...variants].filter((q) => {
         const key = q.trim().toLowerCase();
