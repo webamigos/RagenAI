@@ -35,12 +35,23 @@ const RERANK_RETRIEVAL_MULTIPLIER = 3;
  * queries issued to the vector store is this value + 1 (the original
  * standalone question is always included as the first query).
  */
-export const MULTI_QUERY_VARIANT_COUNT = 2;
+export const MULTI_QUERY_VARIANT_COUNT = 1;
 
 const expandQueriesSchema = z.object({
   variants: z
     .array(z.string())
     .describe('Alternative phrasings of the input question'),
+});
+
+const rephraseAndExpandSchema = z.object({
+  standaloneQuestion: z
+    .string()
+    .describe(
+      'The rephrased standalone question that captures the full intent without depending on chat history',
+    ),
+  variants: z
+    .array(z.string())
+    .describe('Alternative phrasings of the standalone question'),
 });
 
 function formatChatHistory(chatHistory: string): Message[] {
@@ -185,6 +196,113 @@ export async function expandQueries(
       'Query expansion failed, falling back to single query',
     );
     return [];
+  }
+}
+
+/**
+ * Combined rephrase + query expansion in a single LLM call.
+ *
+ * Produces a standalone question from the chat history AND generates alternative
+ * phrasings for multi-query retrieval — saving one full LLM round-trip compared
+ * to calling rephraseQuestion() then expandQueries() sequentially.
+ *
+ * When `expandVariants` is false, the variants array is always empty (skips
+ * multi-query entirely while still saving the separate rephrase call).
+ *
+ * Falls back to just the rephrased standalone question (no variants) on any
+ * structured-output error — the expansion step must never regress behavior.
+ */
+export async function rephraseAndExpand(
+  model: LanguageModelV3,
+  input: BaseChatChainInput,
+  expandVariants = true,
+  variantCount: number = MULTI_QUERY_VARIANT_COUNT,
+): Promise<{ standaloneQuestion: string; variants: string[] }> {
+  if (!model) {
+    throw new Error('Error rephrasing question: No model instance');
+  }
+
+  const messages: ModelMessage[] = [];
+
+  if (input.chat_history) {
+    const formattedHistory = formatChatHistory(input.chat_history);
+    for (const msg of formattedHistory) {
+      messages.push({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+      });
+    }
+  }
+
+  const expansionInstruction = expandVariants
+    ? `Then generate exactly ${variantCount} alternative phrasing(s) of that standalone question using different vocabulary, synonyms, or a different level of abstraction. Each alternative must be a complete, standalone question. Do not include the standalone question itself in the variants array.`
+    : 'Set variants to an empty array.';
+
+  const humanMessage = `Rephrase the following question as a standalone question that captures the full intent without depending on chat history. ${expansionInstruction} Respond in the same language as the input question.\n\nQuestion: ${input.question}`;
+  messages.push({ role: 'user', content: humanMessage });
+
+  try {
+    const result = await generateObject({
+      model,
+      schema: rephraseAndExpandSchema,
+      system: systemTemplates.rephraseAndExpand,
+      messages,
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: 'rephrase-and-expand',
+      },
+    });
+
+    const standaloneQuestion = result.object.standaloneQuestion.trim();
+    if (standaloneQuestion.length === 0) {
+      // If the model returns empty, fall back to the raw input question.
+      return { standaloneQuestion: input.question, variants: [] };
+    }
+
+    if (!expandVariants) {
+      return { standaloneQuestion, variants: [] };
+    }
+
+    // Defensive cleanup — same as expandQueries():
+    const standaloneNormalized = standaloneQuestion.toLowerCase();
+    const seen = new Set<string>();
+    const variants: string[] = [];
+    for (const raw of result.object.variants) {
+      const trimmed = raw.trim();
+      if (trimmed.length === 0) {
+        continue;
+      }
+      const normalized = trimmed.toLowerCase();
+      if (normalized === standaloneNormalized) {
+        continue;
+      }
+      if (seen.has(normalized)) {
+        continue;
+      }
+      seen.add(normalized);
+      variants.push(trimmed);
+      if (variants.length >= variantCount) {
+        break;
+      }
+    }
+
+    logger.debug(
+      {
+        variantCount: variants.length,
+        requestedCount: variantCount,
+        standaloneQuestionLength: standaloneQuestion.length,
+      },
+      'Rephrase + expand completed in single LLM call',
+    );
+
+    return { standaloneQuestion, variants };
+  } catch (err) {
+    // Graceful degradation: if structured output fails, fall back to input question with no variants.
+    logger.warn(
+      { err, questionLength: input.question.length },
+      'Rephrase-and-expand failed, falling back to raw input question',
+    );
+    return { standaloneQuestion: input.question, variants: [] };
   }
 }
 
