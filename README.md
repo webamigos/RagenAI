@@ -362,7 +362,7 @@ Docling is started automatically via `npm run ragen:up:full` on port **5001** (n
 open http://localhost:5001/ui
 ```
 
-**Config**: `docling/Dockerfile` + `docling/entrypoint.sh` — baked into Docker image for Railway deployment. `docling/railway.toml` for Railway-specific settings.
+**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in the **ragen-worker** repository (since Docling is strictly a worker dependency).
 
 **Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
 
