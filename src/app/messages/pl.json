@@ -445,7 +445,30 @@
       "api-keys": "Klucze API",
       "security": "Bezpieczeństwo",
       "ai-usage": "Użycie AI",
-      "disk-usage": "Użycie dysku"
+      "disk-usage": "Użycie dysku",
+      "rag-settings": "Pipeline RAG"
+    },
+    "rag-settings": {
+      "title": "Ustawienia pipeline RAG",
+      "description": "Podgląd aktualnej konfiguracji pipeline wyszukiwania w bazie wiedzy.",
+      "on-premise-note": "Te ustawienia mogą być zmienione w instalacjach on-premise.",
+      "multi-query-label": "Rozszerzanie zapytań",
+      "multi-query-description": "Generuj alternatywne sformułowania pytań w celu szerszego wyszukiwania dokumentów.",
+      "doc-summaries-label": "Podsumowania dokumentów",
+      "doc-summaries-description": "Generuj podsumowania przy dodawaniu dokumentów dla lepszej trafności wyszukiwania.",
+      "content-moderation-label": "Moderacja treści",
+      "content-moderation-description": "Filtruj szkodliwe lub nieodpowiednie treści przed przetwarzaniem zapytań.",
+      "content-moderation-saas-note": "Zawsze włączona w trybie SaaS.",
+      "reranking-label": "Reranking",
+      "reranking-description": "Ponownie oceń pobrane dokumenty za pomocą modelu cross-encoder dla wyższej precyzji.",
+      "models-title": "Używane modele",
+      "model-embedding": "Embedding",
+      "model-reranking": "Reranking",
+      "model-rephrase": "Przeformułowanie / Multi-query",
+      "model-answer": "Generowanie odpowiedzi",
+      "budget-title": "Miesięczny budżet AI",
+      "budget-no-limit": "Brak limitu",
+      "budget-managed-by-admin": "Zarządzany przez administratora platformy."
     }
   },
   "settings-page": {

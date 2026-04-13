@@ -210,6 +210,7 @@ export async function retrieveRelevantDocuments(
   maxDocuments = 4,
   metadataFilter?: object,
   litellmApiKey?: string,
+  rerankingEnabled = true,
 ): Promise<string> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -225,7 +226,7 @@ export async function retrieveRelevantDocuments(
       ? metadataFilter
       : undefined;
 
-  const useReranking = isRerankingEnabled();
+  const useReranking = rerankingEnabled && isRerankingEnabled();
   const totalPoolTarget = useReranking
     ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
     : maxDocuments;

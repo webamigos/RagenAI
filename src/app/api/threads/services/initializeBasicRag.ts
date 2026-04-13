@@ -15,6 +15,7 @@ import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-cl
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
+import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 type InitializeRagChainParams = {
@@ -85,7 +86,10 @@ export const initializeRagChain = async ({
       litellmApiKey,
     });
 
-    const orgMetadata = await getOrganizationMetadata(orgId);
+    const [orgMetadata, ragPipelineSettings] = await Promise.all([
+      getOrganizationMetadata(orgId),
+      getRagPipelineSettings(orgId),
+    ]);
     let vectorStore: VectorStoreClient;
 
     if (orgMetadata.vectorStore === 'supabase') {
@@ -132,6 +136,12 @@ export const initializeRagChain = async ({
         mcpContext,
         approvedToolCalls: approvedToolCalls ?? [],
         tracking: { organizationId: orgId, projectId, userId },
+        ragSettings: {
+          multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,
+          contentModerationEnabled:
+            ragPipelineSettings.contentModerationEnabled,
+          rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+        },
       },
       vectorStore,
     });

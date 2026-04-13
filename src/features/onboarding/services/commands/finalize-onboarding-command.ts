@@ -108,6 +108,22 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           );
         }
 
+        // Apply default limits (including $10 monthly budget) and RAG settings to new org
+        try {
+          const { applyDefaultLimitsToOrg, applyDefaultRagSettingsToOrg } =
+            await import('@/features/organizations/services/organization-settings');
+          const { syncLiteLLMTeamBudgetCommand } =
+            await import('@/features/organizations/services/commands/litellm-team-command');
+          await applyDefaultLimitsToOrg(orgId);
+          await applyDefaultRagSettingsToOrg(orgId);
+          await syncLiteLLMTeamBudgetCommand(orgId);
+        } catch (limitsError) {
+          logger.error(
+            { err: limitsError, orgId },
+            'Failed to apply default limits/RAG settings during onboarding',
+          );
+        }
+
         // Set firstOrg to the created organization
         firstOrg = { id: orgId, name: `${userName}'s Organization` };
       } catch (createError) {

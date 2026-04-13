@@ -4,7 +4,7 @@
 
 const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 const XLSX_EXTENSIONS = ['.xlsx', '.xls'];
-const BINARY_DOC_EXTENSIONS = ['.pdf', '.epub', '.docx'];
+const BINARY_DOC_EXTENSIONS = ['.pdf', '.epub', '.docx', '.pptx', '.ppt'];
 
 /**
  * Checks if a file is an Excel spreadsheet (.xlsx, .xls)
@@ -41,7 +41,9 @@ export const isSupportedFile = (file: File): boolean => {
     file.name.endsWith('.csv') ||
     file.name.endsWith('.xlsx') ||
     file.name.endsWith('.xls') ||
-    file.name.endsWith('.docx')
+    file.name.endsWith('.docx') ||
+    file.name.endsWith('.pptx') ||
+    file.name.endsWith('.ppt')
   );
 };
 

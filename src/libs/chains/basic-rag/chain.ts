@@ -9,17 +9,19 @@ import {
 } from './operations';
 
 /**
- * Feature flag for multi-query expansion (ADR-15).
- * Enabled unless explicitly set to "0" or "false". Disable by setting
- * FEATURE_FLAG_MULTI_QUERY=0 in the environment.
+ * Whether content moderation should run. Per-org setting takes precedence;
+ * in SaaS mode (IS_ON_PREMISE is not set), moderation is always enforced
+ * regardless of the setting as a defense-in-depth measure.
  */
-function isMultiQueryEnabled(): boolean {
-  const value = process.env.FEATURE_FLAG_MULTI_QUERY;
-  if (value === undefined) {
+function shouldModerate(
+  ragSettings: { contentModerationEnabled: boolean } | undefined,
+): boolean {
+  if (!process.env.IS_ON_PREMISE) {
     return true;
   }
-  return value !== '0' && value.toLowerCase() !== 'false';
+  return ragSettings?.contentModerationEnabled !== false;
 }
+
 import {
   sanitizeAndValidateInput,
   moderateContent,
@@ -42,13 +44,15 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate content first, then rephrase
-      await moderateContent(
-        models.contentModerator,
-        sanitizedInput,
-        true,
-        config?.tracking,
-      );
+      // Step 2: Moderate content (skippable in on-premise), then rephrase
+      if (shouldModerate(config?.ragSettings)) {
+        await moderateContent(
+          models.contentModerator,
+          sanitizedInput,
+          true,
+          config?.tracking,
+        );
+      }
       const standaloneQuestion = await rephraseQuestion(
         models.questionRephraser,
         sanitizedInput,
@@ -63,7 +67,8 @@ export const basicRagChain = async ({
       // standalone question, but we defensively dedupe the full list here too
       // (order-preserving) so any future change in expandQueries cannot cause
       // redundant Qdrant round-trips.
-      const variants = isMultiQueryEnabled()
+      const multiQueryEnabled = config?.ragSettings?.multiQueryEnabled ?? true;
+      const variants = multiQueryEnabled
         ? await expandQueries(models.questionRephraser, standaloneQuestion)
         : [];
       const seenQueries = new Set<string>();
@@ -88,6 +93,7 @@ export const basicRagChain = async ({
           config?.maxDocumentsToRetrieve,
           config?.metadataFilter,
           config?.litellmApiKey,
+          config?.ragSettings?.rerankingEnabled ?? true,
         ),
         retrieveThreadDocuments(
           textThreadDocs,

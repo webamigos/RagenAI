@@ -26,9 +26,16 @@ export interface ChainTrackingContext {
   userId?: string | null;
 }
 
+export interface ChainRagSettings {
+  multiQueryEnabled: boolean;
+  contentModerationEnabled: boolean;
+  rerankingEnabled: boolean;
+}
+
 export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
+  ragSettings?: ChainRagSettings;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;

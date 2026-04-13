@@ -442,7 +442,30 @@
       "api-keys": "API Keys",
       "security": "Security",
       "ai-usage": "AI Usage",
-      "disk-usage": "Disk Usage"
+      "disk-usage": "Disk Usage",
+      "rag-settings": "RAG Pipeline"
+    },
+    "rag-settings": {
+      "title": "RAG Pipeline Settings",
+      "description": "View the current configuration of your knowledge base retrieval pipeline.",
+      "on-premise-note": "These settings can be changed in on-premise deployments.",
+      "multi-query-label": "Multi-query expansion",
+      "multi-query-description": "Generate alternative phrasings of each question for broader document retrieval.",
+      "doc-summaries-label": "Document summaries",
+      "doc-summaries-description": "Generate summaries at document ingest time for improved search relevance.",
+      "content-moderation-label": "Content moderation",
+      "content-moderation-description": "Filter harmful or inappropriate content before processing queries.",
+      "content-moderation-saas-note": "Always enabled in SaaS mode.",
+      "reranking-label": "Reranking",
+      "reranking-description": "Re-score retrieved documents using a cross-encoder model for higher precision.",
+      "models-title": "Models in use",
+      "model-embedding": "Embedding",
+      "model-reranking": "Reranking",
+      "model-rephrase": "Rephrase / Multi-query",
+      "model-answer": "Answer generation",
+      "budget-title": "Monthly AI budget",
+      "budget-no-limit": "No limit set",
+      "budget-managed-by-admin": "Managed by platform administrator."
     }
   },
   "settings-page": {
