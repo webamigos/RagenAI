@@ -60,6 +60,13 @@ const FIREFLIES_INSTRUCTIONS = `For Fireflies.ai (meeting transcripts):
 - DATE FILTERING: Use fromDate and toDate in ISO 8601 format (e.g., "2026-01-01") only when the user explicitly asks about a specific time period.
 - USER INFO: Use fireflies_get_user (no parameters) if you need the user's email or account details.`;
 
+const WOOCOMMERCE_INSTRUCTIONS = `For WooCommerce (store management):
+- PRODUCTS: Use the product tools to list, search, or read product details. For "recent products" list sorted by date DESC and limit results to 20. For "out of stock" filter by stock_status="outofstock".
+- ORDERS: Use the order tools to list and inspect orders. For "recent orders" use per_page=20 sorted by date DESC. For status questions filter by status (pending, processing, on-hold, completed, cancelled, refunded, failed). Always include date_created and total when listing.
+- WRITES: Creating or updating products/orders has real effects on the live store. Confirm the exact intent with the user before calling any create/update tool; never guess SKUs, prices, or statuses.
+- PERMISSIONS: The connected REST keys may be read-only. If a write call returns a permission error, tell the user to generate read_write keys in WooCommerce → Settings → Advanced → REST API rather than retrying.
+- CURRENCY: Prices are returned as strings in the store's currency. Don't reformat or convert — display as-is.`;
+
 const SLACK_INSTRUCTIONS = `For Slack:
 - SEARCHING: Use search tools to find messages, files, users, and channels. Provide relevant keywords from the user's query.
 - "MY MESSAGES": When user says "my messages" or uses first-person language, search for messages from the authenticated user.
@@ -82,6 +89,7 @@ const PROVIDER_INSTRUCTIONS: Record<
   GOOGLE_ADS: GOOGLE_ADS_INSTRUCTIONS,
   FIREFLIES: FIREFLIES_INSTRUCTIONS,
   SLACK: SLACK_INSTRUCTIONS,
+  WOOCOMMERCE: WOOCOMMERCE_INSTRUCTIONS,
 };
 
 export function buildMcpContext(
