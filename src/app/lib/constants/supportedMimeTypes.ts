@@ -13,4 +13,7 @@ export const SUPPORTED_MIME_TYPES: Record<string, string> = {
   'application/vnd.ms-excel': 'xls',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
     'docx',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+    'pptx',
+  'application/vnd.ms-powerpoint': 'ppt',
 };

@@ -9,6 +9,7 @@ import { headers } from 'next/headers';
 import { cache } from 'react';
 import db from '@ragenai/prisma-client';
 import { isAppAdmin, isOrgAdmin } from './auth-access-control';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 // Re-export pure functions for convenience
 export { isAppAdmin, isOrgAdmin, APP_ADMIN_ROLE } from './auth-access-control';
@@ -66,6 +67,25 @@ export const getActiveMember = cache(async (organizationId: string) => {
 export async function requireOrgAdmin(organizationId: string) {
   const member = await getActiveMember(organizationId);
   if (!member || !isOrgAdmin(member.role)) {
+    const session = await getSession();
+    // Classify as cross-org attempt only when the user IS authenticated
+    // but doesn't have a membership in this org — bare 'no session' is
+    // just unauth, not a security event worth paging an admin.
+    if (session?.user) {
+      recordSecurityEvent({
+        eventType: member
+          ? 'UNAUTHORIZED_ACCESS_ATTEMPTED'
+          : 'CROSS_ORG_ACCESS_ATTEMPTED',
+        severity: 'warn',
+        source: 'auth',
+        organizationId,
+        userId: session.user.id,
+        metadata: {
+          requiredRole: 'orgAdmin',
+          actualRole: member?.role ?? null,
+        },
+      });
+    }
     throw new Error('Unauthorized: org admin or owner role required');
   }
   return member;
@@ -74,6 +94,22 @@ export async function requireOrgAdmin(organizationId: string) {
 export async function requireOrgOwner(organizationId: string) {
   const member = await getActiveMember(organizationId);
   if (!member || member.role !== 'owner') {
+    const session = await getSession();
+    if (session?.user) {
+      recordSecurityEvent({
+        eventType: member
+          ? 'UNAUTHORIZED_ACCESS_ATTEMPTED'
+          : 'CROSS_ORG_ACCESS_ATTEMPTED',
+        severity: 'warn',
+        source: 'auth',
+        organizationId,
+        userId: session.user.id,
+        metadata: {
+          requiredRole: 'orgOwner',
+          actualRole: member?.role ?? null,
+        },
+      });
+    }
     throw new Error('Unauthorized: org owner role required');
   }
   return member;

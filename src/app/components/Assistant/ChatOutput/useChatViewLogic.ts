@@ -15,6 +15,20 @@ import 'highlight.js/styles/github-dark.css';
 
 import type { StreamedMessageDto } from '@/features/messages/contracts/message.types';
 import { logger } from '@/app/lib/utils/logger';
+import {
+  rewriteLinksInHtml,
+  parseTrustedDomains,
+} from '@/libs/security/link-rewriter';
+
+/**
+ * Client-side trusted-link allowlist. The raw list comes from
+ * `NEXT_PUBLIC_TRUSTED_LINK_DOMAINS` so it reaches the browser (Next.js
+ * only inlines `NEXT_PUBLIC_*` vars into client bundles). Parsed once
+ * at module load — no reason to re-parse on every render.
+ */
+const TRUSTED_DOMAINS = parseTrustedDomains(
+  process.env.NEXT_PUBLIC_TRUSTED_LINK_DOMAINS,
+);
 
 const createMarkdownRenderer = () => {
   const md = new MarkdownIt({
@@ -62,12 +76,53 @@ const createMarkdownRenderer = () => {
   return md;
 };
 
+/**
+ * Phase 5 hardened DOMPurify config.
+ *
+ * Additions over the previous baseline:
+ *   - `ALLOWED_URI_REGEXP` restricts `href`/`src` to http, https,
+ *     mailto, tel, fragment, and root-relative paths. This is how
+ *     `javascript:`, `data:`, `vbscript:`, `file:`, and other
+ *     unsafe URI schemes get stripped at the sanitizer boundary —
+ *     belt to the link rewriter's suspenders below.
+ *   - `FORBID_ATTR` explicitly removes the most common event-handler
+ *     and formaction attributes. DOMPurify already strips most of
+ *     these by default, but being explicit (a) documents intent and
+ *     (b) protects against future DOMPurify version regressions.
+ *
+ * Protocol-relative URL defence:
+ * The negative lookahead `\/(?!\/)` accepts a single-slash root-
+ * relative path (`/settings`) but rejects protocol-relative URLs
+ * like `//evil.com` which would otherwise inherit the page's
+ * protocol and navigate to an arbitrary external host. Without
+ * this guard, an attacker could smuggle cross-origin links through
+ * the sanitizer as "root-relative."
+ */
+const ALLOWED_URI_REGEXP = /^(?:(?:https?|mailto|tel):|#|\/(?!\/))/i;
+
 const sanitizeHtml = (html: string): string => {
   return DOMPurify.sanitize(html, {
     FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+    FORBID_ATTR: [
+      'onclick',
+      'onerror',
+      'onload',
+      'onmouseover',
+      'onmouseout',
+      'onfocus',
+      'onblur',
+      'onsubmit',
+      'onchange',
+      'onkeydown',
+      'onkeyup',
+      'onkeypress',
+      'formaction',
+      'action',
+    ],
+    ALLOWED_URI_REGEXP,
     ALLOW_ARIA_ATTR: true,
     ALLOW_DATA_ATTR: false,
-    ADD_ATTR: ['target', 'rel'],
+    ADD_ATTR: ['target', 'rel', 'data-ragen-link'],
   });
 };
 
@@ -84,7 +139,16 @@ export const useChatViewLogic = (
   const md = useMemo(() => createMarkdownRenderer(), []);
 
   const renderAndSanitize = useMemo(() => {
-    return (content: string) => sanitizeHtml(md.render(content));
+    return (content: string) => {
+      // Order matters: sanitize first (strips dangerous URIs + tags),
+      // THEN rewrite external links. Rewriting first would give the
+      // sanitizer a chance to strip our `/r?u=...` hrefs because it
+      // would see them as relative-to-untrusted-origin links.
+      const sanitized = sanitizeHtml(md.render(content));
+      return rewriteLinksInHtml(sanitized, {
+        trustedDomains: TRUSTED_DOMAINS,
+      });
+    };
   }, [md]);
 
   useEffect(() => {

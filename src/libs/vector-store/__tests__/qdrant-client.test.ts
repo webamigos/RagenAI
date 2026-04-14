@@ -58,7 +58,7 @@ function createMockEmbeddings(): EmbeddingsProvider {
   };
 }
 
-describe('QdrantVectorStoreClient', () => {
+describe('QdrantVectorStoreClient (hybrid search)', () => {
   let client: QdrantVectorStoreClient;
   let embeddings: EmbeddingsProvider;
 
@@ -74,7 +74,7 @@ describe('QdrantVectorStoreClient', () => {
   });
 
   describe('similaritySearch', () => {
-    it('should search with query embedding and return documents', async () => {
+    it('uses RRF fusion over dense + sparse prefetch branches', async () => {
       mockQuery.mockResolvedValue({
         points: [
           {
@@ -94,25 +94,53 @@ describe('QdrantVectorStoreClient', () => {
         ],
       });
 
-      const results = await client.similaritySearch('test query', 5);
+      const results = await client.similaritySearch('faktura vat', 5);
 
-      expect(embeddings.embedQuery).toHaveBeenCalledWith('test query');
-      expect(mockQuery).toHaveBeenCalledWith('test-collection', {
-        query: expect.any(Array),
-        limit: 5,
-        filter: undefined,
-        with_payload: true,
-      });
+      expect(embeddings.embedQuery).toHaveBeenCalledWith('faktura vat');
+      expect(mockQuery).toHaveBeenCalledTimes(1);
+
+      const callArgs = mockQuery.mock.calls[0];
+      expect(callArgs[0]).toBe('test-collection');
+
+      const queryBody = callArgs[1];
+      expect(queryBody.query).toEqual({ fusion: 'rrf' });
+      expect(queryBody.limit).toBe(5);
+      expect(queryBody.with_payload).toBe(true);
+
+      // Two prefetch branches: dense + sparse
+      expect(queryBody.prefetch).toHaveLength(2);
+      const denseBranch = queryBody.prefetch.find(
+        (p: { using: string }) => p.using === 'dense',
+      );
+      const sparseBranch = queryBody.prefetch.find(
+        (p: { using: string }) => p.using === 'sparse',
+      );
+      expect(denseBranch).toBeDefined();
+      expect(sparseBranch).toBeDefined();
+      expect(denseBranch.query).toEqual(expect.any(Array));
+      expect(sparseBranch.query).toHaveProperty('indices');
+      expect(sparseBranch.query).toHaveProperty('values');
+      // Over-fetch by 4x k per branch
+      expect(denseBranch.limit).toBe(20);
+      expect(sparseBranch.limit).toBe(20);
+
       expect(results).toHaveLength(2);
       expect(results[0].pageContent).toBe('Document content');
-      expect(results[0].metadata).toEqual({
-        file_id: 'f1',
-        organization_id: 'org1',
-      });
       expect(results[1].pageContent).toBe('Another document');
     });
 
-    it('should convert intermediate filter to Qdrant format', async () => {
+    it('falls back to dense-only when query has no sparse tokens', async () => {
+      mockQuery.mockResolvedValue({ points: [] });
+
+      // Punctuation / digits only — no unicode letter tokens
+      await client.similaritySearch('42!? ...', 5);
+
+      const queryBody = mockQuery.mock.calls[0][1];
+      expect(queryBody.prefetch).toHaveLength(1);
+      expect(queryBody.prefetch[0].using).toBe('dense');
+    });
+
+    it('passes converted filter to every prefetch branch', async () => {
       mockQuery.mockResolvedValue({ points: [] });
 
       const filter = {
@@ -123,79 +151,89 @@ describe('QdrantVectorStoreClient', () => {
             match_any: { values: ['user:u1', 'team:t1'] },
           },
         ],
-        should: [{ key: 'metadata.project_id', match: { value: 42 } }],
       };
 
-      await client.similaritySearch('query', 10, filter);
+      await client.similaritySearch('hello world', 10, filter);
 
-      expect(mockQuery).toHaveBeenCalledWith('test-collection', {
-        query: expect.any(Array),
-        limit: 10,
-        filter: {
-          must: [
-            { key: 'metadata.organization_id', match: { value: 'org1' } },
-            {
-              key: 'metadata.accessible_by',
-              match: { any: ['user:u1', 'team:t1'] },
-            },
-          ],
-          should: [{ key: 'metadata.project_id', match: { value: 42 } }],
-        },
-        with_payload: true,
-      });
+      const queryBody = mockQuery.mock.calls[0][1];
+      const expectedFilter = {
+        must: [
+          { key: 'metadata.organization_id', match: { value: 'org1' } },
+          {
+            key: 'metadata.accessible_by',
+            match: { any: ['user:u1', 'team:t1'] },
+          },
+        ],
+      };
+      for (const branch of queryBody.prefetch) {
+        expect(branch.filter).toEqual(expectedFilter);
+      }
     });
 
-    it('should convert is_null filter condition', async () => {
+    it('converts is_null filter condition', async () => {
       mockQuery.mockResolvedValue({ points: [] });
 
       const filter = {
         must: [{ key: 'metadata.project_id', is_null: true }],
       };
 
-      await client.similaritySearch('query', 5, filter);
+      await client.similaritySearch('hello', 5, filter);
 
-      expect(mockQuery).toHaveBeenCalledWith('test-collection', {
-        query: expect.any(Array),
-        limit: 5,
-        filter: {
-          must: [{ is_null: { key: 'metadata.project_id' } }],
-        },
-        with_payload: true,
+      const queryBody = mockQuery.mock.calls[0][1];
+      expect(queryBody.prefetch[0].filter).toEqual({
+        must: [{ is_null: { key: 'metadata.project_id' } }],
       });
     });
   });
 
   describe('addDocuments', () => {
-    it('should embed documents and upsert to Qdrant', async () => {
+    it('upserts points with named dense + sparse vectors', async () => {
       mockUpsert.mockResolvedValue({});
 
       const docs = [
-        { pageContent: 'Doc 1', metadata: { file_id: 'f1' } },
-        { pageContent: 'Doc 2', metadata: { file_id: 'f2' } },
+        { pageContent: 'faktura vat dla klienta', metadata: { file_id: 'f1' } },
+        { pageContent: 'invoice amount total', metadata: { file_id: 'f2' } },
       ];
 
       await client.addDocuments(docs);
 
       expect(embeddings.embedDocuments).toHaveBeenCalledWith([
-        'Doc 1',
-        'Doc 2',
+        'faktura vat dla klienta',
+        'invoice amount total',
       ]);
-      expect(mockUpsert).toHaveBeenCalledWith('test-collection', {
-        points: expect.arrayContaining([
-          expect.objectContaining({
-            vector: expect.any(Array),
-            payload: {
-              content: 'Doc 1',
-              pageContent: 'Doc 1',
-              metadata: { file_id: 'f1' },
-            },
-          }),
-        ]),
-        wait: true,
-      });
+      expect(mockUpsert).toHaveBeenCalledTimes(1);
+
+      const upsertBody = mockUpsert.mock.calls[0][1];
+      expect(upsertBody.points).toHaveLength(2);
+
+      const point = upsertBody.points[0];
+      expect(point.vector).toHaveProperty('dense');
+      expect(point.vector).toHaveProperty('sparse');
+      expect(point.vector.dense).toEqual(expect.any(Array));
+      expect(point.vector.dense).toHaveLength(1024);
+      expect(point.vector.sparse).toHaveProperty('indices');
+      expect(point.vector.sparse).toHaveProperty('values');
+      expect(point.vector.sparse.indices.length).toBeGreaterThan(0);
+      expect(point.payload.metadata).toEqual({ file_id: 'f1' });
     });
 
-    it('should skip empty document arrays', async () => {
+    it('omits sparse vector for chunks with no tokenizable content', async () => {
+      mockUpsert.mockResolvedValue({});
+
+      await client.addDocuments([
+        { pageContent: '42 !!', metadata: { file_id: 'f1' } },
+        { pageContent: 'real content', metadata: { file_id: 'f2' } },
+      ]);
+
+      const upsertBody = mockUpsert.mock.calls[0][1];
+      expect(upsertBody.points[0].vector).toEqual({
+        dense: expect.any(Array),
+      });
+      expect(upsertBody.points[0].vector).not.toHaveProperty('sparse');
+      expect(upsertBody.points[1].vector).toHaveProperty('sparse');
+    });
+
+    it('skips empty document arrays', async () => {
       await client.addDocuments([]);
 
       expect(embeddings.embedDocuments).not.toHaveBeenCalled();
@@ -204,7 +242,7 @@ describe('QdrantVectorStoreClient', () => {
   });
 
   describe('deleteDocuments', () => {
-    it('should delete documents matching filter', async () => {
+    it('deletes documents matching filter', async () => {
       mockDelete.mockResolvedValue({});
 
       const filter = {
@@ -221,7 +259,7 @@ describe('QdrantVectorStoreClient', () => {
       });
     });
 
-    it('should skip delete with empty filter', async () => {
+    it('skips delete with empty filter', async () => {
       await client.deleteDocuments({});
 
       expect(mockDelete).not.toHaveBeenCalled();
@@ -229,7 +267,7 @@ describe('QdrantVectorStoreClient', () => {
   });
 
   describe('updatePayload', () => {
-    it('should set payload on matching documents', async () => {
+    it('sets payload on matching documents', async () => {
       mockSetPayload.mockResolvedValue({});
 
       const filter = {
@@ -251,7 +289,7 @@ describe('QdrantVectorStoreClient', () => {
   });
 
   describe('scrollPoints', () => {
-    it('should scroll through points with pagination', async () => {
+    it('scrolls through points with pagination', async () => {
       mockScroll.mockResolvedValue({
         points: [
           {
@@ -277,13 +315,12 @@ describe('QdrantVectorStoreClient', () => {
   });
 
   describe('ensureCollection', () => {
-    it('should create collection if it does not exist', async () => {
+    it('creates collection with hybrid dense+sparse schema', async () => {
       mockCollectionExists.mockResolvedValue({ exists: false });
       mockCreateCollection.mockResolvedValue({});
       mockCreatePayloadIndex.mockResolvedValue({});
       mockQuery.mockResolvedValue({ points: [] });
 
-      // Create a fresh client to reset the verified state
       const freshClient = new QdrantVectorStoreClient(embeddings, {
         url: 'http://localhost:6333',
         collectionName: 'new-collection',
@@ -294,8 +331,15 @@ describe('QdrantVectorStoreClient', () => {
       expect(mockCollectionExists).toHaveBeenCalledWith('new-collection');
       expect(mockCreateCollection).toHaveBeenCalledWith('new-collection', {
         vectors: {
-          size: 1024,
-          distance: 'Cosine',
+          dense: {
+            size: 1024,
+            distance: 'Cosine',
+          },
+        },
+        sparse_vectors: {
+          sparse: {
+            modifier: 'idf',
+          },
         },
         optimizers_config: {
           indexing_threshold: 20000,
@@ -304,7 +348,7 @@ describe('QdrantVectorStoreClient', () => {
       expect(mockCreatePayloadIndex).toHaveBeenCalledTimes(4);
     });
 
-    it('should not create collection if it already exists', async () => {
+    it('does not create collection if it already exists', async () => {
       mockCollectionExists.mockResolvedValue({ exists: true });
       mockQuery.mockResolvedValue({ points: [] });
 

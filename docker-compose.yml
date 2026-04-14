@@ -38,29 +38,6 @@ services:
     networks:
       - ragen-network
 
-  # meilisearch:
-  #   image: getmeili/meilisearch:v1.36
-  #   container_name: ragen-meilisearch
-  #   restart: unless-stopped
-  #   profiles:
-  #     - meilisearch
-  #   environment:
-  #     MEILI_ENV: development
-  #     MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY:-ragen-dev-key}
-  #     MEILI_NO_ANALYTICS: "true"
-  #     MEILI_EXPERIMENTAL_ENABLE_METRICS: "true"
-  #   ports:
-  #     - "${MEILISEARCH_PORT:-7700}:7700"
-  #   volumes:
-  #     - meilisearch_data:/meili_data
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - ragen-network
-
   temporal:
     image: temporalio/auto-setup:1.26.2
     container_name: ragen-temporal
@@ -137,6 +114,29 @@ services:
     networks:
       - ragen-network
 
+  docling:
+    image: ghcr.io/docling-project/docling-serve-cpu:latest
+    container_name: ragen-docling
+    restart: unless-stopped
+    environment:
+      UVICORN_HOST: "0.0.0.0"
+      UVICORN_PORT: "5001"
+      UVICORN_WORKERS: "1"
+      DOCLING_SERVE_MAX_SYNC_WAIT: "300"
+      DOCLING_SERVE_LOAD_MODELS_AT_BOOT: "true"
+      DOCLING_SERVE_ENABLE_UI: "true"
+      DOCLING_NUM_THREADS: "4"
+    ports:
+      - "${DOCLING_PORT:-5001}:5001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      - ragen-network
+
   # Optional — only needed for API rate limiting
   redis:
     image: redis:7-alpine
@@ -160,8 +160,6 @@ volumes:
     name: ragen-redis-data
   qdrant_data:
     name: ragen-qdrant-data
-  # meilisearch_data:
-  #   name: ragen-meilisearch-data
   litellm_postgres_data:
     name: ragen-litellm-postgres-data
 

@@ -64,7 +64,10 @@ test.describe('Auth P0 — sign-up form validation', () => {
     await expect(page.locator('input[type="email"]')).toBeVisible({
       timeout: 5_000,
     });
-    await expect(page.locator('input[type="password"]')).toBeVisible({
+    await expect(page.locator('#password')).toBeVisible({
+      timeout: 5_000,
+    });
+    await expect(page.locator('#confirmPassword')).toBeVisible({
       timeout: 5_000,
     });
 

@@ -24,7 +24,7 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
     }),
     db.userFile.groupBy({
       by: ['organizationId'],
-      _sum: { fileSize: true },
+      _sum: { fileSize: true, pageCount: true },
       _count: { id: true },
     }),
   ]);
@@ -32,7 +32,11 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
   const usageMap = new Map(
     fileAggs.map((a) => [
       a.organizationId,
-      { totalBytes: a._sum.fileSize ?? 0, fileCount: a._count.id },
+      {
+        totalBytes: a._sum.fileSize ?? 0,
+        fileCount: a._count.id,
+        pageCount: a._sum.pageCount ?? 0,
+      },
     ]),
   );
 
@@ -40,12 +44,14 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
     const usage = usageMap.get(org.id) ?? {
       totalBytes: 0,
       fileCount: 0,
+      pageCount: 0,
     };
     return {
       orgId: org.id,
       orgName: org.name,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,
+      pageCount: usage.pageCount,
       storageLimitBytes:
         org.settings?.storageLimitBytes != null
           ? Number(org.settings.storageLimitBytes)
@@ -70,7 +76,7 @@ export async function getAdminOrgProjectsStorageQuery(
     db.userFile.groupBy({
       by: ['projectId'],
       where: { organizationId: orgId },
-      _sum: { fileSize: true },
+      _sum: { fileSize: true, pageCount: true },
       _count: { id: true },
     }),
   ]);
@@ -78,17 +84,26 @@ export async function getAdminOrgProjectsStorageQuery(
   const usageMap = new Map(
     fileAggs.map((a) => [
       a.projectId,
-      { totalBytes: a._sum.fileSize ?? 0, fileCount: a._count.id },
+      {
+        totalBytes: a._sum.fileSize ?? 0,
+        fileCount: a._count.id,
+        pageCount: a._sum.pageCount ?? 0,
+      },
     ]),
   );
 
   const results: ProjectStorageSummary[] = projects.map((project) => {
-    const usage = usageMap.get(project.id) ?? { totalBytes: 0, fileCount: 0 };
+    const usage = usageMap.get(project.id) ?? {
+      totalBytes: 0,
+      fileCount: 0,
+      pageCount: 0,
+    };
     return {
       projectId: project.id,
       projectTitle: project.title,
       totalBytes: usage.totalBytes,
       fileCount: usage.fileCount,
+      pageCount: usage.pageCount,
     };
   });
 

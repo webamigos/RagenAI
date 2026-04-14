@@ -32,6 +32,6 @@
     question: "How do I authenticate API requests?"
   assert:
     - type: contains-any
-      value: ["x-api-key", "API key"]
+      value: ["Authorization", "Bearer", "API key"]
     - type: llm-rubric
       value: "Explains API authentication"

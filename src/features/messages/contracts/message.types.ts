@@ -46,6 +46,26 @@ export const createMessageSchema = (t?: (key: string) => string) =>
         }),
       )
       .optional(),
+    /**
+     * Phase 2b — tool-call approval flow. When the user clicks Approve
+     * on a paused tool-confirmation card, the client resubmits the chat
+     * with this field populated. The server threads it into the chain's
+     * `experimental_context` so the MCP `needsApproval` predicate lets
+     * the matching tool call through instead of pausing again.
+     *
+     * Scoped per-turn: only honored for tool calls in the turn being
+     * resubmitted. Expired/stale IDs are harmless because the predicate
+     * only compares them against the live `toolCallId` the SDK generates.
+     */
+    approvedToolCalls: z.array(z.string()).optional(),
+    /**
+     * Phase 2b — explicit denial audit trail. When the user clicks Deny
+     * on a paused tool-confirmation card, the client sets this field so
+     * the server can record a `TOOL_CALL_DENIED` security event. No
+     * server-side behavior other than the audit trail — the natural
+     * language denial in the prompt tells the LLM to stand down.
+     */
+    deniedToolCalls: z.array(z.string()).optional(),
   });
 
 export type CreateMessageDto = z.infer<ReturnType<typeof createMessageSchema>>;

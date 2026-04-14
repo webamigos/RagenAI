@@ -30,6 +30,7 @@ import {
 } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
 import { FolderIcon } from '@heroicons/react/24/outline';
+import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 
 type Props = {
   files: UserFileType[];
@@ -178,6 +179,7 @@ const FileRow = ({
             ) : (
               <span title={fileName}>{truncatedFileName}</span>
             )}
+            <SuspiciousContentBadge metadata={file.metadata} />
           </span>
         </TableCell>
         <TableCell>{prettyBytes(fileSize)}</TableCell>

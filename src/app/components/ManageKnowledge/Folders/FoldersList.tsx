@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import prettyBytes from 'pretty-bytes';
 import {
   FolderIcon,
   DocumentTextIcon,
@@ -35,11 +36,17 @@ import { buildFolderTree } from '@/features/documents/utils/folder-tree';
 
 export type ViewMode = 'all' | 'my-files' | 'shared-with-me';
 
+type UsageData = {
+  storageBytes: number;
+  pageCount: number;
+};
+
 type Props = {
   initialFolders: DocumentFolderItem[];
   onSelectFolder?: (folderId: string | null, viewMode?: ViewMode) => void;
   selectedFolderId?: string | null;
   selectedViewMode?: ViewMode;
+  usage?: UsageData | null;
 };
 
 const navItemBase =
@@ -64,6 +71,7 @@ export function FoldersList({
   onSelectFolder,
   selectedFolderId,
   selectedViewMode = 'all',
+  usage,
 }: Props) {
   const t = useTranslations('folders');
   const { successToast, errorToast } = statusToast();
@@ -244,48 +252,73 @@ export function FoldersList({
 
   return (
     <>
-      <div className="space-y-1">
-        {/* Navigation items */}
-        <button
-          onClick={() => onSelectFolder?.(null, 'all')}
-          className={`${navItemBase} ${
-            selectedFolderId === null && selectedViewMode === 'all'
-              ? navItemActive
-              : navItemInactive
-          }`}
-        >
-          <DocumentTextIcon className="size-4 shrink-0" />
-          <span>{t('all-files')}</span>
-        </button>
+      <div className="flex flex-col h-full">
+        <div className="space-y-1 flex-1">
+          {/* Navigation items */}
+          <button
+            onClick={() => onSelectFolder?.(null, 'all')}
+            className={`${navItemBase} ${
+              selectedFolderId === null && selectedViewMode === 'all'
+                ? navItemActive
+                : navItemInactive
+            }`}
+          >
+            <DocumentTextIcon className="size-4 shrink-0" />
+            <span>{t('all-files')}</span>
+          </button>
 
-        {/* Folder tree - indented under All files */}
-        <div className="ml-1">
-          {folderTree.map((folder) => renderFolder(folder))}
+          {/* Folder tree - indented under All files */}
+          <div className="ml-1">
+            {folderTree.map((folder) => renderFolder(folder))}
+          </div>
+
+          <div className="!my-2 border-t border-gray-200 dark:border-gray-700" />
+
+          <button
+            onClick={() => onSelectFolder?.(null, 'my-files')}
+            className={`${navItemBase} ${
+              selectedViewMode === 'my-files' ? navItemActive : navItemInactive
+            }`}
+          >
+            <UserIcon className="size-4 shrink-0" />
+            <span>{t('my-files')}</span>
+          </button>
+
+          <button
+            onClick={() => onSelectFolder?.(null, 'shared-with-me')}
+            className={`${navItemBase} ${
+              selectedViewMode === 'shared-with-me'
+                ? navItemActive
+                : navItemInactive
+            }`}
+          >
+            <UsersIcon className="size-4 shrink-0" />
+            <span>{t('shared-with-me')}</span>
+          </button>
         </div>
 
-        <div className="!my-2 border-t border-gray-200 dark:border-gray-700" />
-
-        <button
-          onClick={() => onSelectFolder?.(null, 'my-files')}
-          className={`${navItemBase} ${
-            selectedViewMode === 'my-files' ? navItemActive : navItemInactive
-          }`}
-        >
-          <UserIcon className="size-4 shrink-0" />
-          <span>{t('my-files')}</span>
-        </button>
-
-        <button
-          onClick={() => onSelectFolder?.(null, 'shared-with-me')}
-          className={`${navItemBase} ${
-            selectedViewMode === 'shared-with-me'
-              ? navItemActive
-              : navItemInactive
-          }`}
-        >
-          <UsersIcon className="size-4 shrink-0" />
-          <span>{t('shared-with-me')}</span>
-        </button>
+        {/* Usage footer */}
+        {usage && (
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-1">
+              {t('usage')}
+            </p>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1 text-sm">
+              <span className="text-gray-500 dark:text-gray-400">
+                {t('storage')}
+              </span>
+              <span className="text-right font-medium text-gray-700 dark:text-gray-300">
+                {prettyBytes(usage.storageBytes)}
+              </span>
+              <span className="text-gray-500 dark:text-gray-400">
+                {t('pages')}
+              </span>
+              <span className="text-right font-medium text-gray-700 dark:text-gray-300">
+                {usage.pageCount.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <AlertDialog

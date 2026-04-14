@@ -6,6 +6,7 @@ import {
   type ApiSseMessageDelta,
   type ApiSseMessageEvent,
   type ApiSseReasoningDelta,
+  type ApiSseToolApprovalRequest,
   type SseMessageError,
 } from '@/features/threads/contracts/events.types';
 
@@ -49,6 +50,10 @@ import {
   setMessageLoadingText,
   setUserMessageId,
 } from '@/store/assistant/assistantSlice';
+import {
+  setPendingApproval,
+  clearPendingApproval,
+} from '@/store/tool-approvals/toolApprovalsSlice';
 
 type CommonConfig = {
   messages: MessageDto[];
@@ -177,6 +182,11 @@ export const handleAssistantStream = async ({
   reduxDispatch(setMessageLoadingText(t('status-thinking')));
   reduxDispatch(setStreamedMessage(null));
   reduxDispatch(setUserMessageId(userMessageId));
+  // Any pending tool approval from a previous turn is resolved the
+  // moment the user submits a new one (approve, deny, or brand-new
+  // message) — the paused toolCallId from that earlier turn can no
+  // longer be honored.
+  reduxDispatch(clearPendingApproval({ threadId }));
 
   try {
     const streamUrl = getStreamUrl(
@@ -338,6 +348,30 @@ export const handleAssistantStream = async ({
               reduxDispatch(setLoading(false));
               scrollFn();
               accumulatingMessage = '';
+            }
+            break;
+
+          case 'tool_approval_request':
+            // Phase 2b — the SDK paused a write tool because RAG
+            // context is present in this turn. Store the pending
+            // approval in Redux so ToolConfirmationCard can render it
+            // inline in the paused assistant message. The explanation
+            // text rides via `delta` (same path as regular assistant
+            // content), so no UI gap is visible here.
+            if (messageData) {
+              const approvalData = messageData as ApiSseToolApprovalRequest;
+              reduxDispatch(
+                setPendingApproval({
+                  threadId,
+                  approval: {
+                    approvalId: approvalData.approvalId,
+                    toolCallId: approvalData.toolCallId,
+                    toolName: approvalData.toolName,
+                    provider: approvalData.provider,
+                    createdAt: new Date().toISOString(),
+                  },
+                }),
+              );
             }
             break;
 

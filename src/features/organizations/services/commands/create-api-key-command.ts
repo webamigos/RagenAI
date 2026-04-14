@@ -3,6 +3,7 @@ import db from '@ragenai/prisma-client';
 import { getRagenAuthClient } from '@/libs/ragen-vault/client';
 import { maskApiKey } from '@/app/lib/utils/hashApiKey';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import { logger } from '@/app/lib/utils/logger';
 
 const VAULT_PROVIDER = 'ragen-api-key';
@@ -67,6 +68,19 @@ export const createApiKeyCommand = async (
       entityType: 'api-key',
       entityId: apiKey.id,
       newData: { name, projectId },
+    });
+
+    recordSecurityEvent({
+      eventType: 'API_KEY_CREATED',
+      severity: 'info',
+      source: 'admin',
+      organizationId: orgId,
+      userId,
+      metadata: {
+        apiKeyId: apiKey.id,
+        projectId,
+        keyName: name,
+      },
     });
 
     return { id: apiKey.id, name, maskedValue, fullKey };

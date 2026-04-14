@@ -61,10 +61,19 @@
     "terms-of-use": "Terms of Use",
     "and": "and",
     "privacy-policy": "Privacy Policy",
+    "confirm-password": "Confirm password",
+    "verification-email-sent-title": "Check your email",
+    "verification-email-sent-description": "We've sent a verification link to {email}. Click the link in the email to activate your account.",
+    "verification-email-sent-hint": "Didn't receive the email? Check your spam folder or click below to resend.",
+    "resend-verification": "Resend verification email",
+    "resend-success": "Verification email has been resent.",
+    "go-to-sign-in": "Go to sign in",
     "validation": {
       "terms": "You need to accept Terms of Use and Privacy Policy",
       "email": "Invalid email",
-      "password": "Invalid password"
+      "password": "Password must be at least 8 characters",
+      "confirm-password": "Passwords do not match",
+      "newsletter-consent": "You need to accept the newsletter policy"
     },
     "newsletter-consent": "I consent to the processing of my personal data by Web Amigos sp. z o.o. for the purpose of sending me a newsletter via electronic means, including information about news, services, offers, recommended links, or events. I understand that I can withdraw this consent at any time. More information can be found in ",
     "newsletter-consent-link": "Newsltetter Policy",
@@ -84,7 +93,8 @@
     "not-a-member": "Not a member?",
     "start-free-trial": "Start a 14 day free trial",
     "or-continue-with": "Or continue with",
-    "sign-in-with-google": "Sign in with Google"
+    "sign-in-with-google": "Sign in with Google",
+    "email-not-verified": "Your email address has not been verified. Please check your inbox for the verification link."
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",
@@ -94,6 +104,18 @@
     "Enter-password": "Enter your new password",
     "Enter-reset-code": "Enter the password reset code that was sent to your email",
     "Reset-password": "Reset password"
+  },
+  "verify-email": {
+    "title": "Verify your email",
+    "description": "We've sent a verification link to your email address. Click the link in the email to verify your account.",
+    "verification-code": "Verification token",
+    "verification-code-placeholder": "Enter the token from your email",
+    "verify": "Verify email",
+    "resend": "Didn't receive the email? Resend",
+    "resending": "Resending...",
+    "resend-success": "Verification email resent successfully!",
+    "error-generic": "An unexpected error occurred",
+    "error-verification-failed": "Verification failed"
   },
   "initial-account": {
     "title": "Create Admin Account",
@@ -206,6 +228,9 @@
     },
     "settings-api-keys": {
       "title": "API Keys | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Security | Ragen AI"
     },
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
@@ -355,6 +380,7 @@
   "assistant-settings": {
     "api-key": "API Key",
     "prompt-assistant-settings": "Assistant settings",
+    "model-selection": "Language model",
     "model-select": {
       "title": "Language model",
       "failed-to-fetch-model": "Error fetching language model",
@@ -409,6 +435,45 @@
     "upload-files": "Upload files",
     "add-from-url": "Add Knowledge from URL"
   },
+  "organization-page": {
+    "title": "Organization",
+    "general-settings": "General settings",
+    "nav": {
+      "profile": "Organization",
+      "members": "Members",
+      "assistant-settings": "Assistant settings",
+      "settings": "Settings",
+      "subscription": "Subscription",
+      "teams": "Teams",
+      "api-keys": "API Keys",
+      "security": "Security",
+      "ai-usage": "AI Usage",
+      "disk-usage": "Disk Usage",
+      "rag-settings": "RAG Pipeline"
+    },
+    "rag-settings": {
+      "title": "RAG Pipeline Settings",
+      "description": "View the current configuration of your knowledge base retrieval pipeline.",
+      "on-premise-note": "These settings can be changed in on-premise deployments.",
+      "multi-query-label": "Multi-query expansion",
+      "multi-query-description": "Generate alternative phrasings of each question for broader document retrieval.",
+      "doc-summaries-label": "Document summaries",
+      "doc-summaries-description": "Generate summaries at document ingest time for improved search relevance.",
+      "content-moderation-label": "Content moderation",
+      "content-moderation-description": "Filter harmful or inappropriate content before processing queries.",
+      "content-moderation-saas-note": "Always enabled in SaaS mode.",
+      "reranking-label": "Reranking",
+      "reranking-description": "Re-score retrieved documents using a cross-encoder model for higher precision.",
+      "models-title": "Models in use",
+      "model-embedding": "Embedding",
+      "model-reranking": "Reranking",
+      "model-rephrase": "Rephrase / Multi-query",
+      "model-answer": "Answer generation",
+      "budget-title": "Monthly AI budget",
+      "budget-no-limit": "No limit set",
+      "budget-managed-by-admin": "Managed by platform administrator."
+    }
+  },
   "settings-page": {
     "title": "Settings",
     "nav": {
@@ -420,6 +485,7 @@
       "subscription": "Subscription",
       "teams": "Teams",
       "api-keys": "API Keys",
+      "security": "Security",
       "users": "Users",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
@@ -459,9 +525,60 @@
       "api-key-placeholder": "Enter API key...",
       "api-key-help-link": "Learn how to get your API key.",
       "api-key-error": "Failed to register API key. Please check your key and try again.",
+      "custom-header-title": "Connect {provider}",
+      "custom-header-description": "Enter your shop URL and WooCommerce REST API keys.",
+      "custom-header-site-url-label": "Shop URL",
+      "custom-header-consumer-key-label": "Consumer key",
+      "custom-header-consumer-secret-label": "Consumer secret",
+      "custom-header-test": "Test connection",
+      "custom-header-test-success": "Connected — {count} tools available.",
+      "custom-header-test-error": "Could not verify the connection. Check the URL and keys.",
+      "custom-header-error": "Failed to register connection. Please check your details.",
       "coming-soon": "Coming soon",
       "gmail-description": "Search emails and read messages.",
-      "notion-description": "Search pages, databases, and manage content."
+      "notion-description": "Search pages, databases, and manage content.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Search and read documents from your Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "View calendar events and check availability."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Access traffic reports, conversions, and audience insights."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "View campaigns, performance, and track costs."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Manage tasks, projects, and workspaces."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Access contacts, companies, deals, and CRM data."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Search meeting transcripts, summaries, and action items."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Search emails and read messages."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Search messages, channels, and send messages."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Manage products and orders from your WooCommerce store."
+        }
+      }
     },
     "chatbots": {
       "title": "Chatbots",
@@ -639,7 +756,8 @@
     "nav": {
       "chats": "Chats",
       "assistants": "Projects",
-      "chatbots": "Chatbots"
+      "chatbots": "Chatbots",
+      "organization": "Organization"
     },
     "starred": {
       "title": "Starred"
@@ -832,7 +950,10 @@
     "add-from-url": "Add from URL",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",
-    "no-shared-files": "No files have been shared with you yet"
+    "no-shared-files": "No files have been shared with you yet",
+    "usage": "Usage",
+    "storage": "Storage",
+    "pages": "Pages"
   },
   "file-delete-modal": {
     "title": "Delete file",
@@ -1179,8 +1300,37 @@
     "reasoning_end": "",
     "tool_call": "calling tool",
     "tool_result": "",
+    "tool_approval_request": "tool requires confirmation",
     "error": "An Error has occurred",
     "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Tool call confirmation",
+    "title": "Confirm tool action",
+    "description": "This action has side effects and the current conversation includes retrieved knowledge-base content. Approve only if the request matches your intent.",
+    "tool-label": "Tool",
+    "provider-label": "Provider",
+    "approve": "Approve",
+    "deny": "Deny",
+    "approve-prompt": "Yes, please proceed with {toolName}.",
+    "deny-prompt": "No, cancel that tool call."
+  },
+  "link-interstitial": {
+    "title": "You are about to leave Ragen",
+    "description": "This link was generated from conversation content that may include untrusted sources. Make sure the destination looks right before continuing.",
+    "host-label": "Destination host",
+    "url-label": "Full URL",
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "back-home": "Back to Ragen",
+    "error-title": "Link error",
+    "error-missing": "No destination URL was provided.",
+    "error-invalid": "The destination URL could not be parsed.",
+    "error-unsupported-scheme": "Only http and https links are supported."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "This file contains patterns that look like injected instructions. Review it before using in RAG queries.",
+    "aria-label": "Suspicious content warning"
   },
   "ErrorBoundary": {
     "error": "An error occurred",
@@ -1392,5 +1542,60 @@
     "untitled-conversation": "New conversation",
     "load-more": "Load more",
     "loading": "Loading..."
+  },
+  "settings-security": {
+    "title": "Security events",
+    "description": "Security-relevant events scoped to your organization. Critical events also trigger an email alert to the configured admin address.",
+    "empty": "No security events recorded in the selected window.",
+    "totalCount": "{count} total",
+    "page": "Page {page} of {totalPages}",
+    "columns": {
+      "time": "Time",
+      "severity": "Severity",
+      "eventType": "Event",
+      "user": "User",
+      "ip": "IP",
+      "resolved": "Resolved"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Warning",
+      "critical": "Critical"
+    },
+    "filters": {
+      "all": "All",
+      "allSeverities": "All severities",
+      "unresolved": "Unresolved",
+      "resolved": "Resolved"
+    },
+    "period": {
+      "1d": "Last 24 hours",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "actions": {
+      "view": "View",
+      "close": "Close",
+      "resolve": "Resolve",
+      "resolving": "Resolving…"
+    },
+    "detail": {
+      "source": "Source",
+      "occurredAt": "Occurred at",
+      "user": "User",
+      "ip": "IP address",
+      "requestId": "Request ID",
+      "metadata": "Metadata",
+      "resolvedBy": "Resolved by {user}"
+    },
+    "resolveError": {
+      "not_found": "Event not found.",
+      "forbidden": "This event belongs to a different organization.",
+      "already_resolved": "Event is already resolved."
+    }
   }
 }

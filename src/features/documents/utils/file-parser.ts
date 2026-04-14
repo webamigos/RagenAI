@@ -23,6 +23,7 @@ const fileParsers: Record<FileType, FileParser> = {
   CSV: async (file) => file.text(),
   XLSX: async (file) => Buffer.from(await file.arrayBuffer()),
   DOCX: async (file) => Buffer.from(await file.arrayBuffer()),
+  PPTX: async (file) => Buffer.from(await file.arrayBuffer()),
 };
 
 export async function parseFile(

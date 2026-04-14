@@ -1,11 +1,26 @@
 import { streamText, stepCountIs } from 'ai';
 import {
-  rephraseQuestion,
+  rephraseAndExpand,
   retrieveRelevantDocuments,
   retrieveThreadDocuments,
   buildRagMessages,
   validateAnswerGenerator,
 } from './operations';
+
+/**
+ * Whether content moderation should run. Per-org setting takes precedence;
+ * in SaaS mode (IS_ON_PREMISE is not set), moderation is always enforced
+ * regardless of the setting as a defense-in-depth measure.
+ */
+function shouldModerate(
+  ragSettings: { contentModerationEnabled: boolean } | undefined,
+): boolean {
+  if (!process.env.IS_ON_PREMISE) {
+    return true;
+  }
+  return ragSettings?.contentModerationEnabled !== false;
+}
+
 import {
   sanitizeAndValidateInput,
   moderateContent,
@@ -28,30 +43,55 @@ export const basicRagChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate content first, then rephrase
-      await moderateContent(
-        models.contentModerator,
-        sanitizedInput,
-        true,
-        config?.tracking,
-      );
-      const standaloneQuestion = await rephraseQuestion(
-        models.questionRephraser,
-        sanitizedInput,
-      );
+      // Step 2: Moderate content and rephrase+expand in parallel.
+      // Moderation doesn't affect the rephrased query — it only gates the
+      // final answer. Running them concurrently saves one full LLM round-trip.
+      // The merged rephraseAndExpand() produces the standalone question AND
+      // query variants in a single LLM call (saves another round-trip vs the
+      // old sequential rephrase → expandQueries flow).
+      const multiQueryEnabled = config?.ragSettings?.multiQueryEnabled ?? true;
+      const [, { standaloneQuestion, variants }] = await Promise.all([
+        shouldModerate(config?.ragSettings)
+          ? moderateContent(
+              models.contentModerator,
+              sanitizedInput,
+              true,
+              config?.tracking,
+            )
+          : Promise.resolve(),
+        rephraseAndExpand(
+          models.questionRephraser,
+          sanitizedInput,
+          multiQueryEnabled,
+        ),
+      ]);
 
-      // Step 3: Partition thread documents — images go to multimodal message, text to retrieval
+      // Defensively dedupe the full query list (order-preserving) so any
+      // future change in rephraseAndExpand cannot cause redundant Qdrant
+      // round-trips.
+      const seenQueries = new Set<string>();
+      const retrievalQueries = [standaloneQuestion, ...variants].filter((q) => {
+        const key = q.trim().toLowerCase();
+        if (seenQueries.has(key)) {
+          return false;
+        }
+        seenQueries.add(key);
+        return true;
+      });
+
+      // Step 4: Partition thread documents — images go to multimodal message, text to retrieval
       const { textDocs: textThreadDocs, imageDocs: imageThreadDocs } =
         partitionThreadDocuments(config?.threadDocuments || []);
 
-      // Step 4: Retrieve KB documents and thread documents in parallel
+      // Step 5: Retrieve KB documents and thread documents in parallel
       const [context, threadContext] = await Promise.all([
         retrieveRelevantDocuments(
           vectorStore,
-          standaloneQuestion,
+          retrievalQueries,
           config?.maxDocumentsToRetrieve,
           config?.metadataFilter,
           config?.litellmApiKey,
+          config?.ragSettings?.rerankingEnabled ?? true,
         ),
         retrieveThreadDocuments(
           textThreadDocs,
@@ -80,14 +120,29 @@ export const basicRagChain = async ({
         ? `${system}\n\n${config.mcpContext}`
         : system;
 
+      // Phase 2 prompt-injection gating: tell the MCP tool wrappers
+      // whether retrieved RAG context is present in this turn. Write
+      // tools consult this via their `needsApproval` predicate and
+      // pause execution when true (exfiltration via malicious document
+      // content is the vector we're closing). `approvedToolCalls` is
+      // always empty in Phase 2a; Phase 2b will populate it from the
+      // request body on explicit user approval.
+      const ragContextPresent = context.trim().length > 0;
+      const toolGatingContext = {
+        ragContextPresent,
+        approvedToolCalls: config?.approvedToolCalls ?? [],
+      };
+
       const result = streamText({
         model: models.answerGenerator,
         system: effectiveSystem,
         messages,
+        maxOutputTokens: config?.maxTokens,
         experimental_telemetry: {
           isEnabled: true,
           functionId: 'basic-rag-stream',
         },
+        experimental_context: toolGatingContext,
         ...(hasTools
           ? {
               tools: config!.mcpTools,

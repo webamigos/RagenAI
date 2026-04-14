@@ -7,8 +7,8 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
 - **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
-- **Vector Search**: Qdrant (default) + Cohere Rerank v3.5 via Bedrock (post-retrieval)
-- **LLM Providers**: OpenAI, Anthropic, Google, AWS Bedrock, Ollama, OpenRouter (with provider routing & ZDR), Fireworks, Azure OpenAI
+- **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and Cohere Rerank v3.5 via Bedrock ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
+- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Azure OpenAI, AWS Bedrock, Google Vertex AI)
 - **Auth**: Better Auth with Prisma adapter
 - **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
 - **Payments**: Stripe
@@ -20,7 +20,12 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 **Prerequisites**: Node.js 22.x, Docker
 
 ```bash
-docker compose up          # Start Postgres (5432), Redis (6379), Qdrant (6333), Temporal, LiteLLM
+# Full stack (includes document processing pipeline)
+npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
+
+# App-only (no document ingestion — can still query existing knowledge bases)
+npm run ragen:up:app       # Postgres, Qdrant, LiteLLM
+
 npm install                # Install dependencies
 npm run generate:types     # Generate Prisma client
 npm run dev                # Start Next.js dev server (Turbopack)
@@ -45,6 +50,8 @@ npm run test:e2e         # Playwright E2E tests
 npm run test:e2e:ui      # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types
 npm run db:seed          # Seed database
+npm run ragen:up:full    # Docker: full stack (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
+npm run ragen:up:app     # Docker: app-only (Postgres, Qdrant, LiteLLM — no document processing)
 ```
 
 ## Project Structure
@@ -163,9 +170,64 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Generate embeddings → Store in Qdrant. Each organization gets its own Qdrant collection. Embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions). Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock improves quality (especially for Polish content).
+Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock sharpens the top-k.
+
+**Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on ragen-worker):
+- `legacy` (default): per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc.
+- `docling`: IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images). Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure. PPTX is only supported via Docling.
 
 **Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
+
+### RAG Pipeline
+
+Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Cohere Rerank** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) is gated on AWS Bedrock credentials being present — no credentials = silent skip (see ADR-12 for details). See ADRs 11, 12, 14, 15, 16 for the full decision history.
+
+**Ingest** (happens in ragen-worker):
+
+```mermaid
+flowchart LR
+    A[File upload] --> B[Parse<br/>PDF/DOCX/EPUB/…]
+    B --> C[Chunk<br/>type-specific splitter]
+    C --> D["Generate summary<br/>ADR-16 · SUMMARY_MODEL"]
+    D --> E["Prepend summary as chunk<br/>chunk_type: summary"]
+    E --> F["Hybrid embed<br/>dense (Cohere) + sparse (BM25)<br/>ADR-14"]
+    F --> G["Upsert to Qdrant<br/>named vectors"]
+    F --> H["Merge UserFile.metadata.summary<br/>jsonb merge, best-effort"]
+```
+
+**Retrieval** (ragen-app `src/libs/chains/basic-rag/`):
+
+```mermaid
+flowchart TD
+    Q[User question] --> R[Rephrase → standalone question]
+    R --> X["expandQueries<br/>ADR-15 · +2 alternative phrasings"]
+    X --> P["[standalone, variant1, variant2]"]
+    P --> S1[Hybrid search · q1]
+    P --> S2[Hybrid search · q2]
+    P --> S3[Hybrid search · q3]
+    S1 --> D1["Qdrant RRF fusion<br/>dense + sparse per query<br/>ADR-14"]
+    S2 --> D1
+    S3 --> D1
+    D1 --> U[Dedupe by content]
+    U --> RR["Cohere Rerank v3.5<br/>ADR-12"]
+    RR --> G["Answer generation<br/>with citation prompting<br/>ADR-16"]
+```
+
+**How they compose**:
+
+| ADR | Stage | Problem solved |
+|-----|-------|----------------|
+| [ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md) Hybrid search | Retrieval | Exact-term and morphological matches dense alone misses |
+| [ADR-15](docs/adrs/15-multi-query-expansion.md) Multi-query | Before retrieval | Vocabulary mismatch between user phrasing and document phrasing |
+| [ADR-16](docs/adrs/16-document-summaries-at-ingest.md) Summaries | Ingest | Per-document topic anchors that no flat chunk contains |
+| [ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md) Cohere Rerank | After retrieval | Cross-encoder sharpens the final top-k |
+
+ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what comes out.
+
+**Feature flags** (defaults on):
+- `FEATURE_FLAG_MULTI_QUERY` (ragen-app) — disable to fall back to single-query retrieval (ADR-15)
+- `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
+- Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
 
 ### State Management
 
@@ -287,7 +349,28 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
 - `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
 
-**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gpt-4o`.
+**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
+
+### Docling (Document Parser)
+
+IBM Docling provides high-quality document parsing with layout understanding, table extraction, and heading hierarchy. It replaces the per-format legacy loaders (Claude native PDF, Mammoth DOCX, SheetJS XLSX) with a single unified pipeline that outputs Markdown.
+
+Docling is started automatically via `npm run ragen:up:full` on port **5001** (not included in `ragen:up:app`).
+
+```bash
+# UI for testing document conversion
+open http://localhost:5001/ui
+```
+
+**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in the **ragen-worker** repository (since Docling is strictly a worker dependency).
+
+**Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
+
+**Worker env vars**:
+- `DOCUMENT_PARSER=docling` — enable Docling (default: `legacy`, uses existing per-format loaders)
+- `DOCLING_URL=http://localhost:5001` — Docling service URL
+
+**CPU-only mode**: The Docker image uses CPU-only inference. Digital PDFs work well; scanned/image-heavy PDFs are slower but functional. OCR is available but slower than GPU.
 
 ### Ragen API
 
@@ -313,13 +396,14 @@ npm run start:dev             # http://localhost:3001 (watch mode)
 ### Running Everything Locally
 
 ```bash
-# 1. Start infrastructure (from ragen-app)
-docker compose up -d             # Postgres, Qdrant, Temporal, LiteLLM, Redis
+# 1. Start infrastructure (from ragen-app) — pick one:
+npm run ragen:up:full            # Full stack: Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
+npm run ragen:up:app             # App-only:  Postgres, Qdrant, LiteLLM (no document processing)
 
 # 2. Start ragen-app
 npm run dev                      # http://localhost:3000
 
-# 3. Start worker (separate terminal)
+# 3. Start worker (separate terminal — only needed with ragen:up:full)
 cd ../ragen-worker && npm run dev
 
 # 4. Start token vault (separate terminal, needed for connectors)
@@ -335,15 +419,17 @@ cd apps/admin && npm run dev              # http://localhost:3200
 cd ../ragen-api && npm run start:dev      # http://localhost:3001
 ```
 
-**Minimum for basic usage**: Steps 1-3 (infrastructure + app + worker).
+**Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
+**Minimum with document processing**: Steps 1 (`ragen:up:full`) + 2 + 3.
 **For public API**: Also need steps 4 (token vault) + 7 (ragen-api).
 
 | Service | Port | When needed |
 |---------|------|-------------|
 | ragen-app | 3000 | Always |
-| ragen-worker | — | Always (processes document uploads) |
+| ragen-worker | — | Document processing (requires `ragen:up:full`) |
 | LiteLLM | 4000 | Always (auto-started via docker compose) |
-| Temporal UI | 8080 | Debugging workflows |
+| Docling | 5001 | Document parsing (`ragen:up:full`, UI at `/ui`) |
+| Temporal UI | 8080 | Debugging workflows (`ragen:up:full`) |
 | ragen-token-vault | 3100 | External connectors + API key validation |
 | ragen-mcp | 8001-8003 | External connectors |
 | Ragen Admin | 3200 | Platform administration |

@@ -7,7 +7,7 @@ COPY apps/admin/package.json ./apps/admin/package.json
 COPY packages/db/package.json ./packages/db/package.json
 COPY prisma/schema.prisma prisma/schema.prisma
 COPY prisma.config.ts prisma.config.ts
-RUN npm ci
+RUN npm ci --ignore-scripts && npm rebuild esbuild
 
 FROM base AS builder
 WORKDIR /app

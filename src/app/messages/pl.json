@@ -61,10 +61,19 @@
     "terms-of-use": "Regulaminu",
     "and": "oraz",
     "privacy-policy": "Polityki prywatności",
+    "confirm-password": "Potwierdź hasło",
+    "verification-email-sent-title": "Sprawdź swoją skrzynkę email",
+    "verification-email-sent-description": "Wysłaliśmy link weryfikacyjny na adres {email}. Kliknij link w wiadomości, aby aktywować swoje konto.",
+    "verification-email-sent-hint": "Nie otrzymałeś wiadomości? Sprawdź folder spam lub kliknij poniżej, aby wysłać ponownie.",
+    "resend-verification": "Wyślij ponownie email weryfikacyjny",
+    "resend-success": "Email weryfikacyjny został wysłany ponownie.",
+    "go-to-sign-in": "Przejdź do logowania",
     "validation": {
       "terms": "Musisz zaakceptować regulamin i politykę prywatności",
       "email": "Nieprawidłowy adres email",
-      "password": "Hasło musi mieć co najmniej 8 znaków"
+      "password": "Hasło musi mieć co najmniej 8 znaków",
+      "confirm-password": "Hasła nie są identyczne",
+      "newsletter-consent": "Musisz zaakceptować politykę newslettera"
     },
     "newsletter-consent": "Wyrażam zgodę na przetwarzania moich danych osobowych przez Web Amigos sp. z o. o. w celu wysyłania do mnie drogą elektroniczną newslettera, czyli informacji o nowościach, usługach, ofertach, polecanych linkach, czy wydarzeniach. Wiem, że mogę tę zgodę w każdej chwili wycofać. Więcej informacji znajduje się w ",
     "newsletter-consent-link": "Polityce newslettera",
@@ -84,7 +93,8 @@
     "not-a-member": "Nie masz konta?",
     "start-free-trial": "Rozpocznij 14 dniowy okres próbny",
     "or-continue-with": "Lub zaloguj się za pomocą",
-    "sign-in-with-google": "Zaloguj się przez Google"
+    "sign-in-with-google": "Zaloguj się przez Google",
+    "email-not-verified": "Twój adres email nie został zweryfikowany. Sprawdź swoją skrzynkę i kliknij link weryfikacyjny."
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",
@@ -95,6 +105,18 @@
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
     "Reset-password": "Zresetuj hasło",
     "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym."
+  },
+  "verify-email": {
+    "title": "Zweryfikuj swój email",
+    "description": "Wysłaliśmy link weryfikacyjny na Twój adres email. Kliknij link w wiadomości, aby zweryfikować swoje konto.",
+    "verification-code": "Token weryfikacyjny",
+    "verification-code-placeholder": "Wprowadź token z wiadomości email",
+    "verify": "Zweryfikuj email",
+    "resend": "Nie otrzymałeś wiadomości? Wyślij ponownie",
+    "resending": "Wysyłanie...",
+    "resend-success": "Email weryfikacyjny został wysłany ponownie!",
+    "error-generic": "Wystąpił nieoczekiwany błąd",
+    "error-verification-failed": "Weryfikacja nie powiodła się"
   },
   "initial-account": {
     "title": "Utwórz konto administratora",
@@ -207,6 +229,9 @@
     },
     "settings-api-keys": {
       "title": "Klucze API | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Bezpieczeństwo | Ragen AI"
     },
     "generate-access-key": {
       "title": "Generowanie klucza dostępu do organizacji | Ragen AI"
@@ -358,6 +383,7 @@
   "assistant-settings": {
     "api-key": "Klucz API",
     "prompt-assistant-settings": "Ustawienia asystenta",
+    "model-selection": "Model językowy",
     "model-select": {
       "title": "Model językowy",
       "failed-to-fetch-model": "Błąd podczas pobierania modelu językowego",
@@ -412,6 +438,45 @@
     "upload-files": "Dodaj pliki",
     "add-from-url": "Dodaj wiedzę z linku"
   },
+  "organization-page": {
+    "title": "Organizacja",
+    "general-settings": "Ustawienia ogólne",
+    "nav": {
+      "profile": "Organizacja",
+      "members": "Użytkownicy",
+      "assistant-settings": "Ustawienia asystenta",
+      "settings": "Ustawienia",
+      "subscription": "Subskrypcja",
+      "teams": "Zespoły",
+      "api-keys": "Klucze API",
+      "security": "Bezpieczeństwo",
+      "ai-usage": "Użycie AI",
+      "disk-usage": "Użycie dysku",
+      "rag-settings": "Pipeline RAG"
+    },
+    "rag-settings": {
+      "title": "Ustawienia pipeline RAG",
+      "description": "Podgląd aktualnej konfiguracji pipeline wyszukiwania w bazie wiedzy.",
+      "on-premise-note": "Te ustawienia mogą być zmienione w instalacjach on-premise.",
+      "multi-query-label": "Rozszerzanie zapytań",
+      "multi-query-description": "Generuj alternatywne sformułowania pytań w celu szerszego wyszukiwania dokumentów.",
+      "doc-summaries-label": "Podsumowania dokumentów",
+      "doc-summaries-description": "Generuj podsumowania przy dodawaniu dokumentów dla lepszej trafności wyszukiwania.",
+      "content-moderation-label": "Moderacja treści",
+      "content-moderation-description": "Filtruj szkodliwe lub nieodpowiednie treści przed przetwarzaniem zapytań.",
+      "content-moderation-saas-note": "Zawsze włączona w trybie SaaS.",
+      "reranking-label": "Reranking",
+      "reranking-description": "Ponownie oceń pobrane dokumenty za pomocą modelu cross-encoder dla wyższej precyzji.",
+      "models-title": "Używane modele",
+      "model-embedding": "Embedding",
+      "model-reranking": "Reranking",
+      "model-rephrase": "Przeformułowanie / Multi-query",
+      "model-answer": "Generowanie odpowiedzi",
+      "budget-title": "Miesięczny budżet AI",
+      "budget-no-limit": "Brak limitu",
+      "budget-managed-by-admin": "Zarządzany przez administratora platformy."
+    }
+  },
   "settings-page": {
     "title": "Ustawienia",
     "nav": {
@@ -423,6 +488,7 @@
       "subscription": "Subskrypcja",
       "teams": "Zespoły",
       "api-keys": "Klucze API",
+      "security": "Bezpieczeństwo",
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
@@ -462,6 +528,15 @@
       "api-key-placeholder": "Wprowadź klucz API...",
       "api-key-help-link": "Dowiedz się, jak uzyskać klucz API.",
       "api-key-error": "Nie udało się zarejestrować klucza API. Sprawdź klucz i spróbuj ponownie.",
+      "custom-header-title": "Połącz {provider}",
+      "custom-header-description": "Wprowadź adres sklepu oraz klucze API WooCommerce.",
+      "custom-header-site-url-label": "Adres sklepu",
+      "custom-header-consumer-key-label": "Consumer key",
+      "custom-header-consumer-secret-label": "Consumer secret",
+      "custom-header-test": "Testuj połączenie",
+      "custom-header-test-success": "Połączono — dostępnych narzędzi: {count}.",
+      "custom-header-test-error": "Nie udało się zweryfikować połączenia. Sprawdź adres i klucze.",
+      "custom-header-error": "Nie udało się zapisać połączenia. Sprawdź wprowadzone dane.",
       "coming-soon": "Wkrótce",
       "gmail-description": "Wyszukuj e-maile i czytaj wiadomości.",
       "notion-description": "Wyszukuj strony, bazy danych i zarządzaj treścią.",
@@ -501,6 +576,10 @@
         "SLACK": {
           "name": "Slack",
           "description": "Wyszukuj wiadomości, kanały i wysyłaj wiadomości."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Zarządzaj produktami i zamówieniami w sklepie WooCommerce."
         }
       }
     },
@@ -680,7 +759,8 @@
     "nav": {
       "chats": "Wątki",
       "assistants": "Asystenci",
-      "chatbots": "Chatboty"
+      "chatbots": "Chatboty",
+      "organization": "Organizacja"
     },
     "starred": {
       "title": "Przypięte"
@@ -873,7 +953,10 @@
     "add-from-url": "Dodaj z linku",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
-    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików"
+    "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
+    "usage": "Użycie",
+    "storage": "Przestrzeń",
+    "pages": "Strony"
   },
   "file-delete-modal": {
     "title": "Usuń plik",
@@ -1220,8 +1303,37 @@
     "reasoning_end": "",
     "tool_call": "wywołuję narzędzie",
     "tool_result": "",
+    "tool_approval_request": "narzędzie wymaga potwierdzenia",
     "error": "Wystąpił błąd",
     "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Potwierdzenie wywołania narzędzia",
+    "title": "Potwierdź działanie narzędzia",
+    "description": "To działanie ma skutki uboczne, a bieżąca rozmowa zawiera treści pobrane z bazy wiedzy. Zatwierdź tylko jeśli zgadza się to z Twoim zamiarem.",
+    "tool-label": "Narzędzie",
+    "provider-label": "Dostawca",
+    "approve": "Zatwierdź",
+    "deny": "Odrzuć",
+    "approve-prompt": "Tak, proszę wykonaj {toolName}.",
+    "deny-prompt": "Nie, anuluj wywołanie tego narzędzia."
+  },
+  "link-interstitial": {
+    "title": "Zaraz opuścisz Ragen",
+    "description": "Ten link został wygenerowany z treści rozmowy, która może pochodzić z niezaufanych źródeł. Upewnij się, że adres docelowy wygląda poprawnie, zanim przejdziesz dalej.",
+    "host-label": "Host docelowy",
+    "url-label": "Pełny adres URL",
+    "continue": "Kontynuuj",
+    "cancel": "Anuluj",
+    "back-home": "Wróć do Ragen",
+    "error-title": "Błąd linku",
+    "error-missing": "Nie podano adresu docelowego.",
+    "error-invalid": "Nie udało się przeanalizować adresu docelowego.",
+    "error-unsupported-scheme": "Obsługiwane są tylko linki http i https."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Ten plik zawiera wzorce przypominające wstrzyknięte instrukcje. Sprawdź go przed użyciem w zapytaniach RAG.",
+    "aria-label": "Ostrzeżenie o podejrzanej treści"
   },
   "ErrorBoundary": {
     "error": "Wystąpił błąd",
@@ -1433,5 +1545,60 @@
     "untitled-conversation": "Nowa rozmowa",
     "load-more": "Załaduj więcej",
     "loading": "Ładowanie..."
+  },
+  "settings-security": {
+    "title": "Zdarzenia bezpieczeństwa",
+    "description": "Zdarzenia bezpieczeństwa w zakresie Twojej organizacji. Zdarzenia krytyczne wyzwalają dodatkowo powiadomienie e-mail na skonfigurowany adres administratora.",
+    "empty": "Brak zarejestrowanych zdarzeń bezpieczeństwa w wybranym okresie.",
+    "totalCount": "{count} łącznie",
+    "page": "Strona {page} z {totalPages}",
+    "columns": {
+      "time": "Czas",
+      "severity": "Waga",
+      "eventType": "Zdarzenie",
+      "user": "Użytkownik",
+      "ip": "IP",
+      "resolved": "Zamknięte"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Ostrzeżenie",
+      "critical": "Krytyczne"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "allSeverities": "Wszystkie poziomy",
+      "unresolved": "Otwarte",
+      "resolved": "Zamknięte"
+    },
+    "period": {
+      "1d": "Ostatnie 24 godziny",
+      "7d": "Ostatnie 7 dni",
+      "30d": "Ostatnie 30 dni"
+    },
+    "pagination": {
+      "prev": "Poprzednia",
+      "next": "Następna"
+    },
+    "actions": {
+      "view": "Szczegóły",
+      "close": "Zamknij",
+      "resolve": "Zamknij zdarzenie",
+      "resolving": "Zamykanie…"
+    },
+    "detail": {
+      "source": "Źródło",
+      "occurredAt": "Wystąpiło",
+      "user": "Użytkownik",
+      "ip": "Adres IP",
+      "requestId": "ID żądania",
+      "metadata": "Metadane",
+      "resolvedBy": "Zamknięte przez {user}"
+    },
+    "resolveError": {
+      "not_found": "Nie znaleziono zdarzenia.",
+      "forbidden": "To zdarzenie należy do innej organizacji.",
+      "already_resolved": "Zdarzenie zostało już zamknięte."
+    }
   }
 }

@@ -44,7 +44,27 @@ const envSchema = z
 
     // Resend
     RESEND_API_KEY: z.string(),
-    RESEND_DEFAULT_AUDIENCE_ID: z.string(),
+    RESEND_DEFAULT_SEGMENT_ID: z.string().optional(),
+
+    // Security alert emails (optional — empty disables email dispatch)
+    SECURITY_ALERT_EMAIL: z.string().optional(),
+    SECURITY_ALERT_FROM: z.string().optional(),
+    // Minimum severity that triggers an email. Defaults to `critical`.
+    // Lower it to `warn` to also email on brute-force / access violations.
+    SECURITY_ALERT_SEVERITY: z.enum(['info', 'warn', 'critical']).optional(),
+
+    // Jailbreak / prompt-injection classifier (Phase 6, feature-flagged).
+    // Off by default — flip on after validating cost/latency in staging.
+    JAILBREAK_DETECTION_ENABLED: z.string().optional(),
+    // Threshold 0.0–1.0 for firing CHAT_JAILBREAK_DETECTED. Default 0.7.
+    JAILBREAK_DETECTION_THRESHOLD: z.string().optional(),
+
+    // Phase 5 — link rewriter allowlist. Comma-separated hostnames with
+    // optional `*.` glob. Links in LLM output NOT on this list are
+    // rewritten to /r?u=<encoded> so the user gets an interstitial.
+    // NEXT_PUBLIC_* so the value ships to the client bundle, where
+    // rewriting happens.
+    NEXT_PUBLIC_TRUSTED_LINK_DOMAINS: z.string().optional(),
 
     // OpenAI
     OPENAI_API_KEY: z.string(),

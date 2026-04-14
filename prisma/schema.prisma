@@ -124,6 +124,7 @@ model UserFile {
   folder             DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
   ownerId            String?         @map("owner_id")
   owner              User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  pageCount          Int?            @map("page_count")
   permissions        DocumentPermission[]
 
   @@unique([id, organizationId])
@@ -194,8 +195,12 @@ model OrganizationSettings {
   monthlyCostLimitCents   Int?     @map("monthly_cost_limit_cents")
   monthlyMessageLimit     Int?     @map("monthly_message_limit")
   maxMembers              Int?     @map("max_members")
-  allowedModels           String[] @default([]) @map("allowed_models")
-  litellmApiKey           String?  @map("litellm_api_key")
+  allowedModels            String[] @default([]) @map("allowed_models")
+  multiQueryEnabled        Boolean? @map("multi_query_enabled")
+  docSummariesEnabled      Boolean? @map("doc_summaries_enabled")
+  contentModerationEnabled Boolean? @map("content_moderation_enabled")
+  rerankingEnabled         Boolean? @map("reranking_enabled")
+  litellmApiKey            String?  @map("litellm_api_key")
   createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -334,6 +339,7 @@ model User {
   mcpOAuthTokens   McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
   auditLogs        AuditLog[]
+  securityEvents   SecurityEvent[]  @relation("UserSecurityEvents")
   ownedFiles       UserFile[]
   ownedFolders     DocumentFolder[]
 
@@ -410,6 +416,7 @@ model Organization {
   googleDriveSyncs GoogleDriveSync[]
   auditLogs        AuditLog[]
   chatbots         Chatbot[]
+  securityEvents   SecurityEvent[]
 
   @@map("organizations")
 }
@@ -642,6 +649,7 @@ enum FileType {
   CSV
   XLSX
   DOCX
+  PPTX
 }
 
 enum EmbeddingStatus {
@@ -702,6 +710,7 @@ enum McpConnectorProvider {
   HUBSPOT
   FIREFLIES
   SLACK
+  WOOCOMMERCE
 }
 
 model GoogleDriveSync {
@@ -748,6 +757,72 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+/// Security-relevant incidents (auth abuse, access control violations,
+/// prompt-injection signals, etc.). Distinct from AuditLog which tracks
+/// routine business actions. SecurityEvent allows nullable organizationId
+/// for pre-auth events (internal-secret mismatch, login attempts before
+/// org context is resolved) and carries forensic context (IP, UA,
+/// requestId) plus severity and resolution state that AuditLog does not.
+model SecurityEvent {
+  id             Int                   @id @default(autoincrement())
+  publicId       String                @unique @default(uuid()) @map("public_id")
+  organizationId String?               @map("organization_id")
+  userId         String?               @map("user_id")
+  eventType      SecurityEventType     @map("event_type")
+  severity       SecurityEventSeverity
+  source         String
+  ipAddress      String?               @map("ip_address")
+  userAgent      String?               @map("user_agent")
+  requestId      String?               @map("request_id")
+  metadata       Json                  @default("{}")
+  resolvedAt     DateTime?             @map("resolved_at") @db.Timestamptz
+  resolvedBy     String?               @map("resolved_by")
+  createdAt      DateTime              @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user         User?         @relation("UserSecurityEvents", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([severity, createdAt])
+  @@index([userId, createdAt])
+  @@index([resolvedAt])
+  @@map("security_events")
+}
+
+enum SecurityEventSeverity {
+  info
+  warn
+  critical
+}
+
+enum SecurityEventType {
+  // Auth / access control
+  AUTH_LOGIN_FAILED
+  AUTH_BRUTEFORCE_SUSPECTED
+  AUTH_PASSWORD_RESET_REQUESTED
+  AUTH_ADMIN_ROLE_GRANTED
+  API_KEY_CREATED
+  API_KEY_REVOKED
+  API_INTERNAL_SECRET_MISMATCH
+  CROSS_ORG_ACCESS_ATTEMPTED
+  UNAUTHORIZED_ACCESS_ATTEMPTED
+  // Chat / LLM (wired in Phases 2/3/6)
+  CHAT_JAILBREAK_DETECTED
+  TOOL_CALL_BLOCKED
+  TOOL_CALL_CONFIRMED
+  TOOL_CALL_DENIED
+  TOOL_ARGS_HIGH_RISK
+  // Ingest (wired in Phase 4)
+  UPLOAD_SUSPICIOUS_CONTENT
+  UPLOAD_REJECTED
+  // Admin
+  ADMIN_SETTINGS_CHANGED
+  // Infra
+  RATE_LIMIT_HIT
+  MCP_OAUTH_FAILED
 }
 
 model ThreadShare {

@@ -33,25 +33,25 @@ export const NewSidebarSettingsBody = () => {
           <ArrowLeftIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('back')}</SidebarLabel>
         </SidebarItem>
-        <SidebarItem href="/settings/organization-profile">
+        <SidebarItem href="/organization/profile">
           <BuildingOfficeIcon className={iconClassName} />
           <SidebarLabel className="font-normal">
             {t('manage-organization')}
           </SidebarLabel>
         </SidebarItem>
-        <SidebarItem href="/settings/prompt-management">
+        <SidebarItem href="/organization/assistant-settings">
           <AdjustmentsHorizontalIcon className={iconClassName} />
           <SidebarLabel className="font-normal">
             {t('assistant-management')}
           </SidebarLabel>
         </SidebarItem>
-        <SidebarItem href="/settings/subscription">
+        <SidebarItem href="/organization/subscription">
           <CreditCardIcon className={iconClassName} />
           <SidebarLabel className="font-normal">
             {t('subscription-management')}
           </SidebarLabel>
         </SidebarItem>
-        <SidebarItem href="/settings/teams">
+        <SidebarItem href="/organization/teams">
           <UserGroupIcon className={iconClassName} />
           <SidebarLabel className="font-normal">{t('teams')}</SidebarLabel>
         </SidebarItem>
@@ -62,13 +62,13 @@ export const NewSidebarSettingsBody = () => {
           </SidebarItem>
         )}
         {isAppAdmin && (
-          <SidebarItem href="/settings/ai-usage">
+          <SidebarItem href="/organization/ai-usage">
             <CpuChipIcon className={iconClassName} />
             <SidebarLabel className="font-normal">{t('ai-usage')}</SidebarLabel>
           </SidebarItem>
         )}
         {isAppAdmin && (
-          <SidebarItem href="/settings/disk-usage">
+          <SidebarItem href="/organization/disk-usage">
             <CircleStackIcon className={iconClassName} />
             <SidebarLabel className="font-normal">
               {t('disk-usage')}

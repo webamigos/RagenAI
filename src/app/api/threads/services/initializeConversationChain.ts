@@ -7,9 +7,11 @@ import { logger } from '@/app/lib/utils/logger';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
 import type { ChainTrackingContext } from '@/libs/chains/types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
 
 type InitializeConversationChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
+  orgId: string;
   projectInstruction?: string | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
@@ -20,6 +22,7 @@ type InitializeConversationChainParams = {
 
 export const initializeConversationChain = async ({
   settings,
+  orgId,
   projectInstruction,
   mcpTools,
   mcpContext,
@@ -28,6 +31,8 @@ export const initializeConversationChain = async ({
 }: InitializeConversationChainParams) => {
   try {
     const { apiKey, model, temperature, prompt, litellmApiKey } = settings;
+
+    const ragPipelineSettings = await getRagPipelineSettings(orgId);
 
     return await conversationChain({
       models: {
@@ -46,6 +51,12 @@ export const initializeConversationChain = async ({
         mcpContext,
         tracking,
         threadDocuments,
+        ragSettings: {
+          multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,
+          contentModerationEnabled:
+            ragPipelineSettings.contentModerationEnabled,
+          rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+        },
       },
     });
   } catch (error) {

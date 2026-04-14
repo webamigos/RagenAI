@@ -34,6 +34,8 @@
     "eval:rephrase": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rephrase-quality.yaml",
     "eval:ci": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/ci-gate.yaml --output evals/results/ci-results.json --output evals/results/ci-results.html",
     "eval:view": "promptfoo view",
+    "ragen:up:full": "docker compose up",
+    "ragen:up:app": "docker compose -f docker-compose.app.yml up",
     "emails:dev": "email dev -d src/app/emails -p 3001",
     "admin:dev": "npm run dev --workspace=@webamigos/ragen-admin",
     "admin:build": "npm run build --workspace=@webamigos/ragen-admin"
@@ -247,7 +249,7 @@
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
-    "resend": "^4.0.1",
+    "resend": "^6.10.0",
     "rxjs": "^7.8.0",
     "server-only": "^0.0.1",
     "shiki": "^3.22.0",

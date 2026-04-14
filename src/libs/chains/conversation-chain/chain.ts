@@ -38,13 +38,19 @@ export const conversationChain = async ({
       // Step 1: Sanitize and validate the input
       const sanitizedInput = sanitizeAndValidateInput(input);
 
-      // Step 2: Moderate the content (no history moderation for conversation)
-      await moderateContent(
-        models.contentModerator,
-        sanitizedInput,
-        false,
-        config?.tracking,
-      );
+      // Step 2: Moderate the content (no history moderation for conversation).
+      // In SaaS mode, moderation is always enforced regardless of the setting.
+      const shouldModerateContent =
+        !process.env.IS_ON_PREMISE ||
+        config?.ragSettings?.contentModerationEnabled !== false;
+      if (shouldModerateContent) {
+        await moderateContent(
+          models.contentModerator,
+          sanitizedInput,
+          false,
+          config?.tracking,
+        );
+      }
 
       // Step 3: Build messages and stream the answer
       const { textDocs, imageDocs } = config?.threadDocuments?.length
@@ -76,6 +82,7 @@ export const conversationChain = async ({
         model: models.answerGenerator,
         system: effectiveSystem,
         messages,
+        maxOutputTokens: config?.maxTokens,
         experimental_telemetry: {
           isEnabled: true,
           functionId: 'conversation-stream',

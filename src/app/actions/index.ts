@@ -6,22 +6,17 @@ import {
   getCurrentUser,
 } from '../lib/utils/auth-helpers';
 
-import { deleteFileFromVectorStore } from '../api/upload/services/TableService';
 import {
   type CreateMessageDto,
   type MessageDto,
 } from '@/features/messages/contracts/message.types';
 import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
-import { deleteFromS3, deleteFromS3ByKey } from '../lib/services/aws';
-import { getDocumentByIdQuery as getDocumentById } from '@/features/documents/services/queries/get-document-query';
-import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
-import { deleteFileFromDbCommand as deleteFileFromDb } from '@/features/documents/services/commands/delete-file-from-db-command';
+import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
-import { deleteProjectFileFromDbCommand as deleteProjectFileFromService } from '@/features/documents/services/commands/delete-project-file-from-db-command';
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
 import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
@@ -35,7 +30,6 @@ import { renameThreadCommand } from '@/features/threads/services/commands/rename
 import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
-import { getFileExtension } from '../lib/utils/getFileExtension';
 import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
@@ -227,45 +221,23 @@ export const deleteProjectFileAction = async (
   projectId: Project['id'],
 ) => {
   try {
-    const fileRecord = await getFileDetailsById(fileId);
-    if (!fileRecord) {
+    const orgId = await getOrgIdOrThrow();
+    const result = await deleteFileCommand({
+      fileId,
+      organizationId: orgId,
+      projectId,
+    });
+
+    if (!result.deleted) {
       return {
         error: 'File not found',
         status: StatusCodes.NOT_FOUND,
       };
     }
 
-    const result = await deleteProjectFileFromService(fileId, projectId);
-
-    // If the file has a stored S3 object, delete it too
-    if (fileRecord) {
-      const documentS3Path = `${fileRecord.id}.${getFileExtension(
-        fileRecord.fileName,
-      )}`;
-
-      try {
-        await deleteFromS3(documentS3Path);
-      } catch (s3Error) {
-        // Log S3 error but continue since the DB entry was deleted
-        logger.error('Failed to delete file from S3', { error: s3Error });
-      }
-
-      // Delete from UserDocument
-      const documentId = fileRecord.documentId;
-      if (documentId) {
-        const userDocument = await getDocumentById(documentId);
-        if (userDocument) {
-          await deleteDocumentFromDb(userDocument.id);
-        }
-      }
-
-      // Delete vectors
-      await deleteFileFromVectorStore(fileRecord.id);
-    }
-
     return {
       success: true,
-      count: result?.count || 0,
+      count: 1,
     };
   } catch (error) {
     return {
@@ -279,59 +251,29 @@ export const deleteProjectFileAction = async (
 export const deleteFileAction = async (fileId: UserFile['id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    //  Removal document from `UserFile`
-    // TODO: UserFile should be in relation to UserDocument
-    const fileRecord = await getFileDetailsById(fileId);
-    const { count } = await deleteFileFromDb(fileId);
+    const result = await deleteFileCommand({ fileId, organizationId: orgId });
 
-    if (fileRecord) {
-      const documentS3Path = `${fileId}.${getFileExtension(
-        fileRecord.fileName,
-      )}`;
-
-      await deleteFromS3(documentS3Path);
-
-      // Removal thumbnail from S3 (best-effort)
-      if (fileRecord.thumbnailS3Key) {
-        try {
-          await deleteFromS3ByKey(fileRecord.thumbnailS3Key);
-        } catch {
-          // Thumbnail cleanup is non-critical
-        }
-      }
-
-      // Removal from `UserDocument`
-      const documentId = fileRecord?.documentId;
-      if (documentId) {
-        await deleteDocumentFromDb(documentId);
-      }
-
-      // Removal vectors
-      await deleteFileFromVectorStore(fileRecord.id);
-
-      if (count === 0) {
-        return {
-          error:
-            'Document not found or user does not have permission to delete it',
-          status: StatusCodes.NOT_FOUND,
-        };
-      }
-
-      // Check document count in organization
-      const documentCount = await getOrganizationFilesCount(orgId);
-
-      // If no documents left, update public metadata
-      if (documentCount === 0) {
-        await saveOrganizationPublicMetadata(orgId, {
-          hasKnowledge: false,
-        });
-      }
-
+    if (!result.deleted) {
       return {
-        message: 'Document deleted successfully',
-        status: StatusCodes.OK,
+        error:
+          'Document not found or user does not have permission to delete it',
+        status: StatusCodes.NOT_FOUND,
       };
     }
+
+    // Clear the org-level hasKnowledge flag when the last file goes
+    // away so onboarding surfaces re-appear.
+    const documentCount = await getOrganizationFilesCount(orgId);
+    if (documentCount === 0) {
+      await saveOrganizationPublicMetadata(orgId, {
+        hasKnowledge: false,
+      });
+    }
+
+    return {
+      message: 'Document deleted successfully',
+      status: StatusCodes.OK,
+    };
   } catch (error) {
     logger.error({ err: error }, 'Error deleting document');
     return {
