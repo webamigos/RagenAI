@@ -25,6 +25,8 @@ import {
   disconnectProvider,
   toggleProvider,
   registerApiKey,
+  registerCustomHeaderConnection,
+  testCustomHeaderConnection,
 } from '../actions';
 
 const providerIcons: Record<McpConnectorProvider, string> = {
@@ -37,6 +39,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   HUBSPOT: '/assets/connectors/hubspot.svg',
   FIREFLIES: '/assets/connectors/fireflies.svg',
   SLACK: '/assets/connectors/slack.svg',
+  WOOCOMMERCE: '/assets/connectors/woocommerce.svg',
 };
 
 type ConnectorCardProps = {
@@ -59,6 +62,82 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const isApiKeyAuth =
     provider.authType === 'api_key' || provider.authType === 'api_key_bearer';
   const isExternalMcp = provider.authType === 'external_mcp';
+  const isCustomHeaderAuth = provider.authType === 'api_key_custom_header';
+
+  const [customHeaderDialogOpen, setCustomHeaderDialogOpen] = useState(false);
+  const [siteUrl, setSiteUrl] = useState('');
+  const [consumerKey, setConsumerKey] = useState('');
+  const [consumerSecret, setConsumerSecret] = useState('');
+  const [customHeaderError, setCustomHeaderError] = useState<string | null>(
+    null,
+  );
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<
+    { ok: true; toolCount: number } | { ok: false; error: string } | null
+  >(null);
+
+  const resetCustomHeaderDialog = () => {
+    setSiteUrl('');
+    setConsumerKey('');
+    setConsumerSecret('');
+    setCustomHeaderError(null);
+    setTestResult(null);
+  };
+
+  const handleCustomHeaderTest = async () => {
+    if (!siteUrl.trim() || !consumerKey.trim() || !consumerSecret.trim()) {
+      return;
+    }
+    setTesting(true);
+    setCustomHeaderError(null);
+    try {
+      const result = await testCustomHeaderConnection(provider.provider, {
+        siteUrl,
+        consumerKey,
+        consumerSecret,
+      });
+      setTestResult(result);
+    } catch {
+      setTestResult({ ok: false, error: t('custom-header-test-error') });
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  const handleCustomHeaderSubmit = async () => {
+    if (!siteUrl.trim() || !consumerKey.trim() || !consumerSecret.trim()) {
+      return;
+    }
+    setLoading(true);
+    setCustomHeaderError(null);
+    try {
+      const updated = await registerCustomHeaderConnection(provider.provider, {
+        siteUrl,
+        consumerKey,
+        consumerSecret,
+      });
+      setCurrentConnector({
+        ...currentConnector,
+        id: updated.id,
+        provider: provider.provider,
+        mcpServerUrl: provider.mcpServerUrl,
+        customerId: '',
+        status: updated.status,
+        connectedAt: updated.connectedAt,
+        enabled: true,
+        createdAt: new Date(),
+      });
+      setCustomHeaderDialogOpen(false);
+      resetCustomHeaderDialog();
+      router.refresh();
+    } catch (err) {
+      setCustomHeaderError(
+        err instanceof Error ? err.message : t('custom-header-error'),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -174,6 +253,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       setApiKeyDialogOpen(true);
       setApiKeyValue('');
       setApiKeyError(null);
+      return;
+    }
+
+    if (isCustomHeaderAuth) {
+      resetCustomHeaderDialog();
+      setCustomHeaderDialogOpen(true);
       return;
     }
 
@@ -331,6 +416,122 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
           </Button>
         )}
       </div>
+
+      {isCustomHeaderAuth && (
+        <Dialog
+          open={customHeaderDialogOpen}
+          onOpenChange={(open) => {
+            setCustomHeaderDialogOpen(open);
+            if (!open) {
+              resetCustomHeaderDialog();
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {t('custom-header-title', {
+                  provider: t(`providers.${provider.provider}.name`),
+                })}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">
+                {t('custom-header-description', {
+                  provider: t(`providers.${provider.provider}.name`),
+                })}
+                {provider.apiKeyHelpUrl && (
+                  <>
+                    {' '}
+                    <a
+                      href={provider.apiKeyHelpUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:text-primary/80"
+                    >
+                      {t('api-key-help-link')}
+                    </a>
+                  </>
+                )}
+              </p>
+              <label className="flex flex-col gap-1 text-sm">
+                <span>{t('custom-header-site-url-label')}</span>
+                <Input
+                  type="url"
+                  value={siteUrl}
+                  onChange={(e) => setSiteUrl(e.target.value)}
+                  placeholder="https://yourstore.com"
+                  autoFocus
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span>{t('custom-header-consumer-key-label')}</span>
+                <Input
+                  type="text"
+                  value={consumerKey}
+                  onChange={(e) => setConsumerKey(e.target.value)}
+                  placeholder="ck_..."
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-sm">
+                <span>{t('custom-header-consumer-secret-label')}</span>
+                <Input
+                  type="password"
+                  value={consumerSecret}
+                  onChange={(e) => setConsumerSecret(e.target.value)}
+                  placeholder="cs_..."
+                />
+              </label>
+              {testResult?.ok && (
+                <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                  {t('custom-header-test-success', {
+                    count: testResult.toolCount,
+                  })}
+                </p>
+              )}
+              {testResult && !testResult.ok && (
+                <p className="text-sm text-red-500">{testResult.error}</p>
+              )}
+              {customHeaderError && (
+                <p className="text-sm text-red-500">{customHeaderError}</p>
+              )}
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  plain
+                  onClick={handleCustomHeaderTest}
+                  disabled={
+                    testing ||
+                    !siteUrl.trim() ||
+                    !consumerKey.trim() ||
+                    !consumerSecret.trim()
+                  }
+                >
+                  {testing ? (
+                    <Loader2Icon className="size-4 animate-spin" />
+                  ) : (
+                    t('custom-header-test')
+                  )}
+                </Button>
+                <Button
+                  onClick={handleCustomHeaderSubmit}
+                  disabled={
+                    loading ||
+                    !siteUrl.trim() ||
+                    !consumerKey.trim() ||
+                    !consumerSecret.trim()
+                  }
+                >
+                  {loading ? (
+                    <Loader2Icon className="size-4 animate-spin" />
+                  ) : (
+                    t('connect')
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {isApiKeyAuth && (
         <Dialog

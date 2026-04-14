@@ -518,6 +518,15 @@
       "api-key-placeholder": "Enter API key...",
       "api-key-help-link": "Learn how to get your API key.",
       "api-key-error": "Failed to register API key. Please check your key and try again.",
+      "custom-header-title": "Connect {provider}",
+      "custom-header-description": "Enter your shop URL and WooCommerce REST API keys.",
+      "custom-header-site-url-label": "Shop URL",
+      "custom-header-consumer-key-label": "Consumer key",
+      "custom-header-consumer-secret-label": "Consumer secret",
+      "custom-header-test": "Test connection",
+      "custom-header-test-success": "Connected — {count} tools available.",
+      "custom-header-test-error": "Could not verify the connection. Check the URL and keys.",
+      "custom-header-error": "Failed to register connection. Please check your details.",
       "coming-soon": "Coming soon",
       "gmail-description": "Search emails and read messages.",
       "notion-description": "Search pages, databases, and manage content.",
@@ -557,6 +566,10 @@
         "SLACK": {
           "name": "Slack",
           "description": "Search messages, channels, and send messages."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Manage products and orders from your WooCommerce store."
         }
       }
     }

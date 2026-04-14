@@ -117,6 +117,20 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/adwords'],
   },
+  {
+    provider: McpConnectorProvider.WOOCOMMERCE,
+    name: 'WooCommerce',
+    description: 'Manage products and orders from your WooCommerce store.',
+    icon: 'shopping-cart',
+    // Per-connector URL — computed from the user's shop URL + mcpServerUrlPath
+    // at registration time. The value here is only used as a placeholder.
+    mcpServerUrl: '',
+    authType: 'api_key_custom_header',
+    headerName: 'X-MCP-API-Key',
+    mcpServerUrlPath: '/wp-json/woocommerce/mcp',
+    apiKeyHelpUrl:
+      'https://woocommerce.com/document/woocommerce-rest-api/#section-2',
+  },
 ];
 
 export const getProviderDefinition = (
