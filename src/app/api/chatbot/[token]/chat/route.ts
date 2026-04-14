@@ -1,16 +1,21 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getChatbotByTokenQuery } from '@/features/chatbots/services/queries/get-chatbot-by-token-query';
 import { getOrCreateChatbotThreadCommand } from '@/features/chatbots/services/commands/get-or-create-chatbot-thread-command';
 import { createMessageInDbCommand } from '@/features/messages/services/commands/create-message-command';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
-import { Role, Source } from '@/generated/prisma/client';
+import { AiUsageStep, Role, Source } from '@/generated/prisma/client';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
+import { normalizeModelId, getModelProvider } from '@/app/components/config';
 import { validateOrigin, buildCorsHeaders } from '../cors';
 import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-history-query';
 import { buildChatbotMetadataFilter } from './metadata-filter';
 import { checkChatbotRateLimit } from './rate-limit';
+import { isBudgetExceededError } from './budget-error';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -143,11 +148,32 @@ export async function POST(
 
     const encoder = new TextEncoder();
 
+    const trackedModelId = settings.model || '';
+    const trackedProvider =
+      getModelProvider(normalizeModelId(trackedModelId)) || 'openrouter';
+    const skipLangfuseContent = isEncryptionEnabled();
+
     const stream = new ReadableStream({
-      async start(controller) {
+      start: observe(async function chatbotStream(controller) {
+        // Set Langfuse trace context. Session groups all messages in a
+        // conversation; omit input/output when per-message encryption
+        // is on so Langfuse only sees metadata (tags, model, timings).
+        updateActiveTrace({
+          name: 'chat-chatbot',
+          ...(skipLangfuseContent ? {} : { input: message }),
+          sessionId: `${organizationId}:${thread.id}`,
+          tags: [
+            `provider:${trackedProvider}`,
+            `model:${trackedModelId}`,
+            'surface:chatbot',
+            `chatbot:${chatbot.id}`,
+          ],
+        });
+
         try {
-          // Signal "thinking" immediately so the widget can show the loading indicator
-          // before the RAG pipeline (moderation + rephrase + retrieval) completes
+          // Signal "thinking" immediately so the widget can show the
+          // loading indicator before RAG (moderation + rephrase +
+          // retrieval) completes.
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ status: 'thinking' })}\n\n`,
@@ -157,8 +183,10 @@ export async function POST(
           const ragChain = await initializeRagChain({
             settings,
             orgId: organizationId,
-            // Public widget endpoint — no authenticated user; metadataFilter already
-            // restricts access to selectedFileIds so admin bypass is not needed
+            // Public widget endpoint — no authenticated user;
+            // metadataFilter already restricts access to
+            // selectedFileIds (or org-wide files) so admin bypass
+            // is not needed.
             isOrgAdmin: false,
             metadataFilter,
             projectInstruction: chatbot.chatbotPrompt,
@@ -181,6 +209,38 @@ export async function POST(
               );
             }
           }
+
+          // Usage tracking — per-org budget and admin dashboards
+          // depend on this. trackAiUsage swallows DB errors itself,
+          // so no try/catch needed here.
+          try {
+            const usage = await result.usage;
+            await trackAiUsage({
+              organizationId,
+              projectId: null,
+              threadId: thread.id,
+              userId: null,
+              step: AiUsageStep.CHAT_COMPLETION,
+              provider: trackedProvider,
+              model: trackedModelId,
+              inputTokens: usage.inputTokens ?? 0,
+              outputTokens: usage.outputTokens ?? 0,
+              totalTokens: usage.totalTokens ?? 0,
+            });
+          } catch (usageError) {
+            // `result.usage` itself can reject (e.g. if the stream
+            // aborted partway) — log but don't fail the whole turn,
+            // the user already received the text.
+            logger.error(
+              { err: usageError },
+              'Failed to read chatbot stream usage',
+            );
+          }
+
+          if (!skipLangfuseContent) {
+            updateActiveTrace({ output: fullResponse });
+          }
+
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
 
@@ -202,10 +262,32 @@ export async function POST(
             logger.error({ err }, 'Failed to save chatbot messages');
           }
         } catch (err) {
+          // LiteLLM returns "Budget has been exceeded" when the org's
+          // virtual key hits its monthly cap. Surface as a structured
+          // SSE event so the widget can render a friendly message
+          // instead of erroring out with a blank bubble.
+          if (isBudgetExceededError(err)) {
+            logger.warn(
+              { err, orgId: organizationId, chatbotId: chatbot.id },
+              'LiteLLM budget exceeded for chatbot',
+            );
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  error: 'budget_exceeded',
+                  message:
+                    "This chatbot's organization has reached its monthly usage limit. Please try again later.",
+                })}\n\n`,
+              ),
+            );
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+            return;
+          }
           logger.error({ err }, 'Error in chatbot stream');
           controller.error(err);
         }
-      },
+      }),
     });
 
     return new Response(stream, {
