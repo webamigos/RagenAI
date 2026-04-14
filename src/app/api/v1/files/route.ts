@@ -92,12 +92,16 @@ export async function POST(request: NextRequest) {
         { status: 401 },
       );
     }
-    logger.error({ err: error }, 'Error in POST /api/v1/files');
+    // Don't surface the raw error message to callers — it can leak
+    // schema/credential fragments. The correlation id below matches the
+    // logged entry so ops can trace the real cause in the logs.
+    const correlationId = Math.random().toString(36).slice(2, 10);
+    logger.error({ err: error, correlationId }, 'Error in POST /api/v1/files');
     return NextResponse.json(
       {
         error: 'Internal Server Error',
         code: 500,
-        detail: error instanceof Error ? error.message : String(error),
+        correlation_id: correlationId,
       },
       { status: 500 },
     );

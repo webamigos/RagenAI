@@ -157,16 +157,20 @@ export async function uploadFileCommand(
     },
   );
 
+  // S3 key: only append the extension if we actually detected one.
+  // parseFile may return a null extension for content without a known
+  // type (e.g. uploaded via stream without a filename), and we don't
+  // want "file-<id>.null" objects in the bucket.
+  const s3Key = parsed.fileExtension
+    ? `${fileRecord.id}.${parsed.fileExtension}`
+    : fileRecord.id;
+
   try {
     // Use the *WithOrg variant because this command can run outside a
     // Better Auth session (called from internal ragen-api → ragen-app
     // proxy routes where there is no request-scoped session to read
     // the org from).
-    await uploadToS3WithOrg(
-      organizationId,
-      `${fileRecord.id}.${parsed.fileExtension}`,
-      parsed.content as Buffer,
-    );
+    await uploadToS3WithOrg(organizationId, s3Key, parsed.content as Buffer);
   } catch (s3Err) {
     // Roll back the DB row so we don't leave orphaned isUploaded:false
     // rows behind on S3 failures.
