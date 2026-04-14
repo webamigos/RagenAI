@@ -1,9 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
+import { AiUsageStep } from '@/generated/prisma/client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import {
   InternalAuthError,
   extractInternalContext,
@@ -211,6 +214,21 @@ export async function POST(request: NextRequest) {
             const usage = await Promise.resolve(result.usage).catch(
               () => undefined,
             );
+            if (usage) {
+              await trackAiUsage({
+                organizationId,
+                projectId: context.projectId,
+                userId: context.userId,
+                step: AiUsageStep.CHAT_COMPLETION,
+                provider:
+                  getModelProvider(normalizeModelId(effectiveModel)) ||
+                  'litellm',
+                model: effectiveModel,
+                inputTokens: usage.inputTokens ?? 0,
+                outputTokens: usage.outputTokens ?? 0,
+                totalTokens: usage.totalTokens ?? 0,
+              });
+            }
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -249,6 +267,21 @@ export async function POST(request: NextRequest) {
       text += chunk;
     }
     const usage = await Promise.resolve(result.usage).catch(() => undefined);
+
+    if (usage) {
+      await trackAiUsage({
+        organizationId,
+        projectId: context.projectId,
+        userId: context.userId,
+        step: AiUsageStep.CHAT_COMPLETION,
+        provider:
+          getModelProvider(normalizeModelId(effectiveModel)) || 'litellm',
+        model: effectiveModel,
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        totalTokens: usage.totalTokens ?? 0,
+      });
+    }
 
     return NextResponse.json({
       text,
