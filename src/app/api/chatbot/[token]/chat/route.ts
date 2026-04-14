@@ -9,6 +9,8 @@ import { logger } from '@/app/lib/utils/logger';
 import { Role, Source } from '@/generated/prisma/client';
 import { validateOrigin, buildCorsHeaders } from '../cors';
 import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-history-query';
+import { buildChatbotMetadataFilter } from './metadata-filter';
+import { checkChatbotRateLimit } from './rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -73,6 +75,22 @@ export async function POST(
     );
   }
 
+  const clientIp =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
+  const rateLimit = await checkChatbotRateLimit(token, clientIp);
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          'Retry-After': String(rateLimit.retryAfterSeconds),
+        },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -104,28 +122,10 @@ export async function POST(
     const rawSettings = await getAllSettings(organizationId);
     const settings = { ...rawSettings, apiKey: rawSettings.apiKey ?? '' };
 
-    const metadataFilter =
-      selectedFileIds.length > 0
-        ? {
-            must: [
-              {
-                key: 'metadata.organization_id',
-                match: { value: organizationId },
-              },
-              {
-                key: 'metadata.file_id',
-                match_any: { values: selectedFileIds },
-              },
-            ],
-          }
-        : {
-            must: [
-              {
-                key: 'metadata.organization_id',
-                match: { value: organizationId },
-              },
-            ],
-          };
+    const metadataFilter = buildChatbotMetadataFilter(
+      organizationId,
+      selectedFileIds,
+    );
 
     const thread = await getOrCreateChatbotThreadCommand(
       chatbot.id,
