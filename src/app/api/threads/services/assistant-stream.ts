@@ -1,4 +1,5 @@
-import { Role, Source } from '@/generated/prisma/client';
+import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import db from '@ragenai/prisma-client';
 import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
@@ -808,7 +809,27 @@ export async function streamEvents({
 
           sendApiEvent(controller, 'llm_completed');
 
-          // AI usage is now tracked automatically by LiteLLM via the org's virtual key
+          try {
+            const usage = await streamResult.usage;
+            const modelId = effectiveSettings.model || '';
+            const provider =
+              getModelProvider(normalizeModelId(modelId)) || 'litellm';
+
+            void trackAiUsage({
+              organizationId: orgId,
+              projectId: threadRecord.projectId ?? null,
+              threadId: publicThreadId,
+              userId,
+              step: AiUsageStep.CHAT_COMPLETION,
+              provider,
+              model: modelId,
+              inputTokens: usage.inputTokens ?? 0,
+              outputTokens: usage.outputTokens ?? 0,
+              totalTokens: usage.totalTokens ?? 0,
+            });
+          } catch (usageError) {
+            logger.error({ err: usageError }, 'Failed to track AI usage');
+          }
 
           sendApiEvent(controller, 'save_assistant_response');
 

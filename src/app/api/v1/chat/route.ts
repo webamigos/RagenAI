@@ -1,9 +1,12 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
+import { AiUsageStep } from '@/generated/prisma/client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import {
   InternalAuthError,
   extractInternalContext,
@@ -75,6 +78,25 @@ export async function POST(request: NextRequest) {
       chat_history: '',
     });
 
+    const modelId = settings.model || '';
+    const trackUsage = async () => {
+      const usage = await Promise.resolve(result.usage).catch(() => undefined);
+      if (!usage) {
+        return;
+      }
+      void trackAiUsage({
+        organizationId,
+        projectId: context.projectId,
+        userId: context.userId,
+        step: AiUsageStep.CHAT_COMPLETION,
+        provider: getModelProvider(normalizeModelId(modelId)) || 'litellm',
+        model: modelId,
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        totalTokens: usage.totalTokens ?? 0,
+      });
+    };
+
     if (stream) {
       const encoder = new TextEncoder();
       const sseStream = new ReadableStream({
@@ -85,6 +107,7 @@ export async function POST(request: NextRequest) {
                 encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
               );
             }
+            await trackUsage();
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
             controller.close();
           } catch (err) {
@@ -108,6 +131,7 @@ export async function POST(request: NextRequest) {
     for await (const chunk of result.textStream) {
       text += chunk;
     }
+    await trackUsage();
 
     return NextResponse.json({ text });
   } catch (error) {
