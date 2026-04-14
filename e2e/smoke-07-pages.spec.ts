@@ -189,5 +189,13 @@ test.describe('Authenticated pages smoke tests', () => {
         timeout: 10_000,
       });
     });
+
+    test('organization chatbots list page loads', async ({ page }) => {
+      await page.goto(ROUTES.organizationChatbots);
+      await expect(page).toHaveURL(/organization\/chatbots/);
+      await expect(page.getByText(/chatboty/i).first()).toBeVisible({
+        timeout: 10_000,
+      });
+    });
   });
 });

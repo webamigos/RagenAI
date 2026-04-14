@@ -1,0 +1,1 @@
+ALTER TYPE "Source" ADD VALUE 'CHATBOT';

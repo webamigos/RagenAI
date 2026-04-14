@@ -221,6 +221,9 @@
     "settings-connectors": {
       "title": "Integracje | Ragen AI"
     },
+    "settings-chatbots": {
+      "title": "Chatboty | Ragen AI"
+    },
     "settings-teams": {
       "title": "Zespoły | Ragen AI"
     },
@@ -256,6 +259,9 @@
     },
     "checkout-success": {
       "title": "Płatność zakończona | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatboty"
     }
   },
   "chat": {
@@ -446,7 +452,8 @@
       "security": "Bezpieczeństwo",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "rag-settings": "Pipeline RAG"
+      "rag-settings": "Pipeline RAG",
+      "chatbots": "Chatboty"
     },
     "rag-settings": {
       "title": "Ustawienia pipeline RAG",
@@ -575,6 +582,95 @@
           "description": "Zarządzaj produktami i zamówieniami w sklepie WooCommerce."
         }
       }
+    },
+    "chatbots": {
+      "title": "Chatboty",
+      "description": "Twórz widgety czatu osadzane na stronach, zasilane Twoją bazą wiedzy.",
+      "no-chatbots": "Brak chatbotów. Utwórz pierwszy.",
+      "create": "Utwórz chatbota",
+      "creating": "Tworzenie...",
+      "cancel": "Anuluj",
+      "name-placeholder": "np. Bot wsparcia",
+      "name-label": "Nazwa",
+      "edit": "Edytuj",
+      "save": "Zapisz zmiany",
+      "saving": "Zapisywanie...",
+      "saved": "Zapisano",
+      "save-error": "Nie udało się zapisać zmian",
+      "active": "Aktywny",
+      "inactive": "Nieaktywny",
+      "files-count": "{count, plural, =0 {Brak wybranych plików} =1 {1 plik wybrany} few {# pliki wybrane} other {# plików wybranych}}",
+      "delete-confirm": "Usunąć chatbota \"{name}\"? Tej operacji nie można cofnąć.",
+      "edit-title": "Edytuj chatbota",
+      "edit-description": "Dostosuj wygląd i dozwolone domeny dla tego chatbota.",
+      "prompt": {
+        "title": "Prompt chatbota",
+        "description": "Zdefiniuj jak chatbot ma się zachowywać — jego persona, temat rozmów, ton i ograniczenia. Jeśli pozostawisz puste, chatbot będzie działał jako ogólny asystent.",
+        "placeholder": "Jesteś pomocnym asystentem firmy XYZ. Odpowiadasz wyłącznie na pytania dotyczące naszych produktów i usług. Zawsze odpowiadaj po polsku."
+      },
+      "theme": {
+        "title": "Wygląd",
+        "primary-color": "Kolor przycisku",
+        "bubble-color": "Kolor ikony",
+        "position": "Pozycja",
+        "position-right": "Prawa strona",
+        "position-left": "Lewa strona",
+        "bot-name": "Nazwa bota",
+        "bot-name-placeholder": "np. Bot wsparcia",
+        "welcome-message": "Wiadomość powitalna",
+        "welcome-message-placeholder": "Cześć! W czym mogę pomóc?",
+        "hex-hint": "np. #6366f1"
+      },
+      "files": {
+        "title": "Baza wiedzy",
+        "description": "Wybierz pliki, do których chatbot ma dostęp. Jeśli nic nie wybierzesz, chatbot przeszuka wszystkie pliki organizacji.",
+        "search-placeholder": "Szukaj plików...",
+        "all-files-warning": "Chatbot ma dostęp do wszystkich plików organizacji. Wybierz konkretne pliki, aby ograniczyć zakres wiedzy.",
+        "selected-count": "Wybrano {count} {count, plural, one {plik} few {pliki} other {plików}}",
+        "empty": "Brak plików z ukończonym indeksowaniem.",
+        "loading": "Ładowanie plików...",
+        "fetch-error": "Nie udało się załadować plików. Odśwież stronę."
+      },
+      "origins": {
+        "title": "Dozwolone domeny",
+        "description": "Ogranicz witryny, które mogą osadzać tego chatbota. Pozostaw puste, aby zezwolić na wszystkie domeny.",
+        "empty-warning": "Chatbot jest dostępny z każdej strony. Dodaj domeny, aby ograniczyć dostęp tylko do swoich witryn.",
+        "placeholder": "https://example.com",
+        "add": "Dodaj",
+        "invalid-url": "Podaj poprawny adres domeny (np. example.com lub https://example.com)"
+      },
+      "embed": {
+        "title": "Osadź na swojej stronie",
+        "description": "Skopiuj ten snippet i wklej go przed zamykającym tagiem body na swojej stronie."
+      },
+      "name-required": "Nazwa jest wymagana",
+      "name-max": "Nazwa może mieć maksymalnie 100 znaków",
+      "prompt-max": "Prompt może mieć maksymalnie 5000 znaków",
+      "conversations": {
+        "title": "Rozmowy",
+        "description": "Historia rozmów użytkowników z tym chatbotem.",
+        "back-to-chatbot": "Powrót do chatbota",
+        "no-conversations": "Brak rozmów",
+        "no-conversations-description": "Nikt jeszcze nie rozmawiał z tym chatbotem.",
+        "session-id": "Sesja",
+        "started-at": "Rozpoczęto",
+        "messages-count": "Wiadomości",
+        "first-message": "Pierwsza wiadomość",
+        "view": "Podgląd",
+        "load-more": "Załaduj więcej",
+        "loading": "Ładowanie...",
+        "visitor": "Odwiedzający",
+        "bot": "Bot",
+        "not-found": "Nie znaleziono rozmowy",
+        "back-to-list": "Powrót do listy",
+        "empty-thread": "Ta rozmowa nie zawiera wiadomości",
+        "decrypt-failed": "Nie udało się odszyfrować wiadomości w tej rozmowie. Klucz szyfrowania może być niedostępny lub nieprawidłowy.",
+        "load-more-error": "Nie udało się załadować rozmów"
+      },
+      "delete-title": "Usuń chatbota",
+      "delete": "Usuń",
+      "deleting": "Usuwanie...",
+      "delete-error": "Nie udało się usunąć chatbota"
     }
   },
   "teams-page": {
@@ -664,6 +760,7 @@
     "nav": {
       "chats": "Wątki",
       "assistants": "Asystenci",
+      "chatbots": "Chatboty",
       "organization": "Organizacja"
     },
     "starred": {
@@ -1438,6 +1535,17 @@
       "success": "Organizacja została utworzona",
       "error": "Nie udało się utworzyć organizacji"
     }
+  },
+  "chatbots-page": {
+    "title": "Chatboty",
+    "description": "Wybierz chatbota, aby zobaczyć jego rozmowy.",
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "conversations-description": "Łącznie {total} rozmów",
+    "no-conversations": "Brak rozmów. Rozmowy pojawią się tutaj gdy użytkownicy zaczną korzystać z widgetu.",
+    "untitled-conversation": "Nowa rozmowa",
+    "load-more": "Załaduj więcej",
+    "loading": "Ładowanie..."
   },
   "settings-security": {
     "title": "Zdarzenia bezpieczeństwa",

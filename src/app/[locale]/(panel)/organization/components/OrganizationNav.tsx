@@ -6,6 +6,7 @@ import {
   BuildingOfficeIcon,
   AdjustmentsHorizontalIcon,
   BeakerIcon,
+  ChatBubbleLeftRightIcon,
   CreditCardIcon,
   UserGroupIcon,
   KeyIcon,
@@ -68,6 +69,11 @@ const navItems: NavItem[] = [
     href: '/organization/disk-usage',
     labelKey: 'disk-usage',
     icon: <CircleStackIcon className={iconClassName} />,
+  },
+  {
+    href: '/organization/chatbots',
+    labelKey: 'chatbots',
+    icon: <ChatBubbleLeftRightIcon className={iconClassName} />,
   },
 ];
 
