@@ -15,12 +15,12 @@ export async function ChatbotTabs({ chatbotId, activeTab }: Props) {
     {
       key: 'settings',
       label: t('edit-title'),
-      href: `/settings/chatbots/${chatbotId}`,
+      href: `/organization/chatbots/${chatbotId}`,
     },
     {
       key: 'conversations',
       label: t('conversations.title'),
-      href: `/settings/chatbots/${chatbotId}/conversations`,
+      href: `/organization/chatbots/${chatbotId}/conversations`,
     },
   ];
 

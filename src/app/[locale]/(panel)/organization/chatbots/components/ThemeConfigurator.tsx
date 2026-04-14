@@ -69,8 +69,9 @@ function ColorField({
             onChange={(e) => setHexInput(e.target.value)}
             onBlur={(e) => commitHex(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter')
-                {commitHex((e.target as HTMLInputElement).value);}
+              if (e.key === 'Enter') {
+                commitHex((e.target as HTMLInputElement).value);
+              }
             }}
             className={`w-24 rounded border px-2 py-0.5 font-mono text-xs focus:outline-none focus:ring-2 ${
               hexError

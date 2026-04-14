@@ -31,7 +31,7 @@ export const ROUTES = {
   settingsTeams: '/pl/organization/teams',
   organizationAiUsage: '/pl/organization/ai-usage',
   organizationDiskUsage: '/pl/organization/disk-usage',
-  settingsChatbots: '/pl/settings/chatbots',
+  organizationChatbots: '/pl/organization/chatbots',
   publicAssistant: (accessToken: string) =>
     `/pl/public/assistants/${accessToken}`,
 } as const;

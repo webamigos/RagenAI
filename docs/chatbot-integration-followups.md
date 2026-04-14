@@ -20,22 +20,30 @@ should ship to paying customers.
   Tunable via `CHATBOT_RATE_LIMIT_TOKEN_PER_MIN` and
   `CHATBOT_RATE_LIMIT_IP_PER_MIN`. Fails open when Redis is unavailable.
   See `src/app/api/chatbot/[token]/chat/rate-limit.ts`.
+- **Admin pages moved** from `/settings/chatbots/*` to
+  `/organization/chatbots/*`, inheriting the org-admin access guard
+  from `OrganizationLayout`. Nav entry added to `OrganizationNav`,
+  `settingsChatbots` route helper renamed to `organizationChatbots`.
 
 ## P0 — before exposing to real customer traffic
 
 ### 1. `getChatbotFiles` bypasses per-file permissions
-`src/app/[locale]/(panel)/settings/chatbots/actions.ts:44` calls
+`src/app/[locale]/(panel)/organization/chatbots/actions.ts:44` calls
 `getAllOrgFilesQuery(orgId, [], { isOrgAdmin: true })` for any
 authenticated org member. The `isOrgAdmin: true` bypass means a regular
 member creating a chatbot can see and expose files they are not a
-member/owner of. Either restrict chatbot creation to org admins (simpler)
-or fetch only files the creating user can actually access.
+member/owner of. After moving the pages under `/organization` the
+`OrganizationLayout` guard blocks non-admins from the *pages*, but the
+server actions are still callable directly — fix by fetching only the
+files the calling user can actually access (preferred), or add an
+explicit admin guard in the action.
 
 ### 2. Restrict chatbot actions to org admins
-`settings/chatbots/actions.ts` uses `getOrgIdFromAuthOrThrow` (any
-org member). Chatbots are org-wide public assets; any member can today
-create, update, and delete them. Use `requireOrgAdmin()` from
-`src/lib/auth-guards.ts` instead.
+`organization/chatbots/actions.ts` uses `getOrgIdFromAuthOrThrow` (any
+org member). The layout guard now blocks non-admin page rendering, but
+the server actions remain directly callable. Replace the helper with
+`requireOrgAdmin()` from `src/lib/auth-guards.ts` inside each action so
+the protection matches the admin-only UX.
 
 ### 3. Validate `selectedFileIds` belong to the org
 `create-chatbot-command.ts:14` and `update-chatbot-command.ts` accept
@@ -83,23 +91,13 @@ CORS rejections, 429s, invalid tokens, origin mismatches are currently
 only logged via Pino. Record them via `recordSecurityEvent()` so
 admins see chatbot abuse in the security dashboard.
 
-### 10. Move chatbot pages under `/organization`
-Dev's `e1267d79 refactor: split settings into personal + organization
-sections` split the settings route group. Chatbot pages live under
-`src/app/[locale]/(panel)/settings/chatbots/*` but per the new layout
-should move to `src/app/[locale]/(panel)/organization/chatbots/*`,
-with the nav entry added to `OrganizationNav` (not `SettingsNav`).
-The `settingsChatbots` key in `e2e/helpers.ts` should rename to
-`organizationChatbots` and point to the new route. Chatbot messages
-JSON keys and E2E assertions follow.
-
-### 11. Ordering of USER + ASSISTANT saves
+### 10. Ordering of USER + ASSISTANT saves
 `src/app/api/chatbot/[token]/chat/route.ts` saves both messages via
 `Promise.all` after the stream completes. Since `createdAt` has ms
 precision and the calls are concurrent, the order can flip on fast
 streams. Sequence them or set explicit timestamps.
 
-### 12. Empty-response guard
+### 11. Empty-response guard
 If the LLM returns an empty string (e.g. moderation refusal), the
 route still saves an empty assistant message. Skip the save when
 `fullResponse.trim()` is empty.

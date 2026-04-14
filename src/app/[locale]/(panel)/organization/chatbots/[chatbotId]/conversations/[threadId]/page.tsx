@@ -26,7 +26,7 @@ export default async function ChatbotConversationThreadPage({ params }: Props) {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href={`/settings/chatbots/${chatbotId}/conversations`}
+          href={`/organization/chatbots/${chatbotId}/conversations`}
           className="flex size-7 items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
         >
           <ArrowLeftIcon className="size-4" />

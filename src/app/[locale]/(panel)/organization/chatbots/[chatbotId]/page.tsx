@@ -22,7 +22,7 @@ export default async function ChatbotEditPage({
       <div className="space-y-3">
         <div className="flex items-center gap-3">
           <Link
-            href="/settings/chatbots"
+            href="/organization/chatbots"
             className="flex size-7 items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
           >
             <ArrowLeftIcon className="size-4" />

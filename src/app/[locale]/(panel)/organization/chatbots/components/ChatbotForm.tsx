@@ -83,7 +83,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
     setIsDeleting(true);
     try {
       await deleteChatbot(chatbot.id);
-      router.push('/settings/chatbots');
+      router.push('/organization/chatbots');
     } catch (err) {
       logger.error({ err }, 'Failed to delete chatbot');
       errorToast({ message: t('delete-error') });

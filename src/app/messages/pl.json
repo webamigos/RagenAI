@@ -452,7 +452,8 @@
       "security": "Bezpieczeństwo",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "rag-settings": "Pipeline RAG"
+      "rag-settings": "Pipeline RAG",
+      "chatbots": "Chatboty"
     },
     "rag-settings": {
       "title": "Ustawienia pipeline RAG",
@@ -492,8 +493,7 @@
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń",
-      "chatbots": "Chatboty"
+      "audit-logs": "Dziennik zdarzeń"
     },
     "general": {
       "profile": "Profil",

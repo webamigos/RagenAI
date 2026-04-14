@@ -36,7 +36,7 @@ export function ChatbotCard({ chatbot }: ChatbotCardProps) {
       </div>
       <Button
         outline
-        onClick={() => router.push(`/settings/chatbots/${chatbot.id}`)}
+        onClick={() => router.push(`/organization/chatbots/${chatbot.id}`)}
       >
         <PencilIcon className="size-4" />
         {t('edit')}

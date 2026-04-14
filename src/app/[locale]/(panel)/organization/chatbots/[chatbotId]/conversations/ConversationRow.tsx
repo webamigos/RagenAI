@@ -63,7 +63,7 @@ export function ConversationRow({
       </td>
       <td className="px-4 py-3">
         <Link
-          href={`/settings/chatbots/${chatbotId}/conversations/${thread.id}`}
+          href={`/organization/chatbots/${chatbotId}/conversations/${thread.id}`}
           className="flex items-center justify-center size-7 rounded text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors opacity-0 group-hover:opacity-100"
           title={t('conversations.view')}
         >

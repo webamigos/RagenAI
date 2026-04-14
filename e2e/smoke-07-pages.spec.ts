@@ -190,9 +190,9 @@ test.describe('Authenticated pages smoke tests', () => {
       });
     });
 
-    test('settings chatbots list page loads', async ({ page }) => {
-      await page.goto(ROUTES.settingsChatbots);
-      await expect(page).toHaveURL(/settings\/chatbots/);
+    test('organization chatbots list page loads', async ({ page }) => {
+      await page.goto(ROUTES.organizationChatbots);
+      await expect(page).toHaveURL(/organization\/chatbots/);
       await expect(page.getByText(/chatboty/i).first()).toBeVisible({
         timeout: 10_000,
       });
