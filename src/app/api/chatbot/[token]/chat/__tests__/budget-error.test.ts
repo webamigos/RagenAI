@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { isBudgetExceededError } from '../budget-error';
+import { isBudgetExceededError, BUDGET_MARKERS } from '../budget-error';
 
 describe('isBudgetExceededError', () => {
+  it('recognises every BUDGET_MARKERS entry as a budget error', () => {
+    for (const marker of BUDGET_MARKERS) {
+      expect(isBudgetExceededError(new Error(`${marker}: details`))).toBe(true);
+    }
+  });
+
   it('recognises the "Budget has been exceeded" LiteLLM message', () => {
     const err = new Error('Budget has been exceeded for organization org-1');
     expect(isBudgetExceededError(err)).toBe(true);

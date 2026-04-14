@@ -149,8 +149,7 @@ export async function POST(
     const encoder = new TextEncoder();
 
     const trackedModelId = settings.model || '';
-    const trackedProvider =
-      getModelProvider(normalizeModelId(trackedModelId)) || 'openrouter';
+    const trackedProvider = getModelProvider(normalizeModelId(trackedModelId));
     const skipLangfuseContent = isEncryptionEnabled();
 
     const stream = new ReadableStream({
@@ -211,8 +210,12 @@ export async function POST(
           }
 
           // Usage tracking — per-org budget and admin dashboards
-          // depend on this. trackAiUsage swallows DB errors itself,
-          // so no try/catch needed here.
+          // depend on this. The try/catch here specifically guards
+          // against `result.usage` rejecting (e.g. if the stream
+          // aborted partway); it does NOT guard the `trackAiUsage`
+          // call, which handles its own DB errors internally. The
+          // user has already received the text at this point, so a
+          // missing usage metric must not fail the turn.
           try {
             const usage = await result.usage;
             await trackAiUsage({
@@ -228,9 +231,6 @@ export async function POST(
               totalTokens: usage.totalTokens ?? 0,
             });
           } catch (usageError) {
-            // `result.usage` itself can reject (e.g. if the stream
-            // aborted partway) — log but don't fail the whole turn,
-            // the user already received the text.
             logger.error(
               { err: usageError },
               'Failed to read chatbot stream usage',
