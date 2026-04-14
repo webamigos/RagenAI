@@ -35,6 +35,12 @@ export interface ChainRagSettings {
 export interface ChainConfig {
   answerInstructions?: string | null;
   projectInstruction?: string;
+  /**
+   * Cap on generated tokens. Threaded through to `streamText({ maxTokens })`.
+   * Leave undefined for provider default. Populated by the OpenAI-compatible
+   * API (`/api/v1/chat/completions`) from the caller's `max_tokens`.
+   */
+  maxTokens?: number;
   ragSettings?: ChainRagSettings;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
