@@ -3,7 +3,7 @@ import db from '@ragenai/prisma-client';
 import type { UserFile } from '@/generated/prisma/client';
 import { createFileCommand } from './create-file-command';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
-import { uploadToS3 } from '@/app/lib/services/aws';
+import { uploadToS3WithOrg } from '@/app/lib/services/aws';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
@@ -158,7 +158,12 @@ export async function uploadFileCommand(
   );
 
   try {
-    await uploadToS3(
+    // Use the *WithOrg variant because this command can run outside a
+    // Better Auth session (called from internal ragen-api → ragen-app
+    // proxy routes where there is no request-scoped session to read
+    // the org from).
+    await uploadToS3WithOrg(
+      organizationId,
       `${fileRecord.id}.${parsed.fileExtension}`,
       parsed.content as Buffer,
     );
@@ -168,11 +173,15 @@ export async function uploadFileCommand(
     await db.userFile
       .delete({ where: { id: fileRecord.id } })
       .catch(() => undefined);
+    const detail = s3Err instanceof Error ? s3Err.message : String(s3Err);
     logger.error(
-      { err: s3Err, fileId: fileRecord.id },
+      { err: s3Err, fileId: fileRecord.id, detail },
       'S3 upload failed, rolled back DB row',
     );
-    throw new UploadRejectedError('s3_upload_failed', 'Failed to store file');
+    throw new UploadRejectedError(
+      's3_upload_failed',
+      `Failed to store file: ${detail}`,
+    );
   }
 
   const updatedRecord = await db.userFile.update({

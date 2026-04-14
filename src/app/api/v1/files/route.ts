@@ -93,6 +93,13 @@ export async function POST(request: NextRequest) {
       );
     }
     logger.error({ err: error }, 'Error in POST /api/v1/files');
-    return new Response('Internal Server Error', { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal Server Error',
+        code: 500,
+        detail: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
   }
 }

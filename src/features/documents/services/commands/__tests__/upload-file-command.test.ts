@@ -14,7 +14,7 @@ vi.mock('@/app/lib/services/fileParser', () => ({
 
 const mockUploadToS3 = vi.fn();
 vi.mock('@/app/lib/services/aws', () => ({
-  uploadToS3: (...args: unknown[]) => mockUploadToS3(...args),
+  uploadToS3WithOrg: (...args: unknown[]) => mockUploadToS3(...args),
 }));
 
 const mockWorkflowStart = vi.fn();
@@ -104,6 +104,7 @@ describe('uploadFileCommand', () => {
 
     expect(mockCreateFile).toHaveBeenCalled();
     expect(mockUploadToS3).toHaveBeenCalledWith(
+      'org-1',
       'file-1.pdf',
       expect.anything(),
     );
