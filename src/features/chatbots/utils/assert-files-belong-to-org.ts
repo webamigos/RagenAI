@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { NotFoundException } from '@/libs/utils/errors';
 
 /**
  * Guard for `selectedFileIds` on chatbot create/update — prevents a
@@ -7,8 +8,8 @@ import db from '@ragenai/prisma-client';
  * slip foreign file IDs into `chatbots.selected_file_ids`, and the
  * public chatbot retrieval filter would happily match them.
  *
- * Throws synchronously with a readable message when any ID is missing.
- * The action layer catches and surfaces it to the UI.
+ * Throws `NotFoundException` when any ID is missing from the org.
+ * The action layer surfaces the message to the UI.
  */
 export const assertFilesBelongToOrg = async (
   fileIds: readonly string[],
@@ -28,7 +29,7 @@ export const assertFilesBelongToOrg = async (
   });
 
   if (matches !== unique.length) {
-    throw new Error(
+    throw new NotFoundException(
       `Some selected files do not belong to this organization or no longer exist (expected ${unique.length}, found ${matches})`,
     );
   }

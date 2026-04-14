@@ -1,5 +1,5 @@
-'use server';
-
+// Internal domain logic — not a server action. See
+// create-chatbot-command.ts for the rationale.
 import db from '@ragenai/prisma-client';
 import { type UpdateChatbotDto } from '../../contracts/chatbot.types';
 import { assertFilesBelongToOrg } from '../../utils/assert-files-belong-to-org';

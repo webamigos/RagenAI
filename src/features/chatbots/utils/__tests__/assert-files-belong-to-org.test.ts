@@ -6,6 +6,7 @@ vi.mock('@ragenai/prisma-client', () => ({
 }));
 
 import { assertFilesBelongToOrg } from '../assert-files-belong-to-org';
+import { NotFoundException } from '@/libs/utils/errors';
 
 describe('assertFilesBelongToOrg', () => {
   beforeEach(() => {
@@ -27,7 +28,11 @@ describe('assertFilesBelongToOrg', () => {
     });
   });
 
-  it('throws when some files are missing or belong to another org', async () => {
+  it('throws NotFoundException when some files are missing or belong to another org', async () => {
+    mockCount.mockResolvedValue(1);
+    await expect(
+      assertFilesBelongToOrg(['f-1', 'f-2'], 'org-1'),
+    ).rejects.toThrow(NotFoundException);
     mockCount.mockResolvedValue(1);
     await expect(
       assertFilesBelongToOrg(['f-1', 'f-2'], 'org-1'),

@@ -1,5 +1,8 @@
-'use server';
-
+// Internal domain logic — not a server action. The caller must be a
+// server-side context (page, route handler, or the action in
+// src/app/.../organization/chatbots/actions.ts) so `organizationId`
+// is always derived from the authenticated session and never trusted
+// from a client payload.
 import db from '@ragenai/prisma-client';
 import { type CreateChatbotDto } from '../../contracts/chatbot.types';
 import { assertFilesBelongToOrg } from '../../utils/assert-files-belong-to-org';
