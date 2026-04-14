@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
               () => undefined,
             );
             if (usage) {
-              void trackAiUsage({
+              await trackAiUsage({
                 organizationId,
                 projectId: context.projectId,
                 userId: context.userId,
@@ -269,7 +269,7 @@ export async function POST(request: NextRequest) {
     const usage = await Promise.resolve(result.usage).catch(() => undefined);
 
     if (usage) {
-      void trackAiUsage({
+      await trackAiUsage({
         organizationId,
         projectId: context.projectId,
         userId: context.userId,

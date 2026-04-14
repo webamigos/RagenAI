@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
       if (!usage) {
         return;
       }
-      void trackAiUsage({
+      await trackAiUsage({
         organizationId,
         projectId: context.projectId,
         userId: context.userId,

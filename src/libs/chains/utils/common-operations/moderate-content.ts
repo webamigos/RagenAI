@@ -27,7 +27,7 @@ export const moderateContent = async (
 
   if (tracking) {
     const estimatedTokens = Math.ceil(contentToModerate.length / 4);
-    void trackAiUsage({
+    await trackAiUsage({
       organizationId: tracking.organizationId,
       projectId: tracking.projectId ?? null,
       userId: tracking.userId ?? null,

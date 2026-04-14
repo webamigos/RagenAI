@@ -811,18 +811,15 @@ export async function streamEvents({
 
           try {
             const usage = await streamResult.usage;
-            const modelId = effectiveSettings.model || '';
-            const provider =
-              getModelProvider(normalizeModelId(modelId)) || 'litellm';
 
-            void trackAiUsage({
+            await trackAiUsage({
               organizationId: orgId,
-              projectId: threadRecord.projectId ?? null,
+              projectId: effectiveProjectId ?? null,
               threadId: publicThreadId,
               userId,
               step: AiUsageStep.CHAT_COMPLETION,
-              provider,
-              model: modelId,
+              provider: trackedProvider,
+              model: trackedModelId,
               inputTokens: usage.inputTokens ?? 0,
               outputTokens: usage.outputTokens ?? 0,
               totalTokens: usage.totalTokens ?? 0,

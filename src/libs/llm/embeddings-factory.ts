@@ -26,11 +26,11 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     this.organizationId = organizationId;
   }
 
-  private trackEmbeddingUsage(tokens: number): void {
+  private async trackEmbeddingUsage(tokens: number): Promise<void> {
     if (!this.organizationId) {
       return;
     }
-    trackAiUsage({
+    await trackAiUsage({
       organizationId: this.organizationId,
       step: AiUsageStep.EMBEDDINGS,
       provider: this.provider,
@@ -48,7 +48,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     });
 
     if (usage) {
-      this.trackEmbeddingUsage(usage.tokens);
+      await this.trackEmbeddingUsage(usage.tokens);
     }
 
     return embeddings;
@@ -61,7 +61,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     });
 
     if (usage) {
-      this.trackEmbeddingUsage(usage.tokens);
+      await this.trackEmbeddingUsage(usage.tokens);
     }
 
     return embedding;
