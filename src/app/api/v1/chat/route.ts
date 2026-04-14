@@ -1,11 +1,15 @@
-import { timingSafeEqual } from 'node:crypto';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRag';
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
-import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
+import {
+  InternalAuthError,
+  extractInternalContext,
+  recordInternalAuthFailure,
+  verifyInternalSecret,
+} from '@/app/api/v1/utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,47 +19,6 @@ const chatRequestSchema = z.object({
   context: z.string().max(20000).optional(),
   stream: z.boolean().optional().default(false),
 });
-
-type InternalContext = {
-  orgId: string;
-  userId: string;
-  projectId: string;
-};
-
-function verifyInternalSecret(request: NextRequest): void {
-  const secret = request.headers.get('x-internal-secret');
-  const expected = process.env.INTERNAL_API_SECRET;
-
-  if (!expected) {
-    throw new Error('INTERNAL_API_SECRET not configured');
-  }
-
-  if (!secret) {
-    throw new InternalAuthError();
-  }
-
-  const secretBuf = Buffer.from(secret);
-  const expectedBuf = Buffer.from(expected);
-
-  if (
-    secretBuf.length !== expectedBuf.length ||
-    !timingSafeEqual(secretBuf, expectedBuf)
-  ) {
-    throw new InternalAuthError();
-  }
-}
-
-function extractInternalContext(request: NextRequest): InternalContext {
-  const orgId = request.headers.get('x-org-id');
-  const userId = request.headers.get('x-user-id');
-  const projectId = request.headers.get('x-project-id');
-
-  if (!orgId || !userId || !projectId) {
-    throw new InternalAuthError();
-  }
-
-  return { orgId, userId, projectId };
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -149,22 +112,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ text });
   } catch (error) {
     if (error instanceof InternalAuthError) {
-      // Record the mismatch as a security event. Fire-and-forget —
-      // cannot block the 401 response. Escalation rules upgrade to
-      // `critical` on a burst of 5 in 10 minutes from the same IP.
-      recordSecurityEvent({
-        eventType: 'API_INTERNAL_SECRET_MISMATCH',
-        severity: 'warn',
-        source: 'api',
-        ipAddress:
-          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null,
-        userAgent: request.headers.get('user-agent') ?? null,
-        metadata: {
-          path: '/api/v1/chat',
-          reason: error.message,
-        },
-      });
-
+      recordInternalAuthFailure(request, '/api/v1/chat', error.message);
       return NextResponse.json(
         { error: 'Unauthorized', code: 401 },
         { status: 401 },
@@ -181,12 +129,5 @@ export async function POST(request: NextRequest) {
     }
 
     return new Response('Internal Server Error', { status: 500 });
-  }
-}
-
-class InternalAuthError extends Error {
-  constructor() {
-    super('Unauthorized');
-    this.name = 'InternalAuthError';
   }
 }
