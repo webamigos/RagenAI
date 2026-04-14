@@ -661,6 +661,7 @@
         "not-found": "Conversation not found",
         "back-to-list": "Back to list",
         "empty-thread": "This conversation has no messages",
+        "decrypt-failed": "Messages for this conversation could not be decrypted. The encryption key may be unavailable or invalid.",
         "load-more-error": "Failed to load conversations"
       },
       "delete-title": "Delete chatbot",

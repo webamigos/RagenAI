@@ -19,7 +19,7 @@ export default async function ChatbotConversationThreadPage({ params }: Props) {
     notFound();
   }
 
-  const { thread, messages } = data;
+  const { thread, messages, decryptionFailed } = data;
   const shortSession = (thread.visitorId ?? thread.id).slice(0, 8);
 
   return (
@@ -44,11 +44,17 @@ export default async function ChatbotConversationThreadPage({ params }: Props) {
         </div>
       </div>
 
-      {messages.length === 0 ? (
+      {decryptionFailed && (
+        <p className="text-sm text-red-600 dark:text-red-400">
+          {t('decrypt-failed')}
+        </p>
+      )}
+      {!decryptionFailed && messages.length === 0 && (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
           {t('empty-thread')}
         </p>
-      ) : (
+      )}
+      {!decryptionFailed && messages.length > 0 && (
         <div className="space-y-4">
           {messages.map((message) => (
             <MessageBubble key={message.id} message={message} />

@@ -26,6 +26,12 @@ export const getChatbotThreadMessagesQuery = async (
     return null;
   }
 
+  const threadDto = {
+    id: thread.id,
+    visitorId: thread.visitorId,
+    createdAt: thread.createdAt.toISOString(),
+  };
+
   let messages: typeof thread.messages;
   try {
     messages = await decryptMessageContents(
@@ -33,22 +39,22 @@ export const getChatbotThreadMessagesQuery = async (
       thread.encryptedDek,
     );
   } catch (error) {
+    // We can't distinguish "empty thread" from "decrypt failed" to the
+    // admin unless we surface it, so flag the state rather than hiding
+    // it behind an empty array.
     logger.error(
       { err: error, threadId },
       'Failed to decrypt chatbot thread messages',
     );
-    messages = [];
+    return { thread: threadDto, messages: [], decryptionFailed: true };
   }
 
   return {
-    thread: {
-      id: thread.id,
-      visitorId: thread.visitorId,
-      createdAt: thread.createdAt.toISOString(),
-    },
+    thread: threadDto,
     messages: messages.map((m) => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
     })),
+    decryptionFailed: false,
   };
 };

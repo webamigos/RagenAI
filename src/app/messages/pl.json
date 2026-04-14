@@ -664,6 +664,7 @@
         "not-found": "Nie znaleziono rozmowy",
         "back-to-list": "Powrót do listy",
         "empty-thread": "Ta rozmowa nie zawiera wiadomości",
+        "decrypt-failed": "Nie udało się odszyfrować wiadomości w tej rozmowie. Klucz szyfrowania może być niedostępny lub nieprawidłowy.",
         "load-more-error": "Nie udało się załadować rozmów"
       },
       "delete-title": "Usuń chatbota",

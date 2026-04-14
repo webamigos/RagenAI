@@ -117,16 +117,22 @@ export const initializeRagChain = async ({
 
     // Supabase applies its own filter via constructor — don't pass metadataFilter
     const isSupabase = orgMetadata.vectorStore === 'supabase';
-    const metadataFilter = isSupabase
-      ? undefined
-      : (metadataFilterOverride ??
-        (await buildMetadataFilter(
-          orgId,
-          projectId ?? null,
-          userId ?? null,
-          userTeamIds,
-          isOrgAdmin,
-        )));
+    const resolveMetadataFilter = async () => {
+      if (isSupabase) {
+        return undefined;
+      }
+      if (metadataFilterOverride) {
+        return assertOrgIdInFilter(metadataFilterOverride, orgId);
+      }
+      return buildMetadataFilter(
+        orgId,
+        projectId ?? null,
+        userId ?? null,
+        userTeamIds,
+        isOrgAdmin,
+      );
+    };
+    const metadataFilter = await resolveMetadataFilter();
 
     return await basicRagChain({
       models: {
@@ -161,6 +167,36 @@ export const initializeRagChain = async ({
     throw error;
   }
 };
+
+/**
+ * Guardrail for the `metadataFilter` override param. Every override MUST
+ * constrain `metadata.organization_id` so a bug in a caller cannot widen
+ * retrieval across organizations. Throws synchronously — better to fail
+ * the request than silently leak.
+ */
+function assertOrgIdInFilter<T extends object>(filter: T, orgId: string): T {
+  const mustList = (filter as { must?: unknown[] }).must;
+  if (!Array.isArray(mustList)) {
+    throw new Error(
+      'metadataFilter override must include a `must` array with organization_id',
+    );
+  }
+  const hasOrgId = mustList.some((c) => {
+    if (!c || typeof c !== 'object') {
+      return false;
+    }
+    const cond = c as { key?: unknown; match?: { value?: unknown } };
+    return (
+      cond.key === 'metadata.organization_id' && cond.match?.value === orgId
+    );
+  });
+  if (!hasOrgId) {
+    throw new Error(
+      `metadataFilter override missing required metadata.organization_id=${orgId} constraint`,
+    );
+  }
+  return filter;
+}
 
 /**
  * Build metadata filter based on project context and user access.
