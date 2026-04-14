@@ -82,6 +82,7 @@ export const conversationChain = async ({
         model: models.answerGenerator,
         system: effectiveSystem,
         messages,
+        maxOutputTokens: config?.maxTokens,
         experimental_telemetry: {
           isEnabled: true,
           functionId: 'conversation-stream',
