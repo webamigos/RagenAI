@@ -16,6 +16,11 @@ import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queri
 import { buildChatbotMetadataFilter } from './metadata-filter';
 import { checkChatbotRateLimit } from './rate-limit';
 import { isBudgetExceededError } from './budget-error';
+import {
+  classifyJailbreakRisk,
+  isAboveJailbreakThreshold,
+} from '@/libs/security/jailbreak-classifier';
+import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,6 +89,23 @@ export async function POST(
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null;
   const rateLimit = await checkChatbotRateLimit(token, clientIp);
   if (!rateLimit.ok) {
+    // Fire-and-forget — admins see repeated limit hits in the
+    // security dashboard so they can tell a misconfigured widget
+    // from a real abuse attempt. The Phase 0.5 escalation rule
+    // bumps severity if hits cluster.
+    recordSecurityEvent({
+      eventType: 'RATE_LIMIT_HIT',
+      severity: 'info',
+      source: 'chatbot',
+      organizationId: chatbot.organizationId,
+      ipAddress: clientIp,
+      userAgent: request.headers.get('user-agent') ?? null,
+      metadata: {
+        scope: rateLimit.scope,
+        chatbotId: chatbot.id,
+        retryAfterSeconds: rateLimit.retryAfterSeconds,
+      },
+    });
     return NextResponse.json(
       { error: 'Too many requests' },
       {
@@ -170,6 +192,51 @@ export async function POST(
           ],
         });
 
+        // Fire-and-forget jailbreak classification. Public chatbots are
+        // the most exposed jailbreak surface — we want the score on
+        // every turn for the security dashboard and escalation rules.
+        // Short-circuits to score=0 when JAILBREAK_DETECTION_ENABLED is
+        // off. Must not delay or block the user's stream.
+        void classifyJailbreakRisk(message)
+          .then((classification) => {
+            if (classification.skipped) {
+              return;
+            }
+            updateActiveTrace({
+              metadata: {
+                jailbreakScore: classification.score,
+                ...(classification.reason
+                  ? { jailbreakReason: classification.reason }
+                  : {}),
+              },
+            });
+            if (isAboveJailbreakThreshold(classification.score)) {
+              recordSecurityEvent({
+                eventType: 'CHAT_JAILBREAK_DETECTED',
+                severity: 'info',
+                source: 'chatbot',
+                organizationId,
+                ipAddress: clientIp,
+                userAgent: request.headers.get('user-agent') ?? null,
+                metadata: {
+                  score: classification.score,
+                  chatbotId: chatbot.id,
+                  threadId: thread.id,
+                  messageLength: message.length,
+                  ...(classification.reason
+                    ? { reason: classification.reason }
+                    : {}),
+                },
+              });
+            }
+          })
+          .catch((err) => {
+            logger.debug(
+              { err },
+              'Jailbreak classifier post-processing failed (chatbot)',
+            );
+          });
+
         try {
           // Signal "thinking" immediately so the widget can show the
           // loading indicator before RAG (moderation + rephrase +
@@ -244,22 +311,38 @@ export async function POST(
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
 
+          // Sequence the saves — running them via Promise.all lets the
+          // DB clocks flip ordering on fast streams, which makes the
+          // admin conversations view render messages out of order.
+          // Awaiting USER first guarantees the chronology.
           try {
-            await Promise.all([
-              createMessageInDbCommand({
-                threadId: thread.id,
-                message: { content: message },
-                role: Role.USER,
-                visitorId: sessionId,
-              }),
-              createMessageInDbCommand({
+            await createMessageInDbCommand({
+              threadId: thread.id,
+              message: { content: message },
+              role: Role.USER,
+              visitorId: sessionId,
+            });
+          } catch (err) {
+            logger.error({ err }, 'Failed to save chatbot USER message');
+          }
+          // Skip the assistant save when the model produced no text
+          // (moderation refusal, silent budget error, tool-only turn).
+          // Saving an empty row just pollutes the conversation view.
+          if (fullResponse.trim().length > 0) {
+            try {
+              await createMessageInDbCommand({
                 threadId: thread.id,
                 message: { content: fullResponse, source: Source.CHATBOT },
                 role: Role.ASSISTANT,
-              }),
-            ]);
-          } catch (err) {
-            logger.error({ err }, 'Failed to save chatbot messages');
+              });
+            } catch (err) {
+              logger.error({ err }, 'Failed to save chatbot ASSISTANT message');
+            }
+          } else {
+            logger.info(
+              { chatbotId: chatbot.id, threadId: thread.id },
+              'Skipping empty chatbot assistant message',
+            );
           }
         } catch (err) {
           // LiteLLM returns "Budget has been exceeded" when the org's
