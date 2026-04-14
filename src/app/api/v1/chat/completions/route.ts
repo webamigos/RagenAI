@@ -46,50 +46,85 @@ const requestSchema = z.object({
 type ParsedRequest = z.infer<typeof requestSchema>;
 
 /**
- * Fold an OpenAI-style messages array into the `(question, chat_history)`
- * pair the RAG chain expects.
+ * Fold an OpenAI-style messages array into what the RAG chain expects.
  *
- * - The last `user` message becomes the question.
- * - All messages _before_ that last user message are stringified into
- *   `chat_history`. System messages are emitted as `System:` lines
- *   (they'll act as extra instructions layered on top of the org prompt).
- * - If no user message is present the request is rejected upstream;
- *   here we defensively fall back to the last message content.
+ * - The last `user` message becomes `question`.
+ * - `user`/`assistant` turns before it become `chat_history`, using the
+ *   `"USER: ..."`/`"ASSISTANT: ..."` format that `formatChatHistory()`
+ *   in `basic-rag/operations.ts` parses. The prefix casing matters —
+ *   anything else is silently dropped by the parser.
+ * - `system` messages are pulled out into `systemPrompts` so the caller
+ *   can merge them into the chain's `projectInstruction` (the chain
+ *   parser has no `SYSTEM:` branch, so they can't ride the history).
+ * - If no user message is present we fall back to the last message as
+ *   the prompt — Zod's `min(1)` guarantees at least one message.
  */
 function foldMessages(messages: ParsedRequest['messages']): {
   question: string;
   chatHistory: string;
+  systemPrompts: string[];
 } {
+  const systemPrompts = messages
+    .filter((m) => m.role === 'system')
+    .map((m) => m.content);
+
+  const conversation = messages.filter((m) => m.role !== 'system');
+
+  if (conversation.length === 0) {
+    return {
+      question: messages[messages.length - 1].content,
+      chatHistory: '',
+      systemPrompts,
+    };
+  }
+
   let lastUserIdx = -1;
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i].role === 'user') {
+  for (let i = conversation.length - 1; i >= 0; i -= 1) {
+    if (conversation[i].role === 'user') {
       lastUserIdx = i;
       break;
     }
   }
 
   if (lastUserIdx === -1) {
-    // Degenerate case — no user turn. Use the last message as the prompt
-    // so the chain has something to work with; the upstream SDK validator
-    // should normally prevent this.
     return {
-      question: messages[messages.length - 1].content,
+      question: conversation[conversation.length - 1].content,
       chatHistory: '',
+      systemPrompts,
     };
   }
 
-  const question = messages[lastUserIdx].content;
-  const roleLabel: Record<ParsedRequest['messages'][number]['role'], string> = {
-    user: 'User',
-    assistant: 'Assistant',
-    system: 'System',
-  };
-  const history = messages
+  const question = conversation[lastUserIdx].content;
+  const history = conversation
     .slice(0, lastUserIdx)
-    .map((m) => `${roleLabel[m.role]}: ${m.content}`)
+    .map((m) => `${m.role === 'user' ? 'USER' : 'ASSISTANT'}: ${m.content}`)
     .join('\n');
 
-  return { question, chatHistory: history };
+  return { question, chatHistory: history, systemPrompts };
+}
+
+/**
+ * Merge caller-supplied `system` messages with the project's existing
+ * instructions. Order: project instruction first (the owner's intent),
+ * then the caller's system messages appended as per-request overrides.
+ */
+function mergeProjectInstruction(
+  projectInstruction: string | null | undefined,
+  systemPrompts: string[],
+): string | null {
+  const parts: string[] = [];
+  if (projectInstruction?.trim()) {
+    parts.push(projectInstruction);
+  }
+  for (const p of systemPrompts) {
+    if (p.trim()) {
+      parts.push(p);
+    }
+  }
+  if (parts.length === 0) {
+    return null;
+  }
+  return parts.join('\n\n');
 }
 
 export async function POST(request: NextRequest) {
@@ -140,15 +175,20 @@ export async function POST(request: NextRequest) {
 
     const effectiveModel = settings.model;
 
+    const { question, chatHistory, systemPrompts } = foldMessages(
+      parsed.messages,
+    );
+
     const ragChain = await initializeRagChain({
       settings,
       orgId: organizationId,
       projectId: context.projectId,
-      projectInstruction: projectSettings?.instructions ?? null,
+      projectInstruction: mergeProjectInstruction(
+        projectSettings?.instructions ?? null,
+        systemPrompts,
+      ),
       maxTokens: parsed.max_tokens,
     });
-
-    const { question, chatHistory } = foldMessages(parsed.messages);
 
     const result = await ragChain.stream({
       question,

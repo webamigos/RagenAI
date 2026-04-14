@@ -175,7 +175,6 @@ describe('/api/v1/chat/completions', () => {
       const req = createRequest(
         {
           messages: [
-            { role: 'system', content: 'be terse' },
             { role: 'user', content: 'hi' },
             { role: 'assistant', content: 'hello' },
             { role: 'user', content: 'how are you?' },
@@ -187,8 +186,72 @@ describe('/api/v1/chat/completions', () => {
 
       expect(mockStream).toHaveBeenCalledWith({
         question: 'how are you?',
-        chat_history: 'System: be terse\nUser: hi\nAssistant: hello',
+        chat_history: 'USER: hi\nASSISTANT: hello',
       });
+    });
+
+    it('pulls system messages out of history and merges them into projectInstruction', async () => {
+      const req = createRequest(
+        {
+          messages: [
+            { role: 'system', content: 'be terse' },
+            { role: 'user', content: 'hi' },
+            { role: 'assistant', content: 'hello' },
+            { role: 'user', content: 'how are you?' },
+          ],
+        },
+        validHeaders,
+      );
+      await POST(req);
+
+      // System is pulled out of history, user/assistant remain in UPPERCASE format.
+      expect(mockStream).toHaveBeenCalledWith({
+        question: 'how are you?',
+        chat_history: 'USER: hi\nASSISTANT: hello',
+      });
+
+      // System message appended to the project's own instructions.
+      expect(mockInitializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectInstruction: 'Be helpful\n\nbe terse',
+        }),
+      );
+    });
+
+    it('uses only project instruction when no system messages provided', async () => {
+      const req = createRequest(
+        { messages: [{ role: 'user', content: 'hi' }] },
+        validHeaders,
+      );
+      await POST(req);
+
+      expect(mockInitializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ projectInstruction: 'Be helpful' }),
+      );
+    });
+
+    it('uses only system messages when no project instruction exists', async () => {
+      mockFindUnique.mockResolvedValue({
+        organizationId: 'org-123',
+        settings: { instructions: null },
+      });
+      const req = createRequest(
+        {
+          messages: [
+            { role: 'system', content: 'be terse' },
+            { role: 'system', content: 'answer in polish' },
+            { role: 'user', content: 'hi' },
+          ],
+        },
+        validHeaders,
+      );
+      await POST(req);
+
+      expect(mockInitializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({
+          projectInstruction: 'be terse\n\nanswer in polish',
+        }),
+      );
     });
   });
 
