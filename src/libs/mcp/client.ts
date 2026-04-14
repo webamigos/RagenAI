@@ -247,6 +247,30 @@ export async function createMcpToolsFromConnectors(
             },
           },
         });
+      } else if (providerDef?.authType === 'api_key_custom_header') {
+        // Read combined `${consumerKey}:${consumerSecret}` from the vault
+        // and inject under the provider-defined header name (e.g.
+        // WooCommerce uses `X-MCP-API-Key`).
+        if (!providerDef.headerName) {
+          throw new Error(`Provider ${connector.provider} missing headerName`);
+        }
+        const tokenData = await ragenAuthClient.getToken(
+          connector.customerId,
+          connector.provider,
+        );
+        if (!tokenData?.accessToken) {
+          throw new Error(`No API key found for ${connector.provider}`);
+        }
+
+        client = await createMCPClient({
+          transport: {
+            type: 'http',
+            url: connector.mcpServerUrl,
+            headers: {
+              [providerDef.headerName]: tokenData.accessToken,
+            },
+          },
+        });
       } else if (providerDef?.authType === 'external_mcp') {
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,

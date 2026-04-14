@@ -12,7 +12,10 @@ import { disconnectConnectorCommand } from '@/features/connectors/services/comma
 import { toggleConnectorCommand } from '@/features/connectors/services/commands/toggle-connector-command';
 import { registerApiKeyCommand } from '@/features/connectors/services/commands/register-api-key-command';
 import { registerApiKeyBearerCommand } from '@/features/connectors/services/commands/register-api-key-bearer-command';
+import { registerApiKeyCustomHeaderCommand } from '@/features/connectors/services/commands/register-api-key-custom-header-command';
+import { testCustomHeaderConnectionCommand } from '@/features/connectors/services/commands/test-custom-header-connection-command';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import type { CustomHeaderCredentials } from '@/features/connectors/contracts/connector.types';
 
 export async function getConnectors() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -75,4 +78,34 @@ export async function registerApiKey(
   }
 
   return registerApiKeyCommand(orgId, userId, provider, apiKey);
+}
+
+export async function registerCustomHeaderConnection(
+  provider: McpConnectorProvider,
+  credentials: CustomHeaderCredentials,
+) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    throw new Error('Unauthorized');
+  }
+  return registerApiKeyCustomHeaderCommand(
+    orgId,
+    userId,
+    provider,
+    credentials,
+  );
+}
+
+export async function testCustomHeaderConnection(
+  provider: McpConnectorProvider,
+  credentials: CustomHeaderCredentials,
+) {
+  // Auth check only — we don't need the IDs because nothing is persisted.
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!orgId || !userId) {
+    throw new Error('Unauthorized');
+  }
+  return testCustomHeaderConnectionCommand(provider, credentials);
 }

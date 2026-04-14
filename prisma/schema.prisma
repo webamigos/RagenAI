@@ -704,6 +704,7 @@ enum McpConnectorProvider {
   HUBSPOT
   FIREFLIES
   SLACK
+  WOOCOMMERCE
 }
 
 model GoogleDriveSync {
