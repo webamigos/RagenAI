@@ -26,7 +26,7 @@ export const getChatbotThreadMessagesQuery = async (
     return null;
   }
 
-  let messages;
+  let messages: typeof thread.messages;
   try {
     messages = await decryptMessageContents(
       thread.messages,
