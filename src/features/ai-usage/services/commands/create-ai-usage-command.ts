@@ -53,10 +53,11 @@ export async function createAiUsageCommand(
 }
 
 /**
- * Fire-and-forget wrapper that never throws or blocks the caller.
+ * Tracking wrapper that never throws — DB errors are caught and logged so
+ * tracking failures cannot break the caller. Returns a Promise so callers
+ * can `await` to ensure durability before the request closes; calling
+ * without `await` is also safe (`void trackAiUsage(...)`).
  */
-export function trackAiUsage(input: CreateAiUsageInput): void {
-  createAiUsageCommand(input).catch((error) => {
-    logger.error({ err: error }, 'trackAiUsage: unhandled error');
-  });
+export async function trackAiUsage(input: CreateAiUsageInput): Promise<void> {
+  await createAiUsageCommand(input).catch(() => {});
 }

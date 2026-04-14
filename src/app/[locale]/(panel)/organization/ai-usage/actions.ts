@@ -10,11 +10,11 @@ import {
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import type { AiUsageFilters } from '@/features/ai-usage/contracts/ai-usage.types';
 import {
+  getAiUsageDashboardQuery,
   getOrganizationsForFilterQuery,
   getProjectsForFilterQuery,
   getUsersForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
-import { getLiteLLMUsageDashboardQuery } from '@/features/ai-usage/services/queries/get-litellm-usage-query';
 
 /**
  * Ensures the caller is an app admin or org admin.
@@ -51,7 +51,7 @@ export async function getAiUsageDashboard(filters?: AiUsageFilters) {
     ...(!access.isAppAdmin ? { organizationId: access.orgId } : {}),
   };
 
-  return getLiteLLMUsageDashboardQuery(scopedFilters);
+  return getAiUsageDashboardQuery(scopedFilters);
 }
 
 export async function getOrganizationsForFilter() {

@@ -1,41 +1,69 @@
 import { embed, embedMany } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { AiUsageStep } from '@/generated/prisma/client';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import type {
   LiteLLMCredentials,
   BaseEmbeddingsConfig,
   EmbeddingsProvider,
 } from './types';
 
-/**
- * Wrapper around Vercel AI SDK embedding models that provides
- * a unified interface. Usage tracking is handled by LiteLLM
- * via the org's virtual key.
- */
-class SimpleEmbeddingsProvider implements EmbeddingsProvider {
+export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
   private embeddingModel: Parameters<typeof embed>[0]['model'];
+  private organizationId?: string;
+  private provider: string;
 
   constructor(
     embeddingModel: Parameters<typeof embed>[0]['model'],
     modelName: string,
+    provider: string,
+    organizationId?: string,
   ) {
     this.embeddingModel = embeddingModel;
     this.model = modelName;
+    this.provider = provider;
+    this.organizationId = organizationId;
+  }
+
+  private async trackEmbeddingUsage(tokens: number): Promise<void> {
+    if (!this.organizationId) {
+      return;
+    }
+    await trackAiUsage({
+      organizationId: this.organizationId,
+      step: AiUsageStep.EMBEDDINGS,
+      provider: this.provider,
+      model: this.model,
+      inputTokens: tokens,
+      outputTokens: 0,
+      totalTokens: tokens,
+    });
   }
 
   async embedDocuments(texts: string[]): Promise<number[][]> {
-    const { embeddings } = await embedMany({
+    const { embeddings, usage } = await embedMany({
       model: this.embeddingModel,
       values: texts,
     });
+
+    if (usage) {
+      await this.trackEmbeddingUsage(usage.tokens);
+    }
+
     return embeddings;
   }
 
   async embedQuery(text: string): Promise<number[]> {
-    const { embedding } = await embed({
+    const { embedding, usage } = await embed({
       model: this.embeddingModel,
       value: text,
     });
+
+    if (usage) {
+      await this.trackEmbeddingUsage(usage.tokens);
+    }
+
     return embedding;
   }
 }
@@ -44,7 +72,7 @@ export class EmbeddingsFactory {
   static createInstance(
     credentials: LiteLLMCredentials,
     config: BaseEmbeddingsConfig,
-    _organizationId?: string,
+    organizationId?: string,
   ): EmbeddingsProvider {
     if (!credentials.baseUrl) {
       throw new Error('LiteLLM baseUrl is required for embeddings');
@@ -76,9 +104,11 @@ export class EmbeddingsFactory {
     });
 
     const modelName = config.model || 'cohere-embed-multilingual-v3';
-    return new SimpleEmbeddingsProvider(
+    return new TrackedEmbeddingsProvider(
       litellm.textEmbeddingModel(modelName),
       modelName,
+      'litellm',
+      organizationId,
     );
   }
 }

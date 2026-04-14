@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 const mockFindUnique = vi.fn();
 const mockGetAllSettings = vi.fn();
 const mockStream = vi.fn();
+const mockTrackAiUsage = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -23,6 +24,13 @@ vi.mock('@/app/api/threads/services/initializeBasicRag', () => ({
       stream: (...args: unknown[]) => mockStream(...args),
     }),
 }));
+
+vi.mock(
+  '@/features/ai-usage/services/commands/create-ai-usage-command',
+  () => ({
+    trackAiUsage: (...args: unknown[]) => mockTrackAiUsage(...args),
+  }),
+);
 
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn() },
@@ -65,6 +73,7 @@ describe('/api/v1/chat', () => {
 
     mockGetAllSettings.mockResolvedValue({
       apiKey: 'some-key',
+      model: 'gpt-5.4',
     });
 
     mockStream.mockResolvedValue({
@@ -72,7 +81,14 @@ describe('/api/v1/chat', () => {
         yield 'Hello ';
         yield 'world';
       })(),
+      usage: Promise.resolve({
+        inputTokens: 12,
+        outputTokens: 7,
+        totalTokens: 19,
+      }),
     });
+
+    mockTrackAiUsage.mockResolvedValue(undefined);
   });
 
   describe('POST - internal secret authentication', () => {
@@ -211,6 +227,75 @@ describe('/api/v1/chat', () => {
         question: 'hello',
         chat_history: '',
       });
+    });
+  });
+
+  describe('POST - usage tracking', () => {
+    it('records CHAT_COMPLETION usage on non-streaming responses', async () => {
+      const req = createRequest({ prompt: 'hello' }, validHeaders);
+      await POST(req);
+
+      expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
+      expect(mockTrackAiUsage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: 'org-123',
+          projectId: 'proj-789',
+          userId: 'user-456',
+          step: 'CHAT_COMPLETION',
+          model: 'gpt-5.4',
+          inputTokens: 12,
+          outputTokens: 7,
+          totalTokens: 19,
+        }),
+      );
+    });
+
+    it('records CHAT_COMPLETION usage after a streaming response completes', async () => {
+      const req = createRequest(
+        { prompt: 'hello', stream: true },
+        validHeaders,
+      );
+      const response = await POST(req);
+      // Drain the stream so the trackUsage call inside the controller runs.
+      await response.text();
+
+      expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
+      expect(mockTrackAiUsage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          step: 'CHAT_COMPLETION',
+          inputTokens: 12,
+          outputTokens: 7,
+        }),
+      );
+    });
+
+    it('skips tracking when the chain returns no usage object', async () => {
+      mockStream.mockResolvedValueOnce({
+        textStream: (async function* () {
+          yield 'hi';
+        })(),
+        usage: Promise.resolve(undefined),
+      });
+
+      const req = createRequest({ prompt: 'hello' }, validHeaders);
+      await POST(req);
+
+      expect(mockTrackAiUsage).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when the usage promise rejects and skips tracking', async () => {
+      mockStream.mockResolvedValueOnce({
+        textStream: (async function* () {
+          yield 'hi';
+        })(),
+        usage: Promise.reject(new Error('usage timeout')),
+      });
+
+      const req = createRequest({ prompt: 'hello' }, validHeaders);
+      const response = await POST(req);
+
+      expect(response.status).toBe(200);
+      expect(mockTrackAiUsage).not.toHaveBeenCalled();
     });
   });
 });
