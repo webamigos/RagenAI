@@ -2,12 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
 const mockUpdate = vi.fn();
+const mockCount = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     chatbot: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
       update: (...args: unknown[]) => mockUpdate(...args),
     },
+    userFile: { count: (...args: unknown[]) => mockCount(...args) },
   },
 }));
 
@@ -90,5 +92,43 @@ describe('updateChatbotCommand', () => {
       where: { id: 'chatbot-99', organizationId: 'org-other' },
       select: { id: true },
     });
+  });
+
+  it('validates that selectedFileIds belong to the organization', async () => {
+    mockFindFirst.mockResolvedValue({ id: 'chatbot-1' });
+    mockCount.mockResolvedValue(2);
+    mockUpdate.mockResolvedValue(chatbotRecord);
+
+    await updateChatbotCommand('chatbot-1', 'org-1', {
+      selectedFileIds: ['file-1', 'file-2'],
+    });
+
+    expect(mockCount).toHaveBeenCalledWith({
+      where: { id: { in: ['file-1', 'file-2'] }, organizationId: 'org-1' },
+    });
+    expect(mockUpdate).toHaveBeenCalled();
+  });
+
+  it('throws and skips update when selectedFileIds include foreign IDs', async () => {
+    mockFindFirst.mockResolvedValue({ id: 'chatbot-1' });
+    // Caller asked for 2, only 1 belongs — cross-org attempt.
+    mockCount.mockResolvedValue(1);
+
+    await expect(
+      updateChatbotCommand('chatbot-1', 'org-1', {
+        selectedFileIds: ['file-1', 'file-from-other-org'],
+      }),
+    ).rejects.toThrow(/do not belong to this organization/);
+
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('does not query userFile.count when selectedFileIds is omitted', async () => {
+    mockFindFirst.mockResolvedValue({ id: 'chatbot-1' });
+    mockUpdate.mockResolvedValue(chatbotRecord);
+
+    await updateChatbotCommand('chatbot-1', 'org-1', { name: 'renamed' });
+
+    expect(mockCount).not.toHaveBeenCalled();
   });
 });

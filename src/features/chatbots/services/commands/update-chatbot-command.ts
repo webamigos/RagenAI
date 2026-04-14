@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { type UpdateChatbotDto } from '../../contracts/chatbot.types';
+import { assertFilesBelongToOrg } from '../../utils/assert-files-belong-to-org';
 
 export const updateChatbotCommand = async (
   id: string,
@@ -14,6 +15,10 @@ export const updateChatbotCommand = async (
   });
   if (!existing) {
     return null;
+  }
+
+  if (data.selectedFileIds !== undefined) {
+    await assertFilesBelongToOrg(data.selectedFileIds, organizationId);
   }
 
   return db.chatbot.update({
