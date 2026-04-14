@@ -208,7 +208,9 @@ export async function POST(request: NextRequest) {
             // Resolve usage after the stream completes. The Vercel AI
             // SDK promises only settle once the underlying provider
             // flushes its final chunk.
-            const usage = await result.usage.catch(() => undefined);
+            const usage = await Promise.resolve(result.usage).catch(
+              () => undefined,
+            );
             controller.enqueue(
               encoder.encode(
                 `data: ${JSON.stringify({
@@ -246,7 +248,7 @@ export async function POST(request: NextRequest) {
     for await (const chunk of result.textStream) {
       text += chunk;
     }
-    const usage = await result.usage.catch(() => undefined);
+    const usage = await Promise.resolve(result.usage).catch(() => undefined);
 
     return NextResponse.json({
       text,

@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { nanoid } from 'nanoid';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUser,
@@ -7,18 +6,15 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import { saveOrganizationPublicMetadata } from '@/app/actions';
-import { getFileType, parseFile } from '@/app/lib/services/fileParser';
-import { uploadToS3 } from '@/app/lib/services/aws';
-import { createFileDetailsInDB } from '@/app/lib/services/file';
 import db from '@ragenai/prisma-client';
-import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
-import { Workflow } from '@/features/documents/contracts/document.types';
-import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import {
+  UploadRejectedError,
+  uploadFileCommand,
+} from '@/features/documents/services/commands/upload-file-command';
 import {
   getStorageUsageQuery,
   getProjectStorageUsageQuery,
 } from '@/features/organizations/services/queries/get-storage-usage-query';
-import prettyBytes from 'pretty-bytes';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -70,9 +66,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Storage limit enforcement
-    const [storageLimits, orgUsage, projectUsageResult] = await Promise.all([
-      getStorageLimits(orgId),
+    // Storage-limit state is maintained as running totals across the
+    // multi-file loop so two sub-limit files don't sneak past a shared
+    // budget. `uploadFileCommand` also validates but we pre-compute
+    // once to avoid N round-trips.
+    const [orgUsage, projectUsageResult] = await Promise.all([
       getStorageUsageQuery(orgId),
       projectRecord
         ? getProjectStorageUsageQuery(orgId, projectRecord.id)
@@ -85,121 +83,47 @@ export async function POST(request: NextRequest) {
     const failedFiles: { fileName: string; error: string }[] = [];
 
     for (const file of files) {
-      // Check single file limit
-      if (file.size > storageLimits.singleFileLimitBytes) {
-        failedFiles.push({
-          fileName: file.name,
-          error: `File exceeds maximum size of ${prettyBytes(storageLimits.singleFileLimitBytes)}`,
-        });
-        continue;
-      }
-
-      // Check org-wide storage limit
-      if (runningOrgUsage + file.size > storageLimits.storageLimitBytes) {
-        failedFiles.push({
-          fileName: file.name,
-          error: `Organization storage limit of ${prettyBytes(storageLimits.storageLimitBytes)} would be exceeded`,
-        });
-        continue;
-      }
-
-      // Check project storage limit
-      if (
-        projectRecord &&
-        runningProjectUsage + file.size > storageLimits.projectStorageLimitBytes
-      ) {
-        failedFiles.push({
-          fileName: file.name,
-          error: `Project storage limit of ${prettyBytes(storageLimits.projectStorageLimitBytes)} would be exceeded`,
-        });
-        continue;
-      }
       try {
-        const parsedFile = await parseFile(file, orgId);
-        const fileType = getFileType(parsedFile.fileName);
-        const fileExtension = parsedFile.fileExtension;
-
-        // Step 1: create file details in db
-        const fileRecord = await createFileDetailsInDB(
-          parsedFile.fileName,
-          file.size,
-          orgId,
-          fileType,
-          projectRecord?.id ?? null,
-          {
-            folderId: folderId || null,
-            ownerId: user?.id ?? null,
-            fileExtension: fileExtension ?? null,
-            fileMimeType: file.type || null,
+        const { fileRecord, bytesUsed, workflowId } = await uploadFileCommand({
+          file,
+          organizationId: orgId,
+          organizationSlug: org.slug,
+          projectId: projectRecord?.id ?? null,
+          userId: user?.id ?? null,
+          userEmail: user?.email ?? null,
+          folderId: folderId || null,
+          runningUsage: {
+            orgBytes: runningOrgUsage,
+            projectBytes: runningProjectUsage,
           },
-        );
-
-        // Step 2: upload to S3
-        await uploadToS3(
-          `${fileRecord.id}.${fileExtension}`,
-          parsedFile.content as Buffer,
-        );
-
-        await db.userFile.update({
-          where: {
-            id: fileRecord.id,
-            organizationId: orgId,
-          },
-          data: {
-            isUploaded: true,
-            uploadedAt: new Date(),
-          },
-        });
-
-        logger.info(`File uploaded to S3: ${parsedFile.fileName}`);
-
-        // Step 3: start async embedding workflow
-        const embeddingWorkflowId = `doc-${nanoid()}`;
-        const client = getTemporalClient();
-
-        await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
-          taskQueue: TASK_QUEUE_NAME,
-          workflowId: embeddingWorkflowId,
-          args: [
-            {
-              ...fileRecord,
-              projectId: projectRecord?.id ?? null,
-              organizationSlug: org.slug,
-              organizationId: orgId,
-              userEmail: user?.email ?? undefined,
-              userId: user?.id ?? undefined,
-              // Correlation ID for e2e request tracing. The Temporal
-              // workflow ID doubles as the requestId since it's unique
-              // per upload and links directly to the Temporal UI. Worker
-              // activities thread it into security events and logs.
-              requestId: embeddingWorkflowId,
-            },
-          ],
         });
 
         logger.info(
-          { workflowId: embeddingWorkflowId, fileName: parsedFile.fileName },
-          'Started embedding workflow',
+          { workflowId, fileName: fileRecord.fileName },
+          'Upload + workflow complete',
         );
 
-        // Only count as processed after workflow start succeeds
         processedFiles.push({
-          fileName: parsedFile.fileName,
-          fileSize: file.size,
+          fileName: fileRecord.fileName,
+          fileSize: bytesUsed,
           uniqueFileId: fileRecord.id,
         });
 
-        // Update running totals for cumulative validation
-        runningOrgUsage += file.size;
+        runningOrgUsage += bytesUsed;
         if (projectRecord) {
-          runningProjectUsage += file.size;
+          runningProjectUsage += bytesUsed;
         }
       } catch (error) {
-        logger.error({ err: error }, `Error processing file ${file.name}`);
-        failedFiles.push({
-          fileName: file.name,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
+        let message = 'Unknown error';
+        if (error instanceof UploadRejectedError) {
+          message = error.message;
+        } else if (error instanceof Error) {
+          message = error.message;
+        }
+        if (!(error instanceof UploadRejectedError)) {
+          logger.error({ err: error }, `Error processing file ${file.name}`);
+        }
+        failedFiles.push({ fileName: file.name, error: message });
         // Continue processing remaining files
       }
     }
