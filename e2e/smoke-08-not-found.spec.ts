@@ -18,7 +18,7 @@ test.describe('404 page', () => {
       name: /powrót do strony głównej/i,
     });
     await expect(backLink).toBeVisible({ timeout: 10_000 });
-    await expect(backLink).toHaveAttribute('href', '/');
+    await expect(backLink).toHaveAttribute('href', '/pl');
   });
 
   test('localized /en 404 shows branded layout', async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe('404 page', () => {
     });
     const backLink = page.getByRole('link', { name: /go back to home/i });
     await expect(backLink).toBeVisible({ timeout: 10_000 });
-    await expect(backLink).toHaveAttribute('href', '/');
+    await expect(backLink).toHaveAttribute('href', '/en');
   });
 
   test('404 page displays the 404 number', async ({ page }) => {
