@@ -460,34 +460,29 @@ Per repo convention (see ragen-app CLAUDE.md §Testing Requirements):
 
 ## Local development — docker compose
 
-Follows the existing pattern of multiple compose files:
+**Per-service pattern.** Each ragen-mcp service owns its own
+`docker-compose.yml` (matches ragen-token-vault, avoids coupling the
+app stack to MCP infra). ragen-app's compose files stay focused on
+the app.
 
-| File | Purpose |
-|------|---------|
-| `docker-compose.yml` | Full stack (Postgres, Qdrant, Temporal, LiteLLM, Redis, …) |
-| `docker-compose.app.yml` | Light — just what ragen-app needs |
-| `docker-compose.mcp.yml` | **New** — MCP services + their databases |
-
-`docker-compose.mcp.yml` contains:
-
-- `mcp-postgres` — dedicated Postgres container on port **5433**
-  (main postgres owns 5432). `POSTGRES_DB=rejestrio`; additional DBs
-  added as sibling MCP services arrive. Matches the
-  `litellm-postgres` precedent already in `docker-compose.yml`.
-- `mcp-rejestrio` — built from sibling `../ragen-mcp` repo
-  (`build.context: ../ragen-mcp`). Devs without that checkout skip
-  by omitting this compose file. Port 9002 (9001 taken by ragen-mcp
-  Google).
-
-Both containers join the shared `ragen-network` (declared `external`
-in this file, owned by `docker-compose.yml`) so ragen-app can call
-`http://mcp-rejestrio:9002/mcp` directly.
-
-Profile-gated so MCP services are off by default:
+For rejestrio specifically:
 
 ```bash
-docker compose -f docker-compose.mcp.yml --profile mcp up
+cd ../ragen-mcp/services/rejestrio
+docker compose up -d postgres           # port 5434 — dedicated to rejestrio
+npm run db:migrate:dev                  # apply Prisma migrations
+npm run dev                             # start the MCP server
 ```
+
+Port map across the org to avoid collisions:
+- `5432` — ragen-app main Postgres
+- `5433` — ragen-token-vault Postgres
+- `5434` — rejestrio Postgres
+- `8002` + `9002` — rejestrio HTTP + MCP httpStream
+
+ragen-app's compose files (`docker-compose.yml`, `docker-compose.app.yml`)
+do NOT need a block for any MCP service. Keep those focused on
+ragen-app's own deps.
 
 ## Contract probe (before any production code)
 
