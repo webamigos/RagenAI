@@ -258,10 +258,15 @@ model SubscriptionPlan {
 /// purpose so aggregate queries ("all construction leads > 5M")
 /// are plain SQL without cross-service joins.
 ///
+/// Named `RejestrioLead` (not `Lead`) to keep the door open for
+/// future lead sources from other integrations (HubSpot CRM sync,
+/// LinkedIn, etc.) — each such source gets its own table with its
+/// own shape, rather than a polymorphic mega-table.
+///
 /// Not a full CRM model — intentionally omits status / owner /
 /// notes / deal stage. Those are layered on when the sales UX
 /// demands them; for now this is the enrichment cache only.
-model Lead {
+model RejestrioLead {
   id                String    @id @default(uuid()) @db.Uuid
   organizationId    String    @map("organization_id")
 
@@ -307,7 +312,7 @@ model Lead {
   @@index([organizationId, pkdMain])
   @@index([organizationId, revenueLast])
   @@index([organizationId, enrichedAt])
-  @@map("leads")
+  @@map("rejestrio_leads")
 }
 
 model Project {

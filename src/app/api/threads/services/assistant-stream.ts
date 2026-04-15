@@ -1,6 +1,6 @@
 import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
-import { upsertLeadFromRejestrioCommand } from '@/features/leads/services/commands/upsert-lead-from-rejestrio-command';
+import { upsertRejestrioLeadCommand } from '@/features/rejestrio-leads/services/commands/upsert-rejestrio-lead-command';
 import db from '@ragenai/prisma-client';
 import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
@@ -734,7 +734,7 @@ export async function streamEvents({
                 // stream. Errors are swallowed + logged inside the
                 // command.
                 if (part.toolName.startsWith('rejestrio__') && orgId) {
-                  void upsertLeadFromRejestrioCommand({
+                  void upsertRejestrioLeadCommand({
                     organizationId: orgId,
                     toolName: part.toolName,
                     result: part.result,

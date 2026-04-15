@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { upsertLeadFromRejestrioCommand } from '../upsert-lead-from-rejestrio-command';
+import { upsertRejestrioLeadCommand } from '../upsert-rejestrio-lead-command';
 
 // Mock the Prisma singleton — we're testing parsing + which fields
 // flow through to upsert, not Prisma itself.
@@ -13,7 +13,7 @@ const upsertMock = vi.fn<(args: UpsertArgs) => Promise<unknown>>(
 );
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
-    lead: {
+    rejestrioLead: {
       upsert: (args: UpsertArgs) => upsertMock(args),
     },
   },
@@ -23,7 +23,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-describe('upsertLeadFromRejestrioCommand', () => {
+describe('upsertRejestrioLeadCommand', () => {
   beforeEach(() => {
     upsertMock.mockClear();
   });
@@ -49,7 +49,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
       },
     };
 
-    await upsertLeadFromRejestrioCommand({
+    await upsertRejestrioLeadCommand({
       organizationId: 'org-1',
       toolName: 'rejestrio__get_krs_info',
       result,
@@ -86,7 +86,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
       ostatnieSprawozdanie: null,
     };
 
-    await upsertLeadFromRejestrioCommand({
+    await upsertRejestrioLeadCommand({
       organizationId: 'org-1',
       toolName: 'rejestrio__get_krs_info',
       result,
@@ -125,7 +125,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
       ],
     };
 
-    await upsertLeadFromRejestrioCommand({
+    await upsertRejestrioLeadCommand({
       organizationId: 'org-1',
       toolName: 'rejestrio__get_financials',
       result,
@@ -155,7 +155,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
       ostatnieSprawozdanie: null,
     });
 
-    await upsertLeadFromRejestrioCommand({
+    await upsertRejestrioLeadCommand({
       organizationId: 'org-1',
       toolName: 'rejestrio__get_krs_info',
       result: raw,
@@ -165,7 +165,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
   });
 
   it('silently ignores unrecognised rejestrio tool names', async () => {
-    await upsertLeadFromRejestrioCommand({
+    await upsertRejestrioLeadCommand({
       organizationId: 'org-1',
       toolName: 'rejestrio__lookup_company',
       result: { success: true, results: [], totalFound: 0 },
@@ -175,7 +175,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
 
   it('silently ignores malformed result payloads without throwing', async () => {
     await expect(
-      upsertLeadFromRejestrioCommand({
+      upsertRejestrioLeadCommand({
         organizationId: 'org-1',
         toolName: 'rejestrio__get_krs_info',
         result: 'not-json-at-all',
@@ -187,7 +187,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
   it('swallows upsert failures — enrichment is best-effort', async () => {
     upsertMock.mockRejectedValueOnce(new Error('DB down'));
     await expect(
-      upsertLeadFromRejestrioCommand({
+      upsertRejestrioLeadCommand({
         organizationId: 'org-1',
         toolName: 'rejestrio__get_krs_info',
         result: {

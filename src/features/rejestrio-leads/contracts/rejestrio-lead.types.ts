@@ -1,7 +1,7 @@
-import type { Lead } from '@/generated/prisma/client';
+import type { RejestrioLead } from '@/generated/prisma/client';
 
-export type LeadDto = Pick<
-  Lead,
+export type RejestrioLeadDto = Pick<
+  RejestrioLead,
   | 'id'
   | 'organizationId'
   | 'nip'
@@ -25,11 +25,11 @@ export type LeadDto = Pick<
 >;
 
 /**
- * Minimal input for upserting a Lead snapshot. All fields are optional
- * except `organizationId` and one of `nip` / `krs` — the command
- * enforces at-least-one-of.
+ * Minimal input for upserting a RejestrioLead snapshot. All fields
+ * are optional except `organizationId` and one of `nip` / `krs` —
+ * the command enforces at-least-one-of.
  */
-export type UpsertLeadInput = {
+export type UpsertRejestrioLeadInput = {
   organizationId: string;
   nip?: string | null;
   krs?: number | null;

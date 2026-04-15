@@ -49,7 +49,7 @@ type Input = {
 };
 
 /**
- * Parse a Rejestrio MCP tool result and upsert the Lead snapshot.
+ * Parse a Rejestrio MCP tool result and upsert the RejestrioLead snapshot.
  *
  * Never throws — enrichment is best-effort. Failures are logged but
  * don't break the chat stream.
@@ -57,9 +57,7 @@ type Input = {
  * Idempotent on (organizationId, krs) and (organizationId, nip) —
  * repeated tool calls for the same company refresh the snapshot.
  */
-export async function upsertLeadFromRejestrioCommand(
-  input: Input,
-): Promise<void> {
+export async function upsertRejestrioLeadCommand(input: Input): Promise<void> {
   try {
     const { organizationId, toolName } = input;
     const payload = parseResult(input.result);
@@ -83,7 +81,7 @@ export async function upsertLeadFromRejestrioCommand(
   } catch (err) {
     logger.warn(
       { err, toolName: input.toolName },
-      'upsertLeadFromRejestrio failed — swallowing; lead snapshot is best-effort',
+      'upsertRejestrioLead failed — swallowing; lead snapshot is best-effort',
     );
   }
 }
@@ -131,7 +129,7 @@ async function upsertFromKrsInfo(
     enrichedAt: new Date(),
     enrichmentSource: 'rejestrio',
   };
-  await db.lead.upsert({
+  await db.rejestrioLead.upsert({
     where: { organizationId_krs: { organizationId, krs: r.krs } },
     update: data,
     create: { organizationId, krs: r.krs, ...data },
@@ -152,7 +150,7 @@ async function upsertFromFinancials(
   if (!latest) {
     return;
   }
-  await db.lead.upsert({
+  await db.rejestrioLead.upsert({
     where: { organizationId_krs: { organizationId, krs: r.krs } },
     update: {
       revenueLast: latest.przychody ?? null,
