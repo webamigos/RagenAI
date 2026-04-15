@@ -7,6 +7,7 @@ const defaultProps = {
   title: 'Page not found',
   description: "Sorry, we couldn't find the page you're looking for.",
   backLabel: 'Go back to home',
+  homePath: '/en',
 };
 
 describe('NotFoundLayout', () => {
@@ -33,7 +34,7 @@ describe('NotFoundLayout', () => {
     const link = screen.getByRole('link', {
       name: new RegExp(defaultProps.backLabel),
     });
-    expect(link).toHaveAttribute('href', '/');
+    expect(link).toHaveAttribute('href', '/en');
   });
 
   it('renders the back link with the correct label', () => {
@@ -49,6 +50,7 @@ describe('NotFoundLayout', () => {
         title="Nie znaleziono strony"
         description="Przepraszamy, nie znaleźliśmy tej strony."
         backLabel="Wróć na stronę główną"
+        homePath="/pl"
       />,
     );
     expect(

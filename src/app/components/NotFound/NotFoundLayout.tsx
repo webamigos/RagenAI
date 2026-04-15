@@ -2,9 +2,15 @@ type Props = {
   title: string;
   description: string;
   backLabel: string;
+  homePath: string;
 };
 
-export const NotFoundLayout = ({ title, description, backLabel }: Props) => {
+export const NotFoundLayout = ({
+  title,
+  description,
+  backLabel,
+  homePath,
+}: Props) => {
   return (
     <main className="relative flex min-h-full flex-col items-center justify-center overflow-hidden bg-primary-light px-6 py-24 dark:bg-primary-dark sm:py-32 lg:px-8">
       {/* Background grid */}
@@ -77,7 +83,7 @@ export const NotFoundLayout = ({ title, description, backLabel }: Props) => {
         {/* CTA */}
         <div className="mt-10">
           <a
-            href="/"
+            href={homePath}
             className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
             style={{
               background: 'linear-gradient(135deg, #252d53 0%, #cb1d3d 100%)',

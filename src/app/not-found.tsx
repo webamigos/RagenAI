@@ -35,6 +35,7 @@ export default async function NotFoundPage() {
           title={t['page-not-found']}
           description={t['sorry-we-could-not-find']}
           backLabel={t['go-back-home']}
+          homePath={`/${locale}`}
         />
       </body>
     </html>
