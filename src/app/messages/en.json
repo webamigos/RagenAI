@@ -220,6 +220,9 @@
     "settings-connectors": {
       "title": "Connectors | Ragen AI"
     },
+    "settings-chatbots": {
+      "title": "Chatbots | Ragen AI"
+    },
     "settings-teams": {
       "title": "Teams | Ragen AI"
     },
@@ -255,6 +258,9 @@
     },
     "checkout-success": {
       "title": "Payment Successful | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatbots"
     }
   },
   "chat": {
@@ -443,7 +449,8 @@
       "security": "Security",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "rag-settings": "RAG Pipeline"
+      "rag-settings": "RAG Pipeline",
+      "chatbots": "Chatbots"
     },
     "rag-settings": {
       "title": "RAG Pipeline Settings",
@@ -572,6 +579,95 @@
           "description": "Manage products and orders from your WooCommerce store."
         }
       }
+    },
+    "chatbots": {
+      "title": "Chatbots",
+      "description": "Create embeddable chat widgets powered by your knowledge base.",
+      "no-chatbots": "No chatbots yet. Create your first one.",
+      "create": "Create chatbot",
+      "creating": "Creating...",
+      "cancel": "Cancel",
+      "name-placeholder": "e.g. Support Bot",
+      "name-label": "Name",
+      "edit": "Edit",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "saved": "Saved",
+      "save-error": "Failed to save changes",
+      "active": "Active",
+      "inactive": "Inactive",
+      "files-count": "{count, plural, =0 {No files selected} =1 {1 file selected} other {# files selected}}",
+      "delete-confirm": "Delete chatbot \"{name}\"? This cannot be undone.",
+      "edit-title": "Edit chatbot",
+      "edit-description": "Customize appearance and allowed domains for this chatbot.",
+      "prompt": {
+        "title": "Chatbot prompt",
+        "description": "Define how the chatbot should behave — its persona, topics, tone and restrictions. Leave empty for a general-purpose assistant.",
+        "placeholder": "You are a helpful assistant for XYZ company. Only answer questions about our products and services. Always respond in English."
+      },
+      "theme": {
+        "title": "Appearance",
+        "primary-color": "Button color",
+        "bubble-color": "Bubble color",
+        "position": "Position",
+        "position-right": "Right",
+        "position-left": "Left",
+        "bot-name": "Bot name",
+        "bot-name-placeholder": "e.g. Support Bot",
+        "welcome-message": "Welcome message",
+        "welcome-message-placeholder": "Hello! How can I help you today?",
+        "hex-hint": "e.g. #6366f1"
+      },
+      "files": {
+        "title": "Knowledge base",
+        "description": "Choose which files this chatbot can access. If nothing is selected, the chatbot will search all organization files.",
+        "search-placeholder": "Search files...",
+        "all-files-warning": "The chatbot has access to all organization files. Select specific files to limit the scope of knowledge.",
+        "selected-count": "{count, plural, one {# file selected} other {# files selected}}",
+        "empty": "No files with completed indexing.",
+        "loading": "Loading files...",
+        "fetch-error": "Failed to load files. Please refresh the page."
+      },
+      "origins": {
+        "title": "Allowed domains",
+        "description": "Restrict which websites can embed this chatbot. Leave empty to allow all domains.",
+        "empty-warning": "Your chatbot is accessible from any website. Add domains to restrict it to your own sites only.",
+        "placeholder": "https://example.com",
+        "add": "Add",
+        "invalid-url": "Enter a valid domain (e.g. example.com or https://example.com)"
+      },
+      "embed": {
+        "title": "Embed on your website",
+        "description": "Copy this snippet and paste it before the closing body tag on your website."
+      },
+      "name-required": "Name is required",
+      "name-max": "Name can be at most 100 characters",
+      "prompt-max": "Prompt can be at most 5000 characters",
+      "conversations": {
+        "title": "Conversations",
+        "description": "History of user conversations with this chatbot.",
+        "back-to-chatbot": "Back to chatbot",
+        "no-conversations": "No conversations yet",
+        "no-conversations-description": "Nobody has chatted with this chatbot yet.",
+        "session-id": "Session",
+        "started-at": "Started",
+        "messages-count": "Messages",
+        "first-message": "First message",
+        "view": "View",
+        "load-more": "Load more",
+        "loading": "Loading...",
+        "visitor": "Visitor",
+        "bot": "Bot",
+        "not-found": "Conversation not found",
+        "back-to-list": "Back to list",
+        "empty-thread": "This conversation has no messages",
+        "decrypt-failed": "Messages for this conversation could not be decrypted. The encryption key may be unavailable or invalid.",
+        "load-more-error": "Failed to load conversations"
+      },
+      "delete-title": "Delete chatbot",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "delete-error": "Failed to delete chatbot"
     }
   },
   "teams-page": {
@@ -661,6 +757,7 @@
     "nav": {
       "chats": "Chats",
       "assistants": "Projects",
+      "chatbots": "Chatbots",
       "organization": "Organization"
     },
     "starred": {
@@ -1435,6 +1532,17 @@
       "success": "Organization created",
       "error": "Failed to create organization"
     }
+  },
+  "chatbots-page": {
+    "title": "Chatbots",
+    "description": "Select a chatbot to view its conversations.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "conversations-description": "{total} conversations total",
+    "no-conversations": "No conversations yet. They will appear here once users start using the widget.",
+    "untitled-conversation": "New conversation",
+    "load-more": "Load more",
+    "loading": "Loading..."
   },
   "settings-security": {
     "title": "Security events",

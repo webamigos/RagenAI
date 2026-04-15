@@ -65,11 +65,15 @@ model Thread {
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
   encryptedDek              String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
+  chatbotId                 String?                 @map("chatbot_id") @db.Uuid
+  chatbot                   Chatbot?                @relation(fields: [chatbotId], references: [id], onDelete: SetNull)
 
+  @@unique([chatbotId, visitorId])
   @@index([organizationId])
   @@index([userId])
   @@index([visitorId, isStarred, createdAt])
   @@index([teamId])
+  @@index([chatbotId])
   @@map("threads")
 }
 
@@ -411,6 +415,7 @@ model Organization {
   mcpOAuthTokens   McpOAuthToken[]
   googleDriveSyncs GoogleDriveSync[]
   auditLogs        AuditLog[]
+  chatbots         Chatbot[]
   securityEvents   SecurityEvent[]
 
   @@map("organizations")
@@ -624,6 +629,7 @@ enum Source {
   UI
   API
   PUBLIC
+  CHATBOT
 }
 
 enum Role {
@@ -850,4 +856,26 @@ model AssistantTemplate {
   projects Project[]
 
   @@map("assistant_templates")
+}
+
+model Chatbot {
+  id              String               @id @default(uuid()) @db.Uuid
+  organizationId  String               @map("organization_id")
+  name            String
+  selectedFileIds String[]             @default([]) @map("selected_file_ids") @db.Uuid
+  widgetToken     String               @unique @default(uuid()) @map("widget_token") @db.Uuid
+  allowedOrigins  String[]             @default([]) @map("allowed_origins")
+  chatbotPrompt   String?              @map("chatbot_prompt")
+  themeConfig     Json                 @default("{}") @map("theme_config")
+  isActive        Boolean              @default(true) @map("is_active")
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  threads      Thread[]
+
+  @@index([organizationId])
+  @@index([widgetToken])
+
+  @@map("chatbots")
 }

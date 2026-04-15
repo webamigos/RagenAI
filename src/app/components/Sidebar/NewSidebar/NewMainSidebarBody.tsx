@@ -128,9 +128,7 @@ export const NewMainSidebarBody = () => {
                   disabled={isLoading}
                   className="w-full px-2 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
                 >
-                  {isLoading
-                    ? '...'
-                    : t('threads.load-more', { defaultMessage: 'Load more' })}
+                  {isLoading ? '...' : t('threads.load-more')}
                 </button>
               )}
             </>

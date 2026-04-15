@@ -10,6 +10,14 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // CORS headers for chatbot widget JS — must be accessible cross-origin
+        source: '/chatbot-widget.js',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Cache-Control', value: 'public, max-age=86400' },
+        ],
+      },
+      {
         // Security headers for all routes
         source: '/:path*',
         headers: [
