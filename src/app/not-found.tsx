@@ -1,8 +1,12 @@
 import './[locale]/global.css';
 
 import { cookies } from 'next/headers';
+import { hasLocale } from 'next-intl';
 
 import { routing } from '@/i18n/routing';
+import messagesEn from './messages/en.json';
+import messagesPl from './messages/pl.json';
+
 import { NotFoundLayout } from './components/NotFound/NotFoundLayout';
 
 // Rendered when a route has no locale segment matched (e.g. /pl/nonexistent falls through to root).
@@ -11,13 +15,11 @@ import { NotFoundLayout } from './components/NotFound/NotFoundLayout';
 export default async function NotFoundPage() {
   const cookieStore = await cookies();
   const localeCookie = cookieStore.get('NEXT_LOCALE')?.value;
-  const locale =
-    localeCookie && routing.locales.includes(localeCookie as any)
-      ? localeCookie
-      : routing.defaultLocale;
+  const locale = hasLocale(routing.locales, localeCookie)
+    ? localeCookie
+    : routing.defaultLocale;
 
-  const messages = (await import(`./messages/${locale}.json`)).default;
-  const t = messages['page404'] as Record<string, string>;
+  const t = (locale === 'pl' ? messagesPl : messagesEn)['page404'];
 
   return (
     <html lang={locale} className="h-full" suppressHydrationWarning>
