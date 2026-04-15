@@ -377,7 +377,16 @@ export async function createMcpToolsFromConnectors(
         {
           err: error,
           provider: connector.provider,
-          mcpServerUrl: connector.mcpServerUrl,
+          // Both: the URL stored on the connector row (what the user
+          // connected with) and the URL we actually tried (what the
+          // resolver picked from env). When they differ, the env var
+          // changed between connects and the debug trail makes that
+          // obvious.
+          mcpServerUrlStored: connector.mcpServerUrl,
+          mcpServerUrlTried: resolveMcpServerUrl(
+            connector,
+            getProviderDefinition(connector.provider as McpConnectorProvider),
+          ),
         },
         'Failed to initialize MCP connector, skipping',
       );
