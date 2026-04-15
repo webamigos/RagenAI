@@ -12,13 +12,21 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
+import { ASSISTANT_PROMPT_MAX_LENGTH } from '@/features/assistants/constants/limits';
 
-const promptSchema = (t: (key: string) => string) =>
+const promptSchema = (
+  t: (key: string, values?: Record<string, unknown>) => string,
+) =>
   z.object({
     editablePrompt: z
       .string()
       .refine((val) => val.length === 0 || val.length >= 25, {
-        error: t('description-min-length'),
+        message: t('description-min-length'),
+      })
+      .refine((val) => val.length <= ASSISTANT_PROMPT_MAX_LENGTH, {
+        message: t('char-limit-exceeded', {
+          limit: ASSISTANT_PROMPT_MAX_LENGTH,
+        }),
       }),
   });
 
@@ -36,11 +44,15 @@ export const EditablePrompt = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isDirty },
   } = useForm<PromptFormValues>({
     resolver: zodResolver(promptSchema(t)),
     defaultValues: { editablePrompt: '' },
   });
+
+  const promptValue = watch('editablePrompt');
+  const isOverLimit = promptValue.length > ASSISTANT_PROMPT_MAX_LENGTH;
 
   useEffect(() => {
     const fetchPrompt = async () => {
@@ -97,11 +109,13 @@ export const EditablePrompt = () => {
         showVoiceInput={false}
         placeholder={t('placeholder')}
       />
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-2">
         <Button
           isSubmit={true}
-          disabled={!isDirty}
-          className={!isDirty ? 'opacity-50 cursor-not-allowed' : ''}
+          disabled={!isDirty || isOverLimit}
+          className={
+            !isDirty || isOverLimit ? 'opacity-50 cursor-not-allowed' : ''
+          }
         >
           {t('update')}
         </Button>

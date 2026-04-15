@@ -54,7 +54,43 @@ type Props = {
   leftAddon?: React.ReactNode;
   leftAddonPosition?: 'center' | 'bottom';
   onPasteIntercept?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
+  charLimit?: number;
 } & ComponentPropsWithRef<'textarea'>;
+
+function CharCounter({ count, limit }: { count: number; limit: number }) {
+  const ratio = count / limit;
+  const isPill = ratio >= 0.9;
+
+  let colorClass: string;
+  let opacityClass: string;
+  let bgClass: string;
+
+  if (ratio > 1) {
+    colorClass = 'text-rose-400';
+    opacityClass = 'opacity-100';
+    bgClass = 'bg-rose-500/10 px-1.5 py-0.5 rounded';
+  } else if (ratio >= 0.9) {
+    colorClass = 'text-amber-400';
+    opacityClass = 'opacity-90';
+    bgClass = 'bg-amber-500/8 px-1.5 py-0.5 rounded';
+  } else if (ratio >= 0.8) {
+    colorClass = 'text-zinc-400 dark:text-zinc-400';
+    opacityClass = 'opacity-70';
+    bgClass = '';
+  } else {
+    colorClass = 'text-zinc-500 dark:text-zinc-600';
+    opacityClass = 'opacity-40';
+    bgClass = '';
+  }
+
+  return (
+    <span
+      className={`text-[11px] tabular-nums font-mono tracking-tight transition-all duration-300 ${colorClass} ${opacityClass} ${isPill ? bgClass : ''}`}
+    >
+      {count} / {limit}
+    </span>
+  );
+}
 
 export const Textarea = forwardRef(
   (
@@ -84,6 +120,7 @@ export const Textarea = forwardRef(
       leftAddon,
       leftAddonPosition = 'center',
       onPasteIntercept,
+      charLimit,
       ...rest
     }: Props,
     ref: ForwardedRef<HTMLTextAreaElement>,
@@ -414,7 +451,8 @@ export const Textarea = forwardRef(
               attachmentIcon ||
               modelSelector ||
               voiceIcon ||
-              sendIcon) && (
+              sendIcon ||
+              charLimit) && (
               <div className="flex items-center justify-between px-3 pb-2 pt-0">
                 <div className="flex items-center">
                   {leftAddon && !attachmentIcon && leftAddon}
@@ -429,6 +467,11 @@ export const Textarea = forwardRef(
                   )}
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {charLimit &&
+                    value !== undefined &&
+                    value.length / charLimit >= 0.8 && (
+                      <CharCounter count={value.length} limit={charLimit} />
+                    )}
                   {modelSelector}
                   {voiceIcon && (
                     <button

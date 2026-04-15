@@ -1,5 +1,6 @@
 'use server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import { ASSISTANT_PROMPT_MAX_LENGTH } from '@/features/assistants/constants/limits';
 
 import {
   getAssistantPrompt,
@@ -120,12 +121,20 @@ export const saveSetting = async (
         await saveModel(orgId, value as string);
         return { success: true, message: 'Model saved successfully' };
 
-      case prompt:
-        await saveAssistantPrompt(orgId, value as string);
+      case prompt: {
+        const promptValue = value as string;
+        if (promptValue.length > ASSISTANT_PROMPT_MAX_LENGTH) {
+          return {
+            success: false,
+            message: `Prompt exceeds maximum length of ${ASSISTANT_PROMPT_MAX_LENGTH} characters`,
+          };
+        }
+        await saveAssistantPrompt(orgId, promptValue);
         return {
           success: true,
           message: 'Assistant prompt saved successfully',
         };
+      }
 
       case maxDocumentsToRetrieve:
         await saveMaxDocumentsToRetrieve(orgId, value as number);
