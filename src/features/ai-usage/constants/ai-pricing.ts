@@ -37,6 +37,24 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     'amazon.titan-embed-text-v1': { input: 0.1, output: 0 },
     'cohere.embed-multilingual-v3': { input: 0.1, output: 0 },
   },
+  // LiteLLM is the unified gateway — `trackAiUsage()` stores
+  // `provider: 'litellm'` when `getModelProvider()` can't map the model
+  // back to its upstream. Keep model IDs here in sync with
+  // `litellm/config.yaml` (the source of truth).
+  litellm: {
+    'gpt-5.4': { input: 2.0, output: 8.0 },
+    'gpt-5.4-nano': { input: 0.1, output: 0.4 },
+    'gpt-5.3-chat': { input: 2.0, output: 8.0 },
+    'claude-sonnet-4-6': { input: 3, output: 15 },
+    'claude-opus-4-6': { input: 5, output: 25 },
+    'claude-haiku-4-5': { input: 0.8, output: 4 },
+    'gemini-3-flash-preview': { input: 0.5, output: 3.0 },
+    'gemini-2.5-flash': { input: 0.1, output: 0.4 },
+    'cohere-embed-multilingual-v3': { input: 0.1, output: 0 },
+    // Cohere Rerank bills per search unit, not per token. Zeroed out
+    // until we add a per-request cost field to the pricing model.
+    'cohere-rerank-v3-5': { input: 0, output: 0 },
+  },
   openrouter: {
     'openai/gpt-4o': { input: 2.5, output: 10 },
     'openai/gpt-4o-mini': { input: 0.15, output: 0.6 },
