@@ -478,7 +478,8 @@ Port map across the org to avoid collisions:
 - `5432` — ragen-app main Postgres
 - `5433` — ragen-token-vault Postgres
 - `5434` — rejestrio Postgres
-- `8002` + `9002` — rejestrio HTTP + MCP httpStream
+- `8004` + `9004` — rejestrio HTTP + MCP httpStream
+  (8001–8003 / 9001–9003 are google / clickup / hubspot)
 
 ragen-app's compose files (`docker-compose.yml`, `docker-compose.app.yml`)
 do NOT need a block for any MCP service. Keep those focused on

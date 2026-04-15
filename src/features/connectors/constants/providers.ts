@@ -15,7 +15,7 @@ const MCP_FIREFLIES_SERVER_URL =
 const MCP_SLACK_SERVER_URL =
   process.env.MCP_SLACK_SERVER_URL || 'https://mcp.slack.com/mcp';
 const MCP_REJESTRIO_SERVER_URL =
-  process.env.MCP_REJESTRIO_SERVER_URL || 'http://localhost:9002/mcp';
+  process.env.MCP_REJESTRIO_SERVER_URL || 'http://localhost:9004/mcp';
 
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
