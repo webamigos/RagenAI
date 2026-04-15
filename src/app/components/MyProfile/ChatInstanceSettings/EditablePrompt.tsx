@@ -12,13 +12,34 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { fetchSettings, saveSetting } from './actions';
 import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
+import { ASSISTANT_PROMPT_MAX_LENGTH } from '@/features/assistants/constants/limits';
 
-const promptSchema = (t: (key: string) => string) =>
+function CharCounter({ count, limit }: { count: number; limit: number }) {
+  const ratio = count / limit;
+  let colorClass = 'text-zinc-500 dark:text-zinc-600 opacity-40';
+  if (ratio > 1) {
+    colorClass = 'text-rose-400 opacity-100';
+  } else if (ratio >= 0.8) {
+    colorClass = 'text-amber-400 opacity-70';
+  }
+  return (
+    <span
+      className={`text-[11px] font-mono tracking-tight transition-all duration-300 ${colorClass}`}
+    >
+      {count} / {limit}
+    </span>
+  );
+}
+
+const promptSchema = (minLengthMsg: string, maxLengthMsg: string) =>
   z.object({
     editablePrompt: z
       .string()
       .refine((val) => val.length === 0 || val.length >= 25, {
-        error: t('description-min-length'),
+        message: minLengthMsg,
+      })
+      .refine((val) => val.length <= ASSISTANT_PROMPT_MAX_LENGTH, {
+        message: maxLengthMsg,
       }),
   });
 
@@ -36,11 +57,20 @@ export const EditablePrompt = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isDirty },
   } = useForm<PromptFormValues>({
-    resolver: zodResolver(promptSchema(t)),
+    resolver: zodResolver(
+      promptSchema(
+        t('description-min-length'),
+        t('char-limit-exceeded', { limit: ASSISTANT_PROMPT_MAX_LENGTH }),
+      ),
+    ),
     defaultValues: { editablePrompt: '' },
   });
+
+  const charCount = watch('editablePrompt').length;
+  const isOverLimit = charCount > ASSISTANT_PROMPT_MAX_LENGTH;
 
   useEffect(() => {
     const fetchPrompt = async () => {
@@ -97,11 +127,15 @@ export const EditablePrompt = () => {
         showVoiceInput={false}
         placeholder={t('placeholder')}
       />
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-2">
+        <CharCounter count={charCount} limit={ASSISTANT_PROMPT_MAX_LENGTH} />
+
         <Button
           isSubmit={true}
-          disabled={!isDirty}
-          className={!isDirty ? 'opacity-50 cursor-not-allowed' : ''}
+          disabled={!isDirty || isOverLimit}
+          className={
+            !isDirty || isOverLimit ? 'opacity-50 cursor-not-allowed' : ''
+          }
         >
           {t('update')}
         </Button>
