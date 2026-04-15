@@ -1,11 +1,9 @@
-'use client';
-
-import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
 import { NotFoundLayout } from '../components/NotFound/NotFoundLayout';
 
-export default function NotFoundPage() {
-  const t = useTranslations('page404');
+export default async function NotFoundPage() {
+  const t = await getTranslations('page404');
 
   return (
     <NotFoundLayout
