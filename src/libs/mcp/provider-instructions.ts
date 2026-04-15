@@ -67,6 +67,15 @@ const WOOCOMMERCE_INSTRUCTIONS = `For WooCommerce (store management):
 - PERMISSIONS: The connected REST keys may be read-only. If a write call returns a permission error, tell the user to generate read_write keys in WooCommerce → Settings → Advanced → REST API rather than retrying.
 - CURRENCY: Prices are returned as strings in the store's currency. Don't reformat or convert — display as-is.`;
 
+const REJESTRIO_INSTRUCTIONS = `For Rejestr.io (Polish KRS company registry, B2B lead scoring):
+- TOOLS: \`lookup_company\` (search by NIP, REGON, or name fragment → returns KRS candidates), \`get_krs_info\` (full snapshot by KRS: legal form, PKD, siedziba, state flags, current zarząd/udziałowcy/powiązania, last-year financial snapshot when available), \`get_financials\` (revenue/profit/costs time-series; \`years=1\` by default reads a free inline snapshot, \`years>1\` hits historical filings).
+- USE TOOLS PROACTIVELY. When the user asks about a Polish company — by NIP/REGON/name, or a follow-up question about one already discussed in this conversation — DO NOT say you don't have access to KRS/CEIDG. You DO have access via these tools. Always call them.
+- PIPELINE: If you only have a NIP/REGON/name → call \`lookup_company\` first to get the KRS id. Then call \`get_krs_info\` with that KRS for detailed info (zarząd, udziałowcy, powiązania, stan — wykreślenie/upadłość/likwidacja). Call \`get_financials\` only when the user explicitly asks for revenue/profit/financial history beyond the snapshot already in \`get_krs_info\`.
+- REUSE KRS FROM HISTORY. If the previous turn in the conversation already identified a company (KRS or NIP mentioned in your earlier reply), pass that identifier directly to \`get_krs_info\` / \`get_financials\` without re-running \`lookup_company\`. Do NOT ask the user to re-provide the NIP if it's already in the conversation.
+- ZARZĄD / UDZIAŁOWCY / POWIĄZANIA: all surfaced by \`get_krs_info\` in the \`powiazania\` field. Filter by \`typ\` and \`aktywne\` to answer "who is currently on the board" vs "who used to be".
+- FINANCIALS: \`get_financials\` returns statements with a \`source\` field — \`basic_snapshot\` (derived from basic data, fast and free), \`fin_document\` (full filing), \`unavailable\` (the company didn't publish a machine-readable filing for that year — typical for large/consolidated filers like GPW-listed SAs). When \`unavailable\`, say so plainly rather than pretending the data doesn't exist.
+- LANGUAGE: Respond in the user's language (usually Polish). Use Polish names for legal concepts: zarząd, udziałowcy, prezes zarządu, spółka z o.o., S.A., upadłość, likwidacja.`;
+
 const SLACK_INSTRUCTIONS = `For Slack:
 - SEARCHING: Use search tools to find messages, files, users, and channels. Provide relevant keywords from the user's query.
 - "MY MESSAGES": When user says "my messages" or uses first-person language, search for messages from the authenticated user.
@@ -90,6 +99,7 @@ const PROVIDER_INSTRUCTIONS: Record<
   FIREFLIES: FIREFLIES_INSTRUCTIONS,
   SLACK: SLACK_INSTRUCTIONS,
   WOOCOMMERCE: WOOCOMMERCE_INSTRUCTIONS,
+  REJESTRIO: REJESTRIO_INSTRUCTIONS,
 };
 
 export function buildMcpContext(
