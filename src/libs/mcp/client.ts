@@ -2,6 +2,7 @@ import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
 import {
   RagenAuthOAuthClientProvider,
   ragenAuthClient,
@@ -19,6 +20,41 @@ export type McpConnectorInfo = {
   organizationId: string;
   userId: string;
 };
+
+/**
+ * Pick the MCP server URL to connect to for a given connector.
+ *
+ * Prefers the live value from `providers.ts` (which reads from env)
+ * because that's what the deployer controls. Falls back to the
+ * per-connector `mcpServerUrl` stored in the DB for providers that
+ * legitimately carry per-org URLs — today only `api_key_custom_header`
+ * (WooCommerce), where the URL is composed from the user's shop
+ * address at registration time.
+ *
+ * Exported so the MCP client tests can assert the resolution rule
+ * without spinning up a full client.
+ */
+export function resolveMcpServerUrl(
+  connector: McpConnectorInfo,
+  providerDef: ProviderDefinition | undefined,
+): string {
+  if (providerDef?.authType === 'api_key_custom_header') {
+    return connector.mcpServerUrl;
+  }
+  if (providerDef?.mcpServerUrl) {
+    return providerDef.mcpServerUrl;
+  }
+  // Missing provider definition — nothing better we can do than the
+  // stored URL. Log a warning so the mismatch shows up in ops.
+  logger.warn(
+    {
+      provider: connector.provider,
+      storedUrl: connector.mcpServerUrl,
+    },
+    'resolveMcpServerUrl: no provider definition found, falling back to stored URL',
+  );
+  return connector.mcpServerUrl;
+}
 
 /**
  * Strip empty/falsy optional args that models like GPT may fill with defaults
@@ -224,6 +260,20 @@ export async function createMcpToolsFromConnectors(
         connector.provider as McpConnectorProvider,
       );
 
+      // Resolve the MCP server URL at tool-load time rather than trusting
+      // the value snapshotted on the connector row at connect time.
+      //
+      // Rationale: for fixed-URL providers (Google / ClickUp / HubSpot /
+      // Rejestrio / Fireflies) the authoritative URL is the env var read
+      // by `providers.ts`. Using the stored value meant every
+      // `MCP_*_SERVER_URL` env change required a disconnect+reconnect to
+      // take effect — a silent footgun.
+      //
+      // Exception: `api_key_custom_header` (WooCommerce today) genuinely
+      // stores a per-org URL composed from the user's shop address, so
+      // the DB value is the source of truth there.
+      const resolvedUrl = resolveMcpServerUrl(connector, providerDef);
+
       let client: MCPClient;
 
       if (providerDef?.authType === 'api_key_bearer') {
@@ -241,7 +291,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             headers: {
               Authorization: `Bearer ${tokenData.accessToken}`,
             },
@@ -265,7 +315,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             headers: {
               [providerDef.headerName]: tokenData.accessToken,
             },
@@ -283,7 +333,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             authProvider,
           },
         });
@@ -291,7 +341,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             headers: {
               'x-customer-id': connector.customerId,
             },
