@@ -1,5 +1,17 @@
-import { NotFound } from '../components/NotFound';
+'use client';
+
+import { useTranslations } from 'next-intl';
+
+import { NotFoundLayout } from '../components/NotFound/NotFoundLayout';
 
 export default function NotFoundPage() {
-  return <NotFound />;
+  const t = useTranslations('page404');
+
+  return (
+    <NotFoundLayout
+      title={t('page-not-found')}
+      description={t('sorry-we-could-not-find')}
+      backLabel={t('go-back-home')}
+    />
+  );
 }
