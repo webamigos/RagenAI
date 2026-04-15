@@ -537,6 +537,8 @@
       "coming-soon": "Coming soon",
       "gmail-description": "Search emails and read messages.",
       "notion-description": "Search pages, databases, and manage content.",
+      "baselinker-description": "BaseLinker integration: orders, products, inventory, and couriers.",
+      "ksef-description": "Poland's National e-Invoice System: issue and fetch structured invoices.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",

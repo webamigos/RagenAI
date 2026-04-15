@@ -540,6 +540,8 @@
       "coming-soon": "Wkrótce",
       "gmail-description": "Wyszukuj e-maile i czytaj wiadomości.",
       "notion-description": "Wyszukuj strony, bazy danych i zarządzaj treścią.",
+      "baselinker-description": "Integracja z BaseLinker: zamówienia, produkty, magazyn i kurierzy.",
+      "ksef-description": "Krajowy System e-Faktur: wystawianie i pobieranie faktur ustrukturyzowanych.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",

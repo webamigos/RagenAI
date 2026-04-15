@@ -52,6 +52,18 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
   },
   {
+    provider: McpConnectorProvider.REJESTRIO,
+    name: 'Rejestr.io',
+    description:
+      'Dane o polskich firmach z KRS: zarząd, finanse, powiązania. Scoring leadów B2B.',
+    icon: 'building-2',
+    mcpServerUrl: MCP_REJESTRIO_SERVER_URL,
+    // No OAuth, no user-supplied API key. The MCP service owns the
+    // Rejestr.io credential server-side. See plan doc:
+    // docs/pl-registry-mcp.md.
+    authType: 'server_side',
+  },
+  {
     provider: McpConnectorProvider.CLICKUP,
     name: 'ClickUp',
     description: 'Manage tasks, projects, and workspaces.',
@@ -118,18 +130,6 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     authBaseUrl: MCP_GOOGLE_AUTH_URL,
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/adwords'],
-  },
-  {
-    provider: McpConnectorProvider.REJESTRIO,
-    name: 'Rejestr.io',
-    description:
-      'Dane o polskich firmach z KRS: zarząd, finanse, powiązania. Scoring leadów B2B.',
-    icon: 'building-2',
-    mcpServerUrl: MCP_REJESTRIO_SERVER_URL,
-    // No OAuth, no user-supplied API key. The MCP service owns the
-    // Rejestr.io credential server-side. See plan doc:
-    // docs/pl-registry-mcp.md.
-    authType: 'server_side',
   },
   {
     provider: McpConnectorProvider.WOOCOMMERCE,
