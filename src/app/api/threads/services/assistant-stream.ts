@@ -1,5 +1,6 @@
 import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { upsertLeadFromRejestrioCommand } from '@/features/leads/services/commands/upsert-lead-from-rejestrio-command';
 import db from '@ragenai/prisma-client';
 import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
@@ -727,6 +728,18 @@ export async function streamEvents({
                   toolCallId: part.toolCallId,
                   toolName: part.toolName,
                 });
+                // Fire-and-forget enrichment side-effects for
+                // Rejestrio tools. Intentionally not awaited — a
+                // failed snapshot write must never break the chat
+                // stream. Errors are swallowed + logged inside the
+                // command.
+                if (part.toolName.startsWith('rejestrio__') && orgId) {
+                  void upsertLeadFromRejestrioCommand({
+                    organizationId: orgId,
+                    toolName: part.toolName,
+                    result: part.result,
+                  });
+                }
                 break;
               case 'tool-approval-request': {
                 // Phase 2 prompt-injection gating: the SDK paused a write
