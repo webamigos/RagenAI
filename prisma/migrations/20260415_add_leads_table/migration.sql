@@ -19,16 +19,28 @@ CREATE TABLE "leads" (
     "enriched_at" TIMESTAMPTZ,
     "enrichment_source" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL,
+    -- Defensive default so raw INSERTs (outside the Prisma client) don't
+    -- fail. The Prisma client still sets this on every write via @updatedAt,
+    -- so the default is effectively only a safety net.
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "leads_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "leads_organization_id_nip_key" ON "leads"("organization_id", "nip");
+-- Partial unique indexes: (org, nip) and (org, krs) are only unique when
+-- the nullable side is populated. Without WHERE clauses, Postgres treats
+-- every NULL as distinct so the constraint is effectively meaningless —
+-- but it also blocks multiple NULLs in some adapter paths. Explicit
+-- partial indexes make the intent clear and safe.
+CREATE UNIQUE INDEX "leads_organization_id_nip_key"
+    ON "leads"("organization_id", "nip")
+    WHERE "nip" IS NOT NULL;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "leads_organization_id_krs_key" ON "leads"("organization_id", "krs");
+CREATE UNIQUE INDEX "leads_organization_id_krs_key"
+    ON "leads"("organization_id", "krs")
+    WHERE "krs" IS NOT NULL;
 
 -- CreateIndex
 CREATE INDEX "leads_organization_id_idx" ON "leads"("organization_id");

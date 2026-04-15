@@ -85,7 +85,7 @@ knew at scoring time, not whatever the cache shows today.
 1. User sends chat message with NIP (or pastes a lead).
 2. Assistant (LiteLLM chain in ragen-app) has MCP tools loaded because
    the `Rejestr.io` connector is enabled on the org.
-3. LLM decides which tool to call (usually `get_company_profile` —
+3. LLM decides which tool to call (usually `get_krs_info` —
    see Tool API).
 4. Tool call hits ragen-mcp `/mcp` over HTTP. MCP service:
    a. Looks up `company_profile` in its own PG by NIP or KRS.

@@ -3,11 +3,18 @@ import { upsertLeadFromRejestrioCommand } from '../upsert-lead-from-rejestrio-co
 
 // Mock the Prisma singleton — we're testing parsing + which fields
 // flow through to upsert, not Prisma itself.
-const upsertMock = vi.fn(async () => ({}));
+type UpsertArgs = {
+  where: { organizationId_krs: { organizationId: string; krs: number } };
+  create: Record<string, unknown>;
+  update: Record<string, unknown>;
+};
+const upsertMock = vi.fn<(args: UpsertArgs) => Promise<unknown>>(
+  async () => ({}),
+);
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     lead: {
-      upsert: (...args: unknown[]) => upsertMock(...args),
+      upsert: (args: UpsertArgs) => upsertMock(args),
     },
   },
 }));
@@ -49,11 +56,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
     });
 
     expect(upsertMock).toHaveBeenCalledOnce();
-    const call = upsertMock.mock.calls[0][0] as {
-      where: { organizationId_krs: { organizationId: string; krs: number } };
-      create: Record<string, unknown>;
-      update: Record<string, unknown>;
-    };
+    const call = upsertMock.mock.calls[0][0];
     expect(call.where.organizationId_krs).toEqual({
       organizationId: 'org-1',
       krs: 634215,
@@ -90,9 +93,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
     });
 
     expect(upsertMock).toHaveBeenCalledOnce();
-    const call = upsertMock.mock.calls[0][0] as {
-      create: Record<string, unknown>;
-    };
+    const call = upsertMock.mock.calls[0][0];
     expect(call.create.isNaGpw).toBe(true);
     expect(call.create.revenueLast).toBeNull();
     expect(call.create.profitLast).toBeNull();
@@ -131,9 +132,7 @@ describe('upsertLeadFromRejestrioCommand', () => {
     });
 
     expect(upsertMock).toHaveBeenCalledOnce();
-    const call = upsertMock.mock.calls[0][0] as {
-      create: Record<string, unknown>;
-    };
+    const call = upsertMock.mock.calls[0][0];
     // Should pick rocznik 2024 (most recent non-unavailable).
     expect(call.create.revenueLast).toBe(3029247.85);
     expect(call.create.revenueRocznik).toBe(2024);
