@@ -12,10 +12,19 @@ import { signUp } from '@/app/hooks/use-better-auth';
 import { updateInitialAdminAccountCommand } from '@/features/users/services/commands/initial-account-commands';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
-const initialAccountSchema = z.object({
-  email: z.email('initial-account.validation.email'),
-  password: z.string().min(8, 'initial-account.validation.password'),
-});
+const initialAccountSchema = z
+  .object({
+    email: z.email('initial-account.validation.email'),
+    password: z.string().min(8, 'initial-account.validation.password'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    // The error surfaces on the confirmPassword field so the user sees
+    // it next to the input they can fix (retyping the confirm, not
+    // changing the original).
+    path: ['confirmPassword'],
+    message: 'initial-account.validation.confirm-password-mismatch',
+  });
 
 type InitialAccountFormData = z.infer<typeof initialAccountSchema>;
 
@@ -96,6 +105,14 @@ export function InitialAccountForm() {
         label={t('password')}
         error={errors.password}
         errorMessage={errors.password?.message}
+      />
+      <Input
+        type="password"
+        id="confirmPassword"
+        {...register('confirmPassword')}
+        label={t('confirm-password')}
+        error={errors.confirmPassword}
+        errorMessage={errors.confirmPassword?.message}
       />
       {error && (
         <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>

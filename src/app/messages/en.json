@@ -122,13 +122,15 @@
     "already-have-account": "Already have an account?",
     "sign-in": "Sign in",
     "password": "Password",
+    "confirm-password": "Confirm password",
     "submit": "Create Account",
     "submitting": "Creating...",
     "success": "Admin account created successfully",
     "error": "Error creating admin account",
     "validation": {
       "email": "Please enter a valid email address",
-      "password": "Password must be at least 8 characters"
+      "password": "Password must be at least 8 characters",
+      "confirm-password-mismatch": "Passwords do not match"
     }
   },
   "account-configuration": {

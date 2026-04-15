@@ -123,13 +123,15 @@
     "already-have-account": "Masz już konto?",
     "sign-in": "Zaloguj się",
     "password": "Hasło",
+    "confirm-password": "Powtórz hasło",
     "submit": "Utwórz konto",
     "submitting": "Tworzenie...",
     "success": "Konto administratora zostało utworzone",
     "error": "Błąd podczas tworzenia konta administratora",
     "validation": {
       "email": "Wprowadź prawidłowy adres email",
-      "password": "Hasło musi mieć co najmniej 8 znaków"
+      "password": "Hasło musi mieć co najmniej 8 znaków",
+      "confirm-password-mismatch": "Hasła nie są identyczne"
     }
   },
   "account-configuration": {
