@@ -122,14 +122,16 @@ export const saveSetting = async (
         return { success: true, message: 'Model saved successfully' };
 
       case prompt: {
-        const promptValue = value as string;
-        if (promptValue.length > ASSISTANT_PROMPT_MAX_LENGTH) {
+        if (typeof value !== 'string') {
+          return { success: false, message: 'Invalid prompt value' };
+        }
+        if (value.length > ASSISTANT_PROMPT_MAX_LENGTH) {
           return {
             success: false,
             message: `Prompt exceeds maximum length of ${ASSISTANT_PROMPT_MAX_LENGTH} characters`,
           };
         }
-        await saveAssistantPrompt(orgId, promptValue);
+        await saveAssistantPrompt(orgId, value);
         return {
           success: true,
           message: 'Assistant prompt saved successfully',

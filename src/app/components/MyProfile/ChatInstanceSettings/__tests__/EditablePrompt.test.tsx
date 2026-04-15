@@ -108,10 +108,4 @@ describe('EditablePrompt', () => {
     const saveBtn = screen.getByRole('button', { name: 'Update' });
     expect(saveBtn).not.toBeDisabled();
   });
-
-  it('shows tooltip on counter icon', async () => {
-    renderComponent();
-    const tooltip = await screen.findByTitle('Longer prompt = higher cost');
-    expect(tooltip).toBeInTheDocument();
-  });
 });

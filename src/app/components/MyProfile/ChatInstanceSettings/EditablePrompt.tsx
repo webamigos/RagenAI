@@ -14,6 +14,23 @@ import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 import { ASSISTANT_PROMPT_MAX_LENGTH } from '@/features/assistants/constants/limits';
 
+function CharCounter({ count, limit }: { count: number; limit: number }) {
+  const ratio = count / limit;
+  let colorClass = 'text-zinc-500 dark:text-zinc-600 opacity-40';
+  if (ratio > 1) {
+    colorClass = 'text-rose-400 opacity-100';
+  } else if (ratio >= 0.8) {
+    colorClass = 'text-amber-400 opacity-70';
+  }
+  return (
+    <span
+      className={`text-[11px] font-mono tracking-tight transition-all duration-300 ${colorClass}`}
+    >
+      {count} / {limit}
+    </span>
+  );
+}
+
 const promptSchema = (minLengthMsg: string, maxLengthMsg: string) =>
   z.object({
     editablePrompt: z
@@ -52,8 +69,8 @@ export const EditablePrompt = () => {
     defaultValues: { editablePrompt: '' },
   });
 
-  const promptValue = watch('editablePrompt');
-  const isOverLimit = promptValue.length > ASSISTANT_PROMPT_MAX_LENGTH;
+  const charCount = watch('editablePrompt').length;
+  const isOverLimit = charCount > ASSISTANT_PROMPT_MAX_LENGTH;
 
   useEffect(() => {
     const fetchPrompt = async () => {
@@ -110,7 +127,9 @@ export const EditablePrompt = () => {
         showVoiceInput={false}
         placeholder={t('placeholder')}
       />
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <CharCounter count={charCount} limit={ASSISTANT_PROMPT_MAX_LENGTH} />
+
         <Button
           isSubmit={true}
           disabled={!isDirty || isOverLimit}

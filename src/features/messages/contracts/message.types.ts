@@ -14,7 +14,8 @@ export enum ChatResponseType {
   VOICE = 'VOICE',
 }
 
-export const MESSAGE_MAX_LENGTH = 10000;
+import { MESSAGE_MAX_LENGTH } from '@/features/messages/constants/limits';
+export { MESSAGE_MAX_LENGTH };
 
 export const createMessageSchema = (t?: (key: string) => string) =>
   z.object({
