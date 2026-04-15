@@ -14,11 +14,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import type {
   ConnectorDto,
   ProviderDefinition,
 } from '@/features/connectors/contracts/connector.types';
+import { PROVIDER_ICON_PATHS as providerIcons } from '@/features/connectors/utils/provider-icons';
 import {
   initiateConnection,
   confirmConnection,
@@ -28,20 +28,6 @@ import {
   registerCustomHeaderConnection,
   testCustomHeaderConnection,
 } from '../actions';
-
-const providerIcons: Record<McpConnectorProvider, string> = {
-  GOOGLE_CALENDAR: '/assets/connectors/google-calendar.svg',
-  GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
-  GOOGLE_ADS: '/assets/connectors/google-ads.svg',
-  GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
-  GMAIL: '/assets/connectors/gmail.svg',
-  CLICKUP: '/assets/connectors/clickup.svg',
-  HUBSPOT: '/assets/connectors/hubspot.svg',
-  FIREFLIES: '/assets/connectors/fireflies.svg',
-  SLACK: '/assets/connectors/slack.svg',
-  WOOCOMMERCE: '/assets/connectors/woocommerce.svg',
-  REJESTRIO: '/assets/connectors/rejestrio.svg',
-};
 
 type ConnectorCardProps = {
   provider: ProviderDefinition;

@@ -274,7 +274,10 @@
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni",
-    "threads-history": "Historia konwersacji"
+    "threads-history": "Historia konwersacji",
+    "tool-call": {
+      "running": "Używam narzędzia: {tool}"
+    }
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",
