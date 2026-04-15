@@ -14,19 +14,15 @@ import { SettingsType } from './types';
 import { defaultOrganizationSettings } from '@/features/organizations/constants/settings';
 import { ASSISTANT_PROMPT_MAX_LENGTH } from '@/features/assistants/constants/limits';
 
-const promptSchema = (
-  t: (key: string, values?: Record<string, unknown>) => string,
-) =>
+const promptSchema = (minLengthMsg: string, maxLengthMsg: string) =>
   z.object({
     editablePrompt: z
       .string()
       .refine((val) => val.length === 0 || val.length >= 25, {
-        message: t('description-min-length'),
+        message: minLengthMsg,
       })
       .refine((val) => val.length <= ASSISTANT_PROMPT_MAX_LENGTH, {
-        message: t('char-limit-exceeded', {
-          limit: ASSISTANT_PROMPT_MAX_LENGTH,
-        }),
+        message: maxLengthMsg,
       }),
   });
 
@@ -47,7 +43,12 @@ export const EditablePrompt = () => {
     watch,
     formState: { errors, isDirty },
   } = useForm<PromptFormValues>({
-    resolver: zodResolver(promptSchema(t)),
+    resolver: zodResolver(
+      promptSchema(
+        t('description-min-length'),
+        t('char-limit-exceeded', { limit: ASSISTANT_PROMPT_MAX_LENGTH }),
+      ),
+    ),
     defaultValues: { editablePrompt: '' },
   });
 
