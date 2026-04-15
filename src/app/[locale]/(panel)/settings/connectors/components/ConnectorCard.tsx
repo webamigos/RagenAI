@@ -40,6 +40,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
   FIREFLIES: '/assets/connectors/fireflies.svg',
   SLACK: '/assets/connectors/slack.svg',
   WOOCOMMERCE: '/assets/connectors/woocommerce.svg',
+  REJESTRIO: '/assets/connectors/rejestrio.svg',
 };
 
 type ConnectorCardProps = {
@@ -63,6 +64,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     provider.authType === 'api_key' || provider.authType === 'api_key_bearer';
   const isExternalMcp = provider.authType === 'external_mcp';
   const isCustomHeaderAuth = provider.authType === 'api_key_custom_header';
+  const isServerSide = provider.authType === 'server_side';
 
   const [customHeaderDialogOpen, setCustomHeaderDialogOpen] = useState(false);
   const [siteUrl, setSiteUrl] = useState('');
@@ -264,6 +266,21 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
     if (isExternalMcp) {
       return handleExternalMcpConnect();
+    }
+
+    if (isServerSide) {
+      // No OAuth, no credentials dialog — the MCP service holds the
+      // upstream credential. Just create the connector row and flip
+      // it straight to CONNECTED via the same confirm endpoint the
+      // popup flow uses.
+      setLoading(true);
+      try {
+        const result = await initiateConnection(provider.provider);
+        await handleAuthCallback(result.id);
+      } catch {
+        setLoading(false);
+      }
+      return;
     }
 
     setLoading(true);

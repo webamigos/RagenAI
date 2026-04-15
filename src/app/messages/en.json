@@ -577,6 +577,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Manage products and orders from your WooCommerce store."
+        },
+        "REJESTRIO": {
+          "name": "Rejestr.io",
+          "description": "Polish KRS company data: management, financials, connections. B2B lead scoring."
         }
       }
     },

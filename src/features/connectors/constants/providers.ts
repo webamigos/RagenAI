@@ -14,6 +14,8 @@ const MCP_FIREFLIES_SERVER_URL =
   process.env.MCP_FIREFLIES_SERVER_URL || 'https://api.fireflies.ai/mcp';
 const MCP_SLACK_SERVER_URL =
   process.env.MCP_SLACK_SERVER_URL || 'https://mcp.slack.com/mcp';
+const MCP_REJESTRIO_SERVER_URL =
+  process.env.MCP_REJESTRIO_SERVER_URL || 'http://localhost:9002/mcp';
 
 export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
   {
@@ -116,6 +118,18 @@ export const CONNECTOR_PROVIDERS: ProviderDefinition[] = [
     authBaseUrl: MCP_GOOGLE_AUTH_URL,
     authPath: '/auth/google',
     scopes: ['https://www.googleapis.com/auth/adwords'],
+  },
+  {
+    provider: McpConnectorProvider.REJESTRIO,
+    name: 'Rejestr.io',
+    description:
+      'Dane o polskich firmach z KRS: zarząd, finanse, powiązania. Scoring leadów B2B.',
+    icon: 'building-2',
+    mcpServerUrl: MCP_REJESTRIO_SERVER_URL,
+    // No OAuth, no user-supplied API key. The MCP service owns the
+    // Rejestr.io credential server-side. See plan doc:
+    // docs/pl-registry-mcp.md.
+    authType: 'server_side',
   },
   {
     provider: McpConnectorProvider.WOOCOMMERCE,
