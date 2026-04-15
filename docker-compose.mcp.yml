@@ -1,0 +1,73 @@
+# MCP services + their databases.
+#
+# Usage (off by default — every service is profile-gated):
+#
+#   docker compose -f docker-compose.mcp.yml --profile mcp up
+#
+# Requires the main `ragen-network` to exist — bring up the main
+# compose (`docker compose up`) first so the network is created.
+#
+# Each MCP service gets its own logical DB on the shared `mcp-postgres`
+# container. First tenant: `rejestrio`. Add more DBs via SQL init or
+# new containers as services arrive.
+#
+# Dev prerequisite: sibling clone of ragen-mcp at ../ragen-mcp so
+# `build.context` resolves.
+
+services:
+  mcp-postgres:
+    image: postgres:16
+    container_name: ragen-mcp-postgres
+    restart: unless-stopped
+    profiles: [mcp]
+    environment:
+      POSTGRES_USER: ${MCP_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${MCP_POSTGRES_PASSWORD:-pass123}
+      POSTGRES_DB: ${MCP_POSTGRES_DB:-rejestrio}
+    ports:
+      - "${MCP_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - mcp_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MCP_POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ragen-network
+
+  # TODO: uncomment once `../ragen-mcp/services/rejestrio/` exists
+  # (planned in PR B). Until then, only the DB container runs, which is
+  # enough to bootstrap the contract probe + migrations.
+  #
+  # mcp-rejestrio:
+  #   build:
+  #     context: ../ragen-mcp
+  #     dockerfile: services/rejestrio/Dockerfile
+  #   container_name: ragen-mcp-rejestrio
+  #   restart: unless-stopped
+  #   profiles: [mcp]
+  #   depends_on:
+  #     mcp-postgres:
+  #       condition: service_healthy
+  #   environment:
+  #     # Bare-token auth — no Bearer prefix. See docs/pl-registry-mcp.md.
+  #     REJESTRIO_API_KEY: ${REJESTRIO_API_KEY}
+  #     REJESTRIO_BASE_URL: ${REJESTRIO_BASE_URL:-https://rejestr.io/api/v2}
+  #     REJESTRIO_PLAN_TIER: ${REJESTRIO_PLAN_TIER:-premium}
+  #     REJESTRIO_DATABASE_URL: postgresql://${MCP_POSTGRES_USER:-postgres}:${MCP_POSTGRES_PASSWORD:-pass123}@mcp-postgres:5432/rejestrio
+  #     REJESTRIO_DEFAULT_DAILY_BUDGET_PLN: ${REJESTRIO_DEFAULT_DAILY_BUDGET_PLN:-20}
+  #     REJESTRIO_DISABLE_PAID_CALLS: ${REJESTRIO_DISABLE_PAID_CALLS:-false}
+  #   ports:
+  #     - "${MCP_REJESTRIO_PORT:-9002}:9002"
+  #   networks:
+  #     - ragen-network
+
+volumes:
+  mcp_postgres_data:
+    name: ragen-mcp-postgres-data
+
+networks:
+  ragen-network:
+    name: ragen-network
+    external: true
