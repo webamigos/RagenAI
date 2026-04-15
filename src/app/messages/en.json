@@ -410,7 +410,9 @@
       "prompt-updated-successfully": "Updated",
       "no-changes-detected": "No changes detected to assistant customization instructions",
       "placeholder": "Enter assistant customization instructions...",
-      "description-min-length": "Assistant customization instructions must contain at least 25 characters"
+      "description-min-length": "Assistant customization instructions must contain at least 25 characters",
+      "char-limit-exceeded": "Prompt exceeds the {limit} character limit",
+      "char-counter-tooltip": "A longer prompt means higher cost and slower response"
     },
     "voice-mode-settings": {
       "title": "Voice Settings",
