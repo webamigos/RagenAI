@@ -668,10 +668,8 @@
         startFreshChat();
       });
 
-    inputEl.addEventListener('input', function () {
-      this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-      var len = this.value.length;
+    function updateComposerState() {
+      var len = inputEl.value.length;
       var ratio = len / MSG_MAX_LENGTH;
       if (ratio >= 0.8) {
         charCountEl.textContent = len + ' / ' + MSG_MAX_LENGTH;
@@ -688,6 +686,12 @@
         inputWrapEl.classList.remove('has-counter');
         sendEl.disabled = false;
       }
+    }
+
+    inputEl.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      updateComposerState();
     });
 
     inputEl.addEventListener('keydown', function (e) {
@@ -709,6 +713,7 @@
       }
       inputEl.value = '';
       inputEl.style.height = '36px';
+      updateComposerState();
       appendMessage(text, 'user');
       sendEl.disabled = true;
       sending = true;
