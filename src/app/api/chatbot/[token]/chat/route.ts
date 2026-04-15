@@ -175,6 +175,23 @@ export async function POST(
       getModelProvider(normalizeModelId(trackedModelId)) || 'openrouter';
     const skipLangfuseContent = isEncryptionEnabled();
 
+    // Save the USER message up-front so any early-return path (budget
+    // exceeded, RAG crash, stream abort) still persists what the visitor
+    // asked. Failures are logged, never fatal — the conversation view
+    // tolerates a missing turn better than a silently-lost one.
+    const saveUserMessage = async () => {
+      try {
+        await createMessageInDbCommand({
+          threadId: thread.id,
+          message: { content: message },
+          role: Role.USER,
+          visitorId: sessionId,
+        });
+      } catch (err) {
+        logger.error({ err }, 'Failed to save chatbot USER message');
+      }
+    };
+
     const stream = new ReadableStream({
       start: observe(async function chatbotStream(controller) {
         // Set Langfuse trace context. Session groups all messages in a
@@ -192,6 +209,10 @@ export async function POST(
           ],
         });
 
+        // Persist USER turn before the stream so budget-exceeded and
+        // other early-return branches don't drop it from history.
+        await saveUserMessage();
+
         // Fire-and-forget jailbreak classification. Public chatbots are
         // the most exposed jailbreak surface — we want the score on
         // every turn for the security dashboard and escalation rules.
@@ -202,10 +223,16 @@ export async function POST(
             if (classification.skipped) {
               return;
             }
+            // `classification.reason` is LLM-derived text that may
+            // quote or paraphrase the user's message — never emit it
+            // to Langfuse when at-rest encryption is on, otherwise
+            // the content would leak through the observability layer.
+            // SecurityEvent metadata is an internal org-admin audit
+            // surface so the reason still lands there.
             updateActiveTrace({
               metadata: {
                 jailbreakScore: classification.score,
-                ...(classification.reason
+                ...(classification.reason && !skipLangfuseContent
                   ? { jailbreakReason: classification.reason }
                   : {}),
               },
@@ -311,23 +338,11 @@ export async function POST(
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
 
-          // Sequence the saves — running them via Promise.all lets the
-          // DB clocks flip ordering on fast streams, which makes the
-          // admin conversations view render messages out of order.
-          // Awaiting USER first guarantees the chronology.
-          try {
-            await createMessageInDbCommand({
-              threadId: thread.id,
-              message: { content: message },
-              role: Role.USER,
-              visitorId: sessionId,
-            });
-          } catch (err) {
-            logger.error({ err }, 'Failed to save chatbot USER message');
-          }
-          // Skip the assistant save when the model produced no text
-          // (moderation refusal, silent budget error, tool-only turn).
-          // Saving an empty row just pollutes the conversation view.
+          // USER message was persisted at the top of the handler;
+          // here we only save the ASSISTANT turn. Skip it entirely
+          // when the model produced no text (moderation refusal,
+          // silent budget error, tool-only turn) — an empty row
+          // pollutes the conversation view without signal.
           if (fullResponse.trim().length > 0) {
             try {
               await createMessageInDbCommand({
