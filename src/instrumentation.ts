@@ -8,6 +8,11 @@ export async function register() {
     return;
   }
 
+  // Subscribers rely on Node-only imports (mailer, Prisma). Gated on
+  // NEXT_RUNTIME above so Edge bundles never pull them in.
+  const { registerAllSubscribers } = await import('./libs/events/subscribers');
+  registerAllSubscribers();
+
   // Skip instrumentation for apps that don't need it (e.g. ragen-admin)
   if (process.env.DISABLE_OTEL === '1') {
     return;
