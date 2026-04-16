@@ -2,6 +2,7 @@ import db from '@ragenai/prisma-client';
 import type { OperationResult } from '@/types/common';
 import type { MessageAttachment } from '@/features/messages/contracts/message.types';
 import { handleCommandError } from '@/shared/utils/error-handling';
+import { logger } from '@/app/lib/utils/logger';
 
 export type RegenerateData = {
   prompt: string;
@@ -53,10 +54,21 @@ export async function regenerateAssistantMessageCommand(
     const assistantMessage = messages[lastAssistantIdx];
     const userMessage = messages[lastUserIdx];
 
-    // Hard-delete both the ASSISTANT and USER messages so the stream can
-    // recreate them as new records — prevents duplicate USER messages in DB.
-    await db.message.delete({ where: { id: assistantMessage.id } });
-    await db.message.delete({ where: { id: userMessage.id } });
+    // Hard-delete both messages atomically — if either delete fails the other
+    // is rolled back, preventing partial mutations.
+    await db.$transaction([
+      db.message.delete({ where: { id: assistantMessage.id } }),
+      db.message.delete({ where: { id: userMessage.id } }),
+    ]);
+
+    logger.info(
+      {
+        threadId,
+        assistantMessageId: assistantMessage.id,
+        userMessageId: userMessage.id,
+      },
+      'Regenerate: deleted assistant and user messages',
+    );
 
     return {
       success: true,

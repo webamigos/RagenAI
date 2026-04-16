@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
 const mockDelete = vi.fn();
+const mockTransaction = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -11,11 +12,12 @@ vi.mock('@ragenai/prisma-client', () => ({
     message: {
       delete: (...args: unknown[]) => mockDelete(...args),
     },
+    $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
 import { regenerateAssistantMessageCommand } from '../regenerate-assistant-message-command';
@@ -43,7 +45,8 @@ const assistantMessage = {
 describe('regenerateAssistantMessageCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDelete.mockResolvedValue({});
+    mockDelete.mockReturnValue({});
+    mockTransaction.mockResolvedValue([{}, {}]);
   });
 
   it('happy path: zwraca prompt i attachments, usuwa wiadomości ASSISTANT i USER', async () => {
@@ -65,9 +68,9 @@ describe('regenerateAssistantMessageCommand', () => {
         attachments: [],
       },
     });
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
     expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'msg-asst-1' } });
     expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'msg-user-1' } });
-    expect(mockDelete).toHaveBeenCalledTimes(2);
   });
 
   it('scope: filtruje po organizationId — zwraca error gdy wątek z innej org', async () => {
