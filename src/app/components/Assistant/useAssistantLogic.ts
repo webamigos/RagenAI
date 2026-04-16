@@ -258,8 +258,9 @@ export const useAssistantLogic = (threadId: string) => {
       };
       const data = {
         prompt,
-        mode:
-          mode === ChatType.CONVERSATION ? 'conversation' : ('rag' as const),
+        mode: (mode === ChatType.CONVERSATION ? 'conversation' : 'rag') as
+          | 'conversation'
+          | 'rag',
         threadDocuments: attachments.map((att) => ({
           name: att.name,
           content: '',
