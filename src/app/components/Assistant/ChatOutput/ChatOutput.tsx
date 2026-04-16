@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
 import { ReadAnswer } from './ReadAnswer/ReadAnswer';
+import { RegenerateButton } from './RegenerateButton';
 import { DurationTime } from './VoiceMode/components/DurationTime';
 import { useChatViewLogic } from './useChatViewLogic';
 import {
@@ -152,6 +153,7 @@ type Props = {
    */
   onApproveToolCall?: (approval: PendingToolApproval) => void;
   onDenyToolCall?: (approval: PendingToolApproval) => void;
+  onRegenerate?: () => Promise<void>;
 };
 
 function MessageTimestamp({ date }: { date?: Date | string | null }) {
@@ -201,12 +203,18 @@ const MessageActions = ({
   message,
   voiceId,
   isPublicAccess,
+  isLast,
+  onRegenerate,
+  isLoading,
 }: {
   content: string;
   role: string;
   message: MessageDto;
   voiceId?: string;
   isPublicAccess: boolean;
+  isLast: boolean;
+  onRegenerate: () => Promise<void>;
+  isLoading: boolean;
 }) => {
   const { renderAndSanitize } = useChatViewLogic(null);
   const renderedHtml = renderAndSanitize(content);
@@ -224,6 +232,12 @@ const MessageActions = ({
           <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
           {!isPublicAccess && (
             <ReadAnswer content={content} voiceId={voiceId!} />
+          )}
+          {!isPublicAccess && isLast && (
+            <RegenerateButton
+              onRegenerate={onRegenerate}
+              disabled={isLoading}
+            />
           )}
         </>
       )}
@@ -244,6 +258,7 @@ export const ChatOutput = ({
   threadId,
   onApproveToolCall,
   onDenyToolCall,
+  onRegenerate,
 }: Props) => {
   const { renderedStreamedMessage } = useChatViewLogic(streamedMessage);
   const [lightboxImage, setLightboxImage] = useState<{
@@ -396,6 +411,9 @@ export const ChatOutput = ({
                   message={message}
                   isPublicAccess={isPublicAccess}
                   voiceId={!isPublicAccess ? voiceId : undefined}
+                  isLast={messageIndex === lastAssistantMessageIndex}
+                  onRegenerate={onRegenerate ?? (() => Promise.resolve())}
+                  isLoading={isLoading}
                 />
                 {/* Phase 2b — inline tool confirmation card on the last
                     assistant message when the SDK paused a write tool. */}
