@@ -34,6 +34,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { type PromptFormRef } from './PromptForm/PromptForm';
 import { handleAssistantStream } from './handle-assistant-stream';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
+import { regenerateLastAssistantMessage } from '@/app/actions';
 
 const { errorToast } = statusToast();
 
@@ -67,6 +68,7 @@ export const useAssistantLogic = (threadId: string) => {
   const promptFormRef = useRef<PromptFormRef>(null);
 
   const t = useTranslations('Index');
+  const tChat = useTranslations('assistant.chat');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
 
@@ -201,6 +203,53 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
+  const onRegenerate = async () => {
+    // Find last ASSISTANT message index and preceding USER message index
+    const lastAssistantIdx =
+      messages
+        .map((m, i) => ({ m, i }))
+        .filter(({ m }) => m.role === 'ASSISTANT')
+        .at(-1)?.i ?? -1;
+    const lastUserIdx =
+      messages
+        .map((m, i) => ({ m, i }))
+        .filter(({ m, i }) => m.role === 'USER' && i < lastAssistantIdx)
+        .at(-1)?.i ?? -1;
+
+    try {
+      const result = await regenerateLastAssistantMessage(threadId);
+
+      if (!result.success || !result.data) {
+        errorToast({ message: result.error ?? tChat('regenerate-error') });
+        return;
+      }
+
+      // Remove last USER+ASSISTANT pair from Redux store optimistically
+      const messagesWithoutLastPair = messages.filter(
+        (_, i) => i !== lastAssistantIdx && i !== lastUserIdx,
+      );
+      dispatch(setMessages(messagesWithoutLastPair));
+
+      // Re-run the stream with data from DB
+      const { prompt, attachments } = result.data;
+      await onSubmit({
+        prompt,
+        mode: mode === ChatType.CONVERSATION ? 'conversation' : 'rag',
+        threadDocuments: attachments.map((att) => ({
+          name: att.name,
+          content: '',
+          size: att.size,
+          type: att.type,
+          sourceUrl: att.sourceUrl,
+          imageData: att.imageData,
+          documentData: att.documentData,
+        })),
+      });
+    } catch {
+      errorToast({ message: tChat('regenerate-error') });
+    }
+  };
+
   const setVoiceMessageAsPlayed = async (messageId: string) => {
     try {
       dispatch(setMessagePlayed(messageId));
@@ -265,6 +314,7 @@ export const useAssistantLogic = (threadId: string) => {
     isSignedIn,
     messages,
     onSubmit,
+    onRegenerate,
     isLocked: () => !isSignedIn && isLimitLock,
     promptFormRef,
     setVoiceMessageAsPlayed,
