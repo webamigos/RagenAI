@@ -31,6 +31,7 @@ import {
 import { ToolbarActions } from './ToolbarActions';
 import { FolderIcon } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
 
 type SelectionProps = {
   isSelected?: (id: string) => boolean;
@@ -248,6 +249,7 @@ export const UserFilesTable = ({
   onToggleAll,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
+  const tBulkBar = useTranslations('bulk-action-bar');
   const [searchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
@@ -277,21 +279,28 @@ export const UserFilesTable = ({
           <TableRow className="text-base">
             {showCheckboxes && (
               <TableHeader className="w-8 pr-0">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected ? isAllSelected(fileIds) : false}
-                  ref={(el) => {
-                    if (el) {
-                      el.indeterminate = isIndeterminate
-                        ? isIndeterminate(fileIds)
-                        : false;
-                    }
-                  }}
-                  onChange={() => onToggleAll?.(fileIds)}
-                  aria-label="Zaznacz wszystkie"
-                  data-testid="select-all-checkbox"
-                  className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
-                />
+                <Tooltip
+                  content={tBulkBar('select-all')}
+                  id="select-all-tooltip"
+                  place="right"
+                  delayShow={500}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected ? isAllSelected(fileIds) : false}
+                    ref={(el) => {
+                      if (el) {
+                        el.indeterminate = isIndeterminate
+                          ? isIndeterminate(fileIds)
+                          : false;
+                      }
+                    }}
+                    onChange={() => onToggleAll?.(fileIds)}
+                    aria-label={tBulkBar('select-all')}
+                    data-testid="select-all-checkbox"
+                    className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+                  />
+                </Tooltip>
               </TableHeader>
             )}
             <TableHeader>{t('file-name')}</TableHeader>

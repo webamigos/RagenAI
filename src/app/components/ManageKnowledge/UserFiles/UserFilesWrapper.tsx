@@ -554,7 +554,10 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
                 isSelected={bulk.isSelected}
+                isAllSelected={bulk.isAllSelected}
+                isIndeterminate={bulk.isIndeterminate}
                 onToggleFile={bulk.toggleFile}
+                onToggleAll={bulk.toggleAll}
               />
             </>
           );

@@ -1,10 +1,17 @@
-import { Link } from '@/i18n/routing';
+'use client';
+
+import { useTranslations } from 'next-intl';
 import {
-  PencilIcon,
-  OpenEyeIcon,
-  SpinnerSVG,
+  PencilSquareIcon,
+  EyeIcon,
   TrashIcon,
-} from '@ragenai/common-ui/icons';
+} from '@heroicons/react/24/outline';
+import { Link } from '@/i18n/routing';
+import { SpinnerSVG } from '@ragenai/common-ui/icons';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+
+const ACTION_BTN_CLS =
+  'inline-flex items-center justify-center rounded p-1 text-muted-foreground hover:text-foreground transition-colors';
 
 type ToolbarIconsProps = {
   fileId: string;
@@ -19,37 +26,59 @@ export const ToolbarActionsMenu = ({
   toggleModal,
   isLoading,
 }: ToolbarIconsProps) => {
+  const t = useTranslations('files-table');
+
   return (
     <>
       {documentId && (
-        <Link
-          className="text-black dark:text-white"
-          href={`/document/${documentId}?edit=true`}
+        <Tooltip
+          id={`edit-${fileId}`}
+          content={t('edit')}
+          place="top"
+          delayShow={600}
         >
-          <PencilIcon className="mt-0.5 cursor-pointer" />
-        </Link>
+          <Link
+            className={ACTION_BTN_CLS}
+            href={`/document/${documentId}?edit=true`}
+          >
+            <PencilSquareIcon className="size-5" />
+          </Link>
+        </Tooltip>
       )}
 
       {documentId && (
-        <Link
-          className="text-black dark:text-white"
-          href={`/document/${documentId}`}
+        <Tooltip
+          id={`view-${fileId}`}
+          content={t('view')}
+          place="top"
+          delayShow={600}
         >
-          <OpenEyeIcon className="cursor-pointer" />
-        </Link>
+          <Link className={ACTION_BTN_CLS} href={`/document/${documentId}`}>
+            <EyeIcon className="size-5" />
+          </Link>
+        </Tooltip>
       )}
 
       {fileId && (
-        <div
-          onClick={() => toggleModal && toggleModal(fileId)}
-          className="cursor-pointer"
+        <Tooltip
+          id={`delete-${fileId}`}
+          content={t('delete')}
+          place="top"
+          delayShow={600}
         >
-          {isLoading ? (
-            <SpinnerSVG className="mt-0.5 ml-0.5" size="sm" />
-          ) : (
-            <TrashIcon />
-          )}
-        </div>
+          <button
+            type="button"
+            onClick={() => toggleModal(fileId)}
+            className={`${ACTION_BTN_CLS} cursor-pointer hover:text-red-500`}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <SpinnerSVG className="size-5" size="sm" />
+            ) : (
+              <TrashIcon className="size-5" />
+            )}
+          </button>
+        </Tooltip>
       )}
     </>
   );

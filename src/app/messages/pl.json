@@ -975,6 +975,7 @@
   "bulk-action-bar": {
     "aria-label": "Masowe operacje na plikach",
     "selected": "{count, plural, one {# zaznaczony} few {# zaznaczone} many {# zaznaczonych} other {# zaznaczone}}",
+    "select-all": "Zaznacz wszystkie",
     "clear": "Odznacz wszystkie",
     "delete": "Usuń",
     "move": "Przenieś",
