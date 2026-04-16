@@ -224,17 +224,42 @@ export const useAssistantLogic = (threadId: string) => {
         return;
       }
 
-      // Remove last USER+ASSISTANT pair from Redux store optimistically
-      const messagesWithoutLastPair = messages.filter(
+      const { prompt, attachments } = result.data;
+
+      // Both USER and ASSISTANT were hard-deleted from DB by the command.
+      // Remove ASSISTANT from Redux but keep USER visible (no flicker).
+      // Pass messagesWithoutBoth to handleAssistantStream so the stream
+      // rebuilds from scratch — user_message_created replaces old USER with
+      // the new DB record atomically (single Redux update, no duplication).
+      const messagesWithoutBoth = messages.filter(
         (_, i) => i !== lastAssistantIdx && i !== lastUserIdx,
       );
-      dispatch(setMessages(messagesWithoutLastPair));
+      const messagesWithoutAssistant = messages.filter(
+        (_, i) => i !== lastAssistantIdx,
+      );
+      dispatch(setMessages(messagesWithoutAssistant));
 
-      // Re-run the stream with data from DB
-      const { prompt, attachments } = result.data;
-      await onSubmit({
+      const userMessage = {
+        id: `user-${Date.now()}`,
+        role: Role.USER,
+        content: prompt,
+        createdAt: new Date().toISOString(),
+        mode:
+          mode === ChatType.CONVERSATION ? 'conversation' : ('rag' as const),
+        messageType: undefined,
+        voiceDurationSeconds: 0,
+        voicePlayed: false as const,
+        attachments: attachments.map((att) => ({
+          name: att.name,
+          size: att.size,
+          type: att.type,
+          sourceUrl: att.sourceUrl,
+        })),
+      };
+      const data = {
         prompt,
-        mode: mode === ChatType.CONVERSATION ? 'conversation' : 'rag',
+        mode:
+          mode === ChatType.CONVERSATION ? 'conversation' : ('rag' as const),
         threadDocuments: attachments.map((att) => ({
           name: att.name,
           content: '',
@@ -244,6 +269,33 @@ export const useAssistantLogic = (threadId: string) => {
           imageData: att.imageData,
           documentData: att.documentData,
         })),
+      };
+
+      dispatch(setMode(mode));
+      scrollToBottom();
+
+      // Pass messagesWithoutBoth so handleAssistantStream builds the list
+      // without the old USER — user_message_created and final_response add
+      // it back with the real DB id, no duplication.
+      await handleAssistantStream({
+        mode: AssistantMode.INTERNAL,
+        messages: messagesWithoutBoth,
+        userMessageId,
+        userMessage,
+        t,
+        tChainErrors,
+        tApiEvents,
+        threadId,
+        responseType,
+        streamedMessage,
+        threadsState: userThreads,
+        scrollFn: scrollToBottom,
+        errorToast,
+        promptFormRef,
+        data,
+        chatType: mode,
+        user: user as unknown as User,
+        reduxDispatch: dispatch,
       });
     } catch {
       errorToast({ message: tChat('regenerate-error') });

@@ -46,7 +46,7 @@ describe('regenerateAssistantMessageCommand', () => {
     mockDelete.mockResolvedValue({});
   });
 
-  it('happy path: zwraca prompt i attachments, usuwa wiadomość ASSISTANT', async () => {
+  it('happy path: zwraca prompt i attachments, usuwa wiadomości ASSISTANT i USER', async () => {
     mockFindFirst.mockResolvedValue({
       id: THREAD_ID,
       messages: [userMessage, assistantMessage],
@@ -66,6 +66,8 @@ describe('regenerateAssistantMessageCommand', () => {
       },
     });
     expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'msg-asst-1' } });
+    expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'msg-user-1' } });
+    expect(mockDelete).toHaveBeenCalledTimes(2);
   });
 
   it('scope: filtruje po organizationId — zwraca error gdy wątek z innej org', async () => {
@@ -142,7 +144,7 @@ describe('regenerateAssistantMessageCommand', () => {
     expect(result.data?.attachments).toEqual([attachment]);
   });
 
-  it('sprawdza scope — where zawiera project.organizationId', async () => {
+  it('sprawdza scope — where zawiera organizationId na Thread', async () => {
     mockFindFirst.mockResolvedValue(null);
 
     await regenerateAssistantMessageCommand(THREAD_ID, ORG_ID, USER_ID);
@@ -151,7 +153,7 @@ describe('regenerateAssistantMessageCommand', () => {
       expect.objectContaining({
         where: expect.objectContaining({
           id: THREAD_ID,
-          project: { organizationId: ORG_ID },
+          organizationId: ORG_ID,
         }),
       }),
     );

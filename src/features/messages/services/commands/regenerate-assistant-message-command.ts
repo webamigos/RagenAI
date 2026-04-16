@@ -15,7 +15,7 @@ export async function regenerateAssistantMessageCommand(
 ): Promise<OperationResult<RegenerateData>> {
   try {
     const thread = await db.thread.findFirst({
-      where: { id: threadId, project: { organizationId: orgId } },
+      where: { id: threadId, organizationId: orgId },
       include: {
         messages: { orderBy: { createdAt: 'asc' } },
       },
@@ -53,8 +53,10 @@ export async function regenerateAssistantMessageCommand(
     const assistantMessage = messages[lastAssistantIdx];
     const userMessage = messages[lastUserIdx];
 
-    // Hard-delete the ASSISTANT message
+    // Hard-delete both the ASSISTANT and USER messages so the stream can
+    // recreate them as new records — prevents duplicate USER messages in DB.
     await db.message.delete({ where: { id: assistantMessage.id } });
+    await db.message.delete({ where: { id: userMessage.id } });
 
     return {
       success: true,
