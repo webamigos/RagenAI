@@ -51,6 +51,8 @@ import { ShareDialog } from '../ShareDialog';
 import { type UserFile } from '@/generated/prisma/browser';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
 
+const BULK_PROGRESS_THRESHOLD = 10;
+
 export type ModalStateProps = {
   isOpen: boolean;
   fileId: UserFile['id'] | null;
@@ -65,6 +67,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const tFolders = useTranslations('folders');
+  const tBulk = useTranslations('bulk-notifications');
   const { user } = useUser();
   const { isOrgAdmin } = useOrganization();
   const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
@@ -126,6 +129,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         setOrgMembers(members);
         setOrgTeams(t);
       })
+      // members list is non-critical — share dialog still works, just won't pre-populate suggestions
       .catch(() => {});
   }, []);
 
@@ -189,16 +193,13 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     [bulk.selectedIds],
   );
 
-  const PROGRESS_THRESHOLD = 10;
-
   const handleBulkDelete = async () => {
     setIsBulkDeleteOpen(false);
     setIsBulkLoading(true);
     const count = fileIds.length;
-    if (count >= PROGRESS_THRESHOLD) {
+    if (count >= BULK_PROGRESS_THRESHOLD) {
       setBulkProgress({
         status: 'running',
-        processed: 0,
         total: count,
         operation: 'delete',
       });
@@ -209,7 +210,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       if (result.succeeded.length > 0) {
         refreshSettings();
       }
-      if (count >= PROGRESS_THRESHOLD) {
+      if (count >= BULK_PROGRESS_THRESHOLD) {
         setBulkProgress({
           status: 'done',
           succeeded: result.succeeded.length,
@@ -218,10 +219,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         });
       } else if (result.failed.length > 0) {
         warningToast({
-          message: `Usunięto ${result.succeeded.length}/${count} plików`,
+          message: tBulk('deleted-partial', {
+            succeeded: result.succeeded.length,
+            total: count,
+          }),
         });
       } else {
-        successToast({ message: `Usunięto ${result.succeeded.length} plików` });
+        successToast({
+          message: tBulk('deleted-all', { count: result.succeeded.length }),
+        });
       }
       bulk.clearAll();
     } catch {
@@ -236,7 +242,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     failed: { fileId: string; fileName: string; error: string }[],
   ) => {
     const count = succeeded.length + failed.length;
-    if (count >= PROGRESS_THRESHOLD) {
+    if (count >= BULK_PROGRESS_THRESHOLD) {
       setBulkProgress({
         status: 'done',
         succeeded: succeeded.length,
@@ -245,10 +251,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       });
     } else if (failed.length > 0) {
       warningToast({
-        message: `Przeniesiono ${succeeded.length}/${count} plików`,
+        message: tBulk('moved-partial', {
+          succeeded: succeeded.length,
+          total: count,
+        }),
       });
     } else {
-      successToast({ message: `Przeniesiono ${succeeded.length} plików` });
+      successToast({
+        message: tBulk('moved-all', { count: succeeded.length }),
+      });
     }
     bulk.clearAll();
     refreshFiles();
@@ -261,10 +272,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     const count = succeeded.length + failed.length;
     if (failed.length > 0) {
       warningToast({
-        message: `Udostępniono ${succeeded.length}/${count} plików`,
+        message: tBulk('shared-partial', {
+          succeeded: succeeded.length,
+          total: count,
+        }),
       });
     } else {
-      successToast({ message: `Udostępniono ${succeeded.length} plików` });
+      successToast({
+        message: tBulk('shared-all', { count: succeeded.length }),
+      });
     }
     bulk.clearAll();
   };
@@ -272,17 +288,16 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const handleBulkReembed = async () => {
     setIsBulkLoading(true);
     const count = fileIds.length;
-    if (count >= PROGRESS_THRESHOLD) {
+    if (count >= BULK_PROGRESS_THRESHOLD) {
       setBulkProgress({
         status: 'running',
-        processed: 0,
         total: count,
         operation: 'reembed',
       });
     }
     try {
       const result = await bulkReembedFilesAction(fileIds);
-      if (count >= PROGRESS_THRESHOLD) {
+      if (count >= BULK_PROGRESS_THRESHOLD) {
         setBulkProgress({
           status: 'done',
           succeeded: result.succeeded.length,
@@ -291,17 +306,20 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         });
       } else if (result.failed.length > 0) {
         warningToast({
-          message: `Ponowna embeddacja: ${result.succeeded.length}/${count} plików`,
+          message: tBulk('reembedded-partial', {
+            succeeded: result.succeeded.length,
+            total: count,
+          }),
         });
       } else {
         successToast({
-          message: `Ponowna embeddacja: ${result.succeeded.length} plików`,
+          message: tBulk('reembedded-all', { count: result.succeeded.length }),
         });
       }
       bulk.clearAll();
       refreshFiles();
     } catch {
-      errorToast({ message: 'Błąd podczas ponownej embeddacji' });
+      errorToast({ message: tBulk('reembed-error') });
     } finally {
       setIsBulkLoading(false);
     }

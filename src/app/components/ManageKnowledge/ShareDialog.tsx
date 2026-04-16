@@ -56,19 +56,25 @@ export function ShareDialog(props: Props) {
     useState<PermissionLevel>('full');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const singleResourceType = !isBulk
+    ? (props as SingleModeProps).resourceType
+    : undefined;
+  const singleResourceId = !isBulk
+    ? (props as SingleModeProps).resourceId
+    : undefined;
+
   const loadPermissions = useCallback(async () => {
-    if (isBulk) {
+    if (isBulk || !singleResourceId) {
       return;
     }
-    const singleProps = props as SingleModeProps;
-    if (singleProps.resourceType === 'file') {
-      const perms = await getFilePermissions(singleProps.resourceId);
+    if (singleResourceType === 'file') {
+      const perms = await getFilePermissions(singleResourceId);
       setPermissions(perms);
     } else {
-      const perms = await getFolderPermissions(singleProps.resourceId);
+      const perms = await getFolderPermissions(singleResourceId);
       setPermissions(perms);
     }
-  }, [isBulk, props]);
+  }, [isBulk, singleResourceType, singleResourceId]);
 
   useEffect(() => {
     if (isOpen) {

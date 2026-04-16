@@ -166,9 +166,15 @@ describe('bulkMoveFilesToFolderAction', () => {
     vi.clearAllMocks();
     mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
     mockGetCurrentUserId.mockResolvedValue('user-1');
+    mockGetActiveMember.mockResolvedValue({ role: 'member' });
   });
 
-  it('moves files to folder successfully', async () => {
+  it('moves owned files to folder successfully', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-1',
+      ownerId: 'user-1',
+      fileName: 'doc.pdf',
+    });
     mockMoveFileToFolderCommand.mockResolvedValue({ success: true });
 
     const result = await bulkMoveFilesToFolderAction(
@@ -182,6 +188,11 @@ describe('bulkMoveFilesToFolderAction', () => {
   });
 
   it('collects error when moveFileToFolderCommand fails', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-bad',
+      ownerId: 'user-1',
+      fileName: 'any.pdf',
+    });
     mockMoveFileToFolderCommand.mockResolvedValue({
       success: false,
       error: 'Folder not found',
@@ -193,8 +204,30 @@ describe('bulkMoveFilesToFolderAction', () => {
     );
 
     expect(result.failed).toEqual([
-      { fileId: 'file-bad', fileName: 'file-bad', error: 'Folder not found' },
+      { fileId: 'file-bad', fileName: 'any.pdf', error: 'Folder not found' },
     ]);
+  });
+
+  it('adds insufficient_permissions when user is not owner and not admin', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-other',
+      ownerId: 'other-user',
+      fileName: 'secret.pdf',
+    });
+
+    const result = await bulkMoveFilesToFolderAction(
+      ['file-other'],
+      'folder-1',
+    );
+
+    expect(result.failed).toEqual([
+      {
+        fileId: 'file-other',
+        fileName: 'secret.pdf',
+        error: 'insufficient_permissions',
+      },
+    ]);
+    expect(mockMoveFileToFolderCommand).not.toHaveBeenCalled();
   });
 });
 
@@ -203,9 +236,15 @@ describe('bulkShareFilesAction', () => {
     vi.clearAllMocks();
     mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
     mockGetCurrentUserId.mockResolvedValue('user-1');
+    mockGetActiveMember.mockResolvedValue({ role: 'member' });
   });
 
-  it('shares files successfully', async () => {
+  it('shares owned files successfully', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-1',
+      ownerId: 'user-1',
+      fileName: 'doc.pdf',
+    });
     mockShareResourceCommand.mockResolvedValue({ success: true });
 
     const result = await bulkShareFilesAction(
@@ -225,6 +264,30 @@ describe('bulkShareFilesAction', () => {
       permission: 'view',
       grantedBy: 'user-1',
     });
+  });
+
+  it('adds insufficient_permissions when user is not owner and not admin', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-other',
+      ownerId: 'other-user',
+      fileName: 'secret.pdf',
+    });
+
+    const result = await bulkShareFilesAction(
+      ['file-other'],
+      'user',
+      'grantee-1',
+      'view',
+    );
+
+    expect(result.failed).toEqual([
+      {
+        fileId: 'file-other',
+        fileName: 'secret.pdf',
+        error: 'insufficient_permissions',
+      },
+    ]);
+    expect(mockShareResourceCommand).not.toHaveBeenCalled();
   });
 
   it('throws when user is not authenticated', async () => {

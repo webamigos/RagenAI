@@ -958,6 +958,17 @@
     "storage": "Storage",
     "pages": "Pages"
   },
+  "bulk-notifications": {
+    "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",
+    "deleted-partial": "Deleted {succeeded} of {total} files",
+    "moved-all": "Moved {count, plural, one {# file} other {# files}}",
+    "moved-partial": "Moved {succeeded} of {total} files",
+    "shared-all": "Shared {count, plural, one {# file} other {# files}}",
+    "shared-partial": "Shared {succeeded} of {total} files",
+    "reembedded-all": "Re-embedded {count, plural, one {# file} other {# files}}",
+    "reembedded-partial": "Re-embedded {succeeded} of {total} files",
+    "reembed-error": "Error during re-embedding"
+  },
   "bulk-action-bar": {
     "aria-label": "Bulk file operations",
     "selected": "{count, plural, one {# selected} other {# selected}}",
@@ -968,7 +979,7 @@
     "reembed": "Re-embed"
   },
   "bulk-progress-banner": {
-    "running": "{operation} in progress: {processed} of {total}…",
+    "running": "{operation} in progress: {total, plural, one {# file} other {# files}}…",
     "done-all": "{operation} complete: {count, plural, one {# file} other {# files}}",
     "done-partial": "{operation} complete: {succeeded} succeeded, {failed} failed",
     "dismiss": "Dismiss",

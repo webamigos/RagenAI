@@ -83,24 +83,55 @@ export async function bulkMoveFilesToFolderAction(
   folderId: string | null,
 ): Promise<BulkActionResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  const member = await getActiveMember(orgId).catch(() => null);
+  const admin = member ? isOrgAdmin(member.role) : false;
 
   const succeeded: string[] = [];
   const failed: { fileId: string; fileName: string; error: string }[] = [];
 
   for (const fileId of fileIds) {
+    const fileRecord = await db.userFile.findFirst({
+      where: { id: fileId, organizationId: orgId },
+      select: { id: true, ownerId: true, fileName: true },
+    });
+
+    if (!fileRecord) {
+      failed.push({ fileId, fileName: fileId, error: 'not_found' });
+      continue;
+    }
+
+    const canMove = admin || fileRecord.ownerId === userId;
+    if (!canMove) {
+      failed.push({
+        fileId,
+        fileName: fileRecord.fileName ?? fileId,
+        error: 'insufficient_permissions',
+      });
+      continue;
+    }
+
     try {
       const result = await moveFileToFolderCommand(fileId, folderId, orgId);
       if (result.success) {
         succeeded.push(fileId);
       } else {
-        failed.push({ fileId, fileName: fileId, error: result.error });
+        failed.push({
+          fileId,
+          fileName: fileRecord.fileName ?? fileId,
+          error: result.error,
+        });
       }
     } catch (err) {
       logger.error(
         { err, fileId },
         'bulkMoveFilesToFolderAction: unexpected error',
       );
-      failed.push({ fileId, fileName: fileId, error: 'unexpected_error' });
+      failed.push({
+        fileId,
+        fileName: fileRecord.fileName ?? fileId,
+        error: 'unexpected_error',
+      });
     }
   }
 
@@ -118,11 +149,33 @@ export async function bulkShareFilesAction(
   if (!userId) {
     throw new Error('Unauthenticated');
   }
+  const member = await getActiveMember(orgId).catch(() => null);
+  const admin = member ? isOrgAdmin(member.role) : false;
 
   const succeeded: string[] = [];
   const failed: { fileId: string; fileName: string; error: string }[] = [];
 
   for (const fileId of fileIds) {
+    const fileRecord = await db.userFile.findFirst({
+      where: { id: fileId, organizationId: orgId },
+      select: { id: true, ownerId: true, fileName: true },
+    });
+
+    if (!fileRecord) {
+      failed.push({ fileId, fileName: fileId, error: 'not_found' });
+      continue;
+    }
+
+    const canShare = admin || fileRecord.ownerId === userId;
+    if (!canShare) {
+      failed.push({
+        fileId,
+        fileName: fileRecord.fileName ?? fileId,
+        error: 'insufficient_permissions',
+      });
+      continue;
+    }
+
     try {
       const result = await shareResourceCommand({
         resourceType: 'file',
@@ -136,11 +189,19 @@ export async function bulkShareFilesAction(
       if (result.success) {
         succeeded.push(fileId);
       } else {
-        failed.push({ fileId, fileName: fileId, error: result.error });
+        failed.push({
+          fileId,
+          fileName: fileRecord.fileName ?? fileId,
+          error: result.error,
+        });
       }
     } catch (err) {
       logger.error({ err, fileId }, 'bulkShareFilesAction: unexpected error');
-      failed.push({ fileId, fileName: fileId, error: 'unexpected_error' });
+      failed.push({
+        fileId,
+        fileName: fileRecord.fileName ?? fileId,
+        error: 'unexpected_error',
+      });
     }
   }
 

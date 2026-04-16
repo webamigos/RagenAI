@@ -1,11 +1,11 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 export type BulkProgressState =
   | { status: 'idle' }
-  | { status: 'running'; processed: number; total: number; operation: string }
+  | { status: 'running'; total: number; operation: string }
   | { status: 'done'; succeeded: number; failed: number; operation: string }
   | { status: 'error'; message: string };
 
@@ -34,7 +34,6 @@ export const BulkProgressBanner = ({ state, onDismiss }: Props) => {
           <span className="flex-1">
             {t('running', {
               operation: t(`op.${state.operation}`),
-              processed: state.processed,
               total: state.total,
             })}
           </span>
@@ -65,7 +64,7 @@ export const BulkProgressBanner = ({ state, onDismiss }: Props) => {
             className="ml-2 text-muted-foreground hover:text-foreground"
             aria-label={t('dismiss')}
           >
-            ✕
+            <X className="size-4" />
           </button>
         </>
       )}
@@ -79,7 +78,7 @@ export const BulkProgressBanner = ({ state, onDismiss }: Props) => {
             className="ml-2 text-muted-foreground hover:text-foreground"
             aria-label={t('dismiss')}
           >
-            ✕
+            <X className="size-4" />
           </button>
         </>
       )}
