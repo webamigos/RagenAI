@@ -18,7 +18,7 @@ export async function regenerateAssistantMessageCommand(
     const thread = await db.thread.findFirst({
       where: { id: threadId, organizationId: orgId },
       include: {
-        messages: { orderBy: { createdAt: 'asc' } },
+        messages: { orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] },
       },
     });
 
