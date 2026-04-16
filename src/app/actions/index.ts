@@ -20,6 +20,7 @@ import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
 import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
+import { regenerateAssistantMessageCommand } from '@/features/messages/services/commands/regenerate-assistant-message-command';
 import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
 import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
 import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
@@ -396,3 +397,9 @@ export const getAccountSetupStatusAction = async () => {
     throw error;
   }
 };
+
+export async function regenerateLastAssistantMessage(threadId: string) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const user = await getCurrentUser();
+  return regenerateAssistantMessageCommand(threadId, orgId, user?.id ?? '');
+}
