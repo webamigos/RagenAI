@@ -72,12 +72,21 @@ export async function regenerateAssistantMessageCommand(
         prompt: userMessage.content,
         attachments: Array.isArray(userMessage.attachments)
           ? (userMessage.attachments as unknown[]).filter(
-              (a): a is MessageAttachment =>
-                typeof a === 'object' &&
-                a !== null &&
-                typeof (a as Record<string, unknown>).name === 'string' &&
-                typeof (a as Record<string, unknown>).size === 'number' &&
-                typeof (a as Record<string, unknown>).type === 'string',
+              (a): a is MessageAttachment => {
+                if (typeof a !== 'object' || a === null) {return false;}
+                const r = a as Record<string, unknown>;
+                return (
+                  typeof r.name === 'string' &&
+                  typeof r.size === 'number' &&
+                  typeof r.type === 'string' &&
+                  (r.sourceUrl === undefined ||
+                    typeof r.sourceUrl === 'string') &&
+                  (r.imageData === undefined ||
+                    typeof r.imageData === 'string') &&
+                  (r.documentData === undefined ||
+                    typeof r.documentData === 'string')
+                );
+              },
             )
           : [],
       },
