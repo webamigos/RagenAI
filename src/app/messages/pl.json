@@ -377,7 +377,9 @@
       "model-label": "Model"
     },
     "chat": {
-      "thinking": "Myślenie"
+      "thinking": "Myślenie",
+      "regenerate": "Regeneruj odpowiedź",
+      "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie."
     }
   },
   "assistant-settings": {

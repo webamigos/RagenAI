@@ -374,7 +374,9 @@
       "model-label": "Model"
     },
     "chat": {
-      "thinking": "Thinking"
+      "thinking": "Thinking",
+      "regenerate": "Regenerate response",
+      "regenerate-error": "Failed to regenerate response. Please try again."
     }
   },
   "assistant-settings": {
