@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
+import { useTranslations } from 'next-intl';
 
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
@@ -27,6 +28,7 @@ export const FileCard = ({
   isSelected,
   onToggleFile,
 }: Props) => {
+  const tBulkBar = useTranslations('bulk-action-bar');
   const {
     fileName,
     fileSize,
@@ -115,7 +117,7 @@ export const FileCard = ({
             checked={!!isSelected}
             onChange={() => onToggleFile(fileIdVal)}
             onClick={(e) => e.stopPropagation()}
-            aria-label={`Zaznacz ${fileName}`}
+            aria-label={tBulkBar('select-file', { fileName })}
             data-testid={`file-card-checkbox-${fileIdVal}`}
             className="size-4 shrink-0 cursor-pointer rounded border-gray-300 accent-blue-600"
           />

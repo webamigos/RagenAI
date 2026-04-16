@@ -61,7 +61,7 @@ export const GridView = ({
         ? isIndeterminate(fileIds)
         : false;
     }
-  });
+  }, [isIndeterminate, fileIds]);
 
   if (isLoading) {
     return <SpinnerSVG size="sm" />;

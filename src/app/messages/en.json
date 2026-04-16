@@ -973,6 +973,7 @@
     "aria-label": "Bulk file operations",
     "selected": "{count, plural, one {# selected} other {# selected}}",
     "select-all": "Select all",
+    "select-file": "Select {fileName}",
     "clear": "Clear selection",
     "delete": "Delete",
     "move": "Move",

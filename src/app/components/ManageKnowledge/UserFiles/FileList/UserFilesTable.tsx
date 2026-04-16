@@ -139,6 +139,7 @@ const FileRow = ({
   onToggleFile,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
+  const tBulkBar = useTranslations('bulk-action-bar');
 
   const {
     createdAt,
@@ -186,7 +187,7 @@ const FileRow = ({
               checked={!!isSelected}
               onChange={() => onToggleFile(file.id)}
               onClick={(e) => e.stopPropagation()}
-              aria-label={`Zaznacz ${file.fileName}`}
+              aria-label={tBulkBar('select-file', { fileName: file.fileName })}
               data-testid={`file-checkbox-${file.id}`}
               className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
             />
