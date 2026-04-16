@@ -40,7 +40,7 @@ describe('EmptyState', () => {
 
     it('nie renderuje opisu gdy pominięty', () => {
       render(<EmptyState title="Brak elementów" />);
-      expect(screen.queryByRole('paragraph')).not.toHaveTextContent('');
+      expect(screen.queryByTestId('empty-state-description')).toBeNull();
     });
 
     it('renderuje ikonę gdy podana', () => {
