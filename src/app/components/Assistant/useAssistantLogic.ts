@@ -204,7 +204,6 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const onRegenerate = async () => {
-    // Find last ASSISTANT message index and preceding USER message index
     const lastAssistantIdx =
       messages
         .map((m, i) => ({ m, i }))
@@ -226,11 +225,6 @@ export const useAssistantLogic = (threadId: string) => {
 
       const { prompt, attachments } = result.data;
 
-      // Both USER and ASSISTANT were hard-deleted from DB by the command.
-      // Remove ASSISTANT from Redux but keep USER visible (no flicker).
-      // Pass messagesWithoutBoth to handleAssistantStream so the stream
-      // rebuilds from scratch — user_message_created replaces old USER with
-      // the new DB record atomically (single Redux update, no duplication).
       const messagesWithoutBoth = messages.filter(
         (_, i) => i !== lastAssistantIdx && i !== lastUserIdx,
       );
@@ -275,9 +269,6 @@ export const useAssistantLogic = (threadId: string) => {
       dispatch(setMode(mode));
       scrollToBottom();
 
-      // Pass messagesWithoutBoth so handleAssistantStream builds the list
-      // without the old USER — user_message_created and final_response add
-      // it back with the real DB id, no duplication.
       await handleAssistantStream({
         mode: AssistantMode.INTERNAL,
         messages: messagesWithoutBoth,

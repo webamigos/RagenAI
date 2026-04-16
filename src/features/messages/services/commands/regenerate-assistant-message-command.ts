@@ -28,7 +28,6 @@ export async function regenerateAssistantMessageCommand(
 
     const messages = thread.messages;
 
-    // Find last ASSISTANT message
     const lastAssistantIdx = [...messages]
       .map((m, i) => ({ m, i }))
       .filter(({ m }) => m.role === 'ASSISTANT')
@@ -38,7 +37,6 @@ export async function regenerateAssistantMessageCommand(
       return { success: false, error: 'No assistant message to regenerate' };
     }
 
-    // Find USER message before last ASSISTANT
     const lastUserIdx = [...messages]
       .map((m, i) => ({ m, i }))
       .filter(({ m, i }) => m.role === 'USER' && i < lastAssistantIdx)
@@ -54,8 +52,6 @@ export async function regenerateAssistantMessageCommand(
     const assistantMessage = messages[lastAssistantIdx];
     const userMessage = messages[lastUserIdx];
 
-    // Hard-delete both messages atomically — if either delete fails the other
-    // is rolled back, preventing partial mutations.
     await db.$transaction([
       db.message.delete({ where: { id: assistantMessage.id } }),
       db.message.delete({ where: { id: userMessage.id } }),
