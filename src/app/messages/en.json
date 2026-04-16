@@ -958,6 +958,34 @@
     "storage": "Storage",
     "pages": "Pages"
   },
+  "bulk-action-bar": {
+    "aria-label": "Bulk file operations",
+    "selected": "{count, plural, one {# selected} other {# selected}}",
+    "clear": "Clear selection",
+    "delete": "Delete",
+    "move": "Move",
+    "share": "Share",
+    "reembed": "Re-embed"
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} in progress: {processed} of {total}…",
+    "done-all": "{operation} complete: {count, plural, one {# file} other {# files}}",
+    "done-partial": "{operation} complete: {succeeded} succeeded, {failed} failed",
+    "dismiss": "Dismiss",
+    "op": {
+      "delete": "Delete",
+      "move": "Move",
+      "share": "Share",
+      "reembed": "Re-embed"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Delete files",
+    "description": "Are you sure you want to delete {count, plural, one {# file} other {# files}}? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "delete": "Delete {count, plural, one {# file} other {# files}}",
+    "cancel": "Cancel"
+  },
   "file-delete-modal": {
     "title": "Delete file",
     "description": "Are you sure you want to delete {fileName}? This action cannot be undone.",

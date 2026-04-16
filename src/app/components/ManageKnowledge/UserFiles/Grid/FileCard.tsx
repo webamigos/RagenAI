@@ -15,6 +15,8 @@ type Props = {
   isLoading: boolean;
   deleteLoading?: boolean;
   toggleModal: (fileId: string | null) => void;
+  isSelected?: boolean;
+  onToggleFile?: (id: string) => void;
 };
 
 export const FileCard = ({
@@ -22,6 +24,8 @@ export const FileCard = ({
   isLoading,
   deleteLoading,
   toggleModal,
+  isSelected,
+  onToggleFile,
 }: Props) => {
   const {
     fileName,
@@ -87,7 +91,23 @@ export const FileCard = ({
   };
 
   return (
-    <div className="flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group">
+    <div
+      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative${isSelected ? ' ring-2 ring-blue-500' : ''}`}
+      data-testid={`file-card-${fileIdVal}`}
+    >
+      {onToggleFile && (
+        <div className="absolute top-2 left-2 z-10">
+          <input
+            type="checkbox"
+            checked={!!isSelected}
+            onChange={() => onToggleFile(fileIdVal)}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Zaznacz ${fileName}`}
+            data-testid={`file-card-checkbox-${fileIdVal}`}
+            className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600 shadow"
+          />
+        </div>
+      )}
       <div className="px-3 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <span className="shrink-0">{fileIcon}</span>

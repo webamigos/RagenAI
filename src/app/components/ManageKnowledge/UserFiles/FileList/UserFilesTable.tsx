@@ -32,6 +32,14 @@ import { ToolbarActions } from './ToolbarActions';
 import { FolderIcon } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 
+type SelectionProps = {
+  isSelected?: (id: string) => boolean;
+  isAllSelected?: (ids: string[]) => boolean;
+  isIndeterminate?: (ids: string[]) => boolean;
+  onToggleFile?: (id: string) => void;
+  onToggleAll?: (ids: string[]) => void;
+};
+
 type Props = {
   files: UserFileType[];
   subfolders?: DocumentFolderItem[];
@@ -45,7 +53,7 @@ type Props = {
     fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
-};
+} & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
   fileType: FileType;
@@ -62,6 +70,8 @@ type FileRowProps = {
   handleDelete: (fileId: UserFile['id'], fileName: string) => void;
   toggleModal: (fileId: UserFile['id'] | null) => void;
   onRemoveFile: (fileId: UserFile['id']) => void;
+  isSelected?: boolean;
+  onToggleFile?: (id: string) => void;
 };
 
 export type ModalStateProps = {
@@ -124,6 +134,8 @@ const FileRow = ({
   deleteLoading,
   toggleModal,
   handleDelete,
+  isSelected,
+  onToggleFile,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
 
@@ -162,7 +174,23 @@ const FileRow = ({
         fileName={file.fileName}
         isLoading={deleteLoading}
       />
-      <TableRow className="text-sm">
+      <TableRow
+        className={`text-sm${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
+        data-testid={`file-row-${file.id}`}
+      >
+        {onToggleFile && (
+          <TableCell className="w-8 pr-0">
+            <input
+              type="checkbox"
+              checked={!!isSelected}
+              onChange={() => onToggleFile(file.id)}
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Zaznacz ${file.fileName}`}
+              data-testid={`file-checkbox-${file.id}`}
+              className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+            />
+          </TableCell>
+        )}
         <TableCell className={file.document?.id ? 'z-10' : ''}>
           <span className="flex items-center">
             <span className="mr-1 inline-flex size-6 shrink-0 items-center">
@@ -213,6 +241,11 @@ export const UserFilesTable = ({
   toggleModal,
   handleDelete,
   onRemoveFile,
+  isSelected,
+  isAllSelected,
+  isIndeterminate,
+  onToggleFile,
+  onToggleAll,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const [searchValue] = useState('');
@@ -231,12 +264,36 @@ export const UserFilesTable = ({
   }, [files, searchValue]);
 
   const hasContent = subfolders.length > 0 || filteredDocuments.length > 0;
+  const fileIds = useMemo(
+    () => filteredDocuments.map((f) => f.id),
+    [filteredDocuments],
+  );
+  const showCheckboxes = !!onToggleFile;
 
   return (
     <div className="relative">
       <Table className="overflow-x-auto [&_tbody_tr:last-child_td]:border-b-0">
         <TableHead>
           <TableRow className="text-base">
+            {showCheckboxes && (
+              <TableHeader className="w-8 pr-0">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected ? isAllSelected(fileIds) : false}
+                  ref={(el) => {
+                    if (el) {
+                      el.indeterminate = isIndeterminate
+                        ? isIndeterminate(fileIds)
+                        : false;
+                    }
+                  }}
+                  onChange={() => onToggleAll?.(fileIds)}
+                  aria-label="Zaznacz wszystkie"
+                  data-testid="select-all-checkbox"
+                  className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+                />
+              </TableHeader>
+            )}
             <TableHeader>{t('file-name')}</TableHeader>
             <TableHeader>{t('file-size')}</TableHeader>
             <TableHeader>{t('created')}</TableHeader>
@@ -254,6 +311,7 @@ export const UserFilesTable = ({
               className="text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
               onClick={() => onNavigateFolder?.(folder.id)}
             >
+              {showCheckboxes && <TableCell className="w-8 pr-0" />}
               <TableCell>
                 <span className="flex items-center gap-2">
                   <FolderIcon className="size-5 text-gray-400 shrink-0" />
@@ -286,13 +344,15 @@ export const UserFilesTable = ({
               toggleModal={toggleModal}
               handleDelete={handleDelete}
               onRemoveFile={onRemoveFile}
+              isSelected={isSelected ? isSelected(file.id) : undefined}
+              onToggleFile={onToggleFile}
             />
           ))}
 
           {!hasContent && (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={showCheckboxes ? 6 : 5}
                 className="text-center text-sm text-gray-500"
               >
                 {t('no-files')}

@@ -27,6 +27,8 @@ type GridViewProps = {
     fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
+  isSelected?: (id: string) => boolean;
+  onToggleFile?: (id: string) => void;
 };
 
 export const GridView = ({
@@ -37,6 +39,8 @@ export const GridView = ({
   showModal,
   handleDelete,
   toggleModal,
+  isSelected,
+  onToggleFile,
 }: GridViewProps) => {
   const t = useTranslations('error-toast');
   const { errorToast } = statusToast();
@@ -69,6 +73,8 @@ export const GridView = ({
           isLoading={isLoading}
           deleteLoading={deleteLoading}
           toggleModal={toggleModal}
+          isSelected={isSelected ? isSelected(file.id) : undefined}
+          onToggleFile={onToggleFile}
         />
       ))}
       {showModal.fileId && (

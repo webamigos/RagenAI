@@ -12,32 +12,43 @@ import {
   getFilePermissions,
   getFolderPermissions,
 } from '@/app/actions/permissions';
+import { bulkShareFilesAction } from '@/app/actions/bulk-documents';
 import type {
   DocumentPermissionItem,
   PermissionLevel,
 } from '@/features/documents/contracts/permission.types';
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
+type OrgMember = { id: string; name: string | null; email: string };
+type OrgTeam = { id: string; name: string };
+
+type SingleModeProps = {
+  mode?: 'single';
   resourceType: 'file' | 'folder';
-  resourceId: string; // file id or folder id
+  resourceId: string;
   resourceName: string;
-  orgMembers: { id: string; name: string | null; email: string }[];
-  orgTeams: { id: string; name: string }[];
   ownerName?: string;
 };
 
-export function ShareDialog({
-  isOpen,
-  onClose,
-  resourceType,
-  resourceId,
-  resourceName,
-  orgMembers,
-  orgTeams,
-  ownerName,
-}: Props) {
+type BulkModeProps = {
+  mode: 'bulk';
+  fileIds: string[];
+  onShared: (
+    succeeded: string[],
+    failed: { fileId: string; fileName: string; error: string }[],
+  ) => void;
+};
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  orgMembers: OrgMember[];
+  orgTeams: OrgTeam[];
+} & (SingleModeProps | BulkModeProps);
+
+export function ShareDialog(props: Props) {
+  const { isOpen, onClose, orgMembers, orgTeams } = props;
+  const isBulk = props.mode === 'bulk';
+
   const { successToast, errorToast } = statusToast();
   const [permissions, setPermissions] = useState<DocumentPermissionItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,14 +57,18 @@ export function ShareDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadPermissions = useCallback(async () => {
-    if (resourceType === 'file') {
-      const perms = await getFilePermissions(resourceId as string);
+    if (isBulk) {
+      return;
+    }
+    const singleProps = props as SingleModeProps;
+    if (singleProps.resourceType === 'file') {
+      const perms = await getFilePermissions(singleProps.resourceId);
       setPermissions(perms);
     } else {
-      const perms = await getFolderPermissions(resourceId);
+      const perms = await getFolderPermissions(singleProps.resourceId);
       setPermissions(perms);
     }
-  }, [resourceType, resourceId]);
+  }, [isBulk, props]);
 
   useEffect(() => {
     if (isOpen) {
@@ -80,16 +95,31 @@ export function ShareDialog({
   ) => {
     setIsSubmitting(true);
     try {
+      if (isBulk) {
+        const bulkProps = props as BulkModeProps;
+        const result = await bulkShareFilesAction(
+          bulkProps.fileIds,
+          granteeType,
+          granteeId,
+          selectedPermission,
+        );
+        bulkProps.onShared(result.succeeded, result.failed);
+        setSearchQuery('');
+        onClose();
+        return;
+      }
+
+      const singleProps = props as SingleModeProps;
       const result =
-        resourceType === 'file'
+        singleProps.resourceType === 'file'
           ? await shareFile(
-              resourceId,
+              singleProps.resourceId,
               granteeType,
               granteeId,
               selectedPermission,
             )
           : await shareFolder(
-              resourceId,
+              singleProps.resourceId,
               granteeType,
               granteeId,
               selectedPermission,
@@ -133,7 +163,11 @@ export function ShareDialog({
 
   return (
     <Dialog open={isOpen} onClose={onClose} size="md">
-      <DialogTitle>Share &quot;{resourceName}&quot;</DialogTitle>
+      <DialogTitle>
+        {isBulk
+          ? `Share ${(props as BulkModeProps).fileIds.length} files`
+          : `Share "${(props as SingleModeProps).resourceName}"`}
+      </DialogTitle>
 
       <div className="mt-4 space-y-4">
         {/* Search & invite */}
@@ -202,72 +236,79 @@ export function ShareDialog({
           </div>
         )}
 
-        {/* Who has access */}
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Who has access
-          </h4>
-          <div className="space-y-2">
-            {ownerName && (
-              <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800">
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xs font-medium text-green-700 dark:text-green-300">
-                    {ownerName.charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {ownerName}
-                    </div>
-                    <div className="text-xs text-gray-500">Owner</div>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400">Full access</span>
-              </div>
-            )}
-
-            {permissions.map((perm) => (
-              <div
-                key={perm.id}
-                className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                      perm.granteeType === 'team'
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    {perm.granteeType === 'team'
-                      ? 'T'
-                      : perm.granteeName.charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {perm.granteeName}
-                    </div>
-                    {perm.granteeEmail && (
-                      <div className="text-xs text-gray-500">
-                        {perm.granteeEmail}
+        {/* Who has access — only in single-file mode */}
+        {!isBulk && (
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Who has access
+            </h4>
+            <div className="space-y-2">
+              {!isBulk &&
+                (props as SingleModeProps).ownerName &&
+                (() => {
+                  const ownerName = (props as SingleModeProps).ownerName!;
+                  return (
+                    <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800">
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xs font-medium text-green-700 dark:text-green-300">
+                          {ownerName.charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {ownerName}
+                          </div>
+                          <div className="text-xs text-gray-500">Owner</div>
+                        </div>
                       </div>
-                    )}
+                      <span className="text-xs text-gray-400">Full access</span>
+                    </div>
+                  );
+                })()}
+
+              {permissions.map((perm) => (
+                <div
+                  key={perm.id}
+                  className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                        perm.granteeType === 'team'
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      {perm.granteeType === 'team'
+                        ? 'T'
+                        : perm.granteeName.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {perm.granteeName}
+                      </div>
+                      {perm.granteeEmail && (
+                        <div className="text-xs text-gray-500">
+                          {perm.granteeEmail}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {perm.permission === 'full' ? 'Full access' : 'View only'}
+                    </span>
+                    <button
+                      onClick={() => handleRevoke(perm.id)}
+                      className="text-red-500 hover:text-red-600 text-xs"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">
-                    {perm.permission === 'full' ? 'Full access' : 'View only'}
-                  </span>
-                  <button
-                    onClick={() => handleRevoke(perm.id)}
-                    className="text-red-500 hover:text-red-600 text-xs"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Copy link */}
         <div className="flex justify-between items-center pt-4 border-t dark:border-gray-700">

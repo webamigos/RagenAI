@@ -25,6 +25,11 @@ type FileListViewProps = {
     fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
+  isSelected?: (id: string) => boolean;
+  isAllSelected?: (ids: string[]) => boolean;
+  isIndeterminate?: (ids: string[]) => boolean;
+  onToggleFile?: (id: string) => void;
+  onToggleAll?: (ids: string[]) => void;
 };
 
 export const FileListView = ({
@@ -39,6 +44,11 @@ export const FileListView = ({
   addFile,
   removeFile,
   handleDelete,
+  isSelected,
+  isAllSelected,
+  isIndeterminate,
+  onToggleFile,
+  onToggleAll,
 }: FileListViewProps) => {
   const { errorToast } = statusToast();
   const t = useTranslations('admin-panel-page');
@@ -63,6 +73,11 @@ export const FileListView = ({
       onRemoveFile={removeFile}
       handleDelete={handleDelete}
       showModal={showModal}
+      isSelected={isSelected}
+      isAllSelected={isAllSelected}
+      isIndeterminate={isIndeterminate}
+      onToggleFile={onToggleFile}
+      onToggleAll={onToggleAll}
     />
   );
 };

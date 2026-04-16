@@ -961,6 +961,34 @@
     "storage": "Przestrzeń",
     "pages": "Strony"
   },
+  "bulk-action-bar": {
+    "aria-label": "Masowe operacje na plikach",
+    "selected": "{count, plural, one {# zaznaczony} few {# zaznaczone} many {# zaznaczonych} other {# zaznaczone}}",
+    "clear": "Odznacz wszystkie",
+    "delete": "Usuń",
+    "move": "Przenieś",
+    "share": "Udostępnij",
+    "reembed": "Ponowna embeddacja"
+  },
+  "bulk-progress-banner": {
+    "running": "Trwa {operation}: {processed} z {total}…",
+    "done-all": "Ukończono {operation}: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "done-partial": "Ukończono {operation}: {succeeded} z powodzeniem, {failed} nieudanych",
+    "dismiss": "Zamknij",
+    "op": {
+      "delete": "usuwanie",
+      "move": "przenoszenie",
+      "share": "udostępnianie",
+      "reembed": "ponowna embeddacja"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Usuń pliki",
+    "description": "Czy na pewno chcesz usunąć {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}? Tej operacji nie można cofnąć.",
+    "deleting": "Usuwanie...",
+    "delete": "Usuń {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "cancel": "Anuluj"
+  },
   "file-delete-modal": {
     "title": "Usuń plik",
     "description": "Czy na pewno chcesz usunąć {fileName}? Tej operacji nie można cofnąć.",

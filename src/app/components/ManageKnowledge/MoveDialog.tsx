@@ -8,29 +8,37 @@ import {
   moveFileToFolder,
   moveFolder,
 } from '@/app/actions/folders';
+import { bulkMoveFilesToFolderAction } from '@/app/actions/bulk-documents';
 import { buildFolderTree } from '@/features/documents/utils/folder-tree';
 import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
 import { statusToast } from '@/app/lib/utils/toast';
 
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
+type SingleModeProps = {
+  mode?: 'single';
   resourceType: 'file' | 'folder';
-  resourceId: string; // file id or folder id
+  resourceId: string;
   resourceName: string;
   currentFolderId?: string | null;
   onMoved: () => void;
 };
 
-export function MoveDialog({
-  isOpen,
-  onClose,
-  resourceType,
-  resourceId,
-  resourceName,
-  currentFolderId,
-  onMoved,
-}: Props) {
+type BulkModeProps = {
+  mode: 'bulk';
+  fileIds: string[];
+  onMoved: (
+    succeeded: string[],
+    failed: { fileId: string; fileName: string; error: string }[],
+  ) => void;
+};
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+} & (SingleModeProps | BulkModeProps);
+
+export function MoveDialog(props: Props) {
+  const { isOpen, onClose } = props;
+  const isBulk = props.mode === 'bulk';
   const { successToast, errorToast } = statusToast();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -63,22 +71,38 @@ export function MoveDialog({
   const handleMove = async () => {
     setIsSubmitting(true);
     try {
-      if (resourceType === 'file') {
-        const result = await moveFileToFolder(resourceId, selectedFolderId);
-        if (!result.success) {
-          errorToast({ message: result.error || 'Failed to move file' });
-          return;
-        }
+      if (isBulk) {
+        const result = await bulkMoveFilesToFolderAction(
+          (props as BulkModeProps).fileIds,
+          selectedFolderId,
+        );
+        (props as BulkModeProps).onMoved(result.succeeded, result.failed);
+        onClose();
       } else {
-        const result = await moveFolder(resourceId, selectedFolderId);
-        if (!result.success) {
-          errorToast({ message: result.error || 'Failed to move folder' });
-          return;
+        const singleProps = props as SingleModeProps;
+        if (singleProps.resourceType === 'file') {
+          const result = await moveFileToFolder(
+            singleProps.resourceId,
+            selectedFolderId,
+          );
+          if (!result.success) {
+            errorToast({ message: result.error || 'Failed to move file' });
+            return;
+          }
+        } else {
+          const result = await moveFolder(
+            singleProps.resourceId,
+            selectedFolderId,
+          );
+          if (!result.success) {
+            errorToast({ message: result.error || 'Failed to move folder' });
+            return;
+          }
         }
+        successToast({ message: `Moved "${singleProps.resourceName}"` });
+        singleProps.onMoved();
+        onClose();
       }
-      successToast({ message: `Moved "${resourceName}"` });
-      onMoved();
-      onClose();
     } catch {
       errorToast({ message: 'Failed to move' });
     } finally {
@@ -89,14 +113,21 @@ export function MoveDialog({
   const folderTree = buildFolderTree(folders);
 
   const isDisabled = (folderId: string): boolean => {
+    if (isBulk) {
+      return false;
+    }
+    const singleProps = props as SingleModeProps;
     // Can't move a folder into itself or its descendants
-    if (resourceType === 'folder' && folderId === resourceId) {
+    if (
+      singleProps.resourceType === 'folder' &&
+      folderId === singleProps.resourceId
+    ) {
       return true;
     }
     // Check if target is a descendant of the folder being moved
-    if (resourceType === 'folder') {
+    if (singleProps.resourceType === 'folder') {
       const folder = folders.find((f) => f.id === folderId);
-      if (folder?.path.includes(`/${resourceId}/`)) {
+      if (folder?.path.includes(`/${singleProps.resourceId}/`)) {
         return true;
       }
     }
@@ -108,6 +139,9 @@ export function MoveDialog({
     const isExpanded = expandedFolders.has(folder.id);
     const isSelected = selectedFolderId === folder.id;
     const disabled = isDisabled(folder.id);
+    const currentFolderId = isBulk
+      ? undefined
+      : (props as SingleModeProps).currentFolderId;
     const isCurrent = folder.id === currentFolderId;
 
     return (
@@ -169,9 +203,15 @@ export function MoveDialog({
 
   return (
     <Dialog open={isOpen} onClose={onClose} size="md">
-      <DialogTitle>Move &quot;{resourceName}&quot;</DialogTitle>
+      <DialogTitle>
+        {isBulk
+          ? `Move ${(props as BulkModeProps).fileIds.length} files`
+          : `Move "${(props as SingleModeProps).resourceName}"`}
+      </DialogTitle>
       <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        Change the location of your {resourceType}.
+        {isBulk
+          ? 'Select a destination folder for the selected files.'
+          : `Change the location of your ${(props as SingleModeProps).resourceType}.`}
       </p>
 
       <div className="mt-4 max-h-80 overflow-y-auto border rounded-md dark:border-gray-700">
@@ -187,7 +227,7 @@ export function MoveDialog({
         >
           <span>📁</span>
           <span className="font-medium">All Files</span>
-          {currentFolderId === null && (
+          {!isBulk && (props as SingleModeProps).currentFolderId === null && (
             <span className="text-xs text-gray-400">(current)</span>
           )}
         </button>
@@ -207,7 +247,12 @@ export function MoveDialog({
         <Button
           type="button"
           onClick={handleMove}
-          disabled={isSubmitting || selectedFolderId === currentFolderId}
+          disabled={
+            isSubmitting ||
+            (!isBulk &&
+              selectedFolderId ===
+                ((props as SingleModeProps).currentFolderId ?? null))
+          }
         >
           {isSubmitting ? 'Moving...' : 'Move'}
         </Button>

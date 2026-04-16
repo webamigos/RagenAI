@@ -19,11 +19,16 @@ vi.mock('@/lib/auth-access-control', () => ({
 }));
 
 const mockFindFirst = vi.fn();
+const mockFindMany = vi.fn();
+const mockUpdateMany = vi.fn();
+const mockUpdate = vi.fn();
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     userFile: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
-      updateMany: vi.fn(),
+      findMany: (...args: unknown[]) => mockFindMany(...args),
+      updateMany: (...args: unknown[]) => mockUpdateMany(...args),
+      update: (...args: unknown[]) => mockUpdate(...args),
     },
   },
 }));
@@ -221,39 +226,80 @@ describe('bulkShareFilesAction', () => {
       grantedBy: 'user-1',
     });
   });
+
+  it('throws when user is not authenticated', async () => {
+    mockGetCurrentUserId.mockResolvedValue(null);
+
+    await expect(
+      bulkShareFilesAction(['file-1'], 'user', 'grantee-1', 'view'),
+    ).rejects.toThrow('Unauthenticated');
+  });
 });
 
 describe('bulkReembedFilesAction', () => {
+  const mockWorkflowStart = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
     mockGetCurrentUserId.mockResolvedValue('user-1');
-    const mockWorkflowStart = vi.fn().mockResolvedValue(undefined);
+    mockWorkflowStart.mockResolvedValue(undefined);
     mockGetTemporalClient.mockReturnValue({
       workflow: { start: mockWorkflowStart },
     });
+    mockUpdate.mockResolvedValue(undefined);
   });
 
-  it('re-embeds files and starts workflows', async () => {
-    const db = (await import('@ragenai/prisma-client')).default;
-    const mockUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
-    const mockFindMany = vi
-      .fn()
-      .mockResolvedValue([
-        {
-          id: 'file-1',
-          fileName: 'doc.pdf',
-          organizationId: 'org-1',
-          projectId: null,
-        },
-      ]);
-    (db.userFile as unknown as Record<string, unknown>).updateMany =
-      mockUpdateMany;
-    (db.userFile as unknown as Record<string, unknown>).findMany = mockFindMany;
+  it('starts workflow and updates status per file after success', async () => {
+    mockFindMany.mockResolvedValue([
+      {
+        id: 'file-1',
+        fileName: 'doc.pdf',
+        organizationId: 'org-1',
+        projectId: null,
+      },
+    ]);
 
     const result = await bulkReembedFilesAction(['file-1']);
 
     expect(result.succeeded).toEqual(['file-1']);
-    expect(mockUpdateMany).toHaveBeenCalled();
+    expect(result.failed).toHaveLength(0);
+    expect(mockWorkflowStart).toHaveBeenCalledTimes(1);
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'file-1' },
+        data: expect.objectContaining({ embeddingStatus: 'NOT_STARTED' }),
+      }),
+    );
+  });
+
+  it('does NOT update status when workflow start fails', async () => {
+    mockFindMany.mockResolvedValue([
+      {
+        id: 'file-2',
+        fileName: 'bad.pdf',
+        organizationId: 'org-1',
+        projectId: null,
+      },
+    ]);
+    mockWorkflowStart.mockRejectedValue(new Error('Temporal down'));
+
+    const result = await bulkReembedFilesAction(['file-2']);
+
+    expect(result.succeeded).toHaveLength(0);
+    expect(result.failed).toEqual([
+      { fileId: 'file-2', fileName: 'bad.pdf', error: 'workflow_start_failed' },
+    ]);
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('reports not_found for fileIds missing from DB', async () => {
+    mockFindMany.mockResolvedValue([]);
+
+    const result = await bulkReembedFilesAction(['ghost-file']);
+
+    expect(result.failed).toEqual([
+      { fileId: 'ghost-file', fileName: 'ghost-file', error: 'not_found' },
+    ]);
   });
 });

@@ -114,7 +114,10 @@ export async function bulkShareFilesAction(
   permission: PermissionLevel,
 ): Promise<BulkActionResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
-  const userId = (await getCurrentUserId()) ?? '';
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    throw new Error('Unauthenticated');
+  }
 
   const succeeded: string[] = [];
   const failed: { fileId: string; fileName: string; error: string }[] = [];
@@ -149,18 +152,6 @@ export async function bulkReembedFilesAction(
 ): Promise<BulkActionResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
 
-  // Reset statuses for all files in one query
-  await db.userFile.updateMany({
-    where: { id: { in: fileIds }, organizationId: orgId },
-    data: {
-      embeddingStatus: EmbeddingStatus.NOT_STARTED,
-      parsingStatus: ParsingStatus.NOT_STARTED,
-      embeddingStartedAt: null,
-      embeddingCompletedAt: null,
-      embeddingFailedAt: null,
-    },
-  });
-
   const fileRecords = await db.userFile.findMany({
     where: { id: { in: fileIds }, organizationId: orgId },
   });
@@ -181,6 +172,16 @@ export async function bulkReembedFilesAction(
             requestId: workflowId,
           },
         ],
+      });
+      await db.userFile.update({
+        where: { id: fileRecord.id },
+        data: {
+          embeddingStatus: EmbeddingStatus.NOT_STARTED,
+          parsingStatus: ParsingStatus.NOT_STARTED,
+          embeddingStartedAt: null,
+          embeddingCompletedAt: null,
+          embeddingFailedAt: null,
+        },
       });
       succeeded.push(fileRecord.id);
     } catch (err) {
