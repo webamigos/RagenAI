@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import type {
   ConnectorDto,
-  ProviderDefinition,
+  PublicProviderDto,
 } from '@/features/connectors/contracts/connector.types';
 import {
   initiateConnection,
@@ -43,7 +43,7 @@ const providerIcons: Record<McpConnectorProvider, string> = {
 };
 
 type ConnectorCardProps = {
-  provider: ProviderDefinition;
+  provider: PublicProviderDto;
   connector: ConnectorDto | undefined;
 };
 

@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { CONNECTOR_PROVIDERS } from '@/features/connectors/constants/providers';
+import { PUBLIC_PROVIDER_LIST } from '@/features/connectors/providers/registry';
 import { getConnectors } from './actions';
 import { ConnectorsList } from './components/ConnectorsList';
 
@@ -22,7 +22,10 @@ export default async function ConnectorsSettingsPage() {
           {t('description')}
         </p>
       </section>
-      <ConnectorsList providers={CONNECTOR_PROVIDERS} connectors={connectors} />
+      <ConnectorsList
+        providers={PUBLIC_PROVIDER_LIST}
+        connectors={connectors}
+      />
     </div>
   );
 }

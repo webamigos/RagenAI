@@ -1,5 +1,8 @@
 import { McpConnectorProvider } from '@/generated/prisma/client';
-import type { ProviderDefinition } from '../contracts/connector.types';
+import type {
+  ProviderDefinition,
+  PublicProviderDto,
+} from '../contracts/connector.types';
 import { CLICKUP_PROVIDER } from './clickup';
 import { FIREFLIES_PROVIDER } from './fireflies';
 import { GMAIL_PROVIDER } from './gmail';
@@ -40,3 +43,29 @@ export function getProvider(
 ): ProviderDefinition {
   return PROVIDER_REGISTRY[provider];
 }
+
+/**
+ * Strips everything a browser shouldn't see — OAuth secrets, server-side
+ * auth config, and any function-valued prompt fragments (which cannot
+ * cross the RSC boundary). Call this on the server before handing a
+ * provider to a client component.
+ */
+export function toPublicProviderDto(
+  def: ProviderDefinition,
+): PublicProviderDto {
+  return {
+    provider: def.provider,
+    name: def.name,
+    description: def.description,
+    icon: def.icon,
+    mcpServerUrl: def.mcpServerUrl,
+    authBaseUrl: def.authBaseUrl,
+    authPath: def.authPath,
+    authType: def.authType,
+    apiKeyHelpUrl: def.apiKeyHelpUrl,
+    scopes: def.scopes,
+  };
+}
+
+export const PUBLIC_PROVIDER_LIST: readonly PublicProviderDto[] =
+  PROVIDER_LIST.map(toPublicProviderDto);

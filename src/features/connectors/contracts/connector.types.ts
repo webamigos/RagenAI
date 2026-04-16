@@ -64,6 +64,28 @@ export type ProviderDefinition = {
 };
 
 /**
+ * Client-safe slice of `ProviderDefinition` for passing across the RSC
+ * boundary. Strips:
+ *   - OAuth client secret/id (server-only — never ship credentials)
+ *   - systemPromptFragment (can be a function → not serializable)
+ *   - useUserScope, headerName, mcpServerUrlPath (server-side auth config)
+ *
+ * Only fields the Connectors UI actually needs are exposed.
+ */
+export type PublicProviderDto = {
+  provider: McpConnectorProvider;
+  name: string;
+  description: string;
+  icon: string;
+  mcpServerUrl: string;
+  authBaseUrl?: string;
+  authPath?: string;
+  authType?: ProviderDefinition['authType'];
+  apiKeyHelpUrl?: string;
+  scopes?: string[];
+};
+
+/**
  * Payload for the WooCommerce-style custom-header auth flow: user provides
  * the shop URL and two REST-API keys, which are joined and stored as a
  * single opaque token in the vault.
