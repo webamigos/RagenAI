@@ -731,7 +731,7 @@
     "return-to-home": "Lista wątków",
     "threads": {
       "no-threads": "Brak wątków",
-      "no-threads-description": "Rozpocznij nową konwersację, aby zobaczyć ją tutaj",
+      "no-threads-description": "Zacznij rozmowę z asystentem",
       "load-more": "Załaduj więcej"
     },
     "threads-categories": {
@@ -890,6 +890,9 @@
     "create": "Nowy asystent",
     "no-assistants": "Brak asystentów",
     "no-assistants-description": "Stwórz pierwszego asystenta, aby rozpocząć",
+    "no-search-results": "Brak wyników dla \"{query}\"",
+    "no-search-results-description": "Spróbuj innego zapytania",
+    "browse-templates": "Przeglądaj szablony",
     "thread-count": "{count} wątków",
     "updated": "Zaktualizowany {time}",
     "global-assistants": "Globalni asystenci"
@@ -900,6 +903,7 @@
     "error-threads": "Błąd podczas pobierania wątków",
     "threads-not-found": "Wątek nie znaleziony",
     "no-results": "Brak wyników.",
+    "no-results-description": "Spróbuj innych słów kluczowych lub sprawdź pisownię",
     "placeholder": "Szukaj czatów i asystentów...",
     "recent": "Ostatnie",
     "threads": "Czaty",
@@ -954,8 +958,10 @@
     "from-disk": "Z dysku",
     "create-document": "Stwórz dokument",
     "add-from-url": "Dodaj z linku",
+    "no-documents": "Brak dokumentów w bazie wiedzy",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
+    "upload-cta": "Wgraj plik",
     "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "usage": "Użycie",
     "storage": "Przestrzeń",
