@@ -294,7 +294,9 @@
     "copied": "Skopiowano ",
     "deleted": "Usunięto ",
     "saved": "Zapisano ",
-    "files-uploaded": "Przesłano {count} plik(ów)"
+    "files-uploaded": "Przesłano {count} plik(ów)",
+    "copy-text": "Kopiuj tekst",
+    "copy-markdown": "Kopiuj Markdown"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
@@ -321,7 +323,9 @@
   },
   "rate-answer": {
     "thank-you": "Twoja ocena została zapisana. Dziękujemy za feedback",
-    "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później"
+    "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później",
+    "like": "Oceń pozytywnie",
+    "dislike": "Oceń negatywnie"
   },
   "admin-panel": {
     "no-files": "Nie wybrano żadnych plików do wysłania",
@@ -1611,5 +1615,8 @@
       "forbidden": "To zdarzenie należy do innej organizacji.",
       "already_resolved": "Zdarzenie zostało już zamknięte."
     }
+  },
+  "read-answer": {
+    "listen": "Odczytaj odpowiedź"
   }
 }
