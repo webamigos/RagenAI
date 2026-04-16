@@ -7,7 +7,7 @@ import type { ProviderDefinition } from '@/features/connectors/contracts/connect
 import { ConnectorCard } from './ConnectorCard';
 
 type ConnectorsListProps = {
-  providers: ProviderDefinition[];
+  providers: readonly ProviderDefinition[];
   connectors: ConnectorDto[];
 };
 
