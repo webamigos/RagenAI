@@ -2,8 +2,12 @@ import { useState, useEffect, memo } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { LikeIcon, DislikeIcon } from '@ragenai/common-ui/icons';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { rateMessage } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
+
+const ACTION_BUTTON_CLS =
+  'inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground transition-colors';
 
 type Props = {
   messageId: string;
@@ -26,37 +30,42 @@ export const RateAnswer = memo(({ messageId, initialRated }: Props) => {
     }
   };
 
-  const renderIcons = () => {
-    switch (rated) {
-      case 1:
-        return <LikeIcon rated={rated} />;
-      case 0:
-        return <DislikeIcon rated={rated} />;
-      case undefined:
-      case null:
-      default:
-        return (
-          <>
-            <LikeIcon
-              onClick={() => handleRateMessage('up')}
-              rated={rated}
-              style={{ cursor: 'pointer' }}
-            />
-            <DislikeIcon
-              onClick={() => handleRateMessage('down')}
-              rated={rated}
-              style={{ cursor: 'pointer' }}
-            />
-          </>
-        );
-    }
-  };
-
   useEffect(() => {
     setRated(initialRated);
   }, [initialRated]);
 
-  return <>{renderIcons()}</>;
+  if (rated === 1) {
+    return <LikeIcon rated={rated} />;
+  }
+
+  if (rated === 0) {
+    return <DislikeIcon rated={rated} />;
+  }
+
+  return (
+    <>
+      <Tooltip id={`like-${messageId}`} content={t('like')}>
+        <button
+          type="button"
+          data-testid="rate-like-btn"
+          className={ACTION_BUTTON_CLS}
+          onClick={() => handleRateMessage('up')}
+        >
+          <LikeIcon rated={rated} />
+        </button>
+      </Tooltip>
+      <Tooltip id={`dislike-${messageId}`} content={t('dislike')}>
+        <button
+          type="button"
+          data-testid="rate-dislike-btn"
+          className={ACTION_BUTTON_CLS}
+          onClick={() => handleRateMessage('down')}
+        >
+          <DislikeIcon rated={rated} />
+        </button>
+      </Tooltip>
+    </>
+  );
 });
 
 RateAnswer.displayName = 'RateAnswer';
