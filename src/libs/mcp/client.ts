@@ -107,24 +107,60 @@ export function wrapToolsForConnector(
     if (typeof tool.execute === 'function') {
       const originalExecute = tool.execute;
 
-      // Remove customer_id from the tool's parameter schema so the LLM doesn't see it
+      // Remove `customer_id` from the tool's parameter schema so the
+      // LLM never sees it. The schema shape exposed by @ai-sdk/mcp can
+      // vary by SDK/MCP-server version — historically it was
+      // `parameters.jsonSchema.properties.customer_id`, but newer MCP
+      // servers surface parameters directly as `inputSchema` or at the
+      // root of `parameters`. We strip from every known path. If the
+      // key appears anywhere else we haven't seen, we warn so future
+      // schema drift shows up in the logs before leaking to users.
       let parameters = tool.parameters;
-      if (parameters?.jsonSchema?.properties?.customer_id) {
-        const { customer_id: _, ...restProps } =
-          parameters.jsonSchema.properties;
-        const required = (
-          Array.isArray(parameters.jsonSchema.required)
-            ? parameters.jsonSchema.required
-            : []
-        ).filter((r: string) => r !== 'customer_id');
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stripKey = (schema: any): any => {
+        if (!schema || typeof schema !== 'object') {
+          return schema;
+        }
+        if (schema.properties && 'customer_id' in schema.properties) {
+          const { customer_id: _, ...restProps } = schema.properties;
+          const required = Array.isArray(schema.required)
+            ? schema.required.filter((r: string) => r !== 'customer_id')
+            : schema.required;
+          return { ...schema, properties: restProps, required };
+        }
+        return schema;
+      };
+
+      if (parameters) {
+        const strippedJson = stripKey(parameters.jsonSchema);
+        const strippedInput = stripKey(parameters.inputSchema);
+        const strippedDirect = stripKey(parameters);
         parameters = {
           ...parameters,
-          jsonSchema: {
-            ...parameters.jsonSchema,
-            properties: restProps,
-            required,
-          },
+          ...(parameters.jsonSchema ? { jsonSchema: strippedJson } : {}),
+          ...(parameters.inputSchema ? { inputSchema: strippedInput } : {}),
+          ...(parameters.properties ? strippedDirect : {}),
         };
+
+        // Detect any remaining leaks and log once per tool, with enough
+        // shape detail for debugging without dumping the whole schema.
+        const stillLeaks = JSON.stringify(parameters).includes('"customer_id"');
+        if (stillLeaks) {
+          logger.warn(
+            {
+              tool: name,
+              keys: Object.keys(parameters ?? {}),
+              jsonSchemaKeys: parameters?.jsonSchema
+                ? Object.keys(parameters.jsonSchema)
+                : null,
+              jsonSchemaPropsKeys: parameters?.jsonSchema?.properties
+                ? Object.keys(parameters.jsonSchema.properties)
+                : null,
+            },
+            'wrapToolsForConnector: customer_id still present after strip — LLM will see it',
+          );
+        }
       }
 
       // Phase 2 prompt-injection defense: classify the tool and, if it
