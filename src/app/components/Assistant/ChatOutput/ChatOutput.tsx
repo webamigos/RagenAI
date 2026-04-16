@@ -231,7 +231,11 @@ const MessageActions = ({
           <RateAnswer initialRated={message.rate} messageId={message.id} />
           <CopyToClipboardButton message={message} htmlContent={renderedHtml} />
           {!isPublicAccess && (
-            <ReadAnswer content={content} voiceId={voiceId!} />
+            <ReadAnswer
+              content={content}
+              voiceId={voiceId!}
+              messageId={message.id}
+            />
           )}
           {!isPublicAccess && isLast && (
             <RegenerateButton
