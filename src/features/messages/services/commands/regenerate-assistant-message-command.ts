@@ -74,7 +74,16 @@ export async function regenerateAssistantMessageCommand(
       success: true,
       data: {
         prompt: userMessage.content,
-        attachments: (userMessage.attachments as MessageAttachment[]) ?? [],
+        attachments: Array.isArray(userMessage.attachments)
+          ? (userMessage.attachments as unknown[]).filter(
+              (a): a is MessageAttachment =>
+                typeof a === 'object' &&
+                a !== null &&
+                typeof (a as Record<string, unknown>).name === 'string' &&
+                typeof (a as Record<string, unknown>).size === 'number' &&
+                typeof (a as Record<string, unknown>).type === 'string',
+            )
+          : [],
       },
     };
   } catch (error) {
