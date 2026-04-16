@@ -2,53 +2,30 @@
 
 import { usePathname, Link } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
-import {
-  Cog6ToothIcon,
-  UserIcon,
-  PuzzlePieceIcon,
-} from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import type { SettingsPage } from '@/features/settings/registry';
 
 const iconClassName = 'size-4 shrink-0';
 
-type NavItem = {
-  href: string;
-  labelKey: string;
-  icon: React.ReactNode;
-};
+type Props = Readonly<{
+  items: readonly SettingsPage[];
+}>;
 
-const navItems: NavItem[] = [
-  {
-    href: '/settings/general',
-    labelKey: 'general',
-    icon: <Cog6ToothIcon className={iconClassName} />,
-  },
-  {
-    href: '/settings/account',
-    labelKey: 'account',
-    icon: <UserIcon className={iconClassName} />,
-  },
-  {
-    href: '/settings/connectors',
-    labelKey: 'connectors',
-    icon: <PuzzlePieceIcon className={iconClassName} />,
-  },
-];
-
-export function SettingsNav() {
+export function SettingsNav({ items }: Props) {
   const pathname = usePathname();
   const t = useTranslations('settings-page.nav');
 
   return (
     <nav className="flex flex-col gap-0.5">
-      {navItems.map((item) => {
+      {items.map((item) => {
+        const Icon = item.icon;
         const isActive =
-          pathname === item.href || pathname.startsWith(item.href + '/');
+          pathname === item.path || pathname.startsWith(item.path + '/');
 
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={item.id}
+            href={item.path}
             className={classMerge(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
               isActive
@@ -56,7 +33,7 @@ export function SettingsNav() {
                 : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-white',
             )}
           >
-            {item.icon}
+            <Icon className={iconClassName} />
             {t(item.labelKey)}
           </Link>
         );
