@@ -8,6 +8,7 @@ import type { MessageDto } from '@/features/messages/contracts/message.types';
 const messages = {
   'success-toast': {
     copied: 'Copied',
+    'copy-options': 'Copy',
     'copy-text': 'Copy text',
     'copy-markdown': 'Copy Markdown',
   },

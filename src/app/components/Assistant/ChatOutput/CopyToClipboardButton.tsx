@@ -85,11 +85,12 @@ export const CopyToClipboardButton = memo(
 
     return (
       <span className={`inline-flex items-center ${className ?? ''}`}>
-        <Tooltip id={`copy-${message.id}`} content={t('copy-text')}>
+        <Tooltip id={`copy-${message.id}`} content={t('copy-options')}>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
                 type="button"
+                aria-label={t('copy-options')}
                 data-testid="copy-trigger-btn"
                 className={ACTION_BUTTON_CLS}
               >

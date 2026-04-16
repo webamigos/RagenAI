@@ -294,6 +294,7 @@
     "deleted": "Deleted",
     "saved": "Saved",
     "files-uploaded": "{count} file(s) uploaded",
+    "copy-options": "Copy",
     "copy-text": "Copy text",
     "copy-markdown": "Copy Markdown"
   },

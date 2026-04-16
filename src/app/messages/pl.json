@@ -295,6 +295,7 @@
     "deleted": "Usunięto ",
     "saved": "Zapisano ",
     "files-uploaded": "Przesłano {count} plik(ów)",
+    "copy-options": "Kopiuj",
     "copy-text": "Kopiuj tekst",
     "copy-markdown": "Kopiuj Markdown"
   },
