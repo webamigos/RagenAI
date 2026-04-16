@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 import type { SettingsPage } from '../registry';
 import {
   canAccessSettingsPage,
@@ -11,7 +10,7 @@ const page = (overrides: Partial<SettingsPage> = {}): SettingsPage => ({
   id: 'test',
   path: '/settings/test',
   labelKey: 'test',
-  icon: Cog6ToothIcon,
+  icon: 'cog',
   order: 100,
   visibility: {},
   ...overrides,

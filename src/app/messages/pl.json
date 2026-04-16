@@ -452,6 +452,7 @@
       "security": "Bezpieczeństwo",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
+      "audit-logs": "Dziennik zdarzeń",
       "rag-settings": "Pipeline RAG",
       "chatbots": "Chatboty"
     },
@@ -780,7 +781,11 @@
       "sign-out": "Wyloguj się",
       "role-app-admin": "Admin aplikacji",
       "role-org-admin": "Admin organizacji",
-      "role-user": "Użytkownik"
+      "role-user": "Użytkownik",
+      "admin-tools": "Narzędzia administracyjne",
+      "ai-usage": "Użycie AI",
+      "disk-usage": "Użycie dysku",
+      "audit-logs": "Dziennik zdarzeń"
     }
   },
   "chats-page": {
