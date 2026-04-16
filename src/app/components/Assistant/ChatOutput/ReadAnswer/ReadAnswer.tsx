@@ -48,6 +48,7 @@ export const ReadAnswer = ({
       <Tooltip id={`read-answer-${messageId}`} content={t('listen')}>
         <button
           type="button"
+          aria-label={t('listen')}
           data-testid="read-answer-btn"
           onClick={handleInitialClick}
           className={ACTION_BUTTON_CLS}
