@@ -47,6 +47,7 @@ export const RateAnswer = memo(({ messageId, initialRated }: Props) => {
       <Tooltip id={`like-${messageId}`} content={t('like')}>
         <button
           type="button"
+          aria-label={t('like')}
           data-testid="rate-like-btn"
           className={ACTION_BUTTON_CLS}
           onClick={() => handleRateMessage('up')}
@@ -57,6 +58,7 @@ export const RateAnswer = memo(({ messageId, initialRated }: Props) => {
       <Tooltip id={`dislike-${messageId}`} content={t('dislike')}>
         <button
           type="button"
+          aria-label={t('dislike')}
           data-testid="rate-dislike-btn"
           className={ACTION_BUTTON_CLS}
           onClick={() => handleRateMessage('down')}
