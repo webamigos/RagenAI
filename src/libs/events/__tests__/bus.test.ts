@@ -108,6 +108,22 @@ describe('createEventBus', () => {
     );
   });
 
+  it('does not reject emit when the failure reporter itself throws', async () => {
+    const bus = makeBus(() => {
+      throw new Error('reporter exploded');
+    });
+    bus.on('thing.happened', () => {
+      throw new Error('handler boom');
+    });
+    const survivor = vi.fn();
+    bus.on('thing.happened', survivor);
+
+    await expect(
+      bus.emit('thing.happened', { id: 'x' }),
+    ).resolves.toBeUndefined();
+    expect(survivor).toHaveBeenCalledOnce();
+  });
+
   it('stops notifying a handler after unsubscribe', async () => {
     const bus = makeBus();
     const handler = vi.fn();

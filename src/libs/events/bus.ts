@@ -49,7 +49,18 @@ export function createEventBus<TEvents extends Record<string, unknown>>(
       );
       for (const result of results) {
         if (result.status === 'rejected') {
-          onFailure({ event: String(event), error: result.reason });
+          // A broken reporter must never block other notifications or
+          // make emit() reject — that would give one buggy subscriber
+          // (via its failure report) the power to take out siblings.
+          try {
+            onFailure({ event: String(event), error: result.reason });
+          } catch (reporterError) {
+            // eslint-disable-next-line no-console
+            console.error(
+              `[events] failure reporter threw for "${String(event)}"`,
+              reporterError,
+            );
+          }
         }
       }
     },
@@ -59,10 +70,14 @@ export function createEventBus<TEvents extends Record<string, unknown>>(
         set = new Set();
         handlers.set(event, set);
       }
+      const boundSet = set;
       const cast = handler as EventHandler<TEvents[keyof TEvents]>;
-      set.add(cast);
+      boundSet.add(cast);
       return () => {
-        set?.delete(cast);
+        boundSet.delete(cast);
+        if (boundSet.size === 0) {
+          handlers.delete(event);
+        }
       };
     },
     reset() {

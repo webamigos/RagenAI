@@ -1,5 +1,6 @@
 import { eventBus } from '@/libs/events';
 import type { Unsubscribe } from '@/libs/events';
+import { maskEmail } from '../mask-email';
 
 const SEGMENT_ID = process.env.RESEND_DEFAULT_SEGMENT_ID;
 
@@ -21,16 +22,17 @@ export function registerNewsletterSignupSubscriber(): Unsubscribe | null {
       firstName: name || 'User',
       segmentId,
     });
+    const maskedEmail = maskEmail(email);
     if ('error' in result) {
       // eslint-disable-next-line no-console
       console.error('[events:newsletter-signup] add failed', {
-        email,
+        email: maskedEmail,
         segmentId,
         error: result.error,
       });
       return;
     }
     // eslint-disable-next-line no-console
-    console.log('[events:newsletter-signup] added', { email });
+    console.log('[events:newsletter-signup] added', { email: maskedEmail });
   });
 }
