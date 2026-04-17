@@ -63,6 +63,12 @@ describe('serializeToMarkdown', () => {
     expect(md).toContain('- report.pdf');
     expect(md).toContain('- data.xlsx');
   });
+
+  it('handles empty messages array gracefully', () => {
+    const md = serializeToMarkdown({ ...baseData, messages: [] });
+    expect(md).toContain('_No messages._');
+    expect(md).not.toContain('undefined');
+  });
 });
 
 describe('buildExportFilename', () => {
@@ -90,5 +96,21 @@ describe('buildExportFilename', () => {
       'md',
     );
     expect(name).toMatch(/^[a-z0-9-]+-2024-03-15\.md$/);
+  });
+
+  it('falls back to "conversation" when title contains only special characters', () => {
+    const name = buildExportFilename('!!!???###', new Date('2024-03-15'), 'md');
+    expect(name).toBe('conversation-2024-03-15.md');
+  });
+
+  it('does not produce trailing hyphen when slug is exactly 50 chars ending in hyphen', () => {
+    const titleWithTrailingHyphen = 'a'.repeat(49) + '-extra';
+    const name = buildExportFilename(
+      titleWithTrailingHyphen,
+      new Date('2024-03-15'),
+      'md',
+    );
+    const slug = name.replace(/-2024-03-15\.md$/, '');
+    expect(slug).not.toMatch(/-$/);
   });
 });

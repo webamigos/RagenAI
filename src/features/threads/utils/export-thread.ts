@@ -15,13 +15,23 @@ export function serializeToMarkdown(data: ThreadExportData): string {
 
   const header = `# ${title}\nDate: ${dateStr}\nAssistant: ${assistant}\n`;
 
-  const messages = data.messages
-    .map((msg) => {
-      const roleLabel = msg.role === Role.USER ? 'User' : 'Assistant';
-      const time = msg.createdAt.toISOString().slice(11, 16);
-      return `**${roleLabel}** _${time}_\n${msg.content}`;
-    })
-    .join('\n\n---\n\n');
+  const messages =
+    data.messages.length === 0
+      ? '_No messages._'
+      : data.messages
+          .map((msg) => {
+            let roleLabel: string;
+            if (msg.role === Role.USER) {
+              roleLabel = 'User';
+            } else if (msg.role === Role.ASSISTANT) {
+              roleLabel = 'Assistant';
+            } else {
+              roleLabel = msg.role;
+            }
+            const time = msg.createdAt.toISOString().slice(11, 16);
+            return `**${roleLabel}** _${time}_\n${msg.content}`;
+          })
+          .join('\n\n---\n\n');
 
   const sources =
     data.sources.length > 0
@@ -42,9 +52,8 @@ export function buildExportFilename(
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
     .slice(0, 50)
-    .replace(/-$/g, '');
+    .replace(/^-|-$/g, '');
   const dateStr = date.toISOString().slice(0, 10);
   return `${slug || 'conversation'}-${dateStr}.${ext}`;
 }
