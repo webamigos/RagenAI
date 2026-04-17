@@ -293,7 +293,10 @@
     "copied": "Copied",
     "deleted": "Deleted",
     "saved": "Saved",
-    "files-uploaded": "{count} file(s) uploaded"
+    "files-uploaded": "{count} file(s) uploaded",
+    "copy-options": "Copy",
+    "copy-text": "Copy text",
+    "copy-markdown": "Copy Markdown"
   },
   "error-toast": {
     "no-user-id": "user id missing",
@@ -318,7 +321,9 @@
   },
   "rate-answer": {
     "thank-you": "Your rating has been saved. Thank you for your feedback",
-    "try-again": "Feedback could not be submitted. Please try again later"
+    "try-again": "Feedback could not be submitted. Please try again later",
+    "like": "Rate positively",
+    "dislike": "Rate negatively"
   },
   "admin-panel": {
     "no-files": "No files have been selected for upload",
@@ -374,7 +379,9 @@
       "model-label": "Model"
     },
     "chat": {
-      "thinking": "Thinking"
+      "thinking": "Thinking",
+      "regenerate": "Regenerate response",
+      "regenerate-error": "Failed to regenerate response. Please try again."
     }
   },
   "assistant-settings": {
@@ -726,8 +733,8 @@
     "support-page": "Support Page",
     "return-to-home": "Threads",
     "threads": {
-      "no-threads": "No conversations yet",
-      "no-threads-description": "Start a new conversation to see it here",
+      "no-threads": "No threads yet",
+      "no-threads-description": "Start a conversation with an assistant",
       "load-more": "Load more"
     },
     "threads-categories": {
@@ -887,6 +894,9 @@
     "create": "New assistant",
     "no-assistants": "No assistants yet",
     "no-assistants-description": "Create your first assistant to get started",
+    "no-search-results": "No results for \"{query}\"",
+    "no-search-results-description": "Try a different search term",
+    "browse-templates": "Browse templates",
     "thread-count": "{count} threads",
     "updated": "Updated {time}",
     "global-assistants": "Global Assistants"
@@ -897,6 +907,7 @@
     "error-threads": "Error fetching threads",
     "threads-not-found": "Thread not found",
     "no-results": "No results found.",
+    "no-results-description": "Try different keywords or check your spelling",
     "placeholder": "Search chats and assistants...",
     "recent": "Recent",
     "threads": "Chats",
@@ -951,8 +962,10 @@
     "from-disk": "From disk",
     "create-document": "Create document",
     "add-from-url": "Add from URL",
+    "no-documents": "No documents in knowledge base",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",
+    "upload-cta": "Upload file",
     "no-shared-files": "No files have been shared with you yet",
     "usage": "Usage",
     "storage": "Storage",
@@ -1641,5 +1654,8 @@
       "forbidden": "This event belongs to a different organization.",
       "already_resolved": "Event is already resolved."
     }
+  },
+  "read-answer": {
+    "listen": "Read answer aloud"
   }
 }

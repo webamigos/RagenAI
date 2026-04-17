@@ -30,6 +30,11 @@ export {
 } from './dialog';
 export { Divider } from './divider';
 export {
+  EmptyState,
+  type EmptyStateProps,
+  type EmptyStateAction,
+} from './empty-state';
+export {
   Dropdown,
   DropdownButton,
   DropdownMenu,

@@ -33,6 +33,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from '@ragenai/tui/dropdown';
+import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
@@ -496,16 +497,26 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
             }
             return (
               <div
-                className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                className="border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600 mb-3" />
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {tFolders('drag-drop')}
-                </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  {tFolders('or-browse')}
-                </p>
+                <EmptyState
+                  icon={
+                    <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
+                  }
+                  title={tFolders('no-documents')}
+                  description={tFolders('drag-drop')}
+                  actions={[
+                    {
+                      label: tFolders('upload-cta'),
+                      onClick: (e?: React.MouseEvent) => {
+                        e?.stopPropagation();
+                        fileInputRef.current?.click();
+                      },
+                    },
+                  ]}
+                  className="py-20"
+                />
               </div>
             );
           }
