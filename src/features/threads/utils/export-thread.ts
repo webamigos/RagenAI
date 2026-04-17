@@ -41,13 +41,41 @@ export function serializeToMarkdown(data: ThreadExportData): string {
   return `${header}\n---\n\n${messages}${sources}\n`;
 }
 
+const TRANSLITERATION_MAP: Record<string, string> = {
+  ą: 'a',
+  ć: 'c',
+  ę: 'e',
+  ł: 'l',
+  ń: 'n',
+  ó: 'o',
+  ś: 's',
+  ź: 'z',
+  ż: 'z',
+  Ą: 'a',
+  Ć: 'c',
+  Ę: 'e',
+  Ł: 'l',
+  Ń: 'n',
+  Ó: 'o',
+  Ś: 's',
+  Ź: 'z',
+  Ż: 'z',
+};
+
+function transliterate(text: string): string {
+  return text.replace(
+    /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/g,
+    (ch) => TRANSLITERATION_MAP[ch] ?? ch,
+  );
+}
+
 export function buildExportFilename(
   title: string | null,
   date: Date,
   ext: string,
 ): string {
   const raw = title ?? 'conversation';
-  const slug = raw
+  const slug = transliterate(raw)
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')

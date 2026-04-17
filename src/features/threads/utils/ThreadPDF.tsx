@@ -1,10 +1,31 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import {
+  Document,
+  Font,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from '@react-pdf/renderer';
 import { Role } from '@/generated/prisma/browser';
 import { type ThreadExportData } from './export-thread';
 
+Font.register({
+  family: 'Roboto',
+  fonts: [
+    {
+      src: 'https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Me5Q.ttf',
+      fontWeight: 'normal',
+    },
+    {
+      src: 'https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9vAw.ttf',
+      fontWeight: 'bold',
+    },
+  ],
+});
+
 const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Helvetica',
+    fontFamily: 'Roboto',
     fontSize: 10,
     paddingTop: 60,
     paddingBottom: 40,
@@ -25,7 +46,8 @@ const styles = StyleSheet.create({
   },
   headerBrand: {
     fontSize: 14,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
     color: '#cb1d3d',
   },
   headerTitle: {
@@ -64,7 +86,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   roleLabel: {
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
     fontSize: 9,
   },
   userLabel: {
@@ -82,7 +105,8 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
   },
   sourcesHeading: {
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'Roboto',
+    fontWeight: 'bold',
     fontSize: 11,
     marginTop: 16,
     marginBottom: 6,

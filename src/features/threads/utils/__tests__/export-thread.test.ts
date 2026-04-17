@@ -103,6 +103,24 @@ describe('buildExportFilename', () => {
     expect(name).toBe('conversation-2024-03-15.md');
   });
 
+  it('transliterates Polish diacritics to ASCII', () => {
+    const name = buildExportFilename(
+      'Halo, działasz?',
+      new Date('2024-03-15'),
+      'pdf',
+    );
+    expect(name).toBe('halo-dzialasz-2024-03-15.pdf');
+  });
+
+  it('transliterates all Polish characters', () => {
+    const name = buildExportFilename(
+      'ąćęłńóśźżĄĆĘŁŃÓŚŹŻ',
+      new Date('2024-03-15'),
+      'md',
+    );
+    expect(name).toBe('acelnoszzacelnoszz-2024-03-15.md');
+  });
+
   it('does not produce trailing hyphen when slug is exactly 50 chars ending in hyphen', () => {
     const titleWithTrailingHyphen = 'a'.repeat(49) + '-extra';
     const name = buildExportFilename(
