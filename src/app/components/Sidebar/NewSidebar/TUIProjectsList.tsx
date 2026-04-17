@@ -5,6 +5,7 @@ import { PlusIcon, FolderPlusIcon } from '@heroicons/react/20/solid';
 
 import { SidebarSection, SidebarHeading } from '@ragenai/tui/sidebar';
 import { Button } from '@ragenai/tui/button';
+import { EmptyState } from '@ragenai/tui/empty-state';
 import { useSidebar } from '@/app/hooks/useSidebar';
 
 import { TUIProjectItem } from './TUIProjectItem';
@@ -66,13 +67,14 @@ export const TUIProjectsList = ({
               }
               if (!isLoading) {
                 return (
-                  <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                    <FolderPlusIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">{t('no-projects')}</p>
-                    <p className="text-xs mt-1">
-                      {t('no-projects-description')}
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={
+                      <FolderPlusIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+                    }
+                    title={t('no-projects')}
+                    description={t('no-projects-description')}
+                    className="py-4"
+                  />
                 );
               }
               return null;
